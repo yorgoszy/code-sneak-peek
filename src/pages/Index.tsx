@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -704,7 +703,7 @@ const Index = () => {
             {/* Right Side - Image and Technology Box */}
             <div className="relative">
               <img
-                src="/lovable-uploads/ab580f0e-bafb-4ea0-8ea3-b88c94787221.png"
+                src="/lovable-uploads/ee8b0998-5f67-4290-b9c4-7d2fd38fef37.png"
                 alt="Advanced Technology"
                 className="w-full h-auto rounded-lg"
               />
