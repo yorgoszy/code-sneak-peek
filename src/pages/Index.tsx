@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X, User, Globe } from "lucide-react";
@@ -85,7 +86,7 @@ const Index = () => {
       )}
 
       {/* Hero Section */}
-      <section id="home" className="relative min-h-screen flex items-center">
+      <section id="home" className="relative min-h-screen flex items-end pb-20">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -107,21 +108,21 @@ const Index = () => {
           </h1>
           
           <div className="flex flex-col sm:flex-row gap-4 mb-16">
-            <Button size="lg" className="text-lg px-8 py-4 bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-light font-light">
+            <Button size="lg" className="text-lg px-8 py-4 bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-pro-light font-light">
               GET STARTED
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-white bg-transparent hover:bg-white/10 rounded-none font-roobert-light font-light">
+            <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-white bg-transparent hover:bg-white/10 rounded-none font-roobert-pro-light font-light">
               CONTACT
             </Button>
           </div>
-          
-          {/* Scroll Down Indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-            <div className="text-center">
-              <div className="text-sm text-gray-300 mb-2">SCROLL DOWN</div>
-              <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
-                <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-bounce"></div>
-              </div>
+        </div>
+        
+        {/* Scroll Down Indicator - moved to absolute bottom */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="text-center">
+            <div className="text-sm text-gray-300 mb-2">SCROLL DOWN</div>
+            <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
+              <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-bounce"></div>
             </div>
           </div>
         </div>
