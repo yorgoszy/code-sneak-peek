@@ -20,8 +20,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'robert': ['Roboto', 'sans-serif'],
-				'sans': ['Roboto', 'sans-serif'],
+				'robert': ['Robert Pro', 'sans-serif'],
+				'sans': ['Robert Pro', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
