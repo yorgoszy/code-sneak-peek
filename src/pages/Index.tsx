@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -857,13 +856,13 @@ const Index = () => {
       {/* Call to Action Section */}
       <section className="py-12 bg-[#00ffba]">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
             {currentContent.results.callToAction.title}
           </h2>
-          <p className="text-xl text-black mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-black mb-6 max-w-2xl mx-auto">
             {currentContent.results.callToAction.subtitle}
           </p>
-          <Button size="lg" className="bg-black hover:bg-gray-800 text-white font-semibold text-lg px-8 py-4 rounded-none">
+          <Button size="lg" className="bg-transparent border-2 border-black hover:bg-black hover:text-[#00ffba] text-black font-semibold text-lg px-8 py-4 rounded-none transition-colors">
             {currentContent.results.callToAction.button}
           </Button>
         </div>
