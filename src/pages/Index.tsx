@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -12,7 +11,7 @@ const Index = () => {
       id: "01",
       title: "Εκμάθηση Κίνησης",
       description: "Εισαγωγικές τεχνικές κίνησης",
-      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+      image: "/lovable-uploads/12fd681e-290f-4ce8-a035-32501adf2034.png"
     },
     {
       id: "02", 
@@ -171,7 +170,7 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Scroll Down Indicator - moved to absolute bottom */}
+        {/* Scroll Down Indicator */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
           <div className="text-center flex flex-col items-center">
             <div className="text-sm text-gray-300 mb-2">SCROLL DOWN</div>
