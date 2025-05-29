@@ -23,26 +23,26 @@ const Index = () => {
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-8">
-                <a href="#home" className="text-white hover:text-green-400 text-sm font-medium transition-colors">
+                <a href="#home" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   Αρχή
                 </a>
-                <a href="#programs" className="text-white hover:text-green-400 text-sm font-medium transition-colors">
+                <a href="#programs" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   Προγράμματα
                 </a>
-                <a href="#schedule" className="text-white hover:text-green-400 text-sm font-medium transition-colors">
+                <a href="#schedule" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   Σχετικά Με Εμάς
                 </a>
-                <a href="#results" className="text-white hover:text-green-400 text-sm font-medium transition-colors">
+                <a href="#results" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   Αποτελέσματα
                 </a>
-                <a href="#contact" className="text-white hover:text-green-400 text-sm font-medium transition-colors">
+                <a href="#contact" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   Επικοινωνία
                 </a>
                 <div className="text-sm text-gray-400 ml-4">en</div>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <Button className="bg-green-500 hover:bg-green-600 text-black font-semibold px-6">
+              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold px-6">
                 Σύνδεση
               </Button>
             </div>
@@ -64,23 +64,23 @@ const Index = () => {
       {isMenuOpen && (
         <div className="md:hidden fixed top-16 left-0 right-0 bg-black/95 backdrop-blur-sm border-b border-gray-800 z-40">
           <div className="px-4 py-4 space-y-3">
-            <a href="#home" className="block text-white hover:text-green-400 text-sm font-medium">
+            <a href="#home" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               Αρχή
             </a>
-            <a href="#programs" className="block text-white hover:text-green-400 text-sm font-medium">
+            <a href="#programs" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               Προγράμματα
             </a>
-            <a href="#schedule" className="block text-white hover:text-green-400 text-sm font-medium">
+            <a href="#schedule" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               Σχετικά Με Εμάς
             </a>
-            <a href="#results" className="block text-white hover:text-green-400 text-sm font-medium">
+            <a href="#results" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               Αποτελέσματα
             </a>
-            <a href="#contact" className="block text-white hover:text-green-400 text-sm font-medium">
+            <a href="#contact" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               Επικοινωνία
             </a>
             <div className="pt-4">
-              <Button className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
                 Σύνδεση
               </Button>
             </div>
@@ -105,13 +105,13 @@ const Index = () => {
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight font-robert">
             The Champion's Journey
             <br />
-            <span className="text-green-500">
+            <span style={{ color: '#00ffba' }}>
               Starts Here
             </span>
           </h1>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button size="lg" className="text-lg px-8 py-4 bg-green-500 hover:bg-green-600 text-black font-semibold">
+            <Button size="lg" className="text-lg px-8 py-4 bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
               GET STARTED
             </Button>
             <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-white hover:bg-white/10">
@@ -144,26 +144,26 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-green-500 transition-colors">
+            <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
               <h3 className="text-2xl font-bold text-white mb-4">Αρχάριοι</h3>
               <p className="text-gray-300 mb-6">Ξεκινήστε το ταξίδι σας με ασφάλεια και σωστή τεχνική</p>
-              <Button className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
                 Μάθετε Περισσότερα
               </Button>
             </div>
             
-            <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-green-500 transition-colors">
+            <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
               <h3 className="text-2xl font-bold text-white mb-4">Μεσαίο Επίπεδο</h3>
               <p className="text-gray-300 mb-6">Αναπτύξτε τις δεξιότητές σας και βελτιώστε την απόδοσή σας</p>
-              <Button className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
                 Μάθετε Περισσότερα
               </Button>
             </div>
             
-            <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-green-500 transition-colors">
+            <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
               <h3 className="text-2xl font-bold text-white mb-4">Προχωρημένοι</h3>
               <p className="text-gray-300 mb-6">Εντατική προπόνηση για αθλητές υψηλού επιπέδου</p>
-              <Button className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -183,7 +183,7 @@ const Index = () => {
                 Στο HYPERKIDS δημιουργούμε πρωταθλητές. Με χρόνια εμπειρίας και πάθος για το άθλημα, 
                 προσφέρουμε την καλύτερη δυνατή εκπαίδευση.
               </p>
-              <Button className="bg-green-500 hover:bg-green-600 text-black font-semibold px-8 py-3">
+              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold px-8 py-3">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -217,19 +217,19 @@ const Index = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-4xl md:text-6xl font-bold text-green-500 mb-2">500+</div>
+              <div className="text-4xl md:text-6xl font-bold text-[#00ffba] mb-2">500+</div>
               <div className="text-gray-300">Μαθητές</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-6xl font-bold text-green-500 mb-2">50+</div>
+              <div className="text-4xl md:text-6xl font-bold text-[#00ffba] mb-2">50+</div>
               <div className="text-gray-300">Πρωταθλητές</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-6xl font-bold text-green-500 mb-2">10</div>
+              <div className="text-4xl md:text-6xl font-bold text-[#00ffba] mb-2">10</div>
               <div className="text-gray-300">Χρόνια Εμπειρίας</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-6xl font-bold text-green-500 mb-2">100%</div>
+              <div className="text-4xl md:text-6xl font-bold text-[#00ffba] mb-2">100%</div>
               <div className="text-gray-300">Αφοσίωση</div>
             </div>
           </div>
@@ -246,7 +246,7 @@ const Index = () => {
             Ελάτε να γνωρίσετε το χώρο μας και να ξεκινήσετε το δικό σας ταξίδι προς την κορυφή
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-green-500 hover:bg-green-600 text-black font-semibold text-lg px-8 py-4">
+            <Button size="lg" className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg px-8 py-4">
               Κλείστε Δοκιμαστικό Μάθημα
             </Button>
             <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 text-lg px-8 py-4">
