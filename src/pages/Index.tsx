@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Menu, X, User, Globe, ChevronLeft, ChevronRight, MapPin, Phone, Mail, Facebook, Instagram, Youtube } from "lucide-react";
+import { useForm } from "react-hook-form";
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -8,6 +12,20 @@ const Index = () => {
   const [activeAboutSection, setActiveAboutSection] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [language, setLanguage] = useState<'el' | 'en'>('el');
+
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      message: ""
+    }
+  });
+
+  const onSubmit = (data: any) => {
+    console.log(data);
+    // Handle form submission
+  };
 
   const toggleLanguage = () => {
     setLanguage(prev => prev === 'el' ? 'en' : 'el');
@@ -761,7 +779,7 @@ const Index = () => {
             <div className="lg:col-span-1 relative">
               <div className="relative overflow-visible">
                 <img
-                  src="/lovable-uploads/0e7684c1-8bdc-4c37-8b81-ebf94f4a6fb4.png"
+                  src="/lovable-uploads/2857cb9c-1d26-4d2c-bba4-ab3c1320b791.png"
                   alt="Advanced Technology"
                   className="w-full h-auto rounded-lg"
                 />
@@ -869,55 +887,193 @@ const Index = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-24 bg-black">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
-            {currentContent.contactSection.title}
-          </h2>
-          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-            {currentContent.contactSection.description}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg px-8 py-4 rounded-none font-roobert-light font-light">
-              {currentContent.contactSection.trial}
-            </Button>
-            <Button variant="outline" size="lg" className="border-white text-white bg-transparent hover:bg-white/10 text-lg px-8 py-4 rounded-none font-roobert-light font-light">
-              {currentContent.contactSection.contactUs}
-            </Button>
+      <section id="contact" className="py-24 bg-black text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
+              Contact
+            </h2>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-12 mb-16">
+            {/* Contact Information */}
+            <div className="space-y-8">
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 text-[#00ffba] mt-1">
+                  <MapPin className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-gray-300">ag.georgiou 46, thessaloniki 54627</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 text-[#00ffba] mt-1">
+                  <Phone className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-gray-300">+30 2310 529104</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 text-[#00ffba] mt-1">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-gray-300">info@hyperkids.gr</p>
+                </div>
+              </div>
+
+              {/* Social Media Icons */}
+              <div className="flex gap-4 pt-4">
+                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
+                  <Facebook className="w-5 h-5" />
+                </div>
+                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
+                  <Instagram className="w-5 h-5" />
+                </div>
+                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
+                  <Youtube className="w-5 h-5" />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Form */}
+            <div className="lg:col-span-2">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Name</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Your name" 
+                              {...field} 
+                              className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email"
+                              placeholder="Your email" 
+                              {...field} 
+                              className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Phone</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Your phone number" 
+                            {...field} 
+                            className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="message"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Message</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Your message" 
+                            rows={6}
+                            {...field} 
+                            className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none resize-none"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg py-4 rounded-none"
+                  >
+                    Send Message
+                  </Button>
+                </form>
+              </Form>
+            </div>
+          </div>
+
+          {/* Hours Section */}
+          <div className="border-t border-gray-800 pt-16">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h3 className="text-3xl font-bold text-white mb-8">Hours</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Monday - Friday:</span>
+                    <span className="text-white">7:00 - 22:00</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Saturday:</span>
+                    <span className="text-white">Closed</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Sunday:</span>
+                    <span className="text-white">Closed</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Google Maps */}
+              <div className="h-64 bg-gray-800 rounded-lg overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.4!2d22.94!3d40.64!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDM4JzI2LjQiTiAyMsKwNTYnMjQuMCJF!5e0!3m2!1sen!2sgr!4v1000000000000!5m2!1sen!2sgr"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Hyperkids Location"
+                ></iframe>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <div className="text-2xl font-bold mb-4">HYPERKIDS</div>
-              <p className="text-gray-400 mb-6">
-                Δημιουργώντας πρωταθλητές για το μέλλον
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4 text-lg">Επικοινωνία</h3>
-              <div className="space-y-2 text-gray-400">
-                <p>Διεύθυνση: Κεντρική 123, Αθήνα</p>
-                <p>Τηλέφωνο: +30 210 123 4567</p>
-                <p>Email: info@hyperkids.gr</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4 text-lg">Ωράριο</h3>
-              <div className="space-y-2 text-gray-400">
-                <p>Δευτέρα - Παρασκευή: 06:00 - 22:00</p>
-                <p>Σάββατο: 08:00 - 20:00</p>
-                <p>Κυριακή: 10:00 - 18:00</p>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 HYPERKIDS. Όλα τα δικαιώματα κατοχυρωμένα.</p>
-          </div>
+      <footer className="bg-gray-900 text-white py-8 border-t border-gray-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-gray-400">&copy; 2023 hyperkids. All rights reserved.</p>
         </div>
       </footer>
     </div>
