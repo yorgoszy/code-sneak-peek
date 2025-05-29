@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -35,7 +36,7 @@ const Index = () => {
       id: "05",
       title: "Muay Thai",
       description: "Μέθοδοι Προπόνησης Νέων Γενιές",
-      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+      image: "/lovable-uploads/59a5eb9c-a6d9-4195-bc4c-bee6f5ce513c.png"
     },
     {
       id: "06",
