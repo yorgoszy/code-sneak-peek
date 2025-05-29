@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
@@ -15,7 +14,7 @@ const Index = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <img 
-                  src="/lovable-uploads/62fc768d-b98f-4885-96a1-5840c86bfc39.png" 
+                  src="/lovable-uploads/721aac89-035f-44b9-93e7-6a5e826bd921.png" 
                   alt="HYPERKIDS Logo" 
                   className="h-8 w-auto"
                 />
@@ -42,7 +41,7 @@ const Index = () => {
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold px-6">
+              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold px-6 rounded-none">
                 Σύνδεση
               </Button>
             </div>
@@ -80,7 +79,7 @@ const Index = () => {
               Επικοινωνία
             </a>
             <div className="pt-4">
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold rounded-none">
                 Σύνδεση
               </Button>
             </div>
@@ -89,7 +88,7 @@ const Index = () => {
       )}
 
       {/* Hero Section */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center">
+      <section id="home" className="relative min-h-screen flex items-center">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -101,7 +100,7 @@ const Index = () => {
         </div>
         
         {/* Content */}
-        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 text-left px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight font-robert">
             The Champion's Journey
             <br />
@@ -110,11 +109,11 @@ const Index = () => {
             </span>
           </h1>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button size="lg" className="text-lg px-8 py-4 bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
+          <div className="flex flex-col sm:flex-row gap-4 mb-16">
+            <Button size="lg" className="text-lg px-8 py-4 bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold rounded-none">
               GET STARTED
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-white hover:bg-white/10">
+            <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-white hover:bg-white/10 rounded-none">
               CONTACT
             </Button>
           </div>
@@ -147,7 +146,7 @@ const Index = () => {
             <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
               <h3 className="text-2xl font-bold text-white mb-4">Αρχάριοι</h3>
               <p className="text-gray-300 mb-6">Ξεκινήστε το ταξίδι σας με ασφάλεια και σωστή τεχνική</p>
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold rounded-none">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -155,7 +154,7 @@ const Index = () => {
             <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
               <h3 className="text-2xl font-bold text-white mb-4">Μεσαίο Επίπεδο</h3>
               <p className="text-gray-300 mb-6">Αναπτύξτε τις δεξιότητές σας και βελτιώστε την απόδοσή σας</p>
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold rounded-none">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -163,7 +162,7 @@ const Index = () => {
             <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
               <h3 className="text-2xl font-bold text-white mb-4">Προχωρημένοι</h3>
               <p className="text-gray-300 mb-6">Εντατική προπόνηση για αθλητές υψηλού επιπέδου</p>
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold rounded-none">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -183,7 +182,7 @@ const Index = () => {
                 Στο HYPERKIDS δημιουργούμε πρωταθλητές. Με χρόνια εμπειρίας και πάθος για το άθλημα, 
                 προσφέρουμε την καλύτερη δυνατή εκπαίδευση.
               </p>
-              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold px-8 py-3">
+              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold px-8 py-3 rounded-none">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -246,10 +245,10 @@ const Index = () => {
             Ελάτε να γνωρίσετε το χώρο μας και να ξεκινήσετε το δικό σας ταξίδι προς την κορυφή
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg px-8 py-4">
+            <Button size="lg" className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg px-8 py-4 rounded-none">
               Κλείστε Δοκιμαστικό Μάθημα
             </Button>
-            <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 text-lg px-8 py-4">
+            <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 text-lg px-8 py-4 rounded-none">
               Επικοινωνήστε Μαζί Μας
             </Button>
           </div>
