@@ -674,19 +674,19 @@ const Index = () => {
               <div className="space-y-6 mb-8">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
-                  <span className="text-gray-800">Mobility & Flexibility</span>
+                  <span className="text-gray-800">Accommodating resistance</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
-                  <span className="text-gray-800">Speed & Agility</span>
+                  <span className="text-gray-800">Accentuated eccentric loading</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
-                  <span className="text-gray-800">Strength & Power</span>
+                  <span className="text-gray-800">Velocity based training</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
-                  <span className="text-gray-800">Endurance & Stamina</span>
+                  <span className="text-gray-800">Specific energy system development</span>
                 </div>
               </div>
 
@@ -703,7 +703,7 @@ const Index = () => {
             {/* Right Side - Image and Technology Box */}
             <div className="relative">
               <img
-                src="/lovable-uploads/ee8b0998-5f67-4290-b9c4-7d2fd38fef37.png"
+                src="/lovable-uploads/118b37e5-41e5-4cc2-bb54-2bd8b2b6855e.png"
                 alt="Advanced Technology"
                 className="w-full h-auto rounded-lg"
               />
