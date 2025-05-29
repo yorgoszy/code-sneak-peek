@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -355,8 +356,8 @@ const Index = () => {
                 {activeAboutSection === 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {methodologyBoxes.map((box, index) => (
-                      <div key={index} className="bg-gray-800/50 border border-gray-700 p-4">
-                        <h4 className="text-[#00ffba] font-semibold text-sm mb-3">{box.title}</h4>
+                      <div key={index} className="bg-gray-800/50 border border-gray-700 p-4 rounded-sm border-l-4 border-l-[#00ffba]">
+                        <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
                         <p className="text-gray-300 text-sm leading-relaxed">{box.content}</p>
                       </div>
                     ))}
