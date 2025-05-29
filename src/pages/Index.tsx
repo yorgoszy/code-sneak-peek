@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -84,7 +85,7 @@ const Index = () => {
         id: 3,
         title: "Elite Training Methodology",
         number: "04",
-        image: "/lovable-uploads/97800d53-e9d6-4b5d-876a-69015555d90b.png",
+        image: "/lovable-uploads/e7b26f7e-bacc-4b5e-b03d-39786bb57f6c.png",
         content: "Η μεθοδολογία προπόνησής μας βασίζεται σε επιστημονικές αρχές και χρόνια εμπειρίας εργασίας με ελίτ αθλητές. Εστιάζουμε στην ανάπτυξη όλων των πτυχών της αθλητικής απόδοσης συμπεριλαμβανομένων: Κινητικότητας & Ευελιξίας, Ταχύτητας & Ευκινησίας, Δύναμης & Ισχύος, Αντοχής & Αντοχής. Χρησιμοποιούμε προηγμένη τεχνολογία για την παρακολούθηση των μετρήσεων απόδοσης σε πραγματικό χρόνο, επιτρέποντας ακριβείς προσαρμογές και βέλτιστα αποτελέσματα προπόνησης."
       }
     ],
@@ -114,7 +115,7 @@ const Index = () => {
         id: 3,
         title: "Elite Training Methodology",
         number: "04",
-        image: "/lovable-uploads/97800d53-e9d6-4b5d-876a-69015555d90b.png",
+        image: "/lovable-uploads/e7b26f7e-bacc-4b5e-b03d-39786bb57f6c.png",
         content: "Our training methodology is based on scientific principles and years of experience working with elite athletes. We focus on developing all aspects of athletic performance including: Mobility & Flexibility, Speed & Agility, Strength & Power, Endurance & Stamina. We utilize cutting-edge technology to track performance metrics in real-time, allowing for precise adjustments and optimal training outcomes."
       }
     ]
