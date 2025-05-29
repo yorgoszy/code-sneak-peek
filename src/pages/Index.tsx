@@ -1,9 +1,45 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Menu, X, User, Globe } from "lucide-react";
+import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentProgram, setCurrentProgram] = useState(0);
+
+  const programs = [
+    {
+      id: "01",
+      title: "Εκμάθηση Κίνησης",
+      description: "Εισαγωγικές τεχνικές κίνησης",
+      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+    },
+    {
+      id: "02", 
+      title: "Ανάπτυξη Κίνησης",
+      description: "Δημιουργία αθλητικών βάσεων για όλα τα αθλήματα",
+      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+    },
+    {
+      id: "03",
+      title: "Δύναμη Νέων", 
+      description: "Προπτωμένες τεχνικές και φυσική κατάσταση",
+      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+    },
+    {
+      id: "04",
+      title: "Φυσική Κατάσταση",
+      description: "Εξατομικευμένες λύσεις φυσικής κατάστασης για όλα τα επίπεδα",
+      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+    }
+  ];
+
+  const nextProgram = () => {
+    setCurrentProgram((prev) => (prev + 1) % programs.length);
+  };
+
+  const prevProgram = () => {
+    setCurrentProgram((prev) => (prev - 1 + programs.length) % programs.length);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white font-robert font-medium">
@@ -85,7 +121,7 @@ const Index = () => {
       )}
 
       {/* Hero Section */}
-      <section id="home" className="relative min-h-screen flex items-end pb-20">
+      <section id="home" className="relative min-h-screen flex items-end pb-32">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -128,47 +164,78 @@ const Index = () => {
       </section>
 
       {/* Programs Section */}
-      <section id="programs" className="py-24 bg-gray-900">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Τα Προγράμματα Μας
+      <section id="programs" className="py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-left mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-roobert-pro-light">
+              Εξερεύνησε Όλα Τα
+              <br />
+              Προγράμματα
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Εξατομικευμένα προγράμματα προπόνησης για όλα τα επίπεδα
-            </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
-              <h3 className="text-2xl font-bold text-white mb-4">Αρχάριοι</h3>
-              <p className="text-gray-300 mb-6">Ξεκινήστε το ταξίδι σας με ασφάλεια και σωστή τεχνική</p>
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-light font-light">
-                Μάθετε Περισσότερα
-              </Button>
+          <div className="relative">
+            {/* Program Numbers Navigation */}
+            <div className="flex gap-8 mb-12">
+              {programs.map((program, index) => (
+                <button
+                  key={program.id}
+                  onClick={() => setCurrentProgram(index)}
+                  className={`text-left transition-colors ${
+                    currentProgram === index ? 'text-[#00ffba]' : 'text-gray-500'
+                  }`}
+                >
+                  <div className="text-lg font-bold mb-2">{program.id}</div>
+                  <div className="text-sm font-roobert-pro-light">{program.title}</div>
+                </button>
+              ))}
             </div>
-            
-            <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
-              <h3 className="text-2xl font-bold text-white mb-4">Μεσαίο Επίπεδο</h3>
-              <p className="text-gray-300 mb-6">Αναπτύξτε τις δεξιότητές σας και βελτιώστε την απόδοσή σας</p>
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-light font-light">
-                Μάθετε Περισσότερα
-              </Button>
+
+            {/* Carousel Navigation Arrows */}
+            <div className="absolute top-0 right-0 flex gap-4">
+              <button
+                onClick={prevProgram}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                onClick={nextProgram}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
             </div>
-            
-            <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
-              <h3 className="text-2xl font-bold text-white mb-4">Προχωρημένοι</h3>
-              <p className="text-gray-300 mb-6">Εντατική προπόνηση για αθλητές υψηλού επιπέδου</p>
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-light font-light">
-                Μάθετε Περισσότερα
-              </Button>
+
+            {/* Program Images Grid */}
+            <div className="grid grid-cols-4 gap-6 h-96">
+              {programs.map((program, index) => (
+                <div 
+                  key={program.id}
+                  className={`relative overflow-hidden transition-all duration-500 ${
+                    currentProgram === index ? 'col-span-2' : 'col-span-1'
+                  }`}
+                >
+                  <img
+                    src={program.image}
+                    alt={program.title}
+                    className="w-full h-full object-cover filter grayscale"
+                  />
+                  <div className="absolute inset-0 bg-black/60"></div>
+                  {currentProgram === index && (
+                    <div className="absolute bottom-6 left-6 text-white">
+                      <p className="text-sm font-roobert-pro-light">{program.description}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section id="schedule" className="py-24 bg-black">
+      <section id="schedule" className="py-24 bg-gray-900">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
