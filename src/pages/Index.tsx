@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -30,7 +29,7 @@ const Index = () => {
       id: "04",
       title: "Φυσική Κατάσταση",
       description: "Εξατομικευμένες λύσεις φυσικής κατάστασης για όλα τα επίπεδα",
-      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+      image: "/lovable-uploads/5a707b1a-30b8-4690-80d1-0f73d3affe5b.png"
     },
     {
       id: "05",
