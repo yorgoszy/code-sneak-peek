@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X, User, Globe } from "lucide-react";
@@ -119,7 +118,7 @@ const Index = () => {
         
         {/* Scroll Down Indicator - moved to absolute bottom */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="text-center">
+          <div className="text-center flex flex-col items-center">
             <div className="text-sm text-gray-300 mb-2">SCROLL DOWN</div>
             <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
               <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-bounce"></div>
