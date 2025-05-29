@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -702,16 +703,16 @@ const Index = () => {
 
             {/* Right Side - Image with Overlay Box */}
             <div className="lg:col-span-1 relative">
-              <div className="relative">
+              <div className="relative overflow-visible">
                 <img
                   src="/lovable-uploads/118b37e5-41e5-4cc2-bb54-2bd8b2b6855e.png"
                   alt="Advanced Technology"
                   className="w-[500px] h-[400px] object-cover rounded-lg"
                 />
-                {/* Green Box Overlay - positioned inside image on the left */}
-                <div className="absolute top-8 left-8 bg-[#00ffba] text-black p-8 rounded-sm max-w-xs">
-                  <h4 className="font-bold text-xl mb-6">Advanced Technology</h4>
-                  <p className="text-base leading-relaxed">
+                {/* Green Box Overlay - positioned at bottom left, half extending outside */}
+                <div className="absolute -bottom-8 -left-12 bg-[#00ffba] text-black p-6 rounded-sm max-w-xs z-10">
+                  <h4 className="font-bold text-lg mb-4">Advanced Technology</h4>
+                  <p className="text-sm leading-relaxed">
                     Real-time performance tracking for
                     optimal results
                   </p>
