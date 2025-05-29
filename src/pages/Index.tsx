@@ -106,6 +106,21 @@ const Index = () => {
     }
   ];
 
+  const methodologyTrainingBoxes = [
+    {
+      title: "Κινητικές Δεξιότητες",
+      content: "• Ανάπτυξη Αθλητικών Δεξιοτήτων\n• Κατάλληλο για την Ηλικία\n• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Τρεξίματα Ευκινησίας, Συντονισμός"
+    },
+    {
+      title: "Αξιολόγηση", 
+      content: "• Κίνηση & Στάση\n• Προφίλ φορτίου - ταχύτητας\n• Προφίλ άλματος\n• Αντοχή"
+    },
+    {
+      title: "Εστιασμένα στα Αποτελέσματα",
+      content: "• Παρακολούθηση Αποτελεσμάτων\n• Καθοδήγηση Απόδοσης\n• Ανάπτυξη Προσαρμοσμένου Προγράμματος"
+    }
+  ];
+
   const nextProgram = () => {
     setCurrentProgram((prev) => (prev + 1) % programs.length);
   };
@@ -385,6 +400,18 @@ const Index = () => {
                       <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-4 border-l-[#00ffba]">
                         <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
                         <p className="text-gray-300 text-sm leading-relaxed">{box.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Methodology Training Boxes - Only show for section 03 */}
+                {activeAboutSection === 2 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {methodologyTrainingBoxes.map((box, index) => (
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-4 border-l-[#00ffba]">
+                        <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
+                        <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">{box.content}</div>
                       </div>
                     ))}
                   </div>
