@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -654,16 +655,18 @@ const Index = () => {
       </section>
 
       {/* Elite Training Methodology Section */}
-      <section className="py-24 bg-gray-900">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left Side - Content */}
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
                 Elite Training Methodology
               </h2>
               
-              <p className="text-gray-300 leading-relaxed mb-8">
+              <div className="w-20 h-1 bg-[#00ffba] mb-8"></div>
+              
+              <p className="text-gray-600 leading-relaxed mb-8">
                 Our training methodology is based on scientific principles and years of
                 experience working with elite athletes. We focus on developing all
                 aspects of athletic performance including:
@@ -672,28 +675,28 @@ const Index = () => {
               <div className="space-y-6 mb-8">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
-                  <span className="text-white">Mobility & Flexibility</span>
+                  <span className="text-gray-800">Mobility & Flexibility</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
-                  <span className="text-white">Speed & Agility</span>
+                  <span className="text-gray-800">Speed & Agility</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
-                  <span className="text-white">Strength & Power</span>
+                  <span className="text-gray-800">Strength & Power</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
-                  <span className="text-white">Endurance & Stamina</span>
+                  <span className="text-gray-800">Endurance & Stamina</span>
                 </div>
               </div>
 
-              <p className="text-gray-300 leading-relaxed mb-8">
+              <p className="text-gray-600 leading-relaxed mb-8">
                 We utilize cutting-edge technology to track performance metrics in real-
                 time, allowing for precise adjustments and optimal training outcomes.
               </p>
 
-              <Button className="bg-black hover:bg-gray-800 text-white border border-gray-600 px-8 py-3 rounded-none font-roobert-pro-light">
+              <Button className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-none font-roobert-pro-light">
                 OUR APPROACH
               </Button>
             </div>
@@ -701,7 +704,7 @@ const Index = () => {
             {/* Right Side - Image and Technology Box */}
             <div className="relative">
               <img
-                src="/lovable-uploads/9d93e678-f076-43f1-840e-e43b19d2ce62.png"
+                src="/lovable-uploads/ab580f0e-bafb-4ea0-8ea3-b88c94787221.png"
                 alt="Advanced Technology"
                 className="w-full h-auto rounded-lg"
               />
