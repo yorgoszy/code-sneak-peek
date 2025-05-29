@@ -91,6 +91,21 @@ const Index = () => {
     }
   ];
 
+  const visionBoxes = [
+    {
+      title: "Περισσότερο από Φυσικό",
+      content: "Δεν προπονούμε απλώς σώματα. Διαμορφώνουμε χαρακτήρα. Κάθε παιδί είναι ένας κόσμος σε κίνηση, και η κίνηση είναι αυτοέκφραση, αυτοπεποίθηση και ανάπτυξη."
+    },
+    {
+      title: "Χτίσιμο Χαρακτήρα",
+      content: "Διδάσκουμε σεβασμό, πειθαρχία, επιμονή και συνεργασία. Στόχος μας είναι να δημιουργήσουμε ένα σχολείο ζωής όπου τα παιδιά μαθαίνουν να στέκονται όρθια φυσικά, ψυχικά και ηθικά."
+    },
+    {
+      title: "Εμπιστοσύνη στη Διαδικασία",
+      content: "Για εμάς, το αύριο αρχίζει σήμερα. Βήμα βήμα. Με εμπιστοσύνη στη διαδικασία. Με το κουράγιο να πάμε παραπέρα. Με τη θέληση να ξεπεράσουμε τα όρια."
+    }
+  ];
+
   const nextProgram = () => {
     setCurrentProgram((prev) => (prev + 1) % programs.length);
   };
@@ -355,6 +370,18 @@ const Index = () => {
                 {activeAboutSection === 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {methodologyBoxes.map((box, index) => (
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-4 border-l-[#00ffba]">
+                        <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
+                        <p className="text-gray-300 text-sm leading-relaxed">{box.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Vision Boxes - Only show for section 02 */}
+                {activeAboutSection === 1 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {visionBoxes.map((box, index) => (
                       <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-4 border-l-[#00ffba]">
                         <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
                         <p className="text-gray-300 text-sm leading-relaxed">{box.content}</p>
