@@ -76,6 +76,21 @@ const Index = () => {
     }
   ];
 
+  const methodologyBoxes = [
+    {
+      title: "Ακαδημαϊκό Υπόβαθρο",
+      content: "Απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023)"
+    },
+    {
+      title: "Επαγγελματίας Αθλητής",
+      content: "Επαγγελματίας αθλητής Muay Thai με εμπειρία σε αγώνες υψηλού επιπέδου"
+    },
+    {
+      title: "Βασικές Αξίες",
+      content: "Ο στόχος μας δεν είναι μόνο η φυσική βελτίωση, αλλά και η καλλιέργεια αυτοπεποίθησης, χαρακτήρα και θετικών αξιών"
+    }
+  ];
+
   const nextProgram = () => {
     setCurrentProgram((prev) => (prev + 1) % programs.length);
   };
@@ -332,9 +347,21 @@ const Index = () => {
                 
                 <h3 className="text-2xl font-bold text-white mb-6">{aboutSections[activeAboutSection].title}</h3>
                 
-                <p className="text-gray-300 leading-relaxed">
+                <p className="text-gray-300 leading-relaxed mb-8">
                   {aboutSections[activeAboutSection].content}
                 </p>
+
+                {/* Methodology Boxes - Only show for section 03 */}
+                {activeAboutSection === 2 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {methodologyBoxes.map((box, index) => (
+                      <div key={index} className="bg-gray-800/50 border border-gray-700 p-4">
+                        <h4 className="text-[#00ffba] font-semibold text-sm mb-3">{box.title}</h4>
+                        <p className="text-gray-300 text-sm leading-relaxed">{box.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
