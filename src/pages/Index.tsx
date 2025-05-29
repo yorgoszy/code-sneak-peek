@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -695,10 +694,6 @@ const Index = () => {
                 We utilize cutting-edge technology to track performance metrics in real-
                 time, allowing for precise adjustments and optimal training outcomes.
               </p>
-
-              <Button className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-none font-roobert-pro-light">
-                OUR APPROACH
-              </Button>
             </div>
 
             {/* Right Side - Image with Overlay Box */}
