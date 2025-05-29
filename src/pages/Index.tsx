@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
@@ -38,7 +37,6 @@ const Index = () => {
                 <a href="#contact" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   Επικοινωνία
                 </a>
-                <div className="text-sm text-gray-400 ml-4">en</div>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
