@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -23,7 +24,7 @@ const Index = () => {
       id: "03",
       title: "Δύναμη Νέων", 
       description: "Προπτωμένες τεχνικές και φυσική κατάσταση",
-      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+      image: "/lovable-uploads/29ceb456-3fe1-4f11-82f7-f66e683312bb.png"
     },
     {
       id: "04",
