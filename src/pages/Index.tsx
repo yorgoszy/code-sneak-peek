@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -7,6 +6,7 @@ const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentProgram, setCurrentProgram] = useState(0);
   const [activeAboutSection, setActiveAboutSection] = useState(0);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [language, setLanguage] = useState<'el' | 'en'>('el');
 
   const toggleLanguage = () => {
@@ -57,6 +57,55 @@ const Index = () => {
       image: "/lovable-uploads/77591c7f-20d5-4ab2-ab03-5ae09f70daf5.png"
     }
   ];
+
+  const testimonials = {
+    el: [
+      {
+        id: 0,
+        quote: "Το πρόγραμμα προπόνησης στο Performance έχει μεταμορφώσει εντελώς το παιχνίδι μου. Κέρδισα δύναμη, ταχύτητα, και ο χρόνος ανάρρωσής μου βελτιώθηκε σημαντικά.",
+        name: "Αλέξανδρος Ιωάννου",
+        title: "Επαγγελματίας Παίκτης Μπάσκετ",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      },
+      {
+        id: 1,
+        quote: "Η μεθοδολογία προπόνησης και η εξατομικευμένη προσέγγιση με βοήθησαν να ξεπεράσω τα όριά μου και να φτάσω σε νέα επίπεδα απόδοσης.",
+        name: "Μαρία Παπαδοπούλου",
+        title: "Πρωταθλήτρια Κολύμβησης",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      },
+      {
+        id: 2,
+        quote: "Στο Hyperkids μαθαίνουν τα παιδιά όχι μόνο αθλητισμό αλλά και αξίες ζωής. Το περιβάλλον είναι υποστηρικτικό και επαγγελματικό.",
+        name: "Γιάννης Κωνσταντίνου",
+        title: "Γονέας & Πρώην Αθλητής",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      }
+    ],
+    en: [
+      {
+        id: 0,
+        quote: "The training program at Performance has completely transformed my game. I've gained strength, speed, and my recovery time has improved significantly.",
+        name: "Alex Johnson",
+        title: "Professional Basketball Player",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      },
+      {
+        id: 1,
+        quote: "The training methodology and personalized approach helped me push beyond my limits and reach new levels of performance.",
+        name: "Maria Smith",
+        title: "Swimming Champion",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      },
+      {
+        id: 2,
+        quote: "At Hyperkids, children learn not only sports but also life values. The environment is supportive and professional.",
+        name: "John Constantine",
+        title: "Parent & Former Athlete",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      }
+    ]
+  };
 
   const aboutSections = {
     el: [
@@ -280,11 +329,13 @@ const Index = () => {
         titleHighlight: "Athletic Journey"
       },
       results: {
-        title: "Τα Αποτελέσματά Μας",
-        students: "Μαθητές",
-        champions: "Πρωταθλητές", 
-        experience: "Χρόνια Εμπειρίας",
-        dedication: "Αφοσίωση"
+        title: "Athlete Results",
+        subtitle: "Don't just take our word for it. Hear from the athletes who have experienced the Performance difference.",
+        callToAction: {
+          title: "Ready to Elevate Your Performance?",
+          subtitle: "Join our community of athletes and start your journey towards peak performance today.",
+          button: "GET STARTED"
+        }
       },
       contactSection: {
         title: "Ξεκινήστε Σήμερα",
@@ -310,11 +361,13 @@ const Index = () => {
         titleHighlight: "Athletic Journey"
       },
       results: {
-        title: "Our Results",
-        students: "Students",
-        champions: "Champions",
-        experience: "Years Experience", 
-        dedication: "Dedication"
+        title: "Athlete Results",
+        subtitle: "Don't just take our word for it. Hear from the athletes who have experienced the Performance difference.",
+        callToAction: {
+          title: "Ready to Elevate Your Performance?",
+          subtitle: "Join our community of athletes and start your journey towards peak performance today.",
+          button: "GET STARTED"
+        }
       },
       contactSection: {
         title: "Start Today",
@@ -333,6 +386,14 @@ const Index = () => {
     setCurrentProgram((prev) => (prev - 1 + programs.length) % programs.length);
   };
 
+  const nextTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev + 1) % testimonials[language].length);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev - 1 + testimonials[language].length) % testimonials[language].length);
+  };
+
   const currentContent = content[language];
   const currentAboutSections = aboutSections[language];
   const currentMethodologyBoxes = methodologyBoxes[language];
@@ -340,6 +401,7 @@ const Index = () => {
   const currentMethodologyTrainingBoxes = methodologyTrainingBoxes[language];
   const currentEliteTrainingBoxes = eliteTrainingBoxes[language];
   const currentNavigation = navigation[language];
+  const currentTestimonials = testimonials[language];
 
   return (
     <div className="min-h-screen bg-black text-white font-robert font-medium">
@@ -717,31 +779,92 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Results Section */}
-      <section id="results" className="py-24 bg-gray-900">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-16">
+      {/* New Results Section with Testimonials */}
+      <section id="results" className="py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
             {currentContent.results.title}
           </h2>
+          <p className="text-xl text-gray-300 mb-16 max-w-3xl mx-auto">
+            {currentContent.results.subtitle}
+          </p>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-4xl md:text-6xl font-bold text-[#00ffba] mb-2">500+</div>
-              <div className="text-gray-300">{currentContent.results.students}</div>
+          {/* Testimonial Slider */}
+          <div className="relative max-w-4xl mx-auto mb-24">
+            <div className="bg-black rounded-lg p-8 md:p-12">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#00ffba] overflow-hidden">
+                    <img
+                      src={currentTestimonials[currentTestimonial].avatar}
+                      alt={currentTestimonials[currentTestimonial].name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+                
+                {/* Content */}
+                <div className="flex-1 text-left">
+                  <blockquote className="text-lg md:text-xl text-white mb-6 leading-relaxed italic">
+                    "{currentTestimonials[currentTestimonial].quote}"
+                  </blockquote>
+                  <div>
+                    <div className="text-white font-bold text-lg mb-1">
+                      {currentTestimonials[currentTestimonial].name}
+                    </div>
+                    <div className="text-[#00ffba] text-sm">
+                      {currentTestimonials[currentTestimonial].title}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-6xl font-bold text-[#00ffba] mb-2">50+</div>
-              <div className="text-gray-300">{currentContent.results.champions}</div>
+            
+            {/* Navigation Arrows */}
+            <div className="absolute top-1/2 -translate-y-1/2 -left-16 right-0 flex justify-between pointer-events-none">
+              <button
+                onClick={prevTestimonial}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors pointer-events-auto"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                onClick={nextTestimonial}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors pointer-events-auto"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
             </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-6xl font-bold text-[#00ffba] mb-2">10</div>
-              <div className="text-gray-300">{currentContent.results.experience}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-6xl font-bold text-[#00ffba] mb-2">100%</div>
-              <div className="text-gray-300">{currentContent.results.dedication}</div>
+            
+            {/* Dots Indicator */}
+            <div className="flex justify-center mt-8 gap-2">
+              {currentTestimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentTestimonial(index)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    currentTestimonial === index ? 'bg-[#00ffba]' : 'bg-gray-600'
+                  }`}
+                />
+              ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Call to Action Section */}
+      <section className="py-24 bg-[#00ffba]">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl md:text-5xl font-bold text-black mb-8">
+            {currentContent.results.callToAction.title}
+          </h2>
+          <p className="text-xl text-black mb-12 max-w-2xl mx-auto">
+            {currentContent.results.callToAction.subtitle}
+          </p>
+          <Button size="lg" className="bg-black hover:bg-gray-800 text-white font-semibold text-lg px-8 py-4 rounded-none">
+            {currentContent.results.callToAction.button}
+          </Button>
         </div>
       </section>
 
