@@ -186,7 +186,7 @@ const Index = () => {
     el: [
       {
         title: "Κινητικές Δεξιότητες",
-        content: "• Ανάπτυξη Αθλητικών Δεξιοτήτων\n• Κατάλληλο για την Ηλικία\n• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Τρεξίματα Ευκινησίας, Συντονισμός"
+        content: "• Ανάπτυξη Αθλητικών Δεξιοτήτων\n• Κατάλληλο για την Ηλικία\n• Ρίψοις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Τρεξίματα Ευκινησίας, Συντονισμός"
       },
       {
         title: "Αξιολόγηση", 
@@ -656,9 +656,9 @@ const Index = () => {
       {/* Elite Training Methodology Section */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-3 gap-16 items-center">
             {/* Left Side - Content */}
-            <div>
+            <div className="lg:col-span-1">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
                 Elite Training Methodology
               </h2>
@@ -700,18 +700,20 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Right Side - Image and Technology Box */}
-            <div className="relative">
+            {/* Center - Image */}
+            <div className="lg:col-span-1 relative">
               <img
                 src="/lovable-uploads/118b37e5-41e5-4cc2-bb54-2bd8b2b6855e.png"
                 alt="Advanced Technology"
-                className="w-full h-auto rounded-lg"
+                className="w-full h-[600px] object-cover rounded-lg"
               />
-              
-              {/* Advanced Technology Overlay */}
-              <div className="absolute bottom-6 right-6 bg-[#00ffba] text-black p-4 rounded-sm max-w-xs">
-                <h4 className="font-bold text-sm mb-2">Advanced Technology</h4>
-                <p className="text-xs">
+            </div>
+
+            {/* Right Side - Technology Box */}
+            <div className="lg:col-span-1 flex items-center justify-center">
+              <div className="bg-[#00ffba] text-black p-8 rounded-sm max-w-sm w-full">
+                <h4 className="font-bold text-xl mb-6">Advanced Technology</h4>
+                <p className="text-base leading-relaxed">
                   Real-time performance tracking for
                   optimal results
                 </p>
