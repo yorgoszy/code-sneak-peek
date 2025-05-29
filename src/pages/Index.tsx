@@ -84,7 +84,7 @@ const Index = () => {
         id: 3,
         title: "Elite Training Methodology",
         number: "04",
-        image: "/lovable-uploads/f08bb424-96a8-4cf3-a01e-20b0e95aadbd.png",
+        image: "/lovable-uploads/c35cee93-863e-43ff-88f4-766d1dab2d26.png",
         content: "Η μεθοδολογία προπόνησής μας βασίζεται σε επιστημονικές αρχές και χρόνια εμπειρίας εργασίας με ελίτ αθλητές. Εστιάζουμε στην ανάπτυξη όλων των πτυχών της αθλητικής απόδοσης συμπεριλαμβανομένων: Κινητικότητας & Ευελιξίας, Ταχύτητας & Ευκινησίας, Δύναμης & Ισχύος, Αντοχής & Αντοχής. Χρησιμοποιούμε προηγμένη τεχνολογία για την παρακολούθηση των μετρήσεων απόδοσης σε πραγματικό χρόνο, επιτρέποντας ακριβείς προσαρμογές και βέλτιστα αποτελέσματα προπόνησης."
       }
     ],
@@ -114,7 +114,7 @@ const Index = () => {
         id: 3,
         title: "Elite Training Methodology",
         number: "04",
-        image: "/lovable-uploads/f08bb424-96a8-4cf3-a01e-20b0e95aadbd.png",
+        image: "/lovable-uploads/c35cee93-863e-43ff-88f4-766d1dab2d26.png",
         content: "Our training methodology is based on scientific principles and years of experience working with elite athletes. We focus on developing all aspects of athletic performance including: Mobility & Flexibility, Speed & Agility, Strength & Power, Endurance & Stamina. We utilize cutting-edge technology to track performance metrics in real-time, allowing for precise adjustments and optimal training outcomes."
       }
     ]
@@ -698,7 +698,7 @@ const Index = () => {
             <div className="lg:col-span-1 relative">
               <div className="relative overflow-visible">
                 <img
-                  src="/lovable-uploads/118b37e5-41e5-4cc2-bb54-2bd8b2b6855e.png"
+                  src="/lovable-uploads/c35cee93-863e-43ff-88f4-766d1dab2d26.png"
                   alt="Advanced Technology"
                   className="w-full h-auto rounded-lg"
                 />
