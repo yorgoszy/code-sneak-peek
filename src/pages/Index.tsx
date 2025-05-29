@@ -1,6 +1,5 @@
-
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
 
 const Index = () => {
@@ -535,6 +534,12 @@ const Index = () => {
 
             {/* Right Side - Image and Content */}
             <div className="relative">
+              {/* Section Number and Line above image */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="text-[#00ffba] font-bold text-4xl">{currentAboutSections[activeAboutSection].number}</div>
+                <div className="w-full h-0.5 bg-[#00ffba]"></div>
+              </div>
+              
               <div className="relative overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105">
                 <img
                   src={currentAboutSections[activeAboutSection].image}
@@ -543,12 +548,7 @@ const Index = () => {
                 />
               </div>
               
-              <div className="mt-8">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="text-[#00ffba] font-bold text-4xl">{currentAboutSections[activeAboutSection].number}</div>
-                  <div className="w-full h-0.5 bg-[#00ffba]"></div>
-                </div>
-                
+              <div className="mt-8">                
                 <h3 className="text-2xl font-bold text-white mb-6">{currentAboutSections[activeAboutSection].title}</h3>
                 
                 <p className="text-gray-300 leading-relaxed mb-8">
