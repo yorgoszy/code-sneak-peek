@@ -254,36 +254,67 @@ const Index = () => {
       </section>
 
       {/* About Section */}
-      <section id="schedule" className="py-24 bg-gray-900">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+      <section id="schedule" className="py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Side - Content */}
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
-                Σχετικά Με Εμάς
+              <div className="text-[#00ffba] text-sm font-medium mb-4 tracking-wider">ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ</div>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
+                Supporting Your
+                <br />
+                <span className="text-[#00ffba]">Athletic Journey</span>
               </h2>
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                Στο HYPERKIDS δημιουργούμε πρωταθλητές. Με χρόνια εμπειρίας και πάθος για το άθλημα, 
-                προσφέρουμε την καλύτερη δυνατή εκπαίδευση.
-              </p>
-              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black px-8 py-3 rounded-none font-roobert-light font-light">
-                Μάθετε Περισσότερα
-              </Button>
+              
+              <div className="space-y-8">
+                <div className="flex items-start gap-4">
+                  <div className="text-[#00ffba] font-bold text-xl">01</div>
+                  <div>
+                    <h3 className="text-white font-semibold text-lg mb-2">Κύριος Προπονητής</h3>
+                    <div className="w-16 h-0.5 bg-[#00ffba] mb-3"></div>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="text-gray-500 font-bold text-xl">02</div>
+                  <div>
+                    <h3 className="text-gray-500 font-semibold text-lg">Το Όραμά μας</h3>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="text-gray-500 font-bold text-xl">03</div>
+                  <div>
+                    <h3 className="text-gray-500 font-semibold text-lg">Μεθοδολογία Προπόνησης</h3>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="bg-gray-800 rounded-lg p-8">
-              <h3 className="text-2xl font-bold text-white mb-6">Ωράριο Λειτουργίας</h3>
-              <div className="space-y-4 text-gray-300">
-                <div className="flex justify-between">
-                  <span>Δευτέρα - Παρασκευή</span>
-                  <span>06:00 - 22:00</span>
+
+            {/* Right Side - Image and Content */}
+            <div className="relative">
+              <img
+                src="/lovable-uploads/ed3cca5e-b82b-4492-b0b0-42072072b566.png"
+                alt="Κύριος Προπονητής"
+                className="w-full h-auto rounded-lg"
+              />
+              
+              <div className="mt-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="text-[#00ffba] font-bold text-4xl">01</div>
+                  <div className="w-full h-0.5 bg-[#00ffba]"></div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Σάββατο</span>
-                  <span>08:00 - 20:00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Κυριακή</span>
-                  <span>10:00 - 18:00</span>
-                </div>
+                
+                <h3 className="text-2xl font-bold text-white mb-6">Κύριος Προπονητής</h3>
+                
+                <p className="text-gray-300 leading-relaxed">
+                  Το όνομά μου είναι Γιώργος Ζυγούρης και είμαι απόφοιτος της Σχολής Φυσικής Αγωγής και 
+                  Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023). Είμαι επαγγελματίας 
+                  αθλητής Muay Thai και πιστοποιημένος προπονητής από το 2024. Μέσα από τη διπλή μου οπτική 
+                  ως αγωνιστής και εκπαιδευτικός, έχω δημιουργήσει ένα περιβάλλον προπόνησης όπου παιδιά, 
+                  έφηβοι και ενήλικες δεν μαθαίνουν απλώς κίνηση—ανακαλύπτουν τις δυνάμεις τους, χτίζουν 
+                  χαρακτήρα μέσω του αθλητισμού και βρίσκουν τη μοναδική τους θέση στον αθλητικό κόσμο.
+                </p>
               </div>
             </div>
           </div>
