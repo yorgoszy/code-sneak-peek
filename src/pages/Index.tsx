@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
@@ -14,7 +15,7 @@ const Index = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <img 
-                  src="/lovable-uploads/721aac89-035f-44b9-93e7-6a5e826bd921.png" 
+                  src="/lovable-uploads/83e3ba31-3c4d-44a1-b842-c9468896e822.png" 
                   alt="HYPERKIDS Logo" 
                   className="h-8 w-auto"
                 />
