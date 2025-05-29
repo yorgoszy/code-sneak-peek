@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -29,6 +30,24 @@ const Index = () => {
       id: "04",
       title: "Φυσική Κατάσταση",
       description: "Εξατομικευμένες λύσεις φυσικής κατάστασης για όλα τα επίπεδα",
+      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+    },
+    {
+      id: "05",
+      title: "Muay Thai",
+      description: "Μέθοδοι Προπόνησης Νέων Γενιές",
+      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+    },
+    {
+      id: "06",
+      title: "Ατομική Προπόνηση",
+      description: "Εξατομικευμένη καθοδήγηση για μέγιστα αποτελέσματα",
+      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+    },
+    {
+      id: "07",
+      title: "Αθλητική Απόδοση",
+      description: "Στρατηγικές Ελίτ Δύναμης & Φυσικής Κατάστασης",
       image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
     }
   ];
