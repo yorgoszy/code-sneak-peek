@@ -546,6 +546,11 @@ const Index = () => {
                   alt={currentAboutSections[activeAboutSection].title}
                   className="w-full h-auto rounded-lg"
                 />
+                {/* Section Number and Line overlay inside image */}
+                <div className="absolute top-6 left-6 right-6 flex items-center gap-4">
+                  <div className="text-[#00ffba] font-bold text-4xl">{currentAboutSections[activeAboutSection].number}</div>
+                  <div className="flex-1 h-0.5 bg-[#00ffba]"></div>
+                </div>
               </div>
               
               <div className="mt-8">                
