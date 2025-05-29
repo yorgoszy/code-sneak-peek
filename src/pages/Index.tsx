@@ -132,7 +132,7 @@ const Index = () => {
       },
       {
         title: "Βασικές Αξίες",
-        content: "Ο στόχος μας δεν είναι μόνο η φυσική βελτίωση, αλλά και η καλλιέργεια αυτοπεποίθησης, χαρακτήρα και θετικών αξιών"
+        content: "Ο στόχος μας δεν είναι μόνο η φυσική βελτίωση, αλλά και η καλλιέργεια αυτοπεποίθησης, χαρακτήρα και ηθικών αξιών"
       }
     ],
     en: [
@@ -666,9 +666,7 @@ const Index = () => {
               <div className="w-20 h-1 bg-[#00ffba] mb-8"></div>
               
               <p className="text-gray-600 leading-relaxed mb-8">
-                New generation training methodology based on scientific principles and years of
-                experience working with elite athletes. We focus on developing all
-                aspects of athletic performance including:
+                New generation training methodology based on scientific principles.
               </p>
 
               <div className="space-y-6 mb-8">
