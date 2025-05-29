@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -657,7 +656,7 @@ const Index = () => {
       {/* Elite Training Methodology Section */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-3 gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left Side - Content */}
             <div className="lg:col-span-1">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
@@ -701,23 +700,22 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Center - Image */}
+            {/* Right Side - Image with Overlay Box */}
             <div className="lg:col-span-1 relative">
-              <img
-                src="/lovable-uploads/118b37e5-41e5-4cc2-bb54-2bd8b2b6855e.png"
-                alt="Advanced Technology"
-                className="w-[500px] h-[400px] object-cover rounded-lg"
-              />
-            </div>
-
-            {/* Right Side - Technology Box */}
-            <div className="lg:col-span-1 flex items-center justify-center">
-              <div className="bg-[#00ffba] text-black p-8 rounded-sm max-w-sm w-full">
-                <h4 className="font-bold text-xl mb-6">Advanced Technology</h4>
-                <p className="text-base leading-relaxed">
-                  Real-time performance tracking for
-                  optimal results
-                </p>
+              <div className="relative">
+                <img
+                  src="/lovable-uploads/118b37e5-41e5-4cc2-bb54-2bd8b2b6855e.png"
+                  alt="Advanced Technology"
+                  className="w-[500px] h-[400px] object-cover rounded-lg"
+                />
+                {/* Green Box Overlay - positioned inside image on the left */}
+                <div className="absolute top-8 left-8 bg-[#00ffba] text-black p-8 rounded-sm max-w-xs">
+                  <h4 className="font-bold text-xl mb-6">Advanced Technology</h4>
+                  <p className="text-base leading-relaxed">
+                    Real-time performance tracking for
+                    optimal results
+                  </p>
+                </div>
               </div>
             </div>
           </div>
