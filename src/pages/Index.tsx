@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -40,9 +40,7 @@ const Index = () => {
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black px-6 rounded-none">
-                Σύνδεση
-              </Button>
+              <User className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
             </div>
             <div className="md:hidden">
               <Button
@@ -77,10 +75,8 @@ const Index = () => {
             <a href="#contact" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               Επικοινωνία
             </a>
-            <div className="pt-4">
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none">
-                Σύνδεση
-              </Button>
+            <div className="pt-4 flex justify-center">
+              <User className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
             </div>
           </div>
         </div>
