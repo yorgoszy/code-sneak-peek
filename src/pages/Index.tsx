@@ -422,6 +422,77 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Programs Section */}
+      <section id="programs" className="py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-left mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-roobert-pro-light">
+              {currentContent.programs.title}
+              <br />
+              {currentContent.programs.subtitle}
+            </h2>
+          </div>
+          
+          <div className="relative">
+            {/* Program Numbers Navigation */}
+            <div className="flex gap-8 mb-12">
+              {programs.map((program, index) => (
+                <button
+                  key={program.id}
+                  onClick={() => setCurrentProgram(index)}
+                  className={`text-left transition-colors ${
+                    currentProgram === index ? 'text-[#00ffba]' : 'text-gray-500'
+                  }`}
+                >
+                  <div className="text-lg font-bold mb-2">{program.id}</div>
+                  <div className="text-sm font-roobert-pro-light">{program.title}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Carousel Navigation Arrows */}
+            <div className="absolute top-0 right-0 flex gap-4">
+              <button
+                onClick={prevProgram}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                onClick={nextProgram}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Program Images Grid */}
+            <div className="grid grid-cols-4 gap-6 h-96">
+              {programs.map((program, index) => (
+                <div 
+                  key={program.id}
+                  className={`relative overflow-hidden transition-all duration-500 ${
+                    currentProgram === index ? 'col-span-2' : 'col-span-1'
+                  }`}
+                >
+                  <img
+                    src={program.image}
+                    alt={program.title}
+                    className="w-full h-full object-cover filter grayscale"
+                  />
+                  <div className="absolute inset-0 bg-black/60"></div>
+                  {currentProgram === index && (
+                    <div className="absolute bottom-6 left-6 text-white">
+                      <p className="text-sm font-roobert-pro-light">{program.description}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* About Section */}
       <section id="schedule" className="py-24 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -519,77 +590,6 @@ const Index = () => {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Programs Section */}
-      <section id="programs" className="py-24 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-left mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-roobert-pro-light">
-              {currentContent.programs.title}
-              <br />
-              {currentContent.programs.subtitle}
-            </h2>
-          </div>
-          
-          <div className="relative">
-            {/* Program Numbers Navigation */}
-            <div className="flex gap-8 mb-12">
-              {programs.map((program, index) => (
-                <button
-                  key={program.id}
-                  onClick={() => setCurrentProgram(index)}
-                  className={`text-left transition-colors ${
-                    currentProgram === index ? 'text-[#00ffba]' : 'text-gray-500'
-                  }`}
-                >
-                  <div className="text-lg font-bold mb-2">{program.id}</div>
-                  <div className="text-sm font-roobert-pro-light">{program.title}</div>
-                </button>
-              ))}
-            </div>
-
-            {/* Carousel Navigation Arrows */}
-            <div className="absolute top-0 right-0 flex gap-4">
-              <button
-                onClick={prevProgram}
-                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button
-                onClick={nextProgram}
-                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Program Images Grid */}
-            <div className="grid grid-cols-4 gap-6 h-96">
-              {programs.map((program, index) => (
-                <div 
-                  key={program.id}
-                  className={`relative overflow-hidden transition-all duration-500 ${
-                    currentProgram === index ? 'col-span-2' : 'col-span-1'
-                  }`}
-                >
-                  <img
-                    src={program.image}
-                    alt={program.title}
-                    className="w-full h-full object-cover filter grayscale"
-                  />
-                  <div className="absolute inset-0 bg-black/60"></div>
-                  {currentProgram === index && (
-                    <div className="absolute bottom-6 left-6 text-white">
-                      <p className="text-sm font-roobert-pro-light">{program.description}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
             </div>
           </div>
         </div>
