@@ -762,7 +762,7 @@ const Index = () => {
             <div className="lg:col-span-1 relative">
               <div className="relative overflow-visible">
                 <img
-                  src="/lovable-uploads/645bd480-56bf-45e9-8884-7217a30a37ed.png"
+                  src="/lovable-uploads/0e7684c1-8bdc-4c37-8b81-ebf94f4a6fb4.png"
                   alt="Advanced Technology"
                   className="w-full h-auto rounded-lg"
                 />
