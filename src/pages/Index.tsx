@@ -351,8 +351,8 @@ const Index = () => {
                   {aboutSections[activeAboutSection].content}
                 </p>
 
-                {/* Methodology Boxes - Only show for section 03 */}
-                {activeAboutSection === 2 && (
+                {/* Methodology Boxes - Only show for section 01 */}
+                {activeAboutSection === 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {methodologyBoxes.map((box, index) => (
                       <div key={index} className="bg-gray-800/50 border border-gray-700 p-4">
