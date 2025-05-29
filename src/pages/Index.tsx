@@ -584,7 +584,7 @@ const Index = () => {
                 <img
                   src={currentAboutSections[activeAboutSection].image}
                   alt={currentAboutSections[activeAboutSection].title}
-                  className="w-full h-[300px] object-cover rounded-lg"
+                  className="w-full h-auto rounded-lg"
                 />
                 {/* Section Number and Line overlay inside image - moved to bottom */}
                 <div className="absolute bottom-6 left-6 right-6 flex items-center gap-4">
@@ -700,7 +700,7 @@ const Index = () => {
                 <img
                   src="/lovable-uploads/118b37e5-41e5-4cc2-bb54-2bd8b2b6855e.png"
                   alt="Advanced Technology"
-                  className="w-full h-[300px] object-cover rounded-lg"
+                  className="w-full h-auto rounded-lg"
                 />
                 {/* Green Box Overlay - positioned at bottom left, half extending outside */}
                 <div className="absolute -bottom-8 -left-12 bg-[#00ffba] text-black p-6 rounded-sm max-w-xs z-10">
@@ -784,4 +784,20 @@ const Index = () => {
             </div>
             <div>
               <h3 className="font-semibold mb-4 text-lg">Ωράριο</h3>
-              <div className="space-y-2 text-gray
+              <div className="space-y-2 text-gray-400">
+                <p>Δευτέρα - Παρασκευή: 06:00 - 22:00</p>
+                <p>Σάββατο: 08:00 - 20:00</p>
+                <p>Κυριακή: 10:00 - 18:00</p>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 HYPERKIDS. Όλα τα δικαιώματα κατοχυρωμένα.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default Index;
