@@ -48,7 +48,7 @@ const Index = () => {
       id: "07",
       title: "Αθλητική Απόδοση",
       description: "Στρατηγικές Ελίτ Δύναμης & Φυσικής Κατάστασης",
-      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+      image: "/lovable-uploads/77591c7f-20d5-4ab2-ab03-5ae09f70daf5.png"
     }
   ];
 
