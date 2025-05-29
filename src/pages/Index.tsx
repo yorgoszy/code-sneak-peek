@@ -515,17 +515,17 @@ const Index = () => {
                     }`}>
                       {section.number}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <button
                         onClick={() => setActiveAboutSection(index)}
-                        className={`font-semibold text-lg mb-2 text-left hover:text-[#00ffba] transition-colors ${
+                        className={`font-semibold text-lg mb-2 text-left hover:text-[#00ffba] transition-colors block w-full ${
                           activeAboutSection === index ? 'text-white' : 'text-gray-500'
                         }`}
                       >
                         {section.title}
                       </button>
                       {activeAboutSection === index && (
-                        <div className="w-16 h-0.5 bg-[#00ffba] mb-3"></div>
+                        <div className="w-full h-0.5 bg-[#00ffba] mb-3"></div>
                       )}
                     </div>
                   </div>
@@ -535,11 +535,13 @@ const Index = () => {
 
             {/* Right Side - Image and Content */}
             <div className="relative">
-              <img
-                src={currentAboutSections[activeAboutSection].image}
-                alt={currentAboutSections[activeAboutSection].title}
-                className="w-full h-auto rounded-lg"
-              />
+              <div className="relative overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105">
+                <img
+                  src={currentAboutSections[activeAboutSection].image}
+                  alt={currentAboutSections[activeAboutSection].title}
+                  className="w-full h-auto rounded-lg"
+                />
+              </div>
               
               <div className="mt-8">
                 <div className="flex items-center gap-4 mb-6">
@@ -557,9 +559,9 @@ const Index = () => {
                 {activeAboutSection === 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {currentMethodologyBoxes.map((box, index) => (
-                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-4 border-l-[#00ffba]">
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-2 border-l-[#00ffba]">
                         <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
-                        <p className="text-gray-300 text-sm leading-relaxed">{box.content}</p>
+                        <p className="text-[#9ca3ad] text-sm leading-relaxed">{box.content}</p>
                       </div>
                     ))}
                   </div>
@@ -569,9 +571,9 @@ const Index = () => {
                 {activeAboutSection === 1 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {currentVisionBoxes.map((box, index) => (
-                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-4 border-l-[#00ffba]">
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-2 border-l-[#00ffba]">
                         <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
-                        <p className="text-gray-300 text-sm leading-relaxed">{box.content}</p>
+                        <p className="text-[#9ca3ad] text-sm leading-relaxed">{box.content}</p>
                       </div>
                     ))}
                   </div>
@@ -581,9 +583,9 @@ const Index = () => {
                 {activeAboutSection === 2 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {currentMethodologyTrainingBoxes.map((box, index) => (
-                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-4 border-l-[#00ffba]">
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-2 border-l-[#00ffba]">
                         <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
-                        <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">{box.content}</div>
+                        <div className="text-[#9ca3ad] text-sm leading-relaxed whitespace-pre-line">{box.content}</div>
                       </div>
                     ))}
                   </div>
