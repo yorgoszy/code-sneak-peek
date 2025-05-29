@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, User, Globe } from "lucide-react";
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -40,6 +40,7 @@ const Index = () => {
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
+              <Globe className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
               <User className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
             </div>
             <div className="md:hidden">
@@ -75,7 +76,8 @@ const Index = () => {
             <a href="#contact" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               Επικοινωνία
             </a>
-            <div className="pt-4 flex justify-center">
+            <div className="pt-4 flex justify-center space-x-4">
+              <Globe className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
               <User className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
             </div>
           </div>
@@ -130,7 +132,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Τα Προγράμματά Μας
+              Τα Προγράμματα Μας
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Εξατομικευμένα προγράμματα προπόνησης για όλα τα επίπεδα
