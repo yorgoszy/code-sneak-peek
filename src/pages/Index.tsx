@@ -700,7 +700,7 @@ const Index = () => {
                 <img
                   src="/lovable-uploads/118b37e5-41e5-4cc2-bb54-2bd8b2b6855e.png"
                   alt="Advanced Technology"
-                  className="w-[500px] h-[400px] object-cover rounded-lg"
+                  className="w-full h-auto rounded-lg"
                 />
                 {/* Green Box Overlay - positioned at bottom left, half extending outside */}
                 <div className="absolute -bottom-8 -left-12 bg-[#00ffba] text-black p-6 rounded-sm max-w-xs z-10">
