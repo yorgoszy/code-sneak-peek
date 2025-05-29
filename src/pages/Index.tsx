@@ -653,6 +653,72 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Elite Training Methodology Section */}
+      <section className="py-24 bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Side - Content */}
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
+                Elite Training Methodology
+              </h2>
+              
+              <p className="text-gray-300 leading-relaxed mb-8">
+                Our training methodology is based on scientific principles and years of
+                experience working with elite athletes. We focus on developing all
+                aspects of athletic performance including:
+              </p>
+
+              <div className="space-y-6 mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
+                  <span className="text-white">Mobility & Flexibility</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
+                  <span className="text-white">Speed & Agility</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
+                  <span className="text-white">Strength & Power</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
+                  <span className="text-white">Endurance & Stamina</span>
+                </div>
+              </div>
+
+              <p className="text-gray-300 leading-relaxed mb-8">
+                We utilize cutting-edge technology to track performance metrics in real-
+                time, allowing for precise adjustments and optimal training outcomes.
+              </p>
+
+              <Button className="bg-black hover:bg-gray-800 text-white border border-gray-600 px-8 py-3 rounded-none font-roobert-pro-light">
+                OUR APPROACH
+              </Button>
+            </div>
+
+            {/* Right Side - Image and Technology Box */}
+            <div className="relative">
+              <img
+                src="/lovable-uploads/9d93e678-f076-43f1-840e-e43b19d2ce62.png"
+                alt="Advanced Technology"
+                className="w-full h-auto rounded-lg"
+              />
+              
+              {/* Advanced Technology Overlay */}
+              <div className="absolute bottom-6 right-6 bg-[#00ffba] text-black p-4 rounded-sm max-w-xs">
+                <h4 className="font-bold text-sm mb-2">Advanced Technology</h4>
+                <p className="text-xs">
+                  Real-time performance tracking for
+                  optimal results
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Results Section */}
       <section id="results" className="py-24 bg-gray-900">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
