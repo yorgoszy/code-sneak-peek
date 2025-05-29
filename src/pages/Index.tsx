@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -87,7 +88,7 @@ const Index = () => {
         title: "Head Coach",
         number: "01",
         image: "/lovable-uploads/33655c97-0bc0-4a99-b492-8f0fa441437f.png",
-        content: "My name is Georgios Zygouris, and I am a graduate of the School of Physical Education and Sport Science at the Aristotle University of Thessaloniki (2023). I am a professional Muay Thai athlete and a certified coach since 2024. Through my dual perspective as both competitor and educator, I've established a training environment where children, teenagers, and adults don't just learn movement—they discover their strengths, build character through sport, and find their unique position in the athletic world."
+        content: "My name is Georgios Zygouris, and I am a graduate of the School of Physical Education and Sport Science at the Aristotle University of Thessaloniki (2023). I am a professional Muay Thai athlete and a certified coach since 2024. Through my dual perspective as both competitor and educator, I've established a training environment where children, teenagers, and adults don't just learn movement, they discover their strengths, build character through sport, and find their unique position in the athletic world."
       },
       {
         id: 1,
