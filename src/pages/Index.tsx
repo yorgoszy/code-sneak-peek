@@ -17,7 +17,7 @@ const Index = () => {
       id: "02", 
       title: "Ανάπτυξη Κίνησης",
       description: "Δημιουργία αθλητικών βάσεων για όλα τα αθλήματα",
-      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+      image: "/lovable-uploads/9d74fc2b-b9ee-4272-9a0e-9f5a3d7d29f4.png"
     },
     {
       id: "03",
