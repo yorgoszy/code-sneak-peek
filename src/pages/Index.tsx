@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
@@ -14,9 +13,11 @@ const Index = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <span className="text-2xl font-bold text-white">
-                  HYPERKIDS
-                </span>
+                <img 
+                  src="/lovable-uploads/62fc768d-b98f-4885-96a1-5840c86bfc39.png" 
+                  alt="HYPERKIDS Logo" 
+                  className="h-8 w-auto"
+                />
               </div>
             </div>
             <div className="hidden md:block">
