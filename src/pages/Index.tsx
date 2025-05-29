@@ -6,6 +6,7 @@ import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentProgram, setCurrentProgram] = useState(0);
+  const [activeAboutSection, setActiveAboutSection] = useState(0);
 
   const programs = [
     {
@@ -49,6 +50,30 @@ const Index = () => {
       title: "Αθλητική Απόδοση",
       description: "Στρατηγικές Ελίτ Δύναμης & Φυσικής Κατάστασης",
       image: "/lovable-uploads/77591c7f-20d5-4ab2-ab03-5ae09f70daf5.png"
+    }
+  ];
+
+  const aboutSections = [
+    {
+      id: 0,
+      title: "Κύριος Προπονητής",
+      number: "01",
+      image: "/lovable-uploads/33655c97-0bc0-4a99-b492-8f0fa441437f.png",
+      content: "Το όνομά μου είναι Γιώργος Ζυγούρης και είμαι απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023). Είμαι επαγγελματίας αθλητής Muay Thai και πιστοποιημένος προπονητής από το 2024. Μέσα από τη διπλή μου οπτική ως αγωνιστής και εκπαιδευτικός, έχω δημιουργήσει ένα περιβάλλον προπόνησης όπου παιδιά, έφηβοι και ενήλικες δεν μαθαίνουν απλώς κίνηση—ανακαλύπτουν τις δυνάμεις τους, χτίζουν χαρακτήρα μέσω του αθλητισμού και βρίσκουν τη μοναδική τους θέση στον αθλητικό κόσμο."
+    },
+    {
+      id: 1,
+      title: "Το Όραμά μας",
+      number: "02",
+      image: "/lovable-uploads/33655c97-0bc0-4a99-b492-8f0fa441437f.png",
+      content: "Στο HYPERKIDS, το όραμά μας είναι να δημιουργήσουμε μια γενιά νέων ανθρώπων που θα έχουν αναπτύξει όχι μόνο τις φυσικές τους ικανότητες, αλλά και τον χαρακτήρα, την αυτοπεποίθηση και τη νοοτροπία του πρωταθλητή. Πιστεύουμε ότι ο αθλητισμός είναι ένα ισχυρό εργαλείο μετασχηματισμού που μπορεί να διαμορφώσει θετικά τη ζωή κάθε παιδιού."
+    },
+    {
+      id: 2,
+      title: "Μεθοδολογία Προπόνησης",
+      number: "03",
+      image: "/lovable-uploads/33655c97-0bc0-4a99-b492-8f0fa441437f.png",
+      content: "Η μεθοδολογία μας βασίζεται στην επιστημονική προσέγγιση της κίνησης και της αθλητικής ανάπτυξης. Εφαρμόζουμε εξατομικευμένα προγράμματα που προσαρμόζονται στις ανάγκες και τις δυνατότητες κάθε αθλητή. Συνδυάζουμε παραδοσιακές τεχνικές προπόνησης με σύγχρονες μεθόδους, δίνοντας έμφαση στη σωστή τεχνική, την ασφάλεια και τη σταδιακή εξέλιξη."
     }
   ];
 
@@ -267,53 +292,49 @@ const Index = () => {
               </h2>
               
               <div className="space-y-8">
-                <div className="flex items-start gap-4">
-                  <div className="text-[#00ffba] font-bold text-xl">01</div>
-                  <div>
-                    <h3 className="text-white font-semibold text-lg mb-2">Κύριος Προπονητής</h3>
-                    <div className="w-16 h-0.5 bg-[#00ffba] mb-3"></div>
+                {aboutSections.map((section, index) => (
+                  <div key={section.id} className="flex items-start gap-4">
+                    <div className={`font-bold text-xl ${
+                      activeAboutSection === index ? 'text-[#00ffba]' : 'text-gray-500'
+                    }`}>
+                      {section.number}
+                    </div>
+                    <div>
+                      <button
+                        onClick={() => setActiveAboutSection(index)}
+                        className={`font-semibold text-lg mb-2 text-left hover:text-[#00ffba] transition-colors ${
+                          activeAboutSection === index ? 'text-white' : 'text-gray-500'
+                        }`}
+                      >
+                        {section.title}
+                      </button>
+                      {activeAboutSection === index && (
+                        <div className="w-16 h-0.5 bg-[#00ffba] mb-3"></div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="text-gray-500 font-bold text-xl">02</div>
-                  <div>
-                    <h3 className="text-gray-500 font-semibold text-lg">Το Όραμά μας</h3>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="text-gray-500 font-bold text-xl">03</div>
-                  <div>
-                    <h3 className="text-gray-500 font-semibold text-lg">Μεθοδολογία Προπόνησης</h3>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
             {/* Right Side - Image and Content */}
             <div className="relative">
               <img
-                src="/lovable-uploads/ed3cca5e-b82b-4492-b0b0-42072072b566.png"
-                alt="Κύριος Προπονητής"
+                src={aboutSections[activeAboutSection].image}
+                alt={aboutSections[activeAboutSection].title}
                 className="w-full h-auto rounded-lg"
               />
               
               <div className="mt-8">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="text-[#00ffba] font-bold text-4xl">01</div>
+                  <div className="text-[#00ffba] font-bold text-4xl">{aboutSections[activeAboutSection].number}</div>
                   <div className="w-full h-0.5 bg-[#00ffba]"></div>
                 </div>
                 
-                <h3 className="text-2xl font-bold text-white mb-6">Κύριος Προπονητής</h3>
+                <h3 className="text-2xl font-bold text-white mb-6">{aboutSections[activeAboutSection].title}</h3>
                 
                 <p className="text-gray-300 leading-relaxed">
-                  Το όνομά μου είναι Γιώργος Ζυγούρης και είμαι απόφοιτος της Σχολής Φυσικής Αγωγής και 
-                  Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023). Είμαι επαγγελματίας 
-                  αθλητής Muay Thai και πιστοποιημένος προπονητής από το 2024. Μέσα από τη διπλή μου οπτική 
-                  ως αγωνιστής και εκπαιδευτικός, έχω δημιουργήσει ένα περιβάλλον προπόνησης όπου παιδιά, 
-                  έφηβοι και ενήλικες δεν μαθαίνουν απλώς κίνηση—ανακαλύπτουν τις δυνάμεις τους, χτίζουν 
-                  χαρακτήρα μέσω του αθλητισμού και βρίσκουν τη μοναδική τους θέση στον αθλητικό κόσμο.
+                  {aboutSections[activeAboutSection].content}
                 </p>
               </div>
             </div>
