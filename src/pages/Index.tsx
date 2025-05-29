@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -41,7 +42,7 @@ const Index = () => {
       id: "06",
       title: "Ατομική Προπόνηση",
       description: "Εξατομικευμένη καθοδήγηση για μέγιστα αποτελέσματα",
-      image: "/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png"
+      image: "/lovable-uploads/85436038-48ee-42f9-a2e6-d13a75dd8d52.png"
     },
     {
       id: "07",
