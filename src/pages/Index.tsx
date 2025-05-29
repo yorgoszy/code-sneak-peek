@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -80,6 +79,13 @@ const Index = () => {
         number: "03",
         image: "/lovable-uploads/e7b26f7e-bacc-4b5e-b03d-39786bb57f6c.png",
         content: "Η μεθοδολογία προπόνησής μας εστιάζει στην προοδευτική ανάπτυξη δεξιοτήτων και την ενίσχυση των σωστών κινητικών προτύπων προσαρμοσμένων στις ανάγκες και στόχους κάθε ατόμου. Μέσω ολοκληρωμένης αξιολόγησης, κατανοούμε τις τρέχουσες ικανότητες και αδυναμίες σας, καθορίζουμε σαφείς στόχους προπόνησης, δημιουργούμε ένα δομημένο χρονοδιάγραμμα για την επίτευξη και σχεδιάζουμε ένα αποκλειστικό εξατομικευμένο πρόγραμμα προπόνησης ειδικά για εσάς."
+      },
+      {
+        id: 3,
+        title: "Elite Training Methodology",
+        number: "04",
+        image: "/lovable-uploads/97800d53-e9d6-4b5d-876a-69015555d90b.png",
+        content: "Η μεθοδολογία προπόνησής μας βασίζεται σε επιστημονικές αρχές και χρόνια εμπειρίας εργασίας με ελίτ αθλητές. Εστιάζουμε στην ανάπτυξη όλων των πτυχών της αθλητικής απόδοσης συμπεριλαμβανομένων: Κινητικότητας & Ευελιξίας, Ταχύτητας & Ευκινησίας, Δύναμης & Ισχύος, Αντοχής & Αντοχής. Χρησιμοποιούμε προηγμένη τεχνολογία για την παρακολούθηση των μετρήσεων απόδοσης σε πραγματικό χρόνο, επιτρέποντας ακριβείς προσαρμογές και βέλτιστα αποτελέσματα προπόνησης."
       }
     ],
     en: [
@@ -103,6 +109,13 @@ const Index = () => {
         number: "03",
         image: "/lovable-uploads/e7b26f7e-bacc-4b5e-b03d-39786bb57f6c.png",
         content: "Our training methodology focuses on progressive skill development and reinforcement of proper movement patterns tailored to each individual's needs and goals. Through comprehensive assessment, we understand your current abilities and weaknesses, establish clear training objectives, create a structured timeline for achievement, and design an exclusive personalized training plan specifically for you."
+      },
+      {
+        id: 3,
+        title: "Elite Training Methodology",
+        number: "04",
+        image: "/lovable-uploads/97800d53-e9d6-4b5d-876a-69015555d90b.png",
+        content: "Our training methodology is based on scientific principles and years of experience working with elite athletes. We focus on developing all aspects of athletic performance including: Mobility & Flexibility, Speed & Agility, Strength & Power, Endurance & Stamina. We utilize cutting-edge technology to track performance metrics in real-time, allowing for precise adjustments and optimal training outcomes."
       }
     ]
   };
@@ -200,6 +213,37 @@ const Index = () => {
     ]
   };
 
+  const eliteTrainingBoxes = {
+    el: [
+      {
+        title: "Προηγμένη Τεχνολογία",
+        content: "Παρακολούθηση απόδοσης σε πραγματικό χρόνο για βέλτιστα αποτελέσματα"
+      },
+      {
+        title: "Επιστημονική Προσέγγιση",
+        content: "Βασισμένη σε επιστημονικές αρχές και χρόνια εμπειρίας με ελίτ αθλητές"
+      },
+      {
+        title: "Ολοκληρωμένη Ανάπτυξη",
+        content: "Εστίαση σε όλες τις πτυχές της αθλητικής απόδοσης"
+      }
+    ],
+    en: [
+      {
+        title: "Advanced Technology",
+        content: "Real-time performance tracking for optimal results"
+      },
+      {
+        title: "Scientific Approach",
+        content: "Based on scientific principles and years of experience with elite athletes"
+      },
+      {
+        title: "Comprehensive Development",
+        content: "Focus on all aspects of athletic performance"
+      }
+    ]
+  };
+
   const navigation = {
     el: {
       home: "Αρχή",
@@ -293,6 +337,7 @@ const Index = () => {
   const currentMethodologyBoxes = methodologyBoxes[language];
   const currentVisionBoxes = visionBoxes[language];
   const currentMethodologyTrainingBoxes = methodologyTrainingBoxes[language];
+  const currentEliteTrainingBoxes = eliteTrainingBoxes[language];
   const currentNavigation = navigation[language];
 
   return (
@@ -586,6 +631,18 @@ const Index = () => {
                       <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l border-l-[#00ffba]">
                         <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
                         <div className="text-[#9ca3ad] text-sm leading-relaxed whitespace-pre-line">{box.content}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Elite Training Boxes - Only show for section 04 */}
+                {activeAboutSection === 3 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {currentEliteTrainingBoxes.map((box, index) => (
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l border-l-[#00ffba]">
+                        <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
+                        <p className="text-[#9ca3ad] text-sm leading-relaxed">{box.content}</p>
                       </div>
                     ))}
                   </div>
