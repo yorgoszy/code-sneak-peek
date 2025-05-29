@@ -21,7 +21,12 @@ export default {
 		extend: {
 			fontFamily: {
 				'robert': ['Robert Pro', 'sans-serif'],
+				'roobert': ['Roobert', 'sans-serif'],
+				'roobert-light': ['Roobert', 'sans-serif'],
 				'sans': ['Robert Pro', 'sans-serif'],
+			},
+			fontWeight: {
+				'light': '300',
 			},
 			colors: {
 				border: 'hsl(var(--border))',

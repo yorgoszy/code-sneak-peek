@@ -107,10 +107,10 @@ const Index = () => {
           </h1>
           
           <div className="flex flex-col sm:flex-row gap-4 mb-16">
-            <Button size="lg" className="text-lg px-8 py-4 bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none">
+            <Button size="lg" className="text-lg px-8 py-4 bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-light font-light">
               GET STARTED
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-white hover:bg-white/10 rounded-none">
+            <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-white bg-transparent hover:bg-white/10 rounded-none font-roobert-light font-light">
               CONTACT
             </Button>
           </div>
@@ -143,7 +143,7 @@ const Index = () => {
             <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
               <h3 className="text-2xl font-bold text-white mb-4">Αρχάριοι</h3>
               <p className="text-gray-300 mb-6">Ξεκινήστε το ταξίδι σας με ασφάλεια και σωστή τεχνική</p>
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-light font-light">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -151,7 +151,7 @@ const Index = () => {
             <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
               <h3 className="text-2xl font-bold text-white mb-4">Μεσαίο Επίπεδο</h3>
               <p className="text-gray-300 mb-6">Αναπτύξτε τις δεξιότητές σας και βελτιώστε την απόδοσή σας</p>
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-light font-light">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -159,7 +159,7 @@ const Index = () => {
             <div className="bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 hover:border-[#00ffba] transition-colors">
               <h3 className="text-2xl font-bold text-white mb-4">Προχωρημένοι</h3>
               <p className="text-gray-300 mb-6">Εντατική προπόνηση για αθλητές υψηλού επιπέδου</p>
-              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none">
+              <Button className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-light font-light">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -179,7 +179,7 @@ const Index = () => {
                 Στο HYPERKIDS δημιουργούμε πρωταθλητές. Με χρόνια εμπειρίας και πάθος για το άθλημα, 
                 προσφέρουμε την καλύτερη δυνατή εκπαίδευση.
               </p>
-              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black px-8 py-3 rounded-none">
+              <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black px-8 py-3 rounded-none font-roobert-light font-light">
                 Μάθετε Περισσότερα
               </Button>
             </div>
@@ -242,10 +242,10 @@ const Index = () => {
             Ελάτε να γνωρίσετε το χώρο μας και να ξεκινήσετε το δικό σας ταξίδι προς την κορυφή
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg px-8 py-4 rounded-none">
+            <Button size="lg" className="bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg px-8 py-4 rounded-none font-roobert-light font-light">
               Κλείστε Δοκιμαστικό Μάθημα
             </Button>
-            <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 text-lg px-8 py-4 rounded-none">
+            <Button variant="outline" size="lg" className="border-white text-white bg-transparent hover:bg-white/10 text-lg px-8 py-4 rounded-none font-roobert-light font-light">
               Επικοινωνήστε Μαζί Μας
             </Button>
           </div>
