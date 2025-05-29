@@ -534,20 +534,14 @@ const Index = () => {
 
             {/* Right Side - Image and Content */}
             <div className="relative">
-              {/* Section Number and Line above image */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className="text-[#00ffba] font-bold text-4xl">{currentAboutSections[activeAboutSection].number}</div>
-                <div className="w-full h-0.5 bg-[#00ffba]"></div>
-              </div>
-              
               <div className="relative overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105">
                 <img
                   src={currentAboutSections[activeAboutSection].image}
                   alt={currentAboutSections[activeAboutSection].title}
                   className="w-full h-auto rounded-lg"
                 />
-                {/* Section Number and Line overlay inside image */}
-                <div className="absolute top-6 left-6 right-6 flex items-center gap-4">
+                {/* Section Number and Line overlay inside image - moved to bottom */}
+                <div className="absolute bottom-6 left-6 right-6 flex items-center gap-4">
                   <div className="text-[#00ffba] font-bold text-4xl">{currentAboutSections[activeAboutSection].number}</div>
                   <div className="flex-1 h-0.5 bg-[#00ffba]"></div>
                 </div>
@@ -564,7 +558,7 @@ const Index = () => {
                 {activeAboutSection === 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {currentMethodologyBoxes.map((box, index) => (
-                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-2 border-l-[#00ffba]">
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l border-l-[#00ffba]">
                         <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
                         <p className="text-[#9ca3ad] text-sm leading-relaxed">{box.content}</p>
                       </div>
@@ -576,7 +570,7 @@ const Index = () => {
                 {activeAboutSection === 1 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {currentVisionBoxes.map((box, index) => (
-                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-2 border-l-[#00ffba]">
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l border-l-[#00ffba]">
                         <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
                         <p className="text-[#9ca3ad] text-sm leading-relaxed">{box.content}</p>
                       </div>
@@ -588,7 +582,7 @@ const Index = () => {
                 {activeAboutSection === 2 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {currentMethodologyTrainingBoxes.map((box, index) => (
-                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l-2 border-l-[#00ffba]">
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l border-l-[#00ffba]">
                         <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
                         <div className="text-[#9ca3ad] text-sm leading-relaxed whitespace-pre-line">{box.content}</div>
                       </div>
