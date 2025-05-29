@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Globe, ChevronLeft, ChevronRight } from "lucide-react";
@@ -666,7 +667,7 @@ const Index = () => {
               <div className="w-20 h-1 bg-[#00ffba] mb-8"></div>
               
               <p className="text-gray-600 leading-relaxed mb-8">
-                Our training methodology is based on scientific principles and years of
+                New generation training methodology based on scientific principles and years of
                 experience working with elite athletes. We focus on developing all
                 aspects of athletic performance including:
               </p>
@@ -705,7 +706,7 @@ const Index = () => {
               <img
                 src="/lovable-uploads/118b37e5-41e5-4cc2-bb54-2bd8b2b6855e.png"
                 alt="Advanced Technology"
-                className="w-full h-[600px] object-cover rounded-lg"
+                className="w-[500px] h-[400px] object-cover rounded-lg"
               />
             </div>
 
