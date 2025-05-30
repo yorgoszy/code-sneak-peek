@@ -209,11 +209,11 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
   return (
     <div className="space-y-6">
       {/* Πρώτη σειρά - Βασικά Τεστ Αντοχής */}
-      <div className="grid grid-cols-3 gap-3 max-w-md">
+      <div className="grid grid-cols-3 gap-3">
         {basicEnduranceFields.map((field) => (
           <Card key={field.key} className="rounded-none">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs text-center">{field.label}</CardTitle>
+              <CardTitle className="text-sm text-center">{field.label}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <Input
