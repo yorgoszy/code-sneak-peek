@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Edit2, Trash2 } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Video } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
@@ -10,7 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AddExerciseDialog } from "@/components/AddExerciseDialog";
+import { EditExerciseDialog } from "@/components/EditExerciseDialog";
 import { toast } from "sonner";
+import { getVideoThumbnail } from "@/utils/videoUtils";
 
 interface Exercise {
   id: string;
@@ -27,6 +29,8 @@ const Exercises = () => {
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [loadingExercises, setLoadingExercises] = useState(true);
 
   useEffect(() => {
@@ -87,6 +91,11 @@ const Exercises = () => {
     } finally {
       setLoadingExercises(false);
     }
+  };
+
+  const handleEditExercise = (exercise: Exercise) => {
+    setSelectedExercise(exercise);
+    setIsEditDialogOpen(true);
   };
 
   const handleDeleteExercise = async (exerciseId: string) => {
@@ -207,14 +216,23 @@ const Exercises = () => {
                         </TableCell>
                         <TableCell>
                           {exercise.video_url ? (
-                            <a 
-                              href={exercise.video_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline text-sm"
-                            >
-                              Προβολή
-                            </a>
+                            <div className="flex items-center space-x-2">
+                              {getVideoThumbnail(exercise.video_url) ? (
+                                <img 
+                                  src={getVideoThumbnail(exercise.video_url)}
+                                  alt="Video thumbnail"
+                                  className="w-16 h-12 object-cover rounded border cursor-pointer"
+                                  onClick={() => window.open(exercise.video_url!, '_blank')}
+                                />
+                              ) : (
+                                <div 
+                                  className="w-16 h-12 bg-gray-100 border rounded flex items-center justify-center cursor-pointer"
+                                  onClick={() => window.open(exercise.video_url!, '_blank')}
+                                >
+                                  <Video className="h-4 w-4 text-gray-400" />
+                                </div>
+                              )}
+                            </div>
                           ) : (
                             '-'
                           )}
@@ -225,6 +243,7 @@ const Exercises = () => {
                               variant="outline" 
                               size="sm"
                               className="rounded-none"
+                              onClick={() => handleEditExercise(exercise)}
                             >
                               <Edit2 className="h-3 w-3" />
                             </Button>
@@ -251,6 +270,13 @@ const Exercises = () => {
       <AddExerciseDialog 
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
+        onSuccess={fetchExercises}
+      />
+
+      <EditExerciseDialog 
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        exercise={selectedExercise}
         onSuccess={fetchExercises}
       />
     </div>

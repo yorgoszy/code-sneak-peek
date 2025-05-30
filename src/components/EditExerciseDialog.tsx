@@ -9,7 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
 
 interface Category {
   id: string;
@@ -17,9 +16,18 @@ interface Category {
   type: string;
 }
 
-interface AddExerciseDialogProps {
+interface Exercise {
+  id: string;
+  name: string;
+  description: string | null;
+  video_url: string | null;
+  categories: { name: string; type: string }[];
+}
+
+interface EditExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  exercise: Exercise | null;
   onSuccess: () => void;
 }
 
@@ -56,7 +64,7 @@ const categoryHierarchy = [
   }
 ];
 
-export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExerciseDialogProps) => {
+export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: EditExerciseDialogProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -64,27 +72,40 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(true);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [newCategoryType, setNewCategoryType] = useState("");
-  const [showAddCategory, setShowAddCategory] = useState(false);
   const [activeTab, setActiveTab] = useState(categoryHierarchy[0].key);
 
   useEffect(() => {
-    if (open) {
+    if (open && exercise) {
+      setName(exercise.name);
+      setDescription(exercise.description || "");
+      setVideoUrl(exercise.video_url || "");
       fetchCategories();
     }
-  }, [open]);
+  }, [open, exercise]);
 
   const fetchCategories = async () => {
     try {
       setLoadingCategories(true);
-      const { data, error } = await supabase
+      
+      // Fetch all categories
+      const { data: allCategories, error: categoriesError } = await supabase
         .from('exercise_categories')
         .select('*')
         .order('type, name');
 
-      if (error) throw error;
-      setCategories(data || []);
+      if (categoriesError) throw categoriesError;
+      setCategories(allCategories || []);
+
+      // Fetch exercise's current categories
+      if (exercise) {
+        const { data: exerciseCategories, error: exerciseCategoriesError } = await supabase
+          .from('exercise_to_category')
+          .select('category_id')
+          .eq('exercise_id', exercise.id);
+
+        if (exerciseCategoriesError) throw exerciseCategoriesError;
+        setSelectedCategories(exerciseCategories?.map(ec => ec.category_id) || []);
+      }
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast.error('Σφάλμα κατά τη φόρτωση των κατηγοριών');
@@ -93,37 +114,10 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     }
   };
 
-  const handleAddCategory = async () => {
-    if (!newCategoryName.trim() || !newCategoryType.trim()) {
-      toast.error('Συμπληρώστε όνομα και τύπο κατηγορίας');
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('exercise_categories')
-        .insert({
-          name: newCategoryName.trim(),
-          type: newCategoryType.trim()
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setCategories(prev => [...prev, data]);
-      setNewCategoryName("");
-      setNewCategoryType("");
-      setShowAddCategory(false);
-      toast.success('Η κατηγορία προστέθηκε επιτυχώς');
-    } catch (error) {
-      console.error('Error adding category:', error);
-      toast.error('Σφάλμα κατά την προσθήκη της κατηγορίας');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!exercise) return;
     
     if (!name.trim()) {
       toast.error('Το όνομα της άσκησης είναι υποχρεωτικό');
@@ -138,20 +132,29 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     try {
       setLoading(true);
 
-      const { data: exerciseData, error: exerciseError } = await supabase
+      // Update exercise
+      const { error: exerciseError } = await supabase
         .from('exercises')
-        .insert({
+        .update({
           name: name.trim(),
           description: description.trim() || null,
           video_url: videoUrl.trim() || null,
         })
-        .select()
-        .single();
+        .eq('id', exercise.id);
 
       if (exerciseError) throw exerciseError;
 
+      // Delete existing category relationships
+      const { error: deleteError } = await supabase
+        .from('exercise_to_category')
+        .delete()
+        .eq('exercise_id', exercise.id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new category relationships
       const exerciseCategoryInserts = selectedCategories.map(categoryId => ({
-        exercise_id: exerciseData.id,
+        exercise_id: exercise.id,
         category_id: categoryId,
       }));
 
@@ -161,12 +164,12 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
 
       if (relationError) throw relationError;
 
-      toast.success('Η άσκηση προστέθηκε επιτυχώς');
+      toast.success('Η άσκηση ενημερώθηκε επιτυχώς');
       onSuccess();
       handleClose();
     } catch (error) {
-      console.error('Error adding exercise:', error);
-      toast.error('Σφάλμα κατά την προσθήκη της άσκησης');
+      console.error('Error updating exercise:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση της άσκησης');
     } finally {
       setLoading(false);
     }
@@ -177,9 +180,6 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     setDescription("");
     setVideoUrl("");
     setSelectedCategories([]);
-    setShowAddCategory(false);
-    setNewCategoryName("");
-    setNewCategoryType("");
     setActiveTab(categoryHierarchy[0].key);
     onOpenChange(false);
   };
@@ -227,16 +227,13 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     );
   };
 
-  const getOtherCategories = () => {
-    const hierarchyTypes = categoryHierarchy.flatMap(g => g.categories);
-    return categories.filter(cat => !hierarchyTypes.includes(cat.type));
-  };
+  if (!exercise) return null;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Προσθήκη Νέας Άσκησης</DialogTitle>
+          <DialogTitle>Επεξεργασία Άσκησης</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -279,62 +276,12 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
           </div>
 
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <Label className="text-lg font-semibold">Κατηγορίες *</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAddCategory(!showAddCategory)}
-                className="rounded-none"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Νέα Κατηγορία
-              </Button>
-            </div>
-
-            {showAddCategory && (
-              <div className="mb-6 p-4 border rounded bg-gray-50">
-                <div className="space-y-3">
-                  <Input
-                    placeholder="Όνομα κατηγορίας"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="rounded-none"
-                  />
-                  <Input
-                    placeholder="Τύπος κατηγορίας (π.χ. upper body)"
-                    value={newCategoryType}
-                    onChange={(e) => setNewCategoryType(e.target.value)}
-                    className="rounded-none"
-                  />
-                  <div className="flex space-x-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleAddCategory}
-                      className="rounded-none"
-                    >
-                      Προσθήκη
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowAddCategory(false)}
-                      className="rounded-none"
-                    >
-                      Ακύρωση
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <Label className="text-lg font-semibold">Κατηγορίες *</Label>
 
             {loadingCategories ? (
               <p className="text-sm text-gray-500 mt-2">Φόρτωση κατηγοριών...</p>
             ) : (
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
                 <TabsList className="grid w-full grid-cols-6 rounded-none">
                   {categoryHierarchy.map(group => (
                     <TabsTrigger 
@@ -354,41 +301,6 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                 ))}
               </Tabs>
             )}
-
-            {/* Show other categories if any exist */}
-            {(() => {
-              const otherCategories = getOtherCategories();
-              if (otherCategories.length > 0 && !loadingCategories) {
-                return (
-                  <div className="mt-6 p-4 border rounded bg-gray-50">
-                    <h3 className="font-medium text-lg text-gray-900 mb-3">Άλλες Κατηγορίες</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {otherCategories.map(category => (
-                        <div 
-                          key={category.id} 
-                          className={`flex items-center p-3 rounded border cursor-pointer transition-colors ${
-                            selectedCategories.includes(category.id) 
-                              ? 'bg-blue-50 border-blue-200' 
-                              : 'bg-white border-gray-200 hover:bg-gray-50'
-                          }`}
-                          onClick={() => handleCategoryToggle(category.id)}
-                        >
-                          <Checkbox
-                            checked={selectedCategories.includes(category.id)}
-                            className="mr-3"
-                            readOnly
-                          />
-                          <span className="text-sm select-none font-medium">
-                            {category.name} ({category.type})
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-              return null;
-            })()}
 
             {/* Show selected categories summary */}
             {selectedCategories.length > 0 && (
@@ -427,7 +339,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
               disabled={loading || loadingCategories}
               className="rounded-none"
             >
-              {loading ? 'Προσθήκη...' : 'Προσθήκη'}
+              {loading ? 'Ενημέρωση...' : 'Ενημέρωση'}
             </Button>
           </div>
         </form>
