@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -45,13 +46,6 @@ interface Group {
   created_at: string;
   created_by: string;
 }
-
-interface GroupMember {
-  id: string;
-  group_id: string;
-  user_id: string;
-  added_at: string;
-  }
 
 const Groups = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -144,15 +138,24 @@ const Groups = () => {
       return;
     }
 
+    if (!userProfile?.id) {
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Δεν μπορέσαμε να αναγνωρίσουμε το προφίλ σας",
+      });
+      return;
+    }
+
     setCreating(true);
     try {
-      // Create the group
+      // Create the group using the app_users id instead of auth user id
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
         .insert([{
           name: groupName,
           description: groupDescription,
-          created_by: user?.id
+          created_by: userProfile.id
         }])
         .select()
         .single();
