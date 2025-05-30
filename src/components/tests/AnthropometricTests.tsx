@@ -5,6 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
+const anthropometricFields = [
+  { key: 'weight', label: 'Βάρος (kg)', type: 'number', step: '0.1' },
+  { key: 'bodyFat', label: 'Λίπος %', type: 'number', step: '0.1' },
+  { key: 'muscleMass', label: 'Μυϊκή Μάζα %', type: 'number', step: '0.1' },
+  { key: 'visceralFat', label: 'Σπλαχνικό Λίπος', type: 'number', step: '0.1' },
+  { key: 'chestCircumference', label: 'Περιφέρεια Στήθους (cm)', type: 'number', step: '0.1' },
+  { key: 'hipCircumference', label: 'Περιφέρεια Λεκάνης (cm)', type: 'number', step: '0.1' },
+  { key: 'gluteCircumference', label: 'Περιφέρεια Γλουτού (cm)', type: 'number', step: '0.1' },
+  { key: 'thighCircumference', label: 'Περιφέρεια Μηρού (cm)', type: 'number', step: '0.1' }
+];
+
 export const AnthropometricTests = () => {
   const [formData, setFormData] = useState({
     weight: '',
@@ -23,117 +34,34 @@ export const AnthropometricTests = () => {
 
   const handleSubmit = () => {
     console.log('Anthropometric data:', formData);
-    // Εδώ θα προσθέσουμε την αποθήκευση στη βάση δεδομένων
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Σωματομετρικά Τεστ</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="weight">Βάρος (kg)</Label>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      {anthropometricFields.map((field) => (
+        <Card key={field.key} className="rounded-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">{field.label}</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
             <Input
-              id="weight"
-              type="number"
-              step="0.1"
-              value={formData.weight}
-              onChange={(e) => handleInputChange('weight', e.target.value)}
+              type={field.type}
+              step={field.step}
+              value={formData[field.key as keyof typeof formData]}
+              onChange={(e) => handleInputChange(field.key, e.target.value)}
               className="rounded-none"
             />
-          </div>
-
-          <div>
-            <Label htmlFor="bodyFat">Λίπος %</Label>
-            <Input
-              id="bodyFat"
-              type="number"
-              step="0.1"
-              value={formData.bodyFat}
-              onChange={(e) => handleInputChange('bodyFat', e.target.value)}
-              className="rounded-none"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="muscleMass">Μυϊκή Μάζα %</Label>
-            <Input
-              id="muscleMass"
-              type="number"
-              step="0.1"
-              value={formData.muscleMass}
-              onChange={(e) => handleInputChange('muscleMass', e.target.value)}
-              className="rounded-none"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="visceralFat">Σπλαχνικό Λίπος</Label>
-            <Input
-              id="visceralFat"
-              type="number"
-              step="0.1"
-              value={formData.visceralFat}
-              onChange={(e) => handleInputChange('visceralFat', e.target.value)}
-              className="rounded-none"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="chestCircumference">Περιφέρεια Στήθους (cm)</Label>
-            <Input
-              id="chestCircumference"
-              type="number"
-              step="0.1"
-              value={formData.chestCircumference}
-              onChange={(e) => handleInputChange('chestCircumference', e.target.value)}
-              className="rounded-none"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="hipCircumference">Περιφέρεια Λεκάνης (cm)</Label>
-            <Input
-              id="hipCircumference"
-              type="number"
-              step="0.1"
-              value={formData.hipCircumference}
-              onChange={(e) => handleInputChange('hipCircumference', e.target.value)}
-              className="rounded-none"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="gluteCircumference">Περιφέρεια Γλουτού (cm)</Label>
-            <Input
-              id="gluteCircumference"
-              type="number"
-              step="0.1"
-              value={formData.gluteCircumference}
-              onChange={(e) => handleInputChange('gluteCircumference', e.target.value)}
-              className="rounded-none"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="thighCircumference">Περιφέρεια Μηρού (cm)</Label>
-            <Input
-              id="thighCircumference"
-              type="number"
-              step="0.1"
-              value={formData.thighCircumference}
-              onChange={(e) => handleInputChange('thighCircumference', e.target.value)}
-              className="rounded-none"
-            />
-          </div>
-        </div>
-
-        <Button onClick={handleSubmit} className="rounded-none">
-          Αποθήκευση Σωματομετρικών
-        </Button>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      ))}
+      
+      <Card className="rounded-none">
+        <CardContent className="p-4 flex items-center justify-center">
+          <Button onClick={handleSubmit} className="rounded-none w-full">
+            Αποθήκευση
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

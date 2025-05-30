@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 
 const postureOptions = ['Κύφωση', 'Λόρδωση', 'Πρηνισμός'];
@@ -55,30 +54,30 @@ export const FunctionalTests = () => {
     fcs: ''
   });
 
-  const handlePostureChange = (option: string, checked: boolean) => {
+  const handlePostureClick = (option: string) => {
     setFormData(prev => ({
       ...prev,
-      posture: checked 
-        ? [...prev.posture, option]
-        : prev.posture.filter(item => item !== option)
+      posture: prev.posture.includes(option)
+        ? prev.posture.filter(item => item !== option)
+        : [...prev.posture, option]
     }));
   };
 
-  const handleSquatChange = (option: string, checked: boolean) => {
+  const handleSquatClick = (option: string) => {
     setFormData(prev => ({
       ...prev,
-      squats: checked 
-        ? [...prev.squats, option]
-        : prev.squats.filter(item => item !== option)
+      squats: prev.squats.includes(option)
+        ? prev.squats.filter(item => item !== option)
+        : [...prev.squats, option]
     }));
   };
 
-  const handleSingleLegSquatChange = (option: string, checked: boolean) => {
+  const handleSingleLegSquatClick = (option: string) => {
     setFormData(prev => ({
       ...prev,
-      singleLegSquats: checked 
-        ? [...prev.singleLegSquats, option]
-        : prev.singleLegSquats.filter(item => item !== option)
+      singleLegSquats: prev.singleLegSquats.includes(option)
+        ? prev.singleLegSquats.filter(item => item !== option)
+        : [...prev.singleLegSquats, option]
     }));
   };
 
@@ -106,118 +105,127 @@ export const FunctionalTests = () => {
 
   const handleSubmit = () => {
     console.log('Functional data:', formData);
-    // Εδώ θα προσθέσουμε την αποθήκευση στη βάση δεδομένων
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Τεστ Λειτουργικότητας</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-6">
-          {/* Στάση Σώματος */}
-          <div>
-            <Label className="text-base font-semibold">Στάση Σώματος</Label>
-            <div className="mt-2 space-y-2">
-              {postureOptions.map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={option}
-                    checked={formData.posture.includes(option)}
-                    onCheckedChange={(checked) => handlePostureChange(option, checked as boolean)}
-                    className="rounded-none"
-                  />
-                  <Label htmlFor={option} className="cursor-pointer">
-                    {option}
-                  </Label>
-                </div>
-              ))}
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+      {/* Στάση Σώματος */}
+      <Card className="rounded-none">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Στάση Σώματος</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-2">
+          {postureOptions.map((option) => (
+            <div 
+              key={option}
+              className={`p-2 border cursor-pointer text-sm rounded-none transition-colors ${
+                formData.posture.includes(option) 
+                  ? 'bg-blue-100 border-blue-300' 
+                  : 'bg-white border-gray-200 hover:bg-gray-50'
+              }`}
+              onClick={() => handlePostureClick(option)}
+            >
+              {option}
             </div>
-          </div>
+          ))}
+        </CardContent>
+      </Card>
 
-          {/* Καθίσματα */}
-          <div>
-            <Label className="text-base font-semibold">Καθίσματα</Label>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {squatOptions.map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={option}
-                    checked={formData.squats.includes(option)}
-                    onCheckedChange={(checked) => handleSquatChange(option, checked as boolean)}
-                    className="rounded-none"
-                  />
-                  <Label htmlFor={option} className="cursor-pointer text-sm">
-                    {option}
-                  </Label>
-                </div>
-              ))}
+      {/* Καθίσματα */}
+      <Card className="rounded-none">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Καθίσματα</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-2">
+          {squatOptions.map((option) => (
+            <div 
+              key={option}
+              className={`p-2 border cursor-pointer text-xs rounded-none transition-colors ${
+                formData.squats.includes(option) 
+                  ? 'bg-blue-100 border-blue-300' 
+                  : 'bg-white border-gray-200 hover:bg-gray-50'
+              }`}
+              onClick={() => handleSquatClick(option)}
+            >
+              {option}
             </div>
-          </div>
+          ))}
+        </CardContent>
+      </Card>
 
-          {/* Καθίσματα με ένα πόδι */}
-          <div>
-            <Label className="text-base font-semibold">Καθίσματα με ένα πόδι</Label>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {singleLegSquatOptions.map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={option}
-                    checked={formData.singleLegSquats.includes(option)}
-                    onCheckedChange={(checked) => handleSingleLegSquatChange(option, checked as boolean)}
-                    className="rounded-none"
-                  />
-                  <Label htmlFor={option} className="cursor-pointer text-sm">
-                    {option}
-                  </Label>
-                </div>
-              ))}
+      {/* Καθίσματα με ένα πόδι */}
+      <Card className="rounded-none">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Καθίσματα με ένα πόδι</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-2">
+          {singleLegSquatOptions.map((option) => (
+            <div 
+              key={option}
+              className={`p-2 border cursor-pointer text-sm rounded-none transition-colors ${
+                formData.singleLegSquats.includes(option) 
+                  ? 'bg-blue-100 border-blue-300' 
+                  : 'bg-white border-gray-200 hover:bg-gray-50'
+              }`}
+              onClick={() => handleSingleLegSquatClick(option)}
+            >
+              {option}
             </div>
-          </div>
+          ))}
+        </CardContent>
+      </Card>
 
-          {/* FMS */}
-          <div>
-            <Label className="text-base font-semibold">FMS</Label>
-            <div className="mt-2 space-y-2">
-              {fmsTests.map((test) => (
-                <div 
-                  key={test} 
-                  className="flex items-center justify-between p-3 border border-gray-200 cursor-pointer hover:bg-gray-50 rounded-none"
-                  onClick={() => handleFmsClick(test)}
-                >
-                  <span>{test}</span>
-                  <span className="font-bold text-lg">
-                    {formData.fms[test] || 0}
-                  </span>
-                </div>
-              ))}
-              <div className="flex justify-between items-center p-3 bg-gray-100 font-bold">
-                <span>Συνολικό Σκορ:</span>
-                <span className={`text-lg ${getFmsScoreColor()}`}>
-                  {calculateFmsTotal()}
-                </span>
-              </div>
+      {/* FMS */}
+      <Card className="rounded-none">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">FMS</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-2">
+          {fmsTests.map((test) => (
+            <div 
+              key={test} 
+              className="flex items-center justify-between p-2 border border-gray-200 cursor-pointer hover:bg-gray-50 rounded-none text-sm"
+              onClick={() => handleFmsClick(test)}
+            >
+              <span>{test}</span>
+              <span className="font-bold text-lg">
+                {formData.fms[test] || 0}
+              </span>
             </div>
+          ))}
+          <div className="flex justify-between items-center p-2 bg-gray-100 font-bold rounded-none">
+            <span className="text-sm">Συνολικό:</span>
+            <span className={`text-lg ${getFmsScoreColor()}`}>
+              {calculateFmsTotal()}
+            </span>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* FCS */}
-          <div>
-            <Label htmlFor="fcs">FCS (σκορ)</Label>
-            <Input
-              id="fcs"
-              type="number"
-              value={formData.fcs}
-              onChange={(e) => setFormData(prev => ({ ...prev, fcs: e.target.value }))}
-              className="rounded-none"
-            />
-          </div>
-        </div>
+      {/* FCS */}
+      <Card className="rounded-none">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">FCS</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <Input
+            type="number"
+            value={formData.fcs}
+            onChange={(e) => setFormData(prev => ({ ...prev, fcs: e.target.value }))}
+            className="rounded-none"
+            placeholder="FCS σκορ"
+          />
+        </CardContent>
+      </Card>
 
-        <Button onClick={handleSubmit} className="rounded-none">
-          Αποθήκευση Λειτουργικότητας
-        </Button>
-      </CardContent>
-    </Card>
+      {/* Κουμπί Αποθήκευσης */}
+      <Card className="rounded-none">
+        <CardContent className="p-4 flex items-center justify-center">
+          <Button onClick={handleSubmit} className="rounded-none w-full">
+            Αποθήκευση Λειτουργικότητας
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
