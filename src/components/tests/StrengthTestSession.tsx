@@ -1,55 +1,8 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Plus, Check, ChevronsUpDown } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-
-interface Exercise {
-  id: string;
-  name: string;
-  usage_count?: number;
-}
-
-interface ExerciseTest {
-  id?: string;
-  exercise_id: string;
-  test_date: string;
-  attempts: Attempt[];
-}
-
-interface Attempt {
-  id?: string;
-  attempt_number: number;
-  weight_kg: number;
-  velocity_ms: number;
-  is_1rm: boolean;
-}
-
-interface StrengthSession {
-  id?: string;
-  athlete_id: string;
-  start_date: string;
-  end_date: string;
-  notes: string;
-  exercise_tests: ExerciseTest[];
-}
-
-interface SessionWithDetails extends StrengthSession {
-  app_users?: { name: string };
-  exercise_tests: (ExerciseTest & { 
-    exercise_name?: string;
-    attempts: (Attempt & { exercises?: { name: string } })[];
-  })[];
-}
+import { SessionForm } from "./strength/SessionForm";
+import { SessionsList } from "./strength/SessionsList";
+import { useStrengthTestData } from "./strength/useStrengthTestData";
 
 interface StrengthTestSessionProps {
   selectedAthleteId: string;
@@ -57,130 +10,20 @@ interface StrengthTestSessionProps {
 }
 
 export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: StrengthTestSessionProps) => {
-  const { toast } = useToast();
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
-  const [currentSession, setCurrentSession] = useState<StrengthSession>({
-    athlete_id: selectedAthleteId,
-    start_date: selectedDate,
-    end_date: selectedDate,
-    notes: '',
-    exercise_tests: []
-  });
-  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
-  const [openExerciseSelectors, setOpenExerciseSelectors] = useState<{ [key: number]: boolean }>({});
-
-  useEffect(() => {
-    setCurrentSession(prev => ({ 
-      ...prev, 
-      athlete_id: selectedAthleteId,
-      start_date: selectedDate,
-      end_date: selectedDate
-    }));
-    fetchExercises();
-    fetchSessions();
-  }, [selectedAthleteId, selectedDate]);
-
-  const fetchExercises = async () => {
-    // Φέρε όλες τις ασκήσεις
-    const { data: exercisesData } = await supabase
-      .from('exercises')
-      .select('id, name')
-      .order('name');
-
-    if (!exercisesData) {
-      setExercises([]);
-      return;
-    }
-
-    // Φέρε στατιστικά χρήσης για τον συγκεκριμένο αθλητή
-    const { data: usageStats } = await supabase
-      .from('strength_test_attempts')
-      .select(`
-        exercise_id,
-        strength_test_sessions!inner(athlete_id)
-      `)
-      .eq('strength_test_sessions.athlete_id', selectedAthleteId);
-
-    // Υπολόγισε τη συχνότητα χρήσης κάθε άσκησης
-    const usageMap = new Map();
-    usageStats?.forEach(stat => {
-      const count = usageMap.get(stat.exercise_id) || 0;
-      usageMap.set(stat.exercise_id, count + 1);
-    });
-
-    // Προσθήκη usage_count στις ασκήσεις και ταξινόμηση
-    const exercisesWithUsage = exercisesData.map(exercise => ({
-      ...exercise,
-      usage_count: usageMap.get(exercise.id) || 0
-    }));
-
-    // Ταξινόμηση: πρώτα οι πιο συχνά χρησιμοποιημένες, μετά αλφαβητικά
-    exercisesWithUsage.sort((a, b) => {
-      if (a.usage_count !== b.usage_count) {
-        return b.usage_count - a.usage_count;
-      }
-      return a.name.localeCompare(b.name);
-    });
-
-    setExercises(exercisesWithUsage);
-  };
-
-  const fetchSessions = async () => {
-    if (!selectedAthleteId) return;
-
-    const { data: sessionsData } = await supabase
-      .from('strength_test_sessions')
-      .select(`
-        *,
-        app_users!athlete_id(name)
-      `)
-      .eq('athlete_id', selectedAthleteId)
-      .order('created_at', { ascending: false });
-
-    if (sessionsData) {
-      const sessionsWithAttempts = await Promise.all(
-        sessionsData.map(async (session) => {
-          const { data: attempts } = await supabase
-            .from('strength_test_attempts')
-            .select(`
-              *,
-              exercises(name)
-            `)
-            .eq('test_session_id', session.id)
-            .order('exercise_id, attempt_number');
-
-          const exerciseTests: any[] = [];
-          const exerciseMap = new Map();
-
-          attempts?.forEach((attempt) => {
-            const exerciseId = attempt.exercise_id;
-            if (!exerciseMap.has(exerciseId)) {
-              exerciseMap.set(exerciseId, {
-                exercise_id: exerciseId,
-                exercise_name: attempt.exercises?.name,
-                test_date: session.test_date,
-                attempts: []
-              });
-              exerciseTests.push(exerciseMap.get(exerciseId));
-            }
-            exerciseMap.get(exerciseId).attempts.push(attempt);
-          });
-
-          return {
-            ...session,
-            start_date: session.test_date,
-            end_date: session.test_date,
-            exercise_tests: exerciseTests
-          };
-        })
-      );
-      setSessions(sessionsWithAttempts);
-    }
-  };
+  const {
+    exercises,
+    sessions,
+    currentSession,
+    editingSessionId,
+    setCurrentSession,
+    saveSession,
+    deleteSession,
+    resetForm,
+    editSession
+  } = useStrengthTestData(selectedAthleteId, selectedDate);
 
   const addExerciseTest = () => {
-    const newExerciseTest: ExerciseTest = {
+    const newExerciseTest = {
       exercise_id: '',
       test_date: selectedDate,
       attempts: []
@@ -191,7 +34,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
     }));
   };
 
-  const updateExerciseTest = (index: number, field: keyof ExerciseTest, value: any) => {
+  const updateExerciseTest = (index: number, field: string, value: any) => {
     setCurrentSession(prev => ({
       ...prev,
       exercise_tests: prev.exercise_tests.map((test, i) => 
@@ -209,16 +52,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
 
   const addAttempt = (exerciseIndex: number) => {
     const exerciseTest = currentSession.exercise_tests[exerciseIndex];
-    if (!exerciseTest.exercise_id) {
-      toast({
-        title: "Σφάλμα",
-        description: "Παρακαλώ επιλέξτε άσκηση πρώτα",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const newAttempt: Attempt = {
+    const newAttempt = {
       attempt_number: exerciseTest.attempts.length + 1,
       weight_kg: 0,
       velocity_ms: 0,
@@ -228,7 +62,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
     updateExerciseTest(exerciseIndex, 'attempts', [...exerciseTest.attempts, newAttempt]);
   };
 
-  const updateAttempt = (exerciseIndex: number, attemptIndex: number, field: keyof Attempt, value: any) => {
+  const updateAttempt = (exerciseIndex: number, attemptIndex: number, field: string, value: any) => {
     const exerciseTest = currentSession.exercise_tests[exerciseIndex];
     const updatedAttempts = exerciseTest.attempts.map((attempt, i) => 
       i === attemptIndex ? { ...attempt, [field]: value } : attempt
@@ -252,161 +86,8 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
     updateExerciseTest(exerciseIndex, 'attempts', updatedAttempts);
   };
 
-  const saveSession = async () => {
-    if (!currentSession.athlete_id || currentSession.exercise_tests.length === 0) {
-      toast({
-        title: "Σφάλμα",
-        description: "Παρακαλώ προσθέστε τουλάχιστον μία άσκηση",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    for (const exerciseTest of currentSession.exercise_tests) {
-      if (!exerciseTest.exercise_id || exerciseTest.attempts.length === 0) {
-        toast({
-          title: "Σφάλμα",
-          description: "Όλες οι ασκήσεις πρέπει να έχουν επιλεγεί και να έχουν τουλάχιστον μία προσπάθεια",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-
-    try {
-      const testDates = currentSession.exercise_tests.map(et => et.test_date);
-      const startDate = testDates.reduce((min, date) => date < min ? date : min);
-
-      let sessionId = currentSession.id;
-
-      if (editingSessionId) {
-        const { error: updateError } = await supabase
-          .from('strength_test_sessions')
-          .update({
-            athlete_id: currentSession.athlete_id,
-            test_date: startDate,
-            notes: currentSession.notes
-          })
-          .eq('id', editingSessionId);
-
-        if (updateError) throw updateError;
-
-        await supabase
-          .from('strength_test_attempts')
-          .delete()
-          .eq('test_session_id', editingSessionId);
-
-        sessionId = editingSessionId;
-      } else {
-        const { data: sessionData, error: sessionError } = await supabase
-          .from('strength_test_sessions')
-          .insert({
-            athlete_id: currentSession.athlete_id,
-            test_date: startDate,
-            notes: currentSession.notes
-          })
-          .select()
-          .single();
-
-        if (sessionError) throw sessionError;
-        sessionId = sessionData.id;
-      }
-
-      const allAttempts: any[] = [];
-      currentSession.exercise_tests.forEach(exerciseTest => {
-        exerciseTest.attempts.forEach(attempt => {
-          allAttempts.push({
-            test_session_id: sessionId,
-            exercise_id: exerciseTest.exercise_id,
-            attempt_number: attempt.attempt_number,
-            weight_kg: attempt.weight_kg,
-            velocity_ms: attempt.velocity_ms,
-            is_1rm: attempt.is_1rm
-          });
-        });
-      });
-
-      const { error: attemptsError } = await supabase
-        .from('strength_test_attempts')
-        .insert(allAttempts);
-
-      if (attemptsError) throw attemptsError;
-
-      toast({
-        title: "Επιτυχία",
-        description: "Το τεστ δύναμης αποθηκεύτηκε επιτυχώς"
-      });
-
-      resetForm();
-      fetchSessions();
-      fetchExercises(); // Ανανέωση για ενημέρωση usage stats
-    } catch (error) {
-      console.error('Error saving strength test:', error);
-      toast({
-        title: "Σφάλμα",
-        description: "Σφάλμα κατά την αποθήκευση",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const editSession = (session: SessionWithDetails) => {
-    setCurrentSession({
-      id: session.id,
-      athlete_id: session.athlete_id,
-      start_date: session.start_date,
-      end_date: session.end_date,
-      notes: session.notes || '',
-      exercise_tests: session.exercise_tests.map(et => ({
-        exercise_id: et.exercise_id,
-        test_date: et.test_date || session.start_date,
-        attempts: et.attempts
-      }))
-    });
-    setEditingSessionId(session.id || null);
-  };
-
-  const resetForm = () => {
-    setCurrentSession({
-      athlete_id: selectedAthleteId,
-      start_date: selectedDate,
-      end_date: selectedDate,
-      notes: '',
-      exercise_tests: []
-    });
-    setEditingSessionId(null);
-  };
-
-  const deleteSession = async (sessionId: string) => {
-    try {
-      const { error } = await supabase
-        .from('strength_test_sessions')
-        .delete()
-        .eq('id', sessionId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Επιτυχία",
-        description: "Το τεστ διαγράφηκε επιτυχώς"
-      });
-
-      fetchSessions();
-    } catch (error) {
-      console.error('Error deleting session:', error);
-      toast({
-        title: "Σφάλμα",
-        description: "Σφάλμα κατά τη διαγραφή",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const toggleExerciseSelector = (index: number) => {
-    setOpenExerciseSelectors(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
+  const updateSession = (field: string, value: any) => {
+    setCurrentSession(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -417,175 +98,22 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
             {editingSessionId ? 'Επεξεργασία Τεστ Δύναμης' : 'Νέο Τεστ Δύναμης'}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Σημειώσεις</Label>
-              <Textarea
-                value={currentSession.notes}
-                onChange={(e) => setCurrentSession(prev => ({...prev, notes: e.target.value}))}
-                className="rounded-none"
-                placeholder="Προαιρετικές σημειώσεις..."
-              />
-            </div>
-          </div>
-
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <Label>Ασκήσεις Τεστ</Label>
-              <Button onClick={addExerciseTest} size="sm" className="rounded-none">
-                <Plus className="w-4 h-4 mr-1" />
-                Άσκηση
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {currentSession.exercise_tests.map((exerciseTest, exerciseIndex) => (
-                <div key={exerciseIndex} className="p-3 border rounded-none bg-gray-50 w-full">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1 pr-2">
-                      <Label className="text-sm">Άσκηση {exerciseIndex + 1}</Label>
-                      <Popover 
-                        open={openExerciseSelectors[exerciseIndex] || false} 
-                        onOpenChange={() => toggleExerciseSelector(exerciseIndex)}
-                      >
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={openExerciseSelectors[exerciseIndex] || false}
-                            className="w-full justify-between rounded-none h-8 text-sm"
-                          >
-                            {exerciseTest.exercise_id
-                              ? exercises.find((exercise) => exercise.id === exerciseTest.exercise_id)?.name
-                              : "Επιλέξτε άσκηση..."}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[300px] p-0 rounded-none">
-                          <Command>
-                            <CommandInput placeholder="Αναζήτηση ασκήσεων..." className="h-9" />
-                            <CommandEmpty>Δεν βρέθηκαν ασκήσεις.</CommandEmpty>
-                            <CommandGroup>
-                              <CommandList>
-                                {exercises.map((exercise) => (
-                                  <CommandItem
-                                    key={exercise.id}
-                                    value={exercise.name}
-                                    onSelect={() => {
-                                      updateExerciseTest(exerciseIndex, 'exercise_id', exercise.id);
-                                      toggleExerciseSelector(exerciseIndex);
-                                    }}
-                                  >
-                                    <div className="flex items-center justify-between w-full">
-                                      <span>{exercise.name}</span>
-                                      {exercise.usage_count && exercise.usage_count > 0 && (
-                                        <Badge variant="secondary" className="text-xs rounded-none">
-                                          {exercise.usage_count}x
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <Check
-                                      className={cn(
-                                        "ml-auto h-4 w-4",
-                                        exerciseTest.exercise_id === exercise.id ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                  </CommandItem>
-                                ))}
-                              </CommandList>
-                            </CommandGroup>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => removeExerciseTest(exerciseIndex)}
-                      className="rounded-none h-8 w-8 p-0"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-
-                  <div className="mb-3">
-                    <Label className="text-sm">Ημερομηνία</Label>
-                    <Input
-                      type="date"
-                      value={exerciseTest.test_date}
-                      onChange={(e) => updateExerciseTest(exerciseIndex, 'test_date', e.target.value)}
-                      className="rounded-none h-8 text-sm"
-                    />
-                  </div>
-
-                  <div className="mb-2">
-                    <Button
-                      size="sm"
-                      onClick={() => addAttempt(exerciseIndex)}
-                      className="rounded-none h-7 text-xs w-full"
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      Προσπάθεια
-                    </Button>
-                  </div>
-
-                  {exerciseTest.attempts.map((attempt, attemptIndex) => (
-                    <div key={attemptIndex} className="flex items-center gap-1 mb-2 p-2 border rounded-none bg-white">
-                      <span className="text-xs font-medium w-6">#{attempt.attempt_number}</span>
-                      
-                      <Input
-                        type="number"
-                        step="0.5"
-                        placeholder="kg"
-                        value={attempt.weight_kg || ''}
-                        onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'weight_kg', parseFloat(e.target.value) || 0)}
-                        className="rounded-none text-sm h-8 w-16 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                      />
-
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="m/s"
-                        value={attempt.velocity_ms || ''}
-                        onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'velocity_ms', parseFloat(e.target.value) || 0)}
-                        className="rounded-none text-sm h-8 w-16 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                      />
-
-                      <Button
-                        size="sm"
-                        variant={attempt.is_1rm ? "default" : "outline"}
-                        onClick={() => markAs1RM(exerciseIndex, attemptIndex)}
-                        className="rounded-none text-xs px-2 h-8"
-                      >
-                        1RM
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => removeAttempt(exerciseIndex, attemptIndex)}
-                        className="rounded-none h-8 w-8 p-0"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button onClick={saveSession} className="rounded-none">
-              {editingSessionId ? 'Ενημέρωση' : 'Αποθήκευση'}
-            </Button>
-            {editingSessionId && (
-              <Button variant="outline" onClick={resetForm} className="rounded-none">
-                Ακύρωση
-              </Button>
-            )}
-          </div>
+        <CardContent>
+          <SessionForm
+            session={currentSession}
+            exercises={exercises}
+            editingSessionId={editingSessionId}
+            onUpdateSession={updateSession}
+            onAddExerciseTest={addExerciseTest}
+            onUpdateExerciseTest={updateExerciseTest}
+            onRemoveExerciseTest={removeExerciseTest}
+            onAddAttempt={addAttempt}
+            onUpdateAttempt={updateAttempt}
+            onRemoveAttempt={removeAttempt}
+            onMark1RM={markAs1RM}
+            onSave={saveSession}
+            onReset={resetForm}
+          />
         </CardContent>
       </Card>
 
@@ -594,68 +122,11 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
           <CardTitle>Υπάρχοντα Τεστ Δύναμης</CardTitle>
         </CardHeader>
         <CardContent>
-          {sessions.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">
-              Δεν υπάρχουν τεστ δύναμης για αυτόν τον αθλητή
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {sessions.map((session) => (
-                <div key={session.id} className="border rounded-none p-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium">
-                        Τεστ Δύναμης - {new Date(session.start_date).toLocaleDateString('el-GR')}
-                        {session.start_date !== session.end_date && 
-                          ` έως ${new Date(session.end_date).toLocaleDateString('el-GR')}`
-                        }
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        Ασκήσεις: {session.exercise_tests.length}
-                      </p>
-                      {session.exercise_tests.map((exerciseTest, index) => {
-                        const oneRMAttempt = exerciseTest.attempts.find(attempt => attempt.is_1rm);
-                        return (
-                          <div key={index} className="mt-1">
-                            <p className="text-sm font-medium">{exerciseTest.exercise_name}</p>
-                            <p className="text-xs text-gray-500">
-                              Προσπάθειες: {exerciseTest.attempts.length}
-                            </p>
-                            {oneRMAttempt && (
-                              <Badge variant="outline" className="rounded-none text-xs">
-                                1RM: {oneRMAttempt.weight_kg}kg @ {oneRMAttempt.velocity_ms}m/s
-                              </Badge>
-                            )}
-                          </div>
-                        );
-                      })}
-                      {session.notes && (
-                        <p className="text-xs text-gray-500 mt-1">{session.notes}</p>
-                      )}
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => editSession(session)}
-                        className="rounded-none text-xs"
-                      >
-                        Επεξεργασία
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => deleteSession(session.id!)}
-                        className="rounded-none text-xs"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <SessionsList
+            sessions={sessions}
+            onEdit={editSession}
+            onDelete={deleteSession}
+          />
         </CardContent>
       </Card>
     </div>
