@@ -42,11 +42,21 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       "bg-white border-r border-gray-200 h-full transition-all duration-300 flex flex-col",
       isCollapsed ? "w-16" : "w-64"
     )}>
-      {/* Header */}
+      {/* Header with Logo */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        {!isCollapsed && (
-          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-        )}
+        <div className="flex items-center">
+          <img 
+            src="/lovable-uploads/66c3033a-1960-41a1-9e02-499d449e2dd7.png" 
+            alt="Logo" 
+            className={cn(
+              "transition-all duration-300",
+              isCollapsed ? "w-8 h-8" : "w-10 h-10 mr-3"
+            )}
+          />
+          {!isCollapsed && (
+            <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+          )}
+        </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-1 rounded hover:bg-gray-100"
