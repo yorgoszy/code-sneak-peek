@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -779,7 +780,7 @@ const Index = () => {
             <div className="lg:col-span-1 relative">
               <div className="relative overflow-visible">
                 <img
-                  src="/lovable-uploads/2857cb9c-1d26-4d2c-bba4-ab3c1320b791.png"
+                  src="/lovable-uploads/22324308-989f-48c5-9352-79aef34fd97a.png"
                   alt="Advanced Technology"
                   className="w-full h-auto rounded-lg"
                 />
