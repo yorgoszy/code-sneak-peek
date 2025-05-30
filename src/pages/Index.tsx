@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -904,7 +903,7 @@ const Index = () => {
                   <MapPin className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-gray-300">ag.georgiou 46, thessaloniki 54627</p>
+                  <p className="text-gray-300">an.georgiou 46, thessaloniki 54627</p>
                 </div>
               </div>
               
@@ -1034,37 +1033,81 @@ const Index = () => {
 
           {/* Hours Section */}
           <div className="border-t border-gray-800 pt-16">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="grid md:grid-cols-3 gap-12 items-center">
+              {/* Left - Contact Information */}
               <div>
-                <h3 className="text-3xl font-bold text-white mb-8">Hours</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">Monday - Friday:</span>
-                    <span className="text-white">7:00 - 22:00</span>
+                <h3 className="text-2xl font-bold text-white mb-8">Επικοινωνία</h3>
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-6 h-6 text-[#00ffba] mt-1">
+                      <MapPin className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-gray-300">an.georgiou 46, thessaloniki 54627</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">Saturday:</span>
-                    <span className="text-white">Closed</span>
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="w-6 h-6 text-[#00ffba] mt-1">
+                      <Phone className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-gray-300">+30 2310 529104</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">Sunday:</span>
-                    <span className="text-white">Closed</span>
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="w-6 h-6 text-[#00ffba] mt-1">
+                      <Mail className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-gray-300">info@hyperkids.gr</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Google Maps */}
-              <div className="h-64 bg-gray-800 rounded-lg overflow-hidden">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.4!2d22.94!3d40.64!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDM4JzI2LjQiTiAyMsKwNTYnMjQuMCJF!5e0!3m2!1sen!2sgr!4v1000000000000!5m2!1sen!2sgr"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Hyperkids Location"
-                ></iframe>
+              {/* Center - Logo and Social Media */}
+              <div className="text-center">
+                <div className="mb-8">
+                  <img 
+                    src="/lovable-uploads/83e3ba31-3c4d-44a1-b842-c9468896e822.png" 
+                    alt="HYPERKIDS Logo" 
+                    className="h-12 w-auto mx-auto mb-6"
+                  />
+                </div>
+                
+                {/* Social Media Icons */}
+                <div className="flex justify-center gap-4">
+                  <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
+                    <Facebook className="w-5 h-5" />
+                  </div>
+                  <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
+                    <Instagram className="w-5 h-5" />
+                  </div>
+                  <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
+                    <Youtube className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right - Hours */}
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-8">Ώρες</h3>
+                <div className="space-y-4">
+                  <div className="flex flex-col">
+                    <span className="text-gray-300">Δευτέρα - Παρασκευή:</span>
+                    <span className="text-white font-semibold">7:00 - 22:00</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-gray-300">Σάββατο:</span>
+                    <span className="text-white font-semibold">Κλειστά</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-gray-300">Κυριακή:</span>
+                    <span className="text-white font-semibold">Κλειστά</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1074,7 +1117,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 border-t border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-gray-400">&copy; 2023 hyperkids. All rights reserved.</p>
+          <p className="text-gray-400">&copy; 2023 hyperkids. Όλα τα δικαιώματα διατηρούνται.</p>
         </div>
       </footer>
     </div>
