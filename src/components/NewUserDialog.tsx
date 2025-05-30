@@ -32,7 +32,6 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("");
-  const [category, setCategory] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -60,7 +59,6 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
 
       // Add optional fields only if they have values
       if (phone.trim()) userData.phone = phone.trim();
-      if (category.trim()) userData.category = category.trim();
       if (birthDate) userData.birth_date = birthDate;
       if (photoUrl) userData.photo_url = photoUrl;
 
@@ -85,7 +83,6 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
         setEmail("");
         setPhone("");
         setRole("");
-        setCategory("");
         setBirthDate("");
         setPhotoUrl(null);
         
@@ -168,16 +165,6 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
                 <SelectItem value="parent">Parent</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="category">Κατηγορία</Label>
-            <Input
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="Εισάγετε την κατηγορία"
-            />
           </div>
 
           <div className="space-y-2">

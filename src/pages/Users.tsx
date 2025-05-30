@@ -5,7 +5,7 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Search, Filter } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,9 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NewUserDialog } from "@/components/NewUserDialog";
 import { EditUserDialog } from "@/components/EditUserDialog";
 import { DeleteUserDialog } from "@/components/DeleteUserDialog";
+import { UserProfileDialog } from "@/components/UserProfileDialog";
 
 interface AppUser {
   id: string;
@@ -33,9 +35,9 @@ interface AppUser {
   email: string;
   role: string;
   phone?: string;
-  category?: string;
   user_status: string;
   birth_date?: string;
+  photo_url?: string;
   created_at: string;
 }
 
@@ -48,12 +50,12 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
   
   // Dialog states
   const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
   const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false);
+  const [userProfileDialogOpen, setUserProfileDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
 
   const fetchUsers = async () => {
@@ -107,6 +109,11 @@ const Users = () => {
     setDeleteUserDialogOpen(true);
   };
 
+  const handleViewUser = (user: AppUser) => {
+    setSelectedUser(user);
+    setUserProfileDialogOpen(true);
+  };
+
   const handleUserCreated = () => {
     fetchUsers();
   };
@@ -125,9 +132,8 @@ const Users = () => {
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     const matchesStatus = statusFilter === "all" || user.user_status === statusFilter;
-    const matchesCategory = categoryFilter === "all" || user.category === categoryFilter;
     
-    return matchesSearch && matchesRole && matchesStatus && matchesCategory;
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   if (loading) {
@@ -235,7 +241,7 @@ const Users = () => {
               </div>
               
               {/* Search and Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -273,20 +279,6 @@ const Users = () => {
                     <SelectItem value="pending">Pending</SelectItem>
                   </SelectContent>
                 </Select>
-                
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger>
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Φίλτρο κατηγορίας" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Όλες οι κατηγορίες</SelectItem>
-                    <SelectItem value="general">General</SelectItem>
-                    <SelectItem value="youth">Youth</SelectItem>
-                    <SelectItem value="adult">Adult</SelectItem>
-                    <SelectItem value="senior">Senior</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </CardHeader>
             <CardContent>
@@ -297,7 +289,7 @@ const Users = () => {
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-600">
-                    {searchTerm || roleFilter !== "all" || statusFilter !== "all" || categoryFilter !== "all" 
+                    {searchTerm || roleFilter !== "all" || statusFilter !== "all"
                       ? "Δεν βρέθηκαν χρήστες με τα επιλεγμένα κριτήρια" 
                       : "Δεν βρέθηκαν χρήστες"}
                   </p>
@@ -309,7 +301,6 @@ const Users = () => {
                       <TableHead>Όνομα</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Ρόλος</TableHead>
-                      <TableHead>Κατηγορία</TableHead>
                       <TableHead>Τηλέφωνο</TableHead>
                       <TableHead>Κατάσταση</TableHead>
                       <TableHead>Εγγραφή</TableHead>
@@ -320,7 +311,15 @@ const Users = () => {
                     {filteredUsers.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">
-                          {user.name}
+                          <div className="flex items-center space-x-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={user.photo_url} alt={user.name} />
+                              <AvatarFallback>
+                                {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>{user.name}</span>
+                          </div>
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
@@ -328,7 +327,6 @@ const Users = () => {
                             {user.role}
                           </span>
                         </TableCell>
-                        <TableCell>{user.category || '-'}</TableCell>
                         <TableCell>{user.phone || '-'}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 text-xs rounded ${getStatusColor(user.user_status)}`}>
@@ -338,6 +336,14 @@ const Users = () => {
                         <TableCell>{formatDate(user.created_at)}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-none"
+                              onClick={() => handleViewUser(user)}
+                            >
+                              <Eye className="h-3 w-3" />
+                            </Button>
                             <Button 
                               variant="outline" 
                               size="sm" 
@@ -384,6 +390,12 @@ const Users = () => {
         isOpen={deleteUserDialogOpen}
         onClose={() => setDeleteUserDialogOpen(false)}
         onUserDeleted={handleUserDeleted}
+        user={selectedUser}
+      />
+
+      <UserProfileDialog
+        isOpen={userProfileDialogOpen}
+        onClose={() => setUserProfileDialogOpen(false)}
         user={selectedUser}
       />
     </div>
