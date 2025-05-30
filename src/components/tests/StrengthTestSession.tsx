@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,26 +49,32 @@ interface SessionWithDetails extends StrengthSession {
 
 interface StrengthTestSessionProps {
   selectedAthleteId: string;
+  selectedDate: string;
 }
 
-export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionProps) => {
+export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: StrengthTestSessionProps) => {
   const { toast } = useToast();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [currentSession, setCurrentSession] = useState<StrengthSession>({
     athlete_id: selectedAthleteId,
-    start_date: new Date().toISOString().split('T')[0],
-    end_date: new Date().toISOString().split('T')[0],
+    start_date: selectedDate,
+    end_date: selectedDate,
     notes: '',
     exercise_tests: []
   });
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
   useEffect(() => {
-    setCurrentSession(prev => ({ ...prev, athlete_id: selectedAthleteId }));
+    setCurrentSession(prev => ({ 
+      ...prev, 
+      athlete_id: selectedAthleteId,
+      start_date: selectedDate,
+      end_date: selectedDate
+    }));
     fetchExercises();
     fetchSessions();
-  }, [selectedAthleteId]);
+  }, [selectedAthleteId, selectedDate]);
 
   const fetchExercises = async () => {
     const { data } = await supabase
@@ -135,7 +140,7 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
   const addExerciseTest = () => {
     const newExerciseTest: ExerciseTest = {
       exercise_id: '',
-      test_date: new Date().toISOString().split('T')[0],
+      test_date: selectedDate,
       attempts: []
     };
     setCurrentSession(prev => ({
@@ -227,7 +232,6 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
     }
 
     try {
-      // Υπολογισμός start_date και end_date από τις ημερομηνίες των ασκήσεων
       const testDates = currentSession.exercise_tests.map(et => et.test_date);
       const startDate = testDates.reduce((min, date) => date < min ? date : min);
       const endDate = testDates.reduce((max, date) => date > max ? date : max);
@@ -323,8 +327,8 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
   const resetForm = () => {
     setCurrentSession({
       athlete_id: selectedAthleteId,
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: new Date().toISOString().split('T')[0],
+      start_date: selectedDate,
+      end_date: selectedDate,
       notes: '',
       exercise_tests: []
     });
@@ -386,10 +390,10 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
               </Button>
             </div>
 
-            {currentSession.exercise_tests.map((exerciseTest, exerciseIndex) => (
-              <div key={exerciseIndex} className="mb-4 p-3 border rounded-none bg-gray-50">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex gap-4 flex-1">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {currentSession.exercise_tests.map((exerciseTest, exerciseIndex) => (
+                <div key={exerciseIndex} className="p-3 border rounded-none bg-gray-50">
+                  <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
                       <Label className="text-sm">Άσκηση {exerciseIndex + 1}</Label>
                       <Select 
@@ -408,79 +412,81 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="w-32">
-                      <Label className="text-sm">Ημερομηνία</Label>
-                      <Input
-                        type="date"
-                        value={exerciseTest.test_date}
-                        onChange={(e) => updateExerciseTest(exerciseIndex, 'test_date', e.target.value)}
-                        className="rounded-none h-8 text-sm"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 ml-2">
-                    <Button
-                      size="sm"
-                      onClick={() => addAttempt(exerciseIndex)}
-                      className="rounded-none h-8 text-xs"
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      Προσπάθεια
-                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => removeExerciseTest(exerciseIndex)}
-                      className="rounded-none h-8 text-xs"
+                      className="rounded-none h-8 w-8 p-0 ml-2"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
+
+                  <div className="mb-3">
+                    <Label className="text-sm">Ημερομηνία</Label>
+                    <Input
+                      type="date"
+                      value={exerciseTest.test_date}
+                      onChange={(e) => updateExerciseTest(exerciseIndex, 'test_date', e.target.value)}
+                      className="rounded-none h-8 text-sm"
+                    />
+                  </div>
+
+                  <div className="mb-2">
+                    <Button
+                      size="sm"
+                      onClick={() => addAttempt(exerciseIndex)}
+                      className="rounded-none h-7 text-xs w-full"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Προσπάθεια
+                    </Button>
+                  </div>
+
+                  {exerciseTest.attempts.map((attempt, attemptIndex) => (
+                    <div key={attemptIndex} className="flex items-center gap-1 mb-2 p-1 border rounded-none bg-white">
+                      <span className="text-xs font-medium w-6">#{attempt.attempt_number}</span>
+                      
+                      <Input
+                        type="number"
+                        step="0.5"
+                        placeholder="kg"
+                        value={attempt.weight_kg || ''}
+                        onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'weight_kg', parseFloat(e.target.value) || 0)}
+                        className="rounded-none text-xs h-6 w-12"
+                      />
+
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="m/s"
+                        value={attempt.velocity_ms || ''}
+                        onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'velocity_ms', parseFloat(e.target.value) || 0)}
+                        className="rounded-none text-xs h-6 w-12"
+                      />
+
+                      <Button
+                        size="sm"
+                        variant={attempt.is_1rm ? "default" : "outline"}
+                        onClick={() => markAs1RM(exerciseIndex, attemptIndex)}
+                        className="rounded-none text-xs px-1 h-6"
+                      >
+                        1RM
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => removeAttempt(exerciseIndex, attemptIndex)}
+                        className="rounded-none h-6 w-6 p-0"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-
-                {exerciseTest.attempts.map((attempt, attemptIndex) => (
-                  <div key={attemptIndex} className="flex items-center gap-2 mb-2 p-2 border rounded-none bg-white">
-                    <span className="min-w-[40px] text-xs font-medium">#{attempt.attempt_number}</span>
-                    
-                    <Input
-                      type="number"
-                      step="0.5"
-                      placeholder="kg"
-                      value={attempt.weight_kg || ''}
-                      onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'weight_kg', parseFloat(e.target.value) || 0)}
-                      className="rounded-none text-xs h-7 w-16"
-                    />
-
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="m/s"
-                      value={attempt.velocity_ms || ''}
-                      onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'velocity_ms', parseFloat(e.target.value) || 0)}
-                      className="rounded-none text-xs h-7 w-16"
-                    />
-
-                    <Button
-                      size="sm"
-                      variant={attempt.is_1rm ? "default" : "outline"}
-                      onClick={() => markAs1RM(exerciseIndex, attemptIndex)}
-                      className="rounded-none text-xs px-2 h-7"
-                    >
-                      1RM
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => removeAttempt(exerciseIndex, attemptIndex)}
-                      className="rounded-none h-7 w-7 p-0"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div className="flex gap-2">
