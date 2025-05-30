@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -184,9 +183,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     onOpenChange(false);
   };
 
-  const handleCategoryToggle = (categoryId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleCategoryClick = (categoryId: string) => {
     setSelectedCategories(prev => 
       prev.includes(categoryId) 
         ? prev.filter(id => id !== categoryId)
@@ -208,17 +205,13 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             return categoriesOfType.map(category => (
               <div 
                 key={category.id} 
-                className={`flex items-center p-3 rounded border cursor-pointer transition-colors ${
+                className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
                   selectedCategories.includes(category.id) 
                     ? 'bg-blue-50 border-blue-200' 
-                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                    : 'bg-gray-50 border-gray-200'
                 }`}
-                onClick={(e) => handleCategoryToggle(category.id, e)}
+                onClick={() => handleCategoryClick(category.id)}
               >
-                <Checkbox
-                  checked={selectedCategories.includes(category.id)}
-                  className="mr-3"
-                />
                 <span className="text-sm select-none font-medium">{category.name}</span>
               </div>
             ));
@@ -295,7 +288,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             </div>
 
             {showAddCategory && (
-              <div className="mb-6 p-4 border rounded bg-gray-50">
+              <div className="mb-6 p-4 border bg-gray-50">
                 <div className="space-y-3">
                   <Input
                     placeholder="Όνομα κατηγορίας"
@@ -361,23 +354,19 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
               const otherCategories = getOtherCategories();
               if (otherCategories.length > 0 && !loadingCategories) {
                 return (
-                  <div className="mt-6 p-4 border rounded bg-gray-50">
+                  <div className="mt-6 p-4 border bg-gray-50">
                     <h3 className="font-medium text-lg text-gray-900 mb-3">Άλλες Κατηγορίες</h3>
                     <div className="grid grid-cols-2 gap-2">
                       {otherCategories.map(category => (
                         <div 
                           key={category.id} 
-                          className={`flex items-center p-3 rounded border cursor-pointer transition-colors ${
+                          className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
                             selectedCategories.includes(category.id) 
                               ? 'bg-blue-50 border-blue-200' 
-                              : 'bg-white border-gray-200 hover:bg-gray-50'
+                              : 'bg-white border-gray-200'
                           }`}
-                          onClick={(e) => handleCategoryToggle(category.id, e)}
+                          onClick={() => handleCategoryClick(category.id)}
                         >
-                          <Checkbox
-                            checked={selectedCategories.includes(category.id)}
-                            className="mr-3"
-                          />
                           <span className="text-sm select-none font-medium">
                             {category.name} ({category.type})
                           </span>
@@ -392,7 +381,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
 
             {/* Show selected categories summary */}
             {selectedCategories.length > 0 && (
-              <div className="mt-4 p-3 bg-blue-50 rounded border">
+              <div className="mt-4 p-3 bg-blue-50 border">
                 <h4 className="font-medium text-sm text-blue-900 mb-2">
                   Επιλεγμένες Κατηγορίες ({selectedCategories.length})
                 </h4>
@@ -402,7 +391,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                     return category ? (
                       <span 
                         key={categoryId}
-                        className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                        className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1"
                       >
                         {category.name}
                       </span>

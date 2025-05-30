@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Edit2, Trash2, Video } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Video, Filter } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
@@ -22,12 +22,30 @@ interface Exercise {
   categories: { name: string; type: string }[];
 }
 
+interface FilterState {
+  bodyRegion: string;
+  movementType: string;
+  equipment: string;
+}
+
+const filterOptions = {
+  bodyRegion: ["", "upper body", "lower body", "total body"],
+  movementType: ["", "push", "pull"],
+  equipment: ["", "barbell", "dumbbell", "kettlebell", "medball", "band", "chains"]
+};
+
 const Exercises = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<FilterState>({
+    bodyRegion: "",
+    movementType: "",
+    equipment: ""
+  });
+  const [showFilters, setShowFilters] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
@@ -40,15 +58,39 @@ const Exercises = () => {
   }, [user]);
 
   useEffect(() => {
-    const filtered = exercises.filter(exercise =>
+    applyFilters();
+  }, [exercises, searchQuery, filters]);
+
+  const applyFilters = () => {
+    let filtered = exercises.filter(exercise =>
       exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       exercise.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       exercise.categories.some(cat => 
         cat.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     );
+
+    // Apply category filters
+    if (filters.bodyRegion) {
+      filtered = filtered.filter(exercise =>
+        exercise.categories.some(cat => cat.name === filters.bodyRegion)
+      );
+    }
+
+    if (filters.movementType) {
+      filtered = filtered.filter(exercise =>
+        exercise.categories.some(cat => cat.name === filters.movementType)
+      );
+    }
+
+    if (filters.equipment) {
+      filtered = filtered.filter(exercise =>
+        exercise.categories.some(cat => cat.name === filters.equipment)
+      );
+    }
+
     setFilteredExercises(filtered);
-  }, [exercises, searchQuery]);
+  };
 
   const fetchExercises = async () => {
     try {
@@ -119,6 +161,17 @@ const Exercises = () => {
     }
   };
 
+  const resetFilters = () => {
+    setFilters({
+      bodyRegion: "",
+      movementType: "",
+      equipment: ""
+    });
+    setSearchQuery("");
+  };
+
+  const activeFiltersCount = Object.values(filters).filter(value => value !== "").length + (searchQuery ? 1 : 0);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -157,16 +210,95 @@ const Exercises = () => {
         </nav>
 
         <div className="flex-1 p-6">
-          <div className="mb-6">
-            <div className="relative max-w-md">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Αναζήτηση ασκήσεων..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 rounded-none"
-              />
+          <div className="mb-6 space-y-4">
+            <div className="flex gap-4 items-center">
+              <div className="relative flex-1 max-w-md">
+                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Αναζήτηση ασκήσεων..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 rounded-none"
+                />
+              </div>
+              
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="rounded-none"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Φίλτρα {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+              </Button>
+
+              {activeFiltersCount > 0 && (
+                <Button
+                  variant="ghost"
+                  onClick={resetFilters}
+                  className="rounded-none text-sm"
+                >
+                  Καθαρισμός
+                </Button>
+              )}
             </div>
+
+            {showFilters && (
+              <div className="bg-white p-4 border rounded space-y-4">
+                <h3 className="font-medium text-gray-900">Φίλτρα Κατηγοριών</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Περιοχή Σώματος
+                    </label>
+                    <select
+                      value={filters.bodyRegion}
+                      onChange={(e) => setFilters(prev => ({ ...prev, bodyRegion: e.target.value }))}
+                      className="w-full p-2 border border-gray-300 rounded-none bg-white"
+                    >
+                      {filterOptions.bodyRegion.map(option => (
+                        <option key={option} value={option}>
+                          {option || "Όλες"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Τύπος Κίνησης
+                    </label>
+                    <select
+                      value={filters.movementType}
+                      onChange={(e) => setFilters(prev => ({ ...prev, movementType: e.target.value }))}
+                      className="w-full p-2 border border-gray-300 rounded-none bg-white"
+                    >
+                      {filterOptions.movementType.map(option => (
+                        <option key={option} value={option}>
+                          {option || "Όλες"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Εξοπλισμός
+                    </label>
+                    <select
+                      value={filters.equipment}
+                      onChange={(e) => setFilters(prev => ({ ...prev, equipment: e.target.value }))}
+                      className="w-full p-2 border border-gray-300 rounded-none bg-white"
+                    >
+                      {filterOptions.equipment.map(option => (
+                        <option key={option} value={option}>
+                          {option || "Όλες"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded shadow">
@@ -189,7 +321,7 @@ const Exercises = () => {
                   {filteredExercises.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                        {searchQuery ? 'Δεν βρέθηκαν ασκήσεις' : 'Δεν υπάρχουν ασκήσεις'}
+                        {searchQuery || activeFiltersCount > 0 ? 'Δεν βρέθηκαν ασκήσεις' : 'Δεν υπάρχουν ασκήσεις'}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -221,12 +353,12 @@ const Exercises = () => {
                                 <img 
                                   src={getVideoThumbnail(exercise.video_url)}
                                   alt="Video thumbnail"
-                                  className="w-16 h-12 object-cover rounded border cursor-pointer"
+                                  className="w-16 h-12 object-cover border cursor-pointer"
                                   onClick={() => window.open(exercise.video_url!, '_blank')}
                                 />
                               ) : (
                                 <div 
-                                  className="w-16 h-12 bg-gray-100 border rounded flex items-center justify-center cursor-pointer"
+                                  className="w-16 h-12 bg-gray-100 border flex items-center justify-center cursor-pointer"
                                   onClick={() => window.open(exercise.video_url!, '_blank')}
                                 >
                                   <Video className="h-4 w-4 text-gray-400" />
