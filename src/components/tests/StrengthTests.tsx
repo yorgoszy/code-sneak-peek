@@ -1,6 +1,10 @@
 
 import { StrengthTestSession } from "./StrengthTestSession";
 
-export const StrengthTests = () => {
-  return <StrengthTestSession />;
+interface StrengthTestsProps {
+  selectedAthleteId: string;
+}
+
+export const StrengthTests = ({ selectedAthleteId }: StrengthTestsProps) => {
+  return <StrengthTestSession selectedAthleteId={selectedAthleteId} />;
 };

@@ -4,15 +4,40 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnthropometricTests } from "@/components/tests/AnthropometricTests";
 import { FunctionalTests } from "@/components/tests/FunctionalTests";
 import { StrengthTests } from "@/components/tests/StrengthTests";
 import { EnduranceTests } from "@/components/tests/EnduranceTests";
 import { JumpTests } from "@/components/tests/JumpTests";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 const Tests = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [selectedAthleteId, setSelectedAthleteId] = useState<string>('');
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    const { data } = await supabase
+      .from('app_users')
+      .select('id, name, email')
+      .order('name');
+    setUsers(data || []);
+  };
 
   if (loading) {
     return (
@@ -45,35 +70,67 @@ const Tests = () => {
         </nav>
 
         <div className="flex-1 p-6">
-          <Tabs defaultValue="anthropometric" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 rounded-none">
-              <TabsTrigger value="anthropometric" className="rounded-none">Σωματομετρικά</TabsTrigger>
-              <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
-              <TabsTrigger value="strength" className="rounded-none">Δύναμη</TabsTrigger>
-              <TabsTrigger value="endurance" className="rounded-none">Αντοχή</TabsTrigger>
-              <TabsTrigger value="jumps" className="rounded-none">Άλματα</TabsTrigger>
-            </TabsList>
+          {/* Επιλογή Αθλητή */}
+          <Card className="rounded-none mb-6">
+            <CardHeader>
+              <CardTitle>Επιλογή Αθλητή</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="max-w-md">
+                <Label>Αθλητής</Label>
+                <Select value={selectedAthleteId} onValueChange={setSelectedAthleteId}>
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Επιλέξτε αθλητή για τα τεστ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
 
-            <TabsContent value="anthropometric" className="mt-6">
-              <AnthropometricTests />
-            </TabsContent>
+          {selectedAthleteId && (
+            <Tabs defaultValue="anthropometric" className="w-full">
+              <TabsList className="grid w-full grid-cols-5 rounded-none">
+                <TabsTrigger value="anthropometric" className="rounded-none">Σωματομετρικά</TabsTrigger>
+                <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
+                <TabsTrigger value="strength" className="rounded-none">Δύναμη</TabsTrigger>
+                <TabsTrigger value="endurance" className="rounded-none">Αντοχή</TabsTrigger>
+                <TabsTrigger value="jumps" className="rounded-none">Άλματα</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="functional" className="mt-6">
-              <FunctionalTests />
-            </TabsContent>
+              <TabsContent value="anthropometric" className="mt-6">
+                <AnthropometricTests />
+              </TabsContent>
 
-            <TabsContent value="strength" className="mt-6">
-              <StrengthTests />
-            </TabsContent>
+              <TabsContent value="functional" className="mt-6">
+                <FunctionalTests />
+              </TabsContent>
 
-            <TabsContent value="endurance" className="mt-6">
-              <EnduranceTests />
-            </TabsContent>
+              <TabsContent value="strength" className="mt-6">
+                <StrengthTests selectedAthleteId={selectedAthleteId} />
+              </TabsContent>
 
-            <TabsContent value="jumps" className="mt-6">
-              <JumpTests />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="endurance" className="mt-6">
+                <EnduranceTests />
+              </TabsContent>
+
+              <TabsContent value="jumps" className="mt-6">
+                <JumpTests />
+              </TabsContent>
+            </Tabs>
+          )}
+
+          {!selectedAthleteId && (
+            <div className="text-center py-12 text-gray-500">
+              <p>Παρακαλώ επιλέξτε αθλητή για να ξεκινήσετε τα τεστ</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
