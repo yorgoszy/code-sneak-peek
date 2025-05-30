@@ -10,6 +10,7 @@ export const AnthropometricTests = () => {
     weight: '',
     bodyFat: '',
     muscleMass: '',
+    visceralFat: '',
     chestCircumference: '',
     hipCircumference: '',
     gluteCircumference: '',
@@ -64,6 +65,18 @@ export const AnthropometricTests = () => {
               step="0.1"
               value={formData.muscleMass}
               onChange={(e) => handleInputChange('muscleMass', e.target.value)}
+              className="rounded-none"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="visceralFat">Σπλαχνικό Λίπος</Label>
+            <Input
+              id="visceralFat"
+              type="number"
+              step="0.1"
+              value={formData.visceralFat}
+              onChange={(e) => handleInputChange('visceralFat', e.target.value)}
               className="rounded-none"
             />
           </div>

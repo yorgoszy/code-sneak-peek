@@ -3,20 +3,105 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
+
+const postureOptions = ['Κύφωση', 'Λόρδωση', 'Πρηνισμός'];
+
+const squatOptions = [
+  'Πρηνισμός Πελμάτων Αριστερά',
+  'Πρηνισμός Πελμάτων Δεξιά',
+  'Έσω Στροφή Γονάτων Αριστερά',
+  'Έσω Στροφή Γονάτων Δεξιά',
+  'Έξω Στροφή Γονάτων Αριστερά',
+  'Έξω Στροφή Γονάτων Δεξιά',
+  'Ανύψωση Φτερνών Αριστερά',
+  'Ανύψωση Φτερνών Δεξιά',
+  'Μεταφορά Βάρους Αριστερά',
+  'Μεταφορά Βάρους Δεξιά',
+  'Εμπρός Κλίση του Κορμού',
+  'Υπερέκταση στην Σ.Σ.',
+  'Κυφωτική Θέση στη Σ.Σ.',
+  'Πτώση Χεριών'
+];
+
+const singleLegSquatOptions = [
+  'Ανύψωση Ισχίου Αριστερά',
+  'Ανύψωση Ισχίου Δεξιά',
+  'Πτώση Ισχίου Αριστερά',
+  'Πτώση Ισχίου Δεξιά',
+  'Έσω Στροφή Κορμού Αριστερά',
+  'Έσω Στροφή Κορμού Δεξιά',
+  'Έξω Στροφή Κορμού Αριστερά',
+  'Έξω Στροφή Κορμού Δεξιά'
+];
+
+const fmsTests = [
+  'Shoulder Mobility',
+  'Active Straight Leg Raise',
+  'Trunk Stability Push-Up',
+  'Rotary Stability',
+  'Inline Lunge',
+  'Hurdle Step',
+  'Deep Squat'
+];
 
 export const FunctionalTests = () => {
   const [formData, setFormData] = useState({
-    posture: '',
-    squats: '',
-    singleLegSquats: '',
-    fms: '',
+    posture: [] as string[],
+    squats: [] as string[],
+    singleLegSquats: [] as string[],
+    fms: {} as Record<string, number>,
     fcs: ''
   });
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handlePostureChange = (option: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      posture: checked 
+        ? [...prev.posture, option]
+        : prev.posture.filter(item => item !== option)
+    }));
+  };
+
+  const handleSquatChange = (option: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      squats: checked 
+        ? [...prev.squats, option]
+        : prev.squats.filter(item => item !== option)
+    }));
+  };
+
+  const handleSingleLegSquatChange = (option: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      singleLegSquats: checked 
+        ? [...prev.singleLegSquats, option]
+        : prev.singleLegSquats.filter(item => item !== option)
+    }));
+  };
+
+  const handleFmsClick = (test: string) => {
+    const currentScore = formData.fms[test] || 0;
+    const nextScore = currentScore === 3 ? 0 : currentScore + 1;
+    
+    setFormData(prev => ({
+      ...prev,
+      fms: {
+        ...prev.fms,
+        [test]: nextScore
+      }
+    }));
+  };
+
+  const calculateFmsTotal = () => {
+    return Object.values(formData.fms).reduce((sum, score) => sum + score, 0);
+  };
+
+  const getFmsScoreColor = () => {
+    const total = calculateFmsTotal();
+    return total >= 14 ? 'text-green-600' : 'text-red-600';
   };
 
   const handleSubmit = () => {
@@ -30,59 +115,100 @@ export const FunctionalTests = () => {
         <CardTitle>Τεστ Λειτουργικότητας</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-6">
+          {/* Στάση Σώματος */}
           <div>
-            <Label htmlFor="posture">Στάση Σώματος</Label>
-            <Textarea
-              id="posture"
-              value={formData.posture}
-              onChange={(e) => handleInputChange('posture', e.target.value)}
-              className="rounded-none resize-none"
-              rows={3}
-              placeholder="Περιγραφή στάσης σώματος..."
-            />
+            <Label className="text-base font-semibold">Στάση Σώματος</Label>
+            <div className="mt-2 space-y-2">
+              {postureOptions.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={option}
+                    checked={formData.posture.includes(option)}
+                    onCheckedChange={(checked) => handlePostureChange(option, checked as boolean)}
+                    className="rounded-none"
+                  />
+                  <Label htmlFor={option} className="cursor-pointer">
+                    {option}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
 
+          {/* Καθίσματα */}
           <div>
-            <Label htmlFor="squats">Καθίσματα (αριθμός)</Label>
-            <Input
-              id="squats"
-              type="number"
-              value={formData.squats}
-              onChange={(e) => handleInputChange('squats', e.target.value)}
-              className="rounded-none"
-            />
+            <Label className="text-base font-semibold">Καθίσματα</Label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {squatOptions.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={option}
+                    checked={formData.squats.includes(option)}
+                    onCheckedChange={(checked) => handleSquatChange(option, checked as boolean)}
+                    className="rounded-none"
+                  />
+                  <Label htmlFor={option} className="cursor-pointer text-sm">
+                    {option}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
 
+          {/* Καθίσματα με ένα πόδι */}
           <div>
-            <Label htmlFor="singleLegSquats">Καθίσματα με ένα πόδι (αριθμός)</Label>
-            <Input
-              id="singleLegSquats"
-              type="number"
-              value={formData.singleLegSquats}
-              onChange={(e) => handleInputChange('singleLegSquats', e.target.value)}
-              className="rounded-none"
-            />
+            <Label className="text-base font-semibold">Καθίσματα με ένα πόδι</Label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {singleLegSquatOptions.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={option}
+                    checked={formData.singleLegSquats.includes(option)}
+                    onCheckedChange={(checked) => handleSingleLegSquatChange(option, checked as boolean)}
+                    className="rounded-none"
+                  />
+                  <Label htmlFor={option} className="cursor-pointer text-sm">
+                    {option}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
 
+          {/* FMS */}
           <div>
-            <Label htmlFor="fms">FMS (σκορ)</Label>
-            <Input
-              id="fms"
-              type="number"
-              value={formData.fms}
-              onChange={(e) => handleInputChange('fms', e.target.value)}
-              className="rounded-none"
-            />
+            <Label className="text-base font-semibold">FMS</Label>
+            <div className="mt-2 space-y-2">
+              {fmsTests.map((test) => (
+                <div 
+                  key={test} 
+                  className="flex items-center justify-between p-3 border border-gray-200 cursor-pointer hover:bg-gray-50 rounded-none"
+                  onClick={() => handleFmsClick(test)}
+                >
+                  <span>{test}</span>
+                  <span className="font-bold text-lg">
+                    {formData.fms[test] || 0}
+                  </span>
+                </div>
+              ))}
+              <div className="flex justify-between items-center p-3 bg-gray-100 font-bold">
+                <span>Συνολικό Σκορ:</span>
+                <span className={`text-lg ${getFmsScoreColor()}`}>
+                  {calculateFmsTotal()}
+                </span>
+              </div>
+            </div>
           </div>
 
+          {/* FCS */}
           <div>
             <Label htmlFor="fcs">FCS (σκορ)</Label>
             <Input
               id="fcs"
               type="number"
               value={formData.fcs}
-              onChange={(e) => handleInputChange('fcs', e.target.value)}
+              onChange={(e) => setFormData(prev => ({ ...prev, fcs: e.target.value }))}
               className="rounded-none"
             />
           </div>

@@ -11,7 +11,8 @@ export const JumpTests = () => {
     counterMovementJump: '',
     depthJump: '',
     broadJump: '',
-    tripleJump: ''
+    tripleJumpLeft: '',
+    tripleJumpRight: ''
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -79,13 +80,25 @@ export const JumpTests = () => {
           </div>
 
           <div>
-            <Label htmlFor="tripleJump">Triple Jump (cm)</Label>
+            <Label htmlFor="tripleJumpLeft">Triple Jump Αριστερό (cm)</Label>
             <Input
-              id="tripleJump"
+              id="tripleJumpLeft"
               type="number"
               step="0.1"
-              value={formData.tripleJump}
-              onChange={(e) => handleInputChange('tripleJump', e.target.value)}
+              value={formData.tripleJumpLeft}
+              onChange={(e) => handleInputChange('tripleJumpLeft', e.target.value)}
+              className="rounded-none"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="tripleJumpRight">Triple Jump Δεξί (cm)</Label>
+            <Input
+              id="tripleJumpRight"
+              type="number"
+              step="0.1"
+              value={formData.tripleJumpRight}
+              onChange={(e) => handleInputChange('tripleJumpRight', e.target.value)}
               className="rounded-none"
             />
           </div>
