@@ -1,20 +1,51 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-const functionalFields = [
-  { key: 'fmsScore', label: 'FMS Score', type: 'number', placeholder: 'Βαθμολογία' },
-  { key: 'sitAndReach', label: 'Sit & Reach', type: 'number', step: '0.1', placeholder: 'cm' },
-  { key: 'shoulderMobilityLeft', label: 'Κινητικότητα Ώμου Αριστερό', type: 'number', step: '0.1', placeholder: 'cm' },
-  { key: 'shoulderMobilityRight', label: 'Κινητικότητα Ώμου Δεξί', type: 'number', step: '0.1', placeholder: 'cm' },
-  { key: 'flamingoBalance', label: 'Flamingo Balance', type: 'number', placeholder: 'δευτερόλεπτα' }
+const fmsExercises = [
+  'Shoulder Mobility',
+  'Active Straight Leg Raise', 
+  'Trunk Stability Push-Up',
+  'Rotary Stability',
+  'Inline Lunge',
+  'Hurdle Step',
+  'Deep Squat'
+];
+
+const postureOptions = ['κύφωση', 'λόρδωση', 'σκολίωση'];
+
+const squatOptions = [
+  'ΠΡΗΝΙΣΜΟΣ ΠΕΛΜΑΤΩΝ ΑΡΙΣΤΕΡΑ',
+  'ΠΡΗΝΙΣΜΟΣ ΠΕΛΜΑΤΩΝ ΔΕΞΙΑ',
+  'ΕΣΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ ΑΡΙΣΤΕΡΑ',
+  'ΕΣΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ ΔΕΞΙΑ',
+  'ΕΞΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ ΑΡΙΣΤΕΡΑ',
+  'ΕΞΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ ΔΕΞΙΑ',
+  'ΑΝΥΨΩΣΗ ΦΤΕΡΝΩΝ ΑΡΙΣΤΕΡΑ',
+  'ΑΝΥΨΩΣΗ ΦΤΕΡΝΩΝ ΔΕΞΙΑ',
+  'ΜΕΤΑΦΟΡΑ ΒΑΡΟΥΣ ΑΡΙΣΤΕΡΑ',
+  'ΜΕΤΑΦΟΡΑ ΒΑΡΟΥΣ ΔΕΞΙΑ',
+  'ΕΜΠΡΟΣ ΚΛΙΣΗ ΤΟΥ ΚΟΡΜΟΥ',
+  'ΥΠΕΡΕΚΤΑΣΗ ΣΤΗΝ Σ.Σ.',
+  'ΚΥΦΩΤΙΚΗ ΘΕΣΗ ΣΤΗ Σ.Σ.',
+  'ΠΤΩΣΗ ΧΕΡΙΩΝ'
+];
+
+const singleLegSquatOptions = [
+  'ΑΝΗΨΩΣΗ ΙΣΧΙΟΥ ΑΡΙΣΤΕΡΑ',
+  'ΑΝΗΨΩΣΗ ΙΣΧΙΟΥ ΔΕΞΙΑ',
+  'ΠΤΩΣΗ ΙΣΧΙΟΥ ΑΡΙΣΤΕΡΑ',
+  'ΠΤΩΣΗ ΙΣΧΙΟΥ ΔΕΞΙΑ',
+  'ΕΣΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ ΑΡΙΣΤΕΡΑ',
+  'ΕΣΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ ΔΕΞΙΑ',
+  'ΕΞΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ ΑΡΙΣΤΕΡΑ',
+  'ΕΞΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ ΔΕΞΙΑ'
 ];
 
 interface FunctionalTestsProps {
@@ -24,19 +55,29 @@ interface FunctionalTestsProps {
 
 export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalTestsProps) => {
   const { user } = useAuth();
-  const [formData, setFormData] = useState({
-    fmsScore: '',
-    sitAndReach: '',
-    shoulderMobilityLeft: '',
-    shoulderMobilityRight: '',
-    flamingoBalance: '',
-    postureAssessment: '',
-    musclesNeedStretching: '',
-    musclesNeedStrengthening: ''
-  });
+  const [fmsScores, setFmsScores] = useState<Record<string, number>>({});
+  const [selectedPosture, setSelectedPosture] = useState<string[]>([]);
+  const [selectedSquatIssues, setSelectedSquatIssues] = useState<string[]>([]);
+  const [selectedSingleLegIssues, setSelectedSingleLegIssues] = useState<string[]>([]);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleFmsClick = (exercise: string) => {
+    setFmsScores(prev => {
+      const currentScore = prev[exercise] || 0;
+      const nextScore = currentScore === 3 ? 0 : currentScore + 1;
+      return { ...prev, [exercise]: nextScore };
+    });
+  };
+
+  const toggleSelection = (item: string, selectedItems: string[], setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>) => {
+    if (selectedItems.includes(item)) {
+      setSelectedItems(prev => prev.filter(i => i !== item));
+    } else {
+      setSelectedItems(prev => [...prev, item]);
+    }
+  };
+
+  const getFmsTotal = () => {
+    return fmsExercises.reduce((total, exercise) => total + (fmsScores[exercise] || 0), 0);
   };
 
   const handleSubmit = async () => {
@@ -62,14 +103,11 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
       // Αποθήκευση λειτουργικών δεδομένων
       const functionalData = {
         test_session_id: session.id,
-        fms_score: formData.fmsScore ? parseInt(formData.fmsScore) : null,
-        sit_and_reach: formData.sitAndReach ? parseFloat(formData.sitAndReach) : null,
-        shoulder_mobility_left: formData.shoulderMobilityLeft ? parseFloat(formData.shoulderMobilityLeft) : null,
-        shoulder_mobility_right: formData.shoulderMobilityRight ? parseFloat(formData.shoulderMobilityRight) : null,
-        flamingo_balance: formData.flamingoBalance ? parseInt(formData.flamingoBalance) : null,
-        posture_assessment: formData.postureAssessment || null,
-        muscles_need_stretching: formData.musclesNeedStretching ? formData.musclesNeedStretching.split(',').map(m => m.trim()) : null,
-        muscles_need_strengthening: formData.musclesNeedStrengthening ? formData.musclesNeedStrengthening.split(',').map(m => m.trim()) : null
+        fms_score: getFmsTotal(),
+        fms_detailed_scores: fmsScores,
+        posture_issues: selectedPosture,
+        squat_issues: selectedSquatIssues,
+        single_leg_squat_issues: selectedSingleLegIssues
       };
 
       const { error: dataError } = await supabase
@@ -80,11 +118,10 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
 
       // Δημιουργία summary για γραφήματα
       const chartData = {
-        fmsScore: formData.fmsScore || 0,
-        musclesStretching: formData.musclesNeedStretching ? formData.musclesNeedStretching.split(',').length : 0,
-        musclesStrengthening: formData.musclesNeedStrengthening ? formData.musclesNeedStrengthening.split(',').length : 0,
-        sitAndReach: formData.sitAndReach || 0,
-        shoulderMobility: (parseFloat(formData.shoulderMobilityLeft || '0') + parseFloat(formData.shoulderMobilityRight || '0')) / 2
+        fmsScore: getFmsTotal(),
+        postureIssuesCount: selectedPosture.length,
+        squatIssuesCount: selectedSquatIssues.length,
+        singleLegIssuesCount: selectedSingleLegIssues.length
       };
 
       await supabase
@@ -99,16 +136,10 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
       toast.success("Τα λειτουργικά δεδομένα αποθηκεύτηκαν επιτυχώς!");
       
       // Reset form
-      setFormData({
-        fmsScore: '',
-        sitAndReach: '',
-        shoulderMobilityLeft: '',
-        shoulderMobilityRight: '',
-        flamingoBalance: '',
-        postureAssessment: '',
-        musclesNeedStretching: '',
-        musclesNeedStrengthening: ''
-      });
+      setFmsScores({});
+      setSelectedPosture([]);
+      setSelectedSquatIssues([]);
+      setSelectedSingleLegIssues([]);
 
     } catch (error) {
       console.error('Error saving functional data:', error);
@@ -116,73 +147,129 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
     }
   };
 
+  const fmsTotal = getFmsTotal();
+
   return (
     <div className="space-y-6">
-      {/* Μετρήσεις */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {functionalFields.map((field) => (
-          <Card key={field.key} className="rounded-none">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">{field.label}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <Input
-                type={field.type}
-                step={field.step}
-                placeholder={field.placeholder}
-                value={formData[field.key as keyof typeof formData]}
-                onChange={(e) => handleInputChange(field.key, e.target.value)}
-                className="rounded-none"
-              />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Στάση Σώματος */}
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle>Στάση Σώματος</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            {postureOptions.map((option) => (
+              <div
+                key={option}
+                onClick={() => toggleSelection(option, selectedPosture, setSelectedPosture)}
+                className={cn(
+                  "p-3 border cursor-pointer text-center text-sm transition-colors",
+                  selectedPosture.includes(option)
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white border-gray-300 hover:bg-gray-50"
+                )}
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Αξιολογήσεις */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="text-sm">Αξιολόγηση Στάσης</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              placeholder="Περιγραφή αξιολόγησης στάσης..."
-              value={formData.postureAssessment}
-              onChange={(e) => handleInputChange('postureAssessment', e.target.value)}
-              className="rounded-none"
-            />
-          </CardContent>
-        </Card>
+      {/* Καθήματα */}
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle>Καθήματα</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {squatOptions.map((option) => (
+              <div
+                key={option}
+                onClick={() => toggleSelection(option, selectedSquatIssues, setSelectedSquatIssues)}
+                className={cn(
+                  "p-2 border cursor-pointer text-center text-xs transition-colors",
+                  selectedSquatIssues.includes(option)
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white border-gray-300 hover:bg-gray-50"
+                )}
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="text-sm">Μύες που Χρειάζονται Διάταση</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              placeholder="π.χ. Δικέφαλος, Τετρακέφαλος (χωρισμένα με κόμμα)"
-              value={formData.musclesNeedStretching}
-              onChange={(e) => handleInputChange('musclesNeedStretching', e.target.value)}
-              className="rounded-none"
-            />
-          </CardContent>
-        </Card>
+      {/* Μονοποδικά Καθήματα */}
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle>Μονοποδικά Καθήματα</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+            {singleLegSquatOptions.map((option) => (
+              <div
+                key={option}
+                onClick={() => toggleSelection(option, selectedSingleLegIssues, setSelectedSingleLegIssues)}
+                className={cn(
+                  "p-2 border cursor-pointer text-center text-xs transition-colors",
+                  selectedSingleLegIssues.includes(option)
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white border-gray-300 hover:bg-gray-50"
+                )}
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="text-sm">Μύες που Χρειάζονται Ενδυνάμωση</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              placeholder="π.χ. Γλουτιαίοι, Κοιλιακοί (χωρισμένα με κόμμα)"
-              value={formData.musclesNeedStrengthening}
-              onChange={(e) => handleInputChange('musclesNeedStrengthening', e.target.value)}
-              className="rounded-none"
-            />
-          </CardContent>
-        </Card>
-      </div>
+      {/* FMS */}
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            FMS 
+            <span className={cn(
+              "text-lg font-bold px-3 py-1 rounded",
+              fmsTotal < 14 ? "bg-red-500 text-white" : "bg-green-500 text-white"
+            )}>
+              Σκορ: {fmsTotal}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {fmsExercises.map((exercise) => (
+              <div
+                key={exercise}
+                onClick={() => handleFmsClick(exercise)}
+                className="p-3 border cursor-pointer text-center transition-colors hover:bg-gray-50"
+              >
+                <div className="font-medium text-sm mb-2">{exercise}</div>
+                <div className="flex justify-center space-x-1">
+                  {[0, 1, 2, 3].map((score) => (
+                    <div
+                      key={score}
+                      className={cn(
+                        "w-8 h-8 rounded border flex items-center justify-center text-sm font-bold",
+                        fmsScores[exercise] === score
+                          ? score === 0 
+                            ? "bg-red-500 text-white" 
+                            : "bg-blue-500 text-white"
+                          : "bg-gray-100 text-gray-400"
+                      )}
+                    >
+                      {score}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Κουμπί Αποθήκευσης */}
       <Card className="rounded-none">
