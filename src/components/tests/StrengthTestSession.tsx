@@ -19,6 +19,7 @@ interface Exercise {
 interface ExerciseTest {
   id?: string;
   exercise_id: string;
+  test_date: string;
   attempts: Attempt[];
 }
 
@@ -33,7 +34,8 @@ interface Attempt {
 interface StrengthSession {
   id?: string;
   athlete_id: string;
-  test_date: string;
+  start_date: string;
+  end_date: string;
   notes: string;
   exercise_tests: ExerciseTest[];
 }
@@ -56,7 +58,8 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [currentSession, setCurrentSession] = useState<StrengthSession>({
     athlete_id: selectedAthleteId,
-    test_date: new Date().toISOString().split('T')[0],
+    start_date: new Date().toISOString().split('T')[0],
+    end_date: new Date().toISOString().split('T')[0],
     notes: '',
     exercise_tests: []
   });
@@ -100,7 +103,6 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
             .eq('test_session_id', session.id)
             .order('exercise_id, attempt_number');
 
-          // Ομαδοποίηση προσπαθειών ανά άσκηση
           const exerciseTests: any[] = [];
           const exerciseMap = new Map();
 
@@ -110,6 +112,7 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
               exerciseMap.set(exerciseId, {
                 exercise_id: exerciseId,
                 exercise_name: attempt.exercises?.name,
+                test_date: session.test_date,
                 attempts: []
               });
               exerciseTests.push(exerciseMap.get(exerciseId));
@@ -119,6 +122,8 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
 
           return {
             ...session,
+            start_date: session.test_date,
+            end_date: session.test_date,
             exercise_tests: exerciseTests
           };
         })
@@ -130,6 +135,7 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
   const addExerciseTest = () => {
     const newExerciseTest: ExerciseTest = {
       exercise_id: '',
+      test_date: new Date().toISOString().split('T')[0],
       attempts: []
     };
     setCurrentSession(prev => ({
@@ -209,7 +215,6 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
       return;
     }
 
-    // Έλεγχος ότι όλες οι ασκήσεις έχουν επιλεγεί και έχουν προσπάθειες
     for (const exerciseTest of currentSession.exercise_tests) {
       if (!exerciseTest.exercise_id || exerciseTest.attempts.length === 0) {
         toast({
@@ -222,22 +227,25 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
     }
 
     try {
+      // Υπολογισμός start_date και end_date από τις ημερομηνίες των ασκήσεων
+      const testDates = currentSession.exercise_tests.map(et => et.test_date);
+      const startDate = testDates.reduce((min, date) => date < min ? date : min);
+      const endDate = testDates.reduce((max, date) => date > max ? date : max);
+
       let sessionId = currentSession.id;
 
       if (editingSessionId) {
-        // Ενημέρωση υπάρχουσας συνεδρίας
         const { error: updateError } = await supabase
           .from('strength_test_sessions')
           .update({
             athlete_id: currentSession.athlete_id,
-            test_date: currentSession.test_date,
+            test_date: startDate,
             notes: currentSession.notes
           })
           .eq('id', editingSessionId);
 
         if (updateError) throw updateError;
 
-        // Διαγραφή υπαρχουσών προσπαθειών
         await supabase
           .from('strength_test_attempts')
           .delete()
@@ -245,12 +253,11 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
 
         sessionId = editingSessionId;
       } else {
-        // Δημιουργία νέας συνεδρίας
         const { data: sessionData, error: sessionError } = await supabase
           .from('strength_test_sessions')
           .insert({
             athlete_id: currentSession.athlete_id,
-            test_date: currentSession.test_date,
+            test_date: startDate,
             notes: currentSession.notes
           })
           .select()
@@ -260,7 +267,6 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
         sessionId = sessionData.id;
       }
 
-      // Εισαγωγή όλων των προσπαθειών
       const allAttempts: any[] = [];
       currentSession.exercise_tests.forEach(exerciseTest => {
         exerciseTest.attempts.forEach(attempt => {
@@ -302,10 +308,12 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
     setCurrentSession({
       id: session.id,
       athlete_id: session.athlete_id,
-      test_date: session.test_date,
+      start_date: session.start_date,
+      end_date: session.end_date,
       notes: session.notes || '',
       exercise_tests: session.exercise_tests.map(et => ({
         exercise_id: et.exercise_id,
+        test_date: et.test_date || session.start_date,
         attempts: et.attempts
       }))
     });
@@ -315,7 +323,8 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
   const resetForm = () => {
     setCurrentSession({
       athlete_id: selectedAthleteId,
-      test_date: new Date().toISOString().split('T')[0],
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: new Date().toISOString().split('T')[0],
       notes: '',
       exercise_tests: []
     });
@@ -349,7 +358,6 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
 
   return (
     <div className="space-y-6">
-      {/* Φόρμα Νέου/Επεξεργασίας Τεστ */}
       <Card className="rounded-none">
         <CardHeader>
           <CardTitle>
@@ -358,15 +366,6 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Ημερομηνία</Label>
-              <Input
-                type="date"
-                value={currentSession.test_date}
-                onChange={(e) => setCurrentSession(prev => ({...prev, test_date: e.target.value}))}
-                className="rounded-none"
-              />
-            </div>
             <div>
               <Label>Σημειώσεις</Label>
               <Textarea
@@ -378,7 +377,6 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
             </div>
           </div>
 
-          {/* Ασκήσεις και Προσπάθειες */}
           <div>
             <div className="flex justify-between items-center mb-3">
               <Label>Ασκήσεις Τεστ</Label>
@@ -389,16 +387,16 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
             </div>
 
             {currentSession.exercise_tests.map((exerciseTest, exerciseIndex) => (
-              <Card key={exerciseIndex} className="mb-4 rounded-none">
-                <CardContent className="pt-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1 mr-4">
-                      <Label>Άσκηση {exerciseIndex + 1}</Label>
+              <div key={exerciseIndex} className="mb-4 p-3 border rounded-none bg-gray-50">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex gap-4 flex-1">
+                    <div className="flex-1">
+                      <Label className="text-sm">Άσκηση {exerciseIndex + 1}</Label>
                       <Select 
                         value={exerciseTest.exercise_id} 
                         onValueChange={(value) => updateExerciseTest(exerciseIndex, 'exercise_id', value)}
                       >
-                        <SelectTrigger className="rounded-none">
+                        <SelectTrigger className="rounded-none h-8 text-sm">
                           <SelectValue placeholder="Επιλέξτε άσκηση" />
                         </SelectTrigger>
                         <SelectContent>
@@ -410,73 +408,78 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => addAttempt(exerciseIndex)}
-                        className="rounded-none"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Προσπάθεια
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => removeExerciseTest(exerciseIndex)}
-                        className="rounded-none"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                    <div className="w-32">
+                      <Label className="text-sm">Ημερομηνία</Label>
+                      <Input
+                        type="date"
+                        value={exerciseTest.test_date}
+                        onChange={(e) => updateExerciseTest(exerciseIndex, 'test_date', e.target.value)}
+                        className="rounded-none h-8 text-sm"
+                      />
                     </div>
                   </div>
+                  <div className="flex gap-2 ml-2">
+                    <Button
+                      size="sm"
+                      onClick={() => addAttempt(exerciseIndex)}
+                      className="rounded-none h-8 text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Προσπάθεια
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => removeExerciseTest(exerciseIndex)}
+                      className="rounded-none h-8 text-xs"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
 
-                  {exerciseTest.attempts.map((attempt, attemptIndex) => (
-                    <div key={attemptIndex} className="flex items-center gap-2 mb-2 p-2 border rounded">
-                      <span className="min-w-[80px] text-sm">#{attempt.attempt_number}</span>
-                      
-                      <div className="flex-1">
-                        <Input
-                          type="number"
-                          step="0.5"
-                          placeholder="Κιλά (kg)"
-                          value={attempt.weight_kg || ''}
-                          onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'weight_kg', parseFloat(e.target.value) || 0)}
-                          className="rounded-none text-sm h-8"
-                        />
-                      </div>
+                {exerciseTest.attempts.map((attempt, attemptIndex) => (
+                  <div key={attemptIndex} className="flex items-center gap-2 mb-2 p-2 border rounded-none bg-white">
+                    <span className="min-w-[40px] text-xs font-medium">#{attempt.attempt_number}</span>
+                    
+                    <Input
+                      type="number"
+                      step="0.5"
+                      placeholder="kg"
+                      value={attempt.weight_kg || ''}
+                      onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'weight_kg', parseFloat(e.target.value) || 0)}
+                      className="rounded-none text-xs h-7 w-16"
+                    />
 
-                      <div className="flex-1">
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ταχύτητα (m/s)"
-                          value={attempt.velocity_ms || ''}
-                          onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'velocity_ms', parseFloat(e.target.value) || 0)}
-                          className="rounded-none text-sm h-8"
-                        />
-                      </div>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="m/s"
+                      value={attempt.velocity_ms || ''}
+                      onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'velocity_ms', parseFloat(e.target.value) || 0)}
+                      className="rounded-none text-xs h-7 w-16"
+                    />
 
-                      <Button
-                        size="sm"
-                        variant={attempt.is_1rm ? "default" : "outline"}
-                        onClick={() => markAs1RM(exerciseIndex, attemptIndex)}
-                        className="rounded-none text-xs px-2"
-                      >
-                        1RM
-                      </Button>
+                    <Button
+                      size="sm"
+                      variant={attempt.is_1rm ? "default" : "outline"}
+                      onClick={() => markAs1RM(exerciseIndex, attemptIndex)}
+                      className="rounded-none text-xs px-2 h-7"
+                    >
+                      1RM
+                    </Button>
 
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => removeAttempt(exerciseIndex, attemptIndex)}
-                        className="rounded-none"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => removeAttempt(exerciseIndex, attemptIndex)}
+                      className="rounded-none h-7 w-7 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             ))}
           </div>
 
@@ -493,7 +496,6 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
         </CardContent>
       </Card>
 
-      {/* Λίστα Υπαρχόντων Τεστ */}
       <Card className="rounded-none">
         <CardHeader>
           <CardTitle>Υπάρχοντα Τεστ Δύναμης</CardTitle>
@@ -506,11 +508,14 @@ export const StrengthTestSession = ({ selectedAthleteId }: StrengthTestSessionPr
           ) : (
             <div className="space-y-3">
               {sessions.map((session) => (
-                <div key={session.id} className="border rounded p-3">
+                <div key={session.id} className="border rounded-none p-3">
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-medium">
-                        Τεστ Δύναμης - {new Date(session.test_date).toLocaleDateString('el-GR')}
+                        Τεστ Δύναμης - {new Date(session.start_date).toLocaleDateString('el-GR')}
+                        {session.start_date !== session.end_date && 
+                          ` έως ${new Date(session.end_date).toLocaleDateString('el-GR')}`
+                        }
                       </h4>
                       <p className="text-sm text-gray-600">
                         Ασκήσεις: {session.exercise_tests.length}
