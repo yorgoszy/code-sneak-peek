@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Edit2, Trash2, Video, Filter } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Video, Filter, X } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
@@ -34,7 +33,7 @@ const Exercises = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -52,7 +51,7 @@ const Exercises = () => {
 
   useEffect(() => {
     applyFilters();
-  }, [exercises, searchQuery, selectedCategory]);
+  }, [exercises, searchQuery, selectedCategories]);
 
   const fetchCategories = async () => {
     try {
@@ -73,7 +72,7 @@ const Exercises = () => {
   };
 
   const applyFilters = () => {
-    console.log('Applying filters:', { searchQuery, selectedCategory });
+    console.log('Applying filters:', { searchQuery, selectedCategories });
     console.log('Total exercises:', exercises.length);
     
     let filtered = exercises.filter(exercise => {
@@ -89,12 +88,14 @@ const Exercises = () => {
     console.log('After search filter:', filtered.length);
 
     // Apply category filter
-    if (selectedCategory) {
+    if (selectedCategories.length > 0) {
       const beforeFilter = filtered.length;
       filtered = filtered.filter(exercise =>
-        exercise.categories.some(cat => cat.name === selectedCategory)
+        selectedCategories.some(selectedCategory => 
+          exercise.categories.some(cat => cat.name === selectedCategory)
+        )
       );
-      console.log(`After category filter (${selectedCategory}):`, filtered.length, 'from', beforeFilter);
+      console.log(`After category filter (${selectedCategories.join(', ')}):`, filtered.length, 'from', beforeFilter);
     }
 
     console.log('Final filtered exercises:', filtered.length);
@@ -172,12 +173,20 @@ const Exercises = () => {
     }
   };
 
+  const handleCategoryToggle = (categoryName: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(categoryName) 
+        ? prev.filter(cat => cat !== categoryName)
+        : [...prev, categoryName]
+    );
+  };
+
   const resetFilters = () => {
-    setSelectedCategory("");
+    setSelectedCategories([]);
     setSearchQuery("");
   };
 
-  const activeFiltersCount = (selectedCategory ? 1 : 0) + (searchQuery ? 1 : 0);
+  const activeFiltersCount = selectedCategories.length + (searchQuery ? 1 : 0);
 
   if (loading) {
     return (
@@ -249,34 +258,53 @@ const Exercises = () => {
               )}
             </div>
 
+            {/* Selected categories display */}
+            {selectedCategories.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedCategories.map(category => (
+                  <Badge 
+                    key={category} 
+                    variant="secondary" 
+                    className="cursor-pointer"
+                    onClick={() => handleCategoryToggle(category)}
+                  >
+                    {category}
+                    <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                ))}
+              </div>
+            )}
+
             {showFilters && (
               <div className="bg-white p-4 border rounded space-y-4">
                 <h3 className="font-medium text-gray-900">Φίλτρα Κατηγοριών</h3>
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Κατηγορία
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Επιλογή Κατηγοριών (πολλαπλή επιλογή)
                     </label>
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => {
-                        console.log('Category filter changed to:', e.target.value);
-                        setSelectedCategory(e.target.value);
-                      }}
-                      className="w-full p-2 border border-gray-300 rounded-none bg-white"
-                      disabled={loadingCategories}
-                    >
-                      <option value="">Όλες οι κατηγορίες</option>
-                      {categories
-                        .filter(cat => cat.name !== "ζορ")  // Filter out "ζορ" category
-                        .map(category => (
-                          <option key={category.id} value={category.name}>
-                            {category.name}
-                          </option>
-                        ))}
-                    </select>
-                    {loadingCategories && (
-                      <p className="text-xs text-gray-500 mt-1">Φόρτωση κατηγοριών...</p>
+                    {loadingCategories ? (
+                      <p className="text-xs text-gray-500">Φόρτωση κατηγοριών...</p>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-2">
+                        {categories
+                          .filter(cat => cat.name !== "ζορ")
+                          .map(category => (
+                            <div 
+                              key={category.id} 
+                              className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                                selectedCategories.includes(category.name) 
+                                  ? 'bg-blue-50 border-blue-200' 
+                                  : 'bg-white border-gray-200'
+                              }`}
+                              onClick={() => handleCategoryToggle(category.name)}
+                            >
+                              <span className="text-sm select-none font-medium">
+                                {category.name}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
                     )}
                   </div>
                 </div>
