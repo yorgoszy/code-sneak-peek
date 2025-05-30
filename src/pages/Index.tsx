@@ -1,293 +1,1084 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Menu, X, User } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Menu, X, User, Globe, ChevronLeft, ChevronRight, MapPin, Phone, Mail, Facebook, Instagram, Youtube } from "lucide-react";
+import { useForm } from "react-hook-form";
 
 const Index = () => {
-  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentProgram, setCurrentProgram] = useState(0);
+  const [activeAboutSection, setActiveAboutSection] = useState(0);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [language, setLanguage] = useState<'el' | 'en'>('el');
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      message: ""
+    }
+  });
+
+  const onSubmit = (data: any) => {
+    console.log(data);
+    // Handle form submission
+  };
+
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'el' ? 'en' : 'el');
+  };
+
+  const programs = [
+    {
+      id: "01",
+      title: "Εκμάθηση Κίνησης",
+      description: "Εισαγωγικές τεχνικές κίνησης",
+      image: "/lovable-uploads/12fd681e-290f-4ce8-a035-32501adf2034.png"
+    },
+    {
+      id: "02", 
+      title: "Ανάπτυξη Κίνησης",
+      description: "Δημιουργία αθλητικών βάσεων για όλα τα αθλήματα",
+      image: "/lovable-uploads/9d74fc2b-b9ee-4272-9a0e-9f5a3d7d29f4.png"
+    },
+    {
+      id: "03",
+      title: "Δύναμη Νέων", 
+      description: "Προπτωμένες τεχνικές και φυσική κατάσταση",
+      image: "/lovable-uploads/29ceb456-3fe1-4f11-82f7-f66e683312bb.png"
+    },
+    {
+      id: "04",
+      title: "Φυσική Κατάσταση",
+      description: "Εξατομικευμένες λύσεις φυσικής κατάστασης για όλα τα επίπεδα",
+      image: "/lovable-uploads/100152b9-0727-459b-b2b6-e6614fe8c730.png"
+    },
+    {
+      id: "05",
+      title: "Muay Thai",
+      description: "Μέθοδοι Προπόνησης Νέων Γενιές",
+      image: "/lovable-uploads/59a5eb9c-a6d9-4195-bc4c-bee6f5ce513c.png"
+    },
+    {
+      id: "06",
+      title: "Ατομική Προπόνηση",
+      description: "Εξατομικευμένη καθοδήγηση για μέγιστα αποτελέσματα",
+      image: "/lovable-uploads/85436038-48ee-42f9-a2e6-d13a75dd8d52.png"
+    },
+    {
+      id: "07",
+      title: "Αθλητική Απόδοση",
+      description: "Στρατηγικές Ελίτ Δύναμης & Φυσικής Κατάστασης",
+      image: "/lovable-uploads/77591c7f-20d5-4ab2-ab03-5ae09f70daf5.png"
+    }
+  ];
+
+  const testimonials = {
+    el: [
+      {
+        id: 0,
+        quote: "Το πρόγραμμα προπόνησης στο Performance έχει μεταμορφώσει εντελώς το παιχνίδι μου. Κέρδισα δύναμη, ταχύτητα, και ο χρόνος ανάρρωσής μου βελτιώθηκε σημαντικά.",
+        name: "Αλέξανδρος Ιωάννου",
+        title: "Επαγγελματίας Παίκτης Μπάσκετ",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      },
+      {
+        id: 1,
+        quote: "Η μεθοδολογία προπόνησης και η εξατομικευμένη προσέγγιση με βοήθησαν να ξεπεράσω τα όριά μου και να φτάσω σε νέα επίπεδα απόδοσης.",
+        name: "Μαρία Παπαδοπούλου",
+        title: "Πρωταθλήτρια Κολύμβησης",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      },
+      {
+        id: 2,
+        quote: "Στο Hyperkids μαθαίνουν τα παιδιά όχι μόνο αθλητισμό αλλά και αξίες ζωής. Το περιβάλλον είναι υποστηρικτικό και επαγγελματικό.",
+        name: "Γιάννης Κωνσταντίνου",
+        title: "Γονέας & Πρώην Αθλητής",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      }
+    ],
+    en: [
+      {
+        id: 0,
+        quote: "The training program at Performance has completely transformed my game. I've gained strength, speed, and my recovery time has improved significantly.",
+        name: "Alex Johnson",
+        title: "Professional Basketball Player",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      },
+      {
+        id: 1,
+        quote: "The training methodology and personalized approach helped me push beyond my limits and reach new levels of performance.",
+        name: "Maria Smith",
+        title: "Swimming Champion",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      },
+      {
+        id: 2,
+        quote: "At Hyperkids, children learn not only sports but also life values. The environment is supportive and professional.",
+        name: "John Constantine",
+        title: "Parent & Former Athlete",
+        avatar: "/lovable-uploads/5fe4260b-05f2-4c12-b877-785e6e657afc.png"
+      }
+    ]
+  };
+
+  const aboutSections = {
+    el: [
+      {
+        id: 0,
+        title: "Κύριος Προπονητής",
+        number: "01",
+        image: "/lovable-uploads/33655c97-0bc0-4a99-b492-8f0fa441437f.png",
+        content: "Το όνομά μου είναι Γιώργος Ζυγούρης και είμαι απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023). Είμαι επαγγελματίας αθλητής Muay Thai και πιστοποιημένος προπονητής από το 2024. Μέσα από τη διπλή μου οπτική ως αγωνιστής και εκπαιδευτικός, έχω δημιουργήσει ένα περιβάλλον προπόνησης όπου παιδιά, έφηβοι και ενήλικες δεν μαθαίνουν απλώς κίνηση—ανακαλύπτουν τις δυνάμεις τους, χτίζουν χαρακτήρα μέσω του αθλητισμού και βρίσκουν τη μοναδική τους θέση στον αθλητικό κόσμο."
+      },
+      {
+        id: 1,
+        title: "Το Όραμά μας",
+        number: "02",
+        image: "/lovable-uploads/81100ffe-6e78-4faa-a6f7-46163c4fdc57.png",
+        content: "Συνδυάζοντας επιστημονική γνώση με πραγματική εμπειρία, εφαρμόζουμε ανάπτυξη δεξιοτήτων και προπόνηση εστιασμένη στην απόδοση, προσαρμοσμένη σε κάθε ηλικία και στάδιο. Βλέπουμε την κίνηση ως κάτι περισσότερο από φυσικό — είναι αυτοέκφραση, αυτοπεποίθηση και η δύναμη να μεγαλώνουμε μέσα από την πρόκληση. Η αποστολή μας είναι να βοηθήσουμε τους νέους να εμπιστευτούν τη διαδικασία και να εξερευνήσουν τις δυνατότητές τους σε έναν ασφαλή, υποστηρικτικό χώρο."
+      },
+      {
+        id: 2,
+        title: "Μεθοδολογία Προπόνησης",
+        number: "03",
+        image: "/lovable-uploads/e7b26f7e-bacc-4b5e-b03d-39786bb57f6c.png",
+        content: "Η μεθοδολογία προπόνησής μας εστιάζει στην προοδευτική ανάπτυξη δεξιοτήτων και την ενίσχυση των σωστών κινητικών προτύπων προσαρμοσμένων στις ανάγκες και στόχους κάθε ατόμου. Μέσω ολοκληρωμένης αξιολόγησης, κατανοούμε τις τρέχουσες ικανότητες και αδυναμίες σας, καθορίζουμε σαφείς στόχους προπόνησης, δημιουργούμε ένα δομημένο χρονοδιάγραμμα για την επίτευξη και σχεδιάζουμε ένα αποκλειστικό εξατομικευμένο πρόγραμμα προπόνησης ειδικά για εσάς."
+      },
+      {
+        id: 3,
+        title: "Elite Training Methodology",
+        number: "04",
+        image: "/lovable-uploads/645bd480-56bf-45e9-8884-7217a30a37ed.png",
+        content: "Η μεθοδολογία προπόνησής μας βασίζεται σε επιστημονικές αρχές και χρόνια εμπειρίας εργασίας με ελίτ αθλητές. Εστιάζουμε στην ανάπτυξη όλων των πτυχών της αθλητικής απόδοσης συμπεριλαμβανομένων: Κινητικότητας & Ευελιξίας, Ταχύτητας & Ευκινησίας, Δύναμης & Ισχύος, Αντοχής & Αντοχής. Χρησιμοποιούμε προηγμένη τεχνολογία για την παρακολούθηση των μετρήσεων απόδοσης σε πραγματικό χρόνο, επιτρέποντας ακριβείς προσαρμογές και βέλτιστα αποτελέσματα προπόνησης."
+      }
+    ],
+    en: [
+      {
+        id: 0,
+        title: "Head Coach",
+        number: "01",
+        image: "/lovable-uploads/33655c97-0bc0-4a99-b492-8f0fa441437f.png",
+        content: "My name is Georgios Zygouris, and I am a graduate of the School of Physical Education and Sport Science at the Aristotle University of Thessaloniki (2023). I am a professional Muay Thai athlete and a certified coach since 2024. Through my dual perspective as both competitor and educator, I've established a training environment where children, teenagers, and adults don't just learn movement, they discover their strengths, build character through sport, and find their unique position in the athletic world."
+      },
+      {
+        id: 1,
+        title: "Our Vision",
+        number: "02",
+        image: "/lovable-uploads/81100ffe-6e78-4faa-a6f7-46163c4fdc57.png",
+        content: "Combining scientific knowledge with real-world experience, we apply skill development and performance-focused training tailored to each age and stage. We see movement as more than physical — it's self-expression, confidence, and the power to grow through challenge. Our mission is to help young people trust the process and explore their potential in a safe, supportive space."
+      },
+      {
+        id: 2,
+        title: "Training Methodology",
+        number: "03",
+        image: "/lovable-uploads/e7b26f7e-bacc-4b5e-b03d-39786bb57f6c.png",
+        content: "Our training methodology focuses on progressive skill development and reinforcement of proper movement patterns tailored to each individual's needs and goals. Through comprehensive assessment, we understand your current abilities and weaknesses, establish clear training objectives, create a structured timeline for achievement, and design an exclusive personalized training plan specifically for you."
+      },
+      {
+        id: 3,
+        title: "Elite Training Methodology",
+        number: "04",
+        image: "/lovable-uploads/645bd480-56bf-45e9-8884-7217a30a37ed.png",
+        content: "Our training methodology is based on scientific principles and years of experience working with elite athletes. We focus on developing all aspects of athletic performance including: Mobility & Flexibility, Speed & Agility, Strength & Power, Endurance & Stamina. We utilize cutting-edge technology to track performance metrics in real-time, allowing for precise adjustments and optimal training outcomes."
+      }
+    ]
+  };
+
+  const methodologyBoxes = {
+    el: [
+      {
+        title: "Ακαδημαϊκό Υπόβαθρο",
+        content: "Απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023)"
+      },
+      {
+        title: "Επαγγελματίας Αθλητής",
+        content: "Επαγγελματίας αθλητής Muay Thai με εμπειρία σε αγώνες υψηλού επιπέδου"
+      },
+      {
+        title: "Βασικές Αξίες",
+        content: "Ο στόχος μας δεν είναι μόνο η φυσική βελτίωση, αλλά και η καλλιέργεια αυτοπεποίθησης, χαρακτήρα και ηθικών αξιών"
+      }
+    ],
+    en: [
+      {
+        title: "Academic Background",
+        content: "Graduate of the School of Physical Education and Sport Science at the Aristotle University of Thessaloniki (2023)"
+      },
+      {
+        title: "Professional Athlete",
+        content: "Professional Muay Thai athlete with experience in high-level competitions"
+      },
+      {
+        title: "Core Values",
+        content: "Our goal is not only physical improvement, but also the cultivation of confidence, character and positive values"
+      }
+    ]
+  };
+
+  const visionBoxes = {
+    el: [
+      {
+        title: "Περισσότερο από Φυσικό",
+        content: "Δεν προπονούμε απλώς σώματα. Διαμορφώνουμε χαρακτήρα. Κάθε παιδί είναι ένας κόσμος σε κίνηση, και η κίνηση είναι αυτοέκφραση, αυτοπεποίθηση και ανάπτυξη."
+      },
+      {
+        title: "Χτίσιμο Χαρακτήρα",
+        content: "Διδάσκουμε σεβασμό, πειθαρχία, επιμονή και συνεργασία. Στόχος μας είναι να δημιουργήσουμε ένα σχολείο ζωής όπου τα παιδιά μαθαίνουν να στέκονται όρθια φυσικά, ψυχικά και ηθικά."
+      },
+      {
+        title: "Εμπιστοσύνη στη Διαδικασία",
+        content: "Για εμάς, το αύριο αρχίζει σήμερα. Βήμα βήμα. Με εμπιστοσύνη στη διαδικασία. Με το κουράγιο να πάμε παραπέρα. Με τη θέληση να ξεπεράσουμε τα όρια."
+      }
+    ],
+    en: [
+      {
+        title: "More than Physical",
+        content: "We don't just train bodies. We shape character. Every child is a world in motion, and movement is self-expression, confidence and development."
+      },
+      {
+        title: "Building Character",
+        content: "We teach respect, discipline, perseverance and cooperation. Our goal is to create a school of life where children learn to stand upright physically, mentally and morally."
+      },
+      {
+        title: "Trust the Process",
+        content: "For us, tomorrow starts today. Step by step. With trust in the process. With the courage to go further. With the will to push the limits."
+      }
+    ]
+  };
+
+  const methodologyTrainingBoxes = {
+    el: [
+      {
+        title: "Κινητικές Δεξιότητες",
+        content: "• Ανάπτυξη Αθλητικών Δεξιοτήτων\n• Κατάλληλο για την Ηλικία\n• Ρίψοις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Τρεξίματα Ευκινησίας, Συντονισμός"
+      },
+      {
+        title: "Αξιολόγηση", 
+        content: "• Κίνηση & Στάση\n• Προφίλ φορτίου - ταχύτητας\n• Προφίλ άλματος\n• Αντοχή"
+      },
+      {
+        title: "Εστιασμένα στα Αποτελέσματα",
+        content: "• Παρακολούθηση Αποτελεσμάτων\n• Καθοδήγηση Απόδοσης\n• Ανάπτυξη Προσαρμοσμένου Προγράμματος"
+      }
+    ],
+    en: [
+      {
+        title: "Movement Skills",
+        content: "• Athletic Skill Development\n• Age Appropriate\n• Throwing & Catching, Climbing Skills, Jumping & Landing, Agility Running, Coordination"
+      },
+      {
+        title: "Assessment",
+        content: "• Movement & Posture\n• Load-velocity profile\n• Jump profile\n• Endurance"
+      },
+      {
+        title: "Results Focused",
+        content: "• Results Tracking\n• Performance Guidance\n• Customized Program Development"
+      }
+    ]
+  };
+
+  const eliteTrainingBoxes = {
+    el: [
+      {
+        title: "Προηγμένη Τεχνολογία",
+        content: "Παρακολούθηση απόδοσης σε πραγματικό χρόνο για βέλτιστα αποτελέσματα"
+      },
+      {
+        title: "Επιστημονική Προσέγγιση",
+        content: "Βασισμένη σε επιστημονικές αρχές και χρόνια εμπειρίας με ελίτ αθλητές"
+      },
+      {
+        title: "Ολοκληρωμένη Ανάπτυξη",
+        content: "Εστίαση σε όλες τις πτυχές της αθλητικής απόδοσης"
+      }
+    ],
+    en: [
+      {
+        title: "Advanced Technology",
+        content: "Real-time performance tracking for optimal results"
+      },
+      {
+        title: "Scientific Approach",
+        content: "Based on scientific principles and years of experience with elite athletes"
+      },
+      {
+        title: "Comprehensive Development",
+        content: "Focus on all aspects of athletic performance"
+      }
+    ]
+  };
+
+  const navigation = {
+    el: {
+      home: "Αρχή",
+      programs: "Προγράμματα",
+      blog: "Blog",
+      about: "Σχετικά Με Εμάς",
+      results: "Αποτελέσματα",
+      contact: "Επικοινωνία"
+    },
+    en: {
+      home: "Home",
+      programs: "Programs",
+      blog: "Blog",
+      about: "About Us", 
+      results: "Results",
+      contact: "Contact"
     }
   };
 
-  const handleLoginClick = () => {
-    navigate('/auth');
+  const content = {
+    el: {
+      hero: {
+        title: "The Champion's Journey",
+        subtitle: "Starts Here",
+        getStarted: "GET STARTED",
+        contact: "CONTACT"
+      },
+      programs: {
+        title: "Εξερεύνησε Όλα Τα",
+        subtitle: "Προγράμματα"
+      },
+      blog: {
+        title: "Τελευταία",
+        subtitle: "Άρθρα"
+      },
+      about: {
+        subtitle: "ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ",
+        title: "Supporting Your",
+        titleHighlight: "Athletic Journey"
+      },
+      results: {
+        title: "Athlete Results",
+        subtitle: "Don't just take our word for it. Hear from the athletes who have experienced the Performance difference.",
+        callToAction: {
+          title: "Ready to Elevate Your Performance?",
+          subtitle: "Join our community of athletes and start your journey towards peak performance today.",
+          button: "GET STARTED"
+        }
+      }
+    },
+    en: {
+      hero: {
+        title: "The Champion's Journey",
+        subtitle: "Starts Here",
+        getStarted: "GET STARTED",
+        contact: "CONTACT"
+      },
+      programs: {
+        title: "Explore All",
+        subtitle: "Programs"
+      },
+      blog: {
+        title: "Latest",
+        subtitle: "Articles"
+      },
+      about: {
+        subtitle: "ABOUT US",
+        title: "Supporting Your",
+        titleHighlight: "Athletic Journey"
+      },
+      results: {
+        title: "Athlete Results",
+        subtitle: "Don't just take our word for it. Hear from the athletes who have experienced the Performance difference.",
+        callToAction: {
+          title: "Ready to Elevate Your Performance?",
+          subtitle: "Join our community of athletes and start your journey towards peak performance today.",
+          button: "GET STARTED"
+        }
+      }
+    }
   };
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const nextProgram = () => {
+    setCurrentProgram((prev) => (prev + 1) % programs.length);
+  };
+
+  const prevProgram = () => {
+    setCurrentProgram((prev) => (prev - 1 + programs.length) % programs.length);
+  };
+
+  const nextTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev + 1) % testimonials[language].length);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev - 1 + testimonials[language].length) % testimonials[language].length);
+  };
+
+  const currentContent = content[language];
+  const currentAboutSections = aboutSections[language];
+  const currentMethodologyBoxes = methodologyBoxes[language];
+  const currentVisionBoxes = visionBoxes[language];
+  const currentMethodologyTrainingBoxes = methodologyTrainingBoxes[language];
+  const currentEliteTrainingBoxes = eliteTrainingBoxes[language];
+  const currentNavigation = navigation[language];
+  const currentTestimonials = testimonials[language];
+
+  // TikTok icon component (since it's not in lucide-react)
+  const TikTokIcon = () => (
+    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+    </svg>
+  );
 
   return (
-    <div style={{ fontFamily: 'Robert Pro, sans-serif' }} className="min-h-screen">
+    <div className="min-h-screen bg-black text-white font-robert font-medium">
       {/* Navigation */}
-      <nav className="bg-white shadow-lg fixed w-full top-0 z-50">
+      <nav className="fixed top-0 w-full bg-black/95 backdrop-blur-sm z-50 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
+              <div className="flex-shrink-0">
                 <img 
-                  src="/lovable-uploads/77591c7f-20d5-4ab2-ab03-5ae09f70daf5.png" 
-                  alt="Hyperkids Logo" 
-                  className="h-12 w-auto"
+                  src="/lovable-uploads/83e3ba31-3c4d-44a1-b842-c9468896e822.png" 
+                  alt="HYPERKIDS Logo" 
+                  className="h-8 w-auto"
                 />
               </div>
             </div>
-            
-            <div className="hidden md:flex items-center space-x-8">
-              <button 
-                onClick={() => scrollToSection('hero')}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-              >
-                ΑΡΧΙΚΗ
-              </button>
-              <button 
-                onClick={() => scrollToSection('programs')}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-              >
-                ΠΡΟΓΡΑΜΜΑΤΑ
-              </button>
-              <button 
-                onClick={() => scrollToSection('services')}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-              >
-                ΥΠΗΡΕΣΙΕΣ
-              </button>
-              <button 
-                onClick={() => scrollToSection('about')}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-              >
-                ΕΤΑΙΡΙΑ
-              </button>
-              <button 
-                onClick={() => scrollToSection('contact')}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-              >
-                ΕΠΙΚΟΙΝΩΝΙΑ
-              </button>
-              <button 
-                onClick={() => scrollToSection('blog')}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-              >
-                BLOG
-              </button>
-              <button 
-                onClick={handleLoginClick}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-              >
-                <User className="h-5 w-5" />
-              </button>
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-baseline space-x-8">
+                <a href="#home" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
+                  {currentNavigation.home}
+                </a>
+                <a href="#programs" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
+                  {currentNavigation.programs}
+                </a>
+                <a href="#blog" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
+                  {currentNavigation.blog}
+                </a>
+                <a href="#schedule" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
+                  {currentNavigation.about}
+                </a>
+                <a href="#results" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
+                  {currentNavigation.results}
+                </a>
+                <a href="#footer" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
+                  {currentNavigation.contact}
+                </a>
+              </div>
             </div>
-
-            {/* Mobile menu button */}
-            <div className="md:hidden flex items-center">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-700 hover:text-blue-600 focus:outline-none focus:text-blue-600"
+            <div className="hidden md:flex items-center space-x-4">
+              <Globe 
+                className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" 
+                onClick={toggleLanguage}
+              />
+              <User className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+            </div>
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-white"
               >
-                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
+                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
             </div>
           </div>
         </div>
-
-        {/* Mobile Navigation Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <button 
-                onClick={() => { scrollToSection('hero'); setIsMobileMenuOpen(false); }}
-                className="block text-gray-700 hover:text-blue-600 px-3 py-2 text-base font-medium w-full text-left"
-              >
-                ΑΡΧΙΚΗ
-              </button>
-              <button 
-                onClick={() => { scrollToSection('programs'); setIsMobileMenuOpen(false); }}
-                className="block text-gray-700 hover:text-blue-600 px-3 py-2 text-base font-medium w-full text-left"
-              >
-                ΠΡΟΓΡΑΜΜΑΤΑ
-              </button>
-              <button 
-                onClick={() => { scrollToSection('services'); setIsMobileMenuOpen(false); }}
-                className="block text-gray-700 hover:text-blue-600 px-3 py-2 text-base font-medium w-full text-left"
-              >
-                ΥΠΗΡΕΣΙΕΣ
-              </button>
-              <button 
-                onClick={() => { scrollToSection('about'); setIsMobileMenuOpen(false); }}
-                className="block text-gray-700 hover:text-blue-600 px-3 py-2 text-base font-medium w-full text-left"
-              >
-                ΕΤΑΙΡΙΑ
-              </button>
-              <button 
-                onClick={() => { scrollToSection('contact'); setIsMobileMenuOpen(false); }}
-                className="block text-gray-700 hover:text-blue-600 px-3 py-2 text-base font-medium w-full text-left"
-              >
-                ΕΠΙΚΟΙΝΩΝΙΑ
-              </button>
-              <button 
-                onClick={() => { scrollToSection('blog'); setIsMobileMenuOpen(false); }}
-                className="block text-gray-700 hover:text-blue-600 px-3 py-2 text-base font-medium w-full text-left"
-              >
-                BLOG
-              </button>
-              <button 
-                onClick={() => { handleLoginClick(); setIsMobileMenuOpen(false); }}
-                className="flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 text-base font-medium w-full text-left"
-              >
-                <User className="h-5 w-5 mr-2" />
-                LOGIN
-              </button>
-            </div>
-          </div>
-        )}
       </nav>
 
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden fixed top-16 left-0 right-0 bg-black/95 backdrop-blur-sm border-b border-gray-800 z-40">
+          <div className="px-4 py-4 space-y-3">
+            <a href="#home" className="block text-white hover:text-[#00ffba] text-sm font-medium">
+              {currentNavigation.home}
+            </a>
+            <a href="#programs" className="block text-white hover:text-[#00ffba] text-sm font-medium">
+              {currentNavigation.programs}
+            </a>
+            <a href="#blog" className="block text-white hover:text-[#00ffba] text-sm font-medium">
+              {currentNavigation.blog}
+            </a>
+            <a href="#schedule" className="block text-white hover:text-[#00ffba] text-sm font-medium">
+              {currentNavigation.about}
+            </a>
+            <a href="#results" className="block text-white hover:text-[#00ffba] text-sm font-medium">
+              {currentNavigation.results}
+            </a>
+            <a href="#footer" className="block text-white hover:text-[#00ffba] text-sm font-medium">
+              {currentNavigation.contact}
+            </a>
+            <div className="pt-4 flex justify-center space-x-4">
+              <Globe 
+                className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" 
+                onClick={toggleLanguage}
+              />
+              <User className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
-      <section id="hero" className="relative bg-cover bg-center h-screen flex items-center justify-center" style={{ backgroundImage: `url('/lovable-uploads/69e99599-09bd-4249-a491-5328696a996d.png')` }}>
-        <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className="container mx-auto text-center relative z-10">
-          <h1 className="text-5xl font-bold text-white mb-4">ΑΘΛΗΤΙΚΗ ΕΤΟΙΜΑΣΙΑ ΓΙΑ <br />ΠΑΙΔΙΑ & ΕΦΗΒΟΥΣ</h1>
-          <p className="text-xl text-gray-300 mb-8">Εξειδικευμένα προγράμματα για την ανάπτυξη των αυριανών αθλητών.</p>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full">
-            Ξεκινήστε Σήμερα
-          </button>
+      <section id="home" className="relative min-h-screen flex items-end pb-32">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('/lovable-uploads/b0c1fb65-ea62-4a1d-8cae-3ce536633f96.png')`,
+          }}
+        >
+          <div className="absolute inset-0 bg-black/60"></div>
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 text-left px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight font-robert">
+            {currentContent.hero.title}
+            <br />
+            <span style={{ color: '#00ffba' }}>
+              {currentContent.hero.subtitle}
+            </span>
+          </h1>
+          
+          <div className="flex flex-col sm:flex-row gap-4 mb-16">
+            <Button size="lg" className="text-lg px-8 py-4 bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none font-roobert-pro-light font-light">
+              {currentContent.hero.getStarted}
+            </Button>
+            <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-white bg-transparent hover:bg-white/10 rounded-none font-roobert-pro-light font-light">
+              {currentContent.hero.contact}
+            </Button>
+          </div>
+        </div>
+        
+        {/* Scroll Down Indicator */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="text-center flex flex-col items-center">
+            <div className="text-sm text-gray-300 mb-2">SCROLL DOWN</div>
+            <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
+              <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-bounce"></div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Programs Section */}
-      <section id="programs" className="py-20 bg-gray-100">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-12">Τα Προγράμματά Μας</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Program Card 1 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/350x200" alt="Program" className="mb-4 rounded-md" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Ακαδημία Ποδοσφαίρου</h3>
-              <p className="text-gray-600">Εκμάθηση βασικών δεξιοτήτων και τακτικών ποδοσφαίρου.</p>
+      <section id="programs" className="py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-left mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-roobert-pro-light">
+              {currentContent.programs.title}
+              <br />
+              {currentContent.programs.subtitle}
+            </h2>
+          </div>
+          
+          <div className="relative">
+            {/* Program Numbers Navigation */}
+            <div className="flex gap-8 mb-12">
+              {programs.map((program, index) => (
+                <button
+                  key={program.id}
+                  onClick={() => setCurrentProgram(index)}
+                  className={`text-left transition-colors ${
+                    currentProgram === index ? 'text-[#00ffba]' : 'text-gray-500'
+                  }`}
+                >
+                  <div className="text-lg font-bold mb-2">{program.id}</div>
+                  <div className="text-sm font-roobert-pro-light">{program.title}</div>
+                </button>
+              ))}
             </div>
-            {/* Program Card 2 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/350x200" alt="Program" className="mb-4 rounded-md" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Τμήμα Κολύμβησης</h3>
-              <p className="text-gray-600">Ανάπτυξη τεχνικών κολύμβησης και φυσικής κατάστασης.</p>
+
+            {/* Carousel Navigation Arrows */}
+            <div className="absolute top-0 right-0 flex gap-4">
+              <button
+                onClick={prevProgram}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                onClick={nextProgram}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
             </div>
-            {/* Program Card 3 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/350x200" alt="Program" className="mb-4 rounded-md" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Στίβος</h3>
-              <p className="text-gray-600">Βελτίωση ταχύτητας, αντοχής και τεχνικών στίβου.</p>
+
+            {/* Program Images Grid */}
+            <div className="grid grid-cols-4 gap-6 h-96">
+              {programs.map((program, index) => (
+                <div 
+                  key={program.id}
+                  className={`relative overflow-hidden transition-all duration-500 ${
+                    currentProgram === index ? 'col-span-2' : 'col-span-1'
+                  }`}
+                >
+                  <img
+                    src={program.image}
+                    alt={program.title}
+                    className="w-full h-full object-cover filter grayscale"
+                  />
+                  <div className="absolute inset-0 bg-black/60"></div>
+                  {currentProgram === index && (
+                    <div className="absolute bottom-6 left-6 text-white">
+                      <p className="text-sm font-roobert-pro-light">{program.description}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-12">Οι Υπηρεσίες Μας</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Service Card 1 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/100x100" alt="Service" className="mb-4 rounded-full mx-auto" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Προσωπική Προπόνηση</h3>
-              <p className="text-gray-600">Εξατομικευμένα προγράμματα προπόνησης.</p>
+      {/* Blog Section */}
+      <section id="blog" className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              {currentContent.blog.title}
+              <br />
+              <span className="text-[#00ffba]">{currentContent.blog.subtitle}</span>
+            </h2>
+          </div>
+          
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            {/* Left Side - Featured Image */}
+            <div className="relative">
+              <img
+                src="/lovable-uploads/4fd00710-90c7-423b-8f46-232a45929952.png"
+                alt="Lift Heavy - Gym Equipment"
+                className="w-full h-auto rounded-lg shadow-lg"
+              />
+              <div className="absolute bottom-6 left-6 bg-black/80 text-white p-4 rounded">
+                <h3 className="text-xl font-bold mb-2">Lift Heavy</h3>
+                <p className="text-sm text-gray-300">Τεχνολογία & Προπόνηση Υψηλής Έντασης</p>
+              </div>
             </div>
-            {/* Service Card 2 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/100x100" alt="Service" className="mb-4 rounded-full mx-auto" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Διατροφική Υποστήριξη</h3>
-              <p className="text-gray-600">Συμβουλές διατροφής για αθλητές.</p>
-            </div>
-            {/* Service Card 3 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/100x100" alt="Service" className="mb-4 rounded-full mx-auto" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Αθλητική Ψυχολογία</h3>
-              <p className="text-gray-600">Υποστήριξη για την ψυχική ενδυνάμωση.</p>
-            </div>
-            {/* Service Card 4 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/100x100" alt="Service" className="mb-4 rounded-full mx-auto" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Φυσικοθεραπεία</h3>
-              <p className="text-gray-600">Αποκατάσταση τραυματισμών.</p>
+
+            {/* Right Side - Article Content */}
+            <div className="space-y-6">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">Lift Heavy</h3>
+              
+              <div className="prose prose-lg text-gray-700 leading-relaxed space-y-6">
+                <p>
+                  Σήμερα, όπου η τεχνολογία έχει σημειώσει ραγδαία πρόοδο, η προπόνηση μπορεί να πραγματοποιηθεί υπό πιο ευνοϊκές συνθήκες. Η τεχνολογία έχει δημιουργήσει σημαντικά εργαλεία για την παρακολούθηση της προπόνησης, όπως GPS, επιταχυνσιόμετρα, καρδιοσυχνόμετρα και πολλά άλλα, βελτιώνοντας την ποιότητα της προπόνησης μέσω της ανατροφοδότησης που παρέχουν.
+                </p>
+                
+                <p>
+                  Υπάρχει μια εσφαλμένη αντίληψη πως, αν προπονηθείς σε υψηλή ένταση (85% του 1RM και πάνω), επειδή η άρση εκτελείται αργά, αυτό σημαίνει πως θα γίνεις πιο αργός. Αυτό δεν είναι απόλυτα ακριβές.
+                </p>
+                
+                <p>
+                  Είμαι υπέρ των υψηλών εντάσεων· δεν υπάρχει λόγος να τις αποφεύγεις. Απλώς πρέπει να εκτελούνται σωστά και τη σωστή στιγμή.
+                </p>
+                
+                <p>
+                  Το πιο σημαντικό στοιχείο είναι το προφίλ φορτίου-ταχύτητας του κάθε αθλητή, και για να δημιουργηθεί αυτό το προφίλ, είναι απαραίτητη η χρήση της τεχνολογίας.
+                </p>
+                
+                <p>
+                  Η μεταβολή του προφίλ φορτίου-ταχύτητας είναι αυτό που θα σε κάνει πιο γρήγορο και ισχυρότερο. Αυτό που μας δείχνει το προφίλ είναι ότι μια άρση στο 85% του 1RM εκτελείται με ταχύτητα περίπου 0.50 m/s, και αυτό που πρέπει να επιτευχθεί για να γίνεις πιο γρήγορος είναι να εκτελέσεις την ίδια άρση με μεγαλύτερη ταχύτητα (π.χ. 0.55 m/s).
+                </p>
+                
+                <p>
+                  Η ταχύτερη και ισχυρότερη εκτέλεση προέρχεται από την ικανότητα να εκτελείς πιο γρήγορα σε σχέση με την προηγούμενη προσπάθειά σου, και όχι απαραίτητα από τη μείωση της έντασης, όπως στο 35-45% του 1RM. Ακόμα και σε αυτές τις εντάσεις, ισχύει το ίδιο. Για να εκτελέσεις μια άρση γρηγορότερα, είναι απαραίτητο να αυξήσεις το 1RM σου. Για να αυξήσεις το 1RM, χρειάζεται μια ταχύτερη άρση. Αυτή η σχέση είναι αλληλένδετη και αμφίδρομη.
+                </p>
+                
+                <p>
+                  Δεν μπορείς να γίνεις πιο γρήγορος αν δεν μεταβάλεις το προφίλ φορτίου-ταχύτητας σου, και δεν μπορείς να το μεταβάλεις αν δεν αυξήσεις το 1RM σου.
+                </p>
+              </div>
+              
+              <div className="pt-6">
+                <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none">
+                  Διαβάστε Περισσότερα
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 bg-gray-100">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Image */}
+      <section id="schedule" className="py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Side - Content */}
             <div>
-              <img src="https://via.placeholder.com/500x400" alt="About Us" className="rounded-lg shadow-md" />
+              <div className="text-[#00ffba] text-sm font-medium mb-4 tracking-wider">{currentContent.about.subtitle}</div>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
+                {currentContent.about.title}
+                <br />
+                <span className="text-[#00ffba]">{currentContent.about.titleHighlight}</span>
+              </h2>
+              
+              <div className="space-y-8">
+                {currentAboutSections.map((section, index) => (
+                  <div key={section.id} className="flex items-start gap-4">
+                    <div className={`font-bold text-xl ${
+                      activeAboutSection === index ? 'text-[#00ffba]' : 'text-gray-500'
+                    }`}>
+                      {section.number}
+                    </div>
+                    <div className="flex-1">
+                      <button
+                        onClick={() => setActiveAboutSection(index)}
+                        className={`font-semibold text-lg mb-2 text-left hover:text-[#00ffba] transition-colors block w-full ${
+                          activeAboutSection === index ? 'text-white' : 'text-gray-500'
+                        }`}
+                      >
+                        {section.title}
+                      </button>
+                      {activeAboutSection === index && (
+                        <div className="w-full h-0.5 bg-[#00ffba] mb-3"></div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            {/* Text Content */}
-            <div>
-              <h2 className="text-3xl font-semibold text-gray-800 mb-4">Σχετικά με Εμάς</h2>
-              <p className="text-gray-600 mb-6">Η Hyperkids είναι μια πρωτοποριακή ακαδημία αθλητικής προετοιμασίας για παιδιά και εφήβους. Στόχος μας είναι να αναπτύξουμε τους αυριανούς αθλητές, παρέχοντας εξειδικευμένα προγράμματα και υπηρεσίες.</p>
-              <p className="text-gray-600">Με έμπειρους προπονητές και σύγχρονες μεθόδους, προσφέρουμε μια ολοκληρωμένη προσέγγιση στην αθλητική ανάπτυξη.</p>
+
+            {/* Right Side - Image and Content */}
+            <div className="relative">
+              <div className="relative overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105">
+                <img
+                  src={currentAboutSections[activeAboutSection].image}
+                  alt={currentAboutSections[activeAboutSection].title}
+                  className="w-full h-auto rounded-lg"
+                />
+                {/* Section Number and Line overlay inside image - moved to bottom */}
+                <div className="absolute bottom-6 left-6 right-6 flex items-center gap-4">
+                  <div className="text-[#00ffba] font-bold text-4xl">{currentAboutSections[activeAboutSection].number}</div>
+                  <div className="flex-1 h-0.5 bg-[#00ffba]"></div>
+                </div>
+              </div>
+              
+              <div className="mt-8">                
+                <h3 className="text-2xl font-bold text-white mb-6">{currentAboutSections[activeAboutSection].title}</h3>
+                
+                <p className="text-gray-300 leading-relaxed mb-8">
+                  {currentAboutSections[activeAboutSection].content}
+                </p>
+
+                {/* Methodology Boxes - Only show for section 01 */}
+                {activeAboutSection === 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {currentMethodologyBoxes.map((box, index) => (
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l border-l-[#00ffba]">
+                        <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
+                        <p className="text-[#9ca3ad] text-sm leading-relaxed">{box.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Vision Boxes - Only show for section 02 */}
+                {activeAboutSection === 1 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {currentVisionBoxes.map((box, index) => (
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l border-l-[#00ffba]">
+                        <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
+                        <p className="text-[#9ca3ad] text-sm leading-relaxed">{box.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Methodology Training Boxes - Only show for section 03 */}
+                {activeAboutSection === 2 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {currentMethodologyTrainingBoxes.map((box, index) => (
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l border-l-[#00ffba]">
+                        <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
+                        <div className="text-[#9ca3ad] text-sm leading-relaxed whitespace-pre-line">{box.content}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Elite Training Boxes - Only show for section 04 */}
+                {activeAboutSection === 3 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {currentEliteTrainingBoxes.map((box, index) => (
+                      <div key={index} className="bg-gray-800/50 p-4 rounded-sm border-l border-l-[#00ffba]">
+                        <h4 className="text-white font-semibold text-sm mb-3">{box.title}</h4>
+                        <p className="text-[#9ca3ad] text-sm leading-relaxed">{box.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-20">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-12">Επικοινωνήστε Μαζί Μας</h2>
-          <div className="max-w-lg mx-auto">
-            <form className="space-y-6">
-              <div>
-                <input type="text" placeholder="Όνομα" className="w-full p-4 border rounded-md" />
+      {/* Elite Training Methodology Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Side - Content */}
+            <div className="lg:col-span-1">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 leading-tight">
+                Elite Training Methodology
+              </h2>
+              
+              <div className="w-20 h-1 bg-[#00ffba] mb-8"></div>
+              
+              <p className="text-gray-600 leading-relaxed mb-8">
+                New generation training methodology based on scientific principles.
+              </p>
+
+              <div className="space-y-6 mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
+                  <span className="text-gray-800">Accommodating resistance</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
+                  <span className="text-gray-800">Accentuated eccentric loading</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
+                  <span className="text-gray-800">Velocity based training</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
+                  <span className="text-gray-800">Specific energy system development</span>
+                </div>
               </div>
-              <div>
-                <input type="email" placeholder="Email" className="w-full p-4 border rounded-md" />
+
+              <p className="text-gray-600 leading-relaxed mb-8">
+                We utilize cutting-edge technology to track performance metrics in real-
+                time, allowing for precise adjustments and optimal training outcomes.
+              </p>
+            </div>
+
+            {/* Right Side - Image with Overlay Box */}
+            <div className="lg:col-span-1 relative">
+              <div className="relative overflow-visible">
+                <img
+                  src="/lovable-uploads/22324308-989f-48c5-9352-79aef34fd97a.png"
+                  alt="Advanced Technology"
+                  className="w-full h-auto rounded-lg"
+                />
+                {/* Green Box Overlay - positioned at bottom left, half extending outside */}
+                <div className="absolute -bottom-8 -left-12 bg-[#00ffba] text-black p-6 rounded-sm max-w-xs z-10">
+                  <h4 className="font-bold text-lg mb-4">Advanced Technology</h4>
+                  <p className="text-sm leading-relaxed">
+                    Real-time performance tracking for
+                    optimal results
+                  </p>
+                </div>
               </div>
-              <div>
-                <textarea placeholder="Μήνυμα" className="w-full p-4 border rounded-md"></textarea>
-              </div>
-              <div>
-                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full w-full">
-                  Αποστολή
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Blog Section */}
-      <section id="blog" className="py-20 bg-gray-100">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-12">Blog</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Blog Post 1 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/350x200" alt="Blog Post" className="mb-4 rounded-md" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Τίτλος Άρθρου 1</h3>
-              <p className="text-gray-600">Περιγραφή του άρθρου...</p>
+      {/* New Results Section with Testimonials */}
+      <section id="results" className="py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            {currentContent.results.title}
+          </h2>
+          <p className="text-xl text-gray-300 mb-16 max-w-3xl mx-auto">
+            {currentContent.results.subtitle}
+          </p>
+          
+          {/* Testimonial Slider */}
+          <div className="relative max-w-4xl mx-auto mb-24">
+            <div className="bg-black rounded-lg p-8 md:p-12">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#00ffba] overflow-hidden">
+                    <img
+                      src={currentTestimonials[currentTestimonial].avatar}
+                      alt={currentTestimonials[currentTestimonial].name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+                
+                {/* Content */}
+                <div className="flex-1 text-left">
+                  <blockquote className="text-lg md:text-xl text-white mb-6 leading-relaxed italic">
+                    "{currentTestimonials[currentTestimonial].quote}"
+                  </blockquote>
+                  <div>
+                    <div className="text-white font-bold text-lg mb-1">
+                      {currentTestimonials[currentTestimonial].name}
+                    </div>
+                    <div className="text-[#00ffba] text-sm">
+                      {currentTestimonials[currentTestimonial].title}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            {/* Blog Post 2 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/350x200" alt="Blog Post" className="mb-4 rounded-md" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Τίτλος Άρθρου 2</h3>
-              <p className="text-gray-600">Περιγραφή του άρθρου...</p>
+            
+            {/* Navigation Arrows */}
+            <div className="absolute top-1/2 -translate-y-1/2 -left-16 right-0 flex justify-between pointer-events-none">
+              <button
+                onClick={prevTestimonial}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors pointer-events-auto"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                onClick={nextTestimonial}
+                className="w-12 h-12 border border-gray-600 rounded-none flex items-center justify-center hover:border-[#00ffba] transition-colors pointer-events-auto"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
             </div>
-            {/* Blog Post 3 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <img src="https://via.placeholder.com/350x200" alt="Blog Post" className="mb-4 rounded-md" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Τίτλος Άρθρου 3</h3>
-              <p className="text-gray-600">Περιγραφή του άρθρου...</p>
+            
+            {/* Dots Indicator */}
+            <div className="flex justify-center mt-8 gap-2">
+              {currentTestimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentTestimonial(index)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    currentTestimonial === index ? 'bg-[#00ffba]' : 'bg-gray-600'
+                  }`}
+                />
+              ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Call to Action Section */}
+      <section className="py-12 bg-[#00ffba]">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
+            {currentContent.results.callToAction.title}
+          </h2>
+          <p className="text-lg text-black mb-6 max-w-2xl mx-auto">
+            {currentContent.results.callToAction.subtitle}
+          </p>
+          <Button size="lg" className="bg-transparent border-2 border-black hover:bg-black hover:text-[#00ffba] text-black font-semibold text-lg px-8 py-4 rounded-none transition-colors">
+            {currentContent.results.callToAction.button}
+          </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 py-8 text-center">
-        <p className="text-white">© 2024 Hyperkids. All rights reserved.</p>
+      <footer id="footer" className="bg-gray-900 text-white py-8 border-t border-gray-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-12 items-start">
+            {/* Left - Contact Information */}
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-8">
+                {language === 'el' ? 'Επικοινωνία' : 'Contact'}
+              </h3>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-6 h-6 text-[#00ffba] mt-1">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <a 
+                      href="https://g.co/kgs/4iU8hhS"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                    >
+                      an.georgiou 46, thessaloniki 54627
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-6 h-6 text-[#00ffba] mt-1">
+                    <Phone className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <a 
+                      href="tel:+302310529104"
+                      className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                    >
+                      +30 2310 529104
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-6 h-6 text-[#00ffba] mt-1">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <a 
+                      href="mailto:info@hyperkids.gr"
+                      className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                    >
+                      info@hyperkids.gr
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Center - Logo and Social Media */}
+            <div className="text-center mt-8">
+              <div className="mb-8">
+                <img 
+                  src="/lovable-uploads/430e0952-e310-4b59-bec8-e7fb8ed94c98.png" 
+                  alt="Logo" 
+                  className="h-12 w-auto mx-auto mb-6"
+                />
+              </div>
+              
+              {/* Social Media Icons */}
+              <div className="flex justify-center gap-4">
+                <Facebook className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+                <Instagram className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+                <TikTokIcon />
+                <Youtube className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+              </div>
+            </div>
+
+            {/* Right - Hours - aligned left with day and time next to each other */}
+            <div className="text-left ml-auto max-w-xs">
+              <h3 className="text-2xl font-bold text-white mb-8">
+                {language === 'el' ? 'Ώρες' : 'Hours'}
+              </h3>
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-300">
+                    {language === 'el' ? 'Δευτέρα - Παρασκευή:' : 'Monday - Friday:'}
+                  </span>
+                  <span className="text-white font-semibold">7:00 - 22:00</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-300">
+                    {language === 'el' ? 'Σάββατο:' : 'Saturday:'}
+                  </span>
+                  <span className="text-white font-semibold">
+                    {language === 'el' ? 'Κλειστά' : 'Closed'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-300">
+                    {language === 'el' ? 'Κυριακή:' : 'Sunday:'}
+                  </span>
+                  <span className="text-white font-semibold">
+                    {language === 'el' ? 'Κλειστά' : 'Closed'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center mt-16">
+            <p className="text-gray-400">
+              &copy; 2023 hyperkids. {language === 'el' ? 'Όλα τα δικαιώματα διατηρούνται.' : 'All rights reserved.'}
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );
