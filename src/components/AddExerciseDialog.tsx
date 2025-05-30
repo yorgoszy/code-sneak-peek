@@ -182,7 +182,12 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     onOpenChange(false);
   };
 
-  const handleCategoryToggle = (categoryId: string) => {
+  const handleCategoryToggle = (categoryId: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     setSelectedCategories(prev => 
       prev.includes(categoryId) 
         ? prev.filter(id => id !== categoryId)
@@ -209,12 +214,19 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                     ? 'bg-blue-50 border-blue-200' 
                     : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                 }`}
-                onClick={() => handleCategoryToggle(category.id)}
+                onClick={(e) => handleCategoryToggle(category.id, e)}
               >
                 <Checkbox
                   checked={selectedCategories.includes(category.id)}
-                  onCheckedChange={() => handleCategoryToggle(category.id)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedCategories(prev => [...prev, category.id]);
+                    } else {
+                      setSelectedCategories(prev => prev.filter(id => id !== category.id));
+                    }
+                  }}
                   className="mr-3"
+                  onClick={(e) => e.stopPropagation()}
                 />
                 <span className="text-sm select-none font-medium">{category.name}</span>
               </div>
@@ -283,7 +295,10 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setShowAddCategory(!showAddCategory)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowAddCategory(!showAddCategory);
+                }}
                 className="rounded-none"
               >
                 <Plus className="h-4 w-4 mr-1" />
@@ -369,12 +384,19 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                               ? 'bg-blue-50 border-blue-200' 
                               : 'bg-white border-gray-200 hover:bg-gray-50'
                           }`}
-                          onClick={() => handleCategoryToggle(category.id)}
+                          onClick={(e) => handleCategoryToggle(category.id, e)}
                         >
                           <Checkbox
                             checked={selectedCategories.includes(category.id)}
-                            onCheckedChange={() => handleCategoryToggle(category.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedCategories(prev => [...prev, category.id]);
+                              } else {
+                                setSelectedCategories(prev => prev.filter(id => id !== category.id));
+                              }
+                            }}
                             className="mr-3"
+                            onClick={(e) => e.stopPropagation()}
                           />
                           <span className="text-sm select-none font-medium">
                             {category.name} ({category.type})
