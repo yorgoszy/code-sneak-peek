@@ -227,17 +227,6 @@ export const useStrengthTestData = (selectedAthleteId: string, selectedDate: str
     }
 
     try {
-      const appUserId = await ensureAppUserExists();
-      
-      if (!appUserId) {
-        toast({
-          title: "Σφάλμα",
-          description: "Σφάλμα στη δημιουργία χρήστη",
-          variant: "destructive"
-        });
-        return;
-      }
-
       const testDates = currentSession.exercise_tests.map(et => et.test_date);
       const startDate = testDates.reduce((min, date) => date < min ? date : min);
 
@@ -250,7 +239,7 @@ export const useStrengthTestData = (selectedAthleteId: string, selectedDate: str
             athlete_id: currentSession.athlete_id,
             test_date: startDate,
             notes: currentSession.notes,
-            created_by: appUserId
+            created_by: user.id
           })
           .eq('id', editingSessionId);
 
@@ -269,7 +258,7 @@ export const useStrengthTestData = (selectedAthleteId: string, selectedDate: str
             athlete_id: currentSession.athlete_id,
             test_date: startDate,
             notes: currentSession.notes,
-            created_by: appUserId
+            created_by: user.id
           })
           .select()
           .single();
