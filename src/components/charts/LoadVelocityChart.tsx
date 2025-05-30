@@ -1,58 +1,85 @@
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface LoadVelocityData {
-  velocity: number;
-  weight: number;
-  exerciseName: string;
-}
+import { CartesianGrid, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend } from "recharts";
 
 interface LoadVelocityChartProps {
-  data: LoadVelocityData[];
+  data: Array<{
+    exerciseName: string;
+    velocity: number;
+    weight: number;
+    date: string;
+  }>;
   exerciseName: string;
 }
 
 export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps) => {
-  // Προσθήκη σημείου (0,0) και ταξινόμηση δεδομένων
-  const chartData = [
-    { velocity: 0, weight: 0 }, // Προσθήκη σημείου εκκίνησης (0,0)
-    ...data.sort((a, b) => a.velocity - b.velocity)
-  ];
+  // Sort data by date to show progression
+  const sortedData = data
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .map((item, index) => ({
+      test: `Τεστ ${index + 1}`,
+      date: new Date(item.date).toLocaleDateString('el-GR'),
+      weight: item.weight,
+      velocity: item.velocity
+    }));
 
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle className="text-lg">Load/Velocity Profile - {exerciseName}</CardTitle>
+        <CardTitle>{exerciseName} - Load/Velocity Profile</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={chartData}>
+          <LineChart data={sortedData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
-              dataKey="velocity" 
-              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -10 }}
-              type="number"
-              domain={[0, 'dataMax']}
+              dataKey="test"
+              tick={{ fontSize: 12 }}
             />
             <YAxis 
-              dataKey="weight"
+              yAxisId="weight"
+              orientation="left"
               label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft' }}
-              type="number"
-              domain={[0, 'dataMax']}
+            />
+            <YAxis 
+              yAxisId="velocity"
+              orientation="right"
+              label={{ value: 'Ταχύτητα (m/s)', angle: 90, position: 'insideRight' }}
             />
             <Tooltip 
-              formatter={(value, name) => [
-                `${value}${name === 'velocity' ? ' m/s' : ' kg'}`,
-                name === 'velocity' ? 'Ταχύτητα' : 'Βάρος'
-              ]}
+              content={({ active, payload, label }) => {
+                if (active && payload && payload.length > 0) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-white p-3 border border-gray-200 rounded shadow">
+                      <p className="font-medium">{label}</p>
+                      <p>Ημερομηνία: {data.date}</p>
+                      <p>Βάρος: {data.weight} kg</p>
+                      <p>Ταχύτητα: {data.velocity} m/s</p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
             />
+            <Legend />
             <Line 
+              yAxisId="weight"
               type="monotone" 
               dataKey="weight" 
-              stroke="#2563eb" 
+              stroke="#8884d8" 
               strokeWidth={2}
-              dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
+              dot={{ fill: "#8884d8", strokeWidth: 2, r: 4 }}
+              name="Βάρος (kg)"
+            />
+            <Line 
+              yAxisId="velocity"
+              type="monotone" 
+              dataKey="velocity" 
+              stroke="#82ca9d" 
+              strokeWidth={2}
+              dot={{ fill: "#82ca9d", strokeWidth: 2, r: 4 }}
+              name="Ταχύτητα (m/s)"
             />
           </LineChart>
         </ResponsiveContainer>
