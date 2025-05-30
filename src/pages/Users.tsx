@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -15,6 +14,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NewUserDialog } from "@/components/NewUserDialog";
+import { EditUserDialog } from "@/components/EditUserDialog";
+import { DeleteUserDialog } from "@/components/DeleteUserDialog";
 
 interface AppUser {
   id: string;
@@ -34,6 +36,12 @@ const Users = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  
+  // Dialog states
+  const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
+  const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -74,6 +82,28 @@ const Users = () => {
 
     fetchUsers();
   }, []);
+
+  const handleEditUser = (user: AppUser) => {
+    setSelectedUser(user);
+    setEditUserDialogOpen(true);
+  };
+
+  const handleDeleteUser = (user: AppUser) => {
+    setSelectedUser(user);
+    setDeleteUserDialogOpen(true);
+  };
+
+  const handleUserCreated = () => {
+    fetchUsers();
+  };
+
+  const handleUserUpdated = () => {
+    fetchUsers();
+  };
+
+  const handleUserDeleted = () => {
+    fetchUsers();
+  };
 
   if (loading) {
     return (
@@ -166,7 +196,10 @@ const Users = () => {
                 <CardTitle className="text-lg font-semibold">
                   Όλοι οι Χρήστες ({users.length})
                 </CardTitle>
-                <Button className="rounded-none">
+                <Button 
+                  className="rounded-none"
+                  onClick={() => setNewUserDialogOpen(true)}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Νέος Χρήστης
                 </Button>
@@ -217,10 +250,20 @@ const Users = () => {
                         <TableCell>{formatDate(user.created_at)}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button variant="outline" size="sm" className="rounded-none">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-none"
+                              onClick={() => handleEditUser(user)}
+                            >
                               <Edit className="h-3 w-3" />
                             </Button>
-                            <Button variant="outline" size="sm" className="rounded-none text-red-600 hover:text-red-700">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-none text-red-600 hover:text-red-700"
+                              onClick={() => handleDeleteUser(user)}
+                            >
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
@@ -234,6 +277,27 @@ const Users = () => {
           </Card>
         </div>
       </div>
+
+      {/* Dialogs */}
+      <NewUserDialog
+        isOpen={newUserDialogOpen}
+        onClose={() => setNewUserDialogOpen(false)}
+        onUserCreated={handleUserCreated}
+      />
+      
+      <EditUserDialog
+        isOpen={editUserDialogOpen}
+        onClose={() => setEditUserDialogOpen(false)}
+        onUserUpdated={handleUserUpdated}
+        user={selectedUser}
+      />
+      
+      <DeleteUserDialog
+        isOpen={deleteUserDialogOpen}
+        onClose={() => setDeleteUserDialogOpen(false)}
+        onUserDeleted={handleUserDeleted}
+        user={selectedUser}
+      />
     </div>
   );
 };

@@ -1,0 +1,163 @@
+
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+
+interface NewUserDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUserCreated: () => void;
+}
+
+export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogProps) => {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    birth_date: "",
+    role: "athlete",
+    user_status: "active"
+  });
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('app_users')
+        .insert([formData]);
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Σφάλμα",
+          description: "Δεν ήταν δυνατή η δημιουργία του χρήστη",
+        });
+      } else {
+        toast({
+          title: "Επιτυχία",
+          description: "Ο χρήστης δημιουργήθηκε επιτυχώς",
+        });
+        onUserCreated();
+        onClose();
+        setFormData({
+          name: "",
+          email: "",
+          birth_date: "",
+          role: "athlete",
+          user_status: "active"
+        });
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Προέκυψε σφάλμα κατά τη δημιουργία του χρήστη",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Νέος Χρήστης</DialogTitle>
+          <DialogDescription>
+            Συμπληρώστε τα στοιχεία για τη δημιουργία νέου χρήστη
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Ονοματεπώνυμο</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="birth_date">Ημερομηνία Γέννησης</Label>
+            <Input
+              id="birth_date"
+              type="date"
+              value={formData.birth_date}
+              onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="role">Ρόλος</Label>
+            <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Επιλέξτε ρόλο" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="trainer">Trainer</SelectItem>
+                <SelectItem value="athlete">Athlete</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="status">Κατάσταση</Label>
+            <Select value={formData.user_status} onValueChange={(value) => setFormData({ ...formData, user_status: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Επιλέξτε κατάσταση" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="rounded-none">
+              Ακύρωση
+            </Button>
+            <Button type="submit" disabled={loading} className="rounded-none">
+              {loading ? "Δημιουργία..." : "Δημιουργία"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
