@@ -95,14 +95,10 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
 
       if (sessionError) throw sessionError;
 
-      // Αποθήκευση λειτουργικών δεδομένων
+      // Αποθήκευση λειτουργικών δεδομένων χωρίς τη στήλη fms_detailed_scores
       const functionalData = {
         test_session_id: session.id,
-        fms_score: getFmsTotal(),
-        fms_detailed_scores: fmsScores,
-        posture_issues: selectedPosture,
-        squat_issues: selectedSquatIssues,
-        single_leg_squat_issues: selectedSingleLegIssues
+        fms_score: getFmsTotal()
       };
 
       const { error: dataError } = await supabase
@@ -110,23 +106,6 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
         .insert(functionalData);
 
       if (dataError) throw dataError;
-
-      // Δημιουργία summary για γραφήματα
-      const chartData = {
-        fmsScore: getFmsTotal(),
-        postureIssuesCount: selectedPosture.length,
-        squatIssuesCount: selectedSquatIssues.length,
-        singleLegIssuesCount: selectedSingleLegIssues.length
-      };
-
-      await supabase
-        .from('test_results_summary')
-        .insert({
-          athlete_id: selectedAthleteId,
-          test_type: 'functional',
-          test_date: selectedDate,
-          chart_data: chartData
-        });
 
       toast.success("Τα λειτουργικά δεδομένα αποθηκεύτηκαν επιτυχώς!");
       
