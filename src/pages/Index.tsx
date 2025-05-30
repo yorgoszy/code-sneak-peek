@@ -1113,7 +1113,7 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Center - Logo and Social Media - moved down */}
+              {/* Center - Logo and Social Media */}
               <div className="text-center mt-8">
                 <div className="mb-8">
                   <img 
@@ -1123,15 +1123,7 @@ const Index = () => {
                   />
                 </div>
                 
-                {/* Globe Icon - moved down */}
-                <div className="flex justify-center mb-6">
-                  <Globe 
-                    className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" 
-                    onClick={toggleLanguage}
-                  />
-                </div>
-                
-                {/* Social Media Icons - removed bubbles and added TikTok */}
+                {/* Social Media Icons */}
                 <div className="flex justify-center gap-4">
                   <Facebook className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
                   <Instagram className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
