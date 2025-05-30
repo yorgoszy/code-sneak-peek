@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { PhotoUpload } from "./PhotoUpload";
 
 interface AppUser {
   id: string;
@@ -48,7 +49,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
   const [category, setCategory] = useState("");
   const [userStatus, setUserStatus] = useState("");
   const [birthDate, setBirthDate] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -61,7 +62,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
       setCategory(user.category || "");
       setUserStatus(user.user_status || "");
       setBirthDate(user.birth_date || "");
-      setPhotoUrl(user.photo_url || "");
+      setPhotoUrl(user.photo_url || null);
     }
   }, [user, isOpen]);
 
@@ -91,7 +92,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
       userData.phone = phone.trim() || null;
       userData.category = category.trim() || null;
       userData.birth_date = birthDate || null;
-      userData.photo_url = photoUrl.trim() || null;
+      userData.photo_url = photoUrl || null;
 
       const { error } = await supabase
         .from('app_users')
@@ -158,6 +159,12 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
             />
           </div>
 
+          <PhotoUpload
+            currentPhotoUrl={photoUrl || undefined}
+            onPhotoChange={setPhotoUrl}
+            disabled={loading}
+          />
+
           <div className="space-y-2">
             <Label htmlFor="phone">Τηλέφωνο</Label>
             <Input
@@ -215,16 +222,6 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               type="date"
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="photoUrl">URL Φωτογραφίας</Label>
-            <Input
-              id="photoUrl"
-              value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
-              placeholder="Εισάγετε το URL της φωτογραφίας"
             />
           </div>
           
