@@ -143,6 +143,28 @@ const Results = () => {
         }
       });
 
+      // Fetch Functional Tests
+      const { data: functionalData } = await supabase
+        .from('functional_test_sessions')
+        .select(`
+          test_date,
+          app_users!athlete_id(name),
+          functional_test_data(*)
+        `)
+        .eq('athlete_id', selectedAthleteId)
+        .order('test_date', { ascending: false });
+
+      functionalData?.forEach(session => {
+        if (session.functional_test_data && session.functional_test_data.length > 0) {
+          results.push({
+            test_date: session.test_date,
+            athlete_name: session.app_users?.name || 'Άγνωστος',
+            test_type: 'functional',
+            data: session.functional_test_data[0]
+          });
+        }
+      });
+
       setTestResults(results);
     } catch (error) {
       console.error('Error fetching test results:', error);
@@ -176,6 +198,17 @@ const Results = () => {
       push_ups: result.data.push_ups || 0,
       pull_ups: result.data.pull_ups || 0,
       vo2_max: result.data.vo2_max || 0
+    }));
+  };
+
+  const getFunctionalChartData = () => {
+    const functionalResults = testResults.filter(r => r.test_type === 'functional');
+    return functionalResults.map(result => ({
+      name: new Date(result.test_date).toLocaleDateString('el-GR'),
+      fms_score: result.data.fms_score || 0,
+      posture_issues: result.data.posture_issues?.length || 0,
+      squat_issues: result.data.squat_issues?.length || 0,
+      single_leg_issues: result.data.single_leg_squat_issues?.length || 0
     }));
   };
 
@@ -256,11 +289,12 @@ const Results = () => {
 
           {selectedAthleteId && testResults.length > 0 && (
             <Tabs defaultValue="anthropometric" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 rounded-none">
+              <TabsList className="grid w-full grid-cols-5 rounded-none">
                 <TabsTrigger value="anthropometric" className="rounded-none">Σωματομετρικά</TabsTrigger>
                 <TabsTrigger value="strength" className="rounded-none">Δύναμη</TabsTrigger>
                 <TabsTrigger value="endurance" className="rounded-none">Αντοχή</TabsTrigger>
                 <TabsTrigger value="jumps" className="rounded-none">Άλματα</TabsTrigger>
+                <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
               </TabsList>
 
               <TabsContent value="anthropometric" className="mt-6">
@@ -325,6 +359,31 @@ const Results = () => {
                     data={getJumpChartData().map(d => ({ name: d.name, value: d.broad_jump, unit: 'cm' }))}
                     title="Broad Jump (cm)"
                     color="#84CC16"
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="functional" className="mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <TestBarChart
+                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.fms_score, unit: '' }))}
+                    title="FMS Score"
+                    color="#9333EA"
+                  />
+                  <TestBarChart
+                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.posture_issues, unit: '' }))}
+                    title="Προβλήματα Στάσης"
+                    color="#DC2626"
+                  />
+                  <TestBarChart
+                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.squat_issues, unit: '' }))}
+                    title="Προβλήματα Καθημάτων"
+                    color="#EA580C"
+                  />
+                  <TestBarChart
+                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.single_leg_issues, unit: '' }))}
+                    title="Προβλήματα Μονοποδικών Καθημάτων"
+                    color="#CA8A04"
                   />
                 </div>
               </TabsContent>

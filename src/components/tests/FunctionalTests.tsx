@@ -95,10 +95,14 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
 
       if (sessionError) throw sessionError;
 
-      // Αποθήκευση λειτουργικών δεδομένων χωρίς τη στήλη fms_detailed_scores
+      // Αποθήκευση λειτουργικών δεδομένων με όλες τις λεπτομέρειες
       const functionalData = {
         test_session_id: session.id,
-        fms_score: getFmsTotal()
+        fms_score: getFmsTotal(),
+        fms_detailed_scores: fmsScores,
+        posture_issues: selectedPosture,
+        squat_issues: selectedSquatIssues,
+        single_leg_squat_issues: selectedSingleLegIssues
       };
 
       const { error: dataError } = await supabase

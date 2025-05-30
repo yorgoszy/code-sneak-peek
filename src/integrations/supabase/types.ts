@@ -625,42 +625,54 @@ export type Database = {
         Row: {
           created_at: string | null
           flamingo_balance: number | null
+          fms_detailed_scores: Json | null
           fms_score: number | null
           id: string
           muscles_need_strengthening: string[] | null
           muscles_need_stretching: string[] | null
           posture_assessment: string | null
+          posture_issues: string[] | null
           shoulder_mobility_left: number | null
           shoulder_mobility_right: number | null
+          single_leg_squat_issues: string[] | null
           sit_and_reach: number | null
+          squat_issues: string[] | null
           test_session_id: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           flamingo_balance?: number | null
+          fms_detailed_scores?: Json | null
           fms_score?: number | null
           id?: string
           muscles_need_strengthening?: string[] | null
           muscles_need_stretching?: string[] | null
           posture_assessment?: string | null
+          posture_issues?: string[] | null
           shoulder_mobility_left?: number | null
           shoulder_mobility_right?: number | null
+          single_leg_squat_issues?: string[] | null
           sit_and_reach?: number | null
+          squat_issues?: string[] | null
           test_session_id?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           flamingo_balance?: number | null
+          fms_detailed_scores?: Json | null
           fms_score?: number | null
           id?: string
           muscles_need_strengthening?: string[] | null
           muscles_need_stretching?: string[] | null
           posture_assessment?: string | null
+          posture_issues?: string[] | null
           shoulder_mobility_left?: number | null
           shoulder_mobility_right?: number | null
+          single_leg_squat_issues?: string[] | null
           sit_and_reach?: number | null
+          squat_issues?: string[] | null
           test_session_id?: string | null
           updated_at?: string | null
         }
