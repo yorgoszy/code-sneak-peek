@@ -13,6 +13,8 @@ interface LoadVelocityFiltersProps {
   onDateToggle: (date: string) => void;
   onSelectAllExercises: () => void;
   onSelectAllDates: () => void;
+  onDeselectAllExercises: () => void;
+  onDeselectAllDates: () => void;
 }
 
 export const LoadVelocityFilters = ({
@@ -23,7 +25,9 @@ export const LoadVelocityFilters = ({
   onExerciseToggle,
   onDateToggle,
   onSelectAllExercises,
-  onSelectAllDates
+  onSelectAllDates,
+  onDeselectAllExercises,
+  onDeselectAllDates
 }: LoadVelocityFiltersProps) => {
   const [exerciseSearchTerm, setExerciseSearchTerm] = useState('');
   const [dateSearchTerm, setDateSearchTerm] = useState('');
@@ -46,12 +50,20 @@ export const LoadVelocityFilters = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Ασκήσεις</Label>
-              <button
-                onClick={onSelectAllExercises}
-                className="text-sm text-blue-600 hover:text-blue-800"
-              >
-                {selectedExercises.length === availableExercises.length ? 'Αποεπιλογή όλων' : 'Επιλογή όλων'}
-              </button>
+              <div className="space-x-2">
+                <button
+                  onClick={onSelectAllExercises}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Επιλογή όλων
+                </button>
+                <button
+                  onClick={onDeselectAllExercises}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Αποεπιλογή όλων
+                </button>
+              </div>
             </div>
 
             <Command className="border border-gray-200 bg-white">
@@ -96,12 +108,20 @@ export const LoadVelocityFilters = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Ημερομηνίες</Label>
-              <button
-                onClick={onSelectAllDates}
-                className="text-sm text-blue-600 hover:text-blue-800"
-              >
-                {selectedDates.length === availableDates.length ? 'Αποεπιλογή όλων' : 'Επιλογή όλων'}
-              </button>
+              <div className="space-x-2">
+                <button
+                  onClick={onSelectAllDates}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Επιλογή όλων
+                </button>
+                <button
+                  onClick={onDeselectAllDates}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Αποεπιλογή όλων
+                </button>
+              </div>
             </div>
 
             <Command className="border border-gray-200 bg-white">

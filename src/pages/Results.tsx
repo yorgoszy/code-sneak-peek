@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -7,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TestBarChart } from "@/components/charts/TestBarChart";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 import { LoadVelocityFilters } from "@/components/charts/LoadVelocityFilters";
+import { CombinedLoadVelocityChart } from "@/components/charts/CombinedLoadVelocityChart";
 import { AthleteSelector } from "@/components/AthleteSelector";
 
 interface User {
