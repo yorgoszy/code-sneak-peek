@@ -22,10 +22,9 @@ const menuItems = [
   { icon: UsersRound, label: "Groups", path: "/dashboard/groups" },
   { icon: BookOpen, label: "Programs", path: "/dashboard/programs" },
   { icon: ClipboardList, label: "Assignments", path: "/dashboard/assignments" },
-  { icon: Activity, label: "Αξιολόγηση", path: "/dashboard/evaluation" },
   { icon: Activity, label: "Tests", path: "/dashboard/tests" },
-  { icon: Dumbbell, label: "Exercises", path: "/dashboard/exercises" },
   { icon: BarChart3, label: "Results", path: "/dashboard/results" },
+  { icon: Dumbbell, label: "Exercises", path: "/dashboard/exercises" },
   { icon: Settings, label: "Settings", path: "/dashboard/settings" },
 ];
 

@@ -11,6 +11,7 @@ import Users from "./pages/Users";
 import Groups from "./pages/Groups";
 import Exercises from "./pages/Exercises";
 import Tests from "./pages/Tests";
+import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ function App() {
             <Route path="/dashboard/groups" element={<Groups />} />
             <Route path="/dashboard/exercises" element={<Exercises />} />
             <Route path="/dashboard/tests" element={<Tests />} />
+            <Route path="/dashboard/results" element={<Results />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

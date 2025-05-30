@@ -3,14 +3,13 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
-import { TestBarChart } from "@/components/charts/TestBarChart";
-import { FunctionalTestResults } from "@/components/charts/FunctionalTestResults";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { TestBarChart } from "@/components/charts/TestBarChart";
+import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 
 interface User {
   id: string;
@@ -18,12 +17,19 @@ interface User {
   email: string;
 }
 
+interface TestResult {
+  test_date: string;
+  athlete_name: string;
+  test_type: string;
+  data: any;
+}
+
 const Results = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedAthleteId, setSelectedAthleteId] = useState<string>('');
   const [users, setUsers] = useState<User[]>([]);
-  const [testResults, setTestResults] = useState<any[]>([]);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
 
   useEffect(() => {
     fetchUsers();
@@ -44,13 +50,153 @@ const Results = () => {
   };
 
   const fetchTestResults = async () => {
-    const { data } = await supabase
-      .from('test_results_summary')
-      .select('*')
-      .eq('athlete_id', selectedAthleteId)
-      .order('test_date', { ascending: false });
+    if (!selectedAthleteId) return;
+
+    try {
+      const results: TestResult[] = [];
+
+      // Fetch Anthropometric Tests
+      const { data: anthropometricData } = await supabase
+        .from('anthropometric_test_sessions')
+        .select(`
+          test_date,
+          app_users!athlete_id(name),
+          anthropometric_test_data(*)
+        `)
+        .eq('athlete_id', selectedAthleteId)
+        .order('test_date', { ascending: false });
+
+      anthropometricData?.forEach(session => {
+        if (session.anthropometric_test_data && session.anthropometric_test_data.length > 0) {
+          results.push({
+            test_date: session.test_date,
+            athlete_name: session.app_users?.name || 'Άγνωστος',
+            test_type: 'anthropometric',
+            data: session.anthropometric_test_data[0]
+          });
+        }
+      });
+
+      // Fetch Strength Tests
+      const { data: strengthData } = await supabase
+        .from('strength_test_sessions')
+        .select(`
+          test_date,
+          app_users!athlete_id(name),
+          strength_test_attempts(*, exercises(name))
+        `)
+        .eq('athlete_id', selectedAthleteId)
+        .order('test_date', { ascending: false });
+
+      strengthData?.forEach(session => {
+        if (session.strength_test_attempts && session.strength_test_attempts.length > 0) {
+          results.push({
+            test_date: session.test_date,
+            athlete_name: session.app_users?.name || 'Άγνωστος',
+            test_type: 'strength',
+            data: session.strength_test_attempts
+          });
+        }
+      });
+
+      // Fetch Jump Tests
+      const { data: jumpData } = await supabase
+        .from('jump_test_sessions')
+        .select(`
+          test_date,
+          app_users!athlete_id(name),
+          jump_test_data(*)
+        `)
+        .eq('athlete_id', selectedAthleteId)
+        .order('test_date', { ascending: false });
+
+      jumpData?.forEach(session => {
+        if (session.jump_test_data && session.jump_test_data.length > 0) {
+          results.push({
+            test_date: session.test_date,
+            athlete_name: session.app_users?.name || 'Άγνωστος',
+            test_type: 'jump',
+            data: session.jump_test_data[0]
+          });
+        }
+      });
+
+      // Fetch Endurance Tests
+      const { data: enduranceData } = await supabase
+        .from('endurance_test_sessions')
+        .select(`
+          test_date,
+          app_users!athlete_id(name),
+          endurance_test_data(*)
+        `)
+        .eq('athlete_id', selectedAthleteId)
+        .order('test_date', { ascending: false });
+
+      enduranceData?.forEach(session => {
+        if (session.endurance_test_data && session.endurance_test_data.length > 0) {
+          results.push({
+            test_date: session.test_date,
+            athlete_name: session.app_users?.name || 'Άγνωστος',
+            test_type: 'endurance',
+            data: session.endurance_test_data[0]
+          });
+        }
+      });
+
+      setTestResults(results);
+    } catch (error) {
+      console.error('Error fetching test results:', error);
+    }
+  };
+
+  const getAnthropometricChartData = () => {
+    const anthropometricResults = testResults.filter(r => r.test_type === 'anthropometric');
+    return anthropometricResults.map(result => ({
+      name: new Date(result.test_date).toLocaleDateString('el-GR'),
+      weight: result.data.weight || 0,
+      height: result.data.height || 0,
+      body_fat: result.data.body_fat_percentage || 0
+    }));
+  };
+
+  const getJumpChartData = () => {
+    const jumpResults = testResults.filter(r => r.test_type === 'jump');
+    return jumpResults.map(result => ({
+      name: new Date(result.test_date).toLocaleDateString('el-GR'),
+      cmj: result.data.counter_movement_jump || 0,
+      broad_jump: result.data.broad_jump || 0,
+      triple_jump_right: result.data.triple_jump_right || 0
+    }));
+  };
+
+  const getEnduranceChartData = () => {
+    const enduranceResults = testResults.filter(r => r.test_type === 'endurance');
+    return enduranceResults.map(result => ({
+      name: new Date(result.test_date).toLocaleDateString('el-GR'),
+      push_ups: result.data.push_ups || 0,
+      pull_ups: result.data.pull_ups || 0,
+      vo2_max: result.data.vo2_max || 0
+    }));
+  };
+
+  const getStrengthChartData = () => {
+    const strengthResults = testResults.filter(r => r.test_type === 'strength');
+    const chartData: any[] = [];
     
-    setTestResults(data || []);
+    strengthResults.forEach(result => {
+      result.data.forEach((attempt: any) => {
+        if (attempt.exercises?.name) {
+          chartData.push({
+            exerciseName: attempt.exercises.name,
+            velocity: attempt.velocity_ms,
+            weight: attempt.weight_kg,
+            date: result.test_date
+          });
+        }
+      });
+    });
+    
+    return chartData;
   };
 
   if (loading) {
@@ -67,18 +213,6 @@ const Results = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  const anthropometricData = testResults
-    .filter(result => result.test_type === 'anthropometric')
-    .slice(0, 1)[0];
-
-  const jumpData = testResults
-    .filter(result => result.test_type === 'jump')
-    .slice(0, 1)[0];
-
-  const enduranceData = testResults
-    .filter(result => result.test_type === 'endurance')
-    .slice(0, 1)[0];
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
@@ -89,13 +223,14 @@ const Results = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Αποτελέσματα</h1>
               <p className="text-sm text-gray-600">
-                Ανάλυση και σύγκριση αποτελεσμάτων τεστ
+                Γραφικές παραστάσεις και συγκρίσεις τεστ
               </p>
             </div>
           </div>
         </nav>
 
         <div className="flex-1 p-6">
+          {/* Επιλογή Αθλητή */}
           <Card className="rounded-none mb-6">
             <CardHeader>
               <CardTitle>Επιλογή Αθλητή</CardTitle>
@@ -120,91 +255,91 @@ const Results = () => {
           </Card>
 
           {selectedAthleteId && testResults.length > 0 && (
-            <Tabs defaultValue="strength" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 rounded-none">
-                <TabsTrigger value="strength" className="rounded-none">Δύναμη</TabsTrigger>
+            <Tabs defaultValue="anthropometric" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 rounded-none">
                 <TabsTrigger value="anthropometric" className="rounded-none">Σωματομετρικά</TabsTrigger>
-                <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
+                <TabsTrigger value="strength" className="rounded-none">Δύναμη</TabsTrigger>
                 <TabsTrigger value="endurance" className="rounded-none">Αντοχή</TabsTrigger>
                 <TabsTrigger value="jumps" className="rounded-none">Άλματα</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="strength" className="mt-6">
-                <div className="text-center py-12 text-gray-500">
-                  <p>Load/Velocity Profiles θα εμφανιστούν εδώ όταν υπάρχουν δεδομένα δύναμης</p>
+              <TabsContent value="anthropometric" className="mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <TestBarChart
+                    data={getAnthropometricChartData().map(d => ({ name: d.name, value: d.weight, unit: 'kg' }))}
+                    title="Βάρος (kg)"
+                    color="#10B981"
+                  />
+                  <TestBarChart
+                    data={getAnthropometricChartData().map(d => ({ name: d.name, value: d.body_fat, unit: '%' }))}
+                    title="Ποσοστό Λίπους (%)"
+                    color="#F59E0B"
+                  />
                 </div>
               </TabsContent>
 
-              <TabsContent value="anthropometric" className="mt-6">
-                {anthropometricData?.chart_data ? (
-                  <TestBarChart
-                    data={anthropometricData.chart_data.labels.map((label: string, index: number) => ({
-                      name: label,
-                      value: anthropometricData.chart_data.values[index],
-                      unit: label.includes('%') ? '%' : label === 'Βάρος' ? 'kg' : 'cm'
-                    }))}
-                    title="Σωματομετρικά Δεδομένα"
-                    color="#10b981"
-                  />
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <p>Δεν υπάρχουν σωματομετρικά δεδομένα</p>
+              <TabsContent value="strength" className="mt-6">
+                {getStrengthChartData().length > 0 && (
+                  <div className="space-y-6">
+                    {/* Group by exercise for Load/Velocity charts */}
+                    {Object.entries(
+                      getStrengthChartData().reduce((acc: any, curr) => {
+                        if (!acc[curr.exerciseName]) acc[curr.exerciseName] = [];
+                        acc[curr.exerciseName].push(curr);
+                        return acc;
+                      }, {})
+                    ).map(([exerciseName, data]: [string, any]) => (
+                      <LoadVelocityChart
+                        key={exerciseName}
+                        data={data}
+                        exerciseName={exerciseName}
+                      />
+                    ))}
                   </div>
                 )}
-              </TabsContent>
-
-              <TabsContent value="functional" className="mt-6">
-                <div className="text-center py-12 text-gray-500">
-                  <p>Αποτελέσματα λειτουργικότητας θα εμφανιστούν εδώ</p>
-                </div>
               </TabsContent>
 
               <TabsContent value="endurance" className="mt-6">
-                {enduranceData?.chart_data ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <TestBarChart
-                    data={enduranceData.chart_data.labels.map((label: string, index: number) => ({
-                      name: label,
-                      value: enduranceData.chart_data.values[index]
-                    }))}
-                    title="Αποτελέσματα Αντοχής"
-                    color="#f59e0b"
+                    data={getEnduranceChartData().map(d => ({ name: d.name, value: d.push_ups, unit: '' }))}
+                    title="Push-ups"
+                    color="#8B5CF6"
                   />
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <p>Δεν υπάρχουν δεδομένα αντοχής</p>
-                  </div>
-                )}
+                  <TestBarChart
+                    data={getEnduranceChartData().map(d => ({ name: d.name, value: d.vo2_max, unit: 'ml/kg/min' }))}
+                    title="VO2 Max"
+                    color="#EF4444"
+                  />
+                </div>
               </TabsContent>
 
               <TabsContent value="jumps" className="mt-6">
-                {jumpData?.chart_data ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <TestBarChart
-                    data={jumpData.chart_data.labels.map((label: string, index: number) => ({
-                      name: label,
-                      value: jumpData.chart_data.values[index],
-                      unit: label.includes('Triple') || label.includes('Broad') ? 'm' : 'cm'
-                    }))}
-                    title="Αποτελέσματα Αλμάτων"
-                    color="#8b5cf6"
+                    data={getJumpChartData().map(d => ({ name: d.name, value: d.cmj, unit: 'cm' }))}
+                    title="Counter Movement Jump (cm)"
+                    color="#06B6D4"
                   />
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <p>Δεν υπάρχουν δεδομένα αλμάτων</p>
-                  </div>
-                )}
+                  <TestBarChart
+                    data={getJumpChartData().map(d => ({ name: d.name, value: d.broad_jump, unit: 'cm' }))}
+                    title="Broad Jump (cm)"
+                    color="#84CC16"
+                  />
+                </div>
               </TabsContent>
             </Tabs>
           )}
 
           {selectedAthleteId && testResults.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              <p>Δεν υπάρχουν αποτελέσματα για αυτόν τον αθλητή</p>
+              <p>Δεν βρέθηκαν αποτελέσματα τεστ για αυτόν τον αθλητή</p>
             </div>
           )}
 
           {!selectedAthleteId && (
             <div className="text-center py-12 text-gray-500">
-              <p>Παρακαλώ επιλέξτε αθλητή για προβολή αποτελεσμάτων</p>
+              <p>Παρακαλώ επιλέξτε αθλητή για να δείτε τα αποτελέσματα</p>
             </div>
           )}
         </div>
