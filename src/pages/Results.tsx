@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { TestBarChart } from "@/components/charts/TestBarChart";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
+import { LoadVelocityFilters } from "@/components/charts/LoadVelocityFilters";
 import { AthleteSelector } from "@/components/AthleteSelector";
 
 interface User {
@@ -28,6 +29,10 @@ const Results = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [activeTab, setActiveTab] = useState("anthropometric");
+  
+  // Φίλτρα για Load/Velocity
+  const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
 
   useEffect(() => {
     fetchUsers();
@@ -246,6 +251,59 @@ const Results = () => {
     return chartData;
   };
 
+  const getAvailableExercises = () => {
+    const strengthData = getStrengthChartData();
+    return [...new Set(strengthData.map(d => d.exerciseName))];
+  };
+
+  const getAvailableDates = () => {
+    const strengthData = getStrengthChartData();
+    return [...new Set(strengthData.map(d => d.date))].sort();
+  };
+
+  const getFilteredStrengthData = () => {
+    const strengthData = getStrengthChartData();
+    return strengthData.filter(d => {
+      const exerciseMatch = selectedExercises.length === 0 || selectedExercises.includes(d.exerciseName);
+      const dateMatch = selectedDates.length === 0 || selectedDates.includes(d.date);
+      return exerciseMatch && dateMatch;
+    });
+  };
+
+  const handleExerciseToggle = (exercise: string) => {
+    if (selectedExercises.includes(exercise)) {
+      setSelectedExercises(selectedExercises.filter(e => e !== exercise));
+    } else {
+      setSelectedExercises([...selectedExercises, exercise]);
+    }
+  };
+
+  const handleDateToggle = (date: string) => {
+    if (selectedDates.includes(date)) {
+      setSelectedDates(selectedDates.filter(d => d !== date));
+    } else {
+      setSelectedDates([...selectedDates, date]);
+    }
+  };
+
+  const handleSelectAllExercises = () => {
+    const availableExercises = getAvailableExercises();
+    if (selectedExercises.length === availableExercises.length) {
+      setSelectedExercises([]);
+    } else {
+      setSelectedExercises(availableExercises);
+    }
+  };
+
+  const handleSelectAllDates = () => {
+    const availableDates = getAvailableDates();
+    if (selectedDates.length === availableDates.length) {
+      setSelectedDates([]);
+    } else {
+      setSelectedDates(availableDates);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -336,8 +394,19 @@ const Results = () => {
               <TabsContent value="strength" className="mt-6">
                 {getStrengthChartData().length > 0 && (
                   <div className="space-y-6">
+                    <LoadVelocityFilters
+                      availableExercises={getAvailableExercises()}
+                      availableDates={getAvailableDates()}
+                      selectedExercises={selectedExercises}
+                      selectedDates={selectedDates}
+                      onExerciseToggle={handleExerciseToggle}
+                      onDateToggle={handleDateToggle}
+                      onSelectAllExercises={handleSelectAllExercises}
+                      onSelectAllDates={handleSelectAllDates}
+                    />
+                    
                     {Object.entries(
-                      getStrengthChartData().reduce((acc: any, curr) => {
+                      getFilteredStrengthData().reduce((acc: any, curr) => {
                         if (!acc[curr.exerciseName]) acc[curr.exerciseName] = [];
                         acc[curr.exerciseName].push(curr);
                         return acc;
