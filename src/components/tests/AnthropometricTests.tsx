@@ -42,6 +42,43 @@ export const AnthropometricTests = ({ selectedAthleteId, selectedDate }: Anthrop
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Δημιουργία app_user εάν δεν υπάρχει
+  const ensureAppUserExists = async () => {
+    if (!user) return null;
+
+    const { data: existingAppUser, error: checkError } = await supabase
+      .from('app_users')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .maybeSingle();
+
+    if (existingAppUser) {
+      return existingAppUser.id;
+    }
+
+    if (checkError) {
+      console.error('Error checking app_user:', checkError);
+    }
+
+    const { data: newAppUser, error: createError } = await supabase
+      .from('app_users')
+      .insert({
+        auth_user_id: user.id,
+        email: user.email || 'unknown@email.com',
+        name: user.user_metadata?.full_name || user.email || 'Unknown User',
+        role: 'coach'
+      })
+      .select('id')
+      .single();
+
+    if (createError) {
+      console.error('Error creating app_user:', createError);
+      throw createError;
+    }
+
+    return newAppUser.id;
+  };
+
   const handleSubmit = async () => {
     if (!selectedAthleteId || !user) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
@@ -49,13 +86,20 @@ export const AnthropometricTests = ({ selectedAthleteId, selectedDate }: Anthrop
     }
 
     try {
+      const appUserId = await ensureAppUserExists();
+      
+      if (!appUserId) {
+        toast.error("Σφάλμα στη δημιουργία χρήστη");
+        return;
+      }
+
       // Δημιουργία session για σωματομετρικά
       const { data: session, error: sessionError } = await supabase
         .from('anthropometric_test_sessions')
         .insert({
           athlete_id: selectedAthleteId,
           test_date: selectedDate,
-          created_by: user.id
+          created_by: appUserId
         })
         .select()
         .single();
@@ -124,7 +168,7 @@ export const AnthropometricTests = ({ selectedAthleteId, selectedDate }: Anthrop
 
     } catch (error) {
       console.error('Error saving anthropometric data:', error);
-      toast.error("Σφάλμα κατά την αποθήκευση");
+      toast.error("Σφάλμα κατά την αποθήκευση: " + (error as any).message);
     }
   };
 
