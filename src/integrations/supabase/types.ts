@@ -330,14 +330,17 @@ export type Database = {
           mas_meters: number | null
           mas_minutes: number | null
           mas_ms: number | null
+          max_hr: number | null
           pull_ups: number | null
           push_ups: number | null
+          resting_hr_1min: number | null
           sprint_meters: number | null
           sprint_resistance: string | null
           sprint_seconds: number | null
           sprint_watt: number | null
           test_session_id: string | null
           updated_at: string | null
+          vo2_max: number | null
         }
         Insert: {
           created_at?: string | null
@@ -350,14 +353,17 @@ export type Database = {
           mas_meters?: number | null
           mas_minutes?: number | null
           mas_ms?: number | null
+          max_hr?: number | null
           pull_ups?: number | null
           push_ups?: number | null
+          resting_hr_1min?: number | null
           sprint_meters?: number | null
           sprint_resistance?: string | null
           sprint_seconds?: number | null
           sprint_watt?: number | null
           test_session_id?: string | null
           updated_at?: string | null
+          vo2_max?: number | null
         }
         Update: {
           created_at?: string | null
@@ -370,14 +376,17 @@ export type Database = {
           mas_meters?: number | null
           mas_minutes?: number | null
           mas_ms?: number | null
+          max_hr?: number | null
           pull_ups?: number | null
           push_ups?: number | null
+          resting_hr_1min?: number | null
           sprint_meters?: number | null
           sprint_resistance?: string | null
           sprint_seconds?: number | null
           sprint_watt?: number | null
           test_session_id?: string | null
           updated_at?: string | null
+          vo2_max?: number | null
         }
         Relationships: [
           {

@@ -36,7 +36,10 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
     masMeters: '',
     masMinutes: '',
     masMs: '',
-    masKmh: ''
+    masKmh: '',
+    maxHr: '',
+    restingHr1min: '',
+    vo2Max: ''
   });
 
   // Αυτόματος υπολογισμός m/s και km/h για MAS
@@ -72,10 +75,14 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
       .from('app_users')
       .select('id')
       .eq('auth_user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (existingAppUser) {
       return existingAppUser.id;
+    }
+
+    if (checkError) {
+      console.error('Error checking app_user:', checkError);
     }
 
     // Εάν δεν υπάρχει, δημιουργούμε έναν νέο
@@ -85,7 +92,7 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
         auth_user_id: user.id,
         email: user.email || 'unknown@email.com',
         name: user.user_metadata?.full_name || user.email || 'Unknown User',
-        role: 'coach' // Ή οποιοσδήποτε default role
+        role: 'coach'
       })
       .select('id')
       .single();
@@ -138,7 +145,7 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
 
       console.log("Session created:", session);
 
-      // Αποθήκευση δεδομένων αντοχής
+      // Αποθήκευση δεδομένων αντοχής με τα νέα πεδία
       const enduranceData = {
         test_session_id: session.id,
         push_ups: formData.pushUps ? parseInt(formData.pushUps) : null,
@@ -154,7 +161,10 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
         mas_meters: formData.masMeters ? parseFloat(formData.masMeters) : null,
         mas_minutes: formData.masMinutes ? parseFloat(formData.masMinutes) : null,
         mas_ms: formData.masMs ? parseFloat(formData.masMs) : null,
-        mas_kmh: formData.masKmh ? parseFloat(formData.masKmh) : null
+        mas_kmh: formData.masKmh ? parseFloat(formData.masKmh) : null,
+        max_hr: formData.maxHr ? parseInt(formData.maxHr) : null,
+        resting_hr_1min: formData.restingHr1min ? parseInt(formData.restingHr1min) : null,
+        vo2_max: formData.vo2Max ? parseFloat(formData.vo2Max) : null
       };
 
       console.log("Endurance data to insert:", enduranceData);
@@ -172,14 +182,16 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
 
       // Δημιουργία summary για γραφήματα
       const chartData = {
-        labels: ['Push Ups', 'Pull Ups', 'Crunches', 'Farmer Walk', 'Sprint', 'MAS'],
+        labels: ['Push Ups', 'Pull Ups', 'Crunches', 'Farmer Walk', 'Sprint', 'MAS', 'Max HR', 'VO2 Max'],
         values: [
           formData.pushUps || 0,
           formData.pullUps || 0,
           formData.crunches || 0,
           formData.farmerKg || 0,
           formData.sprintWatt || 0,
-          formData.masKmh || 0
+          formData.masKmh || 0,
+          formData.maxHr || 0,
+          formData.vo2Max || 0
         ]
       };
 
@@ -213,7 +225,10 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
         masMeters: '',
         masMinutes: '',
         masMs: '',
-        masKmh: ''
+        masKmh: '',
+        maxHr: '',
+        restingHr1min: '',
+        vo2Max: ''
       });
 
     } catch (error) {
@@ -244,7 +259,56 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
         ))}
       </div>
 
-      {/* Δεύτερη σειρά - Προχωρημένα Τεστ */}
+      {/* Δεύτερη σειρά - Καρδιακά Δεδομένα */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="rounded-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-center">Max HR</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <Input
+              type="number"
+              placeholder="bpm"
+              value={formData.maxHr}
+              onChange={(e) => handleInputChange('maxHr', e.target.value)}
+              className="rounded-none h-8 text-xs"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-center">1min Rest HR</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <Input
+              type="number"
+              placeholder="bpm"
+              value={formData.restingHr1min}
+              onChange={(e) => handleInputChange('restingHr1min', e.target.value)}
+              className="rounded-none h-8 text-xs"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-center">VO2 Max</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <Input
+              type="number"
+              step="0.1"
+              placeholder="ml/kg/min"
+              value={formData.vo2Max}
+              onChange={(e) => handleInputChange('vo2Max', e.target.value)}
+              className="rounded-none h-8 text-xs"
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Τρίτη σειρά - Προχωρημένα Τεστ */}
       <div className="grid grid-cols-3 gap-3">
         {/* Farmer */}
         <Card className="rounded-none">
