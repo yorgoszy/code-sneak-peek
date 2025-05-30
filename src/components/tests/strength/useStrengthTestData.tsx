@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -66,43 +67,6 @@ export const useStrengthTestData = (selectedAthleteId: string, selectedDate: str
     fetchExercises();
     fetchSessions();
   }, [selectedAthleteId, selectedDate]);
-
-  // Δημιουργία app_user εάν δεν υπάρχει
-  const ensureAppUserExists = async () => {
-    if (!user) return null;
-
-    const { data: existingAppUser, error: checkError } = await supabase
-      .from('app_users')
-      .select('id')
-      .eq('auth_user_id', user.id)
-      .maybeSingle();
-
-    if (existingAppUser) {
-      return existingAppUser.id;
-    }
-
-    if (checkError) {
-      console.error('Error checking app_user:', checkError);
-    }
-
-    const { data: newAppUser, error: createError } = await supabase
-      .from('app_users')
-      .insert({
-        auth_user_id: user.id,
-        email: user.email || 'unknown@email.com',
-        name: user.user_metadata?.full_name || user.email || 'Unknown User',
-        role: 'coach'
-      })
-      .select('id')
-      .single();
-
-    if (createError) {
-      console.error('Error creating app_user:', createError);
-      throw createError;
-    }
-
-    return newAppUser.id;
-  };
 
   const fetchExercises = async () => {
     const { data: exercisesData } = await supabase
@@ -218,18 +182,16 @@ export const useStrengthTestData = (selectedAthleteId: string, selectedDate: str
       }
     }
 
-    try {
-      const appUserId = await ensureAppUserExists();
-      
-      if (!appUserId) {
-        toast({
-          title: "Σφάλμα",
-          description: "Σφάλμα στη δημιουργία χρήστη",
-          variant: "destructive"
-        });
-        return;
-      }
+    if (!user) {
+      toast({
+        title: "Σφάλμα",
+        description: "Πρέπει να είστε συνδεδεμένοι για να αποθηκεύσετε δεδομένα",
+        variant: "destructive"
+      });
+      return;
+    }
 
+    try {
       const testDates = currentSession.exercise_tests.map(et => et.test_date);
       const startDate = testDates.reduce((min, date) => date < min ? date : min);
 
@@ -242,7 +204,7 @@ export const useStrengthTestData = (selectedAthleteId: string, selectedDate: str
             athlete_id: currentSession.athlete_id,
             test_date: startDate,
             notes: currentSession.notes,
-            created_by: appUserId
+            created_by: user.id // Χρησιμοποιούμε το auth user id
           })
           .eq('id', editingSessionId);
 
@@ -261,7 +223,7 @@ export const useStrengthTestData = (selectedAthleteId: string, selectedDate: str
             athlete_id: currentSession.athlete_id,
             test_date: startDate,
             notes: currentSession.notes,
-            created_by: appUserId
+            created_by: user.id // Χρησιμοποιούμε το auth user id
           })
           .select()
           .single();
