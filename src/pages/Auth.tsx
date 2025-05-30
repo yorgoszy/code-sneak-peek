@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -105,6 +106,38 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("reset-email") as string;
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Email Στάλθηκε!",
+        description: "Ελέγξτε το email σας για οδηγίες επαναφοράς κωδικού.",
+      });
+
+      setShowForgotPassword(false);
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      toast({
+        title: "Σφάλμα",
+        description: error.message || "Παρουσιάστηκε σφάλμα κατά την επαναφορά κωδικού.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -118,54 +151,91 @@ const Auth = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">Είσοδος στο λογαριασμό σας</CardTitle>
+            <CardTitle className="text-center">
+              {showForgotPassword ? "Επαναφορά Κωδικού" : "Είσοδος στο λογαριασμό σας"}
+            </CardTitle>
             <CardDescription className="text-center">
-              Συνδεθείτε για να συνεχίσετε
+              {showForgotPassword ? "Εισάγετε το email σας για επαναφορά κωδικού" : "Συνδεθείτε για να συνεχίσετε"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Σύνδεση</TabsTrigger>
-                <TabsTrigger value="signup">Εγγραφή</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="login">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" placeholder="your@email.com" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Κωδικός</Label>
-                    <Input id="password" name="password" type="password" required />
-                  </div>
-                  <Button type="submit" className="w-full rounded-none" disabled={isLoading}>
-                    {isLoading ? "Σύνδεση..." : "Σύνδεση"}
-                  </Button>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Πλήρες Όνομα</Label>
-                    <Input id="name" name="name" type="text" placeholder="Το όνομά σας" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input id="signup-email" name="signup-email" type="email" placeholder="your@email.com" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Κωδικός</Label>
-                    <Input id="signup-password" name="signup-password" type="password" required />
-                  </div>
-                  <Button type="submit" className="w-full rounded-none" disabled={isLoading}>
-                    {isLoading ? "Εγγραφή..." : "Εγγραφή"}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            {showForgotPassword ? (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input 
+                    id="reset-email" 
+                    name="reset-email" 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    required 
+                  />
+                </div>
+                <Button type="submit" className="w-full rounded-none" disabled={isLoading}>
+                  {isLoading ? "Αποστολή..." : "Αποστολή Email Επαναφοράς"}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full rounded-none"
+                  onClick={() => setShowForgotPassword(false)}
+                >
+                  Επιστροφή στη Σύνδεση
+                </Button>
+              </form>
+            ) : (
+              <Tabs defaultValue="login" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Σύνδεση</TabsTrigger>
+                  <TabsTrigger value="signup">Εγγραφή</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="login">
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" name="email" type="email" placeholder="your@email.com" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Κωδικός</Label>
+                      <Input id="password" name="password" type="password" required />
+                    </div>
+                    <Button type="submit" className="w-full rounded-none" disabled={isLoading}>
+                      {isLoading ? "Σύνδεση..." : "Σύνδεση"}
+                    </Button>
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        Ξέχασα τον κωδικό μου
+                      </button>
+                    </div>
+                  </form>
+                </TabsContent>
+                
+                <TabsContent value="signup">
+                  <form onSubmit={handleSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Πλήρες Όνομα</Label>
+                      <Input id="name" name="name" type="text" placeholder="Το όνομά σας" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input id="signup-email" name="signup-email" type="email" placeholder="your@email.com" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Κωδικός</Label>
+                      <Input id="signup-password" name="signup-password" type="password" required />
+                    </div>
+                    <Button type="submit" className="w-full rounded-none" disabled={isLoading}>
+                      {isLoading ? "Εγγραφή..." : "Εγγραφή"}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
+            )}
 
             <div className="mt-6 text-center">
               <Link to="/" className="text-sm text-blue-600 hover:underline">
