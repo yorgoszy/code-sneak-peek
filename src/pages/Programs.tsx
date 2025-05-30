@@ -18,7 +18,6 @@ const Programs = () => {
   const [loading, setLoading] = useState(false);
 
   // Dialog states
-  const [showNewProgram, setShowNewProgram] = useState(false);
   const [showNewWeek, setShowNewWeek] = useState(false);
   const [showNewDay, setShowNewDay] = useState(false);
   const [showNewBlock, setShowNewBlock] = useState(false);
@@ -125,7 +124,6 @@ const Programs = () => {
     } else {
       toast.success('Το πρόγραμμα δημιουργήθηκε επιτυχώς');
       setNewProgram({ name: '', description: '', athlete_id: '' });
-      setShowNewProgram(false);
       fetchPrograms();
     }
   };
@@ -390,8 +388,6 @@ const Programs = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
           <NewProgramDialog
-            open={showNewProgram}
-            onOpenChange={handleNewProgramDialogChange}
             newProgram={newProgram}
             setNewProgram={setNewProgram}
             users={users}
