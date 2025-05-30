@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnthropometricTests } from "@/components/tests/AnthropometricTests";
 import { FunctionalTests } from "@/components/tests/FunctionalTests";
@@ -25,6 +26,7 @@ const Tests = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedAthleteId, setSelectedAthleteId] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -70,26 +72,37 @@ const Tests = () => {
         </nav>
 
         <div className="flex-1 p-6">
-          {/* Επιλογή Αθλητή */}
+          {/* Επιλογή Αθλητή και Ημερομηνίας */}
           <Card className="rounded-none mb-6">
             <CardHeader>
-              <CardTitle>Επιλογή Αθλητή</CardTitle>
+              <CardTitle>Επιλογή Αθλητή και Ημερομηνίας</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="max-w-md">
-                <Label>Αθλητής</Label>
-                <Select value={selectedAthleteId} onValueChange={setSelectedAthleteId}>
-                  <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε αθλητή για τα τεστ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map(user => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+                <div>
+                  <Label>Αθλητής</Label>
+                  <Select value={selectedAthleteId} onValueChange={setSelectedAthleteId}>
+                    <SelectTrigger className="rounded-none">
+                      <SelectValue placeholder="Επιλέξτε αθλητή για τα τεστ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map(user => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Ημερομηνία Τεστ</Label>
+                  <Input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="rounded-none"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -113,7 +126,7 @@ const Tests = () => {
               </TabsContent>
 
               <TabsContent value="strength" className="mt-6">
-                <StrengthTests selectedAthleteId={selectedAthleteId} />
+                <StrengthTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
               </TabsContent>
 
               <TabsContent value="endurance" className="mt-6">
