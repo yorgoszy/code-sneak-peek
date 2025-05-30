@@ -184,7 +184,9 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     onOpenChange(false);
   };
 
-  const handleCategoryToggle = (categoryId: string) => {
+  const handleCategoryToggle = (categoryId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setSelectedCategories(prev => 
       prev.includes(categoryId) 
         ? prev.filter(id => id !== categoryId)
@@ -211,12 +213,11 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                     ? 'bg-blue-50 border-blue-200' 
                     : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                 }`}
-                onClick={() => handleCategoryToggle(category.id)}
+                onClick={(e) => handleCategoryToggle(category.id, e)}
               >
                 <Checkbox
                   checked={selectedCategories.includes(category.id)}
                   className="mr-3"
-                  readOnly
                 />
                 <span className="text-sm select-none font-medium">{category.name}</span>
               </div>
@@ -371,12 +372,11 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                               ? 'bg-blue-50 border-blue-200' 
                               : 'bg-white border-gray-200 hover:bg-gray-50'
                           }`}
-                          onClick={() => handleCategoryToggle(category.id)}
+                          onClick={(e) => handleCategoryToggle(category.id, e)}
                         >
                           <Checkbox
                             checked={selectedCategories.includes(category.id)}
                             className="mr-3"
-                            readOnly
                           />
                           <span className="text-sm select-none font-medium">
                             {category.name} ({category.type})
