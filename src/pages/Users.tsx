@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2 } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Search, Filter } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -14,6 +15,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { NewUserDialog } from "@/components/NewUserDialog";
 import { EditUserDialog } from "@/components/EditUserDialog";
 import { DeleteUserDialog } from "@/components/DeleteUserDialog";
@@ -36,6 +45,10 @@ const Users = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   
   // Dialog states
   const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
@@ -106,6 +119,17 @@ const Users = () => {
     fetchUsers();
   };
 
+  // Filter users based on search term and filters
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    const matchesStatus = statusFilter === "all" || user.user_status === statusFilter;
+    const matchesCategory = categoryFilter === "all" || user.category === categoryFilter;
+    
+    return matchesSearch && matchesRole && matchesStatus && matchesCategory;
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -138,6 +162,10 @@ const Users = () => {
         return 'bg-blue-100 text-blue-800';
       case 'athlete':
         return 'bg-green-100 text-green-800';
+      case 'general':
+        return 'bg-purple-100 text-purple-800';
+      case 'parent':
+        return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -195,7 +223,7 @@ const Users = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-lg font-semibold">
-                  Όλοι οι Χρήστες ({users.length})
+                  Όλοι οι Χρήστες ({filteredUsers.length})
                 </CardTitle>
                 <Button 
                   className="rounded-none"
@@ -205,15 +233,74 @@ const Users = () => {
                   Νέος Χρήστης
                 </Button>
               </div>
+              
+              {/* Search and Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Αναζήτηση χρηστών..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger>
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Φίλτρο ρόλου" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Όλοι οι ρόλοι</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="trainer">Trainer</SelectItem>
+                    <SelectItem value="athlete">Athlete</SelectItem>
+                    <SelectItem value="general">General</SelectItem>
+                    <SelectItem value="parent">Parent</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Φίλτρο κατάστασης" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Όλες οι καταστάσεις</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger>
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Φίλτρο κατηγορίας" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Όλες οι κατηγορίες</SelectItem>
+                    <SelectItem value="general">General</SelectItem>
+                    <SelectItem value="youth">Youth</SelectItem>
+                    <SelectItem value="adult">Adult</SelectItem>
+                    <SelectItem value="senior">Senior</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
             <CardContent>
               {loadingUsers ? (
                 <div className="text-center py-8">
                   <p className="text-gray-600">Φόρτωση χρηστών...</p>
                 </div>
-              ) : users.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600">Δεν βρέθηκαν χρήστες</p>
+                  <p className="text-gray-600">
+                    {searchTerm || roleFilter !== "all" || statusFilter !== "all" || categoryFilter !== "all" 
+                      ? "Δεν βρέθηκαν χρήστες με τα επιλεγμένα κριτήρια" 
+                      : "Δεν βρέθηκαν χρήστες"}
+                  </p>
                 </div>
               ) : (
                 <Table>
@@ -230,7 +317,7 @@ const Users = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((user) => (
+                    {filteredUsers.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">
                           {user.name}

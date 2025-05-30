@@ -31,6 +31,8 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
+    category: "general",
     birth_date: "",
     role: "athlete",
     user_status: "active"
@@ -62,6 +64,8 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
         setFormData({
           name: "",
           email: "",
+          phone: "",
+          category: "general",
           birth_date: "",
           role: "athlete",
           user_status: "active"
@@ -109,6 +113,16 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
               required
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Τηλέφωνο</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            />
+          </div>
           
           <div className="space-y-2">
             <Label htmlFor="birth_date">Ημερομηνία Γέννησης</Label>
@@ -130,6 +144,23 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
                 <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="trainer">Trainer</SelectItem>
                 <SelectItem value="athlete">Athlete</SelectItem>
+                <SelectItem value="general">General</SelectItem>
+                <SelectItem value="parent">Parent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Κατηγορία</Label>
+            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Επιλέξτε κατηγορία" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="general">General</SelectItem>
+                <SelectItem value="youth">Youth</SelectItem>
+                <SelectItem value="adult">Adult</SelectItem>
+                <SelectItem value="senior">Senior</SelectItem>
               </SelectContent>
             </Select>
           </div>
