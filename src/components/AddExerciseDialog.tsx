@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -25,26 +26,32 @@ interface AddExerciseDialogProps {
 const categoryHierarchy = [
   {
     title: "Περιοχή Σώματος",
+    key: "body-region",
     categories: ["upper body", "lower body", "total body"]
   },
   {
     title: "Τύπος Κίνησης",
+    key: "movement-type",
     categories: ["push", "pull"]
   },
   {
     title: "Κατεύθυνση",
+    key: "direction",
     categories: ["horizontal", "vertical", "linear", "lateral"]
   },
   {
     title: "Συμμετρία",
+    key: "symmetry",
     categories: ["bilateral", "unilateral", "ipsilateral"]
   },
   {
     title: "Εξοπλισμός",
+    key: "equipment",
     categories: ["barbell", "dumbbell", "kettlebell", "medball", "band", "chains"]
   },
   {
     title: "Τύπος Συστολής",
+    key: "contraction",
     categories: ["non counter movement", "counter movement", "reactive", "non reactive"]
   }
 ];
@@ -187,17 +194,17 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     return categories.filter(cat => cat.type === type);
   };
 
-  const renderCategoryGroup = (group: { title: string; categories: string[] }) => {
+  const renderCategorySection = (group: { title: string; categories: string[] }) => {
     return (
-      <div key={group.title} className="mb-4">
-        <h4 className="font-medium text-sm text-gray-700 mb-2">{group.title}</h4>
-        <div className="space-y-1">
+      <div className="space-y-3">
+        <h3 className="font-medium text-lg text-gray-900">{group.title}</h3>
+        <div className="grid grid-cols-2 gap-2">
           {group.categories.map(categoryType => {
             const categoriesOfType = getCategoriesByType(categoryType);
             return categoriesOfType.map(category => (
               <div 
                 key={category.id} 
-                className={`flex items-center p-2 rounded border cursor-pointer transition-colors ${
+                className={`flex items-center p-3 rounded border cursor-pointer transition-colors ${
                   selectedCategories.includes(category.id) 
                     ? 'bg-blue-50 border-blue-200' 
                     : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
@@ -207,9 +214,9 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                 <Checkbox
                   checked={selectedCategories.includes(category.id)}
                   onCheckedChange={() => handleCategoryToggle(category.id)}
-                  className="mr-2"
+                  className="mr-3"
                 />
-                <span className="text-sm select-none">{category.name}</span>
+                <span className="text-sm select-none font-medium">{category.name}</span>
               </div>
             ));
           })}
@@ -218,24 +225,43 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     );
   };
 
+  const getOtherCategories = () => {
+    const hierarchyTypes = categoryHierarchy.flatMap(g => g.categories);
+    return categories.filter(cat => !hierarchyTypes.includes(cat.type));
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Προσθήκη Νέας Άσκησης</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Όνομα Άσκησης *</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="π.χ. Bench Press"
-              className="rounded-none"
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="name">Όνομα Άσκησης *</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="π.χ. Bench Press"
+                className="rounded-none"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="videoUrl">URL Βίντεο</Label>
+              <Input
+                id="videoUrl"
+                type="url"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="https://youtube.com/watch?v=..."
+                className="rounded-none"
+              />
+            </div>
           </div>
 
           <div>
@@ -251,20 +277,8 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
           </div>
 
           <div>
-            <Label htmlFor="videoUrl">URL Βίντεο</Label>
-            <Input
-              id="videoUrl"
-              type="url"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              placeholder="https://youtube.com/watch?v=..."
-              className="rounded-none"
-            />
-          </div>
-
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <Label className="text-base font-medium">Κατηγορίες *</Label>
+            <div className="flex justify-between items-center mb-4">
+              <Label className="text-lg font-semibold">Κατηγορίες *</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -278,8 +292,8 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             </div>
 
             {showAddCategory && (
-              <div className="mb-4 p-3 border rounded bg-gray-50">
-                <div className="space-y-2">
+              <div className="mb-6 p-4 border rounded bg-gray-50">
+                <div className="space-y-3">
                   <Input
                     placeholder="Όνομα κατηγορίας"
                     value={newCategoryName}
@@ -318,45 +332,81 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             {loadingCategories ? (
               <p className="text-sm text-gray-500 mt-2">Φόρτωση κατηγοριών...</p>
             ) : (
-              <div className="max-h-64 overflow-y-auto border rounded p-3">
-                {categoryHierarchy.map(group => renderCategoryGroup(group))}
-                
-                {/* Render any other categories that don't fit the hierarchy */}
-                {(() => {
-                  const hierarchyTypes = categoryHierarchy.flatMap(g => g.categories);
-                  const otherCategories = categories.filter(cat => !hierarchyTypes.includes(cat.type));
-                  
-                  if (otherCategories.length > 0) {
-                    return (
-                      <div className="mb-4">
-                        <h4 className="font-medium text-sm text-gray-700 mb-2">Άλλες Κατηγορίες</h4>
-                        <div className="space-y-1">
-                          {otherCategories.map(category => (
-                            <div 
-                              key={category.id} 
-                              className={`flex items-center p-2 rounded border cursor-pointer transition-colors ${
-                                selectedCategories.includes(category.id) 
-                                  ? 'bg-blue-50 border-blue-200' 
-                                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                              }`}
-                              onClick={() => handleCategoryToggle(category.id)}
-                            >
-                              <Checkbox
-                                checked={selectedCategories.includes(category.id)}
-                                onCheckedChange={() => handleCategoryToggle(category.id)}
-                                className="mr-2"
-                              />
-                              <span className="text-sm select-none">
-                                {category.name} ({category.type})
-                              </span>
-                            </div>
-                          ))}
+              <Tabs defaultValue={categoryHierarchy[0].key} className="w-full">
+                <TabsList className="grid w-full grid-cols-6 rounded-none">
+                  {categoryHierarchy.map(group => (
+                    <TabsTrigger 
+                      key={group.key} 
+                      value={group.key}
+                      className="rounded-none text-xs"
+                    >
+                      {group.title}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {categoryHierarchy.map(group => (
+                  <TabsContent key={group.key} value={group.key} className="mt-4">
+                    {renderCategorySection(group)}
+                  </TabsContent>
+                ))}
+              </Tabs>
+            )}
+
+            {/* Show other categories if any exist */}
+            {(() => {
+              const otherCategories = getOtherCategories();
+              if (otherCategories.length > 0 && !loadingCategories) {
+                return (
+                  <div className="mt-6 p-4 border rounded bg-gray-50">
+                    <h3 className="font-medium text-lg text-gray-900 mb-3">Άλλες Κατηγορίες</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {otherCategories.map(category => (
+                        <div 
+                          key={category.id} 
+                          className={`flex items-center p-3 rounded border cursor-pointer transition-colors ${
+                            selectedCategories.includes(category.id) 
+                              ? 'bg-blue-50 border-blue-200' 
+                              : 'bg-white border-gray-200 hover:bg-gray-50'
+                          }`}
+                          onClick={() => handleCategoryToggle(category.id)}
+                        >
+                          <Checkbox
+                            checked={selectedCategories.includes(category.id)}
+                            onCheckedChange={() => handleCategoryToggle(category.id)}
+                            className="mr-3"
+                          />
+                          <span className="text-sm select-none font-medium">
+                            {category.name} ({category.type})
+                          </span>
                         </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
+            {/* Show selected categories summary */}
+            {selectedCategories.length > 0 && (
+              <div className="mt-4 p-3 bg-blue-50 rounded border">
+                <h4 className="font-medium text-sm text-blue-900 mb-2">
+                  Επιλεγμένες Κατηγορίες ({selectedCategories.length})
+                </h4>
+                <div className="flex flex-wrap gap-1">
+                  {selectedCategories.map(categoryId => {
+                    const category = categories.find(c => c.id === categoryId);
+                    return category ? (
+                      <span 
+                        key={categoryId}
+                        className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                      >
+                        {category.name}
+                      </span>
+                    ) : null;
+                  })}
+                </div>
               </div>
             )}
           </div>
