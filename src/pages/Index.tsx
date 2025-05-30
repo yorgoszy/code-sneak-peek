@@ -958,6 +958,9 @@ const Index = () => {
                   <Instagram className="w-5 h-5" />
                 </div>
                 <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
+                  <TikTokIcon />
+                </div>
+                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
                   <Youtube className="w-5 h-5" />
                 </div>
               </div>
@@ -1138,7 +1141,7 @@ const Index = () => {
               </div>
 
               {/* Right - Hours - aligned left with day and time next to each other */}
-              <div className="text-left">
+              <div className="text-left ml-auto max-w-xs">
                 <h3 className="text-2xl font-bold text-white mb-8">
                   {language === 'el' ? 'Ώρες' : 'Hours'}
                 </h3>
