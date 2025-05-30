@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -75,28 +74,13 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
     console.log("Form data:", formData);
 
     try {
-      // Βρίσκουμε τον app_user που αντιστοιχεί στον authenticated user
-      const { data: appUser, error: appUserError } = await supabase
-        .from('app_users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (appUserError) {
-        console.error('App user error:', appUserError);
-        toast.error("Σφάλμα στην εύρεση του χρήστη");
-        return;
-      }
-
-      console.log("App user found:", appUser);
-
-      // Δημιουργία session για αντοχή
+      // Δημιουργία session για αντοχή - χρησιμοποιούμε άμεσα το auth user id
       const { data: session, error: sessionError } = await supabase
         .from('endurance_test_sessions')
         .insert({
           athlete_id: selectedAthleteId,
           test_date: selectedDate,
-          created_by: appUser.id
+          created_by: user.id  // Χρησιμοποιούμε άμεσα το auth user id
         })
         .select()
         .single();
