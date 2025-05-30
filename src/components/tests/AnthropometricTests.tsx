@@ -1,30 +1,40 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const anthropometricFields = [
-  { key: 'weight', label: 'Βάρος (kg)', type: 'number', step: '0.1' },
-  { key: 'bodyFat', label: 'Λίπος %', type: 'number', step: '0.1' },
-  { key: 'muscleMass', label: 'Μυϊκή Μάζα %', type: 'number', step: '0.1' },
-  { key: 'visceralFat', label: 'Σπλαχνικό Λίπος', type: 'number', step: '0.1' },
-  { key: 'chestCircumference', label: 'Περιφέρεια Στήθους (cm)', type: 'number', step: '0.1' },
-  { key: 'hipCircumference', label: 'Περιφέρεια Λεκάνης (cm)', type: 'number', step: '0.1' },
-  { key: 'gluteCircumference', label: 'Περιφέρεια Γλουτού (cm)', type: 'number', step: '0.1' },
-  { key: 'thighCircumference', label: 'Περιφέρεια Μηρού (cm)', type: 'number', step: '0.1' }
+  { key: 'height', label: 'Ύψος', type: 'number', step: '0.1', placeholder: 'cm' },
+  { key: 'weight', label: 'Βάρος', type: 'number', step: '0.1', placeholder: 'kg' },
+  { key: 'bodyFatPercentage', label: 'Ποσοστό Λίπους', type: 'number', step: '0.1', placeholder: '%' },
+  { key: 'muscleMassPercentage', label: 'Ποσοστό Μυϊκής Μάζας', type: 'number', step: '0.1', placeholder: '%' },
+  { key: 'waistCircumference', label: 'Περίμετρος Μέσης', type: 'number', step: '0.1', placeholder: 'cm' },
+  { key: 'hipCircumference', label: 'Περίμετρος Γοφών', type: 'number', step: '0.1', placeholder: 'cm' },
+  { key: 'chestCircumference', label: 'Περίμετρος Στήθους', type: 'number', step: '0.1', placeholder: 'cm' },
+  { key: 'armCircumference', label: 'Περίμετρος Βραχίονα', type: 'number', step: '0.1', placeholder: 'cm' },
+  { key: 'thighCircumference', label: 'Περίμετρος Μηρού', type: 'number', step: '0.1', placeholder: 'cm' }
 ];
 
-export const AnthropometricTests = () => {
+interface AnthropometricTestsProps {
+  selectedAthleteId: string;
+  selectedDate: string;
+}
+
+export const AnthropometricTests = ({ selectedAthleteId, selectedDate }: AnthropometricTestsProps) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
+    height: '',
     weight: '',
-    bodyFat: '',
-    muscleMass: '',
-    visceralFat: '',
-    chestCircumference: '',
+    bodyFatPercentage: '',
+    muscleMassPercentage: '',
+    waistCircumference: '',
     hipCircumference: '',
-    gluteCircumference: '',
+    chestCircumference: '',
+    armCircumference: '',
     thighCircumference: ''
   });
 
@@ -32,8 +42,90 @@ export const AnthropometricTests = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log('Anthropometric data:', formData);
+  const handleSubmit = async () => {
+    if (!selectedAthleteId || !user) {
+      toast.error("Παρακαλώ επιλέξτε αθλητή");
+      return;
+    }
+
+    try {
+      // Δημιουργία session για σωματομετρικά
+      const { data: session, error: sessionError } = await supabase
+        .from('anthropometric_test_sessions')
+        .insert({
+          athlete_id: selectedAthleteId,
+          test_date: selectedDate,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Αποθήκευση σωματομετρικών δεδομένων
+      const anthropometricData = {
+        test_session_id: session.id,
+        height: formData.height ? parseFloat(formData.height) : null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        body_fat_percentage: formData.bodyFatPercentage ? parseFloat(formData.bodyFatPercentage) : null,
+        muscle_mass_percentage: formData.muscleMassPercentage ? parseFloat(formData.muscleMassPercentage) : null,
+        waist_circumference: formData.waistCircumference ? parseFloat(formData.waistCircumference) : null,
+        hip_circumference: formData.hipCircumference ? parseFloat(formData.hipCircumference) : null,
+        chest_circumference: formData.chestCircumference ? parseFloat(formData.chestCircumference) : null,
+        arm_circumference: formData.armCircumference ? parseFloat(formData.armCircumference) : null,
+        thigh_circumference: formData.thighCircumference ? parseFloat(formData.thighCircumference) : null
+      };
+
+      const { error: dataError } = await supabase
+        .from('anthropometric_test_data')
+        .insert(anthropometricData);
+
+      if (dataError) throw dataError;
+
+      // Δημιουργία summary για γραφήματα
+      const chartData = {
+        labels: ['Ύψος', 'Βάρος', 'Λίπος %', 'Μυϊκή Μάζα %', 'Μέση', 'Γοφοί', 'Στήθος', 'Βραχίονας', 'Μηρός'],
+        values: [
+          formData.height || 0,
+          formData.weight || 0,
+          formData.bodyFatPercentage || 0,
+          formData.muscleMassPercentage || 0,
+          formData.waistCircumference || 0,
+          formData.hipCircumference || 0,
+          formData.chestCircumference || 0,
+          formData.armCircumference || 0,
+          formData.thighCircumference || 0
+        ]
+      };
+
+      await supabase
+        .from('test_results_summary')
+        .insert({
+          athlete_id: selectedAthleteId,
+          test_type: 'anthropometric',
+          test_date: selectedDate,
+          chart_data: chartData
+        });
+
+      toast.success("Τα σωματομετρικά δεδομένα αποθηκεύτηκαν επιτυχώς!");
+      
+      // Reset form
+      setFormData({
+        height: '',
+        weight: '',
+        bodyFatPercentage: '',
+        muscleMassPercentage: '',
+        waistCircumference: '',
+        hipCircumference: '',
+        chestCircumference: '',
+        armCircumference: '',
+        thighCircumference: ''
+      });
+
+    } catch (error) {
+      console.error('Error saving anthropometric data:', error);
+      toast.error("Σφάλμα κατά την αποθήκευση");
+    }
   };
 
   return (
@@ -47,6 +139,7 @@ export const AnthropometricTests = () => {
             <Input
               type={field.type}
               step={field.step}
+              placeholder={field.placeholder}
               value={formData[field.key as keyof typeof formData]}
               onChange={(e) => handleInputChange(field.key, e.target.value)}
               className="rounded-none"
@@ -58,7 +151,7 @@ export const AnthropometricTests = () => {
       <Card className="rounded-none">
         <CardContent className="p-4 flex items-center justify-center">
           <Button onClick={handleSubmit} className="rounded-none w-full">
-            Αποθήκευση
+            Αποθήκευση Σωματομετρικών
           </Button>
         </CardContent>
       </Card>

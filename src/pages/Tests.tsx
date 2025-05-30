@@ -118,11 +118,11 @@ const Tests = () => {
               </TabsList>
 
               <TabsContent value="anthropometric" className="mt-6">
-                <AnthropometricTests />
+                <AnthropometricTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
               </TabsContent>
 
               <TabsContent value="functional" className="mt-6">
-                <FunctionalTests />
+                <FunctionalTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
               </TabsContent>
 
               <TabsContent value="strength" className="mt-6">
@@ -130,11 +130,11 @@ const Tests = () => {
               </TabsContent>
 
               <TabsContent value="endurance" className="mt-6">
-                <EnduranceTests />
+                <EnduranceTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
               </TabsContent>
 
               <TabsContent value="jumps" className="mt-6">
-                <JumpTests />
+                <JumpTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
               </TabsContent>
             </Tabs>
           )}

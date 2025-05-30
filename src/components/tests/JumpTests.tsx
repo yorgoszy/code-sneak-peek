@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const jumpFields = [
   { key: 'nonCounterMovementJump', label: 'Non-Counter Movement Jump', type: 'number', step: '0.1', placeholder: 'cm' },
@@ -13,7 +16,13 @@ const jumpFields = [
   { key: 'tripleJumpRight', label: 'Triple Jump Δεξί', type: 'number', step: '0.01', placeholder: 'm' }
 ];
 
-export const JumpTests = () => {
+interface JumpTestsProps {
+  selectedAthleteId: string;
+  selectedDate: string;
+}
+
+export const JumpTests = ({ selectedAthleteId, selectedDate }: JumpTestsProps) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     nonCounterMovementJump: '',
     counterMovementJump: '',
@@ -27,8 +36,81 @@ export const JumpTests = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log('Jump data:', formData);
+  const handleSubmit = async () => {
+    if (!selectedAthleteId || !user) {
+      toast.error("Παρακαλώ επιλέξτε αθλητή");
+      return;
+    }
+
+    try {
+      // Δημιουργία session για άλματα
+      const { data: session, error: sessionError } = await supabase
+        .from('jump_test_sessions')
+        .insert({
+          athlete_id: selectedAthleteId,
+          test_date: selectedDate,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Αποθήκευση δεδομένων αλμάτων
+      const jumpData = {
+        test_session_id: session.id,
+        non_counter_movement_jump: formData.nonCounterMovementJump ? parseFloat(formData.nonCounterMovementJump) : null,
+        counter_movement_jump: formData.counterMovementJump ? parseFloat(formData.counterMovementJump) : null,
+        depth_jump: formData.depthJump ? parseFloat(formData.depthJump) : null,
+        broad_jump: formData.broadJump ? parseFloat(formData.broadJump) : null,
+        triple_jump_left: formData.tripleJumpLeft ? parseFloat(formData.tripleJumpLeft) : null,
+        triple_jump_right: formData.tripleJumpRight ? parseFloat(formData.tripleJumpRight) : null
+      };
+
+      const { error: dataError } = await supabase
+        .from('jump_test_data')
+        .insert(jumpData);
+
+      if (dataError) throw dataError;
+
+      // Δημιουργία summary για γραφήματα
+      const chartData = {
+        labels: ['Non-CMJ', 'CMJ', 'Depth Jump', 'Broad Jump', 'Triple L', 'Triple R'],
+        values: [
+          formData.nonCounterMovementJump || 0,
+          formData.counterMovementJump || 0,
+          formData.depthJump || 0,
+          formData.broadJump || 0,
+          formData.tripleJumpLeft || 0,
+          formData.tripleJumpRight || 0
+        ]
+      };
+
+      await supabase
+        .from('test_results_summary')
+        .insert({
+          athlete_id: selectedAthleteId,
+          test_type: 'jump',
+          test_date: selectedDate,
+          chart_data: chartData
+        });
+
+      toast.success("Τα δεδομένα αλμάτων αποθηκεύτηκαν επιτυχώς!");
+      
+      // Reset form
+      setFormData({
+        nonCounterMovementJump: '',
+        counterMovementJump: '',
+        depthJump: '',
+        broadJump: '',
+        tripleJumpLeft: '',
+        tripleJumpRight: ''
+      });
+
+    } catch (error) {
+      console.error('Error saving jump data:', error);
+      toast.error("Σφάλμα κατά την αποθήκευση");
+    }
   };
 
   return (
