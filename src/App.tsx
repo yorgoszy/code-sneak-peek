@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Groups from "./pages/Groups";
+import Exercises from "./pages/Exercises";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/users" element={<Users />} />
             <Route path="/dashboard/groups" element={<Groups />} />
+            <Route path="/dashboard/exercises" element={<Exercises />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
