@@ -206,7 +206,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
               >
                 <Checkbox
                   checked={selectedCategories.includes(category.id)}
-                  onChange={() => {}} // handled by parent div click
+                  onCheckedChange={() => handleCategoryToggle(category.id)}
                   className="mr-2"
                 />
                 <span className="text-sm select-none">{category.name}</span>
@@ -343,7 +343,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                             >
                               <Checkbox
                                 checked={selectedCategories.includes(category.id)}
-                                onChange={() => {}} // handled by parent div click
+                                onCheckedChange={() => handleCategoryToggle(category.id)}
                                 className="mr-2"
                               />
                               <span className="text-sm select-none">
