@@ -902,122 +902,20 @@ const Index = () => {
             </h2>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-12 mb-16">
-            {/* Contact Information */}
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 text-[#00ffba] mt-1">
-                  <MapPin className="w-6 h-6" />
-                </div>
-                <div>
-                  <a 
-                    href="https://g.co/kgs/4iU8hhS"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-300 hover:text-[#00ffba] transition-colors"
-                  >
-                    an.georgiou 46, thessaloniki 54627
-                  </a>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 text-[#00ffba] mt-1">
-                  <Phone className="w-6 h-6" />
-                </div>
-                <div>
-                  <a 
-                    href="tel:+302310529104"
-                    className="text-gray-300 hover:text-[#00ffba] transition-colors"
-                  >
-                    +30 2310 529104
-                  </a>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 text-[#00ffba] mt-1">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <div>
-                  <a 
-                    href="mailto:info@hyperkids.gr"
-                    className="text-gray-300 hover:text-[#00ffba] transition-colors"
-                  >
-                    info@hyperkids.gr
-                  </a>
-                </div>
-              </div>
-
-              {/* Social Media Icons */}
-              <div className="flex gap-4 pt-4">
-                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
-                  <Facebook className="w-5 h-5" />
-                </div>
-                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
-                  <Instagram className="w-5 h-5" />
-                </div>
-                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
-                  <TikTokIcon />
-                </div>
-                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
-                  <Youtube className="w-5 h-5" />
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <div className="lg:col-span-2">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white">Name</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Your name" 
-                              {...field} 
-                              className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white">Email</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="email"
-                              placeholder="Your email" 
-                              {...field} 
-                              className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
+          {/* Contact Form - Full Width */}
+          <div className="max-w-4xl mx-auto">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="phone"
+                    name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white">Phone</FormLabel>
+                        <FormLabel className="text-white">Name</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Your phone number" 
+                            placeholder="Your name" 
                             {...field} 
                             className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
                           />
@@ -1029,37 +927,74 @@ const Index = () => {
                   
                   <FormField
                     control={form.control}
-                    name="message"
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white">Message</FormLabel>
+                        <FormLabel className="text-white">Email</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Your message" 
-                            rows={6}
+                          <Input 
+                            type="email"
+                            placeholder="Your email" 
                             {...field} 
-                            className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none resize-none"
+                            className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg py-4 rounded-none"
-                  >
-                    Send Message
-                  </Button>
-                </form>
-              </Form>
-            </div>
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Phone</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Your phone number" 
+                          {...field} 
+                          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Message</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Your message" 
+                          rows={6}
+                          {...field} 
+                          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none resize-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg py-4 rounded-none"
+                >
+                  Send Message
+                </Button>
+              </form>
+            </Form>
           </div>
 
           {/* Hours Section */}
-          <div className="border-t border-gray-800 pt-16">
+          <div className="border-t border-gray-800 pt-16 mt-16">
             <div className="grid md:grid-cols-3 gap-12 items-start">
               {/* Left - Contact Information */}
               <div>
