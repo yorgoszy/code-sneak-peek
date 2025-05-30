@@ -22,17 +22,11 @@ interface Exercise {
   categories: { name: string; type: string }[];
 }
 
-interface FilterState {
-  bodyRegion: string;
-  movementType: string;
-  equipment: string;
+interface Category {
+  id: string;
+  name: string;
+  type: string;
 }
-
-const filterOptions = {
-  bodyRegion: ["", "upper body", "lower body", "total body"],
-  movementType: ["", "push", "pull"],
-  equipment: ["", "barbell", "dumbbell", "kettlebell", "medball", "band", "chain", "bodyweight"]
-};
 
 const Exercises = () => {
   const { user, loading, isAuthenticated } = useAuth();
@@ -40,29 +34,46 @@ const Exercises = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<FilterState>({
-    bodyRegion: "",
-    movementType: "",
-    equipment: ""
-  });
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [loadingExercises, setLoadingExercises] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchExercises();
+      fetchCategories();
     }
   }, [user]);
 
   useEffect(() => {
     applyFilters();
-  }, [exercises, searchQuery, filters]);
+  }, [exercises, searchQuery, selectedCategory]);
+
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const { data, error } = await supabase
+        .from('exercise_categories')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast.error('Σφάλμα κατά τη φόρτωση των κατηγοριών');
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   const applyFilters = () => {
-    console.log('Applying filters:', { searchQuery, filters });
+    console.log('Applying filters:', { searchQuery, selectedCategory });
     console.log('Total exercises:', exercises.length);
     
     let filtered = exercises.filter(exercise => {
@@ -77,29 +88,13 @@ const Exercises = () => {
 
     console.log('After search filter:', filtered.length);
 
-    // Apply category filters
-    if (filters.bodyRegion) {
+    // Apply category filter
+    if (selectedCategory) {
       const beforeFilter = filtered.length;
       filtered = filtered.filter(exercise =>
-        exercise.categories.some(cat => cat.name === filters.bodyRegion)
+        exercise.categories.some(cat => cat.name === selectedCategory)
       );
-      console.log(`After body region filter (${filters.bodyRegion}):`, filtered.length, 'from', beforeFilter);
-    }
-
-    if (filters.movementType) {
-      const beforeFilter = filtered.length;
-      filtered = filtered.filter(exercise =>
-        exercise.categories.some(cat => cat.name === filters.movementType)
-      );
-      console.log(`After movement type filter (${filters.movementType}):`, filtered.length, 'from', beforeFilter);
-    }
-
-    if (filters.equipment) {
-      const beforeFilter = filtered.length;
-      filtered = filtered.filter(exercise =>
-        exercise.categories.some(cat => cat.name === filters.equipment)
-      );
-      console.log(`After equipment filter (${filters.equipment}):`, filtered.length, 'from', beforeFilter);
+      console.log(`After category filter (${selectedCategory}):`, filtered.length, 'from', beforeFilter);
     }
 
     console.log('Final filtered exercises:', filtered.length);
@@ -178,15 +173,11 @@ const Exercises = () => {
   };
 
   const resetFilters = () => {
-    setFilters({
-      bodyRegion: "",
-      movementType: "",
-      equipment: ""
-    });
+    setSelectedCategory("");
     setSearchQuery("");
   };
 
-  const activeFiltersCount = Object.values(filters).filter(value => value !== "").length + (searchQuery ? 1 : 0);
+  const activeFiltersCount = (selectedCategory ? 1 : 0) + (searchQuery ? 1 : 0);
 
   if (loading) {
     return (
@@ -261,65 +252,32 @@ const Exercises = () => {
             {showFilters && (
               <div className="bg-white p-4 border rounded space-y-4">
                 <h3 className="font-medium text-gray-900">Φίλτρα Κατηγοριών</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Περιοχή Σώματος
+                      Κατηγορία
                     </label>
                     <select
-                      value={filters.bodyRegion}
+                      value={selectedCategory}
                       onChange={(e) => {
-                        console.log('Body region filter changed to:', e.target.value);
-                        setFilters(prev => ({ ...prev, bodyRegion: e.target.value }));
+                        console.log('Category filter changed to:', e.target.value);
+                        setSelectedCategory(e.target.value);
                       }}
                       className="w-full p-2 border border-gray-300 rounded-none bg-white"
+                      disabled={loadingCategories}
                     >
-                      {filterOptions.bodyRegion.map(option => (
-                        <option key={option} value={option}>
-                          {option || "Όλες"}
-                        </option>
-                      ))}
+                      <option value="">Όλες οι κατηγορίες</option>
+                      {categories
+                        .filter(cat => cat.name !== "ζορ")  // Filter out "ζορ" category
+                        .map(category => (
+                          <option key={category.id} value={category.name}>
+                            {category.name}
+                          </option>
+                        ))}
                     </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Τύπος Κίνησης
-                    </label>
-                    <select
-                      value={filters.movementType}
-                      onChange={(e) => {
-                        console.log('Movement type filter changed to:', e.target.value);
-                        setFilters(prev => ({ ...prev, movementType: e.target.value }));
-                      }}
-                      className="w-full p-2 border border-gray-300 rounded-none bg-white"
-                    >
-                      {filterOptions.movementType.map(option => (
-                        <option key={option} value={option}>
-                          {option || "Όλες"}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Εξοπλισμός
-                    </label>
-                    <select
-                      value={filters.equipment}
-                      onChange={(e) => {
-                        console.log('Equipment filter changed to:', e.target.value);
-                        setFilters(prev => ({ ...prev, equipment: e.target.value }));
-                      }}
-                      className="w-full p-2 border border-gray-300 rounded-none bg-white"
-                    >
-                      {filterOptions.equipment.map(option => (
-                        <option key={option} value={option}>
-                          {option || "Όλες"}
-                        </option>
-                      ))}
-                    </select>
+                    {loadingCategories && (
+                      <p className="text-xs text-gray-500 mt-1">Φόρτωση κατηγοριών...</p>
+                    )}
                   </div>
                 </div>
               </div>
