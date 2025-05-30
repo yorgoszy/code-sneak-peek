@@ -1321,12 +1321,15 @@ export type Database = {
           id: string
           kg: string | null
           ms: string | null
+          notes: string | null
+          percentage_1rm: number | null
           reps: string | null
           rest: string | null
           rm: string | null
           sets: number
           tempo: string | null
           updated_at: string | null
+          velocity_ms: number | null
         }
         Insert: {
           block_id?: string | null
@@ -1336,12 +1339,15 @@ export type Database = {
           id?: string
           kg?: string | null
           ms?: string | null
+          notes?: string | null
+          percentage_1rm?: number | null
           reps?: string | null
           rest?: string | null
           rm?: string | null
           sets: number
           tempo?: string | null
           updated_at?: string | null
+          velocity_ms?: number | null
         }
         Update: {
           block_id?: string | null
@@ -1351,12 +1357,15 @@ export type Database = {
           id?: string
           kg?: string | null
           ms?: string | null
+          notes?: string | null
+          percentage_1rm?: number | null
           reps?: string | null
           rest?: string | null
           rm?: string | null
           sets?: number
           tempo?: string | null
           updated_at?: string | null
+          velocity_ms?: number | null
         }
         Relationships: [
           {
@@ -1443,6 +1452,7 @@ export type Database = {
       }
       programs: {
         Row: {
+          athlete_id: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -1455,6 +1465,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          athlete_id?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -1467,6 +1478,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          athlete_id?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -1478,7 +1490,15 @@ export type Database = {
           type?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "programs_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_images: {
         Row: {
@@ -1981,6 +2001,14 @@ export type Database = {
       force_delete_athlete: {
         Args: { athlete_id: string }
         Returns: undefined
+      }
+      get_latest_1rm: {
+        Args: { athlete_id: string; exercise_id: string }
+        Returns: number
+      }
+      get_suggested_velocity: {
+        Args: { athlete_id: string; exercise_id: string; percentage: number }
+        Returns: number
       }
       get_user_role: {
         Args: { _user_id: string }
