@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Users, Search } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Users, Search, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -227,6 +226,12 @@ const Groups = () => {
     setDeleteGroupDialogOpen(true);
   };
 
+  const handleViewGroup = (group: Group) => {
+    // For now, we'll just log the group. This can be expanded to show group details
+    console.log('Viewing group:', group);
+    // You can implement a view dialog or navigate to a detailed view here
+  };
+
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -337,6 +342,14 @@ const Groups = () => {
                         <TableCell>{formatDate(group.created_at)}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-none"
+                              onClick={() => handleViewGroup(group)}
+                            >
+                              <Eye className="h-3 w-3" />
+                            </Button>
                             <Button 
                               variant="outline" 
                               size="sm" 
