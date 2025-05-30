@@ -1,6 +1,6 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,13 +8,12 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const fmsExercises = [
-  'Shoulder Mobility',
-  'Active Straight Leg Raise', 
-  'Trunk Stability Push-Up',
-  'Rotary Stability',
-  'Inline Lunge',
-  'Hurdle Step',
-  'Deep Squat'
+  // Πρώτη σειρά
+  ['Shoulder Mobility', 'Active Straight Leg Raise'],
+  // Δεύτερη σειρά  
+  ['Trunk Stability Push-Up', 'Rotary Stability'],
+  // Τρίτη σειρά
+  ['Inline Lunge', 'Hurdle Step', 'Deep Squat']
 ];
 
 const postureOptions = ['κύφωση', 'λόρδωση', 'σκολίωση'];
@@ -85,7 +84,7 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
   };
 
   const getFmsTotal = () => {
-    return fmsExercises.reduce((total, exercise) => total + (fmsScores[exercise] || 0), 0);
+    return fmsExercises.flat().reduce((total, exercise) => total + (fmsScores[exercise] || 0), 0);
   };
 
   const handleSubmit = async () => {
@@ -158,48 +157,23 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
   const fmsTotal = getFmsTotal();
 
   return (
-    <div className="space-y-6">
-      {/* Στάση Σώματος */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Στάση Σώματος</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {postureOptions.map((option) => (
-              <div
-                key={option}
-                onClick={() => toggleSelection(option, selectedPosture, setSelectedPosture)}
-                className={cn(
-                  "p-3 border cursor-pointer text-center text-sm transition-colors",
-                  selectedPosture.includes(option)
-                    ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-white border-gray-300 hover:bg-gray-50"
-                )}
-              >
-                {option}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Καθήματα */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Καθήματα</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Επιλογές που δεν έχουν αριστερά/δεξιά */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              {squatOptions.slice(5).map((option) => (
+    <div className="space-y-4">
+      {/* Πρώτη γραμμή: Στάση Σώματος, Καθήματα, Μονοποδικά Καθήματα */}
+      <div className="grid grid-cols-3 gap-4">
+        {/* Στάση Σώματος */}
+        <Card className="rounded-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Στάση Σώματος</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-1">
+              {postureOptions.map((option) => (
                 <div
                   key={option}
-                  onClick={() => toggleSelection(option, selectedSquatIssues, setSelectedSquatIssues)}
+                  onClick={() => toggleSelection(option, selectedPosture, setSelectedPosture)}
                   className={cn(
                     "p-2 border cursor-pointer text-center text-xs transition-colors",
-                    selectedSquatIssues.includes(option)
+                    selectedPosture.includes(option)
                       ? "bg-blue-500 text-white border-blue-500"
                       : "bg-white border-gray-300 hover:bg-gray-50"
                   )}
@@ -208,27 +182,106 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Πίνακας για αριστερά/δεξιά */}
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
+        {/* Καθήματα */}
+        <Card className="rounded-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Καθήματα</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-1">
+              {/* Επιλογές χωρίς αριστερά/δεξιά */}
+              {squatOptions.slice(5).map((option) => (
+                <div
+                  key={option}
+                  onClick={() => toggleSelection(option, selectedSquatIssues, setSelectedSquatIssues)}
+                  className={cn(
+                    "p-1 border cursor-pointer text-center text-xs transition-colors",
+                    selectedSquatIssues.includes(option)
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "bg-white border-gray-300 hover:bg-gray-50"
+                  )}
+                >
+                  {option}
+                </div>
+              ))}
+              
+              {/* Πίνακας για αριστερά/δεξιά */}
+              <div className="text-xs">
+                <table className="w-full border-collapse text-xs">
+                  <thead>
+                    <tr>
+                      <th className="border border-gray-300 p-1 text-left text-xs">Επιλογή</th>
+                      <th className="border border-gray-300 p-1 text-center text-xs">Α</th>
+                      <th className="border border-gray-300 p-1 text-center text-xs">Δ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {squatOptions.slice(0, 5).map((option) => (
+                      <tr key={option}>
+                        <td className="border border-gray-300 p-1 text-xs">{option}</td>
+                        <td className="border border-gray-300 p-0 text-center">
+                          <div
+                            onClick={() => toggleSquatSelection(option, 'ΑΡΙΣΤΕΡΑ')}
+                            className={cn(
+                              "w-6 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
+                              selectedSquatIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
+                                ? "bg-blue-500 text-white border-blue-500"
+                                : "bg-white border-gray-300 hover:bg-gray-50"
+                            )}
+                          >
+                            ✓
+                          </div>
+                        </td>
+                        <td className="border border-gray-300 p-0 text-center">
+                          <div
+                            onClick={() => toggleSquatSelection(option, 'ΔΕΞΙΑ')}
+                            className={cn(
+                              "w-6 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
+                              selectedSquatIssues.includes(`${option} ΔΕΞΙΑ`)
+                                ? "bg-blue-500 text-white border-blue-500"
+                                : "bg-white border-gray-300 hover:bg-gray-50"
+                            )}
+                          >
+                            ✓
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Μονοποδικά Καθήματα */}
+        <Card className="rounded-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Μονοποδικά Καθήματα</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="text-xs">
+              <table className="w-full border-collapse text-xs">
                 <thead>
                   <tr>
-                    <th className="border border-gray-300 p-2 text-left text-sm font-medium">Επιλογή</th>
-                    <th className="border border-gray-300 p-2 text-center text-sm font-medium">Αριστερά</th>
-                    <th className="border border-gray-300 p-2 text-center text-sm font-medium">Δεξιά</th>
+                    <th className="border border-gray-300 p-1 text-left text-xs">Επιλογή</th>
+                    <th className="border border-gray-300 p-1 text-center text-xs">Α</th>
+                    <th className="border border-gray-300 p-1 text-center text-xs">Δ</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {squatOptions.slice(0, 5).map((option) => (
+                  {singleLegSquatOptions.map((option) => (
                     <tr key={option}>
-                      <td className="border border-gray-300 p-2 text-xs">{option}</td>
-                      <td className="border border-gray-300 p-1 text-center">
+                      <td className="border border-gray-300 p-1 text-xs">{option}</td>
+                      <td className="border border-gray-300 p-0 text-center">
                         <div
-                          onClick={() => toggleSquatSelection(option, 'ΑΡΙΣΤΕΡΑ')}
+                          onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
                           className={cn(
-                            "w-8 h-8 border cursor-pointer flex items-center justify-center mx-auto",
-                            selectedSquatIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
+                            "w-6 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
+                            selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
                               ? "bg-blue-500 text-white border-blue-500"
                               : "bg-white border-gray-300 hover:bg-gray-50"
                           )}
@@ -236,12 +289,12 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
                           ✓
                         </div>
                       </td>
-                      <td className="border border-gray-300 p-1 text-center">
+                      <td className="border border-gray-300 p-0 text-center">
                         <div
-                          onClick={() => toggleSquatSelection(option, 'ΔΕΞΙΑ')}
+                          onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
                           className={cn(
-                            "w-8 h-8 border cursor-pointer flex items-center justify-center mx-auto",
-                            selectedSquatIssues.includes(`${option} ΔΕΞΙΑ`)
+                            "w-6 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
+                            selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
                               ? "bg-blue-500 text-white border-blue-500"
                               : "bg-white border-gray-300 hover:bg-gray-50"
                           )}
@@ -254,102 +307,53 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
                 </tbody>
               </table>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Μονοποδικά Καθήματα */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Μονοποδικά Καθήματα</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="border border-gray-300 p-2 text-left text-sm font-medium">Επιλογή</th>
-                  <th className="border border-gray-300 p-2 text-center text-sm font-medium">Αριστερά</th>
-                  <th className="border border-gray-300 p-2 text-center text-sm font-medium">Δεξιά</th>
-                </tr>
-              </thead>
-              <tbody>
-                {singleLegSquatOptions.map((option) => (
-                  <tr key={option}>
-                    <td className="border border-gray-300 p-2 text-xs">{option}</td>
-                    <td className="border border-gray-300 p-1 text-center">
-                      <div
-                        onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
-                        className={cn(
-                          "w-8 h-8 border cursor-pointer flex items-center justify-center mx-auto",
-                          selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
-                            ? "bg-blue-500 text-white border-blue-500"
-                            : "bg-white border-gray-300 hover:bg-gray-50"
-                        )}
-                      >
-                        ✓
-                      </div>
-                    </td>
-                    <td className="border border-gray-300 p-1 text-center">
-                      <div
-                        onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
-                        className={cn(
-                          "w-8 h-8 border cursor-pointer flex items-center justify-center mx-auto",
-                          selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
-                            ? "bg-blue-500 text-white border-blue-500"
-                            : "bg-white border-gray-300 hover:bg-gray-50"
-                        )}
-                      >
-                        ✓
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* FMS */}
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center justify-between text-sm">
             FMS 
             <span className={cn(
-              "text-lg font-bold px-3 py-1 rounded",
+              "text-sm font-bold px-2 py-1",
               fmsTotal < 14 ? "bg-red-500 text-white" : "bg-green-500 text-white"
             )}>
               Σκορ: {fmsTotal}
             </span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {fmsExercises.map((exercise) => (
-              <div
-                key={exercise}
-                onClick={() => handleFmsClick(exercise)}
-                className="p-3 border cursor-pointer text-center transition-colors hover:bg-gray-50"
-              >
-                <div className="font-medium text-sm mb-2">{exercise}</div>
-                <div className="flex justify-center space-x-1">
-                  {[0, 1, 2, 3].map((score) => (
-                    <div
-                      key={score}
-                      className={cn(
-                        "w-8 h-8 rounded border flex items-center justify-center text-sm font-bold",
-                        fmsScores[exercise] === score
-                          ? score === 0 
-                            ? "bg-red-500 text-white" 
-                            : "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-400"
-                      )}
-                    >
-                      {score}
+        <CardContent className="pt-0">
+          <div className="space-y-2">
+            {fmsExercises.map((row, rowIndex) => (
+              <div key={rowIndex} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${row.length}, 1fr)` }}>
+                {row.map((exercise) => (
+                  <div
+                    key={exercise}
+                    onClick={() => handleFmsClick(exercise)}
+                    className="p-2 border cursor-pointer text-center transition-colors hover:bg-gray-50"
+                  >
+                    <div className="font-medium text-xs mb-1">{exercise}</div>
+                    <div className="flex justify-center space-x-1">
+                      {[0, 1, 2, 3].map((score) => (
+                        <div
+                          key={score}
+                          className={cn(
+                            "w-6 h-6 border flex items-center justify-center text-xs font-bold",
+                            fmsScores[exercise] === score
+                              ? score === 0 
+                                ? "bg-red-500 text-white" 
+                                : "bg-blue-500 text-white"
+                              : "bg-gray-100 text-gray-400"
+                          )}
+                        >
+                          {score}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
