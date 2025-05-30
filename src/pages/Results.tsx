@@ -1,16 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { TestBarChart } from "@/components/charts/TestBarChart";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
+import { AthleteSelector } from "@/components/AthleteSelector";
 
 interface User {
   id: string;
@@ -51,11 +47,11 @@ const Results = () => {
     setUsers(data || []);
   };
 
-  const handleAthleteToggle = (athleteId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedAthleteIds([...selectedAthleteIds, athleteId]);
-    } else {
+  const handleAthleteToggle = (athleteId: string) => {
+    if (selectedAthleteIds.includes(athleteId)) {
       setSelectedAthleteIds(selectedAthleteIds.filter(id => id !== athleteId));
+    } else {
+      setSelectedAthleteIds([...selectedAthleteIds, athleteId]);
     }
   };
 
@@ -281,48 +277,11 @@ const Results = () => {
         </nav>
 
         <div className="flex-1 p-6">
-          {/* Επιλογή Αθλητών */}
-          <Card className="rounded-none mb-6">
-            <CardHeader>
-              <CardTitle>Επιλογή Αθλητών</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>Αθλητές</Label>
-                  <button
-                    onClick={handleSelectAllAthletes}
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    {selectedAthleteIds.length === users.length ? 'Αποεπιλογή όλων' : 'Επιλογή όλων'}
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-32 overflow-y-auto border border-gray-200 p-2 bg-white">
-                  {users.map(user => (
-                    <div key={user.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={user.id}
-                        checked={selectedAthleteIds.includes(user.id)}
-                        onCheckedChange={(checked) => handleAthleteToggle(user.id, checked as boolean)}
-                      />
-                      <label 
-                        htmlFor={user.id}
-                        className="text-sm cursor-pointer flex-1"
-                        onClick={() => handleAthleteToggle(user.id, !selectedAthleteIds.includes(user.id))}
-                      >
-                        {user.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-                {selectedAthleteIds.length > 0 && (
-                  <p className="text-sm text-gray-600">
-                    Επιλεγμένοι: {selectedAthleteIds.length} αθλητές
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <AthleteSelector
+            selectedAthleteIds={selectedAthleteIds}
+            onAthleteToggle={handleAthleteToggle}
+            onSelectAll={handleSelectAllAthletes}
+          />
 
           {selectedAthleteIds.length > 0 && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
