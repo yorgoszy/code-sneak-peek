@@ -8,6 +8,8 @@ import { ProgramDetails } from "@/components/programs/ProgramDetails";
 import { Program, User, Exercise, Week, Day, Block } from "@/components/programs/types";
 
 const Programs = () => {
+  console.log('Programs component rendered');
+  
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
@@ -21,6 +23,8 @@ const Programs = () => {
   const [showNewDay, setShowNewDay] = useState(false);
   const [showNewBlock, setShowNewBlock] = useState(false);
   const [showNewExercise, setShowNewExercise] = useState(false);
+
+  console.log('showNewProgram state:', showNewProgram);
 
   // Form states
   const [newProgram, setNewProgram] = useState({ name: '', description: '', athlete_id: '' });
@@ -99,6 +103,7 @@ const Programs = () => {
   };
 
   const createProgram = async () => {
+    console.log('createProgram called');
     if (!newProgram.name) {
       toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
@@ -360,7 +365,13 @@ const Programs = () => {
   };
 
   const handleSelectProgram = (program: Program) => {
+    console.log('Program selected:', program);
     setSelectedProgram(program);
+  };
+
+  const handleNewProgramDialogChange = (open: boolean) => {
+    console.log('Dialog open change:', open);
+    setShowNewProgram(open);
   };
 
   if (loading) {
@@ -380,7 +391,7 @@ const Programs = () => {
           <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
           <NewProgramDialog
             open={showNewProgram}
-            onOpenChange={setShowNewProgram}
+            onOpenChange={handleNewProgramDialogChange}
             newProgram={newProgram}
             setNewProgram={setNewProgram}
             users={users}

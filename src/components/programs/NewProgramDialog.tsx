@@ -26,10 +26,22 @@ export const NewProgramDialog: React.FC<NewProgramDialogProps> = ({
   users,
   onCreateProgram
 }) => {
+  console.log('NewProgramDialog rendered with open:', open);
+  
+  const handleTriggerClick = () => {
+    console.log('Dialog trigger clicked');
+    onOpenChange(true);
+  };
+
+  const handleCreateClick = () => {
+    console.log('Create button clicked');
+    onCreateProgram();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button className="rounded-none">
+        <Button className="rounded-none" onClick={handleTriggerClick}>
           <Plus className="w-4 h-4 mr-2" />
           Νέο Πρόγραμμα
         </Button>
@@ -71,7 +83,7 @@ export const NewProgramDialog: React.FC<NewProgramDialogProps> = ({
               </SelectContent>
             </Select>
           </div>
-          <Button className="rounded-none w-full" onClick={onCreateProgram}>
+          <Button className="rounded-none w-full" onClick={handleCreateClick}>
             Δημιουργία
           </Button>
         </div>
