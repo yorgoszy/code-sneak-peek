@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -392,9 +393,9 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {currentSession.exercise_tests.map((exerciseTest, exerciseIndex) => (
-                <div key={exerciseIndex} className="p-3 border rounded-none bg-gray-50">
+                <div key={exerciseIndex} className="p-3 border rounded-none bg-gray-50 w-full">
                   <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
+                    <div className="flex-1 pr-2">
                       <Label className="text-sm">Άσκηση {exerciseIndex + 1}</Label>
                       <Select 
                         value={exerciseTest.exercise_id} 
@@ -416,7 +417,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
                       size="sm"
                       variant="outline"
                       onClick={() => removeExerciseTest(exerciseIndex)}
-                      className="rounded-none h-8 w-8 p-0 ml-2"
+                      className="rounded-none h-8 w-8 p-0"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -444,7 +445,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
                   </div>
 
                   {exerciseTest.attempts.map((attempt, attemptIndex) => (
-                    <div key={attemptIndex} className="flex items-center gap-1 mb-2 p-1 border rounded-none bg-white">
+                    <div key={attemptIndex} className="flex items-center gap-1 mb-2 p-2 border rounded-none bg-white">
                       <span className="text-xs font-medium w-6">#{attempt.attempt_number}</span>
                       
                       <Input
@@ -453,7 +454,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
                         placeholder="kg"
                         value={attempt.weight_kg || ''}
                         onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'weight_kg', parseFloat(e.target.value) || 0)}
-                        className="rounded-none text-xs h-6 w-12"
+                        className="rounded-none text-sm h-8 w-16 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                       />
 
                       <Input
@@ -462,14 +463,14 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
                         placeholder="m/s"
                         value={attempt.velocity_ms || ''}
                         onChange={(e) => updateAttempt(exerciseIndex, attemptIndex, 'velocity_ms', parseFloat(e.target.value) || 0)}
-                        className="rounded-none text-xs h-6 w-12"
+                        className="rounded-none text-sm h-8 w-16 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                       />
 
                       <Button
                         size="sm"
                         variant={attempt.is_1rm ? "default" : "outline"}
                         onClick={() => markAs1RM(exerciseIndex, attemptIndex)}
-                        className="rounded-none text-xs px-1 h-6"
+                        className="rounded-none text-xs px-2 h-8"
                       >
                         1RM
                       </Button>
@@ -478,7 +479,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
                         size="sm"
                         variant="outline"
                         onClick={() => removeAttempt(exerciseIndex, attemptIndex)}
-                        className="rounded-none h-6 w-6 p-0"
+                        className="rounded-none h-8 w-8 p-0"
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
