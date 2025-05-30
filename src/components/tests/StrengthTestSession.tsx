@@ -5,15 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Trash2, Plus, Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Exercise {
   id: string;
   name: string;
+  usage_count?: number;
 }
 
 interface ExerciseTest {
@@ -65,6 +68,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
     exercise_tests: []
   });
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [openExerciseSelectors, setOpenExerciseSelectors] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     setCurrentSession(prev => ({ 
@@ -78,11 +82,48 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
   }, [selectedAthleteId, selectedDate]);
 
   const fetchExercises = async () => {
-    const { data } = await supabase
+    // Φέρε όλες τις ασκήσεις
+    const { data: exercisesData } = await supabase
       .from('exercises')
       .select('id, name')
       .order('name');
-    setExercises(data || []);
+
+    if (!exercisesData) {
+      setExercises([]);
+      return;
+    }
+
+    // Φέρε στατιστικά χρήσης για τον συγκεκριμένο αθλητή
+    const { data: usageStats } = await supabase
+      .from('strength_test_attempts')
+      .select(`
+        exercise_id,
+        strength_test_sessions!inner(athlete_id)
+      `)
+      .eq('strength_test_sessions.athlete_id', selectedAthleteId);
+
+    // Υπολόγισε τη συχνότητα χρήσης κάθε άσκησης
+    const usageMap = new Map();
+    usageStats?.forEach(stat => {
+      const count = usageMap.get(stat.exercise_id) || 0;
+      usageMap.set(stat.exercise_id, count + 1);
+    });
+
+    // Προσθήκη usage_count στις ασκήσεις και ταξινόμηση
+    const exercisesWithUsage = exercisesData.map(exercise => ({
+      ...exercise,
+      usage_count: usageMap.get(exercise.id) || 0
+    }));
+
+    // Ταξινόμηση: πρώτα οι πιο συχνά χρησιμοποιημένες, μετά αλφαβητικά
+    exercisesWithUsage.sort((a, b) => {
+      if (a.usage_count !== b.usage_count) {
+        return b.usage_count - a.usage_count;
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    setExercises(exercisesWithUsage);
   };
 
   const fetchSessions = async () => {
@@ -235,7 +276,6 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
     try {
       const testDates = currentSession.exercise_tests.map(et => et.test_date);
       const startDate = testDates.reduce((min, date) => date < min ? date : min);
-      const endDate = testDates.reduce((max, date) => date > max ? date : max);
 
       let sessionId = currentSession.id;
 
@@ -299,6 +339,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
 
       resetForm();
       fetchSessions();
+      fetchExercises(); // Ανανέωση για ενημέρωση usage stats
     } catch (error) {
       console.error('Error saving strength test:', error);
       toast({
@@ -361,6 +402,13 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
     }
   };
 
+  const toggleExerciseSelector = (index: number) => {
+    setOpenExerciseSelectors(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <Card className="rounded-none">
@@ -397,21 +445,59 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 pr-2">
                       <Label className="text-sm">Άσκηση {exerciseIndex + 1}</Label>
-                      <Select 
-                        value={exerciseTest.exercise_id} 
-                        onValueChange={(value) => updateExerciseTest(exerciseIndex, 'exercise_id', value)}
+                      <Popover 
+                        open={openExerciseSelectors[exerciseIndex] || false} 
+                        onOpenChange={() => toggleExerciseSelector(exerciseIndex)}
                       >
-                        <SelectTrigger className="rounded-none h-8 text-sm">
-                          <SelectValue placeholder="Επιλέξτε άσκηση" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {exercises.map(exercise => (
-                            <SelectItem key={exercise.id} value={exercise.id}>
-                              {exercise.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openExerciseSelectors[exerciseIndex] || false}
+                            className="w-full justify-between rounded-none h-8 text-sm"
+                          >
+                            {exerciseTest.exercise_id
+                              ? exercises.find((exercise) => exercise.id === exerciseTest.exercise_id)?.name
+                              : "Επιλέξτε άσκηση..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0 rounded-none">
+                          <Command>
+                            <CommandInput placeholder="Αναζήτηση ασκήσεων..." className="h-9" />
+                            <CommandEmpty>Δεν βρέθηκαν ασκήσεις.</CommandEmpty>
+                            <CommandGroup>
+                              <CommandList>
+                                {exercises.map((exercise) => (
+                                  <CommandItem
+                                    key={exercise.id}
+                                    value={exercise.name}
+                                    onSelect={() => {
+                                      updateExerciseTest(exerciseIndex, 'exercise_id', exercise.id);
+                                      toggleExerciseSelector(exerciseIndex);
+                                    }}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <span>{exercise.name}</span>
+                                      {exercise.usage_count && exercise.usage_count > 0 && (
+                                        <Badge variant="secondary" className="text-xs rounded-none">
+                                          {exercise.usage_count}x
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <Check
+                                      className={cn(
+                                        "ml-auto h-4 w-4",
+                                        exerciseTest.exercise_id === exercise.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                  </CommandItem>
+                                ))}
+                              </CommandList>
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <Button
                       size="sm"
