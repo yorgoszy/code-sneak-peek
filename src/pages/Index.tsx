@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1138,31 +1137,31 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Right - Hours - aligned left with day and time on same line */}
+              {/* Right - Hours - aligned left with day and time next to each other */}
               <div className="text-left">
                 <h3 className="text-2xl font-bold text-white mb-8">
                   {language === 'el' ? 'Ώρες' : 'Hours'}
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex justify-between">
+                  <div className="flex items-center gap-2">
                     <span className="text-gray-300">
                       {language === 'el' ? 'Δευτέρα - Παρασκευή:' : 'Monday - Friday:'}
                     </span>
-                    <span className="text-white font-semibold ml-4">7:00 - 22:00</span>
+                    <span className="text-white font-semibold">7:00 - 22:00</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex items-center gap-2">
                     <span className="text-gray-300">
                       {language === 'el' ? 'Σάββατο:' : 'Saturday:'}
                     </span>
-                    <span className="text-white font-semibold ml-4">
+                    <span className="text-white font-semibold">
                       {language === 'el' ? 'Κλειστά' : 'Closed'}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex items-center gap-2">
                     <span className="text-gray-300">
                       {language === 'el' ? 'Κυριακή:' : 'Sunday:'}
                     </span>
-                    <span className="text-white font-semibold ml-4">
+                    <span className="text-white font-semibold">
                       {language === 'el' ? 'Κλειστά' : 'Closed'}
                     </span>
                   </div>
