@@ -1,32 +1,19 @@
 
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { 
-  Home, 
   Users, 
-  UsersRound, 
-  BookOpen, 
-  ClipboardList, 
+  UserPlus, 
   Activity, 
   Dumbbell, 
-  BarChart3, 
-  Settings,
+  TrendingUp, 
+  FileText,
+  Calendar,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  BarChart3
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const menuItems = [
-  { icon: Home, label: "Home", path: "/dashboard" },
-  { icon: Users, label: "Users", path: "/dashboard/users" },
-  { icon: UsersRound, label: "Groups", path: "/dashboard/groups" },
-  { icon: BookOpen, label: "Programs", path: "/dashboard/programs" },
-  { icon: ClipboardList, label: "Assignments", path: "/dashboard/assignments" },
-  { icon: Activity, label: "Tests", path: "/dashboard/tests" },
-  { icon: BarChart3, label: "Results", path: "/dashboard/results" },
-  { icon: Dumbbell, label: "Exercises", path: "/dashboard/exercises" },
-  { icon: Settings, label: "Settings", path: "/dashboard/settings" },
-];
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -36,62 +23,56 @@ interface SidebarProps {
 export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const location = useLocation();
 
+  const menuItems = [
+    { icon: BarChart3, label: "Επισκόπηση", path: "/dashboard" },
+    { icon: Users, label: "Χρήστες", path: "/dashboard/users" },
+    { icon: UserPlus, label: "Ομάδες", path: "/dashboard/groups" },
+    { icon: Dumbbell, label: "Ασκήσεις", path: "/dashboard/exercises" },
+    { icon: Activity, label: "Τεστ", path: "/dashboard/tests" },
+    { icon: TrendingUp, label: "Αποτελέσματα", path: "/dashboard/results" },
+    { icon: Calendar, label: "Προγράμματα", path: "/dashboard/programs" },
+  ];
+
   return (
-    <div className={cn(
-      "bg-white border-r border-gray-200 h-full transition-all duration-300 flex flex-col",
-      isCollapsed ? "w-16" : "w-64"
-    )}>
-      {/* Header with Logo */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <div className="flex items-center">
-          <img 
-            src="/lovable-uploads/2e2bc98a-e87e-41d4-b3df-0512553f2370.png" 
-            alt="Logo" 
-            className={cn(
-              "transition-all duration-300",
-              isCollapsed ? "w-8 h-8" : "w-12 h-12 mr-3"
-            )}
-          />
+    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${
+      isCollapsed ? 'w-16' : 'w-64'
+    }`}>
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+            <h2 className="text-lg font-semibold text-gray-800">HyperKids</h2>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="rounded-none"
+          >
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
         </div>
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1 rounded hover:bg-gray-100"
-        >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
-        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2">
-        <ul className="space-y-1">
+      <nav className="p-4">
+        <div className="space-y-2">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  className={cn(
-                    "flex items-center px-3 py-2 rounded text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  )}
-                  title={isCollapsed ? item.label : undefined}
-                >
-                  <item.icon className={cn("h-4 w-4", !isCollapsed && "mr-3")} />
-                  {!isCollapsed && <span>{item.label}</span>}
-                </Link>
-              </li>
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center space-x-3 px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 ${
+                  isActive ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700'
+                }`}
+              >
+                <item.icon className="h-5 w-5 flex-shrink-0" />
+                {!isCollapsed && <span>{item.label}</span>}
+              </Link>
             );
           })}
-        </ul>
+        </div>
       </nav>
     </div>
   );
