@@ -14,6 +14,16 @@ const Dashboard = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    athletes: 0,
+    trainers: 0,
+    parents: 0,
+    general: 0,
+    activePrograms: 0,
+    totalExercises: 0,
+    newUsersThisMonth: 0
+  });
 
   useEffect(() => {
     if (user) {
@@ -29,8 +39,63 @@ const Dashboard = () => {
       };
       
       fetchUserProfile();
+      fetchDashboardStats();
     }
   }, [user]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      // Get total users count
+      const { count: totalUsers } = await supabase
+        .from('app_users')
+        .select('*', { count: 'exact', head: true });
+
+      // Get users by role
+      const { data: usersByRole } = await supabase
+        .from('app_users')
+        .select('role');
+
+      const athletes = usersByRole?.filter(u => u.role === 'athlete').length || 0;
+      const trainers = usersByRole?.filter(u => u.role === 'trainer').length || 0;
+      const parents = usersByRole?.filter(u => u.role === 'parent').length || 0;
+      const general = usersByRole?.filter(u => u.role === 'general').length || 0;
+
+      // Get active programs count
+      const { count: activePrograms } = await supabase
+        .from('programs')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active');
+
+      // Get total exercises count
+      const { count: totalExercises } = await supabase
+        .from('exercises')
+        .select('*', { count: 'exact', head: true });
+
+      // Get new users this month
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const { count: newUsersThisMonth } = await supabase
+        .from('app_users')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', startOfMonth.toISOString());
+
+      setStats({
+        totalUsers: totalUsers || 0,
+        athletes,
+        trainers,
+        parents,
+        general,
+        activePrograms: activePrograms || 0,
+        totalExercises: totalExercises || 0,
+        newUsersThisMonth: newUsersThisMonth || 0
+      });
+
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -64,9 +129,9 @@ const Dashboard = () => {
         <nav className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">dashboard.home</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
               <p className="text-sm text-gray-600">
-                Welcome back, {isAdmin ? 'Admin User!' : userProfile?.name || user?.email}
+                Καλώς ήρθατε, {isAdmin ? 'Admin User!' : userProfile?.name || user?.email}
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -91,45 +156,45 @@ const Dashboard = () => {
           {/* Tabs */}
           <div className="flex space-x-6 mb-6">
             <button className="text-sm font-medium text-blue-600 border-b-2 border-blue-600 pb-2">
-              Overview
+              Επισκόπηση
             </button>
             <button className="text-sm font-medium text-gray-500 pb-2">
-              Analytics
+              Αναλυτικά
             </button>
             <button className="text-sm font-medium text-gray-500 pb-2">
-              Reports
+              Αναφορές
             </button>
           </div>
 
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatCard
-              title="Total Athletes"
-              value="1"
-              subtitle="Εγγεγραμμένοι αθλητές"
+              title="Σύνολο Χρηστών"
+              value={stats.totalUsers}
+              subtitle={`Αθλητές: ${stats.athletes} | Προπονητές: ${stats.trainers} | Γονείς: ${stats.parents} | Γενικοί: ${stats.general}`}
               icon={<Users className="h-5 w-5" />}
               trend="up"
             />
             <StatCard
-              title="Active Programs"
-              value="2"
-              subtitle="Ενεργά προγράμματα"
-              icon={<Activity className="h-5 w-5" />}
-              trend="up"
+              title="Νέοι Χρήστες"
+              value={stats.newUsersThisMonth}
+              subtitle="Αυτόν τον μήνα"
+              icon={<TrendingUp className="h-5 w-5" />}
+              trend={stats.newUsersThisMonth > 0 ? "up" : "neutral"}
             />
             <StatCard
-              title="Available Exercises"
-              value="3"
-              subtitle="Διαθέσιμες ασκήσεις"
+              title="Ενεργά Προγράμματα"
+              value={stats.activePrograms}
+              subtitle="Προγράμματα προπόνησης"
+              icon={<Activity className="h-5 w-5" />}
+              trend={stats.activePrograms > 0 ? "up" : "neutral"}
+            />
+            <StatCard
+              title="Διαθέσιμες Ασκήσεις"
+              value={stats.totalExercises}
+              subtitle="Στη βάση δεδομένων"
               icon={<Dumbbell className="h-5 w-5" />}
               trend="neutral"
-            />
-            <StatCard
-              title="System Health"
-              value="73%"
-              subtitle="Λειτουργικότητα συστήματος"
-              icon={<TrendingUp className="h-5 w-5" />}
-              trend="up"
             />
           </div>
 
