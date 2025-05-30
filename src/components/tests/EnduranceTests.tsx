@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,41 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Δημιουργία app_user εάν δεν υπάρχει
+  const ensureAppUserExists = async () => {
+    if (!user) return null;
+
+    // Πρώτα ελέγχουμε εάν υπάρχει app_user για αυτόν τον auth user
+    const { data: existingAppUser, error: checkError } = await supabase
+      .from('app_users')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (existingAppUser) {
+      return existingAppUser.id;
+    }
+
+    // Εάν δεν υπάρχει, δημιουργούμε έναν νέο
+    const { data: newAppUser, error: createError } = await supabase
+      .from('app_users')
+      .insert({
+        auth_user_id: user.id,
+        email: user.email || 'unknown@email.com',
+        name: user.user_metadata?.full_name || user.email || 'Unknown User',
+        role: 'coach' // Ή οποιοσδήποτε default role
+      })
+      .select('id')
+      .single();
+
+    if (createError) {
+      console.error('Error creating app_user:', createError);
+      throw createError;
+    }
+
+    return newAppUser.id;
+  };
+
   const handleSubmit = async () => {
     if (!selectedAthleteId || !user) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
@@ -74,13 +110,23 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
     console.log("Form data:", formData);
 
     try {
-      // Δημιουργία session για αντοχή - χρησιμοποιούμε άμεσα το auth user id
+      // Διασφαλίζουμε ότι υπάρχει app_user για τον τρέχοντα χρήστη
+      const appUserId = await ensureAppUserExists();
+      
+      if (!appUserId) {
+        toast.error("Σφάλμα στη δημιουργία χρήστη");
+        return;
+      }
+
+      console.log("App user ID:", appUserId);
+
+      // Δημιουργία session για αντοχή
       const { data: session, error: sessionError } = await supabase
         .from('endurance_test_sessions')
         .insert({
           athlete_id: selectedAthleteId,
           test_date: selectedDate,
-          created_by: user.id  // Χρησιμοποιούμε άμεσα το auth user id
+          created_by: appUserId
         })
         .select()
         .single();
