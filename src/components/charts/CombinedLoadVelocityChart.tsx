@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CartesianGrid, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend } from "recharts";
 
@@ -79,7 +80,7 @@ export const CombinedLoadVelocityChart = ({ data }: CombinedLoadVelocityChartPro
                       <p className="font-medium">Ημερομηνία: {label}</p>
                       {payload.map((entry, index) => (
                         <p key={index} style={{ color: entry.color }}>
-                          {entry.name}: {entry.value} {entry.name?.includes('weight') ? 'kg' : 'm/s'}
+                          {entry.name}: {entry.value} {typeof entry.name === 'string' && entry.name.includes('weight') ? 'kg' : 'm/s'}
                         </p>
                       ))}
                     </div>
