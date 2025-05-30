@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AthleteSelector } from "@/components/AthleteSelector";
 import { Trash2, Plus, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { Sidebar } from "@/components/Sidebar";
 
 interface User {
   id: string;
@@ -69,6 +69,7 @@ interface Program {
 }
 
 const Programs = () => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -420,453 +421,461 @@ const Programs = () => {
   };
 
   if (loading) {
-    return <div className="p-6">Φόρτωση...</div>;
+    return (
+      <div className="min-h-screen flex w-full">
+        <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
+        <div className="flex-1 p-6">Φόρτωση...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
-        <Dialog open={showNewProgram} onOpenChange={setShowNewProgram}>
-          <DialogTrigger asChild>
-            <Button className="rounded-none">
-              <Plus className="w-4 h-4 mr-2" />
-              Νέο Πρόγραμμα
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="rounded-none">
-            <DialogHeader>
-              <DialogTitle>Δημιουργία Νέου Προγράμματος</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Όνομα Προγράμματος</Label>
-                <Input
-                  className="rounded-none"
-                  value={newProgram.name}
-                  onChange={(e) => setNewProgram({...newProgram, name: e.target.value})}
-                  placeholder="π.χ. Πρόγραμμα Δύναμης"
-                />
-              </div>
-              <div>
-                <Label>Περιγραφή</Label>
-                <Textarea
-                  className="rounded-none"
-                  value={newProgram.description}
-                  onChange={(e) => setNewProgram({...newProgram, description: e.target.value})}
-                  placeholder="Περιγραφή προγράμματος..."
-                />
-              </div>
-              <div>
-                <Label>Αθλητής (προαιρετικό)</Label>
-                <Select value={newProgram.athlete_id} onValueChange={(value) => setNewProgram({...newProgram, athlete_id: value})}>
-                  <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε αθλητή" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Χωρίς συγκεκριμένο αθλητή</SelectItem>
-                    {users.map(user => (
-                      <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button className="rounded-none w-full" onClick={createProgram}>
-                Δημιουργία
+    <div className="min-h-screen flex w-full">
+      <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
+      <div className="flex-1 p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
+          <Dialog open={showNewProgram} onOpenChange={setShowNewProgram}>
+            <DialogTrigger asChild>
+              <Button className="rounded-none">
+                <Plus className="w-4 h-4 mr-2" />
+                Νέο Πρόγραμμα
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Programs List */}
-        <div className="lg:col-span-1">
-          <Card className="rounded-none">
-            <CardHeader>
-              <CardTitle>Προγράμματα</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {programs.map(program => (
-                  <div
-                    key={program.id}
-                    className={`p-3 border cursor-pointer hover:bg-gray-50 ${
-                      selectedProgram?.id === program.id ? 'bg-blue-50 border-blue-300' : ''
-                    }`}
-                    onClick={() => setSelectedProgram(program)}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h4 className="font-medium">{program.name}</h4>
-                        {program.app_users && (
-                          <p className="text-sm text-gray-600">{program.app_users.name}</p>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteProgram(program.id);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+            </DialogTrigger>
+            <DialogContent className="rounded-none">
+              <DialogHeader>
+                <DialogTitle>Δημιουργία Νέου Προγράμματος</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Όνομα Προγράμματος</Label>
+                  <Input
+                    className="rounded-none"
+                    value={newProgram.name}
+                    onChange={(e) => setNewProgram({...newProgram, name: e.target.value})}
+                    placeholder="π.χ. Πρόγραμμα Δύναμης"
+                  />
+                </div>
+                <div>
+                  <Label>Περιγραφή</Label>
+                  <Textarea
+                    className="rounded-none"
+                    value={newProgram.description}
+                    onChange={(e) => setNewProgram({...newProgram, description: e.target.value})}
+                    placeholder="Περιγραφή προγράμματος..."
+                  />
+                </div>
+                <div>
+                  <Label>Αθλητής (προαιρετικό)</Label>
+                  <Select value={newProgram.athlete_id} onValueChange={(value) => setNewProgram({...newProgram, athlete_id: value})}>
+                    <SelectTrigger className="rounded-none">
+                      <SelectValue placeholder="Επιλέξτε αθλητή" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Χωρίς συγκεκριμένο αθλητή</SelectItem>
+                      {users.map(user => (
+                        <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button className="rounded-none w-full" onClick={createProgram}>
+                  Δημιουργία
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Program Details */}
-        <div className="lg:col-span-3">
-          {selectedProgram ? (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Programs List */}
+          <div className="lg:col-span-1">
             <Card className="rounded-none">
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>{selectedProgram.name}</CardTitle>
-                  <Dialog open={showNewWeek} onOpenChange={setShowNewWeek}>
-                    <DialogTrigger asChild>
-                      <Button className="rounded-none">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Προσθήκη Εβδομάδας
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="rounded-none">
-                      <DialogHeader>
-                        <DialogTitle>Νέα Εβδομάδα</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label>Όνομα Εβδομάδας</Label>
-                          <Input
-                            className="rounded-none"
-                            value={newWeek.name}
-                            onChange={(e) => setNewWeek({...newWeek, name: e.target.value})}
-                            placeholder="π.χ. Εβδομάδα 1"
-                          />
-                        </div>
-                        <div>
-                          <Label>Αριθμός Εβδομάδας</Label>
-                          <Input
-                            className="rounded-none"
-                            type="number"
-                            value={newWeek.week_number}
-                            onChange={(e) => setNewWeek({...newWeek, week_number: parseInt(e.target.value)})}
-                          />
-                        </div>
-                        <Button className="rounded-none w-full" onClick={createWeek}>
-                          Δημιουργία
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
+                <CardTitle>Προγράμματα</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {selectedProgram.program_weeks?.map(week => (
-                    <Card key={week.id} className="rounded-none">
-                      <CardHeader>
-                        <div className="flex justify-between items-center">
-                          <CardTitle className="text-lg">{week.name}</CardTitle>
-                          <div className="flex gap-2">
-                            <Dialog open={showNewDay} onOpenChange={setShowNewDay}>
-                              <DialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  className="rounded-none"
-                                  onClick={() => setCurrentWeek(week)}
-                                >
-                                  <Plus className="w-4 h-4 mr-2" />
-                                  Προσθήκη Ημέρας
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="rounded-none">
-                                <DialogHeader>
-                                  <DialogTitle>Νέα Ημέρα</DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div>
-                                    <Label>Όνομα Ημέρας</Label>
-                                    <Input
-                                      className="rounded-none"
-                                      value={newDay.name}
-                                      onChange={(e) => setNewDay({...newDay, name: e.target.value})}
-                                      placeholder="π.χ. Δευτέρα - Upper Body"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label>Αριθμός Ημέρας</Label>
-                                    <Input
-                                      className="rounded-none"
-                                      type="number"
-                                      value={newDay.day_number}
-                                      onChange={(e) => setNewDay({...newDay, day_number: parseInt(e.target.value)})}
-                                    />
-                                  </div>
-                                  <Button className="rounded-none w-full" onClick={createDay}>
-                                    Δημιουργία
-                                  </Button>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteWeek(week.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                <div className="space-y-2">
+                  {programs.map(program => (
+                    <div
+                      key={program.id}
+                      className={`p-3 border cursor-pointer hover:bg-gray-50 ${
+                        selectedProgram?.id === program.id ? 'bg-blue-50 border-blue-300' : ''
+                      }`}
+                      onClick={() => setSelectedProgram(program)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-medium">{program.name}</h4>
+                          {program.app_users && (
+                            <p className="text-sm text-gray-600">{program.app_users.name}</p>
+                          )}
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {week.program_days?.map(day => (
-                            <Card key={day.id} className="rounded-none">
-                              <CardHeader>
-                                <div className="flex justify-between items-center">
-                                  <CardTitle className="text-base">{day.name}</CardTitle>
-                                  <div className="flex gap-1">
-                                    <Dialog open={showNewBlock} onOpenChange={setShowNewBlock}>
-                                      <DialogTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => setCurrentDay(day)}
-                                        >
-                                          <Plus className="w-4 h-4" />
-                                        </Button>
-                                      </DialogTrigger>
-                                      <DialogContent className="rounded-none">
-                                        <DialogHeader>
-                                          <DialogTitle>Νέο Block</DialogTitle>
-                                        </DialogHeader>
-                                        <div className="space-y-4">
-                                          <div>
-                                            <Label>Όνομα Block</Label>
-                                            <Input
-                                              className="rounded-none"
-                                              value={newBlock.name}
-                                              onChange={(e) => setNewBlock({...newBlock, name: e.target.value})}
-                                              placeholder="π.χ. Warm-up, Main Set"
-                                            />
-                                          </div>
-                                          <div>
-                                            <Label>Σειρά</Label>
-                                            <Input
-                                              className="rounded-none"
-                                              type="number"
-                                              value={newBlock.block_order}
-                                              onChange={(e) => setNewBlock({...newBlock, block_order: parseInt(e.target.value)})}
-                                            />
-                                          </div>
-                                          <Button className="rounded-none w-full" onClick={createBlock}>
-                                            Δημιουργία
-                                          </Button>
-                                        </div>
-                                      </DialogContent>
-                                    </Dialog>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => deleteDay(day.id)}
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="space-y-3">
-                                  {day.program_blocks?.map(block => (
-                                    <Card key={block.id} className="rounded-none border-gray-200">
-                                      <CardHeader className="pb-2">
-                                        <div className="flex justify-between items-center">
-                                          <h5 className="font-medium text-sm">{block.name}</h5>
-                                          <div className="flex gap-1">
-                                            <Dialog open={showNewExercise} onOpenChange={setShowNewExercise}>
-                                              <DialogTrigger asChild>
-                                                <Button
-                                                  size="sm"
-                                                  variant="ghost"
-                                                  onClick={() => setCurrentBlock(block)}
-                                                >
-                                                  <Plus className="w-3 h-3" />
-                                                </Button>
-                                              </DialogTrigger>
-                                              <DialogContent className="rounded-none max-w-2xl">
-                                                <DialogHeader>
-                                                  <DialogTitle>Προσθήκη Άσκησης</DialogTitle>
-                                                </DialogHeader>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                  <div>
-                                                    <Label>Άσκηση</Label>
-                                                    <Select value={newExercise.exercise_id} onValueChange={(value) => setNewExercise({...newExercise, exercise_id: value})}>
-                                                      <SelectTrigger className="rounded-none">
-                                                        <SelectValue placeholder="Επιλέξτε άσκηση" />
-                                                      </SelectTrigger>
-                                                      <SelectContent>
-                                                        {exercises.map(exercise => (
-                                                          <SelectItem key={exercise.id} value={exercise.id}>
-                                                            {exercise.name}
-                                                          </SelectItem>
-                                                        ))}
-                                                      </SelectContent>
-                                                    </Select>
-                                                  </div>
-                                                  <div>
-                                                    <Label>Sets</Label>
-                                                    <Input
-                                                      className="rounded-none"
-                                                      type="number"
-                                                      value={newExercise.sets}
-                                                      onChange={(e) => setNewExercise({...newExercise, sets: parseInt(e.target.value)})}
-                                                    />
-                                                  </div>
-                                                  <div>
-                                                    <Label>Reps</Label>
-                                                    <Input
-                                                      className="rounded-none"
-                                                      value={newExercise.reps}
-                                                      onChange={(e) => setNewExercise({...newExercise, reps: e.target.value})}
-                                                      placeholder="π.χ. 8-10, 12, AMRAP"
-                                                    />
-                                                  </div>
-                                                  <div>
-                                                    <Label>%1RM</Label>
-                                                    <Input
-                                                      className="rounded-none"
-                                                      type="number"
-                                                      value={newExercise.percentage_1rm}
-                                                      onChange={(e) => setNewExercise({...newExercise, percentage_1rm: parseInt(e.target.value)})}
-                                                      placeholder="π.χ. 80"
-                                                    />
-                                                  </div>
-                                                  <div>
-                                                    <Label>Kg</Label>
-                                                    <Input
-                                                      className="rounded-none"
-                                                      value={newExercise.kg}
-                                                      onChange={(e) => setNewExercise({...newExercise, kg: e.target.value})}
-                                                      placeholder="Αυτόματα από %1RM"
-                                                    />
-                                                  </div>
-                                                  <div>
-                                                    <Label>Tempo</Label>
-                                                    <Input
-                                                      className="rounded-none"
-                                                      value={newExercise.tempo}
-                                                      onChange={(e) => setNewExercise({...newExercise, tempo: e.target.value})}
-                                                      placeholder="π.χ. 3-1-1-0"
-                                                    />
-                                                  </div>
-                                                  <div>
-                                                    <Label>Rest</Label>
-                                                    <Input
-                                                      className="rounded-none"
-                                                      value={newExercise.rest}
-                                                      onChange={(e) => setNewExercise({...newExercise, rest: e.target.value})}
-                                                      placeholder="π.χ. 2-3 λεπτά"
-                                                    />
-                                                  </div>
-                                                  <div>
-                                                    <Label>Σειρά</Label>
-                                                    <Input
-                                                      className="rounded-none"
-                                                      type="number"
-                                                      value={newExercise.exercise_order}
-                                                      onChange={(e) => setNewExercise({...newExercise, exercise_order: parseInt(e.target.value)})}
-                                                    />
-                                                  </div>
-                                                  <div className="col-span-2">
-                                                    <Label>Σημειώσεις</Label>
-                                                    <Textarea
-                                                      className="rounded-none"
-                                                      value={newExercise.notes}
-                                                      onChange={(e) => setNewExercise({...newExercise, notes: e.target.value})}
-                                                      placeholder="Επιπλέον οδηγίες..."
-                                                    />
-                                                  </div>
-                                                  <div className="col-span-2">
-                                                    <Button className="rounded-none w-full" onClick={createExercise}>
-                                                      Προσθήκη Άσκησης
-                                                    </Button>
-                                                  </div>
-                                                </div>
-                                              </DialogContent>
-                                            </Dialog>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => deleteBlock(block.id)}
-                                            >
-                                              <Trash2 className="w-3 h-3" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </CardHeader>
-                                      <CardContent className="pt-2">
-                                        <div className="space-y-2">
-                                          {block.program_exercises?.map(exercise => (
-                                            <div key={exercise.id} className="text-xs p-2 bg-gray-50 rounded">
-                                              <div className="flex justify-between items-start">
-                                                <div className="flex-1">
-                                                  <div className="font-medium">
-                                                    {exercise.exercises?.name}
-                                                  </div>
-                                                  <div className="text-gray-600 mt-1">
-                                                    {exercise.sets} sets × {exercise.reps} reps
-                                                    {exercise.kg && ` @ ${exercise.kg}kg`}
-                                                    {exercise.percentage_1rm && ` (${exercise.percentage_1rm}%1RM)`}
-                                                    {exercise.velocity_ms && ` @ ${exercise.velocity_ms}m/s`}
-                                                  </div>
-                                                  {exercise.tempo && (
-                                                    <div className="text-gray-500">Tempo: {exercise.tempo}</div>
-                                                  )}
-                                                  {exercise.rest && (
-                                                    <div className="text-gray-500">Rest: {exercise.rest}</div>
-                                                  )}
-                                                  {exercise.notes && (
-                                                    <div className="text-gray-500 italic">{exercise.notes}</div>
-                                                  )}
-                                                </div>
-                                                <Button
-                                                  variant="ghost"
-                                                  size="sm"
-                                                  onClick={() => deleteExercise(exercise.id)}
-                                                >
-                                                  <Trash2 className="w-3 h-3" />
-                                                </Button>
-                                              </div>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </CardContent>
-                                    </Card>
-                                  ))}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteProgram(program.id);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          ) : (
-            <Card className="rounded-none">
-              <CardContent className="p-12 text-center">
-                <p className="text-gray-500">Επιλέξτε ένα πρόγραμμα για να δείτε τις λεπτομέρειες</p>
-              </CardContent>
-            </Card>
-          )}
+          </div>
+
+          {/* Program Details */}
+          <div className="lg:col-span-3">
+            {selectedProgram ? (
+              <Card className="rounded-none">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>{selectedProgram.name}</CardTitle>
+                    <Dialog open={showNewWeek} onOpenChange={setShowNewWeek}>
+                      <DialogTrigger asChild>
+                        <Button className="rounded-none">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Προσθήκη Εβδομάδας
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="rounded-none">
+                        <DialogHeader>
+                          <DialogTitle>Νέα Εβδομάδα</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label>Όνομα Εβδομάδας</Label>
+                            <Input
+                              className="rounded-none"
+                              value={newWeek.name}
+                              onChange={(e) => setNewWeek({...newWeek, name: e.target.value})}
+                              placeholder="π.χ. Εβδομάδα 1"
+                            />
+                          </div>
+                          <div>
+                            <Label>Αριθμός Εβδομάδας</Label>
+                            <Input
+                              className="rounded-none"
+                              type="number"
+                              value={newWeek.week_number}
+                              onChange={(e) => setNewWeek({...newWeek, week_number: parseInt(e.target.value)})}
+                            />
+                          </div>
+                          <Button className="rounded-none w-full" onClick={createWeek}>
+                            Δημιουργία
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {selectedProgram.program_weeks?.map(week => (
+                      <Card key={week.id} className="rounded-none">
+                        <CardHeader>
+                          <div className="flex justify-between items-center">
+                            <CardTitle className="text-lg">{week.name}</CardTitle>
+                            <div className="flex gap-2">
+                              <Dialog open={showNewDay} onOpenChange={setShowNewDay}>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    className="rounded-none"
+                                    onClick={() => setCurrentWeek(week)}
+                                  >
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Προσθήκη Ημέρας
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="rounded-none">
+                                  <DialogHeader>
+                                    <DialogTitle>Νέα Ημέρα</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <Label>Όνομα Ημέρας</Label>
+                                      <Input
+                                        className="rounded-none"
+                                        value={newDay.name}
+                                        onChange={(e) => setNewDay({...newDay, name: e.target.value})}
+                                        placeholder="π.χ. Δευτέρα - Upper Body"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label>Αριθμός Ημέρας</Label>
+                                      <Input
+                                        className="rounded-none"
+                                        type="number"
+                                        value={newDay.day_number}
+                                        onChange={(e) => setNewDay({...newDay, day_number: parseInt(e.target.value)})}
+                                      />
+                                    </div>
+                                    <Button className="rounded-none w-full" onClick={createDay}>
+                                      Δημιουργία
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteWeek(week.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {week.program_days?.map(day => (
+                              <Card key={day.id} className="rounded-none">
+                                <CardHeader>
+                                  <div className="flex justify-between items-center">
+                                    <CardTitle className="text-base">{day.name}</CardTitle>
+                                    <div className="flex gap-1">
+                                      <Dialog open={showNewBlock} onOpenChange={setShowNewBlock}>
+                                        <DialogTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => setCurrentDay(day)}
+                                          >
+                                            <Plus className="w-4 h-4" />
+                                          </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="rounded-none">
+                                          <DialogHeader>
+                                            <DialogTitle>Νέο Block</DialogTitle>
+                                          </DialogHeader>
+                                          <div className="space-y-4">
+                                            <div>
+                                              <Label>Όνομα Block</Label>
+                                              <Input
+                                                className="rounded-none"
+                                                value={newBlock.name}
+                                                onChange={(e) => setNewBlock({...newBlock, name: e.target.value})}
+                                                placeholder="π.χ. Warm-up, Main Set"
+                                              />
+                                            </div>
+                                            <div>
+                                              <Label>Σειρά</Label>
+                                              <Input
+                                                className="rounded-none"
+                                                type="number"
+                                                value={newBlock.block_order}
+                                                onChange={(e) => setNewBlock({...newBlock, block_order: parseInt(e.target.value)})}
+                                              />
+                                            </div>
+                                            <Button className="rounded-none w-full" onClick={createBlock}>
+                                              Δημιουργία
+                                            </Button>
+                                          </div>
+                                        </DialogContent>
+                                      </Dialog>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => deleteDay(day.id)}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </CardHeader>
+                                <CardContent>
+                                  <div className="space-y-3">
+                                    {day.program_blocks?.map(block => (
+                                      <Card key={block.id} className="rounded-none border-gray-200">
+                                        <CardHeader className="pb-2">
+                                          <div className="flex justify-between items-center">
+                                            <h5 className="font-medium text-sm">{block.name}</h5>
+                                            <div className="flex gap-1">
+                                              <Dialog open={showNewExercise} onOpenChange={setShowNewExercise}>
+                                                <DialogTrigger asChild>
+                                                  <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => setCurrentBlock(block)}
+                                                  >
+                                                    <Plus className="w-3 h-3" />
+                                                  </Button>
+                                                </DialogTrigger>
+                                                <DialogContent className="rounded-none max-w-2xl">
+                                                  <DialogHeader>
+                                                    <DialogTitle>Προσθήκη Άσκησης</DialogTitle>
+                                                  </DialogHeader>
+                                                  <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                      <Label>Άσκηση</Label>
+                                                      <Select value={newExercise.exercise_id} onValueChange={(value) => setNewExercise({...newExercise, exercise_id: value})}>
+                                                        <SelectTrigger className="rounded-none">
+                                                          <SelectValue placeholder="Επιλέξτε άσκηση" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                          {exercises.map(exercise => (
+                                                            <SelectItem key={exercise.id} value={exercise.id}>
+                                                              {exercise.name}
+                                                            </SelectItem>
+                                                          ))}
+                                                        </SelectContent>
+                                                      </Select>
+                                                    </div>
+                                                    <div>
+                                                      <Label>Sets</Label>
+                                                      <Input
+                                                        className="rounded-none"
+                                                        type="number"
+                                                        value={newExercise.sets}
+                                                        onChange={(e) => setNewExercise({...newExercise, sets: parseInt(e.target.value)})}
+                                                      />
+                                                    </div>
+                                                    <div>
+                                                      <Label>Reps</Label>
+                                                      <Input
+                                                        className="rounded-none"
+                                                        value={newExercise.reps}
+                                                        onChange={(e) => setNewExercise({...newExercise, reps: e.target.value})}
+                                                        placeholder="π.χ. 8-10, 12, AMRAP"
+                                                      />
+                                                    </div>
+                                                    <div>
+                                                      <Label>%1RM</Label>
+                                                      <Input
+                                                        className="rounded-none"
+                                                        type="number"
+                                                        value={newExercise.percentage_1rm}
+                                                        onChange={(e) => setNewExercise({...newExercise, percentage_1rm: parseInt(e.target.value)})}
+                                                        placeholder="π.χ. 80"
+                                                      />
+                                                    </div>
+                                                    <div>
+                                                      <Label>Kg</Label>
+                                                      <Input
+                                                        className="rounded-none"
+                                                        value={newExercise.kg}
+                                                        onChange={(e) => setNewExercise({...newExercise, kg: e.target.value})}
+                                                        placeholder="Αυτόματα από %1RM"
+                                                      />
+                                                    </div>
+                                                    <div>
+                                                      <Label>Tempo</Label>
+                                                      <Input
+                                                        className="rounded-none"
+                                                        value={newExercise.tempo}
+                                                        onChange={(e) => setNewExercise({...newExercise, tempo: e.target.value})}
+                                                        placeholder="π.χ. 3-1-1-0"
+                                                      />
+                                                    </div>
+                                                    <div>
+                                                      <Label>Rest</Label>
+                                                      <Input
+                                                        className="rounded-none"
+                                                        value={newExercise.rest}
+                                                        onChange={(e) => setNewExercise({...newExercise, rest: e.target.value})}
+                                                        placeholder="π.χ. 2-3 λεπτά"
+                                                      />
+                                                    </div>
+                                                    <div>
+                                                      <Label>Σειρά</Label>
+                                                      <Input
+                                                        className="rounded-none"
+                                                        type="number"
+                                                        value={newExercise.exercise_order}
+                                                        onChange={(e) => setNewExercise({...newExercise, exercise_order: parseInt(e.target.value)})}
+                                                      />
+                                                    </div>
+                                                    <div className="col-span-2">
+                                                      <Label>Σημειώσεις</Label>
+                                                      <Textarea
+                                                        className="rounded-none"
+                                                        value={newExercise.notes}
+                                                        onChange={(e) => setNewExercise({...newExercise, notes: e.target.value})}
+                                                        placeholder="Επιπλέον οδηγίες..."
+                                                      />
+                                                    </div>
+                                                    <div className="col-span-2">
+                                                      <Button className="rounded-none w-full" onClick={createExercise}>
+                                                        Προσθήκη Άσκησης
+                                                      </Button>
+                                                    </div>
+                                                  </div>
+                                                </DialogContent>
+                                              </Dialog>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => deleteBlock(block.id)}
+                                              >
+                                                <Trash2 className="w-3 h-3" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        </CardHeader>
+                                        <CardContent className="pt-2">
+                                          <div className="space-y-2">
+                                            {block.program_exercises?.map(exercise => (
+                                              <div key={exercise.id} className="text-xs p-2 bg-gray-50 rounded">
+                                                <div className="flex justify-between items-start">
+                                                  <div className="flex-1">
+                                                    <div className="font-medium">
+                                                      {exercise.exercises?.name}
+                                                    </div>
+                                                    <div className="text-gray-600 mt-1">
+                                                      {exercise.sets} sets × {exercise.reps} reps
+                                                      {exercise.kg && ` @ ${exercise.kg}kg`}
+                                                      {exercise.percentage_1rm && ` (${exercise.percentage_1rm}%1RM)`}
+                                                      {exercise.velocity_ms && ` @ ${exercise.velocity_ms}m/s`}
+                                                    </div>
+                                                    {exercise.tempo && (
+                                                      <div className="text-gray-500">Tempo: {exercise.tempo}</div>
+                                                    )}
+                                                    {exercise.rest && (
+                                                      <div className="text-gray-500">Rest: {exercise.rest}</div>
+                                                    )}
+                                                    {exercise.notes && (
+                                                      <div className="text-gray-500 italic">{exercise.notes}</div>
+                                                    )}
+                                                  </div>
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => deleteExercise(exercise.id)}
+                                                  >
+                                                    <Trash2 className="w-3 h-3" />
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="rounded-none">
+                <CardContent className="p-12 text-center">
+                  <p className="text-gray-500">Επιλέξτε ένα πρόγραμμα για να δείτε τις λεπτομέρειες</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>
