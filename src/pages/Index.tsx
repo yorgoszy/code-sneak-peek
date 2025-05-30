@@ -1071,8 +1071,8 @@ const Index = () => {
               <div className="text-center">
                 <div className="mb-8">
                   <img 
-                    src="/lovable-uploads/83e3ba31-3c4d-44a1-b842-c9468896e822.png" 
-                    alt="HYPERKIDS Logo" 
+                    src="/lovable-uploads/430e0952-e310-4b59-bec8-e7fb8ed94c98.png" 
+                    alt="Logo" 
                     className="h-12 w-auto mx-auto mb-6"
                   />
                 </div>
