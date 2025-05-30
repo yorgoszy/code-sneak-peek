@@ -1,8 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, Users, Zap, Shield, Heart, BookOpen } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowRight, Star, Users, Zap, Shield, Heart, BookOpen, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const { user, loading, signOut, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    } else {
+      navigate("/auth");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Navigation */}
@@ -18,11 +34,35 @@ const Index = () => {
               <a href="#features" className="text-gray-700 hover:text-blue-600 transition-colors">Χαρακτηριστικά</a>
               <a href="#blog" className="text-gray-700 hover:text-blue-600 transition-colors">Blog</a>
               <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">Επικοινωνία</a>
-              <Link to="/auth">
-                <Button variant="outline" className="rounded-none">
-                  Σύνδεση
-                </Button>
-              </Link>
+              
+              {!loading && (
+                isAuthenticated ? (
+                  <div className="flex items-center space-x-4">
+                    <Link to="/dashboard">
+                      <Button variant="outline" className="rounded-none">
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <span className="text-sm text-gray-600">
+                      {user?.email}
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      className="rounded-none"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Αποσύνδεση
+                    </Button>
+                  </div>
+                ) : (
+                  <Link to="/auth">
+                    <Button variant="outline" className="rounded-none">
+                      Σύνδεση
+                    </Button>
+                  </Link>
+                )
+              )}
             </div>
           </div>
         </div>
@@ -38,8 +78,8 @@ const Index = () => {
             Η πλατφόρμα που μεταμορφώνει την εκπαίδευση των παιδιών σας.
           </p>
           <div className="flex justify-center space-x-4">
-            <Button className="rounded-none">
-              Ξεκινήστε τώρα <ArrowRight className="ml-2" />
+            <Button className="rounded-none" onClick={handleGetStarted}>
+              {isAuthenticated ? "Πήγαινε στο Dashboard" : "Ξεκινήστε τώρα"} <ArrowRight className="ml-2" />
             </Button>
             <Button variant="outline" className="rounded-none">
               Μάθετε περισσότερα
@@ -175,7 +215,6 @@ const Index = () => {
               <img
                 src="https://source.unsplash.com/400x300/?children"
                 alt="Children"
-                className="w-full h-48 object-cover rounded-t-lg"
               />
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -205,8 +244,8 @@ const Index = () => {
           <p className="text-lg text-white/80 mb-8">
             Δημιουργήστε έναν λογαριασμό και αποκτήστε πρόσβαση σε όλο το εκπαιδευτικό υλικό.
           </p>
-          <Button className="rounded-none">
-            Δημιουργήστε λογαριασμό <ArrowRight className="ml-2" />
+          <Button className="rounded-none" onClick={handleGetStarted}>
+            {isAuthenticated ? "Πήγαινε στο Dashboard" : "Δημιουργήστε λογαριασμό"} <ArrowRight className="ml-2" />
           </Button>
         </div>
       </section>

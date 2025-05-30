@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +8,22 @@ import { Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAuthenticated, loading } = useAuth();
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, loading, navigate]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,7 +52,7 @@ const Auth = () => {
               auth_user_id: data.user.id,
               email: email,
               name: name,
-              role: email === 'yorgoszy@gmail.com' ? 'admin' : 'user',
+              role: email === 'yorgoszy@gmail.com' || email === 'info@hyperkids.gr' ? 'admin' : 'user',
               category: 'general',
               user_status: 'active'
             }
@@ -58,7 +67,7 @@ const Auth = () => {
           description: "Ο λογαριασμός σας δημιουργήθηκε επιτυχώς.",
         });
 
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -93,7 +102,7 @@ const Auth = () => {
         description: "Συνδεθήκατε επιτυχώς.",
       });
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: any) {
       console.error('Signin error:', error);
       toast({
@@ -137,6 +146,17 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <Heart className="h-12 w-12 text-pink-500 mx-auto mb-4 animate-pulse" />
+          <p className="text-gray-600">Φόρτωση...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
