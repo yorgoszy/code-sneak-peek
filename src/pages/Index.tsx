@@ -1137,7 +1137,7 @@ const Index = () => {
                 <h3 className="text-2xl font-bold text-white mb-8">
                   {language === 'el' ? 'Ώρες' : 'Hours'}
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="flex items-center gap-2">
                     <span className="text-gray-300">
                       {language === 'el' ? 'Δευτέρα - Παρασκευή:' : 'Monday - Friday:'}
