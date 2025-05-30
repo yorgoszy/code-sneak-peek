@@ -46,11 +46,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center">
           <img 
-            src="/lovable-uploads/66c3033a-1960-41a1-9e02-499d449e2dd7.png" 
+            src="/lovable-uploads/2e2bc98a-e87e-41d4-b3df-0512553f2370.png" 
             alt="Logo" 
             className={cn(
               "transition-all duration-300",
-              isCollapsed ? "w-8 h-8" : "w-10 h-10 mr-3"
+              isCollapsed ? "w-8 h-8" : "w-12 h-12 mr-3"
             )}
           />
           {!isCollapsed && (

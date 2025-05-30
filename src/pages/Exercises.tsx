@@ -31,7 +31,7 @@ interface FilterState {
 const filterOptions = {
   bodyRegion: ["", "upper body", "lower body", "total body"],
   movementType: ["", "push", "pull"],
-  equipment: ["", "barbell", "dumbbell", "kettlebell", "medball", "band", "chains"]
+  equipment: ["", "barbell", "dumbbell", "kettlebell", "medball", "band", "chain", "bodyweight"]
 };
 
 const Exercises = () => {
@@ -62,33 +62,47 @@ const Exercises = () => {
   }, [exercises, searchQuery, filters]);
 
   const applyFilters = () => {
-    let filtered = exercises.filter(exercise =>
-      exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      exercise.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      exercise.categories.some(cat => 
-        cat.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
+    console.log('Applying filters:', { searchQuery, filters });
+    console.log('Total exercises:', exercises.length);
+    
+    let filtered = exercises.filter(exercise => {
+      const matchesSearch = exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        exercise.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        exercise.categories.some(cat => 
+          cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      
+      return matchesSearch;
+    });
+
+    console.log('After search filter:', filtered.length);
 
     // Apply category filters
     if (filters.bodyRegion) {
+      const beforeFilter = filtered.length;
       filtered = filtered.filter(exercise =>
         exercise.categories.some(cat => cat.name === filters.bodyRegion)
       );
+      console.log(`After body region filter (${filters.bodyRegion}):`, filtered.length, 'from', beforeFilter);
     }
 
     if (filters.movementType) {
+      const beforeFilter = filtered.length;
       filtered = filtered.filter(exercise =>
         exercise.categories.some(cat => cat.name === filters.movementType)
       );
+      console.log(`After movement type filter (${filters.movementType}):`, filtered.length, 'from', beforeFilter);
     }
 
     if (filters.equipment) {
+      const beforeFilter = filtered.length;
       filtered = filtered.filter(exercise =>
         exercise.categories.some(cat => cat.name === filters.equipment)
       );
+      console.log(`After equipment filter (${filters.equipment}):`, filtered.length, 'from', beforeFilter);
     }
 
+    console.log('Final filtered exercises:', filtered.length);
     setFilteredExercises(filtered);
   };
 
@@ -126,6 +140,8 @@ const Exercises = () => {
         })) || []
       })) || [];
 
+      console.log('Fetched exercises:', transformedExercises.length);
+      console.log('Sample exercise categories:', transformedExercises[0]?.categories);
       setExercises(transformedExercises);
     } catch (error) {
       console.error('Error fetching exercises:', error);
@@ -252,7 +268,10 @@ const Exercises = () => {
                     </label>
                     <select
                       value={filters.bodyRegion}
-                      onChange={(e) => setFilters(prev => ({ ...prev, bodyRegion: e.target.value }))}
+                      onChange={(e) => {
+                        console.log('Body region filter changed to:', e.target.value);
+                        setFilters(prev => ({ ...prev, bodyRegion: e.target.value }));
+                      }}
                       className="w-full p-2 border border-gray-300 rounded-none bg-white"
                     >
                       {filterOptions.bodyRegion.map(option => (
@@ -269,7 +288,10 @@ const Exercises = () => {
                     </label>
                     <select
                       value={filters.movementType}
-                      onChange={(e) => setFilters(prev => ({ ...prev, movementType: e.target.value }))}
+                      onChange={(e) => {
+                        console.log('Movement type filter changed to:', e.target.value);
+                        setFilters(prev => ({ ...prev, movementType: e.target.value }));
+                      }}
                       className="w-full p-2 border border-gray-300 rounded-none bg-white"
                     >
                       {filterOptions.movementType.map(option => (
@@ -286,7 +308,10 @@ const Exercises = () => {
                     </label>
                     <select
                       value={filters.equipment}
-                      onChange={(e) => setFilters(prev => ({ ...prev, equipment: e.target.value }))}
+                      onChange={(e) => {
+                        console.log('Equipment filter changed to:', e.target.value);
+                        setFilters(prev => ({ ...prev, equipment: e.target.value }));
+                      }}
                       className="w-full p-2 border border-gray-300 rounded-none bg-white"
                     >
                       {filterOptions.equipment.map(option => (

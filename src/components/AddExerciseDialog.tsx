@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -22,36 +21,34 @@ interface AddExerciseDialogProps {
   onSuccess: () => void;
 }
 
-const categoryHierarchy = [
+const categoryGroups = [
   {
     title: "Περιοχή Σώματος",
-    key: "body-region",
     categories: ["upper body", "lower body", "total body"]
   },
   {
     title: "Τύπος Κίνησης",
-    key: "movement-type",
     categories: ["push", "pull"]
   },
   {
     title: "Κατεύθυνση",
-    key: "direction",
-    categories: ["horizontal", "vertical", "linear", "lateral"]
+    categories: ["horizontal", "vertical", "rotational", "linear", "perpendicular"]
   },
   {
     title: "Συμμετρία",
-    key: "symmetry",
     categories: ["bilateral", "unilateral", "ipsilateral"]
   },
   {
     title: "Εξοπλισμός",
-    key: "equipment",
-    categories: ["barbell", "dumbbell", "kettlebell", "medball", "band", "chains"]
+    categories: ["barbell", "dumbbell", "kettlebell", "medball", "band", "chain", "bodyweight"]
   },
   {
     title: "Τύπος Συστολής",
-    key: "contraction",
     categories: ["non counter movement", "counter movement", "reactive", "non reactive"]
+  },
+  {
+    title: "Χαρακτηριστικά",
+    categories: ["mobility", "stability", "strength", "power", "endurance", "oly lifting"]
   }
 ];
 
@@ -66,7 +63,6 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryType, setNewCategoryType] = useState("");
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [activeTab, setActiveTab] = useState(categoryHierarchy[0].key);
 
   useEffect(() => {
     if (open) {
@@ -179,7 +175,6 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     setShowAddCategory(false);
     setNewCategoryName("");
     setNewCategoryType("");
-    setActiveTab(categoryHierarchy[0].key);
     onOpenChange(false);
   };
 
@@ -191,18 +186,18 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     );
   };
 
-  const getCategoriesByType = (type: string) => {
-    return categories.filter(cat => cat.type === type);
+  const getCategoriesByName = (categoryName: string) => {
+    return categories.filter(cat => cat.name === categoryName);
   };
 
-  const renderCategorySection = (group: { title: string; categories: string[] }) => {
+  const renderCategoryGroup = (group: { title: string; categories: string[] }) => {
     return (
-      <div className="space-y-3">
+      <div key={group.title} className="space-y-3 mb-6">
         <h3 className="font-medium text-lg text-gray-900">{group.title}</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {group.categories.map(categoryType => {
-            const categoriesOfType = getCategoriesByType(categoryType);
-            return categoriesOfType.map(category => (
+        <div className="grid grid-cols-3 gap-2">
+          {group.categories.map(categoryName => {
+            const categoriesWithName = getCategoriesByName(categoryName);
+            return categoriesWithName.map(category => (
               <div 
                 key={category.id} 
                 className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
@@ -222,8 +217,8 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
   };
 
   const getOtherCategories = () => {
-    const hierarchyTypes = categoryHierarchy.flatMap(g => g.categories);
-    return categories.filter(cat => !hierarchyTypes.includes(cat.type));
+    const groupCategoryNames = categoryGroups.flatMap(g => g.categories);
+    return categories.filter(cat => !groupCategoryNames.includes(cat.name));
   };
 
   return (
@@ -328,56 +323,40 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             {loadingCategories ? (
               <p className="text-sm text-gray-500 mt-2">Φόρτωση κατηγοριών...</p>
             ) : (
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-6 rounded-none">
-                  {categoryHierarchy.map(group => (
-                    <TabsTrigger 
-                      key={group.key} 
-                      value={group.key}
-                      className="rounded-none text-xs"
-                    >
-                      {group.title}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+              <div className="space-y-6">
+                {categoryGroups.map(group => renderCategoryGroup(group))}
 
-                {categoryHierarchy.map(group => (
-                  <TabsContent key={group.key} value={group.key} className="mt-4">
-                    {renderCategorySection(group)}
-                  </TabsContent>
-                ))}
-              </Tabs>
-            )}
-
-            {/* Show other categories if any exist */}
-            {(() => {
-              const otherCategories = getOtherCategories();
-              if (otherCategories.length > 0 && !loadingCategories) {
-                return (
-                  <div className="mt-6 p-4 border bg-gray-50">
-                    <h3 className="font-medium text-lg text-gray-900 mb-3">Άλλες Κατηγορίες</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {otherCategories.map(category => (
-                        <div 
-                          key={category.id} 
-                          className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
-                            selectedCategories.includes(category.id) 
-                              ? 'bg-blue-50 border-blue-200' 
-                              : 'bg-white border-gray-200'
-                          }`}
-                          onClick={() => handleCategoryClick(category.id)}
-                        >
-                          <span className="text-sm select-none font-medium">
-                            {category.name} ({category.type})
-                          </span>
+                {/* Show other categories if any exist */}
+                {(() => {
+                  const otherCategories = getOtherCategories();
+                  if (otherCategories.length > 0) {
+                    return (
+                      <div className="p-4 border bg-gray-50">
+                        <h3 className="font-medium text-lg text-gray-900 mb-3">Άλλες Κατηγορίες</h3>
+                        <div className="grid grid-cols-3 gap-2">
+                          {otherCategories.map(category => (
+                            <div 
+                              key={category.id} 
+                              className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                                selectedCategories.includes(category.id) 
+                                  ? 'bg-blue-50 border-blue-200' 
+                                  : 'bg-white border-gray-200'
+                              }`}
+                              onClick={() => handleCategoryClick(category.id)}
+                            >
+                              <span className="text-sm select-none font-medium">
+                                {category.name} ({category.type})
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-              return null;
-            })()}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            )}
 
             {/* Show selected categories summary */}
             {selectedCategories.length > 0 && (
