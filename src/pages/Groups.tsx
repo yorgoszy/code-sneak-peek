@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { EditGroupDialog } from "@/components/EditGroupDialog";
+import { DeleteGroupDialog } from "@/components/DeleteGroupDialog";
 
 interface AppUser {
   id: string;
@@ -60,6 +62,9 @@ const Groups = () => {
   
   // Dialog states
   const [newGroupDialogOpen, setNewGroupDialogOpen] = useState(false);
+  const [editGroupDialogOpen, setEditGroupDialogOpen] = useState(false);
+  const [deleteGroupDialogOpen, setDeleteGroupDialogOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
   const [creating, setCreating] = useState(false);
@@ -212,6 +217,16 @@ const Groups = () => {
     }
   };
 
+  const handleEditGroup = (group: Group) => {
+    setSelectedGroup(group);
+    setEditGroupDialogOpen(true);
+  };
+
+  const handleDeleteGroup = (group: Group) => {
+    setSelectedGroup(group);
+    setDeleteGroupDialogOpen(true);
+  };
+
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -326,6 +341,7 @@ const Groups = () => {
                               variant="outline" 
                               size="sm" 
                               className="rounded-none"
+                              onClick={() => handleEditGroup(group)}
                             >
                               <Edit className="h-3 w-3" />
                             </Button>
@@ -333,6 +349,7 @@ const Groups = () => {
                               variant="outline" 
                               size="sm" 
                               className="rounded-none text-red-600 hover:text-red-700"
+                              onClick={() => handleDeleteGroup(group)}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -504,6 +521,22 @@ const Groups = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Group Dialog */}
+      <EditGroupDialog
+        isOpen={editGroupDialogOpen}
+        onClose={() => setEditGroupDialogOpen(false)}
+        onGroupUpdated={fetchGroups}
+        group={selectedGroup}
+      />
+
+      {/* Delete Group Dialog */}
+      <DeleteGroupDialog
+        isOpen={deleteGroupDialogOpen}
+        onClose={() => setDeleteGroupDialogOpen(false)}
+        onGroupDeleted={fetchGroups}
+        group={selectedGroup}
+      />
     </div>
   );
 };
