@@ -35,14 +35,14 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
             <XAxis 
               dataKey="velocity"
               type="number"
-              domain={['dataMin', 'dataMax']}
+              domain={[0, 'dataMax']}
               label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -10 }}
               tick={{ fontSize: 12 }}
             />
             <YAxis 
               dataKey="weight"
               type="number"
-              domain={['dataMin', 'dataMax']}
+              domain={[0, 'dataMax']}
               label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip 
