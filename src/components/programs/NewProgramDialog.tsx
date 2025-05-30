@@ -14,29 +14,41 @@ interface NewProgramDialogProps {
   setNewProgram: (program: { name: string; description: string; athlete_id: string }) => void;
   users: User[];
   onCreateProgram: () => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const NewProgramDialog: React.FC<NewProgramDialogProps> = ({
   newProgram,
   setNewProgram,
   users,
-  onCreateProgram
+  onCreateProgram,
+  onOpenChange
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (onOpenChange) {
+      onOpenChange(open);
+    }
+  };
 
   const handleCreateClick = () => {
     onCreateProgram();
     setIsOpen(false);
+    if (onOpenChange) {
+      onOpenChange(false);
+    }
   };
 
   return (
     <>
-      <Button className="rounded-none" onClick={() => setIsOpen(true)}>
+      <Button className="rounded-none" onClick={() => handleOpenChange(true)}>
         <Plus className="w-4 h-4 mr-2" />
         Νέο Πρόγραμμα
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="rounded-none">
           <DialogHeader>
             <DialogTitle>Δημιουργία Νέου Προγράμματος</DialogTitle>
