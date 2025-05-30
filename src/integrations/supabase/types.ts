@@ -67,7 +67,6 @@ export type Database = {
       }
       app_users: {
         Row: {
-          auth_user_id: string | null
           birth_date: string | null
           category: string | null
           created_at: string | null
@@ -81,7 +80,6 @@ export type Database = {
           user_status: string
         }
         Insert: {
-          auth_user_id?: string | null
           birth_date?: string | null
           category?: string | null
           created_at?: string | null
@@ -95,7 +93,6 @@ export type Database = {
           user_status?: string
         }
         Update: {
-          auth_user_id?: string | null
           birth_date?: string | null
           category?: string | null
           created_at?: string | null
@@ -736,33 +733,6 @@ export type Database = {
           },
         ]
       }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string | null
-          email: string | null
-          full_name: string | null
-          id: string
-          updated_at: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
-          email?: string | null
-          full_name?: string | null
-          id: string
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          email?: string | null
-          full_name?: string | null
-          id?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       program_assignments: {
         Row: {
           athlete_id: string | null
@@ -1358,30 +1328,6 @@ export type Database = {
           },
         ]
       }
-      user_roles: {
-        Row: {
-          assigned_by: string | null
-          created_at: string | null
-          id: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Insert: {
-          assigned_by?: string | null
-          created_at?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Update: {
-          assigned_by?: string | null
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       program_templates: {
@@ -1424,20 +1370,9 @@ export type Database = {
         Args: { athlete_id: string }
         Returns: undefined
       }
-      get_user_role: {
-        Args: { _user_id: string }
-        Returns: Database["public"]["Enums"]["user_role"]
-      }
-      has_role: {
-        Args: {
-          _user_id: string
-          _role: Database["public"]["Enums"]["user_role"]
-        }
-        Returns: boolean
-      }
     }
     Enums: {
-      user_role: "admin" | "athlete" | "coach" | "parent" | "general"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1552,8 +1487,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      user_role: ["admin", "athlete", "coach", "parent", "general"],
-    },
+    Enums: {},
   },
 } as const
