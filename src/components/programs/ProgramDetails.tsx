@@ -3,62 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgramWeek } from './ProgramWeek';
 import { NewWeekDialog } from './NewWeekDialog';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface Exercise {
-  id: string;
-  name: string;
-}
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  sets: number;
-  reps: string;
-  kg: string;
-  percentage_1rm?: number;
-  velocity_ms?: number;
-  tempo?: string;
-  rest?: string;
-  notes?: string;
-  exercise_order: number;
-  exercises?: { name: string };
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  program_exercises: ProgramExercise[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  program_blocks: Block[];
-}
-
-interface Week {
-  id: string;
-  name: string;
-  week_number: number;
-  program_days: Day[];
-}
-
-interface Program {
-  id: string;
-  name: string;
-  description?: string;
-  athlete_id?: string;
-  app_users?: { name: string };
-  program_weeks: Week[];
-}
+import { Program, User, Exercise, Week, Day, Block } from './types';
 
 interface ProgramDetailsProps {
   selectedProgram: Program | null;

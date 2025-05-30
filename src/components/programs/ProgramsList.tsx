@@ -3,14 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-
-interface Program {
-  id: string;
-  name: string;
-  description?: string;
-  athlete_id?: string;
-  app_users?: { name: string };
-}
+import { Program } from './types';
 
 interface ProgramsListProps {
   programs: Program[];

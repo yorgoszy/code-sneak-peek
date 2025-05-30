@@ -4,33 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { NewExerciseDialog } from './NewExerciseDialog';
-
-interface Exercise {
-  id: string;
-  name: string;
-}
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  sets: number;
-  reps: string;
-  kg: string;
-  percentage_1rm?: number;
-  velocity_ms?: number;
-  tempo?: string;
-  rest?: string;
-  notes?: string;
-  exercise_order: number;
-  exercises?: { name: string };
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  program_exercises: ProgramExercise[];
-}
+import { Exercise, Block } from './types';
 
 interface ProgramBlockProps {
   block: Block;
