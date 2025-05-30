@@ -23,8 +23,6 @@ const Programs = () => {
   const [showNewBlock, setShowNewBlock] = useState(false);
   const [showNewExercise, setShowNewExercise] = useState(false);
 
-  console.log('showNewProgram state:', showNewProgram);
-
   // Form states
   const [newProgram, setNewProgram] = useState({ name: '', description: '', athlete_id: '' });
   const [newWeek, setNewWeek] = useState({ name: '', week_number: 1 });
@@ -369,7 +367,6 @@ const Programs = () => {
 
   const handleNewProgramDialogChange = (open: boolean) => {
     console.log('Dialog open change:', open);
-    setShowNewProgram(open);
   };
 
   if (loading) {
