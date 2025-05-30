@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -291,10 +290,10 @@ const Results = () => {
             <Tabs defaultValue="anthropometric" className="w-full">
               <TabsList className="grid w-full grid-cols-5 rounded-none">
                 <TabsTrigger value="anthropometric" className="rounded-none">Σωματομετρικά</TabsTrigger>
+                <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
                 <TabsTrigger value="strength" className="rounded-none">Δύναμη</TabsTrigger>
                 <TabsTrigger value="endurance" className="rounded-none">Αντοχή</TabsTrigger>
                 <TabsTrigger value="jumps" className="rounded-none">Άλματα</TabsTrigger>
-                <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
               </TabsList>
 
               <TabsContent value="anthropometric" className="mt-6">
@@ -308,6 +307,31 @@ const Results = () => {
                     data={getAnthropometricChartData().map(d => ({ name: d.name, value: d.body_fat, unit: '%' }))}
                     title="Ποσοστό Λίπους (%)"
                     color="#F59E0B"
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="functional" className="mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <TestBarChart
+                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.fms_score, unit: '' }))}
+                    title="FMS Score"
+                    color="#9333EA"
+                  />
+                  <TestBarChart
+                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.posture_issues, unit: '' }))}
+                    title="Προβλήματα Στάσης"
+                    color="#DC2626"
+                  />
+                  <TestBarChart
+                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.squat_issues, unit: '' }))}
+                    title="Προβλήματα Καθημάτων"
+                    color="#EA580C"
+                  />
+                  <TestBarChart
+                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.single_leg_issues, unit: '' }))}
+                    title="Προβλήματα Μονοποδικών Καθημάτων"
+                    color="#CA8A04"
                   />
                 </div>
               </TabsContent>
@@ -359,31 +383,6 @@ const Results = () => {
                     data={getJumpChartData().map(d => ({ name: d.name, value: d.broad_jump, unit: 'cm' }))}
                     title="Broad Jump (cm)"
                     color="#84CC16"
-                  />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="functional" className="mt-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <TestBarChart
-                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.fms_score, unit: '' }))}
-                    title="FMS Score"
-                    color="#9333EA"
-                  />
-                  <TestBarChart
-                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.posture_issues, unit: '' }))}
-                    title="Προβλήματα Στάσης"
-                    color="#DC2626"
-                  />
-                  <TestBarChart
-                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.squat_issues, unit: '' }))}
-                    title="Προβλήματα Καθημάτων"
-                    color="#EA580C"
-                  />
-                  <TestBarChart
-                    data={getFunctionalChartData().map(d => ({ name: d.name, value: d.single_leg_issues, unit: '' }))}
-                    title="Προβλήματα Μονοποδικών Καθημάτων"
-                    color="#CA8A04"
                   />
                 </div>
               </TabsContent>
