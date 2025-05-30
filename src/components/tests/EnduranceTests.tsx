@@ -1,9 +1,10 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -39,9 +40,7 @@ const advancedTests = [
     label: 'MAS',
     fields: [
       { key: 'masMeters', label: 'Μέτρα', placeholder: 'm' },
-      { key: 'masMinutes', label: 'Λεπτά', placeholder: 'λεπτά' },
-      { key: 'masMs', label: 'm/s', placeholder: 'm/s' },
-      { key: 'masKmh', label: 'km/h', placeholder: 'km/h' }
+      { key: 'masMinutes', label: 'Λεπτά', placeholder: 'λεπτά' }
     ]
   }
 ];
@@ -70,6 +69,26 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
     masKmh: ''
   });
 
+  // Αυτόματος υπολογισμός m/s και km/h για MAS
+  useEffect(() => {
+    if (formData.masMeters && formData.masMinutes) {
+      const meters = parseFloat(formData.masMeters);
+      const minutes = parseFloat(formData.masMinutes);
+      
+      if (meters > 0 && minutes > 0) {
+        const totalSeconds = minutes * 60;
+        const ms = meters / totalSeconds;
+        const kmh = ms * 3.6;
+        
+        setFormData(prev => ({
+          ...prev,
+          masMs: ms.toFixed(2),
+          masKmh: kmh.toFixed(2)
+        }));
+      }
+    }
+  }, [formData.masMeters, formData.masMinutes]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -79,6 +98,10 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
       toast.error("Παρακαλώ επιλέξτε αθλητή");
       return;
     }
+
+    console.log("Starting endurance test submission...");
+    console.log("Selected athlete:", selectedAthleteId);
+    console.log("Form data:", formData);
 
     try {
       // Δημιουργία session για αντοχή
@@ -92,7 +115,12 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
         .select()
         .single();
 
-      if (sessionError) throw sessionError;
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw sessionError;
+      }
+
+      console.log("Session created:", session);
 
       // Αποθήκευση δεδομένων αντοχής
       const enduranceData = {
@@ -113,11 +141,18 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
         mas_kmh: formData.masKmh ? parseFloat(formData.masKmh) : null
       };
 
+      console.log("Endurance data to insert:", enduranceData);
+
       const { error: dataError } = await supabase
         .from('endurance_test_data')
         .insert(enduranceData);
 
-      if (dataError) throw dataError;
+      if (dataError) {
+        console.error('Data insertion error:', dataError);
+        throw dataError;
+      }
+
+      console.log("Endurance data inserted successfully");
 
       // Δημιουργία summary για γραφήματα
       const chartData = {
@@ -132,7 +167,7 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
         ]
       };
 
-      await supabase
+      const { error: summaryError } = await supabase
         .from('test_results_summary')
         .insert({
           athlete_id: selectedAthleteId,
@@ -140,6 +175,10 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
           test_date: selectedDate,
           chart_data: chartData
         });
+
+      if (summaryError) {
+        console.error('Summary error:', summaryError);
+      }
 
       toast.success("Τα δεδομένα αντοχής αποθηκεύτηκαν επιτυχώς!");
       
@@ -169,13 +208,12 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
 
   return (
     <div className="space-y-6">
-      {/* Βασικά Τεστ Αντοχής και Προχωρημένα */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {/* Βασικά Τεστ */}
+      {/* Πρώτη σειρά - Βασικά Τεστ Αντοχής */}
+      <div className="grid grid-cols-3 gap-3 max-w-md">
         {basicEnduranceFields.map((field) => (
           <Card key={field.key} className="rounded-none">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">{field.label}</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs text-center">{field.label}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <Input
@@ -183,51 +221,167 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
                 placeholder={field.placeholder}
                 value={formData[field.key as keyof typeof formData]}
                 onChange={(e) => handleInputChange(field.key, e.target.value)}
-                className="rounded-none"
+                className="rounded-none h-8 text-xs"
               />
             </CardContent>
           </Card>
         ))}
+      </div>
 
-        {/* Προχωρημένα Τεστ */}
-        {advancedTests.map((test) => (
-          <Card key={test.key} className="rounded-none">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">{test.label}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 space-y-2">
-              {test.fields.map((field) => (
-                <div key={field.key}>
-                  <Label className="text-xs">{field.label}</Label>
-                  {field.type === 'select' ? (
-                    <Select 
-                      value={formData[field.key as keyof typeof formData]} 
-                      onValueChange={(value) => handleInputChange(field.key, value)}
-                    >
-                      <SelectTrigger className="rounded-none h-8 text-xs">
-                        <SelectValue placeholder="Επιλέξτε" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="χαμηλή">Χαμηλή</SelectItem>
-                        <SelectItem value="μέτρια">Μέτρια</SelectItem>
-                        <SelectItem value="υψηλή">Υψηλή</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      type="number"
-                      step="0.1"
-                      placeholder={field.placeholder}
-                      value={formData[field.key as keyof typeof formData]}
-                      onChange={(e) => handleInputChange(field.key, e.target.value)}
-                      className="rounded-none h-8 text-xs"
-                    />
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
+      {/* Δεύτερη σειρά - Προχωρημένα Τεστ */}
+      <div className="grid grid-cols-3 gap-3">
+        {/* Farmer */}
+        <Card className="rounded-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Farmer</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 space-y-2">
+            <div>
+              <Label className="text-xs">Βάρος</Label>
+              <Input
+                type="number"
+                step="0.1"
+                placeholder="kg"
+                value={formData.farmerKg}
+                onChange={(e) => handleInputChange('farmerKg', e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Μέτρα</Label>
+              <Input
+                type="number"
+                step="0.1"
+                placeholder="m"
+                value={formData.farmerMeters}
+                onChange={(e) => handleInputChange('farmerMeters', e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Χρόνος</Label>
+              <Input
+                type="number"
+                step="0.1"
+                placeholder="δευτ."
+                value={formData.farmerSeconds}
+                onChange={(e) => handleInputChange('farmerSeconds', e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sprint */}
+        <Card className="rounded-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Sprint</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 space-y-2">
+            <div>
+              <Label className="text-xs">Χρόνος</Label>
+              <Input
+                type="number"
+                step="0.1"
+                placeholder="δευτ."
+                value={formData.sprintSeconds}
+                onChange={(e) => handleInputChange('sprintSeconds', e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Μέτρα</Label>
+              <Input
+                type="number"
+                step="0.1"
+                placeholder="m"
+                value={formData.sprintMeters}
+                onChange={(e) => handleInputChange('sprintMeters', e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Αντίσταση</Label>
+              <Select 
+                value={formData.sprintResistance} 
+                onValueChange={(value) => handleInputChange('sprintResistance', value)}
+              >
+                <SelectTrigger className="rounded-none h-8 text-xs">
+                  <SelectValue placeholder="Επιλέξτε" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="χαμηλή">Χαμηλή</SelectItem>
+                  <SelectItem value="μέτρια">Μέτρια</SelectItem>
+                  <SelectItem value="υψηλή">Υψηλή</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Watt</Label>
+              <Input
+                type="number"
+                step="0.1"
+                placeholder="W"
+                value={formData.sprintWatt}
+                onChange={(e) => handleInputChange('sprintWatt', e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* MAS */}
+        <Card className="rounded-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">MAS</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 space-y-2">
+            <div>
+              <Label className="text-xs">Μέτρα</Label>
+              <Input
+                type="number"
+                step="0.1"
+                placeholder="m"
+                value={formData.masMeters}
+                onChange={(e) => handleInputChange('masMeters', e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Λεπτά</Label>
+              <Input
+                type="number"
+                step="0.1"
+                placeholder="λεπτά"
+                value={formData.masMinutes}
+                onChange={(e) => handleInputChange('masMinutes', e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">m/s</Label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="m/s"
+                value={formData.masMs}
+                readOnly
+                className="rounded-none h-8 text-xs bg-gray-100"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">km/h</Label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="km/h"
+                value={formData.masKmh}
+                readOnly
+                className="rounded-none h-8 text-xs bg-gray-100"
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
       <Card className="rounded-none">
