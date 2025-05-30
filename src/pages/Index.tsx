@@ -457,6 +457,9 @@ const Index = () => {
                 <a href="#results" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   {currentNavigation.results}
                 </a>
+                <a href="#footer" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
+                  {currentNavigation.contact}
+                </a>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
@@ -495,6 +498,9 @@ const Index = () => {
             </a>
             <a href="#results" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               {currentNavigation.results}
+            </a>
+            <a href="#footer" className="block text-white hover:text-[#00ffba] text-sm font-medium">
+              {currentNavigation.contact}
             </a>
             <div className="pt-4 flex justify-center space-x-4">
               <Globe 
@@ -741,7 +747,7 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left Side - Content */}
             <div className="lg:col-span-1">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 leading-tight">
                 Elite Training Methodology
               </h2>
               
@@ -888,7 +894,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 border-t border-gray-800">
+      <footer id="footer" className="bg-gray-900 text-white py-8 border-t border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-12 items-start">
             {/* Left - Contact Information */}
