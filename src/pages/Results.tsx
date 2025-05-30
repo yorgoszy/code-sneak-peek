@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -306,6 +305,14 @@ const Results = () => {
     }
   };
 
+  const handleDeselectAllExercises = () => {
+    setSelectedExercises([]);
+  };
+
+  const handleDeselectAllDates = () => {
+    setSelectedDates([]);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -405,21 +412,27 @@ const Results = () => {
                       onDateToggle={handleDateToggle}
                       onSelectAllExercises={handleSelectAllExercises}
                       onSelectAllDates={handleSelectAllDates}
+                      onDeselectAllExercises={handleDeselectAllExercises}
+                      onDeselectAllDates={handleDeselectAllDates}
                     />
                     
-                    {Object.entries(
-                      getFilteredStrengthData().reduce((acc: any, curr) => {
-                        if (!acc[curr.exerciseName]) acc[curr.exerciseName] = [];
-                        acc[curr.exerciseName].push(curr);
-                        return acc;
-                      }, {})
-                    ).map(([exerciseName, data]: [string, any]) => (
-                      <LoadVelocityChart
-                        key={exerciseName}
-                        data={data}
-                        exerciseName={exerciseName}
-                      />
-                    ))}
+                    {getFilteredStrengthData().length > 0 && selectedExercises.length > 1 ? (
+                      <CombinedLoadVelocityChart data={getFilteredStrengthData()} />
+                    ) : (
+                      Object.entries(
+                        getFilteredStrengthData().reduce((acc: any, curr) => {
+                          if (!acc[curr.exerciseName]) acc[curr.exerciseName] = [];
+                          acc[curr.exerciseName].push(curr);
+                          return acc;
+                        }, {})
+                      ).map(([exerciseName, data]: [string, any]) => (
+                        <LoadVelocityChart
+                          key={exerciseName}
+                          data={data}
+                          exerciseName={exerciseName}
+                        />
+                      ))
+                    )}
                   </div>
                 )}
               </TabsContent>
