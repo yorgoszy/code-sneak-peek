@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -10,7 +11,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { TestBarChart } from "@/components/charts/TestBarChart";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
-import { AdvancedChart } from "@/components/charts/AdvancedChart";
 
 interface User {
   id: string;
@@ -31,7 +31,7 @@ const Results = () => {
   const [selectedAthleteIds, setSelectedAthleteIds] = useState<string[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
-  const [activeTab, setActiveTab] = useState("advanced");
+  const [activeTab, setActiveTab] = useState("anthropometric");
 
   useEffect(() => {
     fetchUsers();
@@ -326,24 +326,13 @@ const Results = () => {
 
           {selectedAthleteIds.length > 0 && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-6 rounded-none">
-                <TabsTrigger value="advanced" className="rounded-none">Προχωρημένη Ανάλυση</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-5 rounded-none">
                 <TabsTrigger value="anthropometric" className="rounded-none">Σωματομετρικά</TabsTrigger>
                 <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
                 <TabsTrigger value="strength" className="rounded-none">Δύναμη</TabsTrigger>
                 <TabsTrigger value="endurance" className="rounded-none">Αντοχή</TabsTrigger>
                 <TabsTrigger value="jumps" className="rounded-none">Άλματα</TabsTrigger>
               </TabsList>
-
-              <TabsContent value="advanced" className="mt-6">
-                <div className="space-y-6">
-                  <AdvancedChart testType="strength" selectedAthleteIds={selectedAthleteIds} />
-                  <AdvancedChart testType="anthropometric" selectedAthleteIds={selectedAthleteIds} />
-                  <AdvancedChart testType="endurance" selectedAthleteIds={selectedAthleteIds} />
-                  <AdvancedChart testType="functional" selectedAthleteIds={selectedAthleteIds} />
-                  <AdvancedChart testType="jump" selectedAthleteIds={selectedAthleteIds} />
-                </div>
-              </TabsContent>
 
               <TabsContent value="anthropometric" className="mt-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

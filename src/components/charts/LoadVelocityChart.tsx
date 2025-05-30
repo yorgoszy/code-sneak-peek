@@ -14,8 +14,11 @@ interface LoadVelocityChartProps {
 }
 
 export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps) => {
-  // Ταξινόμηση δεδομένων από μικρότερη προς μεγαλύτερη ταχύτητα
-  const sortedData = [...data].sort((a, b) => a.velocity - b.velocity);
+  // Προσθήκη σημείου (0,0) και ταξινόμηση δεδομένων
+  const chartData = [
+    { velocity: 0, weight: 0 }, // Προσθήκη σημείου εκκίνησης (0,0)
+    ...data.sort((a, b) => a.velocity - b.velocity)
+  ];
 
   return (
     <Card className="rounded-none">
@@ -24,19 +27,19 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={sortedData}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="velocity" 
               label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -10 }}
               type="number"
-              domain={['dataMin', 'dataMax']}
+              domain={[0, 'dataMax']}
             />
             <YAxis 
               dataKey="weight"
               label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft' }}
               type="number"
-              domain={['dataMin', 'dataMax']}
+              domain={[0, 'dataMax']}
             />
             <Tooltip 
               formatter={(value, name) => [
