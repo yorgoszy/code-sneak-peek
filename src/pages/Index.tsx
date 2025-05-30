@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -420,6 +421,13 @@ const Index = () => {
   const currentEliteTrainingBoxes = eliteTrainingBoxes[language];
   const currentNavigation = navigation[language];
   const currentTestimonials = testimonials[language];
+
+  // TikTok icon component (since it's not in lucide-react)
+  const TikTokIcon = () => (
+    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+    </svg>
+  );
 
   return (
     <div className="min-h-screen bg-black text-white font-robert font-medium">
@@ -903,7 +911,14 @@ const Index = () => {
                   <MapPin className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-gray-300">an.georgiou 46, thessaloniki 54627</p>
+                  <a 
+                    href="https://g.co/kgs/4iU8hhS"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                  >
+                    an.georgiou 46, thessaloniki 54627
+                  </a>
                 </div>
               </div>
               
@@ -912,7 +927,12 @@ const Index = () => {
                   <Phone className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-gray-300">+30 2310 529104</p>
+                  <a 
+                    href="tel:+302310529104"
+                    className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                  >
+                    +30 2310 529104
+                  </a>
                 </div>
               </div>
               
@@ -921,7 +941,12 @@ const Index = () => {
                   <Mail className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-gray-300">info@hyperkids.gr</p>
+                  <a 
+                    href="mailto:info@hyperkids.gr"
+                    className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                  >
+                    info@hyperkids.gr
+                  </a>
                 </div>
               </div>
 
@@ -1036,14 +1061,23 @@ const Index = () => {
             <div className="grid md:grid-cols-3 gap-12 items-start">
               {/* Left - Contact Information */}
               <div>
-                <h3 className="text-2xl font-bold text-white mb-8">Επικοινωνία</h3>
+                <h3 className="text-2xl font-bold text-white mb-8">
+                  {language === 'el' ? 'Επικοινωνία' : 'Contact'}
+                </h3>
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
                     <div className="w-6 h-6 text-[#00ffba] mt-1">
                       <MapPin className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-gray-300">an.georgiou 46, thessaloniki 54627</p>
+                      <a 
+                        href="https://g.co/kgs/4iU8hhS"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                      >
+                        an.georgiou 46, thessaloniki 54627
+                      </a>
                     </div>
                   </div>
                   
@@ -1052,7 +1086,12 @@ const Index = () => {
                       <Phone className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-gray-300">+30 2310 529104</p>
+                      <a 
+                        href="tel:+302310529104"
+                        className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                      >
+                        +30 2310 529104
+                      </a>
                     </div>
                   </div>
                   
@@ -1061,14 +1100,19 @@ const Index = () => {
                       <Mail className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-gray-300">info@hyperkids.gr</p>
+                      <a 
+                        href="mailto:info@hyperkids.gr"
+                        className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                      >
+                        info@hyperkids.gr
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Center - Logo and Social Media */}
-              <div className="text-center">
+              {/* Center - Logo and Social Media - moved down */}
+              <div className="text-center mt-8">
                 <div className="mb-8">
                   <img 
                     src="/lovable-uploads/430e0952-e310-4b59-bec8-e7fb8ed94c98.png" 
@@ -1077,35 +1121,50 @@ const Index = () => {
                   />
                 </div>
                 
-                {/* Social Media Icons */}
+                {/* Globe Icon - moved down */}
+                <div className="flex justify-center mb-6">
+                  <Globe 
+                    className="h-6 w-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" 
+                    onClick={toggleLanguage}
+                  />
+                </div>
+                
+                {/* Social Media Icons - removed bubbles and added TikTok */}
                 <div className="flex justify-center gap-4">
-                  <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
-                    <Facebook className="w-5 h-5" />
-                  </div>
-                  <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
-                    <Instagram className="w-5 h-5" />
-                  </div>
-                  <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors cursor-pointer">
-                    <Youtube className="w-5 h-5" />
-                  </div>
+                  <Facebook className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+                  <Instagram className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+                  <TikTokIcon />
+                  <Youtube className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
                 </div>
               </div>
 
-              {/* Right - Hours - moved to far right and aligned properly */}
-              <div className="text-right ml-auto">
-                <h3 className="text-2xl font-bold text-white mb-8">Ώρες</h3>
+              {/* Right - Hours - aligned left with day and time on same line */}
+              <div className="text-left">
+                <h3 className="text-2xl font-bold text-white mb-8">
+                  {language === 'el' ? 'Ώρες' : 'Hours'}
+                </h3>
                 <div className="space-y-4">
-                  <div className="flex flex-col items-end">
-                    <span className="text-gray-300">Δευτέρα - Παρασκευή:</span>
-                    <span className="text-white font-semibold">7:00 - 22:00</span>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">
+                      {language === 'el' ? 'Δευτέρα - Παρασκευή:' : 'Monday - Friday:'}
+                    </span>
+                    <span className="text-white font-semibold ml-4">7:00 - 22:00</span>
                   </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-gray-300">Σάββατο:</span>
-                    <span className="text-white font-semibold">Κλειστά</span>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">
+                      {language === 'el' ? 'Σάββατο:' : 'Saturday:'}
+                    </span>
+                    <span className="text-white font-semibold ml-4">
+                      {language === 'el' ? 'Κλειστά' : 'Closed'}
+                    </span>
                   </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-gray-300">Κυριακή:</span>
-                    <span className="text-white font-semibold">Κλειστά</span>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">
+                      {language === 'el' ? 'Κυριακή:' : 'Sunday:'}
+                    </span>
+                    <span className="text-white font-semibold ml-4">
+                      {language === 'el' ? 'Κλειστά' : 'Closed'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1117,7 +1176,9 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 border-t border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-gray-400">&copy; 2023 hyperkids. Όλα τα δικαιώματα διατηρούνται.</p>
+          <p className="text-gray-400">
+            &copy; 2023 hyperkids. {language === 'el' ? 'Όλα τα δικαιώματα διατηρούνται.' : 'All rights reserved.'}
+          </p>
         </div>
       </footer>
     </div>
