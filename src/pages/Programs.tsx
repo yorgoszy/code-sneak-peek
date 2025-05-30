@@ -1,18 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, Edit, Copy } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { AthleteSelector } from "@/components/AthleteSelector";
+import { Trash2, Plus, Edit } from "lucide-react";
+import { toast } from "sonner";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 interface Exercise {
   id: string;
@@ -20,77 +24,130 @@ interface Exercise {
 }
 
 interface ProgramExercise {
-  id?: string;
+  id: string;
   exercise_id: string;
-  exercise_name?: string;
   sets: number;
   reps: string;
+  kg: string;
   percentage_1rm?: number;
-  kg?: string;
   velocity_ms?: number;
   tempo?: string;
   rest?: string;
   notes?: string;
   exercise_order: number;
+  exercises?: { name: string };
 }
 
 interface Block {
-  id?: string;
+  id: string;
   name: string;
   block_order: number;
-  exercises: ProgramExercise[];
+  program_exercises: ProgramExercise[];
 }
 
 interface Day {
-  id?: string;
+  id: string;
   name: string;
   day_number: number;
-  blocks: Block[];
+  program_blocks: Block[];
 }
 
 interface Week {
-  id?: string;
+  id: string;
   name: string;
   week_number: number;
-  days: Day[];
+  program_days: Day[];
 }
 
 interface Program {
-  id?: string;
+  id: string;
   name: string;
   description?: string;
   athlete_id?: string;
-  weeks: Week[];
+  app_users?: { name: string };
+  program_weeks: Week[];
 }
 
 const Programs = () => {
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [currentProgram, setCurrentProgram] = useState<Program>({
-    name: '',
-    description: '',
-    weeks: []
-  });
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [athletes, setAthletes] = useState<any[]>([]);
-  const [selectedAthleteId, setSelectedAthleteId] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [editingProgramId, setEditingProgramId] = useState<string | null>(null);
-  const { toast } = useToast();
+
+  // Dialog states
+  const [showNewProgram, setShowNewProgram] = useState(false);
+  const [showNewWeek, setShowNewWeek] = useState(false);
+  const [showNewDay, setShowNewDay] = useState(false);
+  const [showNewBlock, setShowNewBlock] = useState(false);
+  const [showNewExercise, setShowNewExercise] = useState(false);
+
+  // Form states
+  const [newProgram, setNewProgram] = useState({ name: '', description: '', athlete_id: '' });
+  const [newWeek, setNewWeek] = useState({ name: '', week_number: 1 });
+  const [newDay, setNewDay] = useState({ name: '', day_number: 1 });
+  const [newBlock, setNewBlock] = useState({ name: '', block_order: 1 });
+  const [newExercise, setNewExercise] = useState({
+    exercise_id: '',
+    sets: 1,
+    reps: '',
+    kg: '',
+    percentage_1rm: 0,
+    tempo: '',
+    rest: '',
+    notes: '',
+    exercise_order: 1
+  });
+
+  // Current context for adding items
+  const [currentWeek, setCurrentWeek] = useState<Week | null>(null);
+  const [currentDay, setCurrentDay] = useState<Day | null>(null);
+  const [currentBlock, setCurrentBlock] = useState<Block | null>(null);
 
   useEffect(() => {
     fetchPrograms();
+    fetchUsers();
     fetchExercises();
-    fetchAthletes();
   }, []);
 
-  const fetchAthletes = async () => {
+  const fetchPrograms = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('programs')
+      .select(`
+        *,
+        app_users(name),
+        program_weeks(
+          *,
+          program_days(
+            *,
+            program_blocks(
+              *,
+              program_exercises(
+                *,
+                exercises(name)
+              )
+            )
+          )
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast.error('Σφάλμα φόρτωσης προγραμμάτων');
+      console.error(error);
+    } else {
+      setPrograms(data || []);
+    }
+    setLoading(false);
+  };
+
+  const fetchUsers = async () => {
     const { data } = await supabase
       .from('app_users')
-      .select('id, name')
-      .eq('role', 'athlete')
+      .select('id, name, email')
       .order('name');
-    
-    if (data) setAthletes(data);
+    setUsers(data || []);
   };
 
   const fetchExercises = async () => {
@@ -98,442 +155,180 @@ const Programs = () => {
       .from('exercises')
       .select('id, name')
       .order('name');
-    
-    if (data) setExercises(data);
+    setExercises(data || []);
   };
 
-  const fetchPrograms = async () => {
-    setLoading(true);
-    const { data: programsData } = await supabase
-      .from('programs')
-      .select(`
-        *,
-        app_users(name)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (programsData) {
-      const programsWithStructure = await Promise.all(
-        programsData.map(async (program) => {
-          const { data: weeks } = await supabase
-            .from('program_weeks')
-            .select('*')
-            .eq('program_id', program.id)
-            .order('week_number');
-
-          const weeksWithDays = await Promise.all(
-            (weeks || []).map(async (week) => {
-              const { data: days } = await supabase
-                .from('program_days')
-                .select('*')
-                .eq('week_id', week.id)
-                .order('day_number');
-
-              const daysWithBlocks = await Promise.all(
-                (days || []).map(async (day) => {
-                  const { data: blocks } = await supabase
-                    .from('program_blocks')
-                    .select('*')
-                    .eq('day_id', day.id)
-                    .order('block_order');
-
-                  const blocksWithExercises = await Promise.all(
-                    (blocks || []).map(async (block) => {
-                      const { data: exercises } = await supabase
-                        .from('program_exercises')
-                        .select(`
-                          *,
-                          exercises(name)
-                        `)
-                        .eq('block_id', block.id)
-                        .order('exercise_order');
-
-                      return {
-                        ...block,
-                        exercises: exercises?.map(ex => ({
-                          ...ex,
-                          exercise_name: ex.exercises?.name
-                        })) || []
-                      };
-                    })
-                  );
-
-                  return {
-                    ...day,
-                    blocks: blocksWithExercises
-                  };
-                })
-              );
-
-              return {
-                ...week,
-                days: daysWithBlocks
-              };
-            })
-          );
-
-          return {
-            ...program,
-            weeks: weeksWithDays
-          };
-        })
-      );
-
-      setPrograms(programsWithStructure);
-    }
-    setLoading(false);
-  };
-
-  const calculateWeight = async (exerciseId: string, percentage: number) => {
-    if (!selectedAthleteId || !percentage) return null;
-
-    const { data, error } = await supabase.rpc('get_latest_1rm', {
-      athlete_id: selectedAthleteId,
-      exercise_id: exerciseId
-    });
-
-    if (error) {
-      console.error('Error getting 1RM:', error);
-      return null;
-    }
-
-    return data ? Math.round((data * percentage) / 100) : null;
-  };
-
-  const getSuggestedVelocity = async (exerciseId: string, percentage: number) => {
-    if (!selectedAthleteId || !percentage) return null;
-
-    const { data, error } = await supabase.rpc('get_suggested_velocity', {
-      athlete_id: selectedAthleteId,
-      exercise_id: exerciseId,
-      percentage: percentage
-    });
-
-    if (error) {
-      console.error('Error getting suggested velocity:', error);
-      return null;
-    }
-
-    return data ? parseFloat(data.toFixed(2)) : null;
-  };
-
-  const saveProgram = async () => {
-    if (!currentProgram.name) {
-      toast({
-        title: "Σφάλμα",
-        description: "Παρακαλώ εισάγετε όνομα προγράμματος",
-        variant: "destructive"
-      });
+  const createProgram = async () => {
+    if (!newProgram.name) {
+      toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
 
-    setLoading(true);
+    const { data, error } = await supabase
+      .from('programs')
+      .insert([{
+        name: newProgram.name,
+        description: newProgram.description,
+        athlete_id: newProgram.athlete_id || null
+      }])
+      .select()
+      .single();
 
-    try {
-      let programId = currentProgram.id;
+    if (error) {
+      toast.error('Σφάλμα δημιουργίας προγράμματος');
+      console.error(error);
+    } else {
+      toast.success('Το πρόγραμμα δημιουργήθηκε επιτυχώς');
+      setNewProgram({ name: '', description: '', athlete_id: '' });
+      setShowNewProgram(false);
+      fetchPrograms();
+    }
+  };
 
-      if (editingProgramId) {
-        // Update existing program
-        const { error: updateError } = await supabase
-          .from('programs')
-          .update({
-            name: currentProgram.name,
-            description: currentProgram.description,
-            athlete_id: selectedAthleteId || null
-          })
-          .eq('id', editingProgramId);
+  const createWeek = async () => {
+    if (!selectedProgram || !newWeek.name) {
+      toast.error('Συμπληρώστε όλα τα απαραίτητα πεδία');
+      return;
+    }
 
-        if (updateError) throw updateError;
-        programId = editingProgramId;
+    const { error } = await supabase
+      .from('program_weeks')
+      .insert([{
+        program_id: selectedProgram.id,
+        name: newWeek.name,
+        week_number: newWeek.week_number
+      }]);
 
-        // Delete existing structure
-        await supabase.from('program_weeks').delete().eq('program_id', editingProgramId);
-      } else {
-        // Create new program
-        const { data: programData, error: programError } = await supabase
-          .from('programs')
-          .insert({
-            name: currentProgram.name,
-            description: currentProgram.description,
-            athlete_id: selectedAthleteId || null
-          })
-          .select()
-          .single();
+    if (error) {
+      toast.error('Σφάλμα δημιουργίας εβδομάδας');
+      console.error(error);
+    } else {
+      toast.success('Η εβδομάδα δημιουργήθηκε επιτυχώς');
+      setNewWeek({ name: '', week_number: 1 });
+      setShowNewWeek(false);
+      fetchPrograms();
+    }
+  };
 
-        if (programError) throw programError;
-        programId = programData.id;
-      }
+  const createDay = async () => {
+    if (!currentWeek || !newDay.name) {
+      toast.error('Συμπληρώστε όλα τα απαραίτητα πεδία');
+      return;
+    }
 
-      // Save weeks, days, blocks, and exercises
-      for (const week of currentProgram.weeks) {
-        const { data: weekData, error: weekError } = await supabase
-          .from('program_weeks')
-          .insert({
-            program_id: programId,
-            name: week.name,
-            week_number: week.week_number
-          })
-          .select()
-          .single();
+    const { error } = await supabase
+      .from('program_days')
+      .insert([{
+        week_id: currentWeek.id,
+        name: newDay.name,
+        day_number: newDay.day_number
+      }]);
 
-        if (weekError) throw weekError;
+    if (error) {
+      toast.error('Σφάλμα δημιουργίας ημέρας');
+      console.error(error);
+    } else {
+      toast.success('Η ημέρα δημιουργήθηκε επιτυχώς');
+      setNewDay({ name: '', day_number: 1 });
+      setShowNewDay(false);
+      fetchPrograms();
+    }
+  };
 
-        for (const day of week.days) {
-          const { data: dayData, error: dayError } = await supabase
-            .from('program_days')
-            .insert({
-              week_id: weekData.id,
-              name: day.name,
-              day_number: day.day_number
-            })
-            .select()
-            .single();
+  const createBlock = async () => {
+    if (!currentDay || !newBlock.name) {
+      toast.error('Συμπληρώστε όλα τα απαραίτητα πεδία');
+      return;
+    }
 
-          if (dayError) throw dayError;
+    const { error } = await supabase
+      .from('program_blocks')
+      .insert([{
+        day_id: currentDay.id,
+        name: newBlock.name,
+        block_order: newBlock.block_order
+      }]);
 
-          for (const block of day.blocks) {
-            const { data: blockData, error: blockError } = await supabase
-              .from('program_blocks')
-              .insert({
-                day_id: dayData.id,
-                name: block.name,
-                block_order: block.block_order
-              })
-              .select()
-              .single();
+    if (error) {
+      toast.error('Σφάλμα δημιουργίας block');
+      console.error(error);
+    } else {
+      toast.success('Το block δημιουργήθηκε επιτυχώς');
+      setNewBlock({ name: '', block_order: 1 });
+      setShowNewBlock(false);
+      fetchPrograms();
+    }
+  };
 
-            if (blockError) throw blockError;
+  const createExercise = async () => {
+    if (!currentBlock || !newExercise.exercise_id) {
+      toast.error('Συμπληρώστε όλα τα απαραίτητα πεδία');
+      return;
+    }
 
-            for (const exercise of block.exercises) {
-              const { error: exerciseError } = await supabase
-                .from('program_exercises')
-                .insert({
-                  block_id: blockData.id,
-                  exercise_id: exercise.exercise_id,
-                  sets: exercise.sets,
-                  reps: exercise.reps,
-                  percentage_1rm: exercise.percentage_1rm,
-                  kg: exercise.kg,
-                  velocity_ms: exercise.velocity_ms,
-                  tempo: exercise.tempo,
-                  rest: exercise.rest,
-                  notes: exercise.notes,
-                  exercise_order: exercise.exercise_order
-                });
+    let calculatedKg = newExercise.kg;
+    let suggestedVelocity = null;
 
-              if (exerciseError) throw exerciseError;
-            }
-          }
+    // Calculate kg from percentage if athlete is selected and percentage is provided
+    if (selectedProgram?.athlete_id && newExercise.percentage_1rm > 0) {
+      const { data: oneRmData } = await supabase
+        .rpc('get_latest_1rm', {
+          athlete_id: selectedProgram.athlete_id,
+          exercise_id: newExercise.exercise_id
+        });
+
+      if (oneRmData) {
+        calculatedKg = Math.round(oneRmData * (newExercise.percentage_1rm / 100)).toString();
+        
+        // Get suggested velocity
+        const { data: velocityData } = await supabase
+          .rpc('get_suggested_velocity', {
+            athlete_id: selectedProgram.athlete_id,
+            exercise_id: newExercise.exercise_id,
+            percentage: newExercise.percentage_1rm
+          });
+
+        if (velocityData) {
+          suggestedVelocity = velocityData;
         }
       }
+    }
 
-      toast({
-        title: "Επιτυχία",
-        description: "Το πρόγραμμα αποθηκεύτηκε επιτυχώς"
+    const { error } = await supabase
+      .from('program_exercises')
+      .insert([{
+        block_id: currentBlock.id,
+        exercise_id: newExercise.exercise_id,
+        sets: newExercise.sets,
+        reps: newExercise.reps,
+        kg: calculatedKg,
+        percentage_1rm: newExercise.percentage_1rm || null,
+        velocity_ms: suggestedVelocity,
+        tempo: newExercise.tempo,
+        rest: newExercise.rest,
+        notes: newExercise.notes,
+        exercise_order: newExercise.exercise_order
+      }]);
+
+    if (error) {
+      toast.error('Σφάλμα προσθήκης άσκησης');
+      console.error(error);
+    } else {
+      toast.success('Η άσκηση προστέθηκε επιτυχώς');
+      setNewExercise({
+        exercise_id: '',
+        sets: 1,
+        reps: '',
+        kg: '',
+        percentage_1rm: 0,
+        tempo: '',
+        rest: '',
+        notes: '',
+        exercise_order: 1
       });
-
-      resetForm();
+      setShowNewExercise(false);
       fetchPrograms();
-    } catch (error) {
-      console.error('Error saving program:', error);
-      toast({
-        title: "Σφάλμα",
-        description: "Σφάλμα κατά την αποθήκευση",
-        variant: "destructive"
-      });
     }
-
-    setLoading(false);
-  };
-
-  const resetForm = () => {
-    setCurrentProgram({
-      name: '',
-      description: '',
-      weeks: []
-    });
-    setSelectedAthleteId('');
-    setEditingProgramId(null);
-  };
-
-  const addWeek = () => {
-    const newWeek: Week = {
-      name: `Εβδομάδα ${currentProgram.weeks.length + 1}`,
-      week_number: currentProgram.weeks.length + 1,
-      days: []
-    };
-
-    setCurrentProgram(prev => ({
-      ...prev,
-      weeks: [...prev.weeks, newWeek]
-    }));
-  };
-
-  const addDay = (weekIndex: number) => {
-    const newDay: Day = {
-      name: `Ημέρα ${currentProgram.weeks[weekIndex].days.length + 1}`,
-      day_number: currentProgram.weeks[weekIndex].days.length + 1,
-      blocks: []
-    };
-
-    setCurrentProgram(prev => ({
-      ...prev,
-      weeks: prev.weeks.map((week, idx) => 
-        idx === weekIndex 
-          ? { ...week, days: [...week.days, newDay] }
-          : week
-      )
-    }));
-  };
-
-  const addBlock = (weekIndex: number, dayIndex: number) => {
-    const newBlock: Block = {
-      name: `Block ${currentProgram.weeks[weekIndex].days[dayIndex].blocks.length + 1}`,
-      block_order: currentProgram.weeks[weekIndex].days[dayIndex].blocks.length + 1,
-      exercises: []
-    };
-
-    setCurrentProgram(prev => ({
-      ...prev,
-      weeks: prev.weeks.map((week, wIdx) => 
-        wIdx === weekIndex 
-          ? {
-              ...week,
-              days: week.days.map((day, dIdx) => 
-                dIdx === dayIndex 
-                  ? { ...day, blocks: [...day.blocks, newBlock] }
-                  : day
-              )
-            }
-          : week
-      )
-    }));
-  };
-
-  const addExercise = (weekIndex: number, dayIndex: number, blockIndex: number) => {
-    const newExercise: ProgramExercise = {
-      exercise_id: '',
-      sets: 1,
-      reps: '',
-      exercise_order: currentProgram.weeks[weekIndex].days[dayIndex].blocks[blockIndex].exercises.length + 1
-    };
-
-    setCurrentProgram(prev => ({
-      ...prev,
-      weeks: prev.weeks.map((week, wIdx) => 
-        wIdx === weekIndex 
-          ? {
-              ...week,
-              days: week.days.map((day, dIdx) => 
-                dIdx === dayIndex 
-                  ? {
-                      ...day,
-                      blocks: day.blocks.map((block, bIdx) => 
-                        bIdx === blockIndex 
-                          ? { ...block, exercises: [...block.exercises, newExercise] }
-                          : block
-                      )
-                    }
-                  : day
-              )
-            }
-          : week
-      )
-    }));
-  };
-
-  const updateExercise = async (weekIndex: number, dayIndex: number, blockIndex: number, exerciseIndex: number, field: string, value: any) => {
-    const updatedProgram = { ...currentProgram };
-    const exercise = updatedProgram.weeks[weekIndex].days[dayIndex].blocks[blockIndex].exercises[exerciseIndex];
-    
-    if (field === 'exercise_id') {
-      const selectedExercise = exercises.find(ex => ex.id === value);
-      exercise.exercise_name = selectedExercise?.name;
-    }
-    
-    exercise[field as keyof ProgramExercise] = value;
-
-    // Auto-calculate weight and velocity when percentage changes
-    if (field === 'percentage_1rm' && value && exercise.exercise_id && selectedAthleteId) {
-      const weight = await calculateWeight(exercise.exercise_id, value);
-      const velocity = await getSuggestedVelocity(exercise.exercise_id, value);
-      
-      if (weight !== null) {
-        exercise.kg = weight.toString();
-      }
-      if (velocity !== null) {
-        exercise.velocity_ms = velocity;
-      }
-    }
-
-    setCurrentProgram(updatedProgram);
-  };
-
-  const deleteWeek = (weekIndex: number) => {
-    setCurrentProgram(prev => ({
-      ...prev,
-      weeks: prev.weeks.filter((_, idx) => idx !== weekIndex)
-    }));
-  };
-
-  const deleteDay = (weekIndex: number, dayIndex: number) => {
-    setCurrentProgram(prev => ({
-      ...prev,
-      weeks: prev.weeks.map((week, wIdx) => 
-        wIdx === weekIndex 
-          ? { ...week, days: week.days.filter((_, dIdx) => dIdx !== dayIndex) }
-          : week
-      )
-    }));
-  };
-
-  const deleteBlock = (weekIndex: number, dayIndex: number, blockIndex: number) => {
-    setCurrentProgram(prev => ({
-      ...prev,
-      weeks: prev.weeks.map((week, wIdx) => 
-        wIdx === weekIndex 
-          ? {
-              ...week,
-              days: week.days.map((day, dIdx) => 
-                dIdx === dayIndex 
-                  ? { ...day, blocks: day.blocks.filter((_, bIdx) => bIdx !== blockIndex) }
-                  : day
-              )
-            }
-          : week
-      )
-    }));
-  };
-
-  const deleteExercise = (weekIndex: number, dayIndex: number, blockIndex: number, exerciseIndex: number) => {
-    setCurrentProgram(prev => ({
-      ...prev,
-      weeks: prev.weeks.map((week, wIdx) => 
-        wIdx === weekIndex 
-          ? {
-              ...week,
-              days: week.days.map((day, dIdx) => 
-                dIdx === dayIndex 
-                  ? {
-                      ...day,
-                      blocks: day.blocks.map((block, bIdx) => 
-                        bIdx === blockIndex 
-                          ? { ...block, exercises: block.exercises.filter((_, eIdx) => eIdx !== exerciseIndex) }
-                          : block
-                      )
-                    }
-                  : day
-              )
-            }
-          : week
-      )
-    }));
-  };
-
-  const editProgram = (program: Program) => {
-    setCurrentProgram(program);
-    setSelectedAthleteId(program.athlete_id || '');
-    setEditingProgramId(program.id || null);
   };
 
   const deleteProgram = async (programId: string) => {
@@ -545,341 +340,534 @@ const Programs = () => {
       .eq('id', programId);
 
     if (error) {
-      toast({
-        title: "Σφάλμα",
-        description: "Σφάλμα κατά τη διαγραφή",
-        variant: "destructive"
-      });
+      toast.error('Σφάλμα διαγραφής προγράμματος');
+      console.error(error);
     } else {
-      toast({
-        title: "Επιτυχία",
-        description: "Το πρόγραμμα διαγράφηκε επιτυχώς"
-      });
+      toast.success('Το πρόγραμμα διαγράφηκε επιτυχώς');
+      fetchPrograms();
+      if (selectedProgram?.id === programId) {
+        setSelectedProgram(null);
+      }
+    }
+  };
+
+  const deleteWeek = async (weekId: string) => {
+    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την εβδομάδα;')) return;
+
+    const { error } = await supabase
+      .from('program_weeks')
+      .delete()
+      .eq('id', weekId);
+
+    if (error) {
+      toast.error('Σφάλμα διαγραφής εβδομάδας');
+      console.error(error);
+    } else {
+      toast.success('Η εβδομάδα διαγράφηκε επιτυχώς');
       fetchPrograms();
     }
   };
 
+  const deleteDay = async (dayId: string) => {
+    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την ημέρα;')) return;
+
+    const { error } = await supabase
+      .from('program_days')
+      .delete()
+      .eq('id', dayId);
+
+    if (error) {
+      toast.error('Σφάλμα διαγραφής ημέρας');
+      console.error(error);
+    } else {
+      toast.success('Η ημέρα διαγράφηκε επιτυχώς');
+      fetchPrograms();
+    }
+  };
+
+  const deleteBlock = async (blockId: string) => {
+    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το block;')) return;
+
+    const { error } = await supabase
+      .from('program_blocks')
+      .delete()
+      .eq('id', blockId);
+
+    if (error) {
+      toast.error('Σφάλμα διαγραφής block');
+      console.error(error);
+    } else {
+      toast.success('Το block διαγράφηκε επιτυχώς');
+      fetchPrograms();
+    }
+  };
+
+  const deleteExercise = async (exerciseId: string) => {
+    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την άσκηση;')) return;
+
+    const { error } = await supabase
+      .from('program_exercises')
+      .delete()
+      .eq('id', exerciseId);
+
+    if (error) {
+      toast.error('Σφάλμα διαγραφής άσκησης');
+      console.error(error);
+    } else {
+      toast.success('Η άσκηση διαγράφηκε επιτυχώς');
+      fetchPrograms();
+    }
+  };
+
+  if (loading) {
+    return <div className="p-6">Φόρτωση...</div>;
+  }
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
-        <Dialog>
+        <Dialog open={showNewProgram} onOpenChange={setShowNewProgram}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button className="rounded-none">
+              <Plus className="w-4 h-4 mr-2" />
               Νέο Πρόγραμμα
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="rounded-none">
             <DialogHeader>
-              <DialogTitle>
-                {editingProgramId ? 'Επεξεργασία Προγράμματος' : 'Νέο Πρόγραμμα Προπόνησης'}
-              </DialogTitle>
+              <DialogTitle>Δημιουργία Νέου Προγράμματος</DialogTitle>
             </DialogHeader>
-            
-            <div className="space-y-6">
-              {/* Program Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="program-name">Όνομα Προγράμματος</Label>
-                  <Input
-                    id="program-name"
-                    value={currentProgram.name}
-                    onChange={(e) => setCurrentProgram(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Εισάγετε όνομα προγράμματος"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="athlete-select">Αθλητής (προαιρετικό)</Label>
-                  <Select value={selectedAthleteId} onValueChange={setSelectedAthleteId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Επιλέξτε αθλητή" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Χωρίς αθλητή</SelectItem>
-                      {athletes.map(athlete => (
-                        <SelectItem key={athlete.id} value={athlete.id}>
-                          {athlete.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="program-description">Περιγραφή</Label>
+                <Label>Όνομα Προγράμματος</Label>
+                <Input
+                  className="rounded-none"
+                  value={newProgram.name}
+                  onChange={(e) => setNewProgram({...newProgram, name: e.target.value})}
+                  placeholder="π.χ. Πρόγραμμα Δύναμης"
+                />
+              </div>
+              <div>
+                <Label>Περιγραφή</Label>
                 <Textarea
-                  id="program-description"
-                  value={currentProgram.description || ''}
-                  onChange={(e) => setCurrentProgram(prev => ({ ...prev, description: e.target.value }))}
+                  className="rounded-none"
+                  value={newProgram.description}
+                  onChange={(e) => setNewProgram({...newProgram, description: e.target.value})}
                   placeholder="Περιγραφή προγράμματος..."
                 />
               </div>
-
-              {/* Weeks */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Εβδομάδες</h3>
-                  <Button onClick={addWeek} size="sm">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Προσθήκη Εβδομάδας
-                  </Button>
-                </div>
-
-                {currentProgram.weeks.map((week, weekIndex) => (
-                  <Card key={weekIndex} className="border-l-4 border-l-blue-500">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <Input
-                            value={week.name}
-                            onChange={(e) => {
-                              const updatedProgram = { ...currentProgram };
-                              updatedProgram.weeks[weekIndex].name = e.target.value;
-                              setCurrentProgram(updatedProgram);
-                            }}
-                            className="font-semibold text-lg"
-                          />
-                          <Badge variant="outline">Εβδομάδα {week.week_number}</Badge>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button onClick={() => addDay(weekIndex)} size="sm" variant="outline">
-                            <Plus className="h-4 w-4 mr-1" />
-                            Ημέρα
-                          </Button>
-                          <Button onClick={() => deleteWeek(weekIndex)} size="sm" variant="destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Days */}
-                      {week.days.map((day, dayIndex) => (
-                        <Card key={dayIndex} className="border-l-4 border-l-green-500">
-                          <CardHeader className="pb-2">
-                            <div className="flex justify-between items-center">
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  value={day.name}
-                                  onChange={(e) => {
-                                    const updatedProgram = { ...currentProgram };
-                                    updatedProgram.weeks[weekIndex].days[dayIndex].name = e.target.value;
-                                    setCurrentProgram(updatedProgram);
-                                  }}
-                                  className="font-medium"
-                                />
-                                <Badge variant="outline">Ημέρα {day.day_number}</Badge>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button onClick={() => addBlock(weekIndex, dayIndex)} size="sm" variant="outline">
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  Block
-                                </Button>
-                                <Button onClick={() => deleteDay(weekIndex, dayIndex)} size="sm" variant="destructive">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            {/* Blocks */}
-                            {day.blocks.map((block, blockIndex) => (
-                              <Card key={blockIndex} className="border-l-4 border-l-orange-500">
-                                <CardHeader className="pb-2">
-                                  <div className="flex justify-between items-center">
-                                    <Input
-                                      value={block.name}
-                                      onChange={(e) => {
-                                        const updatedProgram = { ...currentProgram };
-                                        updatedProgram.weeks[weekIndex].days[dayIndex].blocks[blockIndex].name = e.target.value;
-                                        setCurrentProgram(updatedProgram);
-                                      }}
-                                      className="font-medium max-w-xs"
-                                    />
-                                    <div className="flex gap-2">
-                                      <Button onClick={() => addExercise(weekIndex, dayIndex, blockIndex)} size="sm" variant="outline">
-                                        <Plus className="h-4 w-4 mr-1" />
-                                        Άσκηση
-                                      </Button>
-                                      <Button onClick={() => deleteBlock(weekIndex, dayIndex, blockIndex)} size="sm" variant="destructive">
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </CardHeader>
-                                <CardContent>
-                                  {/* Exercises */}
-                                  <div className="space-y-4">
-                                    {block.exercises.map((exercise, exerciseIndex) => (
-                                      <div key={exerciseIndex} className="grid grid-cols-8 gap-2 items-center p-3 border rounded">
-                                        <div className="col-span-1">
-                                          <Label className="text-xs">Άσκηση</Label>
-                                          <Select 
-                                            value={exercise.exercise_id} 
-                                            onValueChange={(value) => updateExercise(weekIndex, dayIndex, blockIndex, exerciseIndex, 'exercise_id', value)}
-                                          >
-                                            <SelectTrigger className="h-8">
-                                              <SelectValue placeholder="Επιλογή" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              {exercises.map(ex => (
-                                                <SelectItem key={ex.id} value={ex.id}>
-                                                  {ex.name}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-
-                                        <div>
-                                          <Label className="text-xs">Sets</Label>
-                                          <Input
-                                            type="number"
-                                            value={exercise.sets}
-                                            onChange={(e) => updateExercise(weekIndex, dayIndex, blockIndex, exerciseIndex, 'sets', parseInt(e.target.value))}
-                                            className="h-8"
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <Label className="text-xs">Reps</Label>
-                                          <Input
-                                            value={exercise.reps}
-                                            onChange={(e) => updateExercise(weekIndex, dayIndex, blockIndex, exerciseIndex, 'reps', e.target.value)}
-                                            placeholder="8-12"
-                                            className="h-8"
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <Label className="text-xs">%1RM</Label>
-                                          <Input
-                                            type="number"
-                                            value={exercise.percentage_1rm || ''}
-                                            onChange={(e) => updateExercise(weekIndex, dayIndex, blockIndex, exerciseIndex, 'percentage_1rm', e.target.value ? parseFloat(e.target.value) : null)}
-                                            placeholder="80"
-                                            className="h-8"
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <Label className="text-xs">Kg</Label>
-                                          <Input
-                                            value={exercise.kg || ''}
-                                            onChange={(e) => updateExercise(weekIndex, dayIndex, blockIndex, exerciseIndex, 'kg', e.target.value)}
-                                            className="h-8"
-                                            readOnly={!!exercise.percentage_1rm}
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <Label className="text-xs">m/s</Label>
-                                          <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={exercise.velocity_ms || ''}
-                                            onChange={(e) => updateExercise(weekIndex, dayIndex, blockIndex, exerciseIndex, 'velocity_ms', e.target.value ? parseFloat(e.target.value) : null)}
-                                            className="h-8"
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <Label className="text-xs">Rest</Label>
-                                          <Input
-                                            value={exercise.rest || ''}
-                                            onChange={(e) => updateExercise(weekIndex, dayIndex, blockIndex, exerciseIndex, 'rest', e.target.value)}
-                                            placeholder="2min"
-                                            className="h-8"
-                                          />
-                                        </div>
-
-                                        <div className="flex justify-center">
-                                          <Button 
-                                            onClick={() => deleteExercise(weekIndex, dayIndex, blockIndex, exerciseIndex)} 
-                                            size="sm" 
-                                            variant="destructive"
-                                          >
-                                            <Trash2 className="h-4 w-4" />
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </CardContent>
-                  </Card>
-                ))}
+              <div>
+                <Label>Αθλητής (προαιρετικό)</Label>
+                <Select value={newProgram.athlete_id} onValueChange={(value) => setNewProgram({...newProgram, athlete_id: value})}>
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Επιλέξτε αθλητή" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Χωρίς συγκεκριμένο αθλητή</SelectItem>
+                    {users.map(user => (
+                      <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-
-              <div className="flex justify-end gap-4">
-                <Button variant="outline" onClick={resetForm}>
-                  Ακύρωση
-                </Button>
-                <Button onClick={saveProgram} disabled={loading}>
-                  {loading ? 'Αποθήκευση...' : editingProgramId ? 'Ενημέρωση' : 'Αποθήκευση'}
-                </Button>
-              </div>
+              <Button className="rounded-none w-full" onClick={createProgram}>
+                Δημιουργία
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Programs List */}
-      <div className="grid gap-4">
-        {loading ? (
-          <div className="text-center py-8">Φόρτωση προγραμμάτων...</div>
-        ) : programs.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            Δεν υπάρχουν προγράμματα. Δημιουργήστε το πρώτο σας πρόγραμμα!
-          </div>
-        ) : (
-          programs.map((program) => (
-            <Card key={program.id} className="p-4">
-              <div className="flex justify-between items-start">
-                <div className="space-y-2">
-                  <h3 className="text-xl font-semibold">{program.name}</h3>
-                  {program.description && (
-                    <p className="text-gray-600">{program.description}</p>
-                  )}
-                  {program.athlete_id && (
-                    <Badge variant="secondary">
-                      {athletes.find(a => a.id === program.athlete_id)?.name || 'Άγνωστος Αθλητής'}
-                    </Badge>
-                  )}
-                  <div className="flex gap-4 text-sm text-gray-500">
-                    <span>{program.weeks?.length || 0} Εβδομάδες</span>
-                    <span>{program.weeks?.reduce((total, week) => total + (week.days?.length || 0), 0) || 0} Ημέρες</span>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Programs List */}
+        <div className="lg:col-span-1">
+          <Card className="rounded-none">
+            <CardHeader>
+              <CardTitle>Προγράμματα</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {programs.map(program => (
+                  <div
+                    key={program.id}
+                    className={`p-3 border cursor-pointer hover:bg-gray-50 ${
+                      selectedProgram?.id === program.id ? 'bg-blue-50 border-blue-300' : ''
+                    }`}
+                    onClick={() => setSelectedProgram(program)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">{program.name}</h4>
+                        {program.app_users && (
+                          <p className="text-sm text-gray-600">{program.app_users.name}</p>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteProgram(program.id);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => editProgram(program)}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Επεξεργασία
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => deleteProgram(program.id!)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                ))}
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Program Details */}
+        <div className="lg:col-span-3">
+          {selectedProgram ? (
+            <Card className="rounded-none">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>{selectedProgram.name}</CardTitle>
+                  <Dialog open={showNewWeek} onOpenChange={setShowNewWeek}>
+                    <DialogTrigger asChild>
+                      <Button className="rounded-none">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Προσθήκη Εβδομάδας
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="rounded-none">
+                      <DialogHeader>
+                        <DialogTitle>Νέα Εβδομάδα</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Όνομα Εβδομάδας</Label>
+                          <Input
+                            className="rounded-none"
+                            value={newWeek.name}
+                            onChange={(e) => setNewWeek({...newWeek, name: e.target.value})}
+                            placeholder="π.χ. Εβδομάδα 1"
+                          />
+                        </div>
+                        <div>
+                          <Label>Αριθμός Εβδομάδας</Label>
+                          <Input
+                            className="rounded-none"
+                            type="number"
+                            value={newWeek.week_number}
+                            onChange={(e) => setNewWeek({...newWeek, week_number: parseInt(e.target.value)})}
+                          />
+                        </div>
+                        <Button className="rounded-none w-full" onClick={createWeek}>
+                          Δημιουργία
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {selectedProgram.program_weeks?.map(week => (
+                    <Card key={week.id} className="rounded-none">
+                      <CardHeader>
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-lg">{week.name}</CardTitle>
+                          <div className="flex gap-2">
+                            <Dialog open={showNewDay} onOpenChange={setShowNewDay}>
+                              <DialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  className="rounded-none"
+                                  onClick={() => setCurrentWeek(week)}
+                                >
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Προσθήκη Ημέρας
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="rounded-none">
+                                <DialogHeader>
+                                  <DialogTitle>Νέα Ημέρα</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div>
+                                    <Label>Όνομα Ημέρας</Label>
+                                    <Input
+                                      className="rounded-none"
+                                      value={newDay.name}
+                                      onChange={(e) => setNewDay({...newDay, name: e.target.value})}
+                                      placeholder="π.χ. Δευτέρα - Upper Body"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label>Αριθμός Ημέρας</Label>
+                                    <Input
+                                      className="rounded-none"
+                                      type="number"
+                                      value={newDay.day_number}
+                                      onChange={(e) => setNewDay({...newDay, day_number: parseInt(e.target.value)})}
+                                    />
+                                  </div>
+                                  <Button className="rounded-none w-full" onClick={createDay}>
+                                    Δημιουργία
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteWeek(week.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {week.program_days?.map(day => (
+                            <Card key={day.id} className="rounded-none">
+                              <CardHeader>
+                                <div className="flex justify-between items-center">
+                                  <CardTitle className="text-base">{day.name}</CardTitle>
+                                  <div className="flex gap-1">
+                                    <Dialog open={showNewBlock} onOpenChange={setShowNewBlock}>
+                                      <DialogTrigger asChild>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => setCurrentDay(day)}
+                                        >
+                                          <Plus className="w-4 h-4" />
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="rounded-none">
+                                        <DialogHeader>
+                                          <DialogTitle>Νέο Block</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="space-y-4">
+                                          <div>
+                                            <Label>Όνομα Block</Label>
+                                            <Input
+                                              className="rounded-none"
+                                              value={newBlock.name}
+                                              onChange={(e) => setNewBlock({...newBlock, name: e.target.value})}
+                                              placeholder="π.χ. Warm-up, Main Set"
+                                            />
+                                          </div>
+                                          <div>
+                                            <Label>Σειρά</Label>
+                                            <Input
+                                              className="rounded-none"
+                                              type="number"
+                                              value={newBlock.block_order}
+                                              onChange={(e) => setNewBlock({...newBlock, block_order: parseInt(e.target.value)})}
+                                            />
+                                          </div>
+                                          <Button className="rounded-none w-full" onClick={createBlock}>
+                                            Δημιουργία
+                                          </Button>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => deleteDay(day.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="space-y-3">
+                                  {day.program_blocks?.map(block => (
+                                    <Card key={block.id} className="rounded-none border-gray-200">
+                                      <CardHeader className="pb-2">
+                                        <div className="flex justify-between items-center">
+                                          <h5 className="font-medium text-sm">{block.name}</h5>
+                                          <div className="flex gap-1">
+                                            <Dialog open={showNewExercise} onOpenChange={setShowNewExercise}>
+                                              <DialogTrigger asChild>
+                                                <Button
+                                                  size="sm"
+                                                  variant="ghost"
+                                                  onClick={() => setCurrentBlock(block)}
+                                                >
+                                                  <Plus className="w-3 h-3" />
+                                                </Button>
+                                              </DialogTrigger>
+                                              <DialogContent className="rounded-none max-w-2xl">
+                                                <DialogHeader>
+                                                  <DialogTitle>Προσθήκη Άσκησης</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                  <div>
+                                                    <Label>Άσκηση</Label>
+                                                    <Select value={newExercise.exercise_id} onValueChange={(value) => setNewExercise({...newExercise, exercise_id: value})}>
+                                                      <SelectTrigger className="rounded-none">
+                                                        <SelectValue placeholder="Επιλέξτε άσκηση" />
+                                                      </SelectTrigger>
+                                                      <SelectContent>
+                                                        {exercises.map(exercise => (
+                                                          <SelectItem key={exercise.id} value={exercise.id}>
+                                                            {exercise.name}
+                                                          </SelectItem>
+                                                        ))}
+                                                      </SelectContent>
+                                                    </Select>
+                                                  </div>
+                                                  <div>
+                                                    <Label>Sets</Label>
+                                                    <Input
+                                                      className="rounded-none"
+                                                      type="number"
+                                                      value={newExercise.sets}
+                                                      onChange={(e) => setNewExercise({...newExercise, sets: parseInt(e.target.value)})}
+                                                    />
+                                                  </div>
+                                                  <div>
+                                                    <Label>Reps</Label>
+                                                    <Input
+                                                      className="rounded-none"
+                                                      value={newExercise.reps}
+                                                      onChange={(e) => setNewExercise({...newExercise, reps: e.target.value})}
+                                                      placeholder="π.χ. 8-10, 12, AMRAP"
+                                                    />
+                                                  </div>
+                                                  <div>
+                                                    <Label>%1RM</Label>
+                                                    <Input
+                                                      className="rounded-none"
+                                                      type="number"
+                                                      value={newExercise.percentage_1rm}
+                                                      onChange={(e) => setNewExercise({...newExercise, percentage_1rm: parseInt(e.target.value)})}
+                                                      placeholder="π.χ. 80"
+                                                    />
+                                                  </div>
+                                                  <div>
+                                                    <Label>Kg</Label>
+                                                    <Input
+                                                      className="rounded-none"
+                                                      value={newExercise.kg}
+                                                      onChange={(e) => setNewExercise({...newExercise, kg: e.target.value})}
+                                                      placeholder="Αυτόματα από %1RM"
+                                                    />
+                                                  </div>
+                                                  <div>
+                                                    <Label>Tempo</Label>
+                                                    <Input
+                                                      className="rounded-none"
+                                                      value={newExercise.tempo}
+                                                      onChange={(e) => setNewExercise({...newExercise, tempo: e.target.value})}
+                                                      placeholder="π.χ. 3-1-1-0"
+                                                    />
+                                                  </div>
+                                                  <div>
+                                                    <Label>Rest</Label>
+                                                    <Input
+                                                      className="rounded-none"
+                                                      value={newExercise.rest}
+                                                      onChange={(e) => setNewExercise({...newExercise, rest: e.target.value})}
+                                                      placeholder="π.χ. 2-3 λεπτά"
+                                                    />
+                                                  </div>
+                                                  <div>
+                                                    <Label>Σειρά</Label>
+                                                    <Input
+                                                      className="rounded-none"
+                                                      type="number"
+                                                      value={newExercise.exercise_order}
+                                                      onChange={(e) => setNewExercise({...newExercise, exercise_order: parseInt(e.target.value)})}
+                                                    />
+                                                  </div>
+                                                  <div className="col-span-2">
+                                                    <Label>Σημειώσεις</Label>
+                                                    <Textarea
+                                                      className="rounded-none"
+                                                      value={newExercise.notes}
+                                                      onChange={(e) => setNewExercise({...newExercise, notes: e.target.value})}
+                                                      placeholder="Επιπλέον οδηγίες..."
+                                                    />
+                                                  </div>
+                                                  <div className="col-span-2">
+                                                    <Button className="rounded-none w-full" onClick={createExercise}>
+                                                      Προσθήκη Άσκησης
+                                                    </Button>
+                                                  </div>
+                                                </div>
+                                              </DialogContent>
+                                            </Dialog>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => deleteBlock(block.id)}
+                                            >
+                                              <Trash2 className="w-3 h-3" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </CardHeader>
+                                      <CardContent className="pt-2">
+                                        <div className="space-y-2">
+                                          {block.program_exercises?.map(exercise => (
+                                            <div key={exercise.id} className="text-xs p-2 bg-gray-50 rounded">
+                                              <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                  <div className="font-medium">
+                                                    {exercise.exercises?.name}
+                                                  </div>
+                                                  <div className="text-gray-600 mt-1">
+                                                    {exercise.sets} sets × {exercise.reps} reps
+                                                    {exercise.kg && ` @ ${exercise.kg}kg`}
+                                                    {exercise.percentage_1rm && ` (${exercise.percentage_1rm}%1RM)`}
+                                                    {exercise.velocity_ms && ` @ ${exercise.velocity_ms}m/s`}
+                                                  </div>
+                                                  {exercise.tempo && (
+                                                    <div className="text-gray-500">Tempo: {exercise.tempo}</div>
+                                                  )}
+                                                  {exercise.rest && (
+                                                    <div className="text-gray-500">Rest: {exercise.rest}</div>
+                                                  )}
+                                                  {exercise.notes && (
+                                                    <div className="text-gray-500 italic">{exercise.notes}</div>
+                                                  )}
+                                                </div>
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  onClick={() => deleteExercise(exercise.id)}
+                                                >
+                                                  <Trash2 className="w-3 h-3" />
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  ))}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
             </Card>
-          ))
-        )}
+          ) : (
+            <Card className="rounded-none">
+              <CardContent className="p-12 text-center">
+                <p className="text-gray-500">Επιλέξτε ένα πρόγραμμα για να δείτε τις λεπτομέρειες</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
