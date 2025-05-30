@@ -1636,13 +1636,6 @@ export type Database = {
             referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "strength_test_sessions_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       strength_tests: {

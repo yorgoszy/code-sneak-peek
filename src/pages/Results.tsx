@@ -6,9 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { TestBarChart } from "@/components/charts/TestBarChart";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
+import { AdvancedChart } from "@/components/charts/AdvancedChart";
 
 interface User {
   id: string;
@@ -26,19 +28,20 @@ interface TestResult {
 const Results = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [selectedAthleteId, setSelectedAthleteId] = useState<string>('');
+  const [selectedAthleteIds, setSelectedAthleteIds] = useState<string[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [activeTab, setActiveTab] = useState("advanced");
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   useEffect(() => {
-    if (selectedAthleteId) {
+    if (selectedAthleteIds.length > 0) {
       fetchTestResults();
     }
-  }, [selectedAthleteId]);
+  }, [selectedAthleteIds]);
 
   const fetchUsers = async () => {
     const { data } = await supabase
@@ -48,8 +51,24 @@ const Results = () => {
     setUsers(data || []);
   };
 
+  const handleAthleteToggle = (athleteId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedAthleteIds([...selectedAthleteIds, athleteId]);
+    } else {
+      setSelectedAthleteIds(selectedAthleteIds.filter(id => id !== athleteId));
+    }
+  };
+
+  const handleSelectAllAthletes = () => {
+    if (selectedAthleteIds.length === users.length) {
+      setSelectedAthleteIds([]);
+    } else {
+      setSelectedAthleteIds(users.map(user => user.id));
+    }
+  };
+
   const fetchTestResults = async () => {
-    if (!selectedAthleteId) return;
+    if (selectedAthleteIds.length === 0) return;
 
     try {
       const results: TestResult[] = [];
@@ -62,7 +81,7 @@ const Results = () => {
           app_users!athlete_id(name),
           anthropometric_test_data(*)
         `)
-        .eq('athlete_id', selectedAthleteId)
+        .in('athlete_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       anthropometricData?.forEach(session => {
@@ -84,7 +103,7 @@ const Results = () => {
           app_users!athlete_id(name),
           strength_test_attempts(*, exercises(name))
         `)
-        .eq('athlete_id', selectedAthleteId)
+        .in('athlete_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       strengthData?.forEach(session => {
@@ -106,7 +125,7 @@ const Results = () => {
           app_users!athlete_id(name),
           jump_test_data(*)
         `)
-        .eq('athlete_id', selectedAthleteId)
+        .in('athlete_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       jumpData?.forEach(session => {
@@ -128,7 +147,7 @@ const Results = () => {
           app_users!athlete_id(name),
           endurance_test_data(*)
         `)
-        .eq('athlete_id', selectedAthleteId)
+        .in('athlete_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       enduranceData?.forEach(session => {
@@ -150,7 +169,7 @@ const Results = () => {
           app_users!athlete_id(name),
           functional_test_data(*)
         `)
-        .eq('athlete_id', selectedAthleteId)
+        .in('athlete_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       functionalData?.forEach(session => {
@@ -262,39 +281,69 @@ const Results = () => {
         </nav>
 
         <div className="flex-1 p-6">
-          {/* Επιλογή Αθλητή */}
+          {/* Επιλογή Αθλητών */}
           <Card className="rounded-none mb-6">
             <CardHeader>
-              <CardTitle>Επιλογή Αθλητή</CardTitle>
+              <CardTitle>Επιλογή Αθλητών</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="max-w-md">
-                <Label>Αθλητής</Label>
-                <Select value={selectedAthleteId} onValueChange={setSelectedAthleteId}>
-                  <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε αθλητή για προβολή αποτελεσμάτων" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map(user => (
-                      <SelectItem key={user.id} value={user.id}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Αθλητές</Label>
+                  <button
+                    onClick={handleSelectAllAthletes}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    {selectedAthleteIds.length === users.length ? 'Αποεπιλογή όλων' : 'Επιλογή όλων'}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-32 overflow-y-auto border border-gray-200 p-2 bg-white">
+                  {users.map(user => (
+                    <div key={user.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={user.id}
+                        checked={selectedAthleteIds.includes(user.id)}
+                        onCheckedChange={(checked) => handleAthleteToggle(user.id, checked as boolean)}
+                      />
+                      <label 
+                        htmlFor={user.id}
+                        className="text-sm cursor-pointer flex-1"
+                        onClick={() => handleAthleteToggle(user.id, !selectedAthleteIds.includes(user.id))}
+                      >
                         {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {selectedAthleteIds.length > 0 && (
+                  <p className="text-sm text-gray-600">
+                    Επιλεγμένοι: {selectedAthleteIds.length} αθλητές
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {selectedAthleteId && testResults.length > 0 && (
-            <Tabs defaultValue="anthropometric" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 rounded-none">
+          {selectedAthleteIds.length > 0 && (
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-6 rounded-none">
+                <TabsTrigger value="advanced" className="rounded-none">Προχωρημένη Ανάλυση</TabsTrigger>
                 <TabsTrigger value="anthropometric" className="rounded-none">Σωματομετρικά</TabsTrigger>
                 <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
                 <TabsTrigger value="strength" className="rounded-none">Δύναμη</TabsTrigger>
                 <TabsTrigger value="endurance" className="rounded-none">Αντοχή</TabsTrigger>
                 <TabsTrigger value="jumps" className="rounded-none">Άλματα</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="advanced" className="mt-6">
+                <div className="space-y-6">
+                  <AdvancedChart testType="strength" selectedAthleteIds={selectedAthleteIds} />
+                  <AdvancedChart testType="anthropometric" selectedAthleteIds={selectedAthleteIds} />
+                  <AdvancedChart testType="endurance" selectedAthleteIds={selectedAthleteIds} />
+                  <AdvancedChart testType="functional" selectedAthleteIds={selectedAthleteIds} />
+                  <AdvancedChart testType="jump" selectedAthleteIds={selectedAthleteIds} />
+                </div>
+              </TabsContent>
 
               <TabsContent value="anthropometric" className="mt-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -339,7 +388,6 @@ const Results = () => {
               <TabsContent value="strength" className="mt-6">
                 {getStrengthChartData().length > 0 && (
                   <div className="space-y-6">
-                    {/* Group by exercise for Load/Velocity charts */}
                     {Object.entries(
                       getStrengthChartData().reduce((acc: any, curr) => {
                         if (!acc[curr.exerciseName]) acc[curr.exerciseName] = [];
@@ -389,15 +437,15 @@ const Results = () => {
             </Tabs>
           )}
 
-          {selectedAthleteId && testResults.length === 0 && (
+          {selectedAthleteIds.length > 0 && testResults.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              <p>Δεν βρέθηκαν αποτελέσματα τεστ για αυτόν τον αθλητή</p>
+              <p>Δεν βρέθηκαν αποτελέσματα τεστ για τους επιλεγμένους αθλητές</p>
             </div>
           )}
 
-          {!selectedAthleteId && (
+          {selectedAthleteIds.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              <p>Παρακαλώ επιλέξτε αθλητή για να δείτε τα αποτελέσματα</p>
+              <p>Παρακαλώ επιλέξτε αθλητές για να δείτε τα αποτελέσματα</p>
             </div>
           )}
         </div>
