@@ -15,36 +15,6 @@ const basicEnduranceFields = [
   { key: 'crunches', label: 'Crunches', type: 'number', placeholder: 'επαναλήψεις' }
 ];
 
-const advancedTests = [
-  {
-    key: 'farmer',
-    label: 'Farmer',
-    fields: [
-      { key: 'farmerKg', label: 'Βάρος', placeholder: 'kg' },
-      { key: 'farmerMeters', label: 'Μέτρα', placeholder: 'm' },
-      { key: 'farmerSeconds', label: 'Χρόνος', placeholder: 'δευτ.' }
-    ]
-  },
-  {
-    key: 'sprint',
-    label: 'Sprint',
-    fields: [
-      { key: 'sprintSeconds', label: 'Χρόνος', placeholder: 'δευτ.' },
-      { key: 'sprintMeters', label: 'Μέτρα', placeholder: 'm' },
-      { key: 'sprintResistance', label: 'Αντίσταση', type: 'select' },
-      { key: 'sprintWatt', label: 'Watt', placeholder: 'W' }
-    ]
-  },
-  {
-    key: 'mas',
-    label: 'MAS',
-    fields: [
-      { key: 'masMeters', label: 'Μέτρα', placeholder: 'm' },
-      { key: 'masMinutes', label: 'Λεπτά', placeholder: 'λεπτά' }
-    ]
-  }
-];
-
 interface EnduranceTestsProps {
   selectedAthleteId: string;
   selectedDate: string;
@@ -101,16 +71,32 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
 
     console.log("Starting endurance test submission...");
     console.log("Selected athlete:", selectedAthleteId);
+    console.log("User:", user.id);
     console.log("Form data:", formData);
 
     try {
+      // Βρίσκουμε τον app_user που αντιστοιχεί στον authenticated user
+      const { data: appUser, error: appUserError } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (appUserError) {
+        console.error('App user error:', appUserError);
+        toast.error("Σφάλμα στην εύρεση του χρήστη");
+        return;
+      }
+
+      console.log("App user found:", appUser);
+
       // Δημιουργία session για αντοχή
       const { data: session, error: sessionError } = await supabase
         .from('endurance_test_sessions')
         .insert({
           athlete_id: selectedAthleteId,
           test_date: selectedDate,
-          created_by: user.id
+          created_by: appUser.id
         })
         .select()
         .single();
@@ -202,7 +188,7 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
 
     } catch (error) {
       console.error('Error saving endurance data:', error);
-      toast.error("Σφάλμα κατά την αποθήκευση");
+      toast.error("Σφάλμα κατά την αποθήκευση: " + (error as any).message);
     }
   };
 
