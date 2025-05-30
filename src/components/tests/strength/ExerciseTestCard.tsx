@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,27 +5,7 @@ import { Plus } from "lucide-react";
 import { ExerciseSelector } from "./ExerciseSelector";
 import { AttemptInput } from "./AttemptInput";
 import { useToast } from "@/hooks/use-toast";
-
-interface Exercise {
-  id: string;
-  name: string;
-  usage_count?: number;
-}
-
-interface Attempt {
-  id?: string;
-  attempt_number: number;
-  weight_kg: number;
-  velocity_ms: number;
-  is_1rm: boolean;
-}
-
-interface ExerciseTest {
-  id?: string;
-  exercise_id: string;
-  test_date: string;
-  attempts: Attempt[];
-}
+import { Exercise, Attempt, ExerciseTest } from "./types";
 
 interface ExerciseTestCardProps {
   exerciseTest: ExerciseTest;

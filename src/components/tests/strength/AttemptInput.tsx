@@ -1,15 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2 } from "lucide-react";
-
-interface Attempt {
-  id?: string;
-  attempt_number: number;
-  weight_kg: number;
-  velocity_ms: number;
-  is_1rm: boolean;
-}
+import { Attempt } from "./types";
 
 interface AttemptInputProps {
   attempt: Attempt;

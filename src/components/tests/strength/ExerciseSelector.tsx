@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,12 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Trash2, Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Exercise {
-  id: string;
-  name: string;
-  usage_count?: number;
-}
+import { Exercise } from "./types";
 
 interface ExerciseSelectorProps {
   exercises: Exercise[];

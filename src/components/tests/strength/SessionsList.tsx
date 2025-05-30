@@ -1,33 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
-
-interface Attempt {
-  id?: string;
-  attempt_number: number;
-  weight_kg: number;
-  velocity_ms: number;
-  is_1rm: boolean;
-  exercises?: { name: string };
-}
-
-interface ExerciseTest {
-  exercise_id: string;
-  exercise_name?: string;
-  test_date: string;
-  attempts: Attempt[];
-}
-
-interface SessionWithDetails {
-  id?: string;
-  athlete_id: string;
-  start_date: string;
-  end_date: string;
-  notes: string;
-  exercise_tests: ExerciseTest[];
-  app_users?: { name: string };
-}
+import { Attempt, ExerciseTest, SessionWithDetails } from "./types";
 
 interface SessionsListProps {
   sessions: SessionWithDetails[];

@@ -1,39 +1,9 @@
-
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { ExerciseTestCard } from "./ExerciseTestCard";
-
-interface Exercise {
-  id: string;
-  name: string;
-  usage_count?: number;
-}
-
-interface Attempt {
-  id?: string;
-  attempt_number: number;
-  weight_kg: number;
-  velocity_ms: number;
-  is_1rm: boolean;
-}
-
-interface ExerciseTest {
-  id?: string;
-  exercise_id: string;
-  test_date: string;
-  attempts: Attempt[];
-}
-
-interface StrengthSession {
-  id?: string;
-  athlete_id: string;
-  start_date: string;
-  end_date: string;
-  notes: string;
-  exercise_tests: ExerciseTest[];
-}
+import { Exercise, Attempt, ExerciseTest, StrengthSession } from "./types";
 
 interface SessionFormProps {
   session: StrengthSession;
