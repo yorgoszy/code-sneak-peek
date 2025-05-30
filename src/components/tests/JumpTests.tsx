@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 const jumpFields = [
-  { key: 'nonCounterMovementJump', label: 'Non-Counter Movement Jump (cm)', type: 'number', step: '0.1' },
-  { key: 'counterMovementJump', label: 'Counter Movement Jump (cm)', type: 'number', step: '0.1' },
-  { key: 'depthJump', label: 'Depth Jump (cm)', type: 'number', step: '0.1' },
-  { key: 'broadJump', label: 'Broad Jump (cm)', type: 'number', step: '0.1' },
-  { key: 'tripleJumpLeft', label: 'Triple Jump Αριστερό (cm)', type: 'number', step: '0.1' },
-  { key: 'tripleJumpRight', label: 'Triple Jump Δεξί (cm)', type: 'number', step: '0.1' }
+  { key: 'nonCounterMovementJump', label: 'Non-Counter Movement Jump', type: 'number', step: '0.1', placeholder: 'cm' },
+  { key: 'counterMovementJump', label: 'Counter Movement Jump', type: 'number', step: '0.1', placeholder: 'cm' },
+  { key: 'depthJump', label: 'Depth Jump', type: 'number', step: '0.1', placeholder: 'cm' },
+  { key: 'broadJump', label: 'Broad Jump', type: 'number', step: '0.01', placeholder: 'm' },
+  { key: 'tripleJumpLeft', label: 'Triple Jump Αριστερό', type: 'number', step: '0.01', placeholder: 'm' },
+  { key: 'tripleJumpRight', label: 'Triple Jump Δεξί', type: 'number', step: '0.01', placeholder: 'm' }
 ];
 
 export const JumpTests = () => {
@@ -42,6 +42,7 @@ export const JumpTests = () => {
             <Input
               type={field.type}
               step={field.step}
+              placeholder={field.placeholder}
               value={formData[field.key as keyof typeof formData]}
               onChange={(e) => handleInputChange(field.key, e.target.value)}
               className="rounded-none"
