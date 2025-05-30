@@ -16,7 +16,7 @@ const fmsExercises = [
   ['Inline Lunge', 'Hurdle Step', 'Deep Squat']
 ];
 
-const postureOptions = ['κύφωση', 'λόρδωση', 'σκολίωση'];
+const postureOptions = ['Κύφωση', 'Λόρδωση', 'Σκολίωση'];
 
 const squatOptions = [
   'ΠΡΗΝΙΣΜΟΣ ΠΕΛΜΑΤΩΝ',
@@ -226,7 +226,7 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
                           <div
                             onClick={() => toggleSquatSelection(option, 'ΑΡΙΣΤΕΡΑ')}
                             className={cn(
-                              "w-6 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
+                              "w-8 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
                               selectedSquatIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
                                 ? "bg-blue-500 text-white border-blue-500"
                                 : "bg-white border-gray-300 hover:bg-gray-50"
@@ -239,7 +239,7 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
                           <div
                             onClick={() => toggleSquatSelection(option, 'ΔΕΞΙΑ')}
                             className={cn(
-                              "w-6 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
+                              "w-8 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
                               selectedSquatIssues.includes(`${option} ΔΕΞΙΑ`)
                                 ? "bg-blue-500 text-white border-blue-500"
                                 : "bg-white border-gray-300 hover:bg-gray-50"
@@ -280,7 +280,7 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
                         <div
                           onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
                           className={cn(
-                            "w-6 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
+                            "w-8 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
                             selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
                               ? "bg-blue-500 text-white border-blue-500"
                               : "bg-white border-gray-300 hover:bg-gray-50"
@@ -293,7 +293,7 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
                         <div
                           onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
                           className={cn(
-                            "w-6 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
+                            "w-8 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
                             selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
                               ? "bg-blue-500 text-white border-blue-500"
                               : "bg-white border-gray-300 hover:bg-gray-50"
