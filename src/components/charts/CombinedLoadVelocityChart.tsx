@@ -13,41 +13,42 @@ interface CombinedLoadVelocityChartProps {
 }
 
 export const CombinedLoadVelocityChart = ({ data }: CombinedLoadVelocityChartProps) => {
-  // Group data by exercise and sort by date
+  // Group data by exercise and sort by velocity
   const exerciseGroups = data.reduce((acc, item) => {
     if (!acc[item.exerciseName]) {
       acc[item.exerciseName] = [];
     }
     acc[item.exerciseName].push({
-      date: item.date,
+      velocity: item.velocity,
       weight: item.weight,
-      velocity: item.velocity
+      date: item.date
     });
     return acc;
-  }, {} as Record<string, Array<{ date: string; weight: number; velocity: number }>>);
+  }, {} as Record<string, Array<{ velocity: number; weight: number; date: string }>>);
 
-  // Sort each exercise data by date and create combined dataset
-  const exerciseNames = Object.keys(exerciseGroups);
-  const allDates = [...new Set(data.map(d => d.date))].sort();
+  // Create combined dataset for all exercises
+  const allDataPoints: Array<{ velocity: number; weight: number; exerciseName: string; date: string }> = [];
   
-  const chartData = allDates.map(date => {
-    const dataPoint: any = { date: new Date(date).toLocaleDateString('el-GR') };
-    
-    exerciseNames.forEach(exerciseName => {
-      const exerciseData = exerciseGroups[exerciseName].find(d => d.date === date);
-      if (exerciseData) {
-        dataPoint[`${exerciseName}_weight`] = exerciseData.weight;
-        dataPoint[`${exerciseName}_velocity`] = exerciseData.velocity;
-      }
+  Object.entries(exerciseGroups).forEach(([exerciseName, exerciseData]) => {
+    exerciseData.forEach(point => {
+      allDataPoints.push({
+        velocity: point.velocity,
+        weight: point.weight,
+        exerciseName: exerciseName,
+        date: point.date
+      });
     });
-    
-    return dataPoint;
   });
+
+  // Sort by velocity for proper curve display
+  const sortedData = allDataPoints.sort((a, b) => a.velocity - b.velocity);
 
   const colors = [
     '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#8dd1e1', 
     '#d084d0', '#ffb347', '#87ceeb', '#dda0dd', '#98fb98'
   ];
+
+  const exerciseNames = Object.keys(exerciseGroups);
 
   return (
     <Card className="rounded-none">
@@ -56,33 +57,31 @@ export const CombinedLoadVelocityChart = ({ data }: CombinedLoadVelocityChartPro
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={500}>
-          <LineChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+          <LineChart data={sortedData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
-              dataKey="date"
+              dataKey="velocity"
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -10 }}
               tick={{ fontSize: 12 }}
             />
             <YAxis 
-              yAxisId="weight"
-              orientation="left"
+              dataKey="weight"
+              type="number"
+              domain={['dataMin', 'dataMax']}
               label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft' }}
             />
-            <YAxis 
-              yAxisId="velocity"
-              orientation="right"
-              label={{ value: 'Ταχύτητα (m/s)', angle: 90, position: 'insideRight' }}
-            />
             <Tooltip 
-              content={({ active, payload, label }) => {
+              content={({ active, payload }) => {
                 if (active && payload && payload.length > 0) {
+                  const data = payload[0].payload;
                   return (
                     <div className="bg-white p-3 border border-gray-200 rounded shadow">
-                      <p className="font-medium">Ημερομηνία: {label}</p>
-                      {payload.map((entry, index) => (
-                        <p key={index} style={{ color: entry.color }}>
-                          {entry.name}: {entry.value} {typeof entry.name === 'string' && entry.name.includes('weight') ? 'kg' : 'm/s'}
-                        </p>
-                      ))}
+                      <p className="font-medium">{data.exerciseName}</p>
+                      <p>Ημερομηνία: {new Date(data.date).toLocaleDateString('el-GR')}</p>
+                      <p>Ταχύτητα: {data.velocity} m/s</p>
+                      <p>Βάρος: {data.weight} kg</p>
                     </div>
                   );
                 }
@@ -90,31 +89,21 @@ export const CombinedLoadVelocityChart = ({ data }: CombinedLoadVelocityChartPro
               }}
             />
             <Legend />
-            {exerciseNames.map((exerciseName, index) => (
-              <React.Fragment key={exerciseName}>
+            {exerciseNames.map((exerciseName, index) => {
+              const exerciseData = sortedData.filter(d => d.exerciseName === exerciseName);
+              return (
                 <Line
-                  yAxisId="weight"
+                  key={exerciseName}
+                  data={exerciseData}
                   type="monotone"
-                  dataKey={`${exerciseName}_weight`}
+                  dataKey="weight"
                   stroke={colors[index % colors.length]}
                   strokeWidth={2}
                   dot={{ fill: colors[index % colors.length], strokeWidth: 2, r: 4 }}
-                  name={`${exerciseName} (Βάρος)`}
-                  connectNulls={false}
+                  name={exerciseName}
                 />
-                <Line
-                  yAxisId="velocity"
-                  type="monotone"
-                  dataKey={`${exerciseName}_velocity`}
-                  stroke={colors[index % colors.length]}
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ fill: colors[index % colors.length], strokeWidth: 2, r: 4 }}
-                  name={`${exerciseName} (Ταχύτητα)`}
-                  connectNulls={false}
-                />
-              </React.Fragment>
-            ))}
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

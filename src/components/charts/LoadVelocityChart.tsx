@@ -13,14 +13,14 @@ interface LoadVelocityChartProps {
 }
 
 export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps) => {
-  // Sort data by date to show progression
+  // Sort data by velocity to create proper curve
   const sortedData = data
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .sort((a, b) => a.velocity - b.velocity)
     .map((item, index) => ({
-      test: `Τεστ ${index + 1}`,
-      date: new Date(item.date).toLocaleDateString('el-GR'),
+      velocity: item.velocity,
       weight: item.weight,
-      velocity: item.velocity
+      date: new Date(item.date).toLocaleDateString('el-GR'),
+      test: `Τεστ ${index + 1}`
     }));
 
   return (
@@ -33,29 +33,28 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
           <LineChart data={sortedData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
-              dataKey="test"
+              dataKey="velocity"
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -10 }}
               tick={{ fontSize: 12 }}
             />
             <YAxis 
-              yAxisId="weight"
-              orientation="left"
+              dataKey="weight"
+              type="number"
+              domain={['dataMin', 'dataMax']}
               label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft' }}
             />
-            <YAxis 
-              yAxisId="velocity"
-              orientation="right"
-              label={{ value: 'Ταχύτητα (m/s)', angle: 90, position: 'insideRight' }}
-            />
             <Tooltip 
-              content={({ active, payload, label }) => {
+              content={({ active, payload }) => {
                 if (active && payload && payload.length > 0) {
                   const data = payload[0].payload;
                   return (
                     <div className="bg-white p-3 border border-gray-200 rounded shadow">
-                      <p className="font-medium">{label}</p>
+                      <p className="font-medium">{data.test}</p>
                       <p>Ημερομηνία: {data.date}</p>
-                      <p>Βάρος: {data.weight} kg</p>
                       <p>Ταχύτητα: {data.velocity} m/s</p>
+                      <p>Βάρος: {data.weight} kg</p>
                     </div>
                   );
                 }
@@ -64,22 +63,12 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
             />
             <Legend />
             <Line 
-              yAxisId="weight"
               type="monotone" 
               dataKey="weight" 
               stroke="#8884d8" 
               strokeWidth={2}
               dot={{ fill: "#8884d8", strokeWidth: 2, r: 4 }}
-              name="Βάρος (kg)"
-            />
-            <Line 
-              yAxisId="velocity"
-              type="monotone" 
-              dataKey="velocity" 
-              stroke="#82ca9d" 
-              strokeWidth={2}
-              dot={{ fill: "#82ca9d", strokeWidth: 2, r: 4 }}
-              name="Ταχύτητα (m/s)"
+              name={`${exerciseName} Load-Velocity`}
             />
           </LineChart>
         </ResponsiveContainer>
