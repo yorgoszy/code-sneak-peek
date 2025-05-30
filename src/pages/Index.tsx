@@ -457,9 +457,6 @@ const Index = () => {
                 <a href="#results" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   {currentNavigation.results}
                 </a>
-                <a href="#contact" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
-                  {currentNavigation.contact}
-                </a>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
@@ -498,9 +495,6 @@ const Index = () => {
             </a>
             <a href="#results" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               {currentNavigation.results}
-            </a>
-            <a href="#contact" className="block text-white hover:text-[#00ffba] text-sm font-medium">
-              {currentNavigation.contact}
             </a>
             <div className="pt-4 flex justify-center space-x-4">
               <Globe 
@@ -893,221 +887,118 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-24 bg-black text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
-              Contact
-            </h2>
-          </div>
-
-          {/* Contact Form - Full Width */}
-          <div className="max-w-4xl mx-auto">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white">Name</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Your name" 
-                            {...field} 
-                            className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white">Email</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="email"
-                            placeholder="Your email" 
-                            {...field} 
-                            className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Phone</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Your phone number" 
-                          {...field} 
-                          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Message</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Your message" 
-                          rows={6}
-                          {...field} 
-                          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-none resize-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <Button 
-                  type="submit" 
-                  size="lg" 
-                  className="w-full bg-[#00ffba] hover:bg-[#00e6a8] text-black font-semibold text-lg py-4 rounded-none"
-                >
-                  Send Message
-                </Button>
-              </form>
-            </Form>
-          </div>
-
-          {/* Hours Section */}
-          <div className="border-t border-gray-800 pt-16 mt-16">
-            <div className="grid md:grid-cols-3 gap-12 items-start">
-              {/* Left - Contact Information */}
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-8">
-                  {language === 'el' ? 'Επικοινωνία' : 'Contact'}
-                </h3>
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-6 h-6 text-[#00ffba] mt-1">
-                      <MapPin className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <a 
-                        href="https://g.co/kgs/4iU8hhS"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-300 hover:text-[#00ffba] transition-colors"
-                      >
-                        an.georgiou 46, thessaloniki 54627
-                      </a>
-                    </div>
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8 border-t border-gray-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-12 items-start">
+            {/* Left - Contact Information */}
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-8">
+                {language === 'el' ? 'Επικοινωνία' : 'Contact'}
+              </h3>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-6 h-6 text-[#00ffba] mt-1">
+                    <MapPin className="w-6 h-6" />
                   </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-6 h-6 text-[#00ffba] mt-1">
-                      <Phone className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <a 
-                        href="tel:+302310529104"
-                        className="text-gray-300 hover:text-[#00ffba] transition-colors"
-                      >
-                        +30 2310 529104
-                      </a>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-6 h-6 text-[#00ffba] mt-1">
-                      <Mail className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <a 
-                        href="mailto:info@hyperkids.gr"
-                        className="text-gray-300 hover:text-[#00ffba] transition-colors"
-                      >
-                        info@hyperkids.gr
-                      </a>
-                    </div>
+                  <div>
+                    <a 
+                      href="https://g.co/kgs/4iU8hhS"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                    >
+                      an.georgiou 46, thessaloniki 54627
+                    </a>
                   </div>
                 </div>
-              </div>
-
-              {/* Center - Logo and Social Media */}
-              <div className="text-center mt-8">
-                <div className="mb-8">
-                  <img 
-                    src="/lovable-uploads/430e0952-e310-4b59-bec8-e7fb8ed94c98.png" 
-                    alt="Logo" 
-                    className="h-12 w-auto mx-auto mb-6"
-                  />
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-6 h-6 text-[#00ffba] mt-1">
+                    <Phone className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <a 
+                      href="tel:+302310529104"
+                      className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                    >
+                      +30 2310 529104
+                    </a>
+                  </div>
                 </div>
                 
-                {/* Social Media Icons */}
-                <div className="flex justify-center gap-4">
-                  <Facebook className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
-                  <Instagram className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
-                  <TikTokIcon />
-                  <Youtube className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
-                </div>
-              </div>
-
-              {/* Right - Hours - aligned left with day and time next to each other */}
-              <div className="text-left ml-auto max-w-xs">
-                <h3 className="text-2xl font-bold text-white mb-8">
-                  {language === 'el' ? 'Ώρες' : 'Hours'}
-                </h3>
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-300">
-                      {language === 'el' ? 'Δευτέρα - Παρασκευή:' : 'Monday - Friday:'}
-                    </span>
-                    <span className="text-white font-semibold">7:00 - 22:00</span>
+                <div className="flex items-start gap-4">
+                  <div className="w-6 h-6 text-[#00ffba] mt-1">
+                    <Mail className="w-6 h-6" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-300">
-                      {language === 'el' ? 'Σάββατο:' : 'Saturday:'}
-                    </span>
-                    <span className="text-white font-semibold">
-                      {language === 'el' ? 'Κλειστά' : 'Closed'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-300">
-                      {language === 'el' ? 'Κυριακή:' : 'Sunday:'}
-                    </span>
-                    <span className="text-white font-semibold">
-                      {language === 'el' ? 'Κλειστά' : 'Closed'}
-                    </span>
+                  <div>
+                    <a 
+                      href="mailto:info@hyperkids.gr"
+                      className="text-gray-300 hover:text-[#00ffba] transition-colors"
+                    >
+                      info@hyperkids.gr
+                    </a>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 border-t border-gray-800">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-gray-400">
-            &copy; 2023 hyperkids. {language === 'el' ? 'Όλα τα δικαιώματα διατηρούνται.' : 'All rights reserved.'}
-          </p>
+            {/* Center - Logo and Social Media */}
+            <div className="text-center mt-8">
+              <div className="mb-8">
+                <img 
+                  src="/lovable-uploads/430e0952-e310-4b59-bec8-e7fb8ed94c98.png" 
+                  alt="Logo" 
+                  className="h-12 w-auto mx-auto mb-6"
+                />
+              </div>
+              
+              {/* Social Media Icons */}
+              <div className="flex justify-center gap-4">
+                <Facebook className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+                <Instagram className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+                <TikTokIcon />
+                <Youtube className="w-6 h-6 text-white hover:text-[#00ffba] cursor-pointer transition-colors" />
+              </div>
+            </div>
+
+            {/* Right - Hours - aligned left with day and time next to each other */}
+            <div className="text-left ml-auto max-w-xs">
+              <h3 className="text-2xl font-bold text-white mb-8">
+                {language === 'el' ? 'Ώρες' : 'Hours'}
+              </h3>
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-300">
+                    {language === 'el' ? 'Δευτέρα - Παρασκευή:' : 'Monday - Friday:'}
+                  </span>
+                  <span className="text-white font-semibold">7:00 - 22:00</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-300">
+                    {language === 'el' ? 'Σάββατο:' : 'Saturday:'}
+                  </span>
+                  <span className="text-white font-semibold">
+                    {language === 'el' ? 'Κλειστά' : 'Closed'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-300">
+                    {language === 'el' ? 'Κυριακή:' : 'Sunday:'}
+                  </span>
+                  <span className="text-white font-semibold">
+                    {language === 'el' ? 'Κλειστά' : 'Closed'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center mt-16">
+            <p className="text-gray-400">
+              &copy; 2023 hyperkids. {language === 'el' ? 'Όλα τα δικαιώματα διατηρούνται.' : 'All rights reserved.'}
+            </p>
+          </div>
         </div>
       </footer>
     </div>
