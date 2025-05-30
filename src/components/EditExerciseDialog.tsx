@@ -29,35 +29,15 @@ interface EditExerciseDialogProps {
   onSuccess: () => void;
 }
 
-const categoryGroups = [
-  {
-    title: "Περιοχή Σώματος",
-    categories: ["upper body", "lower body", "total body"]
-  },
-  {
-    title: "Τύπος Κίνησης",
-    categories: ["push", "pull"]
-  },
-  {
-    title: "Κατεύθυνση",
-    categories: ["horizontal", "vertical", "rotational", "linear", "perpendicular"]
-  },
-  {
-    title: "Συμμετρία",
-    categories: ["bilateral", "unilateral", "ipsilateral"]
-  },
-  {
-    title: "Εξοπλισμός",
-    categories: ["barbell", "dumbbell", "kettlebell", "medball", "band", "chain", "bodyweight"]
-  },
-  {
-    title: "Τύπος Συστολής",
-    categories: ["non counter movement", "counter movement", "reactive", "non reactive"]
-  },
-  {
-    title: "Χαρακτηριστικά",
-    categories: ["mobility", "stability", "strength", "power", "endurance", "oly lifting"]
-  }
+// Correct order of categories as requested
+const orderedCategories = [
+  "upper body", "lower body", "total body",
+  "push", "pull",
+  "horizontal", "vertical", "rotational", "linear", "perpendicular",
+  "bilateral", "unilateral", "ipsilateral",
+  "barbell", "dumbbell", "kettlebell", "medball", "band", "chain", "bodyweight",
+  "non counter movement", "counter movement", "reactive", "non reactive",
+  "mobility", "stability", "strength", "power", "endurance", "oly lifting"
 ];
 
 export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: EditExerciseDialogProps) => {
@@ -186,39 +166,26 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
     );
   };
 
-  const getCategoriesByName = (categoryName: string) => {
-    return categories.filter(cat => cat.name === categoryName);
-  };
-
-  const renderCategoryGroup = (group: { title: string; categories: string[] }) => {
-    return (
-      <div key={group.title} className="space-y-3 mb-6">
-        <h3 className="font-medium text-lg text-gray-900">{group.title}</h3>
-        <div className="grid grid-cols-3 gap-2">
-          {group.categories.map(categoryName => {
-            const categoriesWithName = getCategoriesByName(categoryName);
-            return categoriesWithName.map(category => (
-              <div 
-                key={category.id} 
-                className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
-                  selectedCategories.includes(category.id) 
-                    ? 'bg-blue-50 border-blue-200' 
-                    : 'bg-gray-50 border-gray-200'
-                }`}
-                onClick={() => handleCategoryClick(category.id)}
-              >
-                <span className="text-sm select-none font-medium">{category.name}</span>
-              </div>
-            ));
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  const getOtherCategories = () => {
-    const groupCategoryNames = categoryGroups.flatMap(g => g.categories);
-    return categories.filter(cat => !groupCategoryNames.includes(cat.name));
+  // Sort categories by the ordered list
+  const getSortedCategories = () => {
+    return categories
+      .filter(cat => cat.name !== "ζορ")  // Remove the "ζορ (W)" category
+      .sort((a, b) => {
+        const indexA = orderedCategories.indexOf(a.name);
+        const indexB = orderedCategories.indexOf(b.name);
+        
+        // If both are in the ordered list, sort by order
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+        
+        // If only one is in the ordered list, prioritize it
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        
+        // If neither is in the ordered list, sort alphabetically
+        return a.name.localeCompare(b.name);
+      });
   };
 
   if (!exercise) return null;
@@ -276,37 +243,26 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
               <p className="text-sm text-gray-500 mt-2">Φόρτωση κατηγοριών...</p>
             ) : (
               <div className="space-y-6 mt-4">
-                {categoryGroups.map(group => renderCategoryGroup(group))}
-
-                {/* Show other categories if any exist */}
-                {(() => {
-                  const otherCategories = getOtherCategories();
-                  if (otherCategories.length > 0) {
-                    return (
-                      <div className="p-4 border bg-gray-50">
-                        <h3 className="font-medium text-lg text-gray-900 mb-3">Άλλες Κατηγορίες</h3>
-                        <div className="grid grid-cols-3 gap-2">
-                          {otherCategories.map(category => (
-                            <div 
-                              key={category.id} 
-                              className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
-                                selectedCategories.includes(category.id) 
-                                  ? 'bg-blue-50 border-blue-200' 
-                                  : 'bg-white border-gray-200'
-                              }`}
-                              onClick={() => handleCategoryClick(category.id)}
-                            >
-                              <span className="text-sm select-none font-medium">
-                                {category.name} ({category.type})
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                <div className="p-4 border bg-gray-50">
+                  <h3 className="font-medium text-lg text-gray-900 mb-3">Κατηγορίες</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {getSortedCategories().map(category => (
+                      <div 
+                        key={category.id} 
+                        className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                          selectedCategories.includes(category.id) 
+                            ? 'bg-blue-50 border-blue-200' 
+                            : 'bg-white border-gray-200'
+                        }`}
+                        onClick={() => handleCategoryClick(category.id)}
+                      >
+                        <span className="text-sm select-none font-medium">
+                          {category.name}
+                        </span>
                       </div>
-                    );
-                  }
-                  return null;
-                })()}
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
