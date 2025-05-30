@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -21,16 +20,11 @@ const fmsExercises = [
 const postureOptions = ['κύφωση', 'λόρδωση', 'σκολίωση'];
 
 const squatOptions = [
-  'ΠΡΗΝΙΣΜΟΣ ΠΕΛΜΑΤΩΝ ΑΡΙΣΤΕΡΑ',
-  'ΠΡΗΝΙΣΜΟΣ ΠΕΛΜΑΤΩΝ ΔΕΞΙΑ',
-  'ΕΣΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ ΑΡΙΣΤΕΡΑ',
-  'ΕΣΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ ΔΕΞΙΑ',
-  'ΕΞΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ ΑΡΙΣΤΕΡΑ',
-  'ΕΞΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ ΔΕΞΙΑ',
-  'ΑΝΥΨΩΣΗ ΦΤΕΡΝΩΝ ΑΡΙΣΤΕΡΑ',
-  'ΑΝΥΨΩΣΗ ΦΤΕΡΝΩΝ ΔΕΞΙΑ',
-  'ΜΕΤΑΦΟΡΑ ΒΑΡΟΥΣ ΑΡΙΣΤΕΡΑ',
-  'ΜΕΤΑΦΟΡΑ ΒΑΡΟΥΣ ΔΕΞΙΑ',
+  'ΠΡΗΝΙΣΜΟΣ ΠΕΛΜΑΤΩΝ',
+  'ΕΣΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ',
+  'ΕΞΩ ΣΤΡΟΦΗ ΓΩΝΑΤΩΝ',
+  'ΑΝΥΨΩΣΗ ΦΤΕΡΝΩΝ',
+  'ΜΕΤΑΦΟΡΑ ΒΑΡΟΥΣ',
   'ΕΜΠΡΟΣ ΚΛΙΣΗ ΤΟΥ ΚΟΡΜΟΥ',
   'ΥΠΕΡΕΚΤΑΣΗ ΣΤΗΝ Σ.Σ.',
   'ΚΥΦΩΤΙΚΗ ΘΕΣΗ ΣΤΗ Σ.Σ.',
@@ -38,14 +32,10 @@ const squatOptions = [
 ];
 
 const singleLegSquatOptions = [
-  'ΑΝΗΨΩΣΗ ΙΣΧΙΟΥ ΑΡΙΣΤΕΡΑ',
-  'ΑΝΗΨΩΣΗ ΙΣΧΙΟΥ ΔΕΞΙΑ',
-  'ΠΤΩΣΗ ΙΣΧΙΟΥ ΑΡΙΣΤΕΡΑ',
-  'ΠΤΩΣΗ ΙΣΧΙΟΥ ΔΕΞΙΑ',
-  'ΕΣΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ ΑΡΙΣΤΕΡΑ',
-  'ΕΣΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ ΔΕΞΙΑ',
-  'ΕΞΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ ΑΡΙΣΤΕΡΑ',
-  'ΕΞΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ ΔΕΞΙΑ'
+  'ΑΝΗΨΩΣΗ ΙΣΧΙΟΥ',
+  'ΠΤΩΣΗ ΙΣΧΙΟΥ',
+  'ΕΣΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ',
+  'ΕΞΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ'
 ];
 
 interface FunctionalTestsProps {
@@ -66,6 +56,24 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
       const nextScore = currentScore === 3 ? 0 : currentScore + 1;
       return { ...prev, [exercise]: nextScore };
     });
+  };
+
+  const toggleSquatSelection = (item: string, side: 'ΑΡΙΣΤΕΡΑ' | 'ΔΕΞΙΑ') => {
+    const fullItem = `${item} ${side}`;
+    if (selectedSquatIssues.includes(fullItem)) {
+      setSelectedSquatIssues(prev => prev.filter(i => i !== fullItem));
+    } else {
+      setSelectedSquatIssues(prev => [...prev, fullItem]);
+    }
+  };
+
+  const toggleSingleLegSelection = (item: string, side: 'ΑΡΙΣΤΕΡΑ' | 'ΔΕΞΙΑ') => {
+    const fullItem = `${item} ${side}`;
+    if (selectedSingleLegIssues.includes(fullItem)) {
+      setSelectedSingleLegIssues(prev => prev.filter(i => i !== fullItem));
+    } else {
+      setSelectedSingleLegIssues(prev => [...prev, fullItem]);
+    }
   };
 
   const toggleSelection = (item: string, selectedItems: string[], setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>) => {
@@ -182,21 +190,70 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
           <CardTitle>Καθήματα</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {squatOptions.map((option) => (
-              <div
-                key={option}
-                onClick={() => toggleSelection(option, selectedSquatIssues, setSelectedSquatIssues)}
-                className={cn(
-                  "p-2 border cursor-pointer text-center text-xs transition-colors",
-                  selectedSquatIssues.includes(option)
-                    ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-white border-gray-300 hover:bg-gray-50"
-                )}
-              >
-                {option}
-              </div>
-            ))}
+          <div className="space-y-4">
+            {/* Επιλογές που δεν έχουν αριστερά/δεξιά */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {squatOptions.slice(5).map((option) => (
+                <div
+                  key={option}
+                  onClick={() => toggleSelection(option, selectedSquatIssues, setSelectedSquatIssues)}
+                  className={cn(
+                    "p-2 border cursor-pointer text-center text-xs transition-colors",
+                    selectedSquatIssues.includes(option)
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "bg-white border-gray-300 hover:bg-gray-50"
+                  )}
+                >
+                  {option}
+                </div>
+              ))}
+            </div>
+
+            {/* Πίνακας για αριστερά/δεξιά */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border border-gray-300 p-2 text-left text-sm font-medium">Επιλογή</th>
+                    <th className="border border-gray-300 p-2 text-center text-sm font-medium">Αριστερά</th>
+                    <th className="border border-gray-300 p-2 text-center text-sm font-medium">Δεξιά</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {squatOptions.slice(0, 5).map((option) => (
+                    <tr key={option}>
+                      <td className="border border-gray-300 p-2 text-xs">{option}</td>
+                      <td className="border border-gray-300 p-1 text-center">
+                        <div
+                          onClick={() => toggleSquatSelection(option, 'ΑΡΙΣΤΕΡΑ')}
+                          className={cn(
+                            "w-8 h-8 border cursor-pointer flex items-center justify-center mx-auto",
+                            selectedSquatIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-white border-gray-300 hover:bg-gray-50"
+                          )}
+                        >
+                          ✓
+                        </div>
+                      </td>
+                      <td className="border border-gray-300 p-1 text-center">
+                        <div
+                          onClick={() => toggleSquatSelection(option, 'ΔΕΞΙΑ')}
+                          className={cn(
+                            "w-8 h-8 border cursor-pointer flex items-center justify-center mx-auto",
+                            selectedSquatIssues.includes(`${option} ΔΕΞΙΑ`)
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-white border-gray-300 hover:bg-gray-50"
+                          )}
+                        >
+                          ✓
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -207,21 +264,49 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
           <CardTitle>Μονοποδικά Καθήματα</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-            {singleLegSquatOptions.map((option) => (
-              <div
-                key={option}
-                onClick={() => toggleSelection(option, selectedSingleLegIssues, setSelectedSingleLegIssues)}
-                className={cn(
-                  "p-2 border cursor-pointer text-center text-xs transition-colors",
-                  selectedSingleLegIssues.includes(option)
-                    ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-white border-gray-300 hover:bg-gray-50"
-                )}
-              >
-                {option}
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="border border-gray-300 p-2 text-left text-sm font-medium">Επιλογή</th>
+                  <th className="border border-gray-300 p-2 text-center text-sm font-medium">Αριστερά</th>
+                  <th className="border border-gray-300 p-2 text-center text-sm font-medium">Δεξιά</th>
+                </tr>
+              </thead>
+              <tbody>
+                {singleLegSquatOptions.map((option) => (
+                  <tr key={option}>
+                    <td className="border border-gray-300 p-2 text-xs">{option}</td>
+                    <td className="border border-gray-300 p-1 text-center">
+                      <div
+                        onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
+                        className={cn(
+                          "w-8 h-8 border cursor-pointer flex items-center justify-center mx-auto",
+                          selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
+                            ? "bg-blue-500 text-white border-blue-500"
+                            : "bg-white border-gray-300 hover:bg-gray-50"
+                        )}
+                      >
+                        ✓
+                      </div>
+                    </td>
+                    <td className="border border-gray-300 p-1 text-center">
+                      <div
+                        onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
+                        className={cn(
+                          "w-8 h-8 border cursor-pointer flex items-center justify-center mx-auto",
+                          selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
+                            ? "bg-blue-500 text-white border-blue-500"
+                            : "bg-white border-gray-300 hover:bg-gray-50"
+                        )}
+                      >
+                        ✓
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>

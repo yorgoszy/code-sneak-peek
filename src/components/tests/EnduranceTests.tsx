@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,38 @@ const basicEnduranceFields = [
   { key: 'pushUps', label: 'Push Ups', type: 'number', placeholder: 'επαναλήψεις' },
   { key: 'pullUps', label: 'Pull Ups', type: 'number', placeholder: 'επαναλήψεις' },
   { key: 'crunches', label: 'Crunches', type: 'number', placeholder: 'επαναλήψεις' }
+];
+
+const advancedTests = [
+  {
+    key: 'farmer',
+    label: 'Farmer',
+    fields: [
+      { key: 'farmerKg', label: 'Βάρος', placeholder: 'kg' },
+      { key: 'farmerMeters', label: 'Μέτρα', placeholder: 'm' },
+      { key: 'farmerSeconds', label: 'Χρόνος', placeholder: 'δευτ.' }
+    ]
+  },
+  {
+    key: 'sprint',
+    label: 'Sprint',
+    fields: [
+      { key: 'sprintSeconds', label: 'Χρόνος', placeholder: 'δευτ.' },
+      { key: 'sprintMeters', label: 'Μέτρα', placeholder: 'm' },
+      { key: 'sprintResistance', label: 'Αντίσταση', type: 'select' },
+      { key: 'sprintWatt', label: 'Watt', placeholder: 'W' }
+    ]
+  },
+  {
+    key: 'mas',
+    label: 'MAS',
+    fields: [
+      { key: 'masMeters', label: 'Μέτρα', placeholder: 'm' },
+      { key: 'masMinutes', label: 'Λεπτά', placeholder: 'λεπτά' },
+      { key: 'masMs', label: 'm/s', placeholder: 'm/s' },
+      { key: 'masKmh', label: 'km/h', placeholder: 'km/h' }
+    ]
+  }
 ];
 
 interface EnduranceTestsProps {
@@ -138,8 +169,9 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
 
   return (
     <div className="space-y-6">
-      {/* Βασικά Τεστ Αντοχής */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      {/* Βασικά Τεστ Αντοχής και Προχωρημένα */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {/* Βασικά Τεστ */}
         {basicEnduranceFields.map((field) => (
           <Card key={field.key} className="rounded-none">
             <CardHeader className="pb-3">
@@ -156,159 +188,47 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
             </CardContent>
           </Card>
         ))}
+
+        {/* Προχωρημένα Τεστ */}
+        {advancedTests.map((test) => (
+          <Card key={test.key} className="rounded-none">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">{test.label}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-2">
+              {test.fields.map((field) => (
+                <div key={field.key}>
+                  <Label className="text-xs">{field.label}</Label>
+                  {field.type === 'select' ? (
+                    <Select 
+                      value={formData[field.key as keyof typeof formData]} 
+                      onValueChange={(value) => handleInputChange(field.key, value)}
+                    >
+                      <SelectTrigger className="rounded-none h-8 text-xs">
+                        <SelectValue placeholder="Επιλέξτε" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="χαμηλή">Χαμηλή</SelectItem>
+                        <SelectItem value="μέτρια">Μέτρια</SelectItem>
+                        <SelectItem value="υψηλή">Υψηλή</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder={field.placeholder}
+                      value={formData[field.key as keyof typeof formData]}
+                      onChange={(e) => handleInputChange(field.key, e.target.value)}
+                      className="rounded-none h-8 text-xs"
+                    />
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ))}
       </div>
-
-      {/* Farmer Walk */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Farmer Walk</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label>Βάρος</Label>
-              <Input
-                type="number"
-                step="0.1"
-                placeholder="kg"
-                value={formData.farmerKg}
-                onChange={(e) => handleInputChange('farmerKg', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-            <div>
-              <Label>Μέτρα</Label>
-              <Input
-                type="number"
-                step="0.1"
-                placeholder="m"
-                value={formData.farmerMeters}
-                onChange={(e) => handleInputChange('farmerMeters', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-            <div>
-              <Label>Χρόνος</Label>
-              <Input
-                type="number"
-                step="0.1"
-                placeholder="δευτ."
-                value={formData.farmerSeconds}
-                onChange={(e) => handleInputChange('farmerSeconds', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Sprint */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Sprint</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Label>Χρόνος</Label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="δευτ."
-                value={formData.sprintSeconds}
-                onChange={(e) => handleInputChange('sprintSeconds', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-            <div>
-              <Label>Μέτρα</Label>
-              <Input
-                type="number"
-                placeholder="m"
-                value={formData.sprintMeters}
-                onChange={(e) => handleInputChange('sprintMeters', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-            <div>
-              <Label>Αντίσταση</Label>
-              <Select value={formData.sprintResistance} onValueChange={(value) => handleInputChange('sprintResistance', value)}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="χαμηλή">Χαμηλή</SelectItem>
-                  <SelectItem value="μέτρια">Μέτρια</SelectItem>
-                  <SelectItem value="υψηλή">Υψηλή</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Watt</Label>
-              <Input
-                type="number"
-                placeholder="W"
-                value={formData.sprintWatt}
-                onChange={(e) => handleInputChange('sprintWatt', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* MAS */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>MAS</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Label>Μέτρα</Label>
-              <Input
-                type="number"
-                placeholder="m"
-                value={formData.masMeters}
-                onChange={(e) => handleInputChange('masMeters', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-            <div>
-              <Label>Λεπτά</Label>
-              <Input
-                type="number"
-                placeholder="λεπτά"
-                value={formData.masMinutes}
-                onChange={(e) => handleInputChange('masMinutes', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-            <div>
-              <Label>m/s</Label>
-              <Input
-                type="number"
-                step="0.1"
-                placeholder="m/s"
-                value={formData.masMs}
-                onChange={(e) => handleInputChange('masMs', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-            <div>
-              <Label>km/h</Label>
-              <Input
-                type="number"
-                step="0.1"
-                placeholder="km/h"
-                value={formData.masKmh}
-                onChange={(e) => handleInputChange('masKmh', e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
       
       <Card className="rounded-none">
         <CardContent className="p-4 flex items-center justify-center">
