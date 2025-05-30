@@ -315,7 +315,8 @@ const Index = () => {
   const navigation = {
     el: {
       home: "Αρχή",
-      programs: "Προγράμματα", 
+      programs: "Προγράμματα",
+      blog: "Blog",
       about: "Σχετικά Με Εμάς",
       results: "Αποτελέσματα",
       contact: "Επικοινωνία"
@@ -323,6 +324,7 @@ const Index = () => {
     en: {
       home: "Home",
       programs: "Programs",
+      blog: "Blog",
       about: "About Us", 
       results: "Results",
       contact: "Contact"
@@ -341,6 +343,10 @@ const Index = () => {
         title: "Εξερεύνησε Όλα Τα",
         subtitle: "Προγράμματα"
       },
+      blog: {
+        title: "Τελευταία",
+        subtitle: "Άρθρα"
+      },
       about: {
         subtitle: "ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ",
         title: "Supporting Your",
@@ -354,12 +360,6 @@ const Index = () => {
           subtitle: "Join our community of athletes and start your journey towards peak performance today.",
           button: "GET STARTED"
         }
-      },
-      contactSection: {
-        title: "Ξεκινήστε Σήμερα",
-        description: "Ελάτε να γνωρίσετε το χώρο μας και να ξεκινήσετε το δικό σας ταξίδι προς την κορυφή",
-        trial: "Κλείστε Δοκιμαστικό Μάθημα",
-        contactUs: "Επικοινωνήστε Μαζί Μας"
       }
     },
     en: {
@@ -372,6 +372,10 @@ const Index = () => {
       programs: {
         title: "Explore All",
         subtitle: "Programs"
+      },
+      blog: {
+        title: "Latest",
+        subtitle: "Articles"
       },
       about: {
         subtitle: "ABOUT US",
@@ -386,12 +390,6 @@ const Index = () => {
           subtitle: "Join our community of athletes and start your journey towards peak performance today.",
           button: "GET STARTED"
         }
-      },
-      contactSection: {
-        title: "Start Today",
-        description: "Come and see our space and start your own journey to the top",
-        trial: "Book Trial Class",
-        contactUs: "Contact Us"
       }
     }
   };
@@ -451,6 +449,9 @@ const Index = () => {
                 <a href="#programs" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   {currentNavigation.programs}
                 </a>
+                <a href="#blog" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
+                  {currentNavigation.blog}
+                </a>
                 <a href="#schedule" className="text-white hover:text-[#00ffba] text-sm font-medium transition-colors">
                   {currentNavigation.about}
                 </a>
@@ -492,6 +493,9 @@ const Index = () => {
             </a>
             <a href="#programs" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               {currentNavigation.programs}
+            </a>
+            <a href="#blog" className="block text-white hover:text-[#00ffba] text-sm font-medium">
+              {currentNavigation.blog}
             </a>
             <a href="#schedule" className="block text-white hover:text-[#00ffba] text-sm font-medium">
               {currentNavigation.about}
@@ -622,6 +626,75 @@ const Index = () => {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Blog Section */}
+      <section id="blog" className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              {currentContent.blog.title}
+              <br />
+              <span className="text-[#00ffba]">{currentContent.blog.subtitle}</span>
+            </h2>
+          </div>
+          
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            {/* Left Side - Featured Image */}
+            <div className="relative">
+              <img
+                src="/lovable-uploads/4fd00710-90c7-423b-8f46-232a45929952.png"
+                alt="Lift Heavy - Gym Equipment"
+                className="w-full h-auto rounded-lg shadow-lg"
+              />
+              <div className="absolute bottom-6 left-6 bg-black/80 text-white p-4 rounded">
+                <h3 className="text-xl font-bold mb-2">Lift Heavy</h3>
+                <p className="text-sm text-gray-300">Τεχνολογία & Προπόνηση Υψηλής Έντασης</p>
+              </div>
+            </div>
+
+            {/* Right Side - Article Content */}
+            <div className="space-y-6">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">Lift Heavy</h3>
+              
+              <div className="prose prose-lg text-gray-700 leading-relaxed space-y-6">
+                <p>
+                  Σήμερα, όπου η τεχνολογία έχει σημειώσει ραγδαία πρόοδο, η προπόνηση μπορεί να πραγματοποιηθεί υπό πιο ευνοϊκές συνθήκες. Η τεχνολογία έχει δημιουργήσει σημαντικά εργαλεία για την παρακολούθηση της προπόνησης, όπως GPS, επιταχυνσιόμετρα, καρδιοσυχνόμετρα και πολλά άλλα, βελτιώνοντας την ποιότητα της προπόνησης μέσω της ανατροφοδότησης που παρέχουν.
+                </p>
+                
+                <p>
+                  Υπάρχει μια εσφαλμένη αντίληψη πως, αν προπονηθείς σε υψηλή ένταση (85% του 1RM και πάνω), επειδή η άρση εκτελείται αργά, αυτό σημαίνει πως θα γίνεις πιο αργός. Αυτό δεν είναι απόλυτα ακριβές.
+                </p>
+                
+                <p>
+                  Είμαι υπέρ των υψηλών εντάσεων· δεν υπάρχει λόγος να τις αποφεύγεις. Απλώς πρέπει να εκτελούνται σωστά και τη σωστή στιγμή.
+                </p>
+                
+                <p>
+                  Το πιο σημαντικό στοιχείο είναι το προφίλ φορτίου-ταχύτητας του κάθε αθλητή, και για να δημιουργηθεί αυτό το προφίλ, είναι απαραίτητη η χρήση της τεχνολογίας.
+                </p>
+                
+                <p>
+                  Η μεταβολή του προφίλ φορτίου-ταχύτητας είναι αυτό που θα σε κάνει πιο γρήγορο και ισχυρότερο. Αυτό που μας δείχνει το προφίλ είναι ότι μια άρση στο 85% του 1RM εκτελείται με ταχύτητα περίπου 0.50 m/s, και αυτό που πρέπει να επιτευχθεί για να γίνεις πιο γρήγορος είναι να εκτελέσεις την ίδια άρση με μεγαλύτερη ταχύτητα (π.χ. 0.55 m/s).
+                </p>
+                
+                <p>
+                  Η ταχύτερη και ισχυρότερη εκτέλεση προέρχεται από την ικανότητα να εκτελείς πιο γρήγορα σε σχέση με την προηγούμενη προσπάθειά σου, και όχι απαραίτητα από τη μείωση της έντασης, όπως στο 35-45% του 1RM. Ακόμα και σε αυτές τις εντάσεις, ισχύει το ίδιο. Για να εκτελέσεις μια άρση γρηγορότερα, είναι απαραίτητο να αυξήσεις το 1RM σου. Για να αυξήσεις το 1RM, χρειάζεται μια ταχύτερη άρση. Αυτή η σχέση είναι αλληλένδετη και αμφίδρομη.
+                </p>
+                
+                <p>
+                  Δεν μπορείς να γίνεις πιο γρήγορος αν δεν μεταβάλεις το προφίλ φορτίου-ταχύτητας σου, και δεν μπορείς να το μεταβάλεις αν δεν αυξήσεις το 1RM σου.
+                </p>
+              </div>
+              
+              <div className="pt-6">
+                <Button className="bg-[#00ffba] hover:bg-[#00e6a8] text-black rounded-none">
+                  Διαβάστε Περισσότερα
+                </Button>
+              </div>
             </div>
           </div>
         </div>
