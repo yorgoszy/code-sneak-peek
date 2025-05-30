@@ -28,6 +28,7 @@ interface Attempt {
   weight_kg: number;
   velocity_ms: number;
   is_1rm: boolean;
+  exercise_id?: string;
 }
 
 interface StrengthSession {
@@ -35,22 +36,26 @@ interface StrengthSession {
   athlete_id: string;
   test_date: string;
   notes: string;
-  exercise_id: string;
   attempts: Attempt[];
+}
+
+interface SessionWithDetails extends StrengthSession {
+  app_users?: { name: string };
+  attempts: (Attempt & { exercises?: { name: string } })[];
 }
 
 export const StrengthTestSession = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [sessions, setSessions] = useState<StrengthSession[]>([]);
+  const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [currentSession, setCurrentSession] = useState<StrengthSession>({
     athlete_id: '',
     test_date: new Date().toISOString().split('T')[0],
     notes: '',
-    exercise_id: '',
     attempts: []
   });
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -80,8 +85,7 @@ export const StrengthTestSession = () => {
       .from('strength_test_sessions')
       .select(`
         *,
-        app_users!athlete_id(name),
-        exercises(name)
+        app_users!athlete_id(name)
       `)
       .order('created_at', { ascending: false });
 
@@ -90,7 +94,10 @@ export const StrengthTestSession = () => {
         sessionsData.map(async (session) => {
           const { data: attempts } = await supabase
             .from('strength_test_attempts')
-            .select('*')
+            .select(`
+              *,
+              exercises(name)
+            `)
             .eq('test_session_id', session.id)
             .order('attempt_number');
 
@@ -105,11 +112,21 @@ export const StrengthTestSession = () => {
   };
 
   const addAttempt = () => {
+    if (!selectedExerciseId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε άσκηση",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const newAttempt: Attempt = {
       attempt_number: currentSession.attempts.length + 1,
       weight_kg: 0,
       velocity_ms: 0,
-      is_1rm: false
+      is_1rm: false,
+      exercise_id: selectedExerciseId
     };
     setCurrentSession(prev => ({
       ...prev,
@@ -144,7 +161,7 @@ export const StrengthTestSession = () => {
   };
 
   const saveSession = async () => {
-    if (!currentSession.athlete_id || !currentSession.exercise_id || currentSession.attempts.length === 0) {
+    if (!currentSession.athlete_id || !selectedExerciseId || currentSession.attempts.length === 0) {
       toast({
         title: "Σφάλμα",
         description: "Παρακαλώ συμπληρώστε όλα τα απαραίτητα πεδία",
@@ -195,7 +212,7 @@ export const StrengthTestSession = () => {
       // Insert attempts
       const attemptsToInsert = currentSession.attempts.map(attempt => ({
         test_session_id: sessionId,
-        exercise_id: currentSession.exercise_id,
+        exercise_id: selectedExerciseId,
         attempt_number: attempt.attempt_number,
         weight_kg: attempt.weight_kg,
         velocity_ms: attempt.velocity_ms,
@@ -225,16 +242,18 @@ export const StrengthTestSession = () => {
     }
   };
 
-  const editSession = (session: any) => {
+  const editSession = (session: SessionWithDetails) => {
     setCurrentSession({
       id: session.id,
       athlete_id: session.athlete_id,
       test_date: session.test_date,
       notes: session.notes || '',
-      exercise_id: session.attempts[0]?.exercise_id || '',
       attempts: session.attempts
     });
-    setEditingSessionId(session.id);
+    if (session.attempts.length > 0) {
+      setSelectedExerciseId(session.attempts[0].exercise_id || '');
+    }
+    setEditingSessionId(session.id || null);
   };
 
   const resetForm = () => {
@@ -242,9 +261,9 @@ export const StrengthTestSession = () => {
       athlete_id: '',
       test_date: new Date().toISOString().split('T')[0],
       notes: '',
-      exercise_id: '',
       attempts: []
     });
+    setSelectedExerciseId('');
     setEditingSessionId(null);
   };
 
@@ -306,8 +325,8 @@ export const StrengthTestSession = () => {
             <div>
               <Label>Άσκηση</Label>
               <Select 
-                value={currentSession.exercise_id} 
-                onValueChange={(value) => setCurrentSession(prev => ({...prev, exercise_id: value}))}
+                value={selectedExerciseId} 
+                onValueChange={setSelectedExerciseId}
               >
                 <SelectTrigger className="rounded-none">
                   <SelectValue placeholder="Επιλέξτε άσκηση" />
@@ -425,14 +444,15 @@ export const StrengthTestSession = () => {
             </p>
           ) : (
             <div className="space-y-3">
-              {sessions.map((session: any) => {
+              {sessions.map((session) => {
                 const oneRMAttempt = session.attempts.find((attempt: any) => attempt.is_1rm);
+                const exerciseName = session.attempts[0]?.exercises?.name || 'Άγνωστη άσκηση';
                 return (
                   <div key={session.id} className="border rounded p-3">
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-medium">
-                          {session.app_users?.name} - {session.exercises?.name}
+                          {session.app_users?.name} - {exerciseName}
                         </h4>
                         <p className="text-sm text-gray-600">
                           Ημερομηνία: {new Date(session.test_date).toLocaleDateString('el-GR')}
@@ -463,7 +483,7 @@ export const StrengthTestSession = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => deleteSession(session.id)}
+                          onClick={() => deleteSession(session.id!)}
                           className="rounded-none text-xs"
                         >
                           <Trash2 className="w-3 h-3" />
