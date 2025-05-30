@@ -1033,7 +1033,7 @@ const Index = () => {
 
           {/* Hours Section */}
           <div className="border-t border-gray-800 pt-16">
-            <div className="grid md:grid-cols-3 gap-12 items-center">
+            <div className="grid md:grid-cols-3 gap-12 items-start">
               {/* Left - Contact Information */}
               <div>
                 <h3 className="text-2xl font-bold text-white mb-8">Επικοινωνία</h3>
@@ -1091,19 +1091,19 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Right - Hours */}
-              <div>
+              {/* Right - Hours - moved to far right and aligned properly */}
+              <div className="text-right ml-auto">
                 <h3 className="text-2xl font-bold text-white mb-8">Ώρες</h3>
                 <div className="space-y-4">
-                  <div className="flex flex-col">
+                  <div className="flex flex-col items-end">
                     <span className="text-gray-300">Δευτέρα - Παρασκευή:</span>
                     <span className="text-white font-semibold">7:00 - 22:00</span>
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col items-end">
                     <span className="text-gray-300">Σάββατο:</span>
                     <span className="text-white font-semibold">Κλειστά</span>
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col items-end">
                     <span className="text-gray-300">Κυριακή:</span>
                     <span className="text-white font-semibold">Κλειστά</span>
                   </div>
