@@ -49,8 +49,8 @@ interface DayCardProps {
   onDuplicateExercise: (exerciseId: string) => void;
   onRemoveDay: (dayId: string) => void;
   onDuplicateDay: (dayId: string) => void;
-  onReorderBlocks: (dayId: string, blockIds: string[]) => void;
-  onReorderExercises: (blockId: string, exerciseIds: string[]) => void;
+  onReorderBlocks: (dayId: string, oldIndex: number, newIndex: number) => void;
+  onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
 }
 
 export const DayCard: React.FC<DayCardProps> = ({
@@ -128,8 +128,8 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveExercise={onRemoveExercise}
           onUpdateExercise={onUpdateExercise}
           onDuplicateExercise={onDuplicateExercise}
-          onReorderBlocks={onReorderBlocks}
-          onReorderExercises={onReorderExercises}
+          onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(day.id, oldIndex, newIndex)}
+          onReorderExercises={(blockId, oldIndex, newIndex) => onReorderExercises(blockId, oldIndex, newIndex)}
         />
         
         {/* Day Calculations */}
