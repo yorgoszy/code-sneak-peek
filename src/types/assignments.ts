@@ -2,14 +2,15 @@
 export interface ProgramAssignment {
   id: string;
   program_id: string;
-  assigned_by: string;
-  assignment_type: 'individual' | 'group';
+  assigned_by?: string;
+  assignment_type?: 'individual' | 'group';
   athlete_id?: string;
   group_id?: string;
   start_date: string;
   end_date?: string;
   status: 'active' | 'completed' | 'paused' | 'cancelled';
   notes?: string;
+  progress?: number;
   created_at: string;
   updated_at: string;
   programs?: {
