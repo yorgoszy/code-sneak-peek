@@ -120,26 +120,26 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveDay={onRemoveDay}
         />
         
-        <DayCardContent
-          blocks={day.blocks}
-          exercises={exercises}
-          onAddExercise={onAddExercise}
-          onRemoveBlock={onRemoveBlock}
-          onDuplicateBlock={onDuplicateBlock}
-          onUpdateBlockName={onUpdateBlockName}
-          onUpdateExercise={onUpdateExercise}
-          onRemoveExercise={onRemoveExercise}
-          onDuplicateExercise={onDuplicateExercise}
-          onReorderBlocks={onReorderBlocks}
-          onReorderExercises={onReorderExercises}
-        />
-        
         {isOpen && (
-          <DayCalculations 
-            blocks={day.blocks} 
-            exercises={exercises} 
+          <DayCardContent
+            blocks={day.blocks}
+            exercises={exercises}
+            onAddExercise={onAddExercise}
+            onRemoveBlock={onRemoveBlock}
+            onDuplicateBlock={onDuplicateBlock}
+            onUpdateBlockName={onUpdateBlockName}
+            onUpdateExercise={onUpdateExercise}
+            onRemoveExercise={onRemoveExercise}
+            onDuplicateExercise={onDuplicateExercise}
+            onReorderBlocks={onReorderBlocks}
+            onReorderExercises={onReorderExercises}
           />
         )}
+        
+        <DayCalculations 
+          blocks={day.blocks} 
+          exercises={exercises} 
+        />
       </Collapsible>
     </Card>
   );
