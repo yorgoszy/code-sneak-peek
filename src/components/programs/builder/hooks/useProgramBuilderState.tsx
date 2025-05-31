@@ -6,6 +6,8 @@ interface ProgramStructure {
   name: string;
   description: string;
   athlete_id: string;
+  start_date?: Date;
+  training_days?: string[];
   weeks: Week[];
 }
 
@@ -49,13 +51,15 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     name: '',
     description: '',
     athlete_id: '',
+    start_date: undefined,
+    training_days: [],
     weeks: []
   });
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const updateProgram = (updates: Partial<ProgramStructure> | ProgramStructure) => {
-    if ('name' in updates || 'description' in updates || 'athlete_id' in updates || 'weeks' in updates) {
+    if ('name' in updates || 'description' in updates || 'athlete_id' in updates || 'start_date' in updates || 'training_days' in updates || 'weeks' in updates) {
       // Handle both partial updates and full program updates
       if ('weeks' in updates && Array.isArray(updates.weeks)) {
         // Full program update
@@ -68,7 +72,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   };
 
   const resetProgram = () => {
-    setProgram({ name: '', description: '', athlete_id: '', weeks: [] });
+    setProgram({ name: '', description: '', athlete_id: '', start_date: undefined, training_days: [], weeks: [] });
   };
 
   return {

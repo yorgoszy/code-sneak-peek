@@ -45,6 +45,14 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     resetProgram();
   };
 
+  const handleStartDateChange = (date: Date | undefined) => {
+    updateProgram({ start_date: date });
+  };
+
+  const handleTrainingDaysChange = (days: string[]) => {
+    updateProgram({ training_days: days });
+  };
+
   return (
     <>
       <ProgramBuilderTrigger onClick={() => handleOpenChange(true)} />
@@ -57,6 +65,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           onNameChange={(name) => updateProgram({ name })}
           onDescriptionChange={(description) => updateProgram({ description })}
           onAthleteChange={(athlete_id) => updateProgram({ athlete_id })}
+          onStartDateChange={handleStartDateChange}
+          onTrainingDaysChange={handleTrainingDaysChange}
           onAddWeek={actions.addWeek}
           onRemoveWeek={actions.removeWeek}
           onDuplicateWeek={actions.duplicateWeek}

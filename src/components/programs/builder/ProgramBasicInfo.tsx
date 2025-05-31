@@ -9,15 +9,21 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { User } from '../types';
+import { ProgramCalendar } from './ProgramCalendar';
 
 interface ProgramBasicInfoProps {
   name: string;
   description: string;
   athleteId: string;
   users: User[];
+  startDate?: Date;
+  trainingDays?: string[];
+  totalWeeks: number;
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
   onAthleteChange: (athleteId: string) => void;
+  onStartDateChange?: (date: Date | undefined) => void;
+  onTrainingDaysChange?: (days: string[]) => void;
 }
 
 export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
@@ -25,9 +31,14 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   description,
   athleteId,
   users,
+  startDate,
+  trainingDays = [],
+  totalWeeks,
   onNameChange,
   onDescriptionChange,
-  onAthleteChange
+  onAthleteChange,
+  onStartDateChange,
+  onTrainingDaysChange
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -49,87 +60,99 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   };
 
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="text-lg">Στοιχεία Προγράμματος *</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <div className="lg:col-span-1">
-            <Input
-              className="rounded-none h-8"
-              value={name}
-              onChange={(e) => onNameChange(e.target.value)}
-              placeholder="π.χ. Πρόγραμμα Δύναμης"
-            />
-          </div>
-          
-          <div className="lg:col-span-1">
-            <Label className="sr-only">Αθλητής (προαιρετικό)</Label>
+    <div className="space-y-4">
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle className="text-lg">Στοιχεία Προγράμματος *</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            <div className="lg:col-span-1">
+              <Input
+                className="rounded-none h-8"
+                value={name}
+                onChange={(e) => onNameChange(e.target.value)}
+                placeholder="π.χ. Πρόγραμμα Δύναμης"
+              />
+            </div>
             
-            {selectedUser ? (
-              <div className="flex items-center justify-between bg-blue-50 text-blue-700 p-2 border border-blue-200 rounded-none h-8">
-                <span className="font-medium text-sm">{selectedUser.name}</span>
-                <button
-                  onClick={removeAthlete}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ) : (
-              <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal rounded-none h-8"
+            <div className="lg:col-span-1">
+              <Label className="sr-only">Αθλητής (προαιρετικό)</Label>
+              
+              {selectedUser ? (
+                <div className="flex items-center justify-between bg-blue-50 text-blue-700 p-2 border border-blue-200 rounded-none h-8">
+                  <span className="font-medium text-sm">{selectedUser.name}</span>
+                  <button
+                    onClick={removeAthlete}
+                    className="text-blue-600 hover:text-blue-800"
                   >
-                    <Search className="mr-2 h-3 w-3" />
-                    <span className="text-sm">Αναζήτηση αθλητή...</span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0 rounded-none" align="start">
-                  <Command className="border-0">
-                    <CommandInput 
-                      placeholder="Αναζήτηση αθλητή..." 
-                      value={searchTerm}
-                      onValueChange={setSearchTerm}
-                    />
-                    <CommandList className="max-h-48">
-                      <CommandEmpty>Δεν βρέθηκε αθλητής</CommandEmpty>
-                      <CommandItem
-                        className="cursor-pointer p-3 hover:bg-gray-100"
-                        onSelect={() => handleAthleteSelect("no-athlete")}
-                      >
-                        Χωρίς συγκεκριμένο αθλητή
-                      </CommandItem>
-                      {filteredUsers.map(user => (
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal rounded-none h-8"
+                    >
+                      <Search className="mr-2 h-3 w-3" />
+                      <span className="text-sm">Αναζήτηση αθλητή...</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0 rounded-none" align="start">
+                    <Command className="border-0">
+                      <CommandInput 
+                        placeholder="Αναζήτηση αθλητή..." 
+                        value={searchTerm}
+                        onValueChange={setSearchTerm}
+                      />
+                      <CommandList className="max-h-48">
+                        <CommandEmpty>Δεν βρέθηκε αθλητής</CommandEmpty>
                         <CommandItem
-                          key={user.id}
                           className="cursor-pointer p-3 hover:bg-gray-100"
-                          onSelect={() => handleAthleteSelect(user.id)}
+                          onSelect={() => handleAthleteSelect("no-athlete")}
                         >
-                          {user.name}
+                          Χωρίς συγκεκριμένο αθλητή
                         </CommandItem>
-                      ))}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            )}
-          </div>
+                        {filteredUsers.map(user => (
+                          <CommandItem
+                            key={user.id}
+                            className="cursor-pointer p-3 hover:bg-gray-100"
+                            onSelect={() => handleAthleteSelect(user.id)}
+                          >
+                            {user.name}
+                          </CommandItem>
+                        ))}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
 
-          <div className="lg:col-span-1">
-            <Label className="sr-only">Περιγραφή</Label>
-            <Textarea
-              className="rounded-none h-8 resize-none"
-              value={description}
-              onChange={(e) => onDescriptionChange(e.target.value)}
-              placeholder="Περιγραφή προγράμματος..."
-            />
+            <div className="lg:col-span-1">
+              <Label className="sr-only">Περιγραφή</Label>
+              <Textarea
+                className="rounded-none h-8 resize-none"
+                value={description}
+                onChange={(e) => onDescriptionChange(e.target.value)}
+                placeholder="Περιγραφή προγράμματος..."
+              />
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {onStartDateChange && onTrainingDaysChange && (
+        <ProgramCalendar
+          startDate={startDate}
+          trainingDays={trainingDays}
+          totalWeeks={totalWeeks}
+          onStartDateChange={onStartDateChange}
+          onTrainingDaysChange={onTrainingDaysChange}
+        />
+      )}
+    </div>
   );
 };
