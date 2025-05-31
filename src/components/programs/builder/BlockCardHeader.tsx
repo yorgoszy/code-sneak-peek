@@ -37,10 +37,10 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   return (
     <CardHeader className="pb-2">
       <div className="flex justify-between items-center">
-        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded">
-          {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded">
+          {isOpen ? <ChevronDown className="w-3 h-3 text-white" /> : <ChevronRight className="w-3 h-3 text-white" />}
           <h6 
-            className="text-xs font-medium cursor-pointer flex items-center gap-2"
+            className="text-xs font-medium cursor-pointer flex items-center gap-2 text-white"
             onDoubleClick={onNameDoubleClick}
           >
             {isEditing ? (
@@ -50,7 +50,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
                 onChange={(e) => onEditingNameChange(e.target.value)}
                 onBlur={onNameSave}
                 onKeyDown={onNameKeyPress}
-                className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs"
+                className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs text-white"
                 autoFocus
                 onClick={(e) => e.stopPropagation()}
               />
@@ -58,7 +58,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
               <>
                 {blockName}
                 {!isOpen && exercisesCount > 0 && (
-                  <span className="text-xs bg-gray-300 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-gray-500 px-2 py-1 rounded-full text-white">
                     {exercisesCount}
                   </span>
                 )}
@@ -74,9 +74,9 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none hover:bg-gray-600"
           >
-            <Plus className="w-2 h-2" />
+            <Plus className="w-2 h-2 text-white" />
           </Button>
           <Button
             onClick={(e) => {
@@ -85,9 +85,9 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none hover:bg-gray-600"
           >
-            <Copy className="w-2 h-2" />
+            <Copy className="w-2 h-2 text-white" />
           </Button>
           <Button
             onClick={(e) => {
@@ -96,9 +96,9 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none hover:bg-gray-600"
           >
-            <Trash2 className="w-2 h-2" />
+            <Trash2 className="w-2 h-2 text-white" />
           </Button>
         </div>
       </div>
