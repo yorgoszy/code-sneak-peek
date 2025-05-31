@@ -89,8 +89,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              value={exercise.sets}
-              onChange={(e) => onUpdate('sets', parseInt(e.target.value) || 1)}
+              value={exercise.sets || ''}
+              onChange={(e) => onUpdate('sets', parseInt(e.target.value) || '')}
               className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
               style={{ 
                 borderRadius: '0px', 
@@ -98,7 +98,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
                 height: '24px', 
                 padding: '0 4px'
               }}
-              placeholder="1"
+              placeholder=""
             />
           </div>
           
@@ -114,7 +114,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
                 height: '24px', 
                 padding: '0 4px'
               }}
-              placeholder="8-10"
+              placeholder=""
             />
           </div>
           
@@ -124,8 +124,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              value={exercise.percentage_1rm}
-              onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || 0)}
+              value={exercise.percentage_1rm || ''}
+              onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || '')}
               className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
               style={{ 
                 borderRadius: '0px', 
@@ -133,7 +133,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
                 height: '24px', 
                 padding: '0 4px'
               }}
-              placeholder="80"
+              placeholder=""
             />
           </div>
           
@@ -149,7 +149,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
                 height: '24px', 
                 padding: '0 4px'
               }}
-              placeholder="80"
+              placeholder=""
             />
           </div>
           
@@ -165,7 +165,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
                 height: '24px', 
                 padding: '0 4px'
               }}
-              placeholder="0.6"
+              placeholder=""
             />
           </div>
           
@@ -181,7 +181,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
                 height: '24px', 
                 padding: '0 4px'
               }}
-              placeholder="3110"
+              placeholder="1.1.1"
             />
           </div>
           
@@ -197,7 +197,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
                 height: '24px', 
                 padding: '0 4px'
               }}
-              placeholder="2'"
+              placeholder=""
             />
           </div>
         </div>
