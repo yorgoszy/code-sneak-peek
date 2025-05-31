@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -110,6 +111,21 @@ export const DayCard: React.FC<DayCardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(day.name);
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: day.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   const handleNameDoubleClick = () => {
     setIsEditing(true);
     setEditingName(day.name);
@@ -144,11 +160,15 @@ export const DayCard: React.FC<DayCardProps> = ({
   const blocksCount = day.blocks.length;
 
   return (
-    <Card className="rounded-none">
+    <Card ref={setNodeRef} style={style} className="rounded-none">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
-            <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded">
+            <CollapsibleTrigger 
+              className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded"
+              {...attributes}
+              {...listeners}
+            >
               {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               <CardTitle 
                 className="text-sm cursor-pointer flex items-center gap-2"
@@ -163,6 +183,7 @@ export const DayCard: React.FC<DayCardProps> = ({
                     onKeyDown={handleNameKeyPress}
                     className="bg-transparent border border-gray-300 rounded px-1 outline-none"
                     autoFocus
+                    onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
                   <>
@@ -178,7 +199,10 @@ export const DayCard: React.FC<DayCardProps> = ({
             </CollapsibleTrigger>
             <div className="flex gap-1">
               <Button
-                onClick={onAddBlock}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddBlock();
+                }}
                 size="sm"
                 variant="ghost"
                 className="rounded-none"
@@ -186,7 +210,10 @@ export const DayCard: React.FC<DayCardProps> = ({
                 <Plus className="w-3 h-3" />
               </Button>
               <Button
-                onClick={onDuplicateDay}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicateDay();
+                }}
                 size="sm"
                 variant="ghost"
                 className="rounded-none"
@@ -194,7 +221,10 @@ export const DayCard: React.FC<DayCardProps> = ({
                 <Copy className="w-3 h-3" />
               </Button>
               <Button
-                onClick={onRemoveDay}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveDay();
+                }}
                 size="sm"
                 variant="ghost"
                 className="rounded-none"

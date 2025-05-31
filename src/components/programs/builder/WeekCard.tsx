@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { DayCard } from './DayCard';
 import { Exercise } from '../types';
-import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 
 interface ProgramExercise {
@@ -64,45 +63,6 @@ interface WeekCardProps {
   onReorderBlocks: (dayId: string, oldIndex: number, newIndex: number) => void;
   onReorderExercises: (dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
 }
-
-const SortableDay: React.FC<{
-  day: Day;
-  exercises: Exercise[];
-  onAddBlock: () => void;
-  onRemoveDay: () => void;
-  onDuplicateDay: () => void;
-  onUpdateDayName: (name: string) => void;
-  onAddExercise: (blockId: string, exerciseId: string) => void;
-  onRemoveBlock: (blockId: string) => void;
-  onDuplicateBlock: (blockId: string) => void;
-  onUpdateBlockName: (blockId: string, name: string) => void;
-  onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
-  onRemoveExercise: (blockId: string, exerciseId: string) => void;
-  onDuplicateExercise: (blockId: string, exerciseId: string) => void;
-  onReorderBlocks: (oldIndex: number, newIndex: number) => void;
-  onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
-}> = (props) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: props.day.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <DayCard {...props} />
-    </div>
-  );
-};
 
 export const WeekCard: React.FC<WeekCardProps> = ({
   week,
@@ -164,7 +124,7 @@ export const WeekCard: React.FC<WeekCardProps> = ({
           <SortableContext items={week.days.map(d => d.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {week.days.map((day) => (
-                <SortableDay
+                <DayCard
                   key={day.id}
                   day={day}
                   exercises={exercises}
