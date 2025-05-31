@@ -118,7 +118,10 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
     onCreateAssignment(assignmentData);
   };
 
-  const athletes = users.filter(user => user.role === 'athlete');
+  // Show all users from app_users table instead of filtering by role
+  const availableUsers = users || [];
+
+  console.log('Available users in AssignmentDialog:', availableUsers);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -168,13 +171,16 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                   <SelectValue placeholder="Επιλέξτε αθλητή" />
                 </SelectTrigger>
                 <SelectContent>
-                  {athletes.map((athlete) => (
-                    <SelectItem key={athlete.id} value={athlete.id}>
-                      {athlete.name}
+                  {availableUsers.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.name} {user.email && `(${user.email})`}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-sm text-gray-500 mt-1">
+                Διαθέσιμοι χρήστες: {availableUsers.length}
+              </p>
             </div>
           )}
 
@@ -188,7 +194,7 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                 <SelectContent>
                   {groups.map((group) => (
                     <SelectItem key={group.id} value={group.id}>
-                      {group.name}
+                      {group.name} ({group.athlete_ids?.length || 0} αθλητές)
                     </SelectItem>
                   ))}
                 </SelectContent>
