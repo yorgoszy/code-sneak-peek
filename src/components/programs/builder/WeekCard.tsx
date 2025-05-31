@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,19 +68,19 @@ interface WeekCardProps {
 const SortableDay: React.FC<{
   day: Day;
   exercises: Exercise[];
-  onAddBlock: (dayId: string) => void;
-  onRemoveDay: (dayId: string) => void;
-  onDuplicateDay: (dayId: string) => void;
-  onUpdateDayName: (dayId: string, name: string) => void;
-  onAddExercise: (dayId: string, blockId: string, exerciseId: string) => void;
-  onRemoveBlock: (dayId: string, blockId: string) => void;
-  onDuplicateBlock: (dayId: string, blockId: string) => void;
-  onUpdateBlockName: (dayId: string, blockId: string, name: string) => void;
-  onUpdateExercise: (dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
-  onRemoveExercise: (dayId: string, blockId: string, exerciseId: string) => void;
-  onDuplicateExercise: (dayId: string, blockId: string, exerciseId: string) => void;
-  onReorderBlocks: (dayId: string, oldIndex: number, newIndex: number) => void;
-  onReorderExercises: (dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
+  onAddBlock: () => void;
+  onRemoveDay: () => void;
+  onDuplicateDay: () => void;
+  onUpdateDayName: (name: string) => void;
+  onAddExercise: (blockId: string, exerciseId: string) => void;
+  onRemoveBlock: (blockId: string) => void;
+  onDuplicateBlock: (blockId: string) => void;
+  onUpdateBlockName: (blockId: string, name: string) => void;
+  onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
+  onRemoveExercise: (blockId: string, exerciseId: string) => void;
+  onDuplicateExercise: (blockId: string, exerciseId: string) => void;
+  onReorderBlocks: (oldIndex: number, newIndex: number) => void;
+  onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
 }> = (props) => {
   const {
     attributes,
