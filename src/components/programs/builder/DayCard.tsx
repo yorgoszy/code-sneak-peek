@@ -119,7 +119,7 @@ export const DayCard: React.FC<DayCardProps> = ({
       {/* Day Content */}
       <div className="p-3">
         <DayCardContent
-          day={day}
+          blocks={day.blocks}
           exercises={exercises}
           onRemoveBlock={onRemoveBlock}
           onDuplicateBlock={onDuplicateBlock}
