@@ -136,29 +136,10 @@ const Programs = () => {
           onDuplicateProgram={handleDuplicateProgram}
           onPreviewProgram={handlePreviewProgram}
           onPreviewDialogClose={handlePreviewDialogClose}
-          showNewWeek={formState.showNewWeek}
-          setShowNewWeek={formState.setShowNewWeek}
-          newWeek={formState.newWeek}
-          setNewWeek={formState.setNewWeek}
           onDeleteWeek={handleDeleteWeek}
           onDeleteDay={handleDeleteDay}
           onDeleteBlock={handleDeleteBlock}
           onDeleteExercise={handleDeleteExercise}
-          onSetCurrentWeek={formState.setCurrentWeek}
-          onSetCurrentDay={formState.setCurrentDay}
-          onSetCurrentBlock={formState.setCurrentBlock}
-          showNewDay={formState.showNewDay}
-          setShowNewDay={formState.setShowNewDay}
-          newDay={formState.newDay}
-          setNewDay={formState.setNewDay}
-          showNewBlock={formState.showNewBlock}
-          setShowNewBlock={formState.setShowNewBlock}
-          newBlock={formState.newBlock}
-          setNewBlock={formState.setNewBlock}
-          showNewExercise={formState.showNewExercise}
-          setShowNewExercise={formState.setShowNewExercise}
-          newExercise={formState.newExercise}
-          setNewExercise={formState.setNewExercise}
         />
       </div>
     </div>

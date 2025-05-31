@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { ProgramBuilderDialog } from './ProgramBuilderDialog';
 import { ProgramsList } from './ProgramsList';
 import { ProgramDetails } from './ProgramDetails';
 import { ProgramPreviewDialog } from './ProgramPreviewDialog';
-import { Program, User, Exercise, Week, Day, Block } from './types';
+import { Program, User, Exercise } from './types';
 
 interface ProgramsLayoutProps {
   programs: Program[];
@@ -22,29 +23,10 @@ interface ProgramsLayoutProps {
   onDuplicateProgram: (program: Program) => void;
   onPreviewProgram: (program: Program) => void;
   onPreviewDialogClose: (open: boolean) => void;
-  showNewWeek: boolean;
-  setShowNewWeek: (show: boolean) => void;
-  newWeek: { name: string; week_number: number };
-  setNewWeek: (week: { name: string; week_number: number }) => void;
   onDeleteWeek: (weekId: string) => void;
   onDeleteDay: (dayId: string) => void;
   onDeleteBlock: (blockId: string) => void;
   onDeleteExercise: (exerciseId: string) => void;
-  onSetCurrentWeek: (week: Week) => void;
-  onSetCurrentDay: (day: Day) => void;
-  onSetCurrentBlock: (block: Block) => void;
-  showNewDay: boolean;
-  setShowNewDay: (show: boolean) => void;
-  newDay: { name: string; day_number: number };
-  setNewDay: (day: { name: string; day_number: number }) => void;
-  showNewBlock: boolean;
-  setShowNewBlock: (show: boolean) => void;
-  newBlock: { name: string; block_order: number };
-  setNewBlock: (block: { name: string; block_order: number }) => void;
-  showNewExercise: boolean;
-  setShowNewExercise: (show: boolean) => void;
-  newExercise: any;
-  setNewExercise: (exercise: any) => void;
 }
 
 export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
@@ -64,29 +46,10 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onDuplicateProgram,
   onPreviewProgram,
   onPreviewDialogClose,
-  showNewWeek,
-  setShowNewWeek,
-  newWeek,
-  setNewWeek,
   onDeleteWeek,
   onDeleteDay,
   onDeleteBlock,
-  onDeleteExercise,
-  onSetCurrentWeek,
-  onSetCurrentDay,
-  onSetCurrentBlock,
-  showNewDay,
-  setShowNewDay,
-  newDay,
-  setNewDay,
-  showNewBlock,
-  setShowNewBlock,
-  newBlock,
-  setNewBlock,
-  showNewExercise,
-  setShowNewExercise,
-  newExercise,
-  setNewExercise
+  onDeleteExercise
 }) => {
   return (
     <div className="space-y-6">
@@ -122,29 +85,10 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
             selectedProgram={selectedProgram}
             users={users}
             exercises={exercises}
-            showNewWeek={showNewWeek}
-            setShowNewWeek={setShowNewWeek}
-            newWeek={newWeek}
-            setNewWeek={setNewWeek}
             onDeleteWeek={onDeleteWeek}
             onDeleteDay={onDeleteDay}
             onDeleteBlock={onDeleteBlock}
             onDeleteExercise={onDeleteExercise}
-            onSetCurrentWeek={onSetCurrentWeek}
-            onSetCurrentDay={onSetCurrentDay}
-            onSetCurrentBlock={onSetCurrentBlock}
-            showNewDay={showNewDay}
-            setShowNewDay={setShowNewDay}
-            newDay={newDay}
-            setNewDay={setNewDay}
-            showNewBlock={showNewBlock}
-            setShowNewBlock={setShowNewBlock}
-            newBlock={newBlock}
-            setNewBlock={setNewBlock}
-            showNewExercise={showNewExercise}
-            setShowNewExercise={setShowNewExercise}
-            newExercise={newExercise}
-            setNewExercise={setNewExercise}
             onEditProgram={onEditProgram}
           />
         </div>
