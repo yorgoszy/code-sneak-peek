@@ -15,7 +15,7 @@ export const useProgramsData = () => {
   const fetchUsers = async () => {
     const { data } = await supabase
       .from('app_users')
-      .select('id, name, email')
+      .select('id, name, email, role')
       .order('name');
     setUsers(data || []);
   };
