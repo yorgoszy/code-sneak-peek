@@ -66,41 +66,43 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onSave
 }) => {
   return (
-    <DialogContent className="rounded-none max-w-6xl max-h-[90vh] overflow-y-auto">
-      <DialogHeader>
+    <DialogContent className="rounded-none w-screen h-screen max-w-none max-h-none m-0 p-0 overflow-hidden flex flex-col">
+      <DialogHeader className="px-6 py-4 border-b">
         <DialogTitle>Βοηθός Πληροφοριών</DialogTitle>
       </DialogHeader>
       
-      <ProgramBuilder
-        program={program}
-        users={users}
-        exercises={exercises}
-        onNameChange={onNameChange}
-        onDescriptionChange={onDescriptionChange}
-        onAthleteChange={onAthleteChange}
-        onAddWeek={onAddWeek}
-        onRemoveWeek={onRemoveWeek}
-        onDuplicateWeek={onDuplicateWeek}
-        onUpdateWeekName={onUpdateWeekName}
-        onAddDay={onAddDay}
-        onRemoveDay={onRemoveDay}
-        onDuplicateDay={onDuplicateDay}
-        onUpdateDayName={onUpdateDayName}
-        onAddBlock={onAddBlock}
-        onRemoveBlock={onRemoveBlock}
-        onDuplicateBlock={onDuplicateBlock}
-        onUpdateBlockName={onUpdateBlockName}
-        onAddExercise={onAddExercise}
-        onRemoveExercise={onRemoveExercise}
-        onUpdateExercise={onUpdateExercise}
-        onDuplicateExercise={onDuplicateExercise}
-        onReorderWeeks={onReorderWeeks}
-        onReorderDays={onReorderDays}
-        onReorderBlocks={onReorderBlocks}
-        onReorderExercises={onReorderExercises}
-      />
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        <ProgramBuilder
+          program={program}
+          users={users}
+          exercises={exercises}
+          onNameChange={onNameChange}
+          onDescriptionChange={onDescriptionChange}
+          onAthleteChange={onAthleteChange}
+          onAddWeek={onAddWeek}
+          onRemoveWeek={onRemoveWeek}
+          onDuplicateWeek={onDuplicateWeek}
+          onUpdateWeekName={onUpdateWeekName}
+          onAddDay={onAddDay}
+          onRemoveDay={onRemoveDay}
+          onDuplicateDay={onDuplicateDay}
+          onUpdateDayName={onUpdateDayName}
+          onAddBlock={onAddBlock}
+          onRemoveBlock={onRemoveBlock}
+          onDuplicateBlock={onDuplicateBlock}
+          onUpdateBlockName={onUpdateBlockName}
+          onAddExercise={onAddExercise}
+          onRemoveExercise={onRemoveExercise}
+          onUpdateExercise={onUpdateExercise}
+          onDuplicateExercise={onDuplicateExercise}
+          onReorderWeeks={onReorderWeeks}
+          onReorderDays={onReorderDays}
+          onReorderBlocks={onReorderBlocks}
+          onReorderExercises={onReorderExercises}
+        />
+      </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end px-6 py-4 border-t">
         <Button onClick={onSave} className="rounded-none bg-green-600 hover:bg-green-700">
           Αποθήκευση Προγράμματος
         </Button>
