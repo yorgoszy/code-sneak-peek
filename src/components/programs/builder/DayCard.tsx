@@ -42,12 +42,13 @@ interface DayCardProps {
   onRemoveDay: () => void;
   onDuplicateDay: () => void;
   onUpdateDayName: (name: string) => void;
-  onAddExercise: (blockId: string) => void;
+  onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
   onUpdateBlockName: (blockId: string, name: string) => void;
   onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (blockId: string, exerciseId: string) => void;
+  onDuplicateExercise: (blockId: string, exerciseId: string) => void;
 }
 
 export const DayCard: React.FC<DayCardProps> = ({
@@ -62,7 +63,8 @@ export const DayCard: React.FC<DayCardProps> = ({
   onDuplicateBlock,
   onUpdateBlockName,
   onUpdateExercise,
-  onRemoveExercise
+  onRemoveExercise,
+  onDuplicateExercise
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -160,7 +162,7 @@ export const DayCard: React.FC<DayCardProps> = ({
                   key={block.id}
                   block={block}
                   exercises={exercises}
-                  onAddExercise={() => onAddExercise(block.id)}
+                  onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
                   onRemoveBlock={() => onRemoveBlock(block.id)}
                   onDuplicateBlock={() => onDuplicateBlock(block.id)}
                   onUpdateBlockName={(name) => onUpdateBlockName(block.id, name)}
@@ -168,6 +170,7 @@ export const DayCard: React.FC<DayCardProps> = ({
                     onUpdateExercise(block.id, exerciseId, field, value)
                   }
                   onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
+                  onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
                 />
               ))}
             </div>

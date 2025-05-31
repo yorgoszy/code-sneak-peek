@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2 } from "lucide-react";
+import { Trash2, Copy } from "lucide-react";
 import { Exercise } from '../types';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 
@@ -25,13 +25,15 @@ interface ExerciseRowProps {
   exercises: Exercise[];
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
+  onDuplicate: () => void;
 }
 
 export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   exercise,
   exercises,
   onUpdate,
-  onRemove
+  onRemove,
+  onDuplicate
 }) => {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
 
@@ -43,8 +45,9 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-8 gap-2 p-2 bg-white rounded border text-xs">
-        <div className="col-span-2">
+      <div className="bg-white rounded border text-xs">
+        {/* Exercise Name Row */}
+        <div className="p-2 border-b bg-gray-50">
           <Button
             variant="outline"
             size="sm"
@@ -55,62 +58,91 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           </Button>
         </div>
         
-        <div>
-          <Input
-            type="number"
-            value={exercise.sets}
-            onChange={(e) => onUpdate('sets', parseInt(e.target.value) || 1)}
-            className="rounded-none text-xs h-8"
-            placeholder="Sets"
-          />
-        </div>
-        
-        <div>
-          <Input
-            value={exercise.reps}
-            onChange={(e) => onUpdate('reps', e.target.value)}
-            className="rounded-none text-xs h-8"
-            placeholder="Reps"
-          />
-        </div>
-        
-        <div>
-          <Input
-            value={exercise.kg}
-            onChange={(e) => onUpdate('kg', e.target.value)}
-            className="rounded-none text-xs h-8"
-            placeholder="Kg"
-          />
-        </div>
-        
-        <div>
-          <Input
-            type="number"
-            value={exercise.percentage_1rm}
-            onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || 0)}
-            className="rounded-none text-xs h-8"
-            placeholder="%1RM"
-          />
-        </div>
-        
-        <div>
-          <Input
-            value={exercise.rest}
-            onChange={(e) => onUpdate('rest', e.target.value)}
-            className="rounded-none text-xs h-8"
-            placeholder="Rest"
-          />
-        </div>
-        
-        <div className="flex justify-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRemove}
-            className="rounded-none p-1 h-8 w-8"
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
+        {/* Exercise Details Row */}
+        <div className="grid grid-cols-8 gap-2 p-2 text-xs">
+          <div>
+            <Input
+              type="number"
+              value={exercise.sets}
+              onChange={(e) => onUpdate('sets', parseInt(e.target.value) || 1)}
+              className="rounded-none text-xs h-8"
+              placeholder="Sets"
+            />
+          </div>
+          
+          <div>
+            <Input
+              value={exercise.reps}
+              onChange={(e) => onUpdate('reps', e.target.value)}
+              className="rounded-none text-xs h-8"
+              placeholder="Reps"
+            />
+          </div>
+          
+          <div>
+            <Input
+              value={exercise.kg}
+              onChange={(e) => onUpdate('kg', e.target.value)}
+              className="rounded-none text-xs h-8"
+              placeholder="Kg"
+            />
+          </div>
+          
+          <div>
+            <Input
+              type="number"
+              value={exercise.percentage_1rm}
+              onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || 0)}
+              className="rounded-none text-xs h-8"
+              placeholder="%1RM"
+            />
+          </div>
+          
+          <div>
+            <Input
+              value={exercise.velocity_ms}
+              onChange={(e) => onUpdate('velocity_ms', e.target.value)}
+              className="rounded-none text-xs h-8"
+              placeholder="Velocity"
+            />
+          </div>
+          
+          <div>
+            <Input
+              value={exercise.tempo}
+              onChange={(e) => onUpdate('tempo', e.target.value)}
+              className="rounded-none text-xs h-8"
+              placeholder="Tempo"
+            />
+          </div>
+          
+          <div>
+            <Input
+              value={exercise.rest}
+              onChange={(e) => onUpdate('rest', e.target.value)}
+              className="rounded-none text-xs h-8"
+              placeholder="Rest"
+            />
+          </div>
+          
+          <div className="flex justify-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDuplicate}
+              className="rounded-none p-1 h-8 w-8"
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onRemove}
+              className="rounded-none p-1 h-8 w-8"
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
       </div>
 

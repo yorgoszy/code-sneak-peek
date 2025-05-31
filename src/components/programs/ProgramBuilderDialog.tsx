@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -256,7 +255,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     });
   };
 
-  const addExercise = (weekId: string, dayId: string, blockId: string) => {
+  const addExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
     const week = program.weeks.find(w => w.id === weekId);
     const day = week?.days.find(d => d.id === dayId);
     const block = day?.blocks.find(b => b.id === blockId);
@@ -264,8 +263,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
 
     const newExercise: ProgramExercise = {
       id: generateId(),
-      exercise_id: '',
-      exercise_name: '',
+      exercise_id: exerciseId,
+      exercise_name: exercises.find(ex => ex.id === exerciseId)?.name || '',
       sets: 1,
       reps: '',
       percentage_1rm: 0,
@@ -300,21 +299,17 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     });
   };
 
-  const duplicateBlock = (weekId: string, dayId: string, blockId: string) => {
+  const duplicateExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
     const week = program.weeks.find(w => w.id === weekId);
     const day = week?.days.find(d => d.id === dayId);
-    const blockToDuplicate = day?.blocks.find(b => b.id === blockId);
-    if (!day || !blockToDuplicate) return;
+    const block = day?.blocks.find(b => b.id === blockId);
+    const exerciseToDuplicate = block?.exercises.find(e => e.id === exerciseId);
+    if (!block || !exerciseToDuplicate) return;
 
-    const newBlock: Block = {
-      ...blockToDuplicate,
+    const newExercise: ProgramExercise = {
+      ...exerciseToDuplicate,
       id: generateId(),
-      name: `${blockToDuplicate.name} (Αντίγραφο)`,
-      block_order: day.blocks.length + 1,
-      exercises: blockToDuplicate.exercises.map(exercise => ({
-        ...exercise,
-        id: generateId()
-      }))
+      exercise_order: block.exercises.length + 1
     };
 
     setProgram({
@@ -325,7 +320,14 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
               ...w,
               days: w.days.map(d => 
                 d.id === dayId 
-                  ? { ...d, blocks: [...d.blocks, newBlock] }
+                  ? {
+                      ...d,
+                      blocks: d.blocks.map(b => 
+                        b.id === blockId 
+                          ? { ...b, exercises: [...b.exercises, newExercise] }
+                          : b
+                      )
+                    }
                   : d
               )
             }
@@ -472,6 +474,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
               onAddExercise={addExercise}
               onRemoveExercise={removeExercise}
               onUpdateExercise={updateExercise}
+              onDuplicateExercise={duplicateExercise}
             />
 
             <div className="flex justify-end">

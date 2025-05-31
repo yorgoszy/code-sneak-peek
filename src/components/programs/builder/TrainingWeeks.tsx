@@ -57,9 +57,10 @@ interface TrainingWeeksProps {
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
   onUpdateBlockName: (weekId: string, dayId: string, blockId: string, name: string) => void;
-  onAddExercise: (weekId: string, dayId: string, blockId: string) => void;
+  onAddExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
+  onDuplicateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
 }
 
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
@@ -79,7 +80,8 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onUpdateBlockName,
   onAddExercise,
   onRemoveExercise,
-  onUpdateExercise
+  onUpdateExercise,
+  onDuplicateExercise
 }) => {
   const [activeWeek, setActiveWeek] = useState(weeks[0]?.id || '');
   const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
@@ -184,7 +186,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                   onRemoveDay={(dayId) => onRemoveDay(week.id, dayId)}
                   onDuplicateDay={(dayId) => onDuplicateDay(week.id, dayId)}
                   onUpdateDayName={(dayId, name) => onUpdateDayName(week.id, dayId, name)}
-                  onAddExercise={(dayId, blockId) => onAddExercise(week.id, dayId, blockId)}
+                  onAddExercise={(dayId, blockId, exerciseId) => onAddExercise(week.id, dayId, blockId, exerciseId)}
                   onRemoveBlock={(dayId, blockId) => onRemoveBlock(week.id, dayId, blockId)}
                   onDuplicateBlock={(dayId, blockId) => onDuplicateBlock(week.id, dayId, blockId)}
                   onUpdateBlockName={(dayId, blockId, name) => onUpdateBlockName(week.id, dayId, blockId, name)}
@@ -193,6 +195,9 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                   }
                   onRemoveExercise={(dayId, blockId, exerciseId) => 
                     onRemoveExercise(week.id, dayId, blockId, exerciseId)
+                  }
+                  onDuplicateExercise={(dayId, blockId, exerciseId) => 
+                    onDuplicateExercise(week.id, dayId, blockId, exerciseId)
                   }
                 />
               </TabsContent>

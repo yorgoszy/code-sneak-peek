@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
 import { ExerciseRow } from './ExerciseRow';
+import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { Exercise } from '../types';
 
 interface ProgramExercise {
@@ -31,12 +32,13 @@ interface Block {
 interface BlockCardProps {
   block: Block;
   exercises: Exercise[];
-  onAddExercise: () => void;
+  onAddExercise: (exerciseId: string) => void;
   onRemoveBlock: () => void;
   onDuplicateBlock: () => void;
   onUpdateBlockName: (name: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (exerciseId: string) => void;
+  onDuplicateExercise: (exerciseId: string) => void;
 }
 
 export const BlockCard: React.FC<BlockCardProps> = ({
@@ -47,11 +49,13 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   onDuplicateBlock,
   onUpdateBlockName,
   onUpdateExercise,
-  onRemoveExercise
+  onRemoveExercise,
+  onDuplicateExercise
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(block.name);
+  const [showExerciseDialog, setShowExerciseDialog] = useState(false);
 
   const handleNameDoubleClick = () => {
     setIsEditing(true);
@@ -74,85 +78,104 @@ export const BlockCard: React.FC<BlockCardProps> = ({
     }
   };
 
+  const handleAddExerciseClick = () => {
+    setShowExerciseDialog(true);
+  };
+
+  const handleExerciseSelect = (exerciseId: string) => {
+    onAddExercise(exerciseId);
+    setShowExerciseDialog(false);
+  };
+
   const exercisesCount = block.exercises.length;
 
   return (
-    <Card className="rounded-none bg-gray-50">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded">
-              {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-              <h6 
-                className="text-xs font-medium cursor-pointer flex items-center gap-2"
-                onDoubleClick={handleNameDoubleClick}
-              >
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    onBlur={handleNameSave}
-                    onKeyDown={handleNameKeyPress}
-                    className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs"
-                    autoFocus
+    <>
+      <Card className="rounded-none bg-gray-50">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-center">
+              <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded">
+                {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                <h6 
+                  className="text-xs font-medium cursor-pointer flex items-center gap-2"
+                  onDoubleClick={handleNameDoubleClick}
+                >
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onBlur={handleNameSave}
+                      onKeyDown={handleNameKeyPress}
+                      className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs"
+                      autoFocus
+                    />
+                  ) : (
+                    <>
+                      {block.name}
+                      {!isOpen && exercisesCount > 0 && (
+                        <span className="text-xs bg-gray-300 px-2 py-1 rounded-full">
+                          {exercisesCount}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </h6>
+              </CollapsibleTrigger>
+              <div className="flex gap-1">
+                <Button
+                  onClick={handleAddExerciseClick}
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-none"
+                >
+                  <Plus className="w-2 h-2" />
+                </Button>
+                <Button
+                  onClick={onDuplicateBlock}
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-none"
+                >
+                  <Copy className="w-2 h-2" />
+                </Button>
+                <Button
+                  onClick={onRemoveBlock}
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-none"
+                >
+                  <Trash2 className="w-2 h-2" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="pt-2">
+              <div className="space-y-2">
+                {block.exercises.map((exercise) => (
+                  <ExerciseRow
+                    key={exercise.id}
+                    exercise={exercise}
+                    exercises={exercises}
+                    onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
+                    onRemove={() => onRemoveExercise(exercise.id)}
+                    onDuplicate={() => onDuplicateExercise(exercise.id)}
                   />
-                ) : (
-                  <>
-                    {block.name}
-                    {!isOpen && exercisesCount > 0 && (
-                      <span className="text-xs bg-gray-300 px-2 py-1 rounded-full">
-                        {exercisesCount}
-                      </span>
-                    )}
-                  </>
-                )}
-              </h6>
-            </CollapsibleTrigger>
-            <div className="flex gap-1">
-              <Button
-                onClick={onAddExercise}
-                size="sm"
-                variant="ghost"
-                className="rounded-none"
-              >
-                <Plus className="w-2 h-2" />
-              </Button>
-              <Button
-                onClick={onDuplicateBlock}
-                size="sm"
-                variant="ghost"
-                className="rounded-none"
-              >
-                <Copy className="w-2 h-2" />
-              </Button>
-              <Button
-                onClick={onRemoveBlock}
-                size="sm"
-                variant="ghost"
-                className="rounded-none"
-              >
-                <Trash2 className="w-2 h-2" />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CollapsibleContent>
-          <CardContent className="pt-2">
-            <div className="space-y-2">
-              {block.exercises.map((exercise) => (
-                <ExerciseRow
-                  key={exercise.id}
-                  exercise={exercise}
-                  exercises={exercises}
-                  onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
-                  onRemove={() => onRemoveExercise(exercise.id)}
-                />
-              ))}
-            </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
-    </Card>
+                ))}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
+      <ExerciseSelectionDialog
+        open={showExerciseDialog}
+        onOpenChange={setShowExerciseDialog}
+        exercises={exercises}
+        onSelectExercise={handleExerciseSelect}
+      />
+    </>
   );
 };

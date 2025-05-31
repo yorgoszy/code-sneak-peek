@@ -50,12 +50,13 @@ interface WeekCardProps {
   onRemoveDay: (dayId: string) => void;
   onDuplicateDay: (dayId: string) => void;
   onUpdateDayName: (dayId: string, name: string) => void;
-  onAddExercise: (dayId: string, blockId: string) => void;
+  onAddExercise: (dayId: string, blockId: string, exerciseId: string) => void;
   onRemoveBlock: (dayId: string, blockId: string) => void;
   onDuplicateBlock: (dayId: string, blockId: string) => void;
   onUpdateBlockName: (dayId: string, blockId: string, name: string) => void;
   onUpdateExercise: (dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (dayId: string, blockId: string, exerciseId: string) => void;
+  onDuplicateExercise: (dayId: string, blockId: string, exerciseId: string) => void;
 }
 
 export const WeekCard: React.FC<WeekCardProps> = ({
@@ -72,7 +73,8 @@ export const WeekCard: React.FC<WeekCardProps> = ({
   onDuplicateBlock,
   onUpdateBlockName,
   onUpdateExercise,
-  onRemoveExercise
+  onRemoveExercise,
+  onDuplicateExercise
 }) => {
   return (
     <Card className="rounded-none border-2">
@@ -110,7 +112,7 @@ export const WeekCard: React.FC<WeekCardProps> = ({
               onRemoveDay={() => onRemoveDay(day.id)}
               onDuplicateDay={() => onDuplicateDay(day.id)}
               onUpdateDayName={(name) => onUpdateDayName(day.id, name)}
-              onAddExercise={(blockId) => onAddExercise(day.id, blockId)}
+              onAddExercise={(blockId, exerciseId) => onAddExercise(day.id, blockId, exerciseId)}
               onRemoveBlock={(blockId) => onRemoveBlock(day.id, blockId)}
               onDuplicateBlock={(blockId) => onDuplicateBlock(day.id, blockId)}
               onUpdateBlockName={(blockId, name) => onUpdateBlockName(day.id, blockId, name)}
@@ -118,6 +120,7 @@ export const WeekCard: React.FC<WeekCardProps> = ({
                 onUpdateExercise(day.id, blockId, exerciseId, field, value)
               }
               onRemoveExercise={(blockId, exerciseId) => onRemoveExercise(day.id, blockId, exerciseId)}
+              onDuplicateExercise={(blockId, exerciseId) => onDuplicateExercise(day.id, blockId, exerciseId)}
             />
           ))}
         </div>
