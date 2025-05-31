@@ -32,6 +32,7 @@ export const usePrograms = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Fetched programs:', data);
       return data || [];
     } catch (error) {
       console.error('Error fetching programs:', error);
@@ -43,7 +44,10 @@ export const usePrograms = () => {
   };
 
   const saveProgram = async (programData: any) => {
+    setLoading(true);
     try {
+      console.log('Saving program data:', programData);
+      
       if (programData.id) {
         // Update existing program
         const { error: programError } = await supabase
@@ -84,10 +88,14 @@ export const usePrograms = () => {
       console.error('Error saving program:', error);
       toast.error('Σφάλμα αποθήκευσης προγράμματος');
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const createProgramStructure = async (programId: string, programData: any) => {
+    console.log('Creating program structure for:', programId, programData);
+    
     for (const week of programData.weeks || []) {
       const { data: weekData, error: weekError } = await supabase
         .from('program_weeks')

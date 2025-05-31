@@ -28,32 +28,36 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises);
 
   useEffect(() => {
-    if (editingProgram && isOpen) {
-      console.log('Loading program for editing:', editingProgram);
-      loadProgramFromData(editingProgram);
-    } else if (isOpen && !editingProgram) {
-      console.log('Resetting program for new creation');
-      resetProgram();
+    if (isOpen) {
+      if (editingProgram) {
+        console.log('Loading program for editing:', editingProgram);
+        loadProgramFromData(editingProgram);
+      } else {
+        console.log('Resetting program for new creation');
+        resetProgram();
+      }
     }
-  }, [editingProgram, isOpen, loadProgramFromData, resetProgram]);
+  }, [editingProgram, isOpen]);
 
   const handleClose = () => {
-    resetProgram();
     onOpenChange();
   };
 
   const handleSave = () => {
-    if (!program.name) {
+    if (!program.name.trim()) {
       alert('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
     
     console.log('Saving program:', program);
-    onCreateProgram({ ...program, id: editingProgram?.id });
+    const programToSave = {
+      ...program,
+      id: editingProgram?.id || undefined
+    };
+    
+    onCreateProgram(programToSave);
     handleClose();
   };
-
-  if (!isOpen) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

@@ -27,12 +27,17 @@ const Programs = () => {
   }, []);
 
   const loadPrograms = async () => {
-    const data = await fetchPrograms();
-    setPrograms(data);
+    try {
+      const data = await fetchPrograms();
+      setPrograms(data);
+    } catch (error) {
+      console.error('Error loading programs:', error);
+    }
   };
 
   const handleCreateProgram = async (programData: any) => {
     try {
+      console.log('Creating/updating program:', programData);
       await saveProgram(programData);
       await loadPrograms();
       setBuilderOpen(false);
@@ -43,17 +48,22 @@ const Programs = () => {
   };
 
   const handleEditProgram = (program: Program) => {
+    console.log('Editing program:', program);
     setEditingProgram(program);
     setBuilderOpen(true);
   };
 
   const handleDeleteProgram = async (programId: string) => {
-    const success = await deleteProgram(programId);
-    if (success) {
-      if (selectedProgram?.id === programId) {
-        setSelectedProgram(null);
+    try {
+      const success = await deleteProgram(programId);
+      if (success) {
+        if (selectedProgram?.id === programId) {
+          setSelectedProgram(null);
+        }
+        await loadPrograms();
       }
-      await loadPrograms();
+    } catch (error) {
+      console.error('Error deleting program:', error);
     }
   };
 
@@ -72,6 +82,7 @@ const Programs = () => {
   };
 
   const handleBuilderClose = () => {
+    console.log('Closing builder dialog');
     setBuilderOpen(false);
     setEditingProgram(null);
   };
@@ -82,6 +93,7 @@ const Programs = () => {
   };
 
   const handleOpenBuilder = () => {
+    console.log('Opening new program builder');
     setEditingProgram(null);
     setBuilderOpen(true);
   };
