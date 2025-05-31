@@ -284,7 +284,25 @@ export const usePrograms = () => {
         .order('assigned_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform the data to match our ProgramAssignment type
+      const assignments: ProgramAssignment[] = (data || []).map(item => ({
+        id: item.id,
+        program_id: item.program_id,
+        user_id: item.user_id || item.athlete_id, // Handle both user_id and athlete_id from DB
+        assigned_by: item.assigned_by,
+        assigned_at: item.assigned_at || item.created_at, // Handle missing assigned_at
+        start_date: item.start_date,
+        end_date: item.end_date,
+        status: item.status,
+        notes: item.notes,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        programs: item.programs,
+        app_users: item.app_users
+      }));
+      
+      return assignments;
     } catch (error) {
       console.error('Error fetching program assignments:', error);
       toast.error('Σφάλμα φόρτωσης αναθέσεων');
