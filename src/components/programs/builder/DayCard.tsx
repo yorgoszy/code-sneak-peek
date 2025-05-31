@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +48,7 @@ interface DayCardProps {
   onDuplicateExercise: (blockId: string, exerciseId: string) => void;
   onRemoveDay: (dayId: string) => void;
   onDuplicateDay: (dayId: string) => void;
-  onReorderBlocks: (dayId: string, oldIndex: number, newIndex: number) => void;
+  onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
 }
 
@@ -128,7 +127,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveExercise={onRemoveExercise}
           onUpdateExercise={onUpdateExercise}
           onDuplicateExercise={onDuplicateExercise}
-          onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(day.id, oldIndex, newIndex)}
+          onReorderBlocks={onReorderBlocks}
           onReorderExercises={(blockId, oldIndex, newIndex) => onReorderExercises(blockId, oldIndex, newIndex)}
         />
         
