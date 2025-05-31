@@ -60,7 +60,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 
   return (
     <>
-      <div className="border-0 border-b w-full" style={{ fontSize: '12px', backgroundColor: '#5272ff' }}>
+      <div className="border-0 border-b w-full" style={{ fontSize: '12px', backgroundColor: '#545454' }}>
         {/* Exercise Name Row with Actions */}
         <div className="p-2 border-b bg-gray-50 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
           <Button
