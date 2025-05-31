@@ -65,7 +65,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal rounded-none h-8",
+                    "w-40 justify-start text-left font-normal rounded-none h-8",
                     !startDate && "text-muted-foreground"
                   )}
                 >
@@ -118,7 +118,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
           {/* Ημερομηνία Λήξης */}
           <div>
             <Label className="text-sm font-medium mb-2 block">Ημερομηνία Λήξης</Label>
-            <div className="w-full h-8 px-3 py-2 bg-gray-100 border border-gray-300 rounded-none text-sm flex items-center">
+            <div className="w-40 h-8 px-3 py-2 bg-gray-100 border border-gray-300 rounded-none text-sm flex items-center">
               {endDate ? format(endDate, "dd/MM/yyyy") : "Αυτόματος υπολογισμός"}
             </div>
             {trainingDays.length > 0 && (
