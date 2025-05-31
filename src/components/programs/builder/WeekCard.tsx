@@ -2,10 +2,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { DayCard } from './DayCard';
 import { Exercise } from '../types';
-import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -98,7 +99,7 @@ const SortableDay: React.FC<{
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative">
+    <div ref={setNodeRef} style={style} className="relative flex-shrink-0" style={{ width: '300px' }}>
       <div
         className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
         {...attributes}
@@ -169,34 +170,37 @@ export const WeekCard: React.FC<WeekCardProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={week.days.map(d => d.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {week.days.map((day) => (
-                <SortableDay
-                  key={day.id}
-                  day={day}
-                  exercises={exercises}
-                  onAddBlock={() => onAddBlock(day.id)}
-                  onRemoveDay={() => onRemoveDay(day.id)}
-                  onDuplicateDay={() => onDuplicateDay(day.id)}
-                  onUpdateDayName={(name) => onUpdateDayName(day.id, name)}
-                  onAddExercise={(blockId, exerciseId) => onAddExercise(day.id, blockId, exerciseId)}
-                  onRemoveBlock={(blockId) => onRemoveBlock(day.id, blockId)}
-                  onDuplicateBlock={(blockId) => onDuplicateBlock(day.id, blockId)}
-                  onUpdateBlockName={(blockId, name) => onUpdateBlockName(day.id, blockId, name)}
-                  onUpdateExercise={(blockId, exerciseId, field, value) => 
-                    onUpdateExercise(day.id, blockId, exerciseId, field, value)
-                  }
-                  onRemoveExercise={(blockId, exerciseId) => onRemoveExercise(day.id, blockId, exerciseId)}
-                  onDuplicateExercise={(blockId, exerciseId) => onDuplicateExercise(day.id, blockId, exerciseId)}
-                  onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(day.id, oldIndex, newIndex)}
-                  onReorderExercises={(blockId, oldIndex, newIndex) => onReorderExercises(day.id, blockId, oldIndex, newIndex)}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+        <ScrollArea className="w-full">
+          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={week.days.map(d => d.id)} strategy={horizontalListSortingStrategy}>
+              <div className="flex gap-4 pb-4">
+                {week.days.map((day) => (
+                  <SortableDay
+                    key={day.id}
+                    day={day}
+                    exercises={exercises}
+                    onAddBlock={() => onAddBlock(day.id)}
+                    onRemoveDay={() => onRemoveDay(day.id)}
+                    onDuplicateDay={() => onDuplicateDay(day.id)}
+                    onUpdateDayName={(name) => onUpdateDayName(day.id, name)}
+                    onAddExercise={(blockId, exerciseId) => onAddExercise(day.id, blockId, exerciseId)}
+                    onRemoveBlock={(blockId) => onRemoveBlock(day.id, blockId)}
+                    onDuplicateBlock={(blockId) => onDuplicateBlock(day.id, blockId)}
+                    onUpdateBlockName={(blockId, name) => onUpdateBlockName(day.id, blockId, name)}
+                    onUpdateExercise={(blockId, exerciseId, field, value) => 
+                      onUpdateExercise(day.id, blockId, exerciseId, field, value)
+                    }
+                    onRemoveExercise={(blockId, exerciseId) => onRemoveExercise(day.id, blockId, exerciseId)}
+                    onDuplicateExercise={(blockId, exerciseId) => onDuplicateExercise(day.id, blockId, exerciseId)}
+                    onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(day.id, oldIndex, newIndex)}
+                    onReorderExercises={(blockId, oldIndex, newIndex) => onReorderExercises(day.id, blockId, oldIndex, newIndex)}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </CardContent>
     </Card>
   );
