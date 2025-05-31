@@ -91,11 +91,6 @@ const Programs = () => {
     await loadPrograms();
   };
 
-  const handlePreviewProgram = (program: Program) => {
-    console.log('Preview program:', program);
-    setSelectedProgram(program);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex w-full">
@@ -122,7 +117,7 @@ const Programs = () => {
           onCreateProgram={handleCreateProgram}
           onBuilderDialogClose={handleBuilderDialogClose}
           onDuplicateProgram={handleDuplicateProgram}
-          onPreviewProgram={handlePreviewProgram}
+          onPreviewProgram={() => {}} // Empty function since we removed preview
           showNewWeek={formState.showNewWeek}
           setShowNewWeek={formState.setShowNewWeek}
           newWeek={formState.newWeek}
