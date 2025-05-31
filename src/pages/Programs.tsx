@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -413,7 +414,6 @@ const Programs = () => {
               setShowNewWeek={setShowNewWeek}
               newWeek={newWeek}
               setNewWeek={setNewWeek}
-              onCreateWeek={createWeek}
               onDeleteWeek={deleteWeek}
               onDeleteDay={deleteDay}
               onDeleteBlock={deleteBlock}
@@ -425,17 +425,14 @@ const Programs = () => {
               setShowNewDay={setShowNewDay}
               newDay={newDay}
               setNewDay={setNewDay}
-              onCreateDay={createDay}
               showNewBlock={showNewBlock}
               setShowNewBlock={setShowNewBlock}
               newBlock={newBlock}
               setNewBlock={setNewBlock}
-              onCreateBlock={createBlock}
               showNewExercise={showNewExercise}
               setShowNewExercise={setShowNewExercise}
               newExercise={newExercise}
               setNewExercise={setNewExercise}
-              onCreateExercise={createExercise}
             />
           </div>
         </div>
