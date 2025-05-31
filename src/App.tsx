@@ -13,7 +13,6 @@ import Exercises from "./pages/Exercises";
 import Tests from "./pages/Tests";
 import Results from "./pages/Results";
 import Programs from "./pages/Programs";
-import ProgramBuilderPage from "./pages/ProgramBuilderPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,7 +34,6 @@ function App() {
             <Route path="/dashboard/tests" element={<Tests />} />
             <Route path="/dashboard/results" element={<Results />} />
             <Route path="/dashboard/programs" element={<Programs />} />
-            <Route path="/dashboard/program-builder" element={<ProgramBuilderPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

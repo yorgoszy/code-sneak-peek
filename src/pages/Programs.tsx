@@ -1,13 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/Sidebar";
+import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
 import { ProgramsList } from "@/components/programs/ProgramsList";
 import { ProgramDetails } from "@/components/programs/ProgramDetails";
 import { Program, User, Exercise, Week, Day, Block } from "@/components/programs/types";
-import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
 
 const Programs = () => {
   console.log('Programs component rendered');
@@ -478,18 +477,17 @@ const Programs = () => {
   return (
     <div className="min-h-screen flex w-full">
       <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
-      <div className="flex-1 p-2 space-y-4">
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
           <ProgramBuilderDialog
             users={users}
             exercises={exercises}
             onCreateProgram={createProgramFromBuilder}
-            onOpenChange={handleNewProgramDialogChange}
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-0">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Programs List */}
           <div className="lg:col-span-1">
             <ProgramsList
@@ -501,7 +499,7 @@ const Programs = () => {
           </div>
 
           {/* Program Details */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-3">
             <ProgramDetails
               selectedProgram={selectedProgram}
               users={users}

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,13 +45,13 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 
   return (
     <>
-      <div className="bg-white border" style={{ fontSize: '10px', minHeight: '40px' }}>
+      <div className="bg-white border" style={{ fontSize: '10px', minHeight: '50px' }}>
         {/* Exercise Name Row with Actions */}
-        <div className="p-1 border-b bg-gray-50 flex items-center gap-2" style={{ minHeight: '20px' }}>
+        <div className="p-1 border-b bg-gray-50 flex items-center gap-2" style={{ minHeight: '25px' }}>
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 text-xs h-4 justify-start px-2"
+            className="flex-1 text-xs h-5 justify-start px-2"
             style={{ borderRadius: '0px', fontSize: '10px' }}
             onClick={() => setShowExerciseDialog(true)}
           >
@@ -64,27 +63,27 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               variant="ghost"
               size="sm"
               onClick={onDuplicate}
-              className="p-1 h-4 w-4"
+              className="p-1 h-5 w-5"
               style={{ borderRadius: '0px' }}
             >
-              <Copy className="w-2 h-2" />
+              <Copy className="w-3 h-3" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onRemove}
-              className="p-1 h-4 w-4"
+              className="p-1 h-5 w-5"
               style={{ borderRadius: '0px' }}
             >
-              <Trash2 className="w-2 h-2" />
+              <Trash2 className="w-3 h-3" />
             </Button>
           </div>
         </div>
         
         {/* Exercise Details Row - Using flex with fixed widths to align with headers */}
-        <div className="flex p-1 gap-1" style={{ minHeight: '20px' }}>
-          <div className="flex flex-col items-center" style={{ width: '30px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '8px', color: '#666' }}>Sets</label>
+        <div className="flex p-1 gap-1" style={{ minHeight: '25px' }}>
+          <div className="flex flex-col items-center" style={{ width: '60px' }}>
+            <label className="block mb-1 text-center w-full" style={{ fontSize: '9px', color: '#666' }}>Sets</label>
             <Input
               type="text"
               inputMode="numeric"
@@ -94,32 +93,32 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
               style={{ 
                 borderRadius: '0px', 
-                fontSize: '8px', 
-                height: '16px', 
-                padding: '0 2px'
+                fontSize: '10px', 
+                height: '24px', 
+                padding: '0 4px'
               }}
               placeholder=""
             />
           </div>
           
-          <div className="flex flex-col items-center" style={{ width: '30px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '8px', color: '#666' }}>Reps</label>
+          <div className="flex flex-col items-center" style={{ width: '60px' }}>
+            <label className="block mb-1 text-center w-full" style={{ fontSize: '9px', color: '#666' }}>Reps</label>
             <Input
               value={exercise.reps}
               onChange={(e) => onUpdate('reps', e.target.value)}
               className="text-center w-full"
               style={{ 
                 borderRadius: '0px', 
-                fontSize: '8px', 
-                height: '16px', 
-                padding: '0 2px'
+                fontSize: '10px', 
+                height: '24px', 
+                padding: '0 4px'
               }}
               placeholder=""
             />
           </div>
           
-          <div className="flex flex-col items-center" style={{ width: '30px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '8px', color: '#666' }}>%1RM</label>
+          <div className="flex flex-col items-center" style={{ width: '60px' }}>
+            <label className="block mb-1 text-center w-full" style={{ fontSize: '9px', color: '#666' }}>%1RM</label>
             <Input
               type="text"
               inputMode="numeric"
@@ -129,73 +128,73 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
               style={{ 
                 borderRadius: '0px', 
-                fontSize: '8px', 
-                height: '16px', 
-                padding: '0 2px'
+                fontSize: '10px', 
+                height: '24px', 
+                padding: '0 4px'
               }}
               placeholder=""
             />
           </div>
           
-          <div className="flex flex-col items-center" style={{ width: '30px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '8px', color: '#666' }}>Kg</label>
+          <div className="flex flex-col items-center" style={{ width: '60px' }}>
+            <label className="block mb-1 text-center w-full" style={{ fontSize: '9px', color: '#666' }}>Kg</label>
             <Input
               value={exercise.kg}
               onChange={(e) => onUpdate('kg', e.target.value)}
               className="text-center w-full"
               style={{ 
                 borderRadius: '0px', 
-                fontSize: '8px', 
-                height: '16px', 
-                padding: '0 2px'
+                fontSize: '10px', 
+                height: '24px', 
+                padding: '0 4px'
               }}
               placeholder=""
             />
           </div>
           
-          <div className="flex flex-col items-center" style={{ width: '30px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '8px', color: '#666' }}>m/s</label>
+          <div className="flex flex-col items-center" style={{ width: '60px' }}>
+            <label className="block mb-1 text-center w-full" style={{ fontSize: '9px', color: '#666' }}>m/s</label>
             <Input
               value={exercise.velocity_ms}
               onChange={(e) => onUpdate('velocity_ms', e.target.value)}
               className="text-center w-full"
               style={{ 
                 borderRadius: '0px', 
-                fontSize: '8px', 
-                height: '16px', 
-                padding: '0 2px'
+                fontSize: '10px', 
+                height: '24px', 
+                padding: '0 4px'
               }}
               placeholder=""
             />
           </div>
           
-          <div className="flex flex-col items-center" style={{ width: '30px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '8px', color: '#666' }}>Tempo</label>
+          <div className="flex flex-col items-center" style={{ width: '60px' }}>
+            <label className="block mb-1 text-center w-full" style={{ fontSize: '9px', color: '#666' }}>Tempo</label>
             <Input
               value={exercise.tempo}
               onChange={(e) => onUpdate('tempo', e.target.value)}
               className="text-center w-full"
               style={{ 
                 borderRadius: '0px', 
-                fontSize: '8px', 
-                height: '16px', 
-                padding: '0 2px'
+                fontSize: '10px', 
+                height: '24px', 
+                padding: '0 4px'
               }}
               placeholder="1.1.1"
             />
           </div>
           
-          <div className="flex flex-col items-center" style={{ width: '30px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '8px', color: '#666' }}>Rest</label>
+          <div className="flex flex-col items-center" style={{ width: '50px' }}>
+            <label className="block mb-1 text-center w-full" style={{ fontSize: '9px', color: '#666' }}>Rest</label>
             <Input
               value={exercise.rest}
               onChange={(e) => onUpdate('rest', e.target.value)}
               className="text-center w-full"
               style={{ 
                 borderRadius: '0px', 
-                fontSize: '8px', 
-                height: '16px', 
-                padding: '0 2px'
+                fontSize: '10px', 
+                height: '24px', 
+                padding: '0 4px'
               }}
               placeholder=""
             />
