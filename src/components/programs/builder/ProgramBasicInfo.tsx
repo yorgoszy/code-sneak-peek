@@ -51,7 +51,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle className="text-lg">Όνομα Προγράμματος *</CardTitle>
+        <CardTitle className="text-lg">Στοιχεία Προγράμματος *</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
