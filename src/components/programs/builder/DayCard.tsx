@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -129,7 +128,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onUpdateExercise={onUpdateExercise}
           onDuplicateExercise={onDuplicateExercise}
           onReorderBlocks={onReorderBlocks}
-          onReorderExercises={onReorderExercises}
+          onReorderExercises={(blockId, oldIndex, newIndex) => onReorderExercises(blockId, oldIndex, newIndex)}
         />
         
         {/* Day Calculations */}
