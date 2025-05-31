@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -52,11 +51,24 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
         athletesCount = count || 0;
       }
 
-      // Count programs created by user
-      const { count: programsCount } = await supabase
-        .from('programs')
-        .select('*', { count: 'exact', head: true })
-        .eq('created_by', user.id);
+      // Count programs created by user or assigned to user
+      let programsCount = 0;
+      
+      if (user.role === 'trainer' || user.role === 'admin') {
+        // For trainers/admins, count programs they created
+        const { count } = await supabase
+          .from('programs')
+          .select('*', { count: 'exact', head: true })
+          .eq('created_by', user.id);
+        programsCount = count || 0;
+      } else if (user.role === 'athlete') {
+        // For athletes, count programs assigned to them
+        const { count } = await supabase
+          .from('program_assignments')
+          .select('*', { count: 'exact', head: true })
+          .eq('athlete_id', user.id);
+        programsCount = count || 0;
+      }
 
       // Count tests if user is athlete
       let testsCount = 0;
@@ -76,7 +88,7 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
 
       setStats({
         athletesCount,
-        programsCount: programsCount || 0,
+        programsCount: programsCount,
         testsCount,
         paymentsCount: paymentsCount || 0
       });
@@ -87,11 +99,30 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
 
   const fetchUserPrograms = async () => {
     try {
-      const { data } = await supabase
-        .from('programs')
-        .select('*')
-        .eq('created_by', user.id)
-        .order('created_at', { ascending: false });
+      let data = null;
+      
+      if (user.role === 'trainer' || user.role === 'admin') {
+        // For trainers/admins, fetch programs they created
+        const { data: programsData } = await supabase
+          .from('programs')
+          .select('*')
+          .eq('created_by', user.id)
+          .order('created_at', { ascending: false });
+        data = programsData;
+      } else if (user.role === 'athlete') {
+        // For athletes, fetch programs assigned to them
+        const { data: assignmentsData } = await supabase
+          .from('program_assignments')
+          .select(`
+            *,
+            programs(*)
+          `)
+          .eq('athlete_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        // Extract programs from assignments
+        data = assignmentsData?.map(assignment => assignment.programs).filter(Boolean) || [];
+      }
       
       setPrograms(data || []);
     } catch (error) {
@@ -199,7 +230,9 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
                 <div className="text-center">
                   <Dumbbell className="h-8 w-8 mx-auto text-green-500 mb-2" />
                   <p className="text-2xl font-bold">{stats.programsCount}</p>
-                  <p className="text-sm text-gray-600">Προγράμματα</p>
+                  <p className="text-sm text-gray-600">
+                    {user.role === 'athlete' ? 'Ανατεθέντα Προγράμματα' : 'Προγράμματα'}
+                  </p>
                 </div>
                 {user.role === 'athlete' && (
                   <div className="text-center">
@@ -228,7 +261,9 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
             <TabsContent value="programs" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Προγράμματα Προπόνησης</CardTitle>
+                  <CardTitle>
+                    {user.role === 'athlete' ? 'Ανατεθέντα Προγράμματα' : 'Προγράμματα Προπόνησης'}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {programs.length === 0 ? (

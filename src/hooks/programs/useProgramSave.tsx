@@ -4,11 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useProgramStructure } from './useProgramStructure';
 import { useProgramAssignments } from './useProgramAssignments';
+import { useAuth } from '../useAuth';
 
 export const useProgramSave = () => {
   const [loading, setLoading] = useState(false);
   const { createProgramStructure } = useProgramStructure();
   const { createOrUpdateAssignment } = useProgramAssignments();
+  const { user } = useAuth();
 
   const saveProgram = async (programData: any) => {
     setLoading(true);
@@ -41,13 +43,14 @@ export const useProgramSave = () => {
         
         toast.success('Το πρόγραμμα ενημερώθηκε επιτυχώς');
       } else {
-        // Create new program
+        // Create new program with created_by field
         const { data: program, error: programError } = await supabase
           .from('programs')
           .insert([{
             name: programData.name,
             description: programData.description,
-            athlete_id: programData.athlete_id || null
+            athlete_id: programData.athlete_id || null,
+            created_by: user?.id
           }])
           .select()
           .single();
