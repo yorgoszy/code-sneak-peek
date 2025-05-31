@@ -45,13 +45,13 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 
   return (
     <>
-      <div className="bg-white border" style={{ fontSize: '10px' }}>
+      <div className="bg-white border" style={{ fontSize: '10px', minHeight: '50px' }}>
         {/* Exercise Name Row with Actions */}
-        <div className="p-1 border-b bg-gray-50 flex items-center gap-2">
+        <div className="p-1 border-b bg-gray-50 flex items-center gap-2" style={{ minHeight: '25px' }}>
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 text-xs h-6 justify-start px-2"
+            className="flex-1 text-xs h-5 justify-start px-2"
             style={{ borderRadius: '0px', fontSize: '10px' }}
             onClick={() => setShowExerciseDialog(true)}
           >
@@ -63,7 +63,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               variant="ghost"
               size="sm"
               onClick={onDuplicate}
-              className="p-1 h-6 w-6"
+              className="p-1 h-5 w-5"
               style={{ borderRadius: '0px' }}
             >
               <Copy className="w-3 h-3" />
@@ -72,7 +72,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               variant="ghost"
               size="sm"
               onClick={onRemove}
-              className="p-1 h-6 w-6"
+              className="p-1 h-5 w-5"
               style={{ borderRadius: '0px' }}
             >
               <Trash2 className="w-3 h-3" />
@@ -81,7 +81,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
         </div>
         
         {/* Exercise Details Row - Using flex with fixed widths to align with headers */}
-        <div className="flex p-1 gap-1">
+        <div className="flex p-1 gap-1" style={{ minHeight: '25px' }}>
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '9px', color: '#666' }}>Sets</label>
             <Input
