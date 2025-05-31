@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy, GripVertical } from "lucide-react";
 import { ExerciseRow } from './ExerciseRow';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { Exercise } from '../types';
@@ -67,8 +68,17 @@ const SortableExercise: React.FC<{
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <ExerciseRow {...props} />
+    <div ref={setNodeRef} style={style} className="relative">
+      <div
+        className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="w-2 h-2 text-gray-400" />
+      </div>
+      <div className="ml-4">
+        <ExerciseRow {...props} />
+      </div>
     </div>
   );
 };
@@ -153,6 +163,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
                       onKeyDown={handleNameKeyPress}
                       className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs"
                       autoFocus
+                      onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
                     <>
@@ -168,7 +179,10 @@ export const BlockCard: React.FC<BlockCardProps> = ({
               </CollapsibleTrigger>
               <div className="flex gap-1">
                 <Button
-                  onClick={handleAddExerciseClick}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddExerciseClick();
+                  }}
                   size="sm"
                   variant="ghost"
                   className="rounded-none"
@@ -176,7 +190,10 @@ export const BlockCard: React.FC<BlockCardProps> = ({
                   <Plus className="w-2 h-2" />
                 </Button>
                 <Button
-                  onClick={onDuplicateBlock}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDuplicateBlock();
+                  }}
                   size="sm"
                   variant="ghost"
                   className="rounded-none"
@@ -184,7 +201,10 @@ export const BlockCard: React.FC<BlockCardProps> = ({
                   <Copy className="w-2 h-2" />
                 </Button>
                 <Button
-                  onClick={onRemoveBlock}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveBlock();
+                  }}
                   size="sm"
                   variant="ghost"
                   className="rounded-none"

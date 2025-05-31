@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy, GripVertical } from "lucide-react";
 import { BlockCard } from './BlockCard';
 import { Exercise } from '../types';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -84,8 +84,17 @@ const SortableBlock: React.FC<{
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <BlockCard {...props} />
+    <div ref={setNodeRef} style={style} className="relative">
+      <div
+        className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="w-3 h-3 text-gray-400" />
+      </div>
+      <div className="ml-4">
+        <BlockCard {...props} />
+      </div>
     </div>
   );
 };
@@ -160,108 +169,114 @@ export const DayCard: React.FC<DayCardProps> = ({
   const blocksCount = day.blocks.length;
 
   return (
-    <Card ref={setNodeRef} style={style} className="rounded-none">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <CollapsibleTrigger 
-              className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded"
-              {...attributes}
-              {...listeners}
-            >
-              {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              <CardTitle 
-                className="text-sm cursor-pointer flex items-center gap-2"
-                onDoubleClick={handleNameDoubleClick}
-              >
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    onBlur={handleNameSave}
-                    onKeyDown={handleNameKeyPress}
-                    className="bg-transparent border border-gray-300 rounded px-1 outline-none"
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <>
-                    {day.name}
-                    {!isOpen && blocksCount > 0 && (
-                      <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
-                        {blocksCount}
-                      </span>
-                    )}
-                  </>
-                )}
-              </CardTitle>
-            </CollapsibleTrigger>
-            <div className="flex gap-1">
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddBlock();
-                }}
-                size="sm"
-                variant="ghost"
-                className="rounded-none"
-              >
-                <Plus className="w-3 h-3" />
-              </Button>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDuplicateDay();
-                }}
-                size="sm"
-                variant="ghost"
-                className="rounded-none"
-              >
-                <Copy className="w-3 h-3" />
-              </Button>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveDay();
-                }}
-                size="sm"
-                variant="ghost"
-                className="rounded-none"
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CollapsibleContent>
-          <CardContent className="pt-2">
-            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={day.blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-                <div className="space-y-2">
-                  {day.blocks.map((block) => (
-                    <SortableBlock
-                      key={block.id}
-                      block={block}
-                      exercises={exercises}
-                      onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
-                      onRemoveBlock={() => onRemoveBlock(block.id)}
-                      onDuplicateBlock={() => onDuplicateBlock(block.id)}
-                      onUpdateBlockName={(name) => onUpdateBlockName(block.id, name)}
-                      onUpdateExercise={(exerciseId, field, value) => 
-                        onUpdateExercise(block.id, exerciseId, field, value)
-                      }
-                      onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
-                      onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
-                      onReorderExercises={(oldIndex, newIndex) => onReorderExercises(block.id, oldIndex, newIndex)}
+    <Card ref={setNodeRef} style={style} className="rounded-none relative">
+      <div
+        className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="w-3 h-3 text-gray-400" />
+      </div>
+      
+      <div className="ml-4">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-center">
+              <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded">
+                {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                <CardTitle 
+                  className="text-sm cursor-pointer flex items-center gap-2"
+                  onDoubleClick={handleNameDoubleClick}
+                >
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onBlur={handleNameSave}
+                      onKeyDown={handleNameKeyPress}
+                      className="bg-transparent border border-gray-300 rounded px-1 outline-none"
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
                     />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
+                  ) : (
+                    <>
+                      {day.name}
+                      {!isOpen && blocksCount > 0 && (
+                        <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+                          {blocksCount}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </CardTitle>
+              </CollapsibleTrigger>
+              <div className="flex gap-1">
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddBlock();
+                  }}
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-none"
+                >
+                  <Plus className="w-3 h-3" />
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDuplicateDay();
+                  }}
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-none"
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveDay();
+                  }}
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-none"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="pt-2">
+              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={day.blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-2">
+                    {day.blocks.map((block) => (
+                      <SortableBlock
+                        key={block.id}
+                        block={block}
+                        exercises={exercises}
+                        onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
+                        onRemoveBlock={() => onRemoveBlock(block.id)}
+                        onDuplicateBlock={() => onDuplicateBlock(block.id)}
+                        onUpdateBlockName={(name) => onUpdateBlockName(block.id, name)}
+                        onUpdateExercise={(exerciseId, field, value) => 
+                          onUpdateExercise(block.id, exerciseId, field, value)
+                        }
+                        onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
+                        onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
+                        onReorderExercises={(oldIndex, newIndex) => onReorderExercises(block.id, oldIndex, newIndex)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
     </Card>
   );
 };
