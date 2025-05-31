@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -8,6 +7,7 @@ export interface User {
 export interface Exercise {
   id: string;
   name: string;
+  description?: string;
 }
 
 export interface ProgramExercise {
