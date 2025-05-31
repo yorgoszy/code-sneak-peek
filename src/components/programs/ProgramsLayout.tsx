@@ -20,14 +20,15 @@ interface ProgramsLayoutProps {
   onDeleteProgram: (programId: string) => void;
   onEditProgram: (program: Program) => void;
   onCreateProgram: (program: any) => void;
-  onBuilderDialogClose: (open: boolean) => void;
+  onBuilderDialogClose: () => void;
   onDuplicateProgram: (program: Program) => void;
   onPreviewProgram: (program: Program) => void;
-  onPreviewDialogClose: (open: boolean) => void;
+  onPreviewDialogClose: () => void;
   onDeleteWeek: (weekId: string) => void;
   onDeleteDay: (dayId: string) => void;
   onDeleteBlock: (blockId: string) => void;
   onDeleteExercise: (exerciseId: string) => void;
+  onOpenBuilder: () => void;
 }
 
 export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
@@ -50,13 +51,14 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onDeleteWeek,
   onDeleteDay,
   onDeleteBlock,
-  onDeleteExercise
+  onDeleteExercise,
+  onOpenBuilder
 }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
-        <ProgramBuilderTrigger onClick={() => onBuilderDialogClose(true)} />
+        <ProgramBuilderTrigger onClick={onOpenBuilder} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -86,20 +88,24 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
         </div>
       </div>
 
-      <ProgramBuilderDialog
-        users={users}
-        exercises={exercises}
-        onCreateProgram={onCreateProgram}
-        editingProgram={editingProgram}
-        isOpen={builderDialogOpen}
-        onOpenChange={onBuilderDialogClose}
-      />
+      {builderDialogOpen && (
+        <ProgramBuilderDialog
+          users={users}
+          exercises={exercises}
+          onCreateProgram={onCreateProgram}
+          editingProgram={editingProgram}
+          isOpen={builderDialogOpen}
+          onOpenChange={onBuilderDialogClose}
+        />
+      )}
 
-      <ProgramPreviewDialog
-        program={previewProgram}
-        isOpen={previewDialogOpen}
-        onOpenChange={onPreviewDialogClose}
-      />
+      {previewDialogOpen && (
+        <ProgramPreviewDialog
+          program={previewProgram}
+          isOpen={previewDialogOpen}
+          onOpenChange={onPreviewDialogClose}
+        />
+      )}
     </div>
   );
 };

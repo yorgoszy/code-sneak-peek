@@ -3,22 +3,24 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
 import { Program } from "@/components/programs/types";
-import { useProgramOperations } from "@/hooks/useProgramOperations";
-import { useProgramData } from "@/hooks/useProgramData";
+import { usePrograms } from "@/hooks/usePrograms";
+import { useProgramsData } from "@/hooks/useProgramsData";
 
 const Programs = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-  const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
-  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   
-  // Program builder states - ensure proper initialization
+  // Builder dialog state
+  const [builderOpen, setBuilderOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
-  const [builderDialogOpen, setBuilderDialogOpen] = useState(false);
+  
+  // Preview dialog state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
 
-  const { users, exercises } = useProgramData();
-  const { loading, fetchPrograms, createProgramFromBuilder, duplicateProgram, deleteProgram, deleteWeek, deleteDay, deleteBlock, deleteExercise } = useProgramOperations();
+  const { users, exercises } = useProgramsData();
+  const { loading, fetchPrograms, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
 
   useEffect(() => {
     loadPrograms();
@@ -30,58 +32,24 @@ const Programs = () => {
   };
 
   const handleCreateProgram = async (programData: any) => {
-    await createProgramFromBuilder(programData);
+    await saveProgram(programData);
     await loadPrograms();
-  };
-
-  const handleDeleteProgram = async (programId: string) => {
-    const success = await deleteProgram(programId, selectedProgram, setSelectedProgram);
-    if (success) {
-      await loadPrograms();
-    }
-  };
-
-  const handleDeleteWeek = async (weekId: string) => {
-    const success = await deleteWeek(weekId);
-    if (success) {
-      await loadPrograms();
-    }
-  };
-
-  const handleDeleteDay = async (dayId: string) => {
-    const success = await deleteDay(dayId);
-    if (success) {
-      await loadPrograms();
-    }
-  };
-
-  const handleDeleteBlock = async (blockId: string) => {
-    const success = await deleteBlock(blockId);
-    if (success) {
-      await loadPrograms();
-    }
-  };
-
-  const handleDeleteExercise = async (exerciseId: string) => {
-    const success = await deleteExercise(exerciseId);
-    if (success) {
-      await loadPrograms();
-    }
-  };
-
-  const handleSelectProgram = (program: Program) => {
-    setSelectedProgram(program);
+    setBuilderOpen(false);
+    setEditingProgram(null);
   };
 
   const handleEditProgram = (program: Program) => {
     setEditingProgram(program);
-    setBuilderDialogOpen(true);
+    setBuilderOpen(true);
   };
 
-  const handleBuilderDialogClose = (open: boolean) => {
-    setBuilderDialogOpen(open);
-    if (!open) {
-      setEditingProgram(null);
+  const handleDeleteProgram = async (programId: string) => {
+    const success = await deleteProgram(programId);
+    if (success) {
+      if (selectedProgram?.id === programId) {
+        setSelectedProgram(null);
+      }
+      await loadPrograms();
     }
   };
 
@@ -92,14 +60,17 @@ const Programs = () => {
 
   const handlePreviewProgram = (program: Program) => {
     setPreviewProgram(program);
-    setPreviewDialogOpen(true);
+    setPreviewOpen(true);
   };
 
-  const handlePreviewDialogClose = (open: boolean) => {
-    setPreviewDialogOpen(open);
-    if (!open) {
-      setPreviewProgram(null);
-    }
+  const handleBuilderClose = () => {
+    setBuilderOpen(false);
+    setEditingProgram(null);
+  };
+
+  const handlePreviewClose = () => {
+    setPreviewOpen(false);
+    setPreviewProgram(null);
   };
 
   if (loading) {
@@ -121,21 +92,22 @@ const Programs = () => {
           users={users}
           exercises={exercises}
           editingProgram={editingProgram}
-          builderDialogOpen={builderDialogOpen}
+          builderDialogOpen={builderOpen}
           previewProgram={previewProgram}
-          previewDialogOpen={previewDialogOpen}
-          onSelectProgram={handleSelectProgram}
+          previewDialogOpen={previewOpen}
+          onSelectProgram={setSelectedProgram}
           onDeleteProgram={handleDeleteProgram}
           onEditProgram={handleEditProgram}
           onCreateProgram={handleCreateProgram}
-          onBuilderDialogClose={handleBuilderDialogClose}
+          onBuilderDialogClose={handleBuilderClose}
           onDuplicateProgram={handleDuplicateProgram}
           onPreviewProgram={handlePreviewProgram}
-          onPreviewDialogClose={handlePreviewDialogClose}
-          onDeleteWeek={handleDeleteWeek}
-          onDeleteDay={handleDeleteDay}
-          onDeleteBlock={handleDeleteBlock}
-          onDeleteExercise={handleDeleteExercise}
+          onPreviewDialogClose={handlePreviewClose}
+          onDeleteWeek={() => {}}
+          onDeleteDay={() => {}}
+          onDeleteBlock={() => {}}
+          onDeleteExercise={() => {}}
+          onOpenBuilder={() => setBuilderOpen(true)}
         />
       </div>
     </div>

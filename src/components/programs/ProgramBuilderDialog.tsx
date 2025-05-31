@@ -10,7 +10,7 @@ interface ProgramBuilderDialogProps {
   users: User[];
   exercises: Exercise[];
   onCreateProgram: (program: any) => void;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: () => void;
   editingProgram?: Program | null;
   isOpen: boolean;
 }
@@ -25,44 +25,33 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
 }) => {
   const { program, updateProgram, resetProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises);
   
-  const actions = useProgramBuilderActions(program, (newProgram) => {
-    updateProgram(newProgram);
-  }, generateId, exercises);
+  const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises);
 
   useEffect(() => {
     if (editingProgram && isOpen) {
       loadProgramFromData(editingProgram);
+    } else if (isOpen && !editingProgram) {
+      resetProgram();
     }
-  }, [editingProgram, isOpen, loadProgramFromData]);
+  }, [editingProgram, isOpen, loadProgramFromData, resetProgram]);
 
-  const handleOpenChange = (open: boolean) => {
-    onOpenChange(open);
-    if (!open) {
-      setTimeout(() => {
-        resetProgram();
-      }, 200);
-    }
+  const handleClose = () => {
+    resetProgram();
+    onOpenChange();
   };
 
-  const handleSaveProgram = () => {
+  const handleSave = () => {
     if (!program.name) {
       alert('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
     onCreateProgram({ ...program, id: editingProgram?.id });
-    handleOpenChange(false);
   };
 
-  const handleStartDateChange = (date: Date | undefined) => {
-    updateProgram({ start_date: date });
-  };
-
-  const handleTrainingDaysChange = (days: string[]) => {
-    updateProgram({ training_days: days });
-  };
+  if (!isOpen) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <ProgramBuilderDialogContent
         program={program}
         users={users}
@@ -70,8 +59,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onNameChange={(name) => updateProgram({ name })}
         onDescriptionChange={(description) => updateProgram({ description })}
         onAthleteChange={(athlete_id) => updateProgram({ athlete_id })}
-        onStartDateChange={handleStartDateChange}
-        onTrainingDaysChange={handleTrainingDaysChange}
+        onStartDateChange={(start_date) => updateProgram({ start_date })}
+        onTrainingDaysChange={(training_days) => updateProgram({ training_days })}
         onAddWeek={actions.addWeek}
         onRemoveWeek={actions.removeWeek}
         onDuplicateWeek={actions.duplicateWeek}
@@ -92,7 +81,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onReorderDays={actions.reorderDays}
         onReorderBlocks={actions.reorderBlocks}
         onReorderExercises={actions.reorderExercises}
-        onSave={handleSaveProgram}
+        onSave={handleSave}
       />
     </Dialog>
   );

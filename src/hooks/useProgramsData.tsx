@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { User, Exercise } from "@/components/programs/types";
 
-export const useProgramData = () => {
+export const useProgramsData = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
