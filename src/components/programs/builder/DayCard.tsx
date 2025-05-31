@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Collapsible } from "@/components/ui/collapsible";
@@ -98,7 +99,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   const blocksCount = day.blocks.length;
 
   return (
-    <Card className="rounded-none relative" style={{ minHeight: '20px', minWidth: '170px' }}>
+    <Card className="rounded-none relative w-64" style={{ minHeight: '20px' }}>
       <div className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10">
         <GripVertical className="w-3 h-3 text-gray-400" />
       </div>
