@@ -99,9 +99,9 @@ export const DayCard: React.FC<DayCardProps> = ({
   const blocksCount = day.blocks.length;
 
   return (
-    <Card className="rounded-none relative" style={{ minHeight: '50px' }}>
-      <div className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10">
-        <GripVertical className="w-3 h-3 text-gray-400" />
+    <Card className="rounded-none relative w-full" style={{ minHeight: '40px' }}>
+      <div className="absolute left-0 top-0 bottom-0 w-3 flex items-center justify-center cursor-move z-10">
+        <GripVertical className="w-2 h-2 text-gray-400" />
       </div>
       
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
