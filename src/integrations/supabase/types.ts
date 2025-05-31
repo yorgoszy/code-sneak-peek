@@ -1193,10 +1193,14 @@ export type Database = {
       }
       program_assignments: {
         Row: {
+          assigned_by: string | null
+          assignment_type: string | null
           athlete_id: string | null
           created_at: string | null
           end_date: string | null
+          group_id: string | null
           id: string
+          notes: string | null
           program_id: string | null
           progress: number | null
           start_date: string | null
@@ -1204,10 +1208,14 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          assigned_by?: string | null
+          assignment_type?: string | null
           athlete_id?: string | null
           created_at?: string | null
           end_date?: string | null
+          group_id?: string | null
           id?: string
+          notes?: string | null
           program_id?: string | null
           progress?: number | null
           start_date?: string | null
@@ -1215,10 +1223,14 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          assigned_by?: string | null
+          assignment_type?: string | null
           athlete_id?: string | null
           created_at?: string | null
           end_date?: string | null
+          group_id?: string | null
           id?: string
+          notes?: string | null
           program_id?: string | null
           progress?: number | null
           start_date?: string | null
@@ -1226,6 +1238,20 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_assigned_by"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_group_id"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "program_assignments_program_id_fkey"
             columns: ["program_id"]
@@ -1460,7 +1486,9 @@ export type Database = {
           id: string
           is_template: boolean | null
           name: string
+          start_date: string | null
           status: string | null
+          training_days: number | null
           type: string | null
           updated_at: string | null
         }
@@ -1473,7 +1501,9 @@ export type Database = {
           id?: string
           is_template?: boolean | null
           name: string
+          start_date?: string | null
           status?: string | null
+          training_days?: number | null
           type?: string | null
           updated_at?: string | null
         }
@@ -1486,7 +1516,9 @@ export type Database = {
           id?: string
           is_template?: boolean | null
           name?: string
+          start_date?: string | null
           status?: string | null
+          training_days?: number | null
           type?: string | null
           updated_at?: string | null
         }

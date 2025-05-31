@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Program } from "@/components/programs/types";
+import { Program, ProgramAssignment } from "@/components/programs/types";
 
 export const usePrograms = () => {
   const [loading, setLoading] = useState(false);
@@ -66,6 +65,12 @@ export const usePrograms = () => {
         
         // Create new structure
         await createProgramStructure(programData.id, programData);
+        
+        // If athlete_id is provided, create or update assignment
+        if (programData.athlete_id) {
+          await createOrUpdateAssignment(programData.id, programData.athlete_id);
+        }
+        
         toast.success('Το πρόγραμμα ενημερώθηκε επιτυχώς');
       } else {
         // Create new program
@@ -82,6 +87,12 @@ export const usePrograms = () => {
         if (programError) throw programError;
 
         await createProgramStructure(program.id, programData);
+        
+        // If athlete_id is provided, create assignment
+        if (programData.athlete_id) {
+          await createOrUpdateAssignment(program.id, programData.athlete_id);
+        }
+        
         toast.success('Το πρόγραμμα δημιουργήθηκε επιτυχώς');
       }
     } catch (error) {
@@ -90,6 +101,46 @@ export const usePrograms = () => {
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createOrUpdateAssignment = async (programId: string, userId: string) => {
+    try {
+      console.log('Creating/updating assignment for program:', programId, 'user:', userId);
+      
+      // Check if assignment already exists
+      const { data: existingAssignment } = await supabase
+        .from('program_assignments')
+        .select('id')
+        .eq('program_id', programId)
+        .eq('user_id', userId)
+        .single();
+
+      if (existingAssignment) {
+        // Update existing assignment
+        const { error } = await supabase
+          .from('program_assignments')
+          .update({ status: 'active', updated_at: new Date().toISOString() })
+          .eq('id', existingAssignment.id);
+        
+        if (error) throw error;
+        console.log('Assignment updated');
+      } else {
+        // Create new assignment
+        const { error } = await supabase
+          .from('program_assignments')
+          .insert([{
+            program_id: programId,
+            user_id: userId,
+            status: 'active'
+          }]);
+        
+        if (error) throw error;
+        console.log('New assignment created');
+      }
+    } catch (error) {
+      console.error('Error creating/updating assignment:', error);
+      // Don't throw here, as the program itself was saved successfully
     }
   };
 
@@ -220,11 +271,32 @@ export const usePrograms = () => {
     }
   };
 
+  const fetchProgramAssignments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('program_assignments')
+        .select(`
+          *,
+          programs(id, name, description),
+          app_users(id, name, email)
+        `)
+        .order('assigned_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching program assignments:', error);
+      toast.error('Σφάλμα φόρτωσης αναθέσεων');
+      return [];
+    }
+  };
+
   return {
     loading,
     fetchPrograms,
     saveProgram,
     deleteProgram,
-    duplicateProgram
+    duplicateProgram,
+    fetchProgramAssignments
   };
 };

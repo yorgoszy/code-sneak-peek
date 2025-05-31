@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   name: string;
@@ -53,4 +54,20 @@ export interface Program {
   athlete_id?: string;
   app_users?: { name: string };
   program_weeks: Week[];
+}
+
+export interface ProgramAssignment {
+  id: string;
+  program_id: string;
+  user_id: string;
+  assigned_by?: string;
+  assigned_at: string;
+  start_date?: string;
+  end_date?: string;
+  status: 'active' | 'completed' | 'paused' | 'cancelled';
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  programs?: Program;
+  app_users?: User;
 }
