@@ -91,7 +91,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
 
   return (
     <>
-      <Card className="rounded-none bg-gray-50" style={{ minHeight: '10px', maxWidth: 'calc(100% - 220px)' }}>
+      <Card className="rounded-none bg-gray-50" style={{ minHeight: '10px', maxWidth: 'calc(100% - 230px)' }}>
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <BlockCardHeader
             blockName={block.name}
