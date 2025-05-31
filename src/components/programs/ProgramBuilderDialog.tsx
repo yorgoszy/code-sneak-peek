@@ -2,13 +2,10 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { User, Exercise } from './types';
+import { ProgramBasicInfo } from './builder/ProgramBasicInfo';
+import { TrainingWeeks } from './builder/TrainingWeeks';
 
 interface ProgramStructure {
   name: string;
@@ -285,11 +282,6 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     });
   };
 
-  const handleAthleteChange = (value: string) => {
-    const athleteId = value === "no-athlete" ? "" : value;
-    setProgram({ ...program, athlete_id: athleteId });
-  };
-
   const handleSaveProgram = () => {
     if (!program.name) {
       alert('Το όνομα προγράμματος είναι υποχρεωτικό');
@@ -314,217 +306,29 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           </DialogHeader>
           
           <div className="space-y-6">
-            {/* Basic Program Info */}
-            <Card className="rounded-none">
-              <CardHeader>
-                <CardTitle className="text-lg">Όνομα Προγράμματος *</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Input
-                  className="rounded-none"
-                  value={program.name}
-                  onChange={(e) => setProgram({ ...program, name: e.target.value })}
-                  placeholder="π.χ. Πρόγραμμα Δύναμης"
-                />
-                
-                <div>
-                  <Label>Περιγραφή</Label>
-                  <Textarea
-                    className="rounded-none"
-                    value={program.description}
-                    onChange={(e) => setProgram({ ...program, description: e.target.value })}
-                    placeholder="Περιγραφή προγράμματος..."
-                  />
-                </div>
+            <ProgramBasicInfo
+              name={program.name}
+              description={program.description}
+              athleteId={program.athlete_id}
+              users={users}
+              onNameChange={(name) => setProgram({ ...program, name })}
+              onDescriptionChange={(description) => setProgram({ ...program, description })}
+              onAthleteChange={(athlete_id) => setProgram({ ...program, athlete_id })}
+            />
 
-                <div>
-                  <Label>Αθλητής (προαιρετικό)</Label>
-                  <Select 
-                    value={program.athlete_id || "no-athlete"} 
-                    onValueChange={handleAthleteChange}
-                  >
-                    <SelectTrigger className="rounded-none">
-                      <SelectValue placeholder="Επιλέξτε αθλητή" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="no-athlete">Χωρίς συγκεκριμένο αθλητή</SelectItem>
-                      {users.map(user => (
-                        <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Training Weeks */}
-            <Card className="rounded-none">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Εβδομάδες Προπόνησης</CardTitle>
-                  <Button onClick={addWeek} className="rounded-none">
-                    <Plus className="w-4 h-4 mr-2" />
-                    +Week
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {program.weeks.map((week) => (
-                    <Card key={week.id} className="rounded-none border-2">
-                      <CardHeader>
-                        <div className="flex justify-between items-center">
-                          <CardTitle className="text-base">{week.name}</CardTitle>
-                          <div className="flex gap-2">
-                            <Button 
-                              onClick={() => addDay(week.id)}
-                              size="sm"
-                              className="rounded-none"
-                            >
-                              <Plus className="w-4 h-4 mr-1" />
-                              +Day
-                            </Button>
-                            <Button
-                              onClick={() => removeWeek(week.id)}
-                              size="sm"
-                              variant="destructive"
-                              className="rounded-none"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {week.days.map((day) => (
-                            <Card key={day.id} className="rounded-none">
-                              <CardHeader>
-                                <div className="flex justify-between items-center">
-                                  <CardTitle className="text-sm">{day.name}</CardTitle>
-                                  <div className="flex gap-1">
-                                    <Button
-                                      onClick={() => addBlock(week.id, day.id)}
-                                      size="sm"
-                                      variant="ghost"
-                                    >
-                                      <Plus className="w-3 h-3" />
-                                    </Button>
-                                    <Button
-                                      onClick={() => removeDay(week.id, day.id)}
-                                      size="sm"
-                                      variant="ghost"
-                                    >
-                                      <Trash2 className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="space-y-2">
-                                  {day.blocks.map((block) => (
-                                    <Card key={block.id} className="rounded-none bg-gray-50">
-                                      <CardHeader className="pb-2">
-                                        <div className="flex justify-between items-center">
-                                          <h6 className="text-xs font-medium">{block.name}</h6>
-                                          <div className="flex gap-1">
-                                            <Button
-                                              onClick={() => addExercise(week.id, day.id, block.id)}
-                                              size="sm"
-                                              variant="ghost"
-                                            >
-                                              <Plus className="w-2 h-2" />
-                                            </Button>
-                                            <Button
-                                              onClick={() => removeBlock(week.id, day.id, block.id)}
-                                              size="sm"
-                                              variant="ghost"
-                                            >
-                                              <Trash2 className="w-2 h-2" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </CardHeader>
-                                      <CardContent className="pt-2">
-                                        <div className="space-y-2">
-                                          {block.exercises.map((exercise) => (
-                                            <div key={exercise.id} className="grid grid-cols-8 gap-1 text-xs">
-                                              <Select
-                                                value={exercise.exercise_id}
-                                                onValueChange={(value) => updateExercise(week.id, day.id, block.id, exercise.id, 'exercise_id', value)}
-                                              >
-                                                <SelectTrigger className="rounded-none h-8 text-xs col-span-2">
-                                                  <SelectValue placeholder="Άσκηση" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  {exercises.map(ex => (
-                                                    <SelectItem key={ex.id} value={ex.id}>{ex.name}</SelectItem>
-                                                  ))}
-                                                </SelectContent>
-                                              </Select>
-                                              
-                                              <Input
-                                                className="rounded-none h-8 text-xs"
-                                                placeholder="Sets"
-                                                type="number"
-                                                value={exercise.sets}
-                                                onChange={(e) => updateExercise(week.id, day.id, block.id, exercise.id, 'sets', parseInt(e.target.value))}
-                                              />
-                                              
-                                              <Input
-                                                className="rounded-none h-8 text-xs"
-                                                placeholder="Reps"
-                                                value={exercise.reps}
-                                                onChange={(e) => updateExercise(week.id, day.id, block.id, exercise.id, 'reps', e.target.value)}
-                                              />
-                                              
-                                              <Input
-                                                className="rounded-none h-8 text-xs"
-                                                placeholder="%1RM"
-                                                type="number"
-                                                value={exercise.percentage_1rm}
-                                                onChange={(e) => updateExercise(week.id, day.id, block.id, exercise.id, 'percentage_1rm', parseInt(e.target.value))}
-                                              />
-                                              
-                                              <Input
-                                                className="rounded-none h-8 text-xs"
-                                                placeholder="kg"
-                                                value={exercise.kg}
-                                                onChange={(e) => updateExercise(week.id, day.id, block.id, exercise.id, 'kg', e.target.value)}
-                                              />
-                                              
-                                              <Input
-                                                className="rounded-none h-8 text-xs"
-                                                placeholder="m/s"
-                                                value={exercise.velocity_ms}
-                                                onChange={(e) => updateExercise(week.id, day.id, block.id, exercise.id, 'velocity_ms', e.target.value)}
-                                              />
-                                              
-                                              <Button
-                                                onClick={() => removeExercise(week.id, day.id, block.id, exercise.id)}
-                                                size="sm"
-                                                variant="ghost"
-                                                className="h-8 w-8 p-0"
-                                              >
-                                                <Trash2 className="w-2 h-2" />
-                                              </Button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </CardContent>
-                                    </Card>
-                                  ))}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <TrainingWeeks
+              weeks={program.weeks}
+              exercises={exercises}
+              onAddWeek={addWeek}
+              onRemoveWeek={removeWeek}
+              onAddDay={addDay}
+              onRemoveDay={removeDay}
+              onAddBlock={addBlock}
+              onRemoveBlock={removeBlock}
+              onAddExercise={addExercise}
+              onRemoveExercise={removeExercise}
+              onUpdateExercise={updateExercise}
+            />
 
             <div className="flex justify-end">
               <Button onClick={handleSaveProgram} className="rounded-none bg-green-600 hover:bg-green-700">
