@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Copy, Trash2, GripVertical } from "lucide-react";
 import { WeekCard } from './WeekCard';
+import { WeekMetrics } from './WeekMetrics';
 import { Exercise } from '../types';
 import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -71,6 +72,7 @@ interface TrainingWeeksProps {
 
 const SortableWeekTab: React.FC<{
   week: Week;
+  previousWeek?: Week;
   isActive: boolean;
   editingWeekId: string | null;
   editingWeekName: string;
@@ -82,6 +84,7 @@ const SortableWeekTab: React.FC<{
   onRemoveWeek: (weekId: string) => void;
 }> = ({
   week,
+  previousWeek,
   isActive,
   editingWeekId,
   editingWeekName,
@@ -111,7 +114,7 @@ const SortableWeekTab: React.FC<{
     <div 
       ref={setNodeRef} 
       style={style} 
-      className="flex items-center group flex-shrink-0 relative"
+      className="flex flex-col items-center group flex-shrink-0 relative"
     >
       <div
         className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
@@ -121,50 +124,59 @@ const SortableWeekTab: React.FC<{
         <GripVertical className="w-3 h-3 text-gray-400" />
       </div>
       
-      <div className="ml-4 flex items-center">
-        <TabsTrigger 
-          value={week.id} 
-          className="rounded-none whitespace-nowrap px-4"
-          onDoubleClick={() => onWeekNameDoubleClick(week)}
-        >
-          {editingWeekId === week.id ? (
-            <input
-              type="text"
-              value={editingWeekName}
-              onChange={(e) => setEditingWeekName(e.target.value)}
-              onBlur={onWeekNameSave}
-              onKeyDown={onWeekNameKeyPress}
-              className="bg-transparent border-none outline-none text-center min-w-0"
-              autoFocus
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            week.name
-          )}
-        </TabsTrigger>
-        <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDuplicateWeek(week.id);
-            }}
-            className="h-6 w-6 p-0 rounded-none"
+      <div className="ml-4 flex flex-col items-center">
+        <div className="flex items-center">
+          <TabsTrigger 
+            value={week.id} 
+            className="rounded-none whitespace-nowrap px-4"
+            onDoubleClick={() => onWeekNameDoubleClick(week)}
           >
-            <Copy className="w-3 h-3" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemoveWeek(week.id);
-            }}
-            className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-800"
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
+            {editingWeekId === week.id ? (
+              <input
+                type="text"
+                value={editingWeekName}
+                onChange={(e) => setEditingWeekName(e.target.value)}
+                onBlur={onWeekNameSave}
+                onKeyDown={onWeekNameKeyPress}
+                className="bg-transparent border-none outline-none text-center min-w-0"
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <div className="flex flex-col items-center">
+                <span>{week.name}</span>
+              </div>
+            )}
+          </TabsTrigger>
+          <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicateWeek(week.id);
+              }}
+              className="h-6 w-6 p-0 rounded-none"
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveWeek(week.id);
+              }}
+              className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-800"
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+        
+        {/* Week Metrics below the tab name */}
+        <div className="mt-2 w-full">
+          <WeekMetrics week={week} previousWeek={previousWeek} />
         </div>
       </div>
     </div>
@@ -252,12 +264,13 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
         {weeks.length > 0 ? (
           <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
             <div className="w-full overflow-x-auto">
-              <TabsList className="inline-flex h-10 items-center justify-start rounded-none bg-muted p-1 text-muted-foreground min-w-full">
+              <TabsList className="inline-flex h-auto items-start justify-start rounded-none bg-muted p-1 text-muted-foreground min-w-full">
                 <SortableContext items={weeks.map(w => w.id)} strategy={horizontalListSortingStrategy}>
-                  {weeks.map((week) => (
+                  {weeks.map((week, index) => (
                     <SortableWeekTab
                       key={week.id}
                       week={week}
+                      previousWeek={index > 0 ? weeks[index - 1] : undefined}
                       isActive={activeWeek === week.id}
                       editingWeekId={editingWeekId}
                       editingWeekName={editingWeekName}
