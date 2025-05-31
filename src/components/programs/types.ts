@@ -1,10 +1,7 @@
-
 export interface User {
   id: string;
   name: string;
   email: string;
-  role?: string;
-  category?: string;
 }
 
 export interface Exercise {
@@ -54,8 +51,6 @@ export interface Program {
   name: string;
   description?: string;
   athlete_id?: string;
-  start_date?: string;
-  training_days?: number;
   app_users?: { name: string };
   program_weeks: Week[];
 }

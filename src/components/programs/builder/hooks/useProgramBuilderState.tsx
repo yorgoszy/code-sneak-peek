@@ -6,8 +6,8 @@ interface ProgramStructure {
   name: string;
   description: string;
   athlete_id: string;
-  start_date?: string;
-  training_days?: number;
+  start_date?: Date;
+  training_days?: string[];
   weeks: Week[];
 }
 
@@ -51,8 +51,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     name: '',
     description: '',
     athlete_id: '',
-    start_date: '',
-    training_days: 0,
+    start_date: undefined,
+    training_days: [],
     weeks: []
   });
 
@@ -69,7 +69,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   };
 
   const resetProgram = () => {
-    setProgram({ name: '', description: '', athlete_id: '', start_date: '', training_days: 0, weeks: [] });
+    setProgram({ name: '', description: '', athlete_id: '', start_date: undefined, training_days: [], weeks: [] });
   };
 
   const loadProgramFromData = (programData: Program) => {
@@ -79,8 +79,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       name: programData.name,
       description: programData.description || '',
       athlete_id: programData.athlete_id || '',
-      start_date: programData.start_date || '',
-      training_days: programData.training_days || 0,
+      start_date: undefined,
+      training_days: [],
       weeks: programData.program_weeks?.map(week => ({
         id: week.id,
         name: week.name,

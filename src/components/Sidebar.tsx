@@ -12,8 +12,7 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  BarChart3,
-  UserCheck
+  BarChart3
 } from "lucide-react";
 
 interface SidebarProps {
@@ -32,7 +31,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     { icon: Activity, label: "Τεστ", path: "/dashboard/tests" },
     { icon: TrendingUp, label: "Αποτελέσματα", path: "/dashboard/results" },
     { icon: Calendar, label: "Προγράμματα", path: "/dashboard/programs" },
-    { icon: UserCheck, label: "Αναθέσεις", path: "/dashboard/assignments" },
   ];
 
   return (
