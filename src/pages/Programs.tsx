@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
@@ -14,7 +15,7 @@ const Programs = () => {
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
 
   const { users, exercises } = useProgramData();
-  const { loading, fetchPrograms, createProgramFromBuilder, deleteProgram, deleteWeek, deleteDay, deleteBlock, deleteExercise, operations } = useProgramOperations();
+  const { loading, fetchPrograms, createProgramFromBuilder, duplicateProgram, deleteProgram, deleteWeek, deleteDay, deleteBlock, deleteExercise } = useProgramOperations();
   const formState = useProgramFormState();
 
   useEffect(() => {
@@ -86,7 +87,7 @@ const Programs = () => {
 
   const handleDuplicateProgram = async (program: Program) => {
     console.log('Duplicate program:', program);
-    await operations.duplicateProgram(program);
+    await duplicateProgram(program);
     await loadPrograms();
   };
 
