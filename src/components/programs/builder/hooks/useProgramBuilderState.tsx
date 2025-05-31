@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Exercise } from '../../types';
+import { Exercise, Program } from '../../types';
 
 interface ProgramStructure {
   name: string;
@@ -60,12 +60,9 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
 
   const updateProgram = (updates: Partial<ProgramStructure> | ProgramStructure) => {
     if ('name' in updates || 'description' in updates || 'athlete_id' in updates || 'start_date' in updates || 'training_days' in updates || 'weeks' in updates) {
-      // Handle both partial updates and full program updates
       if ('weeks' in updates && Array.isArray(updates.weeks)) {
-        // Full program update
         setProgram(updates as ProgramStructure);
       } else {
-        // Partial update
         setProgram(prev => ({ ...prev, ...updates }));
       }
     }
@@ -75,11 +72,57 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     setProgram({ name: '', description: '', athlete_id: '', start_date: undefined, training_days: [], weeks: [] });
   };
 
+  const loadProgramFromData = (programData: Program) => {
+    console.log('Loading program data:', programData);
+    
+    const loadedProgram: ProgramStructure = {
+      name: programData.name,
+      description: programData.description || '',
+      athlete_id: programData.athlete_id || '',
+      start_date: undefined,
+      training_days: [],
+      weeks: programData.program_weeks?.map(week => ({
+        id: week.id,
+        name: week.name,
+        week_number: week.week_number,
+        days: week.program_days?.map(day => ({
+          id: day.id,
+          name: day.name,
+          day_number: day.day_number,
+          blocks: day.program_blocks?.map(block => ({
+            id: block.id,
+            name: block.name,
+            block_order: block.block_order,
+            exercises: block.program_exercises?.map(exercise => {
+              const exerciseData = exercises.find(ex => ex.id === exercise.exercise_id);
+              return {
+                id: exercise.id,
+                exercise_id: exercise.exercise_id,
+                exercise_name: exerciseData?.name || 'Unknown Exercise',
+                sets: exercise.sets,
+                reps: exercise.reps || '',
+                percentage_1rm: exercise.percentage_1rm || 0,
+                kg: exercise.kg || '',
+                velocity_ms: exercise.velocity_ms?.toString() || '',
+                tempo: exercise.tempo || '',
+                rest: exercise.rest || '',
+                exercise_order: exercise.exercise_order
+              };
+            }) || []
+          })) || []
+        })) || []
+      })) || []
+    };
+
+    setProgram(loadedProgram);
+  };
+
   return {
     program,
     updateProgram,
     resetProgram,
-    generateId
+    generateId,
+    loadProgramFromData
   };
 };
 

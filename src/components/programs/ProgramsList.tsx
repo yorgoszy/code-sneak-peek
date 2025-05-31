@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 import { Program } from './types';
 
 interface ProgramsListProps {
@@ -10,13 +10,15 @@ interface ProgramsListProps {
   selectedProgram: Program | null;
   onSelectProgram: (program: Program) => void;
   onDeleteProgram: (programId: string) => void;
+  onEditProgram: (program: Program) => void;
 }
 
 export const ProgramsList: React.FC<ProgramsListProps> = ({
   programs,
   selectedProgram,
   onSelectProgram,
-  onDeleteProgram
+  onDeleteProgram,
+  onEditProgram
 }) => {
   return (
     <Card className="rounded-none">
@@ -40,16 +42,30 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                     <p className="text-sm text-gray-600">{program.app_users.name}</p>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteProgram(program.id);
-                  }}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditProgram(program);
+                    }}
+                    className="rounded-none"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteProgram(program.id);
+                    }}
+                    className="rounded-none"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

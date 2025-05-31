@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
-import { User, Exercise } from './types';
+import { User, Exercise, Program } from './types';
 import { ProgramBuilderTrigger } from './builder/ProgramBuilderTrigger';
 import { ProgramBuilderDialogContent } from './builder/ProgramBuilderDialogContent';
 import { useProgramBuilderState } from './builder/hooks/useProgramBuilderState';
@@ -12,26 +12,46 @@ interface ProgramBuilderDialogProps {
   exercises: Exercise[];
   onCreateProgram: (program: any) => void;
   onOpenChange?: (open: boolean) => void;
+  editingProgram?: Program | null;
+  isOpen?: boolean;
 }
 
 export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   users,
   exercises,
   onCreateProgram,
-  onOpenChange
+  onOpenChange,
+  editingProgram,
+  isOpen: externalIsOpen
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { program, updateProgram, resetProgram, generateId } = useProgramBuilderState(exercises);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  
+  const { program, updateProgram, resetProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises);
   
   const actions = useProgramBuilderActions(program, (newProgram) => {
-    // Update the program state when actions modify it
     updateProgram(newProgram);
   }, generateId, exercises);
 
+  // Load editing program when it changes
+  useEffect(() => {
+    if (editingProgram && isOpen) {
+      loadProgramFromData(editingProgram);
+    }
+  }, [editingProgram, isOpen, loadProgramFromData]);
+
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
+    if (externalIsOpen === undefined) {
+      setInternalIsOpen(open);
+    }
     if (onOpenChange) {
       onOpenChange(open);
+    }
+    if (!open) {
+      // Reset program when closing
+      setTimeout(() => {
+        resetProgram();
+      }, 200);
     }
   };
 
@@ -40,9 +60,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       alert('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
-    onCreateProgram(program);
-    setIsOpen(false);
-    resetProgram();
+    onCreateProgram({ ...program, id: editingProgram?.id });
+    handleOpenChange(false);
   };
 
   const handleStartDateChange = (date: Date | undefined) => {
@@ -55,7 +74,9 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
 
   return (
     <>
-      <ProgramBuilderTrigger onClick={() => handleOpenChange(true)} />
+      {externalIsOpen === undefined && (
+        <ProgramBuilderTrigger onClick={() => handleOpenChange(true)} />
+      )}
 
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <ProgramBuilderDialogContent
