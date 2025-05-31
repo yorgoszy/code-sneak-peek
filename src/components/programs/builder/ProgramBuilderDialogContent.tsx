@@ -13,8 +13,8 @@ interface ProgramBuilderDialogContentProps {
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
   onAthleteChange: (athlete_id: string) => void;
-  onStartDateChange?: (date: Date | undefined) => void;
-  onTrainingDaysChange?: (days: string[]) => void;
+  onStartDateChange?: (date: string) => void;
+  onTrainingDaysChange?: (days: number) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;

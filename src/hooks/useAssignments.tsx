@@ -22,7 +22,28 @@ export const useAssignments = () => {
 
       if (error) throw error;
       console.log('Fetched assignments:', data);
-      return data || [];
+      
+      // Transform the data to match ProgramAssignment type
+      const transformedData = (data || []).map(item => ({
+        id: item.id,
+        program_id: item.program_id,
+        assigned_by: item.assigned_by || undefined,
+        assignment_type: item.assignment_type || 'individual',
+        athlete_id: item.athlete_id || undefined,
+        group_id: item.group_id || undefined,
+        start_date: item.start_date,
+        end_date: item.end_date || undefined,
+        status: item.status,
+        notes: item.notes || undefined,
+        progress: item.progress || 0,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        programs: item.programs || undefined,
+        app_users: item.app_users || undefined,
+        athlete_groups: item.athlete_groups || undefined
+      }));
+
+      return transformedData;
     } catch (error) {
       console.error('Error fetching assignments:', error);
       toast.error('Σφάλμα φόρτωσης αναθέσεων');
