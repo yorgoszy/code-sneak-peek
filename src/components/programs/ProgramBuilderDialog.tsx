@@ -10,9 +10,9 @@ interface ProgramBuilderDialogProps {
   users: User[];
   exercises: Exercise[];
   onCreateProgram: (program: any) => void;
-  onOpenChange?: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void;
   editingProgram?: Program | null;
-  isOpen?: boolean;
+  isOpen: boolean;
 }
 
 export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
@@ -21,7 +21,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   onCreateProgram,
   onOpenChange,
   editingProgram,
-  isOpen = false
+  isOpen
 }) => {
   const { program, updateProgram, resetProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises);
   
@@ -31,15 +31,12 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
 
   useEffect(() => {
     if (editingProgram && isOpen) {
-      console.log('Loading program for editing:', editingProgram);
       loadProgramFromData(editingProgram);
     }
   }, [editingProgram, isOpen, loadProgramFromData]);
 
   const handleOpenChange = (open: boolean) => {
-    if (onOpenChange) {
-      onOpenChange(open);
-    }
+    onOpenChange(open);
     if (!open) {
       setTimeout(() => {
         resetProgram();
@@ -48,7 +45,6 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   };
 
   const handleSaveProgram = () => {
-    console.log('Saving program:', program);
     if (!program.name) {
       alert('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;

@@ -7,15 +7,13 @@ import { useProgramOperations } from "@/hooks/useProgramOperations";
 import { useProgramData } from "@/hooks/useProgramData";
 
 const Programs = () => {
-  console.log('Programs component rendered');
-  
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   
-  // Program builder states - moved here from useProgramFormState
+  // Program builder states - ensure proper initialization
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
   const [builderDialogOpen, setBuilderDialogOpen] = useState(false);
 
@@ -72,12 +70,10 @@ const Programs = () => {
   };
 
   const handleSelectProgram = (program: Program) => {
-    console.log('Program selected:', program);
     setSelectedProgram(program);
   };
 
   const handleEditProgram = (program: Program) => {
-    console.log('Edit program:', program);
     setEditingProgram(program);
     setBuilderDialogOpen(true);
   };
@@ -90,13 +86,11 @@ const Programs = () => {
   };
 
   const handleDuplicateProgram = async (program: Program) => {
-    console.log('Duplicate program:', program);
     await duplicateProgram(program);
     await loadPrograms();
   };
 
   const handlePreviewProgram = (program: Program) => {
-    console.log('Preview program:', program);
     setPreviewProgram(program);
     setPreviewDialogOpen(true);
   };
