@@ -13,7 +13,6 @@ interface ProgramDetailsProps {
   setShowNewWeek: (show: boolean) => void;
   newWeek: { name: string; week_number: number };
   setNewWeek: (week: { name: string; week_number: number }) => void;
-  onCreateWeek: () => void;
   onDeleteWeek: (weekId: string) => void;
   onDeleteDay: (dayId: string) => void;
   onDeleteBlock: (blockId: string) => void;
@@ -25,17 +24,14 @@ interface ProgramDetailsProps {
   setShowNewDay: (show: boolean) => void;
   newDay: { name: string; day_number: number };
   setNewDay: (day: { name: string; day_number: number }) => void;
-  onCreateDay: () => void;
   showNewBlock: boolean;
   setShowNewBlock: (show: boolean) => void;
   newBlock: { name: string; block_order: number };
   setNewBlock: (block: { name: string; block_order: number }) => void;
-  onCreateBlock: () => void;
   showNewExercise: boolean;
   setShowNewExercise: (show: boolean) => void;
   newExercise: any;
   setNewExercise: (exercise: any) => void;
-  onCreateExercise: () => void;
 }
 
 export const ProgramDetails: React.FC<ProgramDetailsProps> = ({
@@ -46,7 +42,6 @@ export const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   setShowNewWeek,
   newWeek,
   setNewWeek,
-  onCreateWeek,
   onDeleteWeek,
   onDeleteDay,
   onDeleteBlock,
@@ -58,17 +53,14 @@ export const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   setShowNewDay,
   newDay,
   setNewDay,
-  onCreateDay,
   showNewBlock,
   setShowNewBlock,
   newBlock,
   setNewBlock,
-  onCreateBlock,
   showNewExercise,
   setShowNewExercise,
   newExercise,
-  setNewExercise,
-  onCreateExercise
+  setNewExercise
 }) => {
   if (!selectedProgram) {
     return (
@@ -90,7 +82,7 @@ export const ProgramDetails: React.FC<ProgramDetailsProps> = ({
             onOpenChange={setShowNewWeek}
             newWeek={newWeek}
             setNewWeek={setNewWeek}
-            onCreateWeek={onCreateWeek}
+            onCreateWeek={() => {}} // Empty function since we're using builder now
           />
         </div>
       </CardHeader>
@@ -111,17 +103,17 @@ export const ProgramDetails: React.FC<ProgramDetailsProps> = ({
               setShowNewDay={setShowNewDay}
               newDay={newDay}
               setNewDay={setNewDay}
-              onCreateDay={onCreateDay}
+              onCreateDay={() => {}} // Empty function since we're using builder now
               showNewBlock={showNewBlock}
               setShowNewBlock={setShowNewBlock}
               newBlock={newBlock}
               setNewBlock={setNewBlock}
-              onCreateBlock={onCreateBlock}
+              onCreateBlock={() => {}} // Empty function since we're using builder now
               showNewExercise={showNewExercise}
               setShowNewExercise={setShowNewExercise}
               newExercise={newExercise}
               setNewExercise={setNewExercise}
-              onCreateExercise={onCreateExercise}
+              onCreateExercise={() => {}} // Empty function since we're using builder now
               exercises={exercises}
             />
           ))}
