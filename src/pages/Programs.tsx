@@ -4,7 +4,6 @@ import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
 import { Program } from "@/components/programs/types";
 import { useProgramOperations } from "@/hooks/useProgramOperations";
-import { useProgramFormState } from "@/hooks/useProgramFormState";
 import { useProgramData } from "@/hooks/useProgramData";
 
 const Programs = () => {
@@ -15,10 +14,13 @@ const Programs = () => {
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  
+  // Program builder states - moved here from useProgramFormState
+  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+  const [builderDialogOpen, setBuilderDialogOpen] = useState(false);
 
   const { users, exercises } = useProgramData();
   const { loading, fetchPrograms, createProgramFromBuilder, duplicateProgram, deleteProgram, deleteWeek, deleteDay, deleteBlock, deleteExercise } = useProgramOperations();
-  const formState = useProgramFormState();
 
   useEffect(() => {
     loadPrograms();
@@ -76,14 +78,14 @@ const Programs = () => {
 
   const handleEditProgram = (program: Program) => {
     console.log('Edit program:', program);
-    formState.setEditingProgram(program);
-    formState.setBuilderDialogOpen(true);
+    setEditingProgram(program);
+    setBuilderDialogOpen(true);
   };
 
   const handleBuilderDialogClose = (open: boolean) => {
-    formState.setBuilderDialogOpen(open);
+    setBuilderDialogOpen(open);
     if (!open) {
-      formState.setEditingProgram(null);
+      setEditingProgram(null);
     }
   };
 
@@ -124,8 +126,8 @@ const Programs = () => {
           selectedProgram={selectedProgram}
           users={users}
           exercises={exercises}
-          editingProgram={formState.editingProgram}
-          builderDialogOpen={formState.builderDialogOpen}
+          editingProgram={editingProgram}
+          builderDialogOpen={builderDialogOpen}
           previewProgram={previewProgram}
           previewDialogOpen={previewDialogOpen}
           onSelectProgram={handleSelectProgram}

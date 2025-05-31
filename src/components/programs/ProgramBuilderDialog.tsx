@@ -36,11 +36,13 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   // Load editing program when it changes
   useEffect(() => {
     if (editingProgram && isOpen) {
+      console.log('Loading program for editing:', editingProgram);
       loadProgramFromData(editingProgram);
     }
   }, [editingProgram, isOpen, loadProgramFromData]);
 
   const handleOpenChange = (open: boolean) => {
+    console.log('Builder dialog open change:', open);
     if (externalIsOpen === undefined) {
       setInternalIsOpen(open);
     }
@@ -56,6 +58,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   };
 
   const handleSaveProgram = () => {
+    console.log('Saving program:', program);
     if (!program.name) {
       alert('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
@@ -72,9 +75,13 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     updateProgram({ training_days: days });
   };
 
+  console.log('ProgramBuilderDialog render - isOpen:', isOpen, 'editingProgram:', editingProgram?.name);
+
   return (
     <>
-      <ProgramBuilderTrigger onClick={() => handleOpenChange(true)} />
+      {!externalIsOpen && (
+        <ProgramBuilderTrigger onClick={() => handleOpenChange(true)} />
+      )}
 
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <ProgramBuilderDialogContent
