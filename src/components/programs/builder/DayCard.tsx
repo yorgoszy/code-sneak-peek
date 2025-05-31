@@ -1,14 +1,11 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy, GripVertical } from "lucide-react";
-import { BlockCard } from './BlockCard';
+import { Card } from "@/components/ui/card";
+import { Collapsible } from "@/components/ui/collapsible";
+import { GripVertical } from "lucide-react";
+import { DayCardHeader } from './DayCardHeader';
+import { DayCardContent } from './DayCardContent';
 import { Exercise } from '../types';
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { DndContext, closestCenter } from '@dnd-kit/core';
 
 interface ProgramExercise {
   id: string;
@@ -56,49 +53,6 @@ interface DayCardProps {
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
 }
 
-const SortableBlock: React.FC<{
-  block: Block;
-  exercises: Exercise[];
-  onAddExercise: (exerciseId: string) => void;
-  onRemoveBlock: () => void;
-  onDuplicateBlock: () => void;
-  onUpdateBlockName: (name: string) => void;
-  onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
-  onRemoveExercise: (exerciseId: string) => void;
-  onDuplicateExercise: (exerciseId: string) => void;
-  onReorderExercises: (oldIndex: number, newIndex: number) => void;
-}> = (props) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: props.block.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} className="relative">
-      <div
-        className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="w-3 h-3 text-gray-400" />
-      </div>
-      <div className="ml-4">
-        <BlockCard {...props} />
-      </div>
-    </div>
-  );
-};
-
 export const DayCard: React.FC<DayCardProps> = ({
   day,
   exercises,
@@ -119,21 +73,6 @@ export const DayCard: React.FC<DayCardProps> = ({
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(day.name);
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: day.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
 
   const handleNameDoubleClick = () => {
     setIsEditing(true);
@@ -156,125 +95,44 @@ export const DayCard: React.FC<DayCardProps> = ({
     }
   };
 
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
-
-    if (active.id !== over.id) {
-      const oldIndex = day.blocks.findIndex(block => block.id === active.id);
-      const newIndex = day.blocks.findIndex(block => block.id === over.id);
-      onReorderBlocks(oldIndex, newIndex);
-    }
-  };
-
   const blocksCount = day.blocks.length;
 
   return (
-    <Card ref={setNodeRef} style={style} className="rounded-none relative">
-      <div
-        className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
-        {...attributes}
-        {...listeners}
-      >
+    <Card className="rounded-none relative">
+      <div className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10">
         <GripVertical className="w-3 h-3 text-gray-400" />
       </div>
       
       <div className="ml-4">
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-center">
-              <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded">
-                {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                <CardTitle 
-                  className="text-sm cursor-pointer flex items-center gap-2"
-                  onDoubleClick={handleNameDoubleClick}
-                >
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      onBlur={handleNameSave}
-                      onKeyDown={handleNameKeyPress}
-                      className="bg-transparent border border-gray-300 rounded px-1 outline-none"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <>
-                      {day.name}
-                      {!isOpen && blocksCount > 0 && (
-                        <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
-                          {blocksCount}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </CardTitle>
-              </CollapsibleTrigger>
-              <div className="flex gap-1">
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddBlock();
-                  }}
-                  size="sm"
-                  variant="ghost"
-                  className="rounded-none"
-                >
-                  <Plus className="w-3 h-3" />
-                </Button>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDuplicateDay();
-                  }}
-                  size="sm"
-                  variant="ghost"
-                  className="rounded-none"
-                >
-                  <Copy className="w-3 h-3" />
-                </Button>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveDay();
-                  }}
-                  size="sm"
-                  variant="ghost"
-                  className="rounded-none"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CollapsibleContent>
-            <CardContent className="pt-2">
-              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={day.blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-                  <div className="space-y-2">
-                    {day.blocks.map((block) => (
-                      <SortableBlock
-                        key={block.id}
-                        block={block}
-                        exercises={exercises}
-                        onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
-                        onRemoveBlock={() => onRemoveBlock(block.id)}
-                        onDuplicateBlock={() => onDuplicateBlock(block.id)}
-                        onUpdateBlockName={(name) => onUpdateBlockName(block.id, name)}
-                        onUpdateExercise={(exerciseId, field, value) => 
-                          onUpdateExercise(block.id, exerciseId, field, value)
-                        }
-                        onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
-                        onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
-                        onReorderExercises={(oldIndex, newIndex) => onReorderExercises(block.id, oldIndex, newIndex)}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            </CardContent>
-          </CollapsibleContent>
+          <DayCardHeader
+            dayName={day.name}
+            isOpen={isOpen}
+            isEditing={isEditing}
+            editingName={editingName}
+            blocksCount={blocksCount}
+            onNameDoubleClick={handleNameDoubleClick}
+            onEditingNameChange={setEditingName}
+            onNameSave={handleNameSave}
+            onNameKeyPress={handleNameKeyPress}
+            onAddBlock={onAddBlock}
+            onDuplicateDay={onDuplicateDay}
+            onRemoveDay={onRemoveDay}
+          />
+          
+          <DayCardContent
+            blocks={day.blocks}
+            exercises={exercises}
+            onAddExercise={onAddExercise}
+            onRemoveBlock={onRemoveBlock}
+            onDuplicateBlock={onDuplicateBlock}
+            onUpdateBlockName={onUpdateBlockName}
+            onUpdateExercise={onUpdateExercise}
+            onRemoveExercise={onRemoveExercise}
+            onDuplicateExercise={onDuplicateExercise}
+            onReorderBlocks={onReorderBlocks}
+            onReorderExercises={onReorderExercises}
+          />
         </Collapsible>
       </div>
     </Card>
