@@ -47,20 +47,39 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   return (
     <>
       <div className="bg-white rounded border text-xs">
-        {/* Exercise Name Row */}
-        <div className="p-2 border-b bg-gray-50">
+        {/* Exercise Name Row with Actions */}
+        <div className="p-2 border-b bg-gray-50 flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="w-full rounded-none text-xs h-7 justify-start px-2"
+            className="flex-1 rounded-none text-xs h-7 justify-start px-2"
             onClick={() => setShowExerciseDialog(true)}
           >
             {selectedExercise ? selectedExercise.name : 'Επιλογή...'}
           </Button>
+          
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDuplicate}
+              className="rounded-none p-1 h-7 w-7"
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onRemove}
+              className="rounded-none p-1 h-7 w-7"
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
         
-        {/* Exercise Details Row */}
-        <div className="grid grid-cols-8 gap-1 p-2">
+        {/* Exercise Details Row - 7 columns now instead of 8 */}
+        <div className="grid grid-cols-7 gap-1 p-2">
           <div>
             <label className="text-xs text-gray-500 block mb-1">Sets</label>
             <Input
@@ -69,7 +88,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               pattern="[0-9]*"
               value={exercise.sets}
               onChange={(e) => onUpdate('sets', parseInt(e.target.value) || 1)}
-              className="rounded-none text-xs h-8 px-2 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="rounded-none text-xs h-8 px-3 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
               placeholder="1"
             />
           </div>
@@ -79,7 +98,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <Input
               value={exercise.reps}
               onChange={(e) => onUpdate('reps', e.target.value)}
-              className="rounded-none text-xs h-8 px-2 text-center"
+              className="rounded-none text-xs h-8 px-3 text-center w-full"
               placeholder="8-10"
             />
           </div>
@@ -89,7 +108,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <Input
               value={exercise.kg}
               onChange={(e) => onUpdate('kg', e.target.value)}
-              className="rounded-none text-xs h-8 px-2 text-center"
+              className="rounded-none text-xs h-8 px-3 text-center w-full"
               placeholder="80"
             />
           </div>
@@ -102,7 +121,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               pattern="[0-9]*"
               value={exercise.percentage_1rm}
               onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || 0)}
-              className="rounded-none text-xs h-8 px-2 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="rounded-none text-xs h-8 px-3 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
               placeholder="80"
             />
           </div>
@@ -112,7 +131,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <Input
               value={exercise.velocity_ms}
               onChange={(e) => onUpdate('velocity_ms', e.target.value)}
-              className="rounded-none text-xs h-8 px-2 text-center"
+              className="rounded-none text-xs h-8 px-3 text-center w-full"
               placeholder="0.6"
             />
           </div>
@@ -122,7 +141,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <Input
               value={exercise.tempo}
               onChange={(e) => onUpdate('tempo', e.target.value)}
-              className="rounded-none text-xs h-8 px-2 text-center"
+              className="rounded-none text-xs h-8 px-3 text-center w-full"
               placeholder="3110"
             />
           </div>
@@ -132,31 +151,9 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <Input
               value={exercise.rest}
               onChange={(e) => onUpdate('rest', e.target.value)}
-              className="rounded-none text-xs h-8 px-2 text-center"
+              className="rounded-none text-xs h-8 px-3 text-center w-full"
               placeholder="2'"
             />
-          </div>
-          
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">Actions</label>
-            <div className="flex justify-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onDuplicate}
-                className="rounded-none p-1 h-8 w-8"
-              >
-                <Copy className="w-3 h-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onRemove}
-                className="rounded-none p-1 h-8 w-8"
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>
