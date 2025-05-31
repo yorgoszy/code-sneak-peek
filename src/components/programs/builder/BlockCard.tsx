@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Collapsible } from "@/components/ui/collapsible";
@@ -91,7 +92,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
 
   return (
     <>
-      <Card className="rounded-none bg-gray-50" style={{ minHeight: '10px', maxWidth: 'calc(100% - 230px)' }}>
+      <Card className="rounded-none bg-gray-50 w-full" style={{ minHeight: '10px' }}>
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <BlockCardHeader
             blockName={block.name}
