@@ -46,9 +46,9 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 
   return (
     <>
-      <div className="bg-white border" style={{ fontSize: '9px', minHeight: '30px' }}>
+      <div className="bg-white border-0 border-b w-full" style={{ fontSize: '9px' }}>
         {/* Exercise Name Row with Actions */}
-        <div className="p-1 border-b bg-gray-50 flex items-center gap-1" style={{ minHeight: '20px' }}>
+        <div className="p-1 border-b bg-gray-50 flex items-center gap-1 w-full" style={{ minHeight: '20px' }}>
           <Button
             variant="outline"
             size="sm"
@@ -82,7 +82,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
         </div>
         
         {/* Exercise Details Row - Using flex with fixed widths to align with headers */}
-        <div className="flex p-1 gap-1" style={{ minHeight: '20px' }}>
+        <div className="flex p-1 gap-1 w-full" style={{ minHeight: '20px' }}>
           <div className="flex flex-col items-center" style={{ width: '50px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '8px', color: '#666' }}>Sets</label>
             <Input

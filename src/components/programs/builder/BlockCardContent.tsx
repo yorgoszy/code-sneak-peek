@@ -50,10 +50,10 @@ export const BlockCardContent: React.FC<BlockCardContentProps> = ({
 
   return (
     <CollapsibleContent>
-      <CardContent className="pt-2 pl-4">
+      <CardContent className="p-0 m-0">
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-0">
+            <div className="w-full h-full">
               {exercises.map((exercise) => (
                 <SortableExercise
                   key={exercise.id}
