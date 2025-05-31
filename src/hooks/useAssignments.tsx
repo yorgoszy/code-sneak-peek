@@ -40,7 +40,7 @@ export const useAssignments = () => {
         updated_at: item.updated_at,
         programs: item.programs || undefined,
         app_users: Array.isArray(item.app_users) && item.app_users.length > 0 ? item.app_users[0] : undefined,
-        athlete_groups: item.athlete_groups || undefined
+        athlete_groups: Array.isArray(item.athlete_groups) && item.athlete_groups.length > 0 ? item.athlete_groups[0] : undefined
       }));
 
       return transformedData;
