@@ -96,20 +96,20 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
                 <div
                   key={day.id}
                   className={cn(
-                    "flex items-center space-x-2 p-1 rounded cursor-pointer hover:bg-gray-50 text-xs",
+                    "flex items-center space-x-1 p-1 rounded cursor-pointer hover:bg-gray-50 text-xs",
                     trainingDays.includes(day.id) && "bg-blue-50 text-blue-700"
                   )}
                   onClick={() => handleDayToggle(day.id)}
                 >
                   <div
                     className={cn(
-                      "w-3 h-3 rounded border-2",
+                      "w-2 h-2 rounded border",
                       trainingDays.includes(day.id)
                         ? "bg-blue-600 border-blue-600"
                         : "border-gray-300"
                     )}
                   />
-                  <span>{day.label}</span>
+                  <span className="text-xs">{day.label}</span>
                 </div>
               ))}
             </div>
