@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ProgramBuilderDialog } from './ProgramBuilderDialog';
 import { ProgramsList } from './ProgramsList';
@@ -146,6 +145,7 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
             setShowNewExercise={setShowNewExercise}
             newExercise={newExercise}
             setNewExercise={setNewExercise}
+            onEditProgram={onEditProgram}
           />
         </div>
       </div>
