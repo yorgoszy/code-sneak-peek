@@ -49,13 +49,13 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
 
   const selectedUser = users.find(user => user.id === athleteId);
 
-  const handleAthleteSelect = (userId: string) => {
-    onAthleteChange(userId === "no-athlete" ? "" : userId);
+  const handleUserSelect = (userId: string) => {
+    onAthleteChange(userId === "no-user" ? "" : userId);
     setIsSearchOpen(false);
     setSearchTerm('');
   };
 
-  const removeAthlete = () => {
+  const removeUser = () => {
     onAthleteChange('');
   };
 
@@ -77,13 +77,13 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             </div>
             
             <div className="lg:col-span-1">
-              <Label className="sr-only">Αθλητής (προαιρετικό)</Label>
+              <Label className="sr-only">Χρήστης (προαιρετικό)</Label>
               
               {selectedUser ? (
                 <div className="flex items-center justify-between bg-blue-50 text-blue-700 p-2 border border-blue-200 rounded-none h-8">
                   <span className="font-medium text-sm">{selectedUser.name}</span>
                   <button
-                    onClick={removeAthlete}
+                    onClick={removeUser}
                     className="text-blue-600 hover:text-blue-800"
                   >
                     <X className="h-3 w-3" />
@@ -97,29 +97,29 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                       className="w-full justify-start text-left font-normal rounded-none h-8"
                     >
                       <Search className="mr-2 h-3 w-3" />
-                      <span className="text-sm">Αναζήτηση αθλητή...</span>
+                      <span className="text-sm">Αναζήτηση χρήστη...</span>
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0 rounded-none" align="start">
                     <Command className="border-0">
                       <CommandInput 
-                        placeholder="Αναζήτηση αθλητή..." 
+                        placeholder="Αναζήτηση χρήστη..." 
                         value={searchTerm}
                         onValueChange={setSearchTerm}
                       />
                       <CommandList className="max-h-48">
-                        <CommandEmpty>Δεν βρέθηκε αθλητής</CommandEmpty>
+                        <CommandEmpty>Δεν βρέθηκε χρήστης</CommandEmpty>
                         <CommandItem
                           className="cursor-pointer p-3 hover:bg-gray-100"
-                          onSelect={() => handleAthleteSelect("no-athlete")}
+                          onSelect={() => handleUserSelect("no-user")}
                         >
-                          Χωρίς συγκεκριμένο αθλητή
+                          Χωρίς συγκεκριμένο χρήστη
                         </CommandItem>
                         {filteredUsers.map(user => (
                           <CommandItem
                             key={user.id}
                             className="cursor-pointer p-3 hover:bg-gray-100"
-                            onSelect={() => handleAthleteSelect(user.id)}
+                            onSelect={() => handleUserSelect(user.id)}
                           >
                             {user.name}
                           </CommandItem>

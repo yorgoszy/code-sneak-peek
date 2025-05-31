@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -271,7 +272,7 @@ export const usePrograms = () => {
     }
   };
 
-  const fetchProgramAssignments = async () => {
+  const fetchProgramAssignments = async (): Promise<ProgramAssignment[]> => {
     try {
       const { data, error } = await supabase
         .from('program_assignments')
