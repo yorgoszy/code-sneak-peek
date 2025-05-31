@@ -63,13 +63,7 @@ export const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   setNewExercise
 }) => {
   if (!selectedProgram) {
-    return (
-      <Card className="rounded-none">
-        <CardContent className="p-12 text-center">
-          <p className="text-gray-500">Επιλέξτε ένα πρόγραμμα για να δείτε τις λεπτομέρειες</p>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   return (
