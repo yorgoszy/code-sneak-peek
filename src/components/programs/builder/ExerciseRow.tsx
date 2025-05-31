@@ -46,14 +46,14 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 
   return (
     <>
-      <div className="bg-white border" style={{ fontSize: '10px' }}>
+      <div className="bg-white border" style={{ fontSize: '9px' }}>
         {/* Exercise Name Row with Actions */}
         <div className="p-1 border-b bg-gray-50 flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 text-xs h-6 justify-start px-2"
-            style={{ borderRadius: '0px', fontSize: '10px' }}
+            className="flex-1 text-xs h-5 justify-start px-2"
+            style={{ borderRadius: '0px', fontSize: '9px' }}
             onClick={() => setShowExerciseDialog(true)}
           >
             {selectedExercise ? selectedExercise.name : 'Επιλογή...'}
@@ -64,148 +64,155 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               variant="ghost"
               size="sm"
               onClick={onDuplicate}
-              className="p-1 h-6 w-6"
+              className="p-1 h-5 w-5"
               style={{ borderRadius: '0px' }}
             >
-              <Copy className="w-3 h-3" />
+              <Copy className="w-2 h-2" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onRemove}
-              className="p-1 h-6 w-6"
+              className="p-1 h-5 w-5"
               style={{ borderRadius: '0px' }}
             >
-              <Trash2 className="w-3 h-3" />
+              <Trash2 className="w-2 h-2" />
             </Button>
           </div>
         </div>
         
-        {/* Exercise Details Row - Correct order: Sets, Reps, %1RM, Kg, m/s, Tempo, Rest */}
-        <div className="grid grid-cols-7 gap-1 p-1">
-          <div>
-            <label className="block mb-1" style={{ fontSize: '9px', color: '#666' }}>Sets</label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={exercise.sets}
-              onChange={(e) => onUpdate('sets', parseInt(e.target.value) || 1)}
-              className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '10px', 
-                height: '24px', 
-                padding: '0 4px',
-                minWidth: '50px'
-              }}
-              placeholder="1"
-            />
+        {/* Exercise Details Row */}
+        <div className="p-1">
+          {/* Headers */}
+          <div className="grid grid-cols-12 gap-1 mb-1">
+            <div className="col-span-2 text-center" style={{ fontSize: '8px', color: '#666' }}>Sets</div>
+            <div className="col-span-2 text-center" style={{ fontSize: '8px', color: '#666' }}>Reps</div>
+            <div className="col-span-2 text-center" style={{ fontSize: '8px', color: '#666' }}>%1RM</div>
+            <div className="col-span-2 text-center" style={{ fontSize: '8px', color: '#666' }}>Kg</div>
+            <div className="col-span-2 text-center" style={{ fontSize: '8px', color: '#666' }}>m/s</div>
+            <div className="col-span-1 text-center" style={{ fontSize: '8px', color: '#666' }}>Tempo</div>
+            <div className="col-span-1 text-center" style={{ fontSize: '8px', color: '#666' }}>Rest</div>
           </div>
           
-          <div>
-            <label className="block mb-1" style={{ fontSize: '9px', color: '#666' }}>Reps</label>
-            <Input
-              value={exercise.reps}
-              onChange={(e) => onUpdate('reps', e.target.value)}
-              className="text-center"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '10px', 
-                height: '24px', 
-                padding: '0 4px',
-                minWidth: '50px'
-              }}
-              placeholder="8-10"
-            />
-          </div>
-          
-          <div>
-            <label className="block mb-1" style={{ fontSize: '9px', color: '#666' }}>%1RM</label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={exercise.percentage_1rm}
-              onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || 0)}
-              className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '10px', 
-                height: '24px', 
-                padding: '0 4px',
-                minWidth: '50px'
-              }}
-              placeholder="80"
-            />
-          </div>
-          
-          <div>
-            <label className="block mb-1" style={{ fontSize: '9px', color: '#666' }}>Kg</label>
-            <Input
-              value={exercise.kg}
-              onChange={(e) => onUpdate('kg', e.target.value)}
-              className="text-center"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '10px', 
-                height: '24px', 
-                padding: '0 4px',
-                minWidth: '50px'
-              }}
-              placeholder="80"
-            />
-          </div>
-          
-          <div>
-            <label className="block mb-1" style={{ fontSize: '9px', color: '#666' }}>m/s</label>
-            <Input
-              value={exercise.velocity_ms}
-              onChange={(e) => onUpdate('velocity_ms', e.target.value)}
-              className="text-center"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '10px', 
-                height: '24px', 
-                padding: '0 4px',
-                minWidth: '50px'
-              }}
-              placeholder="0.6"
-            />
-          </div>
-          
-          <div>
-            <label className="block mb-1" style={{ fontSize: '9px', color: '#666' }}>Tempo</label>
-            <Input
-              value={exercise.tempo}
-              onChange={(e) => onUpdate('tempo', e.target.value)}
-              className="text-center"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '10px', 
-                height: '24px', 
-                padding: '0 4px',
-                minWidth: '50px'
-              }}
-              placeholder="3110"
-            />
-          </div>
-          
-          <div>
-            <label className="block mb-1" style={{ fontSize: '9px', color: '#666' }}>Rest</label>
-            <Input
-              value={exercise.rest}
-              onChange={(e) => onUpdate('rest', e.target.value)}
-              className="text-center"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '10px', 
-                height: '24px', 
-                padding: '0 4px',
-                minWidth: '50px'
-              }}
-              placeholder="2'"
-            />
+          {/* Input Fields */}
+          <div className="grid grid-cols-12 gap-1">
+            <div className="col-span-2">
+              <Input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={exercise.sets}
+                onChange={(e) => onUpdate('sets', parseInt(e.target.value) || 1)}
+                className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                style={{ 
+                  borderRadius: '0px', 
+                  fontSize: '8px', 
+                  height: '20px', 
+                  padding: '0 2px',
+                  width: '100%'
+                }}
+                placeholder="3"
+              />
+            </div>
+            
+            <div className="col-span-2">
+              <Input
+                value={exercise.reps}
+                onChange={(e) => onUpdate('reps', e.target.value)}
+                className="text-center"
+                style={{ 
+                  borderRadius: '0px', 
+                  fontSize: '8px', 
+                  height: '20px', 
+                  padding: '0 2px',
+                  width: '100%'
+                }}
+                placeholder="8.5.3"
+              />
+            </div>
+            
+            <div className="col-span-2">
+              <Input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={exercise.percentage_1rm}
+                onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || 0)}
+                className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                style={{ 
+                  borderRadius: '0px', 
+                  fontSize: '8px', 
+                  height: '20px', 
+                  padding: '0 2px',
+                  width: '100%'
+                }}
+                placeholder="80"
+              />
+            </div>
+            
+            <div className="col-span-2">
+              <Input
+                value={exercise.kg}
+                onChange={(e) => onUpdate('kg', e.target.value)}
+                className="text-center"
+                style={{ 
+                  borderRadius: '0px', 
+                  fontSize: '8px', 
+                  height: '20px', 
+                  padding: '0 2px',
+                  width: '100%'
+                }}
+                placeholder="80"
+              />
+            </div>
+            
+            <div className="col-span-2">
+              <Input
+                value={exercise.velocity_ms}
+                onChange={(e) => onUpdate('velocity_ms', e.target.value)}
+                className="text-center"
+                style={{ 
+                  borderRadius: '0px', 
+                  fontSize: '8px', 
+                  height: '20px', 
+                  padding: '0 2px',
+                  width: '100%'
+                }}
+                placeholder="0.6"
+              />
+            </div>
+            
+            <div className="col-span-1">
+              <Input
+                value={exercise.tempo}
+                onChange={(e) => onUpdate('tempo', e.target.value)}
+                className="text-center"
+                style={{ 
+                  borderRadius: '0px', 
+                  fontSize: '8px', 
+                  height: '20px', 
+                  padding: '0 1px',
+                  width: '100%'
+                }}
+                placeholder="3.1.1"
+              />
+            </div>
+            
+            <div className="col-span-1">
+              <Input
+                value={exercise.rest}
+                onChange={(e) => onUpdate('rest', e.target.value)}
+                className="text-center"
+                style={{ 
+                  borderRadius: '0px', 
+                  fontSize: '8px', 
+                  height: '20px', 
+                  padding: '0 1px',
+                  width: '100%'
+                }}
+                placeholder="2:00"
+              />
+            </div>
           </div>
         </div>
       </div>
