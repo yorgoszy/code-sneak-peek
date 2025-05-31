@@ -8,13 +8,8 @@ interface ProgramBuilderTriggerProps {
 }
 
 export const ProgramBuilderTrigger: React.FC<ProgramBuilderTriggerProps> = ({ onClick }) => {
-  const handleClick = () => {
-    // Open program builder in new window/tab
-    window.open('/dashboard/program-builder', '_blank');
-  };
-
   return (
-    <Button className="rounded-none" onClick={handleClick}>
+    <Button className="rounded-none" onClick={onClick}>
       <Plus className="w-4 h-4 mr-2" />
       Νέο Πρόγραμμα
     </Button>
