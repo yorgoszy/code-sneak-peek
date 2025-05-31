@@ -70,7 +70,7 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
       <CardContent className="pt-2">
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {blocks.map((block) => (
                 <SortableBlock
                   key={block.id}
