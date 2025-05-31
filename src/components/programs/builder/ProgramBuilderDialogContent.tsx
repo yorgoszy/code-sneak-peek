@@ -103,7 +103,11 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
       </div>
 
       <div className="flex justify-end px-6 py-4 border-t">
-        <Button onClick={onSave} className="rounded-none bg-green-600 hover:bg-green-700">
+        <Button 
+          onClick={onSave} 
+          className="rounded-none text-white hover:opacity-90"
+          style={{ backgroundColor: '#004aad' }}
+        >
           Αποθήκευση Προγράμματος
         </Button>
       </div>
