@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
@@ -15,7 +14,7 @@ const Programs = () => {
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
 
   const { users, exercises } = useProgramData();
-  const { loading, fetchPrograms, createProgramFromBuilder, deleteProgram, deleteWeek, deleteDay, deleteBlock, deleteExercise } = useProgramOperations();
+  const { loading, fetchPrograms, createProgramFromBuilder, deleteProgram, deleteWeek, deleteDay, deleteBlock, deleteExercise, operations } = useProgramOperations();
   const formState = useProgramFormState();
 
   useEffect(() => {
@@ -85,6 +84,17 @@ const Programs = () => {
     }
   };
 
+  const handleDuplicateProgram = async (program: Program) => {
+    console.log('Duplicate program:', program);
+    await operations.duplicateProgram(program);
+    await loadPrograms();
+  };
+
+  const handlePreviewProgram = (program: Program) => {
+    console.log('Preview program:', program);
+    setSelectedProgram(program);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex w-full">
@@ -110,6 +120,8 @@ const Programs = () => {
           onEditProgram={handleEditProgram}
           onCreateProgram={handleCreateProgram}
           onBuilderDialogClose={handleBuilderDialogClose}
+          onDuplicateProgram={handleDuplicateProgram}
+          onPreviewProgram={handlePreviewProgram}
           showNewWeek={formState.showNewWeek}
           setShowNewWeek={formState.setShowNewWeek}
           newWeek={formState.newWeek}

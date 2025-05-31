@@ -16,6 +16,8 @@ interface ProgramsLayoutProps {
   onEditProgram: (program: Program) => void;
   onCreateProgram: (program: any) => void;
   onBuilderDialogClose: (open: boolean) => void;
+  onDuplicateProgram: (program: Program) => void;
+  onPreviewProgram: (program: Program) => void;
   showNewWeek: boolean;
   setShowNewWeek: (show: boolean) => void;
   newWeek: { name: string; week_number: number };
@@ -53,6 +55,8 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onEditProgram,
   onCreateProgram,
   onBuilderDialogClose,
+  onDuplicateProgram,
+  onPreviewProgram,
   showNewWeek,
   setShowNewWeek,
   newWeek,
@@ -104,6 +108,8 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
             onSelectProgram={onSelectProgram}
             onDeleteProgram={onDeleteProgram}
             onEditProgram={onEditProgram}
+            onDuplicateProgram={onDuplicateProgram}
+            onPreviewProgram={onPreviewProgram}
           />
         </div>
 
