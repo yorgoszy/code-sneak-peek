@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/Sidebar";
-import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
 import { ProgramsList } from "@/components/programs/ProgramsList";
 import { ProgramDetails } from "@/components/programs/ProgramDetails";
 import { Program, User, Exercise, Week, Day, Block } from "@/components/programs/types";
@@ -480,11 +481,13 @@ const Programs = () => {
       <div className="flex-1 p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
-          <ProgramBuilderDialog
-            users={users}
-            exercises={exercises}
-            onCreateProgram={createProgramFromBuilder}
-          />
+          <Button 
+            className="rounded-none" 
+            onClick={() => window.open('/dashboard/program-builder', '_blank')}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Νέο Πρόγραμμα
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
