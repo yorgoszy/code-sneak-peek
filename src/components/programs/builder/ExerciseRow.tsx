@@ -47,38 +47,17 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   return (
     <>
       <div className="bg-white border" style={{ fontSize: '10px' }}>
-        {/* Exercise Name Row with Actions */}
-        <div className="p-1 border-b bg-gray-50 flex items-center gap-2">
+        {/* Exercise Name Row */}
+        <div className="p-1 border-b bg-gray-50 flex items-center">
           <Button
             variant="outline"
             size="sm"
             className="flex-1 text-xs h-6 justify-start px-2"
-            style={{ borderRadius: '0px', fontSize: '10px', maxWidth: '200px' }}
+            style={{ borderRadius: '0px', fontSize: '10px' }}
             onClick={() => setShowExerciseDialog(true)}
           >
             {selectedExercise ? selectedExercise.name : 'Επιλογή...'}
           </Button>
-          
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDuplicate}
-              className="p-1 h-6 w-6"
-              style={{ borderRadius: '0px' }}
-            >
-              <Copy className="w-3 h-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRemove}
-              className="p-1 h-6 w-6"
-              style={{ borderRadius: '0px' }}
-            >
-              <Trash2 className="w-3 h-3" />
-            </Button>
-          </div>
         </div>
         
         {/* Exercise Details Row - Using flex with fixed widths to align with headers */}
@@ -199,6 +178,29 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               }}
               placeholder=""
             />
+          </div>
+          
+          <div className="flex flex-col items-center justify-end" style={{ width: '50px' }}>
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDuplicate}
+                className="p-1 h-6 w-6"
+                style={{ borderRadius: '0px' }}
+              >
+                <Copy className="w-3 h-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onRemove}
+                className="p-1 h-6 w-6"
+                style={{ borderRadius: '0px' }}
+              >
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
