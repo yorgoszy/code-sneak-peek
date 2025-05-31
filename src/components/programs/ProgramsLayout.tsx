@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { ProgramBuilderDialog } from './ProgramBuilderDialog';
 import { ProgramsList } from './ProgramsList';
 import { ProgramDetails } from './ProgramDetails';
+import { ProgramPreviewDialog } from './ProgramPreviewDialog';
 import { Program, User, Exercise, Week, Day, Block } from './types';
 
 interface ProgramsLayoutProps {
@@ -12,12 +12,16 @@ interface ProgramsLayoutProps {
   exercises: Exercise[];
   editingProgram: Program | null;
   builderDialogOpen: boolean;
+  previewProgram: Program | null;
+  previewDialogOpen: boolean;
   onSelectProgram: (program: Program) => void;
   onDeleteProgram: (programId: string) => void;
   onEditProgram: (program: Program) => void;
   onCreateProgram: (program: any) => void;
   onBuilderDialogClose: (open: boolean) => void;
   onDuplicateProgram: (program: Program) => void;
+  onPreviewProgram: (program: Program) => void;
+  onPreviewDialogClose: (open: boolean) => void;
   showNewWeek: boolean;
   setShowNewWeek: (show: boolean) => void;
   newWeek: { name: string; week_number: number };
@@ -50,12 +54,16 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   exercises,
   editingProgram,
   builderDialogOpen,
+  previewProgram,
+  previewDialogOpen,
   onSelectProgram,
   onDeleteProgram,
   onEditProgram,
   onCreateProgram,
   onBuilderDialogClose,
   onDuplicateProgram,
+  onPreviewProgram,
+  onPreviewDialogClose,
   showNewWeek,
   setShowNewWeek,
   newWeek,
@@ -104,6 +112,7 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
             onDeleteProgram={onDeleteProgram}
             onEditProgram={onEditProgram}
             onDuplicateProgram={onDuplicateProgram}
+            onPreviewProgram={onPreviewProgram}
           />
         </div>
 
@@ -139,6 +148,13 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           />
         </div>
       </div>
+
+      {/* Preview Dialog */}
+      <ProgramPreviewDialog
+        program={previewProgram}
+        isOpen={previewDialogOpen}
+        onOpenChange={onPreviewDialogClose}
+      />
     </div>
   );
 };

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Edit, Copy } from "lucide-react";
+import { Trash2, Edit, Copy, Eye } from "lucide-react";
 import { Program } from './types';
 
 interface ProgramsListProps {
@@ -12,6 +12,7 @@ interface ProgramsListProps {
   onDeleteProgram: (programId: string) => void;
   onEditProgram: (program: Program) => void;
   onDuplicateProgram?: (program: Program) => void;
+  onPreviewProgram?: (program: Program) => void;
 }
 
 export const ProgramsList: React.FC<ProgramsListProps> = ({
@@ -20,7 +21,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   onSelectProgram,
   onDeleteProgram,
   onEditProgram,
-  onDuplicateProgram
+  onDuplicateProgram,
+  onPreviewProgram
 }) => {
   const getProgramStats = (program: Program) => {
     const weeksCount = program.program_weeks?.length || 0;
@@ -61,6 +63,20 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                       </div>
                     </div>
                     <div className="flex gap-1">
+                      {onPreviewProgram && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onPreviewProgram(program);
+                          }}
+                          className="rounded-none"
+                          title="Προεπισκόπηση"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"

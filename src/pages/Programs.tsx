@@ -13,6 +13,8 @@ const Programs = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
 
   const { users, exercises } = useProgramData();
   const { loading, fetchPrograms, createProgramFromBuilder, duplicateProgram, deleteProgram, deleteWeek, deleteDay, deleteBlock, deleteExercise } = useProgramOperations();
@@ -91,6 +93,19 @@ const Programs = () => {
     await loadPrograms();
   };
 
+  const handlePreviewProgram = (program: Program) => {
+    console.log('Preview program:', program);
+    setPreviewProgram(program);
+    setPreviewDialogOpen(true);
+  };
+
+  const handlePreviewDialogClose = (open: boolean) => {
+    setPreviewDialogOpen(open);
+    if (!open) {
+      setPreviewProgram(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex w-full">
@@ -111,12 +126,16 @@ const Programs = () => {
           exercises={exercises}
           editingProgram={formState.editingProgram}
           builderDialogOpen={formState.builderDialogOpen}
+          previewProgram={previewProgram}
+          previewDialogOpen={previewDialogOpen}
           onSelectProgram={handleSelectProgram}
           onDeleteProgram={handleDeleteProgram}
           onEditProgram={handleEditProgram}
           onCreateProgram={handleCreateProgram}
           onBuilderDialogClose={handleBuilderDialogClose}
           onDuplicateProgram={handleDuplicateProgram}
+          onPreviewProgram={handlePreviewProgram}
+          onPreviewDialogClose={handlePreviewDialogClose}
           showNewWeek={formState.showNewWeek}
           setShowNewWeek={formState.setShowNewWeek}
           newWeek={formState.newWeek}
