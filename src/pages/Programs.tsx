@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -96,33 +97,6 @@ const Programs = () => {
       .select('id, name')
       .order('name');
     setExercises(data || []);
-  };
-
-  const createProgram = async () => {
-    console.log('createProgram called');
-    if (!newProgram.name) {
-      toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('programs')
-      .insert([{
-        name: newProgram.name,
-        description: newProgram.description,
-        athlete_id: newProgram.athlete_id || null
-      }])
-      .select()
-      .single();
-
-    if (error) {
-      toast.error('Σφάλμα δημιουργίας προγράμματος');
-      console.error(error);
-    } else {
-      toast.success('Το πρόγραμμα δημιουργήθηκε επιτυχώς');
-      setNewProgram({ name: '', description: '', athlete_id: '' });
-      fetchPrograms();
-    }
   };
 
   const createWeek = async () => {
