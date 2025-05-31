@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Sidebar } from "@/components/Sidebar";
-import { NewProgramDialog } from "@/components/programs/NewProgramDialog";
+import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
 import { ProgramsList } from "@/components/programs/ProgramsList";
 import { ProgramDetails } from "@/components/programs/ProgramDetails";
 import { Program, User, Exercise, Week, Day, Block } from "@/components/programs/types";
@@ -24,7 +24,6 @@ const Programs = () => {
   const [showNewExercise, setShowNewExercise] = useState(false);
 
   // Form states
-  const [newProgram, setNewProgram] = useState({ name: '', description: '', athlete_id: '' });
   const [newWeek, setNewWeek] = useState({ name: '', week_number: 1 });
   const [newDay, setNewDay] = useState({ name: '', day_number: 1 });
   const [newBlock, setNewBlock] = useState({ name: '', block_order: 1 });
@@ -360,6 +359,129 @@ const Programs = () => {
     }
   };
 
+  const createProgramFromBuilder = async (programData: any) => {
+    console.log('createProgramFromBuilder called', programData);
+    
+    if (!programData.name) {
+      toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
+      return;
+    }
+
+    try {
+      // Create the main program
+      const { data: program, error: programError } = await supabase
+        .from('programs')
+        .insert([{
+          name: programData.name,
+          description: programData.description,
+          athlete_id: programData.athlete_id || null
+        }])
+        .select()
+        .single();
+
+      if (programError) throw programError;
+
+      // Create weeks, days, blocks, and exercises
+      for (const week of programData.weeks) {
+        const { data: weekData, error: weekError } = await supabase
+          .from('program_weeks')
+          .insert([{
+            program_id: program.id,
+            name: week.name,
+            week_number: week.week_number
+          }])
+          .select()
+          .single();
+
+        if (weekError) throw weekError;
+
+        for (const day of week.days) {
+          const { data: dayData, error: dayError } = await supabase
+            .from('program_days')
+            .insert([{
+              week_id: weekData.id,
+              name: day.name,
+              day_number: day.day_number
+            }])
+            .select()
+            .single();
+
+          if (dayError) throw dayError;
+
+          for (const block of day.blocks) {
+            const { data: blockData, error: blockError } = await supabase
+              .from('program_blocks')
+              .insert([{
+                day_id: dayData.id,
+                name: block.name,
+                block_order: block.block_order
+              }])
+              .select()
+              .single();
+
+            if (blockError) throw blockError;
+
+            for (const exercise of block.exercises) {
+              if (!exercise.exercise_id) continue;
+
+              let calculatedKg = exercise.kg;
+              let suggestedVelocity = null;
+
+              // Calculate kg from percentage if athlete is selected and percentage is provided
+              if (programData.athlete_id && exercise.percentage_1rm > 0) {
+                const { data: oneRmData } = await supabase
+                  .rpc('get_latest_1rm', {
+                    athlete_id: programData.athlete_id,
+                    exercise_id: exercise.exercise_id
+                  });
+
+                if (oneRmData) {
+                  calculatedKg = Math.round(oneRmData * (exercise.percentage_1rm / 100)).toString();
+                  
+                  // Get suggested velocity
+                  const { data: velocityData } = await supabase
+                    .rpc('get_suggested_velocity', {
+                      athlete_id: programData.athlete_id,
+                      exercise_id: exercise.exercise_id,
+                      percentage: exercise.percentage_1rm
+                    });
+
+                  if (velocityData) {
+                    suggestedVelocity = velocityData;
+                  }
+                }
+              }
+
+              const { error: exerciseError } = await supabase
+                .from('program_exercises')
+                .insert([{
+                  block_id: blockData.id,
+                  exercise_id: exercise.exercise_id,
+                  sets: exercise.sets,
+                  reps: exercise.reps,
+                  kg: calculatedKg,
+                  percentage_1rm: exercise.percentage_1rm || null,
+                  velocity_ms: exercise.velocity_ms ? parseFloat(exercise.velocity_ms) : suggestedVelocity,
+                  tempo: exercise.tempo,
+                  rest: exercise.rest,
+                  notes: '',
+                  exercise_order: exercise.exercise_order
+                }]);
+
+              if (exerciseError) throw exerciseError;
+            }
+          }
+        }
+      }
+
+      toast.success('Το πρόγραμμα δημιουργήθηκε επιτυχώς');
+      fetchPrograms();
+    } catch (error) {
+      console.error('Error creating program:', error);
+      toast.error('Σφάλμα δημιουργίας προγράμματος');
+    }
+  };
+
   const handleSelectProgram = (program: Program) => {
     console.log('Program selected:', program);
     setSelectedProgram(program);
@@ -384,11 +506,10 @@ const Programs = () => {
       <div className="flex-1 p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
-          <NewProgramDialog
-            newProgram={newProgram}
-            setNewProgram={setNewProgram}
+          <ProgramBuilderDialog
             users={users}
-            onCreateProgram={createProgram}
+            exercises={exercises}
+            onCreateProgram={createProgramFromBuilder}
           />
         </div>
 
