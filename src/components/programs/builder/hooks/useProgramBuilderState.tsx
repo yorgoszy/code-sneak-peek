@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { User, Exercise } from '../../types';
+import { Exercise } from '../../types';
 
 interface ProgramStructure {
   name: string;
@@ -54,8 +54,17 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  const updateProgram = (updates: Partial<ProgramStructure>) => {
-    setProgram(prev => ({ ...prev, ...updates }));
+  const updateProgram = (updates: Partial<ProgramStructure> | ProgramStructure) => {
+    if ('name' in updates || 'description' in updates || 'athlete_id' in updates || 'weeks' in updates) {
+      // Handle both partial updates and full program updates
+      if ('weeks' in updates && Array.isArray(updates.weeks)) {
+        // Full program update
+        setProgram(updates as ProgramStructure);
+      } else {
+        // Partial update
+        setProgram(prev => ({ ...prev, ...updates }));
+      }
+    }
   };
 
   const resetProgram = () => {
@@ -64,7 +73,6 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
 
   return {
     program,
-    setProgram,
     updateProgram,
     resetProgram,
     generateId
