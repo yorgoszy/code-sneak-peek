@@ -91,7 +91,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
           {/* Μέρες Προπόνησης */}
           <div>
             <Label className="text-sm font-medium mb-2 block">Μέρες Προπόνησης</Label>
-            <div className="grid grid-cols-2 gap-1 max-h-[120px] overflow-y-auto">
+            <div className="flex flex-wrap gap-1 max-h-[120px] overflow-y-auto">
               {weekDays.map(day => (
                 <div
                   key={day.id}
