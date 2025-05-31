@@ -29,8 +29,10 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
 
   useEffect(() => {
     if (editingProgram && isOpen) {
+      console.log('Loading program for editing:', editingProgram);
       loadProgramFromData(editingProgram);
     } else if (isOpen && !editingProgram) {
+      console.log('Resetting program for new creation');
       resetProgram();
     }
   }, [editingProgram, isOpen, loadProgramFromData, resetProgram]);
@@ -45,7 +47,10 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       alert('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
+    
+    console.log('Saving program:', program);
     onCreateProgram({ ...program, id: editingProgram?.id });
+    handleClose();
   };
 
   if (!isOpen) return null;

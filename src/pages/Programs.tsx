@@ -32,10 +32,14 @@ const Programs = () => {
   };
 
   const handleCreateProgram = async (programData: any) => {
-    await saveProgram(programData);
-    await loadPrograms();
-    setBuilderOpen(false);
-    setEditingProgram(null);
+    try {
+      await saveProgram(programData);
+      await loadPrograms();
+      setBuilderOpen(false);
+      setEditingProgram(null);
+    } catch (error) {
+      console.error('Error creating program:', error);
+    }
   };
 
   const handleEditProgram = (program: Program) => {
@@ -54,8 +58,12 @@ const Programs = () => {
   };
 
   const handleDuplicateProgram = async (program: Program) => {
-    await duplicateProgram(program);
-    await loadPrograms();
+    try {
+      await duplicateProgram(program);
+      await loadPrograms();
+    } catch (error) {
+      console.error('Error duplicating program:', error);
+    }
   };
 
   const handlePreviewProgram = (program: Program) => {
@@ -71,6 +79,11 @@ const Programs = () => {
   const handlePreviewClose = () => {
     setPreviewOpen(false);
     setPreviewProgram(null);
+  };
+
+  const handleOpenBuilder = () => {
+    setEditingProgram(null);
+    setBuilderOpen(true);
   };
 
   if (loading) {
@@ -107,7 +120,7 @@ const Programs = () => {
           onDeleteDay={() => {}}
           onDeleteBlock={() => {}}
           onDeleteExercise={() => {}}
-          onOpenBuilder={() => setBuilderOpen(true)}
+          onOpenBuilder={handleOpenBuilder}
         />
       </div>
     </div>
