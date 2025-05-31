@@ -89,6 +89,8 @@ export const DayCard: React.FC<DayCardProps> = ({
     }
   };
 
+  const blocksCount = day.blocks.length;
+
   return (
     <Card className="rounded-none">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -97,7 +99,7 @@ export const DayCard: React.FC<DayCardProps> = ({
             <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded">
               {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               <CardTitle 
-                className="text-sm cursor-pointer"
+                className="text-sm cursor-pointer flex items-center gap-2"
                 onDoubleClick={handleNameDoubleClick}
               >
                 {isEditing ? (
@@ -111,7 +113,14 @@ export const DayCard: React.FC<DayCardProps> = ({
                     autoFocus
                   />
                 ) : (
-                  day.name
+                  <>
+                    {day.name}
+                    {!isOpen && blocksCount > 0 && (
+                      <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+                        {blocksCount}
+                      </span>
+                    )}
+                  </>
                 )}
               </CardTitle>
             </CollapsibleTrigger>

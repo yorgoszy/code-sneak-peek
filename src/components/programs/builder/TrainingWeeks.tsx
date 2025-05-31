@@ -127,49 +127,51 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
       <CardContent>
         {weeks.length > 0 ? (
           <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
-            <TabsList className="grid w-full grid-cols-auto overflow-x-auto rounded-none">
-              {weeks.map((week) => (
-                <div key={week.id} className="flex items-center group">
-                  <TabsTrigger 
-                    value={week.id} 
-                    className="rounded-none flex-1"
-                    onDoubleClick={() => handleWeekNameDoubleClick(week)}
-                  >
-                    {editingWeekId === week.id ? (
-                      <input
-                        type="text"
-                        value={editingWeekName}
-                        onChange={(e) => setEditingWeekName(e.target.value)}
-                        onBlur={handleWeekNameSave}
-                        onKeyDown={handleWeekNameKeyPress}
-                        className="bg-transparent border-none outline-none text-center"
-                        autoFocus
-                      />
-                    ) : (
-                      week.name
-                    )}
-                  </TabsTrigger>
-                  <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onDuplicateWeek(week.id)}
-                      className="h-6 w-6 p-0 rounded-none"
+            <div className="w-full overflow-x-auto">
+              <TabsList className="inline-flex h-10 items-center justify-start rounded-none bg-muted p-1 text-muted-foreground min-w-full">
+                {weeks.map((week) => (
+                  <div key={week.id} className="flex items-center group flex-shrink-0">
+                    <TabsTrigger 
+                      value={week.id} 
+                      className="rounded-none whitespace-nowrap px-4"
+                      onDoubleClick={() => handleWeekNameDoubleClick(week)}
                     >
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onRemoveWeek(week.id)}
-                      className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                      {editingWeekId === week.id ? (
+                        <input
+                          type="text"
+                          value={editingWeekName}
+                          onChange={(e) => setEditingWeekName(e.target.value)}
+                          onBlur={handleWeekNameSave}
+                          onKeyDown={handleWeekNameKeyPress}
+                          className="bg-transparent border-none outline-none text-center min-w-0"
+                          autoFocus
+                        />
+                      ) : (
+                        week.name
+                      )}
+                    </TabsTrigger>
+                    <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onDuplicateWeek(week.id)}
+                        className="h-6 w-6 p-0 rounded-none"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onRemoveWeek(week.id)}
+                        className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-800"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </TabsList>
+                ))}
+              </TabsList>
+            </div>
             
             {weeks.map((week) => (
               <TabsContent key={week.id} value={week.id} className="mt-4">

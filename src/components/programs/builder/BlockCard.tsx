@@ -74,6 +74,8 @@ export const BlockCard: React.FC<BlockCardProps> = ({
     }
   };
 
+  const exercisesCount = block.exercises.length;
+
   return (
     <Card className="rounded-none bg-gray-50">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -82,7 +84,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
             <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded">
               {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
               <h6 
-                className="text-xs font-medium cursor-pointer"
+                className="text-xs font-medium cursor-pointer flex items-center gap-2"
                 onDoubleClick={handleNameDoubleClick}
               >
                 {isEditing ? (
@@ -96,7 +98,14 @@ export const BlockCard: React.FC<BlockCardProps> = ({
                     autoFocus
                   />
                 ) : (
-                  block.name
+                  <>
+                    {block.name}
+                    {!isOpen && exercisesCount > 0 && (
+                      <span className="text-xs bg-gray-300 px-2 py-1 rounded-full">
+                        {exercisesCount}
+                      </span>
+                    )}
+                  </>
                 )}
               </h6>
             </CollapsibleTrigger>
