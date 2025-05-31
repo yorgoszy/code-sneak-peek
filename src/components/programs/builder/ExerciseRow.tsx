@@ -45,22 +45,10 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   };
 
   const selectedExercise = exercises.find(ex => ex.id === exercise.exercise_id);
-  
-  // Calculate exercise number for this specific exercise
-  const getExerciseNumber = () => {
-    const sameExercises = allBlockExercises
-      .filter(ex => ex.exercise_id === exercise.exercise_id && ex.exercise_id)
-      .sort((a, b) => a.exercise_order - b.exercise_order);
-    
-    const currentIndex = sameExercises.findIndex(ex => ex.id === exercise.id);
-    return sameExercises.length > 1 ? currentIndex + 1 : null;
-  };
-
-  const exerciseNumber = getExerciseNumber();
 
   return (
     <>
-      <div className="bg-white border-0 border-b w-full" style={{ fontSize: '12px' }}>
+      <div className="bg-white border-0 border-b w-full ml-4" style={{ fontSize: '12px' }}>
         {/* Exercise Name Row with Actions */}
         <div className="p-2 border-b bg-gray-50 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
           <Button
@@ -70,16 +58,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             style={{ borderRadius: '0px', fontSize: '12px' }}
             onClick={() => setShowExerciseDialog(true)}
           >
-            {selectedExercise ? (
-              <span className="flex items-center gap-1">
-                {exerciseNumber && (
-                  <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm mr-1">
-                    {exerciseNumber}
-                  </span>
-                )}
-                {selectedExercise.name}
-              </span>
-            ) : 'Επιλογή...'}
+            {selectedExercise ? selectedExercise.name : 'Επιλογή...'}
           </Button>
           
           <div className="flex gap-1">
