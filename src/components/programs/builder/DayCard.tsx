@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
 import { BlockCard } from './BlockCard';
 import { Exercise } from '../types';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { DndContext, closestCenter } from '@dnd-kit/core';
 
 interface ProgramExercise {
   id: string;
@@ -49,7 +51,43 @@ interface DayCardProps {
   onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (blockId: string, exerciseId: string) => void;
   onDuplicateExercise: (blockId: string, exerciseId: string) => void;
+  onReorderBlocks: (oldIndex: number, newIndex: number) => void;
+  onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
 }
+
+const SortableBlock: React.FC<{
+  block: Block;
+  exercises: Exercise[];
+  onAddExercise: (exerciseId: string) => void;
+  onRemoveBlock: () => void;
+  onDuplicateBlock: () => void;
+  onUpdateBlockName: (name: string) => void;
+  onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
+  onRemoveExercise: (exerciseId: string) => void;
+  onDuplicateExercise: (exerciseId: string) => void;
+  onReorderExercises: (oldIndex: number, newIndex: number) => void;
+}> = (props) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.block.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <BlockCard {...props} />
+    </div>
+  );
+};
 
 export const DayCard: React.FC<DayCardProps> = ({
   day,
@@ -64,7 +102,9 @@ export const DayCard: React.FC<DayCardProps> = ({
   onUpdateBlockName,
   onUpdateExercise,
   onRemoveExercise,
-  onDuplicateExercise
+  onDuplicateExercise,
+  onReorderBlocks,
+  onReorderExercises
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -88,6 +128,16 @@ export const DayCard: React.FC<DayCardProps> = ({
     } else if (e.key === 'Escape') {
       setIsEditing(false);
       setEditingName(day.name);
+    }
+  };
+
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      const oldIndex = day.blocks.findIndex(block => block.id === active.id);
+      const newIndex = day.blocks.findIndex(block => block.id === over.id);
+      onReorderBlocks(oldIndex, newIndex);
     }
   };
 
@@ -156,24 +206,29 @@ export const DayCard: React.FC<DayCardProps> = ({
         </CardHeader>
         <CollapsibleContent>
           <CardContent className="pt-2">
-            <div className="space-y-2">
-              {day.blocks.map((block) => (
-                <BlockCard
-                  key={block.id}
-                  block={block}
-                  exercises={exercises}
-                  onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
-                  onRemoveBlock={() => onRemoveBlock(block.id)}
-                  onDuplicateBlock={() => onDuplicateBlock(block.id)}
-                  onUpdateBlockName={(name) => onUpdateBlockName(block.id, name)}
-                  onUpdateExercise={(exerciseId, field, value) => 
-                    onUpdateExercise(block.id, exerciseId, field, value)
-                  }
-                  onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
-                  onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
-                />
-              ))}
-            </div>
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={day.blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2">
+                  {day.blocks.map((block) => (
+                    <SortableBlock
+                      key={block.id}
+                      block={block}
+                      exercises={exercises}
+                      onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
+                      onRemoveBlock={() => onRemoveBlock(block.id)}
+                      onDuplicateBlock={() => onDuplicateBlock(block.id)}
+                      onUpdateBlockName={(name) => onUpdateBlockName(block.id, name)}
+                      onUpdateExercise={(exerciseId, field, value) => 
+                        onUpdateExercise(block.id, exerciseId, field, value)
+                      }
+                      onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
+                      onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
+                      onReorderExercises={(oldIndex, newIndex) => onReorderExercises(block.id, oldIndex, newIndex)}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

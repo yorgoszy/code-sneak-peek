@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,9 @@ import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
 import { ExerciseRow } from './ExerciseRow';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { Exercise } from '../types';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { DndContext, closestCenter } from '@dnd-kit/core';
 
 interface ProgramExercise {
   id: string;
@@ -39,7 +41,37 @@ interface BlockCardProps {
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onDuplicateExercise: (exerciseId: string) => void;
+  onReorderExercises: (oldIndex: number, newIndex: number) => void;
 }
+
+const SortableExercise: React.FC<{
+  exercise: ProgramExercise;
+  exercises: Exercise[];
+  onUpdate: (field: string, value: any) => void;
+  onRemove: () => void;
+  onDuplicate: () => void;
+}> = (props) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.exercise.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <ExerciseRow {...props} />
+    </div>
+  );
+};
 
 export const BlockCard: React.FC<BlockCardProps> = ({
   block,
@@ -50,7 +82,8 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   onUpdateBlockName,
   onUpdateExercise,
   onRemoveExercise,
-  onDuplicateExercise
+  onDuplicateExercise,
+  onReorderExercises
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -85,6 +118,16 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   const handleExerciseSelect = (exerciseId: string) => {
     onAddExercise(exerciseId);
     setShowExerciseDialog(false);
+  };
+
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      const oldIndex = block.exercises.findIndex(exercise => exercise.id === active.id);
+      const newIndex = block.exercises.findIndex(exercise => exercise.id === over.id);
+      onReorderExercises(oldIndex, newIndex);
+    }
   };
 
   const exercisesCount = block.exercises.length;
@@ -153,18 +196,22 @@ export const BlockCard: React.FC<BlockCardProps> = ({
           </CardHeader>
           <CollapsibleContent>
             <CardContent className="pt-2">
-              <div className="space-y-2">
-                {block.exercises.map((exercise) => (
-                  <ExerciseRow
-                    key={exercise.id}
-                    exercise={exercise}
-                    exercises={exercises}
-                    onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
-                    onRemove={() => onRemoveExercise(exercise.id)}
-                    onDuplicate={() => onDuplicateExercise(exercise.id)}
-                  />
-                ))}
-              </div>
+              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={block.exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-2">
+                    {block.exercises.map((exercise) => (
+                      <SortableExercise
+                        key={exercise.id}
+                        exercise={exercise}
+                        exercises={exercises}
+                        onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
+                        onRemove={() => onRemoveExercise(exercise.id)}
+                        onDuplicate={() => onDuplicateExercise(exercise.id)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             </CardContent>
           </CollapsibleContent>
         </Collapsible>

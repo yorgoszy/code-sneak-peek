@@ -5,6 +5,8 @@ import { Plus } from "lucide-react";
 import { User, Exercise } from './types';
 import { ProgramBasicInfo } from './builder/ProgramBasicInfo';
 import { TrainingWeeks } from './builder/TrainingWeeks';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
 
 interface ProgramStructure {
   name: string;
@@ -68,6 +70,13 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     athlete_id: '',
     weeks: []
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -456,6 +465,86 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     });
   };
 
+  const reorderWeeks = (oldIndex: number, newIndex: number) => {
+    const newWeeks = arrayMove(program.weeks, oldIndex, newIndex).map((week, index) => ({
+      ...week,
+      week_number: index + 1
+    }));
+    setProgram({ ...program, weeks: newWeeks });
+  };
+
+  const reorderDays = (weekId: string, oldIndex: number, newIndex: number) => {
+    setProgram({
+      ...program,
+      weeks: program.weeks.map(w => 
+        w.id === weekId 
+          ? {
+              ...w,
+              days: arrayMove(w.days, oldIndex, newIndex).map((day, index) => ({
+                ...day,
+                day_number: index + 1
+              }))
+            }
+          : w
+      )
+    });
+  };
+
+  const reorderBlocks = (weekId: string, dayId: string, oldIndex: number, newIndex: number) => {
+    setProgram({
+      ...program,
+      weeks: program.weeks.map(w => 
+        w.id === weekId 
+          ? {
+              ...w,
+              days: w.days.map(d => 
+                d.id === dayId 
+                  ? {
+                      ...d,
+                      blocks: arrayMove(d.blocks, oldIndex, newIndex).map((block, index) => ({
+                        ...block,
+                        block_order: index + 1
+                      }))
+                    }
+                  : d
+              )
+            }
+          : w
+      )
+    });
+  };
+
+  const reorderExercises = (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => {
+    setProgram({
+      ...program,
+      weeks: program.weeks.map(w => 
+        w.id === weekId 
+          ? {
+              ...w,
+              days: w.days.map(d => 
+                d.id === dayId 
+                  ? {
+                      ...d,
+                      blocks: d.blocks.map(b => 
+                        b.id === blockId 
+                          ? {
+                              ...b,
+                              exercises: arrayMove(b.exercises, oldIndex, newIndex).map((exercise, index) => ({
+                                ...exercise,
+                                exercise_order: index + 1
+                              }))
+                            }
+                          : b
+                      )
+                    }
+                  : d
+              )
+            }
+          : w
+      )
+    });
+  };
+
   const handleSaveProgram = () => {
     if (!program.name) {
       alert('Το όνομα προγράμματος είναι υποχρεωτικό');
@@ -490,26 +579,32 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
               onAthleteChange={(athlete_id) => setProgram({ ...program, athlete_id })}
             />
 
-            <TrainingWeeks
-              weeks={program.weeks}
-              exercises={exercises}
-              onAddWeek={addWeek}
-              onRemoveWeek={removeWeek}
-              onDuplicateWeek={duplicateWeek}
-              onUpdateWeekName={updateWeekName}
-              onAddDay={addDay}
-              onRemoveDay={removeDay}
-              onDuplicateDay={duplicateDay}
-              onUpdateDayName={updateDayName}
-              onAddBlock={addBlock}
-              onRemoveBlock={removeBlock}
-              onDuplicateBlock={duplicateBlock}
-              onUpdateBlockName={updateBlockName}
-              onAddExercise={addExercise}
-              onRemoveExercise={removeExercise}
-              onUpdateExercise={updateExercise}
-              onDuplicateExercise={duplicateExercise}
-            />
+            <DndContext sensors={sensors} collisionDetection={closestCenter}>
+              <TrainingWeeks
+                weeks={program.weeks}
+                exercises={exercises}
+                onAddWeek={addWeek}
+                onRemoveWeek={removeWeek}
+                onDuplicateWeek={duplicateWeek}
+                onUpdateWeekName={updateWeekName}
+                onAddDay={addDay}
+                onRemoveDay={removeDay}
+                onDuplicateDay={duplicateDay}
+                onUpdateDayName={updateDayName}
+                onAddBlock={addBlock}
+                onRemoveBlock={removeBlock}
+                onDuplicateBlock={duplicateBlock}
+                onUpdateBlockName={updateBlockName}
+                onAddExercise={addExercise}
+                onRemoveExercise={removeExercise}
+                onUpdateExercise={updateExercise}
+                onDuplicateExercise={duplicateExercise}
+                onReorderWeeks={reorderWeeks}
+                onReorderDays={reorderDays}
+                onReorderBlocks={reorderBlocks}
+                onReorderExercises={reorderExercises}
+              />
+            </DndContext>
 
             <div className="flex justify-end">
               <Button onClick={handleSaveProgram} className="rounded-none bg-green-600 hover:bg-green-700">

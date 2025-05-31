@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Copy, Trash2 } from "lucide-react";
 import { WeekCard } from './WeekCard';
 import { Exercise } from '../types';
+import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ProgramExercise {
   id: string;
@@ -61,7 +62,98 @@ interface TrainingWeeksProps {
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
   onDuplicateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
+  onReorderWeeks: (oldIndex: number, newIndex: number) => void;
+  onReorderDays: (weekId: string, oldIndex: number, newIndex: number) => void;
+  onReorderBlocks: (weekId: string, dayId: string, oldIndex: number, newIndex: number) => void;
+  onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
 }
+
+const SortableWeekTab: React.FC<{
+  week: Week;
+  isActive: boolean;
+  editingWeekId: string | null;
+  editingWeekName: string;
+  onWeekNameDoubleClick: (week: Week) => void;
+  onWeekNameSave: () => void;
+  onWeekNameKeyPress: (e: React.KeyboardEvent) => void;
+  setEditingWeekName: (name: string) => void;
+  onDuplicateWeek: (weekId: string) => void;
+  onRemoveWeek: (weekId: string) => void;
+}> = ({
+  week,
+  isActive,
+  editingWeekId,
+  editingWeekName,
+  onWeekNameDoubleClick,
+  onWeekNameSave,
+  onWeekNameKeyPress,
+  setEditingWeekName,
+  onDuplicateWeek,
+  onRemoveWeek
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: week.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      {...attributes} 
+      {...listeners}
+      className="flex items-center group flex-shrink-0"
+    >
+      <TabsTrigger 
+        value={week.id} 
+        className="rounded-none whitespace-nowrap px-4"
+        onDoubleClick={() => onWeekNameDoubleClick(week)}
+      >
+        {editingWeekId === week.id ? (
+          <input
+            type="text"
+            value={editingWeekName}
+            onChange={(e) => setEditingWeekName(e.target.value)}
+            onBlur={onWeekNameSave}
+            onKeyDown={onWeekNameKeyPress}
+            className="bg-transparent border-none outline-none text-center min-w-0"
+            autoFocus
+          />
+        ) : (
+          week.name
+        )}
+      </TabsTrigger>
+      <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => onDuplicateWeek(week.id)}
+          className="h-6 w-6 p-0 rounded-none"
+        >
+          <Copy className="w-3 h-3" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => onRemoveWeek(week.id)}
+          className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-800"
+        >
+          <Trash2 className="w-3 h-3" />
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   weeks,
@@ -81,7 +173,11 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onAddExercise,
   onRemoveExercise,
   onUpdateExercise,
-  onDuplicateExercise
+  onDuplicateExercise,
+  onReorderWeeks,
+  onReorderDays,
+  onReorderBlocks,
+  onReorderExercises
 }) => {
   const [activeWeek, setActiveWeek] = useState(weeks[0]?.id || '');
   const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
@@ -115,6 +211,16 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
     }
   }, [weeks, activeWeek]);
 
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      const oldIndex = weeks.findIndex(week => week.id === active.id);
+      const newIndex = weeks.findIndex(week => week.id === over.id);
+      onReorderWeeks(oldIndex, newIndex);
+    }
+  };
+
   return (
     <Card className="rounded-none">
       <CardHeader>
@@ -131,47 +237,23 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
           <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
             <div className="w-full overflow-x-auto">
               <TabsList className="inline-flex h-10 items-center justify-start rounded-none bg-muted p-1 text-muted-foreground min-w-full">
-                {weeks.map((week) => (
-                  <div key={week.id} className="flex items-center group flex-shrink-0">
-                    <TabsTrigger 
-                      value={week.id} 
-                      className="rounded-none whitespace-nowrap px-4"
-                      onDoubleClick={() => handleWeekNameDoubleClick(week)}
-                    >
-                      {editingWeekId === week.id ? (
-                        <input
-                          type="text"
-                          value={editingWeekName}
-                          onChange={(e) => setEditingWeekName(e.target.value)}
-                          onBlur={handleWeekNameSave}
-                          onKeyDown={handleWeekNameKeyPress}
-                          className="bg-transparent border-none outline-none text-center min-w-0"
-                          autoFocus
-                        />
-                      ) : (
-                        week.name
-                      )}
-                    </TabsTrigger>
-                    <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => onDuplicateWeek(week.id)}
-                        className="h-6 w-6 p-0 rounded-none"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => onRemoveWeek(week.id)}
-                        className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                <SortableContext items={weeks.map(w => w.id)} strategy={horizontalListSortingStrategy}>
+                  {weeks.map((week) => (
+                    <SortableWeekTab
+                      key={week.id}
+                      week={week}
+                      isActive={activeWeek === week.id}
+                      editingWeekId={editingWeekId}
+                      editingWeekName={editingWeekName}
+                      onWeekNameDoubleClick={handleWeekNameDoubleClick}
+                      onWeekNameSave={handleWeekNameSave}
+                      onWeekNameKeyPress={handleWeekNameKeyPress}
+                      setEditingWeekName={setEditingWeekName}
+                      onDuplicateWeek={onDuplicateWeek}
+                      onRemoveWeek={onRemoveWeek}
+                    />
+                  ))}
+                </SortableContext>
               </TabsList>
             </div>
             
@@ -199,6 +281,9 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                   onDuplicateExercise={(dayId, blockId, exerciseId) => 
                     onDuplicateExercise(week.id, dayId, blockId, exerciseId)
                   }
+                  onReorderDays={(oldIndex, newIndex) => onReorderDays(week.id, oldIndex, newIndex)}
+                  onReorderBlocks={(dayId, oldIndex, newIndex) => onReorderBlocks(week.id, dayId, oldIndex, newIndex)}
+                  onReorderExercises={(dayId, blockId, oldIndex, newIndex) => onReorderExercises(week.id, dayId, blockId, oldIndex, newIndex)}
                 />
               </TabsContent>
             ))}
