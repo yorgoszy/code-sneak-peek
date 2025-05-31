@@ -50,20 +50,19 @@ export const BlockCardContent: React.FC<BlockCardContentProps> = ({
 
   return (
     <CollapsibleContent>
-      <CardContent className="pt-1 pl-2 pr-1 pb-1">
+      <CardContent className="pt-2 pl-4">
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
-            <div className="flex flex-col h-full" style={{ gap: '1px' }}>
+            <div className="space-y-0">
               {exercises.map((exercise) => (
-                <div key={exercise.id} style={{ height: '28px' }}>
-                  <SortableExercise
-                    exercise={exercise}
-                    exercises={availableExercises}
-                    onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
-                    onRemove={() => onRemoveExercise(exercise.id)}
-                    onDuplicate={() => onDuplicateExercise(exercise.id)}
-                  />
-                </div>
+                <SortableExercise
+                  key={exercise.id}
+                  exercise={exercise}
+                  exercises={availableExercises}
+                  onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
+                  onRemove={() => onRemoveExercise(exercise.id)}
+                  onDuplicate={() => onDuplicateExercise(exercise.id)}
+                />
               ))}
             </div>
           </SortableContext>
