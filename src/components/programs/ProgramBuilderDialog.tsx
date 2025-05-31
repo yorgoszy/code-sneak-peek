@@ -63,7 +63,26 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
             onNameChange={(name) => updateProgram({ name })}
             onDescriptionChange={(description) => updateProgram({ description })}
             onAthleteChange={(athlete_id) => updateProgram({ athlete_id })}
-            {...actions}
+            onAddWeek={actions.addWeek}
+            onRemoveWeek={actions.removeWeek}
+            onDuplicateWeek={actions.duplicateWeek}
+            onUpdateWeekName={actions.updateWeekName}
+            onAddDay={actions.addDay}
+            onRemoveDay={actions.removeDay}
+            onDuplicateDay={actions.duplicateDay}
+            onUpdateDayName={actions.updateDayName}
+            onAddBlock={actions.addBlock}
+            onRemoveBlock={actions.removeBlock}
+            onDuplicateBlock={actions.duplicateBlock}
+            onUpdateBlockName={actions.updateBlockName}
+            onAddExercise={actions.addExercise}
+            onRemoveExercise={actions.removeExercise}
+            onUpdateExercise={actions.updateExercise}
+            onDuplicateExercise={actions.duplicateExercise}
+            onReorderWeeks={actions.reorderWeeks}
+            onReorderDays={actions.reorderDays}
+            onReorderBlocks={actions.reorderBlocks}
+            onReorderExercises={actions.reorderExercises}
           />
 
           <div className="flex justify-end">
