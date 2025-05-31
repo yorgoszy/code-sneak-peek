@@ -1,10 +1,9 @@
 
 import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Exercise } from '../types';
-import { Search, Play } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface ExerciseSelectionDialogProps {
   open: boolean;
@@ -75,26 +74,12 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
                           </p>
                         )}
                       </div>
-                      <div className="flex gap-1 ml-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Handle video play - you can implement this later
-                          }}
-                        >
-                          <Play className="w-3 h-3" />
-                        </Button>
-                      </div>
                     </div>
                     
                     <div className="mt-2 flex flex-wrap gap-1">
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                         Άσκηση
                       </span>
-                      {/* Add more badges based on exercise properties when available */}
                     </div>
                   </div>
                 ))}
