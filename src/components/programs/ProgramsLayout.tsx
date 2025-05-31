@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ProgramBuilderDialog } from './ProgramBuilderDialog';
 import { ProgramsList } from './ProgramsList';
@@ -78,6 +77,10 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   newExercise,
   setNewExercise
 }) => {
+  const handleOpenBuilder = () => {
+    onBuilderDialogClose(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

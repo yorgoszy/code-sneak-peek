@@ -74,9 +74,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
 
   return (
     <>
-      {externalIsOpen === undefined && (
-        <ProgramBuilderTrigger onClick={() => handleOpenChange(true)} />
-      )}
+      <ProgramBuilderTrigger onClick={() => handleOpenChange(true)} />
 
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <ProgramBuilderDialogContent
