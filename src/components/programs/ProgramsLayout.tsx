@@ -4,6 +4,7 @@ import { ProgramBuilderDialog } from './ProgramBuilderDialog';
 import { ProgramsList } from './ProgramsList';
 import { ProgramDetails } from './ProgramDetails';
 import { ProgramPreviewDialog } from './ProgramPreviewDialog';
+import { ProgramBuilderTrigger } from './builder/ProgramBuilderTrigger';
 import { Program, User, Exercise } from './types';
 
 interface ProgramsLayoutProps {
@@ -51,19 +52,15 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onDeleteBlock,
   onDeleteExercise
 }) => {
+  const handleOpenBuilder = () => {
+    onBuilderDialogClose(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
-        <ProgramBuilderDialog
-          users={users}
-          exercises={exercises}
-          onCreateProgram={onCreateProgram}
-          editingProgram={editingProgram}
-          isOpen={builderDialogOpen}
-          onOpenChange={onBuilderDialogClose}
-          showTrigger={false}
-        />
+        <ProgramBuilderTrigger onClick={handleOpenBuilder} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -94,6 +91,17 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           />
         </div>
       </div>
+
+      {/* Builder Dialog */}
+      <ProgramBuilderDialog
+        users={users}
+        exercises={exercises}
+        onCreateProgram={onCreateProgram}
+        editingProgram={editingProgram}
+        isOpen={builderDialogOpen}
+        onOpenChange={onBuilderDialogClose}
+        showTrigger={false}
+      />
 
       {/* Preview Dialog */}
       <ProgramPreviewDialog

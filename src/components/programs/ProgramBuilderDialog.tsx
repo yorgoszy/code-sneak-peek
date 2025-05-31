@@ -14,7 +14,7 @@ interface ProgramBuilderDialogProps {
   onOpenChange?: (open: boolean) => void;
   editingProgram?: Program | null;
   isOpen?: boolean;
-  showTrigger?: boolean; // New prop to control trigger display
+  showTrigger?: boolean;
 }
 
 export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
@@ -23,12 +23,9 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   onCreateProgram,
   onOpenChange,
   editingProgram,
-  isOpen: externalIsOpen,
-  showTrigger = true
+  isOpen = false,
+  showTrigger = false
 }) => {
-  const [internalIsOpen, setInternalIsOpen] = useState(false);
-  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
-  
   const { program, updateProgram, resetProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises);
   
   const actions = useProgramBuilderActions(program, (newProgram) => {
@@ -45,9 +42,6 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
 
   const handleOpenChange = (open: boolean) => {
     console.log('Builder dialog open change:', open);
-    if (externalIsOpen === undefined) {
-      setInternalIsOpen(open);
-    }
     if (onOpenChange) {
       onOpenChange(open);
     }
@@ -80,44 +74,38 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   console.log('ProgramBuilderDialog render - isOpen:', isOpen, 'editingProgram:', editingProgram?.name, 'showTrigger:', showTrigger);
 
   return (
-    <>
-      {showTrigger && externalIsOpen === undefined && (
-        <ProgramBuilderTrigger onClick={() => handleOpenChange(true)} />
-      )}
-
-      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <ProgramBuilderDialogContent
-          program={program}
-          users={users}
-          exercises={exercises}
-          onNameChange={(name) => updateProgram({ name })}
-          onDescriptionChange={(description) => updateProgram({ description })}
-          onAthleteChange={(athlete_id) => updateProgram({ athlete_id })}
-          onStartDateChange={handleStartDateChange}
-          onTrainingDaysChange={handleTrainingDaysChange}
-          onAddWeek={actions.addWeek}
-          onRemoveWeek={actions.removeWeek}
-          onDuplicateWeek={actions.duplicateWeek}
-          onUpdateWeekName={actions.updateWeekName}
-          onAddDay={actions.addDay}
-          onRemoveDay={actions.removeDay}
-          onDuplicateDay={actions.duplicateDay}
-          onUpdateDayName={actions.updateDayName}
-          onAddBlock={actions.addBlock}
-          onRemoveBlock={actions.removeBlock}
-          onDuplicateBlock={actions.duplicateBlock}
-          onUpdateBlockName={actions.updateBlockName}
-          onAddExercise={actions.addExercise}
-          onRemoveExercise={actions.removeExercise}
-          onUpdateExercise={actions.updateExercise}
-          onDuplicateExercise={actions.duplicateExercise}
-          onReorderWeeks={actions.reorderWeeks}
-          onReorderDays={actions.reorderDays}
-          onReorderBlocks={actions.reorderBlocks}
-          onReorderExercises={actions.reorderExercises}
-          onSave={handleSaveProgram}
-        />
-      </Dialog>
-    </>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <ProgramBuilderDialogContent
+        program={program}
+        users={users}
+        exercises={exercises}
+        onNameChange={(name) => updateProgram({ name })}
+        onDescriptionChange={(description) => updateProgram({ description })}
+        onAthleteChange={(athlete_id) => updateProgram({ athlete_id })}
+        onStartDateChange={handleStartDateChange}
+        onTrainingDaysChange={handleTrainingDaysChange}
+        onAddWeek={actions.addWeek}
+        onRemoveWeek={actions.removeWeek}
+        onDuplicateWeek={actions.duplicateWeek}
+        onUpdateWeekName={actions.updateWeekName}
+        onAddDay={actions.addDay}
+        onRemoveDay={actions.removeDay}
+        onDuplicateDay={actions.duplicateDay}
+        onUpdateDayName={actions.updateDayName}
+        onAddBlock={actions.addBlock}
+        onRemoveBlock={actions.removeBlock}
+        onDuplicateBlock={actions.duplicateBlock}
+        onUpdateBlockName={actions.updateBlockName}
+        onAddExercise={actions.addExercise}
+        onRemoveExercise={actions.removeExercise}
+        onUpdateExercise={actions.updateExercise}
+        onDuplicateExercise={actions.duplicateExercise}
+        onReorderWeeks={actions.reorderWeeks}
+        onReorderDays={actions.reorderDays}
+        onReorderBlocks={actions.reorderBlocks}
+        onReorderExercises={actions.reorderExercises}
+        onSave={handleSaveProgram}
+      />
+    </Dialog>
   );
 };
