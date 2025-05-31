@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -58,20 +57,23 @@ export const useAssignments = () => {
     try {
       console.log('Creating assignment:', assignmentData);
       
-      // Get current user
-      const { data: userData } = await supabase
+      // Get current user from app_users table
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) throw new Error('User not authenticated');
+
+      const { data: appUser } = await supabase
         .from('app_users')
         .select('id')
-        .eq('auth_user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('auth_user_id', userData.user.id)
         .single();
 
-      if (!userData) throw new Error('User not found');
+      if (!appUser) throw new Error('User not found in app_users');
 
       const { error } = await supabase
         .from('program_assignments')
         .insert([{
           ...assignmentData,
-          assigned_by: userData.id
+          assigned_by: appUser.id
         }]);
 
       if (error) throw error;

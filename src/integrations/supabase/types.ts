@@ -1486,7 +1486,9 @@ export type Database = {
           id: string
           is_template: boolean | null
           name: string
+          start_date: string | null
           status: string | null
+          training_days: number | null
           type: string | null
           updated_at: string | null
         }
@@ -1499,7 +1501,9 @@ export type Database = {
           id?: string
           is_template?: boolean | null
           name: string
+          start_date?: string | null
           status?: string | null
+          training_days?: number | null
           type?: string | null
           updated_at?: string | null
         }
@@ -1512,7 +1516,9 @@ export type Database = {
           id?: string
           is_template?: boolean | null
           name?: string
+          start_date?: string | null
           status?: string | null
+          training_days?: number | null
           type?: string | null
           updated_at?: string | null
         }
