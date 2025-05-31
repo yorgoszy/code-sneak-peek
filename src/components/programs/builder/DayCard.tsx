@@ -44,6 +44,8 @@ interface DayCardProps {
   onUpdateDayName: (name: string) => void;
   onAddExercise: (blockId: string) => void;
   onRemoveBlock: (blockId: string) => void;
+  onDuplicateBlock: (blockId: string) => void;
+  onUpdateBlockName: (blockId: string, name: string) => void;
   onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (blockId: string, exerciseId: string) => void;
 }
@@ -57,6 +59,8 @@ export const DayCard: React.FC<DayCardProps> = ({
   onUpdateDayName,
   onAddExercise,
   onRemoveBlock,
+  onDuplicateBlock,
+  onUpdateBlockName,
   onUpdateExercise,
   onRemoveExercise
 }) => {
@@ -149,6 +153,8 @@ export const DayCard: React.FC<DayCardProps> = ({
                   exercises={exercises}
                   onAddExercise={() => onAddExercise(block.id)}
                   onRemoveBlock={() => onRemoveBlock(block.id)}
+                  onDuplicateBlock={() => onDuplicateBlock(block.id)}
+                  onUpdateBlockName={(name) => onUpdateBlockName(block.id, name)}
                   onUpdateExercise={(exerciseId, field, value) => 
                     onUpdateExercise(block.id, exerciseId, field, value)
                   }

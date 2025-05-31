@@ -51,8 +51,12 @@ interface TrainingWeeksProps {
   onUpdateWeekName: (weekId: string, name: string) => void;
   onAddDay: (weekId: string) => void;
   onRemoveDay: (weekId: string, dayId: string) => void;
+  onDuplicateDay: (weekId: string, dayId: string) => void;
+  onUpdateDayName: (weekId: string, dayId: string, name: string) => void;
   onAddBlock: (weekId: string, dayId: string) => void;
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
+  onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
+  onUpdateBlockName: (weekId: string, dayId: string, blockId: string, name: string) => void;
   onAddExercise: (weekId: string, dayId: string, blockId: string) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
@@ -67,8 +71,12 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onUpdateWeekName,
   onAddDay,
   onRemoveDay,
+  onDuplicateDay,
+  onUpdateDayName,
   onAddBlock,
   onRemoveBlock,
+  onDuplicateBlock,
+  onUpdateBlockName,
   onAddExercise,
   onRemoveExercise,
   onUpdateExercise
@@ -172,8 +180,12 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                   onRemoveWeek={() => onRemoveWeek(week.id)}
                   onAddBlock={(dayId) => onAddBlock(week.id, dayId)}
                   onRemoveDay={(dayId) => onRemoveDay(week.id, dayId)}
+                  onDuplicateDay={(dayId) => onDuplicateDay(week.id, dayId)}
+                  onUpdateDayName={(dayId, name) => onUpdateDayName(week.id, dayId, name)}
                   onAddExercise={(dayId, blockId) => onAddExercise(week.id, dayId, blockId)}
                   onRemoveBlock={(dayId, blockId) => onRemoveBlock(week.id, dayId, blockId)}
+                  onDuplicateBlock={(dayId, blockId) => onDuplicateBlock(week.id, dayId, blockId)}
+                  onUpdateBlockName={(dayId, blockId, name) => onUpdateBlockName(week.id, dayId, blockId, name)}
                   onUpdateExercise={(dayId, blockId, exerciseId, field, value) => 
                     onUpdateExercise(week.id, dayId, blockId, exerciseId, field, value)
                   }

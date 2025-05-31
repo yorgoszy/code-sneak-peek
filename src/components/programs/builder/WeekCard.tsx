@@ -48,8 +48,12 @@ interface WeekCardProps {
   onRemoveWeek: () => void;
   onAddBlock: (dayId: string) => void;
   onRemoveDay: (dayId: string) => void;
+  onDuplicateDay: (dayId: string) => void;
+  onUpdateDayName: (dayId: string, name: string) => void;
   onAddExercise: (dayId: string, blockId: string) => void;
   onRemoveBlock: (dayId: string, blockId: string) => void;
+  onDuplicateBlock: (dayId: string, blockId: string) => void;
+  onUpdateBlockName: (dayId: string, blockId: string, name: string) => void;
   onUpdateExercise: (dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (dayId: string, blockId: string, exerciseId: string) => void;
 }
@@ -61,8 +65,12 @@ export const WeekCard: React.FC<WeekCardProps> = ({
   onRemoveWeek,
   onAddBlock,
   onRemoveDay,
+  onDuplicateDay,
+  onUpdateDayName,
   onAddExercise,
   onRemoveBlock,
+  onDuplicateBlock,
+  onUpdateBlockName,
   onUpdateExercise,
   onRemoveExercise
 }) => {
@@ -100,8 +108,12 @@ export const WeekCard: React.FC<WeekCardProps> = ({
               exercises={exercises}
               onAddBlock={() => onAddBlock(day.id)}
               onRemoveDay={() => onRemoveDay(day.id)}
+              onDuplicateDay={() => onDuplicateDay(day.id)}
+              onUpdateDayName={(name) => onUpdateDayName(day.id, name)}
               onAddExercise={(blockId) => onAddExercise(day.id, blockId)}
               onRemoveBlock={(blockId) => onRemoveBlock(day.id, blockId)}
+              onDuplicateBlock={(blockId) => onDuplicateBlock(day.id, blockId)}
+              onUpdateBlockName={(blockId, name) => onUpdateBlockName(day.id, blockId, name)}
               onUpdateExercise={(blockId, exerciseId, field, value) => 
                 onUpdateExercise(day.id, blockId, exerciseId, field, value)
               }

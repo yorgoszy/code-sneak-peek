@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -462,8 +463,12 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
               onUpdateWeekName={updateWeekName}
               onAddDay={addDay}
               onRemoveDay={removeDay}
+              onDuplicateDay={duplicateDay}
+              onUpdateDayName={updateDayName}
               onAddBlock={addBlock}
               onRemoveBlock={removeBlock}
+              onDuplicateBlock={duplicateBlock}
+              onUpdateBlockName={updateBlockName}
               onAddExercise={addExercise}
               onRemoveExercise={removeExercise}
               onUpdateExercise={updateExercise}
