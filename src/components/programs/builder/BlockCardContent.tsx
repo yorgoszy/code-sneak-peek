@@ -59,6 +59,7 @@ export const BlockCardContent: React.FC<BlockCardContentProps> = ({
                   key={exercise.id}
                   exercise={exercise}
                   exercises={availableExercises}
+                  allBlockExercises={exercises}
                   onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
                   onRemove={() => onRemoveExercise(exercise.id)}
                   onDuplicate={() => onDuplicateExercise(exercise.id)}

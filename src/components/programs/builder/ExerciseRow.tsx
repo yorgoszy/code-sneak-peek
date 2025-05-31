@@ -23,6 +23,7 @@ interface ProgramExercise {
 interface ExerciseRowProps {
   exercise: ProgramExercise;
   exercises: Exercise[];
+  allBlockExercises: ProgramExercise[];
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
   onDuplicate: () => void;
@@ -31,6 +32,7 @@ interface ExerciseRowProps {
 export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   exercise,
   exercises,
+  allBlockExercises,
   onUpdate,
   onRemove,
   onDuplicate
@@ -43,6 +45,18 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   };
 
   const selectedExercise = exercises.find(ex => ex.id === exercise.exercise_id);
+  
+  // Calculate exercise number for this specific exercise
+  const getExerciseNumber = () => {
+    const sameExercises = allBlockExercises
+      .filter(ex => ex.exercise_id === exercise.exercise_id && ex.exercise_id)
+      .sort((a, b) => a.exercise_order - b.exercise_order);
+    
+    const currentIndex = sameExercises.findIndex(ex => ex.id === exercise.id);
+    return sameExercises.length > 1 ? currentIndex + 1 : null;
+  };
+
+  const exerciseNumber = getExerciseNumber();
 
   return (
     <>
@@ -56,7 +70,16 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             style={{ borderRadius: '0px', fontSize: '12px' }}
             onClick={() => setShowExerciseDialog(true)}
           >
-            {selectedExercise ? selectedExercise.name : 'Επιλογή...'}
+            {selectedExercise ? (
+              <span className="flex items-center gap-1">
+                {selectedExercise.name}
+                {exerciseNumber && (
+                  <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm ml-1">
+                    {exerciseNumber}
+                  </span>
+                )}
+              </span>
+            ) : 'Επιλογή...'}
           </Button>
           
           <div className="flex gap-1">

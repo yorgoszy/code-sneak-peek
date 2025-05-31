@@ -23,6 +23,7 @@ interface ProgramExercise {
 interface SortableExerciseProps {
   exercise: ProgramExercise;
   exercises: Exercise[];
+  allBlockExercises: ProgramExercise[];
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
   onDuplicate: () => void;
