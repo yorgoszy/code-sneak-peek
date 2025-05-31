@@ -14,8 +14,8 @@ interface ProgramBuilderProps {
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
   onAthleteChange: (athlete_id: string) => void;
-  onStartDateChange?: (date: Date | undefined) => void;
-  onTrainingDaysChange?: (days: string[]) => void;
+  onStartDateChange?: (date: string) => void;
+  onTrainingDaysChange?: (days: number) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -61,16 +61,15 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
       <ProgramBasicInfo
         name={program.name}
         description={program.description}
-        athleteId={program.athlete_id}
+        athlete_id={program.athlete_id}
         users={users}
-        startDate={program.start_date}
-        trainingDays={program.training_days || []}
-        totalWeeks={program.weeks.length}
+        start_date={program.start_date}
+        training_days={program.training_days}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
         onAthleteChange={onAthleteChange}
-        onStartDateChange={onStartDateChange}
-        onTrainingDaysChange={onTrainingDaysChange}
+        onStartDateChange={onStartDateChange || (() => {})}
+        onTrainingDaysChange={onTrainingDaysChange || (() => {})}
       />
 
       <DndContext sensors={sensors} collisionDetection={closestCenter}>

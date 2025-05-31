@@ -8,7 +8,7 @@ export interface ProgramAssignment {
   group_id?: string;
   start_date: string;
   end_date?: string;
-  status: 'active' | 'completed' | 'paused' | 'cancelled';
+  status: string; // Changed from union type to string to match Supabase data
   notes?: string;
   progress?: number;
   created_at: string;
