@@ -422,6 +422,40 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     });
   };
 
+  const duplicateBlock = (weekId: string, dayId: string, blockId: string) => {
+    const week = program.weeks.find(w => w.id === weekId);
+    const day = week?.days.find(d => d.id === dayId);
+    const blockToDuplicate = day?.blocks.find(b => b.id === blockId);
+    if (!day || !blockToDuplicate) return;
+
+    const newBlock: Block = {
+      ...blockToDuplicate,
+      id: generateId(),
+      name: `${blockToDuplicate.name} (Αντίγραφο)`,
+      block_order: day.blocks.length + 1,
+      exercises: blockToDuplicate.exercises.map(exercise => ({
+        ...exercise,
+        id: generateId()
+      }))
+    };
+
+    setProgram({
+      ...program,
+      weeks: program.weeks.map(w => 
+        w.id === weekId 
+          ? {
+              ...w,
+              days: w.days.map(d => 
+                d.id === dayId 
+                  ? { ...d, blocks: [...d.blocks, newBlock] }
+                  : d
+              )
+            }
+          : w
+      )
+    });
+  };
+
   const handleSaveProgram = () => {
     if (!program.name) {
       alert('Το όνομα προγράμματος είναι υποχρεωτικό');
