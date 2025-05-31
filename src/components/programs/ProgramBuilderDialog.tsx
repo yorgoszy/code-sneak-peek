@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { User, Exercise, Program } from './types';
-import { ProgramBuilderTrigger } from './builder/ProgramBuilderTrigger';
 import { ProgramBuilderDialogContent } from './builder/ProgramBuilderDialogContent';
 import { useProgramBuilderState } from './builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from './builder/hooks/useProgramBuilderActions';
@@ -14,7 +13,6 @@ interface ProgramBuilderDialogProps {
   onOpenChange?: (open: boolean) => void;
   editingProgram?: Program | null;
   isOpen?: boolean;
-  showTrigger?: boolean;
 }
 
 export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
@@ -23,8 +21,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   onCreateProgram,
   onOpenChange,
   editingProgram,
-  isOpen = false,
-  showTrigger = false
+  isOpen = false
 }) => {
   const { program, updateProgram, resetProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises);
   
@@ -32,7 +29,6 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     updateProgram(newProgram);
   }, generateId, exercises);
 
-  // Load editing program when it changes
   useEffect(() => {
     if (editingProgram && isOpen) {
       console.log('Loading program for editing:', editingProgram);
@@ -41,12 +37,10 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   }, [editingProgram, isOpen, loadProgramFromData]);
 
   const handleOpenChange = (open: boolean) => {
-    console.log('Builder dialog open change:', open);
     if (onOpenChange) {
       onOpenChange(open);
     }
     if (!open) {
-      // Reset program when closing
       setTimeout(() => {
         resetProgram();
       }, 200);
@@ -70,8 +64,6 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   const handleTrainingDaysChange = (days: string[]) => {
     updateProgram({ training_days: days });
   };
-
-  console.log('ProgramBuilderDialog render - isOpen:', isOpen, 'editingProgram:', editingProgram?.name, 'showTrigger:', showTrigger);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>

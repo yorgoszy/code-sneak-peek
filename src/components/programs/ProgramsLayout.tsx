@@ -52,19 +52,14 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onDeleteBlock,
   onDeleteExercise
 }) => {
-  const handleOpenBuilder = () => {
-    onBuilderDialogClose(true);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
-        <ProgramBuilderTrigger onClick={handleOpenBuilder} />
+        <ProgramBuilderTrigger onClick={() => onBuilderDialogClose(true)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Programs List - Now takes 2 columns */}
         <div className="lg:col-span-2">
           <ProgramsList
             programs={programs}
@@ -77,7 +72,6 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           />
         </div>
 
-        {/* Program Details - Now takes 1 column */}
         <div className="lg:col-span-1">
           <ProgramDetails
             selectedProgram={selectedProgram}
@@ -92,7 +86,6 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
         </div>
       </div>
 
-      {/* Builder Dialog */}
       <ProgramBuilderDialog
         users={users}
         exercises={exercises}
@@ -100,10 +93,8 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
         editingProgram={editingProgram}
         isOpen={builderDialogOpen}
         onOpenChange={onBuilderDialogClose}
-        showTrigger={false}
       />
 
-      {/* Preview Dialog */}
       <ProgramPreviewDialog
         program={previewProgram}
         isOpen={previewDialogOpen}
