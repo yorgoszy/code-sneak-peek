@@ -59,20 +59,12 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     handleClose();
   };
 
-  // Convert start_date string to Date object for ProgramCalendar
-  const startDateAsDate = program.start_date ? new Date(program.start_date) : undefined;
-
-  // Convert training_days number to empty array since ProgramCalendar expects string[] for day names
-  const trainingDaysAsArray: string[] = [];
-
-  const handleStartDateChange = (date: Date | undefined) => {
-    const dateString = date ? date.toISOString().split('T')[0] : '';
-    updateProgram({ start_date: dateString });
+  const handleStartDateChange = (date: string) => {
+    updateProgram({ start_date: date });
   };
 
-  const handleTrainingDaysChange = (days: string[]) => {
-    // Convert string[] back to number for storage
-    updateProgram({ training_days: days.length });
+  const handleTrainingDaysChange = (days: number) => {
+    updateProgram({ training_days: days });
   };
 
   return (
