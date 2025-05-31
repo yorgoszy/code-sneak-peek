@@ -53,77 +53,81 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
       <CardHeader>
         <CardTitle className="text-lg">Όνομα Προγράμματος *</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Input
-          className="rounded-none"
-          value={name}
-          onChange={(e) => onNameChange(e.target.value)}
-          placeholder="π.χ. Πρόγραμμα Δύναμης"
-        />
-        
-        <div>
-          <Label>Περιγραφή</Label>
-          <Textarea
-            className="rounded-none"
-            value={description}
-            onChange={(e) => onDescriptionChange(e.target.value)}
-            placeholder="Περιγραφή προγράμματος..."
-          />
-        </div>
-
-        <div>
-          <Label>Αθλητής (προαιρετικό)</Label>
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <div className="lg:col-span-1">
+            <Input
+              className="rounded-none h-8"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="π.χ. Πρόγραμμα Δύναμης"
+            />
+          </div>
           
-          {selectedUser ? (
-            <div className="flex items-center justify-between bg-blue-50 text-blue-700 p-3 border border-blue-200 rounded-none">
-              <span className="font-medium">{selectedUser.name}</span>
-              <button
-                onClick={removeAthlete}
-                className="text-blue-600 hover:text-blue-800"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ) : (
-            <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal rounded-none"
+          <div className="lg:col-span-1">
+            <Label className="sr-only">Αθλητής (προαιρετικό)</Label>
+            
+            {selectedUser ? (
+              <div className="flex items-center justify-between bg-blue-50 text-blue-700 p-2 border border-blue-200 rounded-none h-8">
+                <span className="font-medium text-sm">{selectedUser.name}</span>
+                <button
+                  onClick={removeAthlete}
+                  className="text-blue-600 hover:text-blue-800"
                 >
-                  <Search className="mr-2 h-4 w-4" />
-                  Αναζήτηση αθλητή...
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0 rounded-none" align="start">
-                <Command className="border-0">
-                  <CommandInput 
-                    placeholder="Αναζήτηση αθλητή..." 
-                    value={searchTerm}
-                    onValueChange={setSearchTerm}
-                  />
-                  <CommandList className="max-h-48">
-                    <CommandEmpty>Δεν βρέθηκε αθλητής</CommandEmpty>
-                    <CommandItem
-                      className="cursor-pointer p-3 hover:bg-gray-100"
-                      onSelect={() => handleAthleteSelect("no-athlete")}
-                    >
-                      Χωρίς συγκεκριμένο αθλητή
-                    </CommandItem>
-                    {filteredUsers.map(user => (
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal rounded-none h-8"
+                  >
+                    <Search className="mr-2 h-3 w-3" />
+                    <span className="text-sm">Αναζήτηση αθλητή...</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0 rounded-none" align="start">
+                  <Command className="border-0">
+                    <CommandInput 
+                      placeholder="Αναζήτηση αθλητή..." 
+                      value={searchTerm}
+                      onValueChange={setSearchTerm}
+                    />
+                    <CommandList className="max-h-48">
+                      <CommandEmpty>Δεν βρέθηκε αθλητής</CommandEmpty>
                       <CommandItem
-                        key={user.id}
                         className="cursor-pointer p-3 hover:bg-gray-100"
-                        onSelect={() => handleAthleteSelect(user.id)}
+                        onSelect={() => handleAthleteSelect("no-athlete")}
                       >
-                        {user.name}
+                        Χωρίς συγκεκριμένο αθλητή
                       </CommandItem>
-                    ))}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          )}
+                      {filteredUsers.map(user => (
+                        <CommandItem
+                          key={user.id}
+                          className="cursor-pointer p-3 hover:bg-gray-100"
+                          onSelect={() => handleAthleteSelect(user.id)}
+                        >
+                          {user.name}
+                        </CommandItem>
+                      ))}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
+
+          <div className="lg:col-span-1">
+            <Label className="sr-only">Περιγραφή</Label>
+            <Textarea
+              className="rounded-none h-8 resize-none"
+              value={description}
+              onChange={(e) => onDescriptionChange(e.target.value)}
+              placeholder="Περιγραφή προγράμματος..."
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
