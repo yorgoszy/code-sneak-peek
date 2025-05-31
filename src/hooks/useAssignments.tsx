@@ -28,7 +28,7 @@ export const useAssignments = () => {
         id: item.id,
         program_id: item.program_id,
         assigned_by: item.assigned_by || undefined,
-        assignment_type: item.assignment_type || 'individual',
+        assignment_type: (item.assignment_type as 'individual' | 'group') || 'individual',
         athlete_id: item.athlete_id || undefined,
         group_id: item.group_id || undefined,
         start_date: item.start_date,
