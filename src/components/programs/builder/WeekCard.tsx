@@ -147,12 +147,12 @@ export const WeekCard: React.FC<WeekCardProps> = ({
     <Card className="rounded-none border-2">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-base">{week.name}</CardTitle>
+          <CardTitle className="text-lg">{week.name}</CardTitle>
           <div className="flex gap-2">
             <Button 
               onClick={onAddDay}
               size="sm"
-              className="rounded-none"
+              className="rounded-none text-sm"
             >
               <Plus className="w-4 h-4 mr-1" />
               +Day
