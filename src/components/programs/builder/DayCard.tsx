@@ -5,6 +5,7 @@ import { Collapsible } from "@/components/ui/collapsible";
 import { GripVertical } from "lucide-react";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
+import { DayCalculations } from './DayCalculations';
 import { Exercise } from '../types';
 
 interface ProgramExercise {
@@ -133,6 +134,13 @@ export const DayCard: React.FC<DayCardProps> = ({
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
           />
+          
+          {isOpen && (
+            <DayCalculations 
+              blocks={day.blocks} 
+              exercises={exercises} 
+            />
+          )}
         </Collapsible>
       </div>
     </Card>
