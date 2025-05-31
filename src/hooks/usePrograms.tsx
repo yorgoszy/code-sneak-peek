@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -109,12 +108,12 @@ export const usePrograms = () => {
     try {
       console.log('Creating/updating assignment for program:', programId, 'user:', userId);
       
-      // Check if assignment already exists
+      // Check if assignment already exists using athlete_id (DB field name)
       const { data: existingAssignment } = await supabase
         .from('program_assignments')
         .select('id')
         .eq('program_id', programId)
-        .eq('user_id', userId)
+        .eq('athlete_id', userId) // Using athlete_id to match DB schema
         .single();
 
       if (existingAssignment) {
@@ -127,12 +126,12 @@ export const usePrograms = () => {
         if (error) throw error;
         console.log('Assignment updated');
       } else {
-        // Create new assignment
+        // Create new assignment using athlete_id
         const { error } = await supabase
           .from('program_assignments')
           .insert([{
             program_id: programId,
-            user_id: userId,
+            athlete_id: userId, // Using athlete_id to match DB schema
             status: 'active'
           }]);
         
@@ -281,28 +280,11 @@ export const usePrograms = () => {
           programs(id, name, description),
           app_users(id, name, email)
         `)
-        .order('assigned_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Transform the data to match our ProgramAssignment type
-      const assignments: ProgramAssignment[] = (data || []).map(item => ({
-        id: item.id,
-        program_id: item.program_id,
-        user_id: item.user_id || item.athlete_id, // Handle both user_id and athlete_id from DB
-        assigned_by: item.assigned_by,
-        assigned_at: item.assigned_at || item.created_at, // Handle missing assigned_at
-        start_date: item.start_date,
-        end_date: item.end_date,
-        status: item.status,
-        notes: item.notes,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        programs: item.programs,
-        app_users: item.app_users
-      }));
-      
-      return assignments;
+      return data || [];
     } catch (error) {
       console.error('Error fetching program assignments:', error);
       toast.error('Σφάλμα φόρτωσης αναθέσεων');

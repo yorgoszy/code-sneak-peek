@@ -56,18 +56,21 @@ export interface Program {
   program_weeks: Week[];
 }
 
+// Updated to match actual database schema
 export interface ProgramAssignment {
   id: string;
   program_id: string;
-  user_id: string;
+  athlete_id?: string; // Using athlete_id to match DB schema
   assigned_by?: string;
-  assigned_at: string;
   start_date?: string;
   end_date?: string;
-  status: 'active' | 'completed' | 'paused' | 'cancelled';
+  status: string; // Using string instead of union to match DB
   notes?: string;
   created_at: string;
   updated_at: string;
+  assignment_type?: string;
+  group_id?: string;
+  progress?: number;
   programs?: Program;
   app_users?: User;
 }
