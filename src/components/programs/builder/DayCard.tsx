@@ -38,19 +38,19 @@ interface Day {
 interface DayCardProps {
   day: Day;
   exercises: Exercise[];
-  onUpdateDayName: (name: string) => void;
-  onAddBlock: () => void;
+  onUpdateDayName: (dayId: string, name: string) => void;
+  onAddBlock: (dayId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
   onUpdateBlockName: (blockId: string, name: string) => void;
-  onAddExercise: (blockId: string, exerciseId: string) => void;
-  onRemoveExercise: (blockId: string, exerciseId: string) => void;
-  onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
-  onDuplicateExercise: (blockId: string, exerciseId: string) => void;
-  onRemoveDay: () => void;
-  onDuplicateDay: () => void;
-  onReorderBlocks: (oldIndex: number, newIndex: number) => void;
-  onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
+  onAddExercise: (blockId: string) => void;
+  onRemoveExercise: (exerciseId: string) => void;
+  onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
+  onDuplicateExercise: (exerciseId: string) => void;
+  onRemoveDay: (dayId: string) => void;
+  onDuplicateDay: (dayId: string) => void;
+  onReorderBlocks: (dayId: string, blockIds: string[]) => void;
+  onReorderExercises: (blockId: string, exerciseIds: string[]) => void;
 }
 
 export const DayCard: React.FC<DayCardProps> = ({
@@ -78,7 +78,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           <span className="text-sm font-medium">Ημέρα {day.day_number}:</span>
           <Input
             value={day.name}
-            onChange={(e) => onUpdateDayName(e.target.value)}
+            onChange={(e) => onUpdateDayName(day.id, e.target.value)}
             className="flex-1 h-8"
             style={{ borderRadius: '0px', fontSize: '12px' }}
             placeholder="Όνομα ημέρας"
@@ -88,7 +88,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={onAddBlock}
+            onClick={() => onAddBlock(day.id)}
             className="h-8 px-2"
             style={{ borderRadius: '0px', fontSize: '11px' }}
           >
@@ -98,7 +98,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={onDuplicateDay}
+            onClick={() => onDuplicateDay(day.id)}
             className="h-8 px-2"
             style={{ borderRadius: '0px' }}
           >
@@ -107,7 +107,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={onRemoveDay}
+            onClick={() => onRemoveDay(day.id)}
             className="h-8 px-2"
             style={{ borderRadius: '0px' }}
           >
@@ -119,7 +119,7 @@ export const DayCard: React.FC<DayCardProps> = ({
       {/* Day Content */}
       <div className="p-3">
         <DayCardContent
-          blocks={day.blocks}
+          day={day}
           exercises={exercises}
           onRemoveBlock={onRemoveBlock}
           onDuplicateBlock={onDuplicateBlock}
