@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -96,6 +95,41 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     });
   };
 
+  const duplicateWeek = (weekId: string) => {
+    const weekToDuplicate = program.weeks.find(w => w.id === weekId);
+    if (!weekToDuplicate) return;
+
+    const newWeek: Week = {
+      ...weekToDuplicate,
+      id: generateId(),
+      name: `${weekToDuplicate.name} (Αντίγραφο)`,
+      week_number: program.weeks.length + 1,
+      days: weekToDuplicate.days.map(day => ({
+        ...day,
+        id: generateId(),
+        blocks: day.blocks.map(block => ({
+          ...block,
+          id: generateId(),
+          exercises: block.exercises.map(exercise => ({
+            ...exercise,
+            id: generateId()
+          }))
+        }))
+      }))
+    };
+
+    setProgram({ ...program, weeks: [...program.weeks, newWeek] });
+  };
+
+  const updateWeekName = (weekId: string, name: string) => {
+    setProgram({
+      ...program,
+      weeks: program.weeks.map(w => 
+        w.id === weekId ? { ...w, name } : w
+      )
+    });
+  };
+
   const addDay = (weekId: string) => {
     const week = program.weeks.find(w => w.id === weekId);
     if (!week) return;
@@ -123,6 +157,52 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       weeks: program.weeks.map(w => 
         w.id === weekId 
           ? { ...w, days: w.days.filter(d => d.id !== dayId) }
+          : w
+      )
+    });
+  };
+
+  const duplicateDay = (weekId: string, dayId: string) => {
+    const week = program.weeks.find(w => w.id === weekId);
+    const dayToDuplicate = week?.days.find(d => d.id === dayId);
+    if (!week || !dayToDuplicate) return;
+
+    const newDay: Day = {
+      ...dayToDuplicate,
+      id: generateId(),
+      name: `${dayToDuplicate.name} (Αντίγραφο)`,
+      day_number: week.days.length + 1,
+      blocks: dayToDuplicate.blocks.map(block => ({
+        ...block,
+        id: generateId(),
+        exercises: block.exercises.map(exercise => ({
+          ...exercise,
+          id: generateId()
+        }))
+      }))
+    };
+
+    setProgram({
+      ...program,
+      weeks: program.weeks.map(w => 
+        w.id === weekId 
+          ? { ...w, days: [...w.days, newDay] }
+          : w
+      )
+    });
+  };
+
+  const updateDayName = (weekId: string, dayId: string, name: string) => {
+    setProgram({
+      ...program,
+      weeks: program.weeks.map(w => 
+        w.id === weekId 
+          ? {
+              ...w,
+              days: w.days.map(d => 
+                d.id === dayId ? { ...d, name } : d
+              )
+            }
           : w
       )
     });
@@ -209,6 +289,63 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
                         b.id === blockId 
                           ? { ...b, exercises: [...b.exercises, newExercise] }
                           : b
+                      )
+                    }
+                  : d
+              )
+            }
+          : w
+      )
+    });
+  };
+
+  const duplicateBlock = (weekId: string, dayId: string, blockId: string) => {
+    const week = program.weeks.find(w => w.id === weekId);
+    const day = week?.days.find(d => d.id === dayId);
+    const blockToDuplicate = day?.blocks.find(b => b.id === blockId);
+    if (!day || !blockToDuplicate) return;
+
+    const newBlock: Block = {
+      ...blockToDuplicate,
+      id: generateId(),
+      name: `${blockToDuplicate.name} (Αντίγραφο)`,
+      block_order: day.blocks.length + 1,
+      exercises: blockToDuplicate.exercises.map(exercise => ({
+        ...exercise,
+        id: generateId()
+      }))
+    };
+
+    setProgram({
+      ...program,
+      weeks: program.weeks.map(w => 
+        w.id === weekId 
+          ? {
+              ...w,
+              days: w.days.map(d => 
+                d.id === dayId 
+                  ? { ...d, blocks: [...d.blocks, newBlock] }
+                  : d
+              )
+            }
+          : w
+      )
+    });
+  };
+
+  const updateBlockName = (weekId: string, dayId: string, blockId: string, name: string) => {
+    setProgram({
+      ...program,
+      weeks: program.weeks.map(w => 
+        w.id === weekId 
+          ? {
+              ...w,
+              days: w.days.map(d => 
+                d.id === dayId 
+                  ? {
+                      ...d,
+                      blocks: d.blocks.map(b => 
+                        b.id === blockId ? { ...b, name } : b
                       )
                     }
                   : d
@@ -321,6 +458,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
               exercises={exercises}
               onAddWeek={addWeek}
               onRemoveWeek={removeWeek}
+              onDuplicateWeek={duplicateWeek}
+              onUpdateWeekName={updateWeekName}
               onAddDay={addDay}
               onRemoveDay={removeDay}
               onAddBlock={addBlock}

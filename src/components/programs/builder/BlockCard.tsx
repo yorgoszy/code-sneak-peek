@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
 import { ExerciseRow } from './ExerciseRow';
 import { Exercise } from '../types';
 
@@ -32,6 +33,8 @@ interface BlockCardProps {
   exercises: Exercise[];
   onAddExercise: () => void;
   onRemoveBlock: () => void;
+  onDuplicateBlock: () => void;
+  onUpdateBlockName: (name: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (exerciseId: string) => void;
 }
@@ -41,45 +44,106 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   exercises,
   onAddExercise,
   onRemoveBlock,
+  onDuplicateBlock,
+  onUpdateBlockName,
   onUpdateExercise,
   onRemoveExercise
 }) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingName, setEditingName] = useState(block.name);
+
+  const handleNameDoubleClick = () => {
+    setIsEditing(true);
+    setEditingName(block.name);
+  };
+
+  const handleNameSave = () => {
+    if (editingName.trim()) {
+      onUpdateBlockName(editingName.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleNameKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleNameSave();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setEditingName(block.name);
+    }
+  };
+
   return (
     <Card className="rounded-none bg-gray-50">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <h6 className="text-xs font-medium">{block.name}</h6>
-          <div className="flex gap-1">
-            <Button
-              onClick={onAddExercise}
-              size="sm"
-              variant="ghost"
-            >
-              <Plus className="w-2 h-2" />
-            </Button>
-            <Button
-              onClick={onRemoveBlock}
-              size="sm"
-              variant="ghost"
-            >
-              <Trash2 className="w-2 h-2" />
-            </Button>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-center">
+            <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded">
+              {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              <h6 
+                className="text-xs font-medium cursor-pointer"
+                onDoubleClick={handleNameDoubleClick}
+              >
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onBlur={handleNameSave}
+                    onKeyDown={handleNameKeyPress}
+                    className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs"
+                    autoFocus
+                  />
+                ) : (
+                  block.name
+                )}
+              </h6>
+            </CollapsibleTrigger>
+            <div className="flex gap-1">
+              <Button
+                onClick={onAddExercise}
+                size="sm"
+                variant="ghost"
+                className="rounded-none"
+              >
+                <Plus className="w-2 h-2" />
+              </Button>
+              <Button
+                onClick={onDuplicateBlock}
+                size="sm"
+                variant="ghost"
+                className="rounded-none"
+              >
+                <Copy className="w-2 h-2" />
+              </Button>
+              <Button
+                onClick={onRemoveBlock}
+                size="sm"
+                variant="ghost"
+                className="rounded-none"
+              >
+                <Trash2 className="w-2 h-2" />
+              </Button>
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-2">
-        <div className="space-y-2">
-          {block.exercises.map((exercise) => (
-            <ExerciseRow
-              key={exercise.id}
-              exercise={exercise}
-              exercises={exercises}
-              onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
-              onRemove={() => onRemoveExercise(exercise.id)}
-            />
-          ))}
-        </div>
-      </CardContent>
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent className="pt-2">
+            <div className="space-y-2">
+              {block.exercises.map((exercise) => (
+                <ExerciseRow
+                  key={exercise.id}
+                  exercise={exercise}
+                  exercises={exercises}
+                  onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
+                  onRemove={() => onRemoveExercise(exercise.id)}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 };
