@@ -41,6 +41,12 @@ export const NewProgramDialog: React.FC<NewProgramDialogProps> = ({
     }
   };
 
+  const handleAthleteChange = (value: string) => {
+    // Convert "no-athlete" back to empty string for the database
+    const athleteId = value === "no-athlete" ? "" : value;
+    setNewProgram({...newProgram, athlete_id: athleteId});
+  };
+
   return (
     <>
       <Button className="rounded-none" onClick={() => handleOpenChange(true)}>
@@ -74,12 +80,15 @@ export const NewProgramDialog: React.FC<NewProgramDialogProps> = ({
             </div>
             <div>
               <Label>Αθλητής (προαιρετικό)</Label>
-              <Select value={newProgram.athlete_id} onValueChange={(value) => setNewProgram({...newProgram, athlete_id: value})}>
+              <Select 
+                value={newProgram.athlete_id || "no-athlete"} 
+                onValueChange={handleAthleteChange}
+              >
                 <SelectTrigger className="rounded-none">
                   <SelectValue placeholder="Επιλέξτε αθλητή" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Χωρίς συγκεκριμένο αθλητή</SelectItem>
+                  <SelectItem value="no-athlete">Χωρίς συγκεκριμένο αθλητή</SelectItem>
                   {users.map(user => (
                     <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
                   ))}
