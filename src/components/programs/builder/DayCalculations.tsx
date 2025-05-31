@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Exercise } from '../types';
@@ -32,7 +31,10 @@ interface DayCalculationsProps {
 export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exercises }) => {
   // Helper function to parse tempo string to seconds
   const parseTempoToSeconds = (tempo: string): number => {
-    if (!tempo) return 0;
+    // If tempo is empty, treat as "1.1.1" (3 seconds)
+    if (!tempo || tempo.trim() === '') {
+      return 3;
+    }
     
     const parts = tempo.split('.');
     let totalSeconds = 0;
