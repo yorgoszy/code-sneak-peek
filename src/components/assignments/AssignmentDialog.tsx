@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,6 @@ interface AssignmentDialogProps {
 }
 
 export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
-  users,
   onCreateAssignment,
   onOpenChange,
   editingAssignment,
@@ -38,11 +36,13 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
 
   const [programs, setPrograms] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       fetchPrograms();
       fetchGroups();
+      fetchUsers();
       
       if (editingAssignment) {
         setFormData({
@@ -71,19 +71,48 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
   }, [isOpen, editingAssignment]);
 
   const fetchPrograms = async () => {
-    const { data } = await supabase
+    console.log('Fetching programs...');
+    const { data, error } = await supabase
       .from('programs')
       .select('id, name, description')
       .order('name');
-    setPrograms(data || []);
+    
+    if (error) {
+      console.error('Error fetching programs:', error);
+    } else {
+      console.log('Fetched programs:', data);
+      setPrograms(data || []);
+    }
   };
 
   const fetchGroups = async () => {
-    const { data } = await supabase
+    console.log('Fetching groups...');
+    const { data, error } = await supabase
       .from('athlete_groups')
       .select('id, name, athlete_ids')
       .order('name');
-    setGroups(data || []);
+    
+    if (error) {
+      console.error('Error fetching groups:', error);
+    } else {
+      console.log('Fetched groups:', data);
+      setGroups(data || []);
+    }
+  };
+
+  const fetchUsers = async () => {
+    console.log('Fetching users from app_users...');
+    const { data, error } = await supabase
+      .from('app_users')
+      .select('id, name, email, role, category')
+      .order('name');
+    
+    if (error) {
+      console.error('Error fetching users:', error);
+    } else {
+      console.log('Fetched users from app_users:', data);
+      setUsers(data || []);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -118,11 +147,6 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
     onCreateAssignment(assignmentData);
   };
 
-  // Show all users from app_users table instead of filtering by role
-  const availableUsers = users || [];
-
-  console.log('Available users in AssignmentDialog:', availableUsers);
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -147,6 +171,9 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-sm text-gray-500 mt-1">
+              Διαθέσιμα προγράμματα: {programs.length}
+            </p>
           </div>
 
           <div>
@@ -171,7 +198,7 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                   <SelectValue placeholder="Επιλέξτε αθλητή" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableUsers.map((user) => (
+                  {users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
                       {user.name} {user.email && `(${user.email})`}
                     </SelectItem>
@@ -179,7 +206,7 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                 </SelectContent>
               </Select>
               <p className="text-sm text-gray-500 mt-1">
-                Διαθέσιμοι χρήστες: {availableUsers.length}
+                Διαθέσιμοι χρήστες: {users.length}
               </p>
             </div>
           )}
@@ -199,6 +226,9 @@ export const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-sm text-gray-500 mt-1">
+                Διαθέσιμες ομάδες: {groups.length}
+              </p>
             </div>
           )}
 
