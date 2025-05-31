@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -170,7 +171,7 @@ export const WeekCard: React.FC<WeekCardProps> = ({
       <CardContent>
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={week.days.map(d => d.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {week.days.map((day) => (
                 <SortableDay
                   key={day.id}
