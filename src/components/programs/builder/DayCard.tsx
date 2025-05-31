@@ -45,7 +45,7 @@ interface DayCardProps {
   onUpdateBlockName: (blockId: string, name: string) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveExercise: (blockId: string, exerciseId: string) => void;
-  onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
+  onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
   onDuplicateExercise: (exerciseId: string) => void;
   onRemoveDay: (dayId: string) => void;
   onDuplicateDay: (dayId: string) => void;
