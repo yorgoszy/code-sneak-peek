@@ -47,8 +47,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   return (
     <>
       <div className="bg-white border" style={{ fontSize: '10px' }}>
-        {/* Exercise Name Row with Actions */}
-        <div className="p-1 border-b bg-gray-50 flex items-center gap-2">
+        {/* Exercise Name Row */}
+        <div className="p-1 border-b bg-gray-50 flex items-center">
           <Button
             variant="outline"
             size="sm"
@@ -58,27 +58,6 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           >
             {selectedExercise ? selectedExercise.name : 'Επιλογή...'}
           </Button>
-          
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDuplicate}
-              className="p-1 h-6 w-6"
-              style={{ borderRadius: '0px' }}
-            >
-              <Copy className="w-3 h-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRemove}
-              className="p-1 h-6 w-6"
-              style={{ borderRadius: '0px' }}
-            >
-              <Trash2 className="w-3 h-3" />
-            </Button>
-          </div>
         </div>
         
         {/* Exercise Details Row - Using flex with fixed widths to align with headers */}
@@ -186,7 +165,26 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           </div>
           
           <div className="flex flex-col items-center" style={{ width: '50px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '9px', color: '#666' }}>Rest</label>
+            <div className="flex justify-center gap-1 mb-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDuplicate}
+                className="p-1 h-4 w-4"
+                style={{ borderRadius: '0px' }}
+              >
+                <Copy className="w-2 h-2" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onRemove}
+                className="p-1 h-4 w-4"
+                style={{ borderRadius: '0px' }}
+              >
+                <Trash2 className="w-2 h-2" />
+              </Button>
+            </div>
             <Input
               value={exercise.rest}
               onChange={(e) => onUpdate('rest', e.target.value)}
