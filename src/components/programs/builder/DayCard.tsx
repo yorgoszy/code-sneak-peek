@@ -99,7 +99,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   const blocksCount = day.blocks.length;
 
   return (
-    <Card className="rounded-none relative w-full" style={{ minHeight: '40px' }}>
+    <Card className="rounded-none relative w-full" style={{ minHeight: '32px' }}>
       <div className="absolute left-0 top-0 bottom-0 w-3 flex items-center justify-center cursor-move z-10">
         <GripVertical className="w-2 h-2 text-gray-400" />
       </div>
