@@ -62,6 +62,7 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           editingProgram={editingProgram}
           isOpen={builderDialogOpen}
           onOpenChange={onBuilderDialogClose}
+          showTrigger={false}
         />
       </div>
 

@@ -14,6 +14,7 @@ interface ProgramBuilderDialogProps {
   onOpenChange?: (open: boolean) => void;
   editingProgram?: Program | null;
   isOpen?: boolean;
+  showTrigger?: boolean; // New prop to control trigger display
 }
 
 export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
@@ -22,7 +23,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   onCreateProgram,
   onOpenChange,
   editingProgram,
-  isOpen: externalIsOpen
+  isOpen: externalIsOpen,
+  showTrigger = true
 }) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
@@ -75,11 +77,11 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     updateProgram({ training_days: days });
   };
 
-  console.log('ProgramBuilderDialog render - isOpen:', isOpen, 'editingProgram:', editingProgram?.name);
+  console.log('ProgramBuilderDialog render - isOpen:', isOpen, 'editingProgram:', editingProgram?.name, 'showTrigger:', showTrigger);
 
   return (
     <>
-      {!externalIsOpen && (
+      {showTrigger && externalIsOpen === undefined && (
         <ProgramBuilderTrigger onClick={() => handleOpenChange(true)} />
       )}
 
