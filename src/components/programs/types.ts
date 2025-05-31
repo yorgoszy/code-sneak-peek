@@ -56,6 +56,13 @@ export interface Program {
   program_weeks: Week[];
 }
 
+// Simplified program info for assignments
+export interface ProgramInfo {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 // Updated to match actual database schema
 export interface ProgramAssignment {
   id: string;
@@ -71,6 +78,6 @@ export interface ProgramAssignment {
   assignment_type?: string;
   group_id?: string;
   progress?: number;
-  programs?: Program;
+  programs?: ProgramInfo; // Using simplified program info
   app_users?: User;
 }
