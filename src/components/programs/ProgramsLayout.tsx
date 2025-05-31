@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ProgramBuilderDialog } from './ProgramBuilderDialog';
 import { ProgramsList } from './ProgramsList';
@@ -102,9 +103,9 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Programs List */}
-        <div className="lg:col-span-1">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Programs List - Now takes 2 columns */}
+        <div className="lg:col-span-2">
           <ProgramsList
             programs={programs}
             selectedProgram={selectedProgram}
@@ -116,8 +117,8 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           />
         </div>
 
-        {/* Program Details */}
-        <div className="lg:col-span-3">
+        {/* Program Details - Now takes 1 column */}
+        <div className="lg:col-span-1">
           <ProgramDetails
             selectedProgram={selectedProgram}
             users={users}
