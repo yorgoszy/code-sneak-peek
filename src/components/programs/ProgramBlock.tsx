@@ -3,19 +3,12 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { NewExerciseDialog } from './NewExerciseDialog';
 import { Exercise, Block } from './types';
 
 interface ProgramBlockProps {
   block: Block;
   onDeleteBlock: (blockId: string) => void;
   onDeleteExercise: (exerciseId: string) => void;
-  onSetCurrentBlock: (block: Block) => void;
-  showNewExercise: boolean;
-  setShowNewExercise: (show: boolean) => void;
-  newExercise: any;
-  setNewExercise: (exercise: any) => void;
-  onCreateExercise: () => void;
   exercises: Exercise[];
 }
 
@@ -23,12 +16,6 @@ export const ProgramBlock: React.FC<ProgramBlockProps> = ({
   block,
   onDeleteBlock,
   onDeleteExercise,
-  onSetCurrentBlock,
-  showNewExercise,
-  setShowNewExercise,
-  newExercise,
-  setNewExercise,
-  onCreateExercise,
   exercises
 }) => {
   return (
@@ -36,24 +23,14 @@ export const ProgramBlock: React.FC<ProgramBlockProps> = ({
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <h5 className="font-medium text-sm">{block.name}</h5>
-          <div className="flex gap-1">
-            <NewExerciseDialog
-              open={showNewExercise}
-              onOpenChange={setShowNewExercise}
-              newExercise={newExercise}
-              setNewExercise={setNewExercise}
-              exercises={exercises}
-              onCreateExercise={onCreateExercise}
-              onSetCurrentBlock={() => onSetCurrentBlock(block)}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDeleteBlock(block.id)}
-            >
-              <Trash2 className="w-3 h-3" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDeleteBlock(block.id)}
+            className="rounded-none"
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="pt-2">
@@ -85,6 +62,7 @@ export const ProgramBlock: React.FC<ProgramBlockProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => onDeleteExercise(exercise.id)}
+                  className="rounded-none"
                 >
                   <Trash2 className="w-3 h-3" />
                 </Button>
