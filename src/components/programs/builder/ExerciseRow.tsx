@@ -72,12 +72,12 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           >
             {selectedExercise ? (
               <span className="flex items-center gap-1">
-                {selectedExercise.name}
                 {exerciseNumber && (
-                  <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm ml-1">
+                  <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm mr-1">
                     {exerciseNumber}
                   </span>
                 )}
+                {selectedExercise.name}
               </span>
             ) : 'Επιλογή...'}
           </Button>
