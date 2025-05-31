@@ -96,10 +96,11 @@ const SortableDay: React.FC<{
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    width: '300px',
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative flex-shrink-0" style={{ width: '300px' }}>
+    <div ref={setNodeRef} style={style} className="relative flex-shrink-0">
       <div
         className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
         {...attributes}
@@ -148,12 +149,12 @@ export const WeekCard: React.FC<WeekCardProps> = ({
     <Card className="rounded-none border-2">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-lg">{week.name}</CardTitle>
+          <CardTitle className="text-xl">{week.name}</CardTitle>
           <div className="flex gap-2">
             <Button 
               onClick={onAddDay}
               size="sm"
-              className="rounded-none text-sm"
+              className="rounded-none text-base"
             >
               <Plus className="w-4 h-4 mr-1" />
               +Day
