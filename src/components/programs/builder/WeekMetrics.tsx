@@ -134,8 +134,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
     <div className="text-xs space-y-1 mt-1 px-2 py-1 bg-gray-50 rounded">
       <div className="grid grid-cols-4 gap-2">
         <div className="text-center">
-          <div className="font-medium text-blue-600">Όγκος</div>
-          <div className="font-semibold text-blue-700">{currentStats.volume.toLocaleString()}</div>
+          <div className="font-semibold text-blue-700">{currentStats.volume.toLocaleString()}tn</div>
           {previousStats && (
             <PercentageIndicator 
               percentage={calculatePercentageChange(currentStats.volume, previousStats.volume)} 
@@ -144,7 +143,6 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
         </div>
         
         <div className="text-center">
-          <div className="font-medium text-green-600">Ένταση</div>
           <div className="font-semibold text-green-700">{currentStats.intensity}%</div>
           {previousStats && (
             <PercentageIndicator 
@@ -154,8 +152,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
         </div>
         
         <div className="text-center">
-          <div className="font-medium text-orange-600">Watts</div>
-          <div className="font-semibold text-orange-700">{currentStats.watts}</div>
+          <div className="font-semibold text-orange-700">{currentStats.watts}w</div>
           {previousStats && (
             <PercentageIndicator 
               percentage={calculatePercentageChange(currentStats.watts, previousStats.watts)} 
@@ -164,7 +161,6 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
         </div>
         
         <div className="text-center">
-          <div className="font-medium text-red-600">Χρόνος</div>
           <div className="font-semibold text-red-700">{currentStats.time}λ</div>
           {previousStats && (
             <PercentageIndicator 
