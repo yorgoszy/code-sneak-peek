@@ -39,7 +39,7 @@ export const useAssignments = () => {
         created_at: item.created_at,
         updated_at: item.updated_at,
         programs: item.programs || undefined,
-        app_users: item.app_users || undefined,
+        app_users: Array.isArray(item.app_users) && item.app_users.length > 0 ? item.app_users[0] : undefined,
         athlete_groups: item.athlete_groups || undefined
       }));
 
