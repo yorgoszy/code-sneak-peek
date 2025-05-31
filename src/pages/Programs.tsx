@@ -117,7 +117,6 @@ const Programs = () => {
           onCreateProgram={handleCreateProgram}
           onBuilderDialogClose={handleBuilderDialogClose}
           onDuplicateProgram={handleDuplicateProgram}
-          onPreviewProgram={() => {}} // Empty function since we removed preview
           showNewWeek={formState.showNewWeek}
           setShowNewWeek={formState.setShowNewWeek}
           newWeek={formState.newWeek}

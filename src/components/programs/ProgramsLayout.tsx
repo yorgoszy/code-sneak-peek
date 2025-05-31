@@ -18,7 +18,6 @@ interface ProgramsLayoutProps {
   onCreateProgram: (program: any) => void;
   onBuilderDialogClose: (open: boolean) => void;
   onDuplicateProgram: (program: Program) => void;
-  onPreviewProgram: (program: Program) => void;
   showNewWeek: boolean;
   setShowNewWeek: (show: boolean) => void;
   newWeek: { name: string; week_number: number };

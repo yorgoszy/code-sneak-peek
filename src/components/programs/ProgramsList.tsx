@@ -12,7 +12,6 @@ interface ProgramsListProps {
   onDeleteProgram: (programId: string) => void;
   onEditProgram: (program: Program) => void;
   onDuplicateProgram?: (program: Program) => void;
-  onPreviewProgram?: (program: Program) => void;
 }
 
 export const ProgramsList: React.FC<ProgramsListProps> = ({
