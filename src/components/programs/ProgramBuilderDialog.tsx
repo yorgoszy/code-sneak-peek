@@ -59,6 +59,22 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     handleClose();
   };
 
+  // Convert start_date string to Date object for ProgramCalendar
+  const startDateAsDate = program.start_date ? new Date(program.start_date) : undefined;
+
+  // Convert training_days number to empty array since ProgramCalendar expects string[] for day names
+  const trainingDaysAsArray: string[] = [];
+
+  const handleStartDateChange = (date: Date | undefined) => {
+    const dateString = date ? date.toISOString().split('T')[0] : '';
+    updateProgram({ start_date: dateString });
+  };
+
+  const handleTrainingDaysChange = (days: string[]) => {
+    // Convert string[] back to number for storage
+    updateProgram({ training_days: days.length });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <ProgramBuilderDialogContent
@@ -68,8 +84,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onNameChange={(name) => updateProgram({ name })}
         onDescriptionChange={(description) => updateProgram({ description })}
         onAthleteChange={(athlete_id) => updateProgram({ athlete_id })}
-        onStartDateChange={(start_date) => updateProgram({ start_date })}
-        onTrainingDaysChange={(training_days) => updateProgram({ training_days })}
+        onStartDateChange={handleStartDateChange}
+        onTrainingDaysChange={handleTrainingDaysChange}
         onAddWeek={actions.addWeek}
         onRemoveWeek={actions.removeWeek}
         onDuplicateWeek={actions.duplicateWeek}

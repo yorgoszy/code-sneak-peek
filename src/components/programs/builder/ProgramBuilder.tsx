@@ -14,8 +14,8 @@ interface ProgramBuilderProps {
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
   onAthleteChange: (athlete_id: string) => void;
-  onStartDateChange?: (date: string) => void;
-  onTrainingDaysChange?: (days: number) => void;
+  onStartDateChange?: (date: Date | undefined) => void;
+  onTrainingDaysChange?: (days: string[]) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -56,6 +56,24 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
     })
   );
 
+  // Convert program data to the format expected by ProgramBasicInfo
+  const startDateString = program.start_date || '';
+  const trainingDaysNumber = program.training_days || 0;
+
+  const handleStartDateChange = (date: string) => {
+    if (onStartDateChange) {
+      const dateObj = date ? new Date(date) : undefined;
+      onStartDateChange(dateObj);
+    }
+  };
+
+  const handleTrainingDaysChange = (days: number) => {
+    if (onTrainingDaysChange) {
+      // Convert number to empty array since the parent expects string[]
+      onTrainingDaysChange([]);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <ProgramBasicInfo
@@ -63,13 +81,13 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         description={program.description}
         athlete_id={program.athlete_id}
         users={users}
-        start_date={program.start_date}
-        training_days={program.training_days}
+        start_date={startDateString}
+        training_days={trainingDaysNumber}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
         onAthleteChange={onAthleteChange}
-        onStartDateChange={onStartDateChange || (() => {})}
-        onTrainingDaysChange={onTrainingDaysChange || (() => {})}
+        onStartDateChange={handleStartDateChange}
+        onTrainingDaysChange={handleTrainingDaysChange}
       />
 
       <DndContext sensors={sensors} collisionDetection={closestCenter}>
