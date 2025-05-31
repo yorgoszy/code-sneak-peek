@@ -1,0 +1,107 @@
+
+import React from 'react';
+import { CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
+
+interface BlockCardHeaderProps {
+  blockName: string;
+  isOpen: boolean;
+  isEditing: boolean;
+  editingName: string;
+  exercisesCount: number;
+  onNameDoubleClick: () => void;
+  onEditingNameChange: (value: string) => void;
+  onNameSave: () => void;
+  onNameKeyPress: (e: React.KeyboardEvent) => void;
+  onAddExercise: () => void;
+  onDuplicateBlock: () => void;
+  onRemoveBlock: () => void;
+}
+
+export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
+  blockName,
+  isOpen,
+  isEditing,
+  editingName,
+  exercisesCount,
+  onNameDoubleClick,
+  onEditingNameChange,
+  onNameSave,
+  onNameKeyPress,
+  onAddExercise,
+  onDuplicateBlock,
+  onRemoveBlock
+}) => {
+  return (
+    <CardHeader className="pb-2">
+      <div className="flex justify-between items-center">
+        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded">
+          {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+          <h6 
+            className="text-xs font-medium cursor-pointer flex items-center gap-2"
+            onDoubleClick={onNameDoubleClick}
+          >
+            {isEditing ? (
+              <input
+                type="text"
+                value={editingName}
+                onChange={(e) => onEditingNameChange(e.target.value)}
+                onBlur={onNameSave}
+                onKeyDown={onNameKeyPress}
+                className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs"
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <>
+                {blockName}
+                {!isOpen && exercisesCount > 0 && (
+                  <span className="text-xs bg-gray-300 px-2 py-1 rounded-full">
+                    {exercisesCount}
+                  </span>
+                )}
+              </>
+            )}
+          </h6>
+        </CollapsibleTrigger>
+        <div className="flex gap-1">
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddExercise();
+            }}
+            size="sm"
+            variant="ghost"
+            className="rounded-none"
+          >
+            <Plus className="w-2 h-2" />
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDuplicateBlock();
+            }}
+            size="sm"
+            variant="ghost"
+            className="rounded-none"
+          >
+            <Copy className="w-2 h-2" />
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveBlock();
+            }}
+            size="sm"
+            variant="ghost"
+            className="rounded-none"
+          >
+            <Trash2 className="w-2 h-2" />
+          </Button>
+        </div>
+      </div>
+    </CardHeader>
+  );
+};

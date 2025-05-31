@@ -1,15 +1,11 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy, GripVertical } from "lucide-react";
-import { ExerciseRow } from './ExerciseRow';
+import { Card } from "@/components/ui/card";
+import { Collapsible } from "@/components/ui/collapsible";
+import { BlockCardHeader } from './BlockCardHeader';
+import { BlockCardContent } from './BlockCardContent';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { Exercise } from '../types';
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { DndContext, closestCenter } from '@dnd-kit/core';
 
 interface ProgramExercise {
   id: string;
@@ -44,44 +40,6 @@ interface BlockCardProps {
   onDuplicateExercise: (exerciseId: string) => void;
   onReorderExercises: (oldIndex: number, newIndex: number) => void;
 }
-
-const SortableExercise: React.FC<{
-  exercise: ProgramExercise;
-  exercises: Exercise[];
-  onUpdate: (field: string, value: any) => void;
-  onRemove: () => void;
-  onDuplicate: () => void;
-}> = (props) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: props.exercise.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} className="relative">
-      <div
-        className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="w-2 h-2 text-gray-400" />
-      </div>
-      <div className="ml-4">
-        <ExerciseRow {...props} />
-      </div>
-    </div>
-  );
-};
 
 export const BlockCard: React.FC<BlockCardProps> = ({
   block,
@@ -130,110 +88,35 @@ export const BlockCard: React.FC<BlockCardProps> = ({
     setShowExerciseDialog(false);
   };
 
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
-
-    if (active.id !== over.id) {
-      const oldIndex = block.exercises.findIndex(exercise => exercise.id === active.id);
-      const newIndex = block.exercises.findIndex(exercise => exercise.id === over.id);
-      onReorderExercises(oldIndex, newIndex);
-    }
-  };
-
   const exercisesCount = block.exercises.length;
 
   return (
     <>
       <Card className="rounded-none bg-gray-50">
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-center">
-              <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded">
-                {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                <h6 
-                  className="text-xs font-medium cursor-pointer flex items-center gap-2"
-                  onDoubleClick={handleNameDoubleClick}
-                >
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      onBlur={handleNameSave}
-                      onKeyDown={handleNameKeyPress}
-                      className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <>
-                      {block.name}
-                      {!isOpen && exercisesCount > 0 && (
-                        <span className="text-xs bg-gray-300 px-2 py-1 rounded-full">
-                          {exercisesCount}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </h6>
-              </CollapsibleTrigger>
-              <div className="flex gap-1">
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddExerciseClick();
-                  }}
-                  size="sm"
-                  variant="ghost"
-                  className="rounded-none"
-                >
-                  <Plus className="w-2 h-2" />
-                </Button>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDuplicateBlock();
-                  }}
-                  size="sm"
-                  variant="ghost"
-                  className="rounded-none"
-                >
-                  <Copy className="w-2 h-2" />
-                </Button>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveBlock();
-                  }}
-                  size="sm"
-                  variant="ghost"
-                  className="rounded-none"
-                >
-                  <Trash2 className="w-2 h-2" />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CollapsibleContent>
-            <CardContent className="pt-2">
-              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={block.exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
-                  <div className="space-y-2">
-                    {block.exercises.map((exercise) => (
-                      <SortableExercise
-                        key={exercise.id}
-                        exercise={exercise}
-                        exercises={exercises}
-                        onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
-                        onRemove={() => onRemoveExercise(exercise.id)}
-                        onDuplicate={() => onDuplicateExercise(exercise.id)}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            </CardContent>
-          </CollapsibleContent>
+          <BlockCardHeader
+            blockName={block.name}
+            isOpen={isOpen}
+            isEditing={isEditing}
+            editingName={editingName}
+            exercisesCount={exercisesCount}
+            onNameDoubleClick={handleNameDoubleClick}
+            onEditingNameChange={setEditingName}
+            onNameSave={handleNameSave}
+            onNameKeyPress={handleNameKeyPress}
+            onAddExercise={handleAddExerciseClick}
+            onDuplicateBlock={onDuplicateBlock}
+            onRemoveBlock={onRemoveBlock}
+          />
+          
+          <BlockCardContent
+            exercises={block.exercises}
+            availableExercises={exercises}
+            onUpdateExercise={onUpdateExercise}
+            onRemoveExercise={onRemoveExercise}
+            onDuplicateExercise={onDuplicateExercise}
+            onReorderExercises={onReorderExercises}
+          />
         </Collapsible>
       </Card>
 
