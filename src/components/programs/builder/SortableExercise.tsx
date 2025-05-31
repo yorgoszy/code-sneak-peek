@@ -53,9 +53,7 @@ export const SortableExercise: React.FC<SortableExerciseProps> = (props) => {
       >
         <GripVertical className="w-2 h-2 text-gray-400" />
       </div>
-      <div className="ml-4">
-        <ExerciseRow {...props} />
-      </div>
+      <ExerciseRow {...props} />
     </div>
   );
 };

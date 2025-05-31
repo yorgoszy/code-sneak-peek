@@ -65,9 +65,7 @@ export const SortableBlock: React.FC<SortableBlockProps> = (props) => {
       >
         <GripVertical className="w-3 h-3 text-gray-400" />
       </div>
-      <div className="ml-4">
-        <BlockCard {...props} />
-      </div>
+      <BlockCard {...props} />
     </div>
   );
 };

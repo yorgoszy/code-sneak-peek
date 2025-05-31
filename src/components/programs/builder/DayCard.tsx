@@ -104,45 +104,43 @@ export const DayCard: React.FC<DayCardProps> = ({
         <GripVertical className="w-3 h-3 text-gray-400" />
       </div>
       
-      <div className="ml-4">
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <DayCardHeader
-            dayName={day.name}
-            isOpen={isOpen}
-            isEditing={isEditing}
-            editingName={editingName}
-            blocksCount={blocksCount}
-            onNameDoubleClick={handleNameDoubleClick}
-            onEditingNameChange={setEditingName}
-            onNameSave={handleNameSave}
-            onNameKeyPress={handleNameKeyPress}
-            onAddBlock={onAddBlock}
-            onDuplicateDay={onDuplicateDay}
-            onRemoveDay={onRemoveDay}
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <DayCardHeader
+          dayName={day.name}
+          isOpen={isOpen}
+          isEditing={isEditing}
+          editingName={editingName}
+          blocksCount={blocksCount}
+          onNameDoubleClick={handleNameDoubleClick}
+          onEditingNameChange={setEditingName}
+          onNameSave={handleNameSave}
+          onNameKeyPress={handleNameKeyPress}
+          onAddBlock={onAddBlock}
+          onDuplicateDay={onDuplicateDay}
+          onRemoveDay={onRemoveDay}
+        />
+        
+        <DayCardContent
+          blocks={day.blocks}
+          exercises={exercises}
+          onAddExercise={onAddExercise}
+          onRemoveBlock={onRemoveBlock}
+          onDuplicateBlock={onDuplicateBlock}
+          onUpdateBlockName={onUpdateBlockName}
+          onUpdateExercise={onUpdateExercise}
+          onRemoveExercise={onRemoveExercise}
+          onDuplicateExercise={onDuplicateExercise}
+          onReorderBlocks={onReorderBlocks}
+          onReorderExercises={onReorderExercises}
+        />
+        
+        {isOpen && (
+          <DayCalculations 
+            blocks={day.blocks} 
+            exercises={exercises} 
           />
-          
-          <DayCardContent
-            blocks={day.blocks}
-            exercises={exercises}
-            onAddExercise={onAddExercise}
-            onRemoveBlock={onRemoveBlock}
-            onDuplicateBlock={onDuplicateBlock}
-            onUpdateBlockName={onUpdateBlockName}
-            onUpdateExercise={onUpdateExercise}
-            onRemoveExercise={onRemoveExercise}
-            onDuplicateExercise={onDuplicateExercise}
-            onReorderBlocks={onReorderBlocks}
-            onReorderExercises={onReorderExercises}
-          />
-          
-          {isOpen && (
-            <DayCalculations 
-              blocks={day.blocks} 
-              exercises={exercises} 
-            />
-          )}
-        </Collapsible>
-      </div>
+        )}
+      </Collapsible>
     </Card>
   );
 };
