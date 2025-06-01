@@ -43,7 +43,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <h2 className="text-lg font-semibold text-gray-800">HyperKids</h2>
+            <img 
+              src="/lovable-uploads/14dbca9e-de35-46e9-b834-a6dcac95f92a.png" 
+              alt="Logo" 
+              className="h-8 w-auto"
+            />
           )}
           <Button
             variant="ghost"
