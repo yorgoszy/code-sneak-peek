@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ActiveProgramsActionsProps {
@@ -22,21 +23,25 @@ export const ActiveProgramsActions: React.FC<ActiveProgramsActionsProps> = ({
     }
 
     console.log('🗑️ Attempting to delete assignment:', assignment.id);
-    console.log('🗑️ Assignment object:', assignment);
 
     try {
-      let success = false;
-      
-      if (onDeleteProgram) {
-        // Use the parent's delete function if provided
-        success = await onDeleteProgram(assignment.id);
-      }
-      
-      if (success && onRefresh) {
-        console.log('✅ Assignment deleted successfully, refreshing list');
-        onRefresh();
-      } else if (!success) {
+      // Delete the assignment from program_assignments table
+      const { error: deleteError } = await supabase
+        .from('program_assignments')
+        .delete()
+        .eq('id', assignment.id);
+
+      if (deleteError) {
+        console.error('❌ Error deleting assignment:', deleteError);
         toast.error('Σφάλμα κατά τη διαγραφή της ανάθεσης');
+        return;
+      }
+
+      console.log('✅ Assignment deleted successfully');
+      toast.success('Η ανάθεση διαγράφηκε επιτυχώς - το πρόγραμμα επέστρεψε στα Προγράμματα');
+      
+      if (onRefresh) {
+        onRefresh();
       }
     } catch (error) {
       console.error('❌ Error in handleDeleteAssignment:', error);
