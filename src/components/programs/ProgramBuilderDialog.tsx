@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { User, Exercise, Program } from './types';
 import { ProgramBuilderDialogContent } from './builder/ProgramBuilderDialogContent';
+import { ProgramAssignmentDialog } from './builder/ProgramAssignmentDialog';
 import { useProgramBuilderState } from './builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from './builder/hooks/useProgramBuilderActions';
 import { useProgramAssignments } from '@/hooks/programs/useProgramAssignments';
@@ -27,6 +28,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
 }) => {
   const { program, updateProgram, resetProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises);
   const { createOrUpdateAssignment } = useProgramAssignments();
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises);
 
@@ -67,24 +69,29 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     }
   };
 
-  const handleAssignments = async () => {
+  const handleOpenAssignments = () => {
     if (!program.name.trim()) {
       toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
-    
-    if (!program.user_id) {
-      toast.error('Επιλέξτε έναν ασκούμενο για την ανάθεση');
+
+    if (!program.weeks || program.weeks.length === 0) {
+      toast.error('Δημιουργήστε πρώτα εβδομάδες και ημέρες προπόνησης');
       return;
     }
 
-    if (!program.training_dates || program.training_dates.length === 0) {
-      toast.error('Επιλέξτε τουλάχιστον μία ημερομηνία προπόνησης');
+    const hasValidDays = program.weeks.some(week => week.days && week.days.length > 0);
+    if (!hasValidDays) {
+      toast.error('Προσθέστε ημέρες προπόνησης στις εβδομάδες');
       return;
     }
-    
+
+    setAssignmentDialogOpen(true);
+  };
+
+  const handleAssign = async (userId: string, trainingDates: string[]) => {
     console.log('=== ASSIGNMENT CREATION DEBUG ===');
-    console.log('Creating program with specific training dates:', program.training_dates);
+    console.log('Creating program with specific training dates:', trainingDates);
     
     const programToSave = {
       ...program,
@@ -100,17 +107,17 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       await onCreateProgram(programToSave);
       const programId = editingProgram?.id || program.id;
       
-      if (programId && program.user_id && program.training_dates?.length > 0) {
+      if (programId && userId && trainingDates?.length > 0) {
         // Create assignment with specific training dates
         await createOrUpdateAssignment(
           programId, 
-          program.user_id, 
+          userId, 
           undefined, // no start_date
           undefined, // no end_date
-          program.training_dates // specific training dates
+          trainingDates // specific training dates
         );
         
-        console.log('✅ Assignment created with training dates:', program.training_dates);
+        console.log('✅ Assignment created with training dates:', trainingDates);
         toast.success('Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς');
       } else {
         console.error('❌ Missing required data for assignment');
@@ -129,40 +136,49 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <ProgramBuilderDialogContent
+    <>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <ProgramBuilderDialogContent
+          program={program}
+          users={users}
+          exercises={exercises}
+          onNameChange={(name) => updateProgram({ name })}
+          onDescriptionChange={(description) => updateProgram({ description })}
+          onAthleteChange={(user_id) => updateProgram({ user_id })}
+          onStartDateChange={(start_date) => updateProgram({ start_date })}
+          onTrainingDaysChange={(training_days) => updateProgram({ training_days })}
+          onAddWeek={actions.addWeek}
+          onRemoveWeek={actions.removeWeek}
+          onDuplicateWeek={actions.duplicateWeek}
+          onUpdateWeekName={actions.updateWeekName}
+          onAddDay={actions.addDay}
+          onRemoveDay={actions.removeDay}
+          onDuplicateDay={actions.duplicateDay}
+          onUpdateDayName={actions.updateDayName}
+          onAddBlock={actions.addBlock}
+          onRemoveBlock={actions.removeBlock}
+          onDuplicateBlock={actions.duplicateBlock}
+          onUpdateBlockName={actions.updateBlockName}
+          onAddExercise={actions.addExercise}
+          onRemoveExercise={actions.removeExercise}
+          onUpdateExercise={actions.updateExercise}
+          onDuplicateExercise={actions.duplicateExercise}
+          onReorderWeeks={actions.reorderWeeks}
+          onReorderDays={actions.reorderDays}
+          onReorderBlocks={actions.reorderBlocks}
+          onReorderExercises={actions.reorderExercises}
+          onSave={handleSave}
+          onAssignments={handleOpenAssignments}
+        />
+      </Dialog>
+
+      <ProgramAssignmentDialog
+        isOpen={assignmentDialogOpen}
+        onClose={() => setAssignmentDialogOpen(false)}
         program={program}
         users={users}
-        exercises={exercises}
-        onNameChange={(name) => updateProgram({ name })}
-        onDescriptionChange={(description) => updateProgram({ description })}
-        onAthleteChange={(user_id) => updateProgram({ user_id })}
-        onStartDateChange={(start_date) => updateProgram({ start_date })}
-        onTrainingDaysChange={(training_days) => updateProgram({ training_days })}
-        onTrainingDatesChange={(training_dates) => updateProgram({ training_dates })}
-        onAddWeek={actions.addWeek}
-        onRemoveWeek={actions.removeWeek}
-        onDuplicateWeek={actions.duplicateWeek}
-        onUpdateWeekName={actions.updateWeekName}
-        onAddDay={actions.addDay}
-        onRemoveDay={actions.removeDay}
-        onDuplicateDay={actions.duplicateDay}
-        onUpdateDayName={actions.updateDayName}
-        onAddBlock={actions.addBlock}
-        onRemoveBlock={actions.removeBlock}
-        onDuplicateBlock={actions.duplicateBlock}
-        onUpdateBlockName={actions.updateBlockName}
-        onAddExercise={actions.addExercise}
-        onRemoveExercise={actions.removeExercise}
-        onUpdateExercise={actions.updateExercise}
-        onDuplicateExercise={actions.duplicateExercise}
-        onReorderWeeks={actions.reorderWeeks}
-        onReorderDays={actions.reorderDays}
-        onReorderBlocks={actions.reorderBlocks}
-        onReorderExercises={actions.reorderExercises}
-        onSave={handleSave}
-        onAssignments={handleAssignments}
+        onAssign={handleAssign}
       />
-    </Dialog>
+    </>
   );
 };

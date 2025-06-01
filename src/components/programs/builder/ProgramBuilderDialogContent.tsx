@@ -4,7 +4,6 @@ import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProgramBasicInfo } from './ProgramBasicInfo';
 import { TrainingWeeks } from './TrainingWeeks';
-import { TrainingDateSelector } from './TrainingDateSelector';
 import { Button } from "@/components/ui/button";
 import { Save, Users } from "lucide-react";
 import type { User, Exercise } from '../types';
@@ -19,7 +18,6 @@ interface ProgramBuilderDialogContentProps {
   onAthleteChange: (user_id: string) => void;
   onStartDateChange: (start_date: Date | undefined) => void;
   onTrainingDaysChange: (training_days: string[]) => void;
-  onTrainingDatesChange?: (dates: string[]) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -52,8 +50,6 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onDescriptionChange,
   onAthleteChange,
   onStartDateChange,
-  onTrainingDaysChange,
-  onTrainingDatesChange,
   onAddWeek,
   onRemoveWeek,
   onDuplicateWeek,
@@ -98,15 +94,6 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onAthleteChange={onAthleteChange}
             onStartDateChange={onStartDateChange}
           />
-
-          {/* Training Dates Selector */}
-          {onTrainingDatesChange && (
-            <TrainingDateSelector
-              selectedDates={program.training_dates || []}
-              onDatesChange={onTrainingDatesChange}
-              programWeeks={program.weeks?.length || 0}
-            />
-          )}
 
           <TrainingWeeks
             weeks={program.weeks || []}
