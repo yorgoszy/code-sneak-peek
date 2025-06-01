@@ -78,15 +78,15 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onAssignments
 }) => {
   return (
-    <DialogContent className="max-w-7xl max-h-[90vh] rounded-none">
-      <DialogHeader>
+    <DialogContent className="max-w-7xl h-[90vh] rounded-none flex flex-col">
+      <DialogHeader className="flex-shrink-0">
         <DialogTitle>
           {program.id ? 'Επεξεργασία Προγράμματος' : 'Δημιουργία Νέου Προγράμματος'}
         </DialogTitle>
       </DialogHeader>
       
-      <ScrollArea className="flex-1 pr-6">
-        <div className="space-y-6">
+      <ScrollArea className="flex-1 h-full">
+        <div className="space-y-6 p-6">
           <ProgramBasicInfo
             name={program.name}
             description={program.description || ''}
@@ -137,7 +137,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
         </div>
       </ScrollArea>
 
-      <div className="flex justify-end gap-2 pt-4 border-t">
+      <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
         <Button
           onClick={onSave}
           variant="outline"
