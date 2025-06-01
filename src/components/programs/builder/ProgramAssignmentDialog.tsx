@@ -7,7 +7,8 @@ import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Search, X, Users, Calendar as CalendarIcon } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, getWeek, getYear, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
+import { el } from "date-fns/locale";
 import type { User } from '../types';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 
@@ -56,24 +57,47 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     setSearchTerm('');
   };
 
+  // Βελτιωμένη λογική επιλογής ημερομηνιών
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
     const dateString = format(date, 'yyyy-MM-dd');
     
     if (selectedDates.includes(dateString)) {
-      // Remove date if already selected
+      // Αφαιρούμε την ημερομηνία αν είναι ήδη επιλεγμένη
       setSelectedDates(selectedDates.filter(d => d !== dateString));
-    } else {
-      // Add date if not selected and limit hasn't been reached
-      if (selectedDates.length < totalRequiredSessions) {
-        setSelectedDates([...selectedDates, dateString].sort());
-      }
+      return;
+    }
+    
+    // Ελέγχουμε αν μπορούμε να προσθέσουμε την ημερομηνία
+    if (canAddDate(date)) {
+      setSelectedDates([...selectedDates, dateString].sort());
     }
   };
 
-  const removeDate = (dateToRemove: string) => {
-    setSelectedDates(selectedDates.filter(d => d !== dateToRemove));
+  // Λογική για έλεγχο αν μπορούμε να προσθέσουμε μια ημερομηνία
+  const canAddDate = (date: Date): boolean => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    
+    // Αν η ημερομηνία είναι ήδη επιλεγμένη, επιτρέπουμε την αφαίρεση
+    if (selectedDates.includes(dateString)) {
+      return true;
+    }
+    
+    // Υπολογίζουμε σε ποια εβδομάδα ανήκει η ημερομηνία
+    const weekNumber = getWeek(date, { weekStartsOn: 1, firstWeekContainsDate: 4 });
+    const year = getYear(date);
+    
+    // Μετράμε πόσες ημερομηνίες έχουμε ήδη επιλέξει για αυτή την εβδομάδα
+    const datesInThisWeek = selectedDates.filter(selectedDate => {
+      const selectedDateObj = parseISO(selectedDate);
+      const selectedWeek = getWeek(selectedDateObj, { weekStartsOn: 1, firstWeekContainsDate: 4 });
+      const selectedYear = getYear(selectedDateObj);
+      return selectedWeek === weekNumber && selectedYear === year;
+    });
+    
+    // Επιτρέπουμε προσθήκη μόνο αν δεν έχουμε φτάσει το όριο ημερών για αυτή την εβδομάδα
+    return datesInThisWeek.length < daysPerWeek;
   };
 
   const clearAllDates = () => {
@@ -83,6 +107,23 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   const isDateSelected = (date: Date) => {
     const dateString = format(date, 'yyyy-MM-dd');
     return selectedDates.includes(dateString);
+  };
+
+  // Ελέγχουμε αν μια ημερομηνία είναι απενεργοποιημένη
+  const isDateDisabled = (date: Date) => {
+    // Απενεργοποιούμε παλιές ημερομηνίες
+    if (date < new Date(new Date().setHours(0, 0, 0, 0))) {
+      return true;
+    }
+    
+    // Αν η ημερομηνία είναι ήδη επιλεγμένη, την επιτρέπουμε (για αποεπιλογή)
+    const dateString = format(date, 'yyyy-MM-dd');
+    if (selectedDates.includes(dateString)) {
+      return false;
+    }
+    
+    // Απενεργοποιούμε αν δεν μπορούμε να προσθέσουμε την ημερομηνία
+    return !canAddDate(date);
   };
 
   const handleAssign = () => {
@@ -189,76 +230,39 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
                 Επιλογή Ημερομηνιών Προπόνησης
               </CardTitle>
               <p className="text-sm text-gray-600">
-                Επιλέξτε {totalRequiredSessions} ημερομηνίες για τις προπονήσεις ({selectedDates.length}/{totalRequiredSessions})
+                Επιλέξτε {daysPerWeek} ημέρες την εβδομάδα για {totalWeeks} εβδομάδες 
+                ({selectedDates.length}/{totalRequiredSessions} προπονήσεις)
               </p>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="flex flex-col items-center gap-4">
                 {/* Calendar */}
-                <div>
-                  <Calendar
-                    mode="single"
-                    selected={undefined}
-                    onSelect={handleDateSelect}
-                    className="rounded-none border pointer-events-auto"
-                    modifiers={{
-                      selected: isDateSelected
-                    }}
-                    modifiersClassNames={{
-                      selected: "bg-blue-500 text-white hover:bg-blue-600"
-                    }}
-                    disabled={(date) => {
-                      // Disable past dates
-                      return date < new Date(new Date().setHours(0, 0, 0, 0));
-                    }}
-                  />
-                </div>
+                <Calendar
+                  mode="single"
+                  selected={undefined}
+                  onSelect={handleDateSelect}
+                  className="rounded-none border pointer-events-auto"
+                  locale={el}
+                  modifiers={{
+                    selected: isDateSelected
+                  }}
+                  modifiersClassNames={{
+                    selected: "bg-blue-500 text-white hover:bg-blue-600"
+                  }}
+                  disabled={isDateDisabled}
+                />
 
-                {/* Selected Dates */}
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-medium">
-                      Επιλεγμένες Ημερομηνίες ({selectedDates.length})
-                    </h4>
-                    {selectedDates.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={clearAllDates}
-                        className="rounded-none"
-                      >
-                        Καθαρισμός
-                      </Button>
-                    )}
-                  </div>
-                  
-                  <div className="max-h-64 overflow-y-auto space-y-2">
-                    {selectedDates.length === 0 ? (
-                      <p className="text-gray-500 text-sm">
-                        Κάντε κλικ στο ημερολόγιο για να επιλέξετε ημερομηνίες
-                      </p>
-                    ) : (
-                      selectedDates.map(dateString => (
-                        <div
-                          key={dateString}
-                          className="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-none"
-                        >
-                          <span className="text-sm">
-                            {format(parseISO(dateString), 'dd/MM/yyyy - EEEE')}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeDate(dateString)}
-                            className="h-6 w-6 p-0 hover:bg-red-100 rounded-none"
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
+                {/* Clear All Button */}
+                {selectedDates.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearAllDates}
+                    className="rounded-none"
+                  >
+                    Αποεπιλογή Όλων ({selectedDates.length})
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
