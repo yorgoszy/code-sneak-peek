@@ -78,69 +78,38 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       return;
     }
     
-    console.log('Creating program with assignments:', program);
-    
-    // Prepare start date string before saving
-    let startDateString: string | undefined;
-    if (program.start_date) {
-      if (typeof program.start_date === 'string') {
-        startDateString = program.start_date;
-      } else if (program.start_date instanceof Date) {
-        startDateString = program.start_date.toISOString().split('T')[0];
-      }
-    }
+    console.log('Creating program for calendar assignment:', program);
     
     const programToSave = {
       ...program,
       id: editingProgram?.id || undefined,
       status: 'active', // Mark as active
-      createAssignment: true, // Flag to create assignment
-      start_date: startDateString // Ensure start_date is a string
+      createAssignment: true // Flag to create assignment
     };
     
     try {
-      // First save the program with the correct start_date
+      // First save the program
       await onCreateProgram(programToSave);
       const programId = editingProgram?.id || program.id;
       
       if (programId && program.user_id) {
-        // Calculate end date if start date is provided
-        let endDate: string | undefined;
-        if (startDateString && program.weeks?.length) {
-          const startDate = new Date(startDateString);
-          const weeksToAdd = program.weeks.length;
-          const calculatedEndDate = new Date(startDate);
-          calculatedEndDate.setDate(calculatedEndDate.getDate() + (weeksToAdd * 7));
-          endDate = calculatedEndDate.toISOString().split('T')[0];
-        }
-        
-        console.log('Assignment dates:', {
-          startDate: startDateString,
-          endDate: endDate,
-          programWeeks: program.weeks?.length
-        });
-        
-        // Create assignment with dates
+        // Create assignment without dates - dates will be set in calendar
         await createOrUpdateAssignment(
           programId, 
-          program.user_id, 
-          startDateString, 
-          endDate
+          program.user_id
         );
         
-        console.log('Assignment created successfully with dates:', {
+        console.log('Assignment created for calendar scheduling:', {
           programId,
-          userId: program.user_id,
-          startDate: startDateString,
-          endDate
+          userId: program.user_id
         });
       }
       
       handleClose();
-      // Navigate to active programs after creating assignment
+      // Navigate to active programs calendar for date selection
       setTimeout(() => {
-        window.location.href = '/dashboard/active-programs';
-      }, 1500);
+        window.location.href = '/dashboard/active-programs?tab=calendar&programId=' + (programId || program.id);
+      }, 1000);
     } catch (error) {
       console.error('Error creating assignments:', error);
     }
