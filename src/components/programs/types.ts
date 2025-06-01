@@ -52,7 +52,7 @@ export interface Program {
   name: string;
   description?: string;
   athlete_id?: string;
-  app_users?: { name: string };
+  app_users?: { name: string } | null;
   program_weeks: Week[];
 }
 
@@ -63,21 +63,21 @@ export interface ProgramInfo {
   description?: string;
 }
 
-// Updated to match actual database schema
+// Updated to match actual database schema and handle query errors
 export interface ProgramAssignment {
   id: string;
   program_id: string;
-  athlete_id?: string; // Using athlete_id to match DB schema
+  athlete_id?: string;
   assigned_by?: string;
   start_date?: string;
   end_date?: string;
-  status: string; // Using string instead of union to match DB
+  status: string;
   notes?: string;
   created_at: string;
   updated_at: string;
   assignment_type?: string;
   group_id?: string;
   progress?: number;
-  programs?: ProgramInfo; // Using simplified program info
-  app_users?: User;
+  programs?: ProgramInfo | null; // Allow null for failed queries
+  app_users?: User | null; // Allow null for failed queries
 }

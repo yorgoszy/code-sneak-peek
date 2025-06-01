@@ -13,7 +13,7 @@ export const useProgramAssignments = () => {
         .from('program_assignments')
         .select('id')
         .eq('program_id', programId)
-        .eq('athlete_id', userId) // Using athlete_id to match DB schema
+        .eq('athlete_id', userId)
         .single();
 
       if (existingAssignment) {
@@ -31,7 +31,7 @@ export const useProgramAssignments = () => {
           .from('program_assignments')
           .insert([{
             program_id: programId,
-            athlete_id: userId, // Using athlete_id to match DB schema
+            athlete_id: userId,
             status: 'active'
           }]);
         
@@ -46,18 +46,43 @@ export const useProgramAssignments = () => {
 
   const fetchProgramAssignments = async (): Promise<ProgramAssignment[]> => {
     try {
+      // First try with foreign key references
       const { data, error } = await supabase
         .from('program_assignments')
         .select(`
           *,
-          programs(id, name, description),
-          app_users(id, name, email)
+          programs!fk_program_assignments_program_id(id, name, description),
+          app_users!fk_program_assignments_athlete_id(id, name, email)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error with foreign key query:', error);
+        // Fallback to simple query without joins
+        const { data: simpleData, error: simpleError } = await supabase
+          .from('program_assignments')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (simpleError) throw simpleError;
+        
+        return (simpleData || []).map(assignment => ({
+          ...assignment,
+          programs: null,
+          app_users: null
+        }));
+      }
       
-      return data || [];
+      // Transform data to handle potential query errors
+      return (data || []).map(assignment => ({
+        ...assignment,
+        programs: assignment.programs && typeof assignment.programs === 'object' && 'id' in assignment.programs 
+          ? assignment.programs as any 
+          : null,
+        app_users: assignment.app_users && typeof assignment.app_users === 'object' && 'id' in assignment.app_users 
+          ? assignment.app_users as any 
+          : null
+      }));
     } catch (error) {
       console.error('Error fetching program assignments:', error);
       toast.error('Σφάλμα φόρτωσης αναθέσεων');
