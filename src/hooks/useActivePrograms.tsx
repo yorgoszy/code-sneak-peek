@@ -62,9 +62,8 @@ export const useActivePrograms = () => {
         .from('program_assignments')
         .select(`
           *,
-          programs!fk_program_assignments_program_id(
+          programs(
             *,
-            app_users!fk_programs_created_by(name),
             program_weeks(
               *,
               program_days(
@@ -92,7 +91,7 @@ export const useActivePrograms = () => {
           .from('program_assignments')
           .select(`
             *,
-            programs!fk_program_assignments_program_id(*)
+            programs(*)
           `)
           .eq('athlete_id', userData.id)
           .eq('status', 'active');
@@ -114,30 +113,32 @@ export const useActivePrograms = () => {
           return;
         }
 
-        const today = new Date();
-        const nextWeek = new Date();
-        nextWeek.setDate(nextWeek.getDate() + 7);
+        // For debugging, let's not filter by date initially to see all assignments
+        console.log('🎯 All assignments before date filtering:', data.map(a => ({
+          id: a.id,
+          programName: a.programs?.name,
+          startDate: a.start_date,
+          endDate: a.end_date,
+          status: a.status
+        })));
 
-        console.log('📅 Date filters:', { 
-          today: today.toISOString().split('T')[0], 
-          nextWeek: nextWeek.toISOString().split('T')[0] 
-        });
-
-        // Filter programs that are active today or start within next week
-        const filteredPrograms = data.filter(assignment => {
-          console.log('🔍 Checking assignment:', {
-            id: assignment.id,
-            programName: assignment.programs?.name,
-            startDate: assignment.start_date,
-            endDate: assignment.end_date,
-            status: assignment.status
-          });
-
-          if (!assignment.start_date || !assignment.end_date) {
-            console.log('❌ Assignment missing dates:', assignment.id);
+        // If no dates are set, show the program anyway
+        const validPrograms = data.filter(assignment => {
+          if (!assignment.programs) {
+            console.log('❌ Assignment without program:', assignment.id);
             return false;
           }
-
+          
+          // If no dates are set, include the assignment
+          if (!assignment.start_date || !assignment.end_date) {
+            console.log('✅ Including assignment without dates:', assignment.id);
+            return true;
+          }
+          
+          const today = new Date();
+          const nextWeek = new Date();
+          nextWeek.setDate(nextWeek.getDate() + 7);
+          
           const startDate = new Date(assignment.start_date);
           const endDate = new Date(assignment.end_date);
           
@@ -158,8 +159,8 @@ export const useActivePrograms = () => {
           return isActive || isComingSoon;
         });
         
-        console.log('✅ Final filtered programs:', filteredPrograms.length, filteredPrograms);
-        setPrograms(filteredPrograms);
+        console.log('✅ Final filtered programs:', validPrograms.length, validPrograms);
+        setPrograms(validPrograms);
       }
     } catch (error) {
       console.error('❌ Unexpected error fetching active programs:', error);

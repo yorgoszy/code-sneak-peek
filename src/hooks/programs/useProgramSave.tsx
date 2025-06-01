@@ -93,8 +93,33 @@ export const useProgramSave = () => {
 
         await createProgramStructure(program.id, programData);
         
-        // If athlete_id is provided, create assignment
-        if (programData.athlete_id) {
+        // Always create an assignment for the creator so the program appears in active programs
+        if (appUserId) {
+          console.log('Creating auto-assignment for creator');
+          const startDate = new Date();
+          const endDate = new Date();
+          endDate.setDate(endDate.getDate() + 30); // Default 30 days duration
+          
+          const { error: assignmentError } = await supabase
+            .from('program_assignments')
+            .insert([{
+              program_id: program.id,
+              athlete_id: appUserId, // Assign to creator
+              status: 'active',
+              start_date: startDate.toISOString().split('T')[0],
+              end_date: endDate.toISOString().split('T')[0],
+              notes: 'Αυτόματη ανάθεση για δημιουργό'
+            }]);
+            
+          if (assignmentError) {
+            console.error('Error creating auto-assignment:', assignmentError);
+          } else {
+            console.log('Auto-assignment created successfully');
+          }
+        }
+        
+        // If athlete_id is provided, create additional assignment
+        if (programData.athlete_id && programData.athlete_id !== appUserId) {
           await createOrUpdateAssignment(program.id, programData.athlete_id);
         }
         
