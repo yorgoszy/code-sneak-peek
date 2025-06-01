@@ -51,10 +51,11 @@ const Index = () => {
                       {user?.email}
                     </span>
                     <Button 
-                      variant="outline" 
+                      variant="ghost" 
                       size="icon"
-                      style={{ borderRadius: '0', backgroundColor: 'white', color: '#5271ff' }}
+                      style={{ borderRadius: '0' }}
                       onClick={handleSignOut}
+                      className="text-white hover:bg-white/20"
                     >
                       <LogOut className="h-4 w-4" />
                     </Button>
