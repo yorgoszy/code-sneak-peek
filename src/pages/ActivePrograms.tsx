@@ -4,11 +4,28 @@ import { Sidebar } from "@/components/Sidebar";
 import { ActiveProgramsList } from "@/components/active-programs/ActiveProgramsList";
 import { ProgramCalendar } from "@/components/active-programs/ProgramCalendar";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { useProgramAssignments } from "@/hooks/programs/useProgramAssignments";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ActivePrograms = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { programs, loading, refetch } = useActivePrograms();
+  const { deleteAssignment } = useProgramAssignments();
+
+  const handleDeleteProgram = async (assignmentId: string) => {
+    try {
+      console.log('🗑️ Attempting to delete assignment from ActivePrograms:', assignmentId);
+      const success = await deleteAssignment(assignmentId);
+      if (success) {
+        console.log('✅ Assignment deleted successfully, refreshing active programs');
+        await refetch();
+      }
+      return success;
+    } catch (error) {
+      console.error('❌ Error deleting assignment in ActivePrograms:', error);
+      return false;
+    }
+  };
 
   if (loading) {
     return (
@@ -42,7 +59,11 @@ const ActivePrograms = () => {
             </TabsContent>
 
             <TabsContent value="list" className="space-y-4">
-              <ActiveProgramsList programs={programs} onRefresh={refetch} />
+              <ActiveProgramsList 
+                programs={programs} 
+                onRefresh={refetch}
+                onDeleteProgram={handleDeleteProgram}
+              />
             </TabsContent>
           </Tabs>
         </div>

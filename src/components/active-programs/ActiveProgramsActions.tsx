@@ -2,21 +2,20 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { useProgramAssignments } from "@/hooks/programs/useProgramAssignments";
 import { toast } from "sonner";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ActiveProgramsActionsProps {
   assignment: EnrichedAssignment;
   onRefresh?: () => void;
+  onDeleteProgram?: (assignmentId: string) => Promise<boolean>;
 }
 
 export const ActiveProgramsActions: React.FC<ActiveProgramsActionsProps> = ({ 
   assignment, 
-  onRefresh 
+  onRefresh,
+  onDeleteProgram
 }) => {
-  const { deleteAssignment } = useProgramAssignments();
-
   const handleDeleteAssignment = async () => {
     if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την ανάθεση;')) {
       return;
@@ -26,10 +25,18 @@ export const ActiveProgramsActions: React.FC<ActiveProgramsActionsProps> = ({
     console.log('🗑️ Assignment object:', assignment);
 
     try {
-      const success = await deleteAssignment(assignment.id);
+      let success = false;
+      
+      if (onDeleteProgram) {
+        // Use the parent's delete function if provided
+        success = await onDeleteProgram(assignment.id);
+      }
+      
       if (success && onRefresh) {
         console.log('✅ Assignment deleted successfully, refreshing list');
         onRefresh();
+      } else if (!success) {
+        toast.error('Σφάλμα κατά τη διαγραφή της ανάθεσης');
       }
     } catch (error) {
       console.error('❌ Error in handleDeleteAssignment:', error);

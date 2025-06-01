@@ -9,9 +9,14 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 interface ActiveProgramsListProps {
   programs: EnrichedAssignment[];
   onRefresh?: () => void;
+  onDeleteProgram?: (assignmentId: string) => Promise<boolean>;
 }
 
-export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs, onRefresh }) => {
+export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ 
+  programs, 
+  onRefresh, 
+  onDeleteProgram 
+}) => {
   const formatTrainingDates = (dates: string[] | undefined) => {
     if (!dates || dates.length === 0) return 'Δεν έχουν οριστεί ημερομηνίες';
     
@@ -88,6 +93,7 @@ export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs
                     <ActiveProgramsActions 
                       assignment={assignment} 
                       onRefresh={onRefresh}
+                      onDeleteProgram={onDeleteProgram}
                     />
                   </div>
                 </div>
