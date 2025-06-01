@@ -134,13 +134,19 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
 
   const fetchUserTests = async () => {
     try {
-      const { data } = await supabase
+      console.log('Fetching tests for user ID:', user.id);
+      const { data, error } = await supabase
         .from('tests')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      setTests(data || []);
+      if (error) {
+        console.error('Error fetching tests:', error);
+      } else {
+        console.log('Fetched tests:', data);
+        setTests(data || []);
+      }
     } catch (error) {
       console.error('Error fetching tests:', error);
     }
