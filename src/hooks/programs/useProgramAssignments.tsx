@@ -82,7 +82,7 @@ export const useProgramAssignments = () => {
         programs: assignment.programs && typeof assignment.programs === 'object' && 'id' in assignment.programs 
           ? assignment.programs as any 
           : null,
-        app_users: assignment.app_users && typeof assignment.app_users === 'object' && 'id' in assignment.app_users 
+        app_users: assignment.app_users && typeof assignment.app_users === 'object' && assignment.app_users !== null && 'id' in assignment.app_users 
           ? assignment.app_users as any 
           : null
       }));
