@@ -57,17 +57,10 @@ export const useActivePrograms = () => {
 
       console.log('✅ Found user data:', userData);
 
-      // First, fetch program assignments with basic program info only
+      // Fetch program assignments without complex relationships
       const { data: assignments, error: assignmentsError } = await supabase
         .from('program_assignments')
-        .select(`
-          *,
-          programs(
-            id,
-            name,
-            description
-          )
-        `)
+        .select('*')
         .eq('athlete_id', userData.id)
         .eq('status', 'active');
 
@@ -85,15 +78,27 @@ export const useActivePrograms = () => {
         return;
       }
 
-      // Now fetch detailed program structure for each program separately
+      // Fetch program details separately for each assignment
       const enrichedAssignments = await Promise.all(
         assignments.map(async (assignment) => {
-          if (!assignment.programs || !assignment.program_id) {
-            console.log('❌ Assignment without valid program:', assignment.id);
+          if (!assignment.program_id) {
+            console.log('❌ Assignment without valid program_id:', assignment.id);
             return assignment;
           }
 
           try {
+            // Fetch basic program info
+            const { data: programData, error: programError } = await supabase
+              .from('programs')
+              .select('id, name, description')
+              .eq('id', assignment.program_id)
+              .single();
+
+            if (programError) {
+              console.error('❌ Error fetching program:', assignment.program_id, programError);
+              return assignment;
+            }
+
             // Fetch program weeks
             const { data: weeks, error: weeksError } = await supabase
               .from('program_weeks')
@@ -142,11 +147,11 @@ export const useActivePrograms = () => {
               })
             );
 
-            // Update the assignment with enriched program data
+            // Return assignment with enriched program data
             return {
               ...assignment,
               programs: {
-                ...assignment.programs,
+                ...programData,
                 program_weeks: weeksWithDays
               }
             };
@@ -161,8 +166,8 @@ export const useActivePrograms = () => {
 
       // Filter by date
       const validPrograms = enrichedAssignments.filter(assignment => {
-        if (!assignment.programs) {
-          console.log('❌ Assignment without valid program:', assignment.id);
+        if (!assignment?.programs) {
+          console.log('❌ Assignment without valid program:', assignment?.id);
           return false;
         }
         
