@@ -1,8 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { ActiveProgramsList } from "@/components/active-programs/ActiveProgramsList";
+import { ProgramCalendar } from "@/components/active-programs/ProgramCalendar";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ActivePrograms = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -28,7 +30,21 @@ const ActivePrograms = () => {
             <h1 className="text-2xl font-bold text-gray-900">Ενεργά Προγράμματα</h1>
             <p className="text-gray-600">Προγράμματα που σας έχουν ανατεθεί και είναι ενεργά</p>
           </div>
-          <ActiveProgramsList programs={programs} />
+          
+          <Tabs defaultValue="calendar" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="calendar">Ημερολόγιο</TabsTrigger>
+              <TabsTrigger value="list">Λίστα</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="calendar" className="space-y-4">
+              <ProgramCalendar programs={programs} />
+            </TabsContent>
+
+            <TabsContent value="list" className="space-y-4">
+              <ActiveProgramsList programs={programs} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
