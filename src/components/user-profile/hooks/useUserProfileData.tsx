@@ -81,20 +81,52 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
       let data = null;
       
       if (user.role === 'trainer' || user.role === 'admin') {
-        // For trainers/admins, fetch programs they created
+        // For trainers/admins, fetch programs they created with full details
         const { data: programsData } = await supabase
           .from('programs')
-          .select('*')
+          .select(`
+            *,
+            app_users(name),
+            program_weeks(
+              *,
+              program_days(
+                *,
+                program_blocks(
+                  *,
+                  program_exercises(
+                    *,
+                    exercises(name)
+                  )
+                )
+              )
+            )
+          `)
           .eq('created_by', user.id)
           .order('created_at', { ascending: false });
         data = programsData;
       } else {
-        // For all other roles, fetch programs assigned to them
+        // For all other roles, fetch programs assigned to them with full details
         const { data: assignmentsData } = await supabase
           .from('program_assignments')
           .select(`
             *,
-            programs(*)
+            programs(
+              *,
+              app_users(name),
+              program_weeks(
+                *,
+                program_days(
+                  *,
+                  program_blocks(
+                    *,
+                    program_exercises(
+                      *,
+                      exercises(name)
+                    )
+                  )
+                )
+              )
+            )
           `)
           .eq('athlete_id', user.id)
           .order('created_at', { ascending: false });
