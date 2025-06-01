@@ -104,8 +104,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     
     try {
       // First save the program
-      await onCreateProgram(programToSave);
-      const programId = editingProgram?.id || program.id;
+      const savedProgram = await onCreateProgram(programToSave);
+      const programId = savedProgram?.id || editingProgram?.id || program.id;
       
       if (programId && userId && trainingDates?.length > 0) {
         // Create assignment with specific training dates
@@ -119,16 +119,16 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         
         console.log('✅ Assignment created with training dates:', trainingDates);
         toast.success('Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς');
+        
+        handleClose();
+        setTimeout(() => {
+          window.location.href = '/dashboard/active-programs';
+        }, 1500);
       } else {
         console.error('❌ Missing required data for assignment');
         toast.error('Απαιτούνται συγκεκριμένες ημερομηνίες προπόνησης');
         return;
       }
-      
-      handleClose();
-      setTimeout(() => {
-        window.location.href = '/dashboard/active-programs';
-      }, 1500);
     } catch (error) {
       console.error('❌ Error creating assignments:', error);
       toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
@@ -144,6 +144,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           exercises={exercises}
           onNameChange={(name) => updateProgram({ name })}
           onDescriptionChange={(description) => updateProgram({ description })}
+          onAthleteChange={(user_id) => updateProgram({ user_id })}
           onAddWeek={actions.addWeek}
           onRemoveWeek={actions.removeWeek}
           onDuplicateWeek={actions.duplicateWeek}

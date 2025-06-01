@@ -15,6 +15,7 @@ interface ProgramBuilderDialogContentProps {
   exercises: Exercise[];
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
+  onAthleteChange: (user_id: string) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -45,6 +46,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   exercises,
   onNameChange,
   onDescriptionChange,
+  onAthleteChange,
   onAddWeek,
   onRemoveWeek,
   onDuplicateWeek,
@@ -81,13 +83,17 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
           <ProgramBasicInfo
             name={program.name}
             description={program.description || ''}
+            selectedUserId={program.user_id}
+            users={users}
             onNameChange={onNameChange}
             onDescriptionChange={onDescriptionChange}
+            onAthleteChange={onAthleteChange}
           />
 
           <TrainingWeeks
             weeks={program.weeks || []}
             exercises={exercises}
+            selectedUserId={program.user_id}
             onAddWeek={onAddWeek}
             onRemoveWeek={onRemoveWeek}
             onDuplicateWeek={onDuplicateWeek}

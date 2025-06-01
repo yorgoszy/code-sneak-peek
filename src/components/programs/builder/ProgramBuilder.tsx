@@ -69,13 +69,17 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
       <ProgramBasicInfo
         name={program.name}
         description={program.description}
+        selectedUserId={program.user_id}
+        users={users}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
+        onAthleteChange={onAthleteChange}
       />
       
       <TrainingWeeks
         weeks={program.weeks}
         exercises={exercises}
+        selectedUserId={program.user_id}
         onAddWeek={onAddWeek}
         onRemoveWeek={onRemoveWeek}
         onDuplicateWeek={onDuplicateWeek}

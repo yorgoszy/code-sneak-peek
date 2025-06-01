@@ -43,7 +43,7 @@ export const useProgramSave = () => {
           if (createUserError) {
             console.error('Error creating user:', createUserError);
             toast.error('Σφάλμα δημιουργίας χρήστη');
-            return;
+            return null;
           }
           appUserId = newUser.id;
         } else if (existingUser) {
@@ -53,7 +53,7 @@ export const useProgramSave = () => {
       
       if (programData.id) {
         // Update existing program
-        const { error: programError } = await supabase
+        const { data: updatedProgram, error: programError } = await supabase
           .from('programs')
           .update({
             name: programData.name,
@@ -61,7 +61,9 @@ export const useProgramSave = () => {
             user_id: programData.user_id || null,
             status: programData.status || 'draft'
           })
-          .eq('id', programData.id);
+          .eq('id', programData.id)
+          .select()
+          .single();
 
         if (programError) throw programError;
 
@@ -96,6 +98,8 @@ export const useProgramSave = () => {
           ? 'Το πρόγραμμα ενημερώθηκε και ανατέθηκε επιτυχώς'
           : 'Το πρόγραμμα ενημερώθηκε επιτυχώς';
         toast.success(successMessage);
+        
+        return updatedProgram;
       } else {
         // Create new program
         const { data: program, error: programError } = await supabase
@@ -133,6 +137,8 @@ export const useProgramSave = () => {
           ? 'Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς'
           : 'Το πρόγραμμα αποθηκεύτηκε επιτυχώς';
         toast.success(successMessage);
+        
+        return program;
       }
     } catch (error) {
       console.error('Error saving program:', error);
