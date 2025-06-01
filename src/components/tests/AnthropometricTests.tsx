@@ -93,11 +93,11 @@ export const AnthropometricTests = ({ selectedAthleteId, selectedDate }: Anthrop
         return;
       }
 
-      // Δημιουργία session για σωματομετρικά
+      // Δημιουργία session για σωματομετρικά - χρησιμοποιώ user_id
       const { data: session, error: sessionError } = await supabase
         .from('anthropometric_test_sessions')
         .insert({
-          athlete_id: selectedAthleteId,
+          user_id: selectedAthleteId,
           test_date: selectedDate,
           created_by: appUserId
         })
@@ -126,7 +126,7 @@ export const AnthropometricTests = ({ selectedAthleteId, selectedDate }: Anthrop
 
       if (dataError) throw dataError;
 
-      // Δημιουργία summary για γραφήματα
+      // Δημιουργία summary για γραφήματα - χρησιμοποιώ user_id
       const chartData = {
         labels: ['Ύψος', 'Βάρος', 'Λίπος %', 'Μυϊκή Μάζα %', 'Μέση', 'Γοφοί', 'Στήθος', 'Βραχίονας', 'Μηρός'],
         values: [
@@ -145,7 +145,7 @@ export const AnthropometricTests = ({ selectedAthleteId, selectedDate }: Anthrop
       await supabase
         .from('test_results_summary')
         .insert({
-          athlete_id: selectedAthleteId,
+          user_id: selectedAthleteId,
           test_type: 'anthropometric',
           test_date: selectedDate,
           chart_data: chartData

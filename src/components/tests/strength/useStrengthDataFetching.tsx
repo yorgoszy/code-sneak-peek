@@ -22,9 +22,9 @@ export const useStrengthDataFetching = () => {
       .from('strength_test_attempts')
       .select(`
         exercise_id,
-        strength_test_sessions!inner(athlete_id)
+        strength_test_sessions!inner(user_id)
       `)
-      .eq('strength_test_sessions.athlete_id', selectedAthleteId);
+      .eq('strength_test_sessions.user_id', selectedAthleteId);
 
     const usageMap = new Map();
     usageStats?.forEach(stat => {
@@ -54,9 +54,9 @@ export const useStrengthDataFetching = () => {
       .from('strength_test_sessions')
       .select(`
         *,
-        app_users!athlete_id(name)
+        app_users!user_id(name)
       `)
-      .eq('athlete_id', selectedAthleteId)
+      .eq('user_id', selectedAthleteId)
       .order('created_at', { ascending: false });
 
     if (sessionsData) {

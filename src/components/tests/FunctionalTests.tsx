@@ -82,11 +82,11 @@ export const FunctionalTests = ({ selectedAthleteId, selectedDate }: FunctionalT
         return;
       }
 
-      // Δημιουργία session για λειτουργικά τεστ
+      // Δημιουργία session για λειτουργικά τεστ - χρησιμοποιώ user_id
       const { data: session, error: sessionError } = await supabase
         .from('functional_test_sessions')
         .insert({
-          athlete_id: selectedAthleteId,
+          user_id: selectedAthleteId,
           test_date: selectedDate,
           created_by: appUserId
         })

@@ -108,10 +108,11 @@ export const useEnduranceTestLogic = () => {
 
       console.log("App user ID:", appUserId);
 
+      // Χρησιμοποιώ user_id αντί για athlete_id
       const { data: session, error: sessionError } = await supabase
         .from('endurance_test_sessions')
         .insert({
-          athlete_id: selectedAthleteId,
+          user_id: selectedAthleteId,
           test_date: selectedDate,
           created_by: appUserId
         })
@@ -173,10 +174,11 @@ export const useEnduranceTestLogic = () => {
         ]
       };
 
+      // Χρησιμοποιώ user_id αντί για athlete_id
       const { error: summaryError } = await supabase
         .from('test_results_summary')
         .insert({
-          athlete_id: selectedAthleteId,
+          user_id: selectedAthleteId,
           test_type: 'endurance',
           test_date: selectedDate,
           chart_data: chartData

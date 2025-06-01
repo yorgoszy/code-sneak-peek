@@ -75,15 +75,15 @@ const Results = () => {
     try {
       const results: TestResult[] = [];
 
-      // Fetch Anthropometric Tests
+      // Fetch Anthropometric Tests - updated to use user_id
       const { data: anthropometricData } = await supabase
         .from('anthropometric_test_sessions')
         .select(`
           test_date,
-          app_users!athlete_id(name),
+          app_users!user_id(name),
           anthropometric_test_data(*)
         `)
-        .in('athlete_id', selectedAthleteIds)
+        .in('user_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       anthropometricData?.forEach(session => {
@@ -97,15 +97,15 @@ const Results = () => {
         }
       });
 
-      // Fetch Strength Tests
+      // Fetch Strength Tests - updated to use user_id
       const { data: strengthData } = await supabase
         .from('strength_test_sessions')
         .select(`
           test_date,
-          app_users!athlete_id(name),
+          app_users!user_id(name),
           strength_test_attempts(*, exercises(name))
         `)
-        .in('athlete_id', selectedAthleteIds)
+        .in('user_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       strengthData?.forEach(session => {
@@ -119,15 +119,15 @@ const Results = () => {
         }
       });
 
-      // Fetch Jump Tests
+      // Fetch Jump Tests - updated to use user_id
       const { data: jumpData } = await supabase
         .from('jump_test_sessions')
         .select(`
           test_date,
-          app_users!athlete_id(name),
+          app_users!user_id(name),
           jump_test_data(*)
         `)
-        .in('athlete_id', selectedAthleteIds)
+        .in('user_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       jumpData?.forEach(session => {
@@ -141,15 +141,15 @@ const Results = () => {
         }
       });
 
-      // Fetch Endurance Tests
+      // Fetch Endurance Tests - updated to use user_id
       const { data: enduranceData } = await supabase
         .from('endurance_test_sessions')
         .select(`
           test_date,
-          app_users!athlete_id(name),
+          app_users!user_id(name),
           endurance_test_data(*)
         `)
-        .in('athlete_id', selectedAthleteIds)
+        .in('user_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       enduranceData?.forEach(session => {
@@ -163,15 +163,15 @@ const Results = () => {
         }
       });
 
-      // Fetch Functional Tests
+      // Fetch Functional Tests - updated to use user_id
       const { data: functionalData } = await supabase
         .from('functional_test_sessions')
         .select(`
           test_date,
-          app_users!athlete_id(name),
+          app_users!user_id(name),
           functional_test_data(*)
         `)
-        .in('athlete_id', selectedAthleteIds)
+        .in('user_id', selectedAthleteIds)
         .order('test_date', { ascending: false });
 
       functionalData?.forEach(session => {

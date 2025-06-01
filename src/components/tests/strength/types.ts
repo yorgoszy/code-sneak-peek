@@ -5,35 +5,31 @@ export interface Exercise {
   usage_count?: number;
 }
 
-export interface Attempt {
-  id?: string;
-  attempt_number: number;
-  weight_kg: number;
-  velocity_ms: number;
-  is_1rm: boolean;
-  exercises?: { name: string };
-}
-
-export interface ExerciseTest {
-  id?: string;
-  exercise_id: string;
+export interface SessionWithDetails {
+  id: string;
+  user_id: string;
   test_date: string;
-  attempts: Attempt[];
-}
-
-export interface StrengthSession {
-  id?: string;
-  athlete_id: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
   start_date: string;
   end_date: string;
-  notes: string;
-  exercise_tests: ExerciseTest[];
+  exercise_tests: any[];
+  app_users?: {
+    name: string;
+  };
 }
 
-export interface SessionWithDetails extends StrengthSession {
-  app_users?: { name: string };
-  exercise_tests: (ExerciseTest & { 
-    exercise_name?: string;
-    attempts: (Attempt & { exercises?: { name: string } })[];
-  })[];
+export interface TestAttempt {
+  id: string;
+  test_session_id: string;
+  exercise_id: string;
+  attempt_number: number;
+  weight_kg: number;
+  velocity_ms?: number;
+  is_1rm: boolean;
+  exercises?: {
+    name: string;
+  };
 }

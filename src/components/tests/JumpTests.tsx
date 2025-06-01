@@ -87,11 +87,11 @@ export const JumpTests = ({ selectedAthleteId, selectedDate }: JumpTestsProps) =
         return;
       }
 
-      // Δημιουργία session για άλματα
+      // Δημιουργία session για άλματα - χρησιμοποιώ user_id
       const { data: session, error: sessionError } = await supabase
         .from('jump_test_sessions')
         .insert({
-          athlete_id: selectedAthleteId,
+          user_id: selectedAthleteId,
           test_date: selectedDate,
           created_by: appUserId
         })
@@ -117,7 +117,7 @@ export const JumpTests = ({ selectedAthleteId, selectedDate }: JumpTestsProps) =
 
       if (dataError) throw dataError;
 
-      // Δημιουργία summary για γραφήματα
+      // Δημιουργία summary για γραφήματα - χρησιμοποιώ user_id
       const chartData = {
         labels: ['Non-CMJ', 'CMJ', 'Depth Jump', 'Broad Jump', 'Triple L', 'Triple R'],
         values: [
@@ -133,7 +133,7 @@ export const JumpTests = ({ selectedAthleteId, selectedDate }: JumpTestsProps) =
       await supabase
         .from('test_results_summary')
         .insert({
-          athlete_id: selectedAthleteId,
+          user_id: selectedAthleteId,
           test_type: 'jump',
           test_date: selectedDate,
           chart_data: chartData

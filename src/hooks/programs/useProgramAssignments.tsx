@@ -8,12 +8,12 @@ export const useProgramAssignments = () => {
     try {
       console.log('Creating/updating assignment for program:', programId, 'user:', userId);
       
-      // Check if assignment already exists using athlete_id (DB field name)
+      // Check if assignment already exists using user_id (updated field name)
       const { data: existingAssignment } = await supabase
         .from('program_assignments')
         .select('id')
         .eq('program_id', programId)
-        .eq('athlete_id', userId)
+        .eq('user_id', userId)
         .single();
 
       if (existingAssignment) {
@@ -26,12 +26,12 @@ export const useProgramAssignments = () => {
         if (error) throw error;
         console.log('Assignment updated');
       } else {
-        // Create new assignment using athlete_id
+        // Create new assignment using user_id
         const { error } = await supabase
           .from('program_assignments')
           .insert([{
             program_id: programId,
-            athlete_id: userId,
+            user_id: userId,
             status: 'active'
           }]);
         
@@ -46,13 +46,13 @@ export const useProgramAssignments = () => {
 
   const fetchProgramAssignments = async (): Promise<ProgramAssignment[]> => {
     try {
-      // First try with foreign key references
+      // Updated to use user_id instead of athlete_id
       const { data, error } = await supabase
         .from('program_assignments')
         .select(`
           *,
           programs!fk_program_assignments_program_id(id, name, description),
-          app_users!fk_program_assignments_athlete_id(id, name, email)
+          app_users!fk_program_assignments_user_id(id, name, email)
         `)
         .order('created_at', { ascending: false });
 
