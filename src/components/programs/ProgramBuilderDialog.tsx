@@ -115,6 +115,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           trainingDates
         });
         
+        // Pass the training dates as the 5th parameter to createOrUpdateAssignment
         await createOrUpdateAssignment(
           programId, 
           userId, 
@@ -131,7 +132,11 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           window.location.href = '/dashboard/active-programs';
         }, 1500);
       } else {
-        console.error('❌ Missing required data for assignment');
+        console.error('❌ Missing required data for assignment:', {
+          programId,
+          userId,
+          trainingDatesLength: trainingDates?.length
+        });
         toast.error('Απαιτούνται συγκεκριμένες ημερομηνίες προπόνησης');
         return;
       }
