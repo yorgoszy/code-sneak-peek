@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -61,8 +62,8 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
           .select('*', { count: 'exact', head: true })
           .eq('created_by', user.id);
         programsCount = count || 0;
-      } else if (user.role === 'athlete' || user.role === 'general' || user.role === 'parent') {
-        // For athletes, general, and parent users, count programs assigned to them
+      } else {
+        // For all other roles, count programs assigned to them
         const { count } = await supabase
           .from('program_assignments')
           .select('*', { count: 'exact', head: true })
@@ -70,17 +71,13 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
         programsCount = count || 0;
       }
 
-      // Count tests if user is athlete
-      let testsCount = 0;
-      if (user.role === 'athlete') {
-        const { count } = await supabase
-          .from('tests')
-          .select('*', { count: 'exact', head: true })
-          .eq('athlete_id', user.id);
-        testsCount = count || 0;
-      }
+      // Count tests for any user role
+      const { count: testsCount } = await supabase
+        .from('tests')
+        .select('*', { count: 'exact', head: true })
+        .eq('athlete_id', user.id);
 
-      // Count payments
+      // Count payments for any user role
       const { count: paymentsCount } = await supabase
         .from('payments')
         .select('*', { count: 'exact', head: true })
@@ -89,7 +86,7 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
       setStats({
         athletesCount,
         programsCount: programsCount,
-        testsCount,
+        testsCount: testsCount || 0,
         paymentsCount: paymentsCount || 0
       });
     } catch (error) {
@@ -109,8 +106,8 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
           .eq('created_by', user.id)
           .order('created_at', { ascending: false });
         data = programsData;
-      } else if (user.role === 'athlete' || user.role === 'general' || user.role === 'parent') {
-        // For athletes, general, and parent users, fetch programs assigned to them
+      } else {
+        // For all other roles, fetch programs assigned to them
         const { data: assignmentsData } = await supabase
           .from('program_assignments')
           .select(`
@@ -132,15 +129,13 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
 
   const fetchUserTests = async () => {
     try {
-      if (user.role === 'athlete') {
-        const { data } = await supabase
-          .from('tests')
-          .select('*')
-          .eq('athlete_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        setTests(data || []);
-      }
+      const { data } = await supabase
+        .from('tests')
+        .select('*')
+        .eq('athlete_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      setTests(data || []);
     } catch (error) {
       console.error('Error fetching tests:', error);
     }
@@ -231,16 +226,14 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
                   <Dumbbell className="h-8 w-8 mx-auto text-green-500 mb-2" />
                   <p className="text-2xl font-bold">{stats.programsCount}</p>
                   <p className="text-sm text-gray-600">
-                    {(user.role === 'athlete' || user.role === 'general' || user.role === 'parent') ? 'Ανατεθέντα Προγράμματα' : 'Προγράμματα'}
+                    {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ανατεθέντα Προγράμματα'}
                   </p>
                 </div>
-                {user.role === 'athlete' && (
-                  <div className="text-center">
-                    <Calendar className="h-8 w-8 mx-auto text-purple-500 mb-2" />
-                    <p className="text-2xl font-bold">{stats.testsCount}</p>
-                    <p className="text-sm text-gray-600">Τεστ</p>
-                  </div>
-                )}
+                <div className="text-center">
+                  <Calendar className="h-8 w-8 mx-auto text-purple-500 mb-2" />
+                  <p className="text-2xl font-bold">{stats.testsCount}</p>
+                  <p className="text-sm text-gray-600">Τεστ</p>
+                </div>
                 <div className="text-center">
                   <CreditCard className="h-8 w-8 mx-auto text-orange-500 mb-2" />
                   <p className="text-2xl font-bold">{stats.paymentsCount}</p>
@@ -252,9 +245,9 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
 
           {/* Detailed Information Tabs */}
           <Tabs defaultValue="programs" className="w-full">
-            <TabsList className={`grid w-full ${user.role === 'athlete' ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="programs">Προγράμματα</TabsTrigger>
-              {user.role === 'athlete' && <TabsTrigger value="tests">Τεστ</TabsTrigger>}
+              <TabsTrigger value="tests">Τεστ</TabsTrigger>
               <TabsTrigger value="payments">Πληρωμές</TabsTrigger>
             </TabsList>
             
@@ -262,7 +255,7 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    {(user.role === 'athlete' || user.role === 'general' || user.role === 'parent') ? 'Ανατεθέντα Προγράμματα' : 'Προγράμματα Προπόνησης'}
+                    {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα Προπόνησης' : 'Ανατεθέντα Προγράμματα'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -273,7 +266,7 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
                   ) : (
                     <div className="space-y-3">
                       {programs.map((program) => (
-                        <div key={program.id} className="border rounded-lg p-3">
+                        <div key={program.id} className="border p-3">
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-medium">{program.name}</h4>
@@ -292,38 +285,36 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
               </Card>
             </TabsContent>
 
-            {user.role === 'athlete' && (
-              <TabsContent value="tests" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Τεστ Αξιολόγησης</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {tests.length === 0 ? (
-                      <p className="text-gray-500 text-center py-4">
-                        Δεν βρέθηκαν τεστ
-                      </p>
-                    ) : (
-                      <div className="space-y-3">
-                        {tests.map((test) => (
-                          <div key={test.id} className="border rounded-lg p-3">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-medium">{test.test_type || 'Τεστ'}</h4>
-                                <p className="text-sm text-gray-600">{test.notes}</p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  Ημερομηνία: {formatDate(test.date)}
-                                </p>
-                              </div>
+            <TabsContent value="tests" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Τεστ Αξιολόγησης</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {tests.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">
+                      Δεν βρέθηκαν τεστ
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {tests.map((test) => (
+                        <div key={test.id} className="border p-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium">{test.test_type || 'Τεστ'}</h4>
+                              <p className="text-sm text-gray-600">{test.notes}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Ημερομηνία: {formatDate(test.date)}
+                              </p>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             <TabsContent value="payments" className="space-y-4">
               <Card>
@@ -338,7 +329,7 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
                   ) : (
                     <div className="space-y-3">
                       {payments.map((payment) => (
-                        <div key={payment.id} className="border rounded-lg p-3">
+                        <div key={payment.id} className="border p-3">
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-medium">€{payment.amount}</h4>
