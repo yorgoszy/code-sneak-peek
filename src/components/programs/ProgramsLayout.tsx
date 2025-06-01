@@ -19,7 +19,7 @@ interface ProgramsLayoutProps {
   onSelectProgram: (program: Program) => void;
   onDeleteProgram: (programId: string) => void;
   onEditProgram: (program: Program) => void;
-  onCreateProgram: (program: any) => void;
+  onCreateProgram: (program: any) => Promise<any>;
   onBuilderDialogClose: () => void;
   onDuplicateProgram: (program: Program) => void;
   onPreviewProgram: (program: Program) => void;

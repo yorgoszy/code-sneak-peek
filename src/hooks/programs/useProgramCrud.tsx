@@ -76,7 +76,7 @@ export const useProgramCrud = () => {
     }
   };
 
-  const duplicateProgram = async (program: Program, saveProgram: (data: any) => Promise<void>): Promise<void> => {
+  const duplicateProgram = async (program: Program, saveProgram: (data: any) => Promise<any>): Promise<any> => {
     try {
       setLoading(true);
       
@@ -108,11 +108,13 @@ export const useProgramCrud = () => {
         })) || []
       };
 
-      await saveProgram(duplicatedProgram);
+      const savedProgram = await saveProgram(duplicatedProgram);
       toast.success('Το πρόγραμμα αντιγράφηκε επιτυχώς');
+      return savedProgram;
     } catch (error) {
       console.error('Error duplicating program:', error);
       toast.error('Σφάλμα κατά την αντιγραφή του προγράμματος');
+      throw error;
     } finally {
       setLoading(false);
     }

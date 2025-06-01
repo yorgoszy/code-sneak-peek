@@ -16,8 +16,7 @@ export const usePrograms = () => {
     saveProgram,
     deleteProgram,
     duplicateProgram: async (program: any) => {
-      const savedProgram = await duplicateProgram(program, saveProgram);
-      return savedProgram;
+      return await duplicateProgram(program, saveProgram);
     },
     fetchProgramAssignments
   };
