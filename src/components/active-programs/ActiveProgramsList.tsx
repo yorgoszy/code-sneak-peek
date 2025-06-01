@@ -1,0 +1,147 @@
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Eye, Calendar, User } from "lucide-react";
+import { useState } from "react";
+import { ProgramPreviewDialog } from "@/components/programs/ProgramPreviewDialog";
+
+interface ActiveProgramsListProps {
+  programs: any[];
+}
+
+export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
+  const [previewProgram, setPreviewProgram] = useState<any>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('el-GR');
+  };
+
+  const calculateProgress = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const now = new Date();
+    
+    const totalDuration = end.getTime() - start.getTime();
+    const elapsed = now.getTime() - start.getTime();
+    
+    if (elapsed < 0) return 0; // Δεν έχει ξεκινήσει ακόμα
+    if (elapsed > totalDuration) return 100; // Έχει τελειώσει
+    
+    return Math.round((elapsed / totalDuration) * 100);
+  };
+
+  const getDaysRemaining = (endDate: string) => {
+    const end = new Date(endDate);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
+
+  const handlePreviewProgram = (program: any) => {
+    setPreviewProgram(program);
+    setPreviewOpen(true);
+  };
+
+  const handlePreviewClose = () => {
+    setPreviewOpen(false);
+    setPreviewProgram(null);
+  };
+
+  if (programs.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-gray-500">
+            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <p>Δεν έχετε ενεργά προγράμματα αυτή τη στιγμή</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <>
+      <div className="grid gap-4">
+        {programs.map((assignment) => {
+          const program = assignment.programs;
+          const progress = calculateProgress(assignment.start_date, assignment.end_date);
+          const daysRemaining = getDaysRemaining(assignment.end_date);
+          
+          return (
+            <Card key={assignment.id}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg">{program.name}</CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">{program.description}</p>
+                  </div>
+                  <Button
+                    onClick={() => handlePreviewProgram(program)}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-none"
+                    title="Προβολή Προγράμματος"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600">Έναρξη:</span>
+                    <span>{formatDate(assignment.start_date)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600">Λήξη:</span>
+                    <span>{formatDate(assignment.end_date)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600">Από:</span>
+                    <span>{program.app_users?.name || 'Άγνωστος'}</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Πρόοδος προγράμματος</span>
+                    <span className="font-medium">
+                      {daysRemaining > 0 ? `${daysRemaining} ημέρες απομένουν` : 'Έχει λήξει'}
+                    </span>
+                  </div>
+                  <Progress value={progress} className="h-2" />
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>{progress}% ολοκληρωμένο</span>
+                    <span>
+                      {progress === 100 ? 'Ολοκληρώθηκε' : `${100 - progress}% απομένει`}
+                    </span>
+                  </div>
+                </div>
+
+                {assignment.notes && (
+                  <div className="text-sm">
+                    <span className="text-gray-600 font-medium">Σημειώσεις:</span>
+                    <p className="text-gray-700 mt-1">{assignment.notes}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <ProgramPreviewDialog
+        program={previewProgram}
+        isOpen={previewOpen}
+        onOpenChange={handlePreviewClose}
+      />
+    </>
+  );
+};
