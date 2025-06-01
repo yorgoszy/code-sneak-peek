@@ -76,7 +76,16 @@ export const useProgramCrud = () => {
       }
 
       console.log('Fetched programs (excluding assigned):', programs?.length || 0);
-      return programs || [];
+      
+      // Transform the data to match the Program type
+      const transformedPrograms = programs?.map(program => ({
+        ...program,
+        app_users: Array.isArray(program.app_users) && program.app_users.length > 0 
+          ? program.app_users[0] 
+          : null
+      })) || [];
+
+      return transformedPrograms as Program[];
     } catch (error) {
       console.error('Unexpected error fetching programs:', error);
       toast.error('Απροσδόκητο σφάλμα φόρτωσης προγραμμάτων');
