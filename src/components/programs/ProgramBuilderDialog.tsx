@@ -5,6 +5,7 @@ import { User, Exercise, Program } from './types';
 import { ProgramBuilderDialogContent } from './builder/ProgramBuilderDialogContent';
 import { useProgramBuilderState } from './builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from './builder/hooks/useProgramBuilderActions';
+import { toast } from "sonner";
 
 interface ProgramBuilderDialogProps {
   users: User[];
@@ -43,9 +44,9 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     onOpenChange();
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!program.name.trim()) {
-      alert('Το όνομα προγράμματος είναι υποχρεωτικό');
+      toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
     
@@ -56,13 +57,17 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       status: 'draft' // Save as draft
     };
     
-    onCreateProgram(programToSave);
-    handleClose();
+    try {
+      await onCreateProgram(programToSave);
+      handleClose();
+    } catch (error) {
+      console.error('Error saving program:', error);
+    }
   };
 
-  const handleAssignments = () => {
+  const handleAssignments = async () => {
     if (!program.name.trim()) {
-      alert('Το όνομα προγράμματος είναι υποχρεωτικό');
+      toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
     
@@ -74,12 +79,16 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       createAssignment: true // Flag to create assignment
     };
     
-    onCreateProgram(programToSave);
-    handleClose();
-    // Navigate to active programs after creating assignment
-    setTimeout(() => {
-      window.location.href = '/dashboard/active-programs';
-    }, 1000);
+    try {
+      await onCreateProgram(programToSave);
+      handleClose();
+      // Navigate to active programs after creating assignment
+      setTimeout(() => {
+        window.location.href = '/dashboard/active-programs';
+      }, 1500);
+    } catch (error) {
+      console.error('Error creating assignments:', error);
+    }
   };
 
   return (

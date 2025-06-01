@@ -1,219 +1,116 @@
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Calendar, User, Clock, AlertCircle } from "lucide-react";
-import { useState } from "react";
-import { ProgramPreviewDialog } from "@/components/programs/ProgramPreviewDialog";
+import { Calendar, Clock, User } from "lucide-react";
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ActiveProgramsListProps {
-  programs: any[];
+  programs: EnrichedAssignment[];
 }
 
-export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
-  const [previewProgram, setPreviewProgram] = useState<any>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
-
-  console.log('🎯 ActiveProgramsList received programs:', programs);
-  console.log('📏 Programs array length:', programs?.length || 0);
-
-  const formatDate = (dateString: string) => {
+export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs }) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Δεν έχει οριστεί';
     return new Date(dateString).toLocaleDateString('el-GR');
   };
 
-  const calculateProgress = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const now = new Date();
+  const getProgramStats = (program: any) => {
+    if (!program?.programs?.program_weeks) {
+      return { weeksCount: 0, daysCount: 0, exercisesCount: 0 };
+    }
     
-    const totalDuration = end.getTime() - start.getTime();
-    const elapsed = now.getTime() - start.getTime();
+    const weeks = program.programs.program_weeks;
+    const weeksCount = weeks.length;
+    const daysCount = weeks.reduce((total: number, week: any) => 
+      total + (week.program_days?.length || 0), 0);
     
-    if (elapsed < 0) return 0;
-    if (elapsed > totalDuration) return 100;
-    
-    return Math.round((elapsed / totalDuration) * 100);
+    return { weeksCount, daysCount, exercisesCount: 0 };
   };
-
-  const getDaysRemaining = (endDate: string) => {
-    const end = new Date(endDate);
-    const now = new Date();
-    const diffTime = end.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(0, diffDays);
-  };
-
-  const getDaysUntilStart = (startDate: string) => {
-    const start = new Date(startDate);
-    const now = new Date();
-    const diffTime = start.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(0, diffDays);
-  };
-
-  const isComingSoon = (startDate: string) => {
-    const start = new Date(startDate);
-    const now = new Date();
-    return start > now;
-  };
-
-  const handlePreviewProgram = (program: any) => {
-    setPreviewProgram(program);
-    setPreviewOpen(true);
-  };
-
-  const handlePreviewClose = () => {
-    setPreviewOpen(false);
-    setPreviewProgram(null);
-  };
-
-  // Show connection error message if needed
-  if (!programs) {
-    return (
-      <Card className="rounded-none border-red-200">
-        <CardContent className="p-6">
-          <div className="text-center text-red-600">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4" />
-            <p className="text-lg font-medium mb-2">Σφάλμα σύνδεσης</p>
-            <p className="text-sm">Υπάρχει πρόβλημα με τη σύνδεση στη βάση δεδομένων</p>
-            <p className="text-xs mt-2 text-gray-500">Ελέγξτε το console για περισσότερες πληροφορίες</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   if (programs.length === 0) {
-    console.log('⚠️ No programs to display');
     return (
       <Card className="rounded-none">
-        <CardContent className="p-6">
-          <div className="text-center text-gray-500">
-            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-lg font-medium mb-2">Δεν έχετε ενεργά προγράμματα</p>
-            <p className="text-sm">Δεν βρέθηκαν προγράμματα που να είναι ενεργά ή να ξεκινούν σύντομα</p>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            Ενεργά Προγράμματα
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-gray-500">
+            <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>Δεν έχετε ενεργά προγράμματα</p>
+            <p className="text-sm">Επικοινωνήστε με τον προπονητή σας για ανάθεση προγράμματος</p>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  console.log('✅ Rendering programs list with', programs.length, 'programs');
-
   return (
-    <>
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Λίστα Προγραμμάτων</h2>
+      
       <div className="grid gap-4">
-        {programs.map((assignment, index) => {
-          console.log(`🔍 Rendering assignment ${index + 1}:`, assignment);
-          const program = assignment.programs;
-          if (!program) {
-            console.warn('⚠️ Program not found for assignment:', assignment);
-            return (
-              <Card key={assignment.id} className="rounded-none border-red-200">
-                <CardContent className="p-4">
-                  <div className="text-red-600">
-                    Σφάλμα: Δεν βρέθηκε πρόγραμμα για το assignment {assignment.id}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          }
-          
-          const comingSoon = isComingSoon(assignment.start_date);
-          const progress = comingSoon ? 0 : calculateProgress(assignment.start_date, assignment.end_date);
-          const daysRemaining = comingSoon ? 0 : getDaysRemaining(assignment.end_date);
-          const daysUntilStart = comingSoon ? getDaysUntilStart(assignment.start_date) : 0;
-          
-          console.log(`📊 Program ${program.name} render data:`, {
-            comingSoon,
-            progress,
-            daysRemaining,
-            daysUntilStart
-          });
+        {programs.map((assignment) => {
+          const { weeksCount, daysCount } = getProgramStats(assignment);
           
           return (
             <Card key={assignment.id} className="rounded-none">
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CardTitle className="text-lg">{program.name}</CardTitle>
-                      {comingSoon && (
-                        <Badge variant="secondary" className="rounded-none">
-                          <Clock className="w-3 h-3 mr-1" />
-                          Coming Soon
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">{program.description}</p>
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg">
+                      {assignment.programs?.name || 'Άγνωστο Πρόγραμμα'}
+                    </CardTitle>
+                    {assignment.programs?.description && (
+                      <p className="text-sm text-gray-600">
+                        {assignment.programs.description}
+                      </p>
+                    )}
                   </div>
-                  <Button
-                    onClick={() => handlePreviewProgram(program)}
-                    variant="outline"
-                    size="sm"
-                    className="rounded-none"
-                    title="Προβολή Προγράμματος"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
+                  <Badge variant="outline" className="rounded-none">
+                    {assignment.status === 'active' ? 'Ενεργό' : assignment.status}
+                  </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-600">Έναρξη:</span>
-                    <span>{formatDate(assignment.start_date)}</span>
+                    <span>Έναρξη: {formatDate(assignment.start_date)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-600">Λήξη:</span>
-                    <span>{formatDate(assignment.end_date)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-600">Από:</span>
-                    <span>{program.app_users?.name || 'Άγνωστος'}</span>
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span>Λήξη: {formatDate(assignment.end_date)}</span>
                   </div>
                 </div>
                 
-                {comingSoon ? (
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">Ξεκινά σε</span>
-                      <span className="font-medium text-blue-600">
-                        {daysUntilStart === 0 ? 'Σήμερα' : 
-                         daysUntilStart === 1 ? 'Αύριο' : 
-                         `${daysUntilStart} ημέρες`}
-                      </span>
-                    </div>
-                    <div className="bg-blue-50 border border-blue-200 rounded p-3 text-center text-blue-700 text-sm">
-                      Το πρόγραμμα θα ξεκινήσει στις {formatDate(assignment.start_date)}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">Πρόοδος προγράμματος</span>
-                      <span className="font-medium">
-                        {daysRemaining > 0 ? `${daysRemaining} ημέρες απομένουν` : 'Έχει λήξει'}
-                      </span>
-                    </div>
-                    <Progress value={progress} className="h-2" />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>{progress}% ολοκληρωμένο</span>
-                      <span>
-                        {progress === 100 ? 'Ολοκληρώθηκε' : `${100 - progress}% απομένει`}
-                      </span>
-                    </div>
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <span>{weeksCount} εβδομάδες</span>
+                  <span>{daysCount} ημέρες προπόνησης</span>
+                </div>
+                
+                {assignment.app_users && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="w-4 h-4 text-gray-500" />
+                    <span>Ασκούμενος: {assignment.app_users.name}</span>
                   </div>
                 )}
-
+                
                 {assignment.notes && (
                   <div className="text-sm">
-                    <span className="text-gray-600 font-medium">Σημειώσεις:</span>
-                    <p className="text-gray-700 mt-1">{assignment.notes}</p>
+                    <span className="font-medium">Σημειώσεις: </span>
+                    <span className="text-gray-600">{assignment.notes}</span>
+                  </div>
+                )}
+                
+                {assignment.progress !== undefined && (
+                  <div className="text-sm">
+                    <span className="font-medium">Πρόοδος: </span>
+                    <span className="text-gray-600">{assignment.progress}%</span>
                   </div>
                 )}
               </CardContent>
@@ -221,12 +118,6 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
           );
         })}
       </div>
-
-      <ProgramPreviewDialog
-        program={previewProgram}
-        isOpen={previewOpen}
-        onOpenChange={handlePreviewClose}
-      />
-    </>
+    </div>
   );
 };

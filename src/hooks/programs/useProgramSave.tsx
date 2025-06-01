@@ -65,23 +65,37 @@ export const useProgramSave = () => {
 
         if (programError) throw programError;
 
-        // Delete old structure
-        await supabase.from('program_weeks').delete().eq('program_id', programData.id);
+        // Delete old structure completely
+        console.log('Deleting old program structure for program:', programData.id);
+        const { error: deleteWeeksError } = await supabase
+          .from('program_weeks')
+          .delete()
+          .eq('program_id', programData.id);
+        
+        if (deleteWeeksError) {
+          console.error('Error deleting old weeks:', deleteWeeksError);
+        }
         
         // Create new structure
+        console.log('Creating new program structure');
         await createProgramStructure(programData.id, programData);
         
-        // If createAssignment flag is set, create assignment
+        // If createAssignment flag is set, create assignment for current user
         if (programData.createAssignment && appUserId) {
+          console.log('Creating assignment for current user');
           await createOrUpdateAssignment(programData.id, appUserId);
         }
         
         // If user_id is provided and different from creator, create additional assignment
         if (programData.user_id && programData.user_id !== appUserId && programData.createAssignment) {
+          console.log('Creating assignment for selected user');
           await createOrUpdateAssignment(programData.id, programData.user_id);
         }
         
-        toast.success('Το πρόγραμμα ενημερώθηκε επιτυχώς');
+        const successMessage = programData.createAssignment 
+          ? 'Το πρόγραμμα ενημερώθηκε και ανατέθηκε επιτυχώς'
+          : 'Το πρόγραμμα ενημερώθηκε επιτυχώς';
+        toast.success(successMessage);
       } else {
         // Create new program
         const { data: program, error: programError } = await supabase
@@ -98,36 +112,21 @@ export const useProgramSave = () => {
 
         if (programError) throw programError;
 
+        console.log('Creating program structure for new program:', program.id);
         await createProgramStructure(program.id, programData);
         
         // Only create assignments if createAssignment flag is set
-        if (programData.createAssignment && appUserId) {
-          console.log('Creating assignment for creator');
-          const startDate = new Date();
-          const endDate = new Date();
-          endDate.setDate(endDate.getDate() + 30);
-          
-          const { error: assignmentError } = await supabase
-            .from('program_assignments')
-            .insert([{
-              program_id: program.id,
-              user_id: appUserId,
-              status: 'active',
-              start_date: startDate.toISOString().split('T')[0],
-              end_date: endDate.toISOString().split('T')[0],
-              notes: 'Ενεργό πρόγραμμα'
-            }]);
-            
-          if (assignmentError) {
-            console.error('Error creating assignment:', assignmentError);
-          } else {
-            console.log('Assignment created successfully');
+        if (programData.createAssignment) {
+          if (appUserId) {
+            console.log('Creating assignment for creator');
+            await createOrUpdateAssignment(program.id, appUserId);
           }
-        }
-        
-        // If user_id is provided and different from creator, create additional assignment
-        if (programData.user_id && programData.user_id !== appUserId && programData.createAssignment) {
-          await createOrUpdateAssignment(program.id, programData.user_id);
+          
+          // If user_id is provided and different from creator, create additional assignment
+          if (programData.user_id && programData.user_id !== appUserId) {
+            console.log('Creating assignment for selected user');
+            await createOrUpdateAssignment(program.id, programData.user_id);
+          }
         }
         
         const successMessage = programData.createAssignment 

@@ -8,7 +8,7 @@ export const useProgramAssignments = () => {
     try {
       console.log('Creating/updating assignment for program:', programId, 'user:', userId);
       
-      // Check if assignment already exists using user_id (updated field name)
+      // Check if assignment already exists using user_id
       const { data: existingAssignment } = await supabase
         .from('program_assignments')
         .select('id')
@@ -25,6 +25,7 @@ export const useProgramAssignments = () => {
         
         if (error) throw error;
         console.log('Assignment updated');
+        toast.success('Η ανάθεση ενημερώθηκε επιτυχώς');
       } else {
         // Create new assignment using user_id
         const { error } = await supabase
@@ -37,10 +38,12 @@ export const useProgramAssignments = () => {
         
         if (error) throw error;
         console.log('New assignment created');
+        toast.success('Η ανάθεση δημιουργήθηκε επιτυχώς');
       }
     } catch (error) {
       console.error('Error creating/updating assignment:', error);
-      // Don't throw here, as the program itself was saved successfully
+      toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
+      throw error; // Re-throw to handle in the calling function
     }
   };
 
