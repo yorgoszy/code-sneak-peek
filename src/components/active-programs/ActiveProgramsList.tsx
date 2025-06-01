@@ -66,6 +66,7 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
   };
 
   console.log('ActiveProgramsList received programs:', programs);
+  console.log('Programs length:', programs.length);
 
   if (programs.length === 0) {
     return (
@@ -73,7 +74,8 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
         <CardContent className="p-6">
           <div className="text-center text-gray-500">
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p>Δεν έχετε ενεργά προγράμματα αυτή τη στιγμή</p>
+            <p className="text-lg font-medium mb-2">Δεν έχετε ενεργά προγράμματα</p>
+            <p className="text-sm">Δεν βρέθηκαν προγράμματα που να είναι ενεργά ή να ξεκινούν σύντομα</p>
           </div>
         </CardContent>
       </Card>
@@ -84,6 +86,7 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
     <>
       <div className="grid gap-4">
         {programs.map((assignment) => {
+          console.log('Rendering assignment:', assignment);
           const program = assignment.programs;
           if (!program) {
             console.warn('Program not found for assignment:', assignment);
@@ -94,6 +97,14 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
           const progress = comingSoon ? 0 : calculateProgress(assignment.start_date, assignment.end_date);
           const daysRemaining = comingSoon ? 0 : getDaysRemaining(assignment.end_date);
           const daysUntilStart = comingSoon ? getDaysUntilStart(assignment.start_date) : 0;
+          
+          console.log('Program render data:', {
+            programName: program.name,
+            comingSoon,
+            progress,
+            daysRemaining,
+            daysUntilStart
+          });
           
           return (
             <Card key={assignment.id} className="rounded-none">

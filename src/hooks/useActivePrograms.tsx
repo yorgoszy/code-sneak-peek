@@ -71,8 +71,9 @@ export const useActivePrograms = () => {
           )
         `)
         .eq('athlete_id', userData.id)
-        .eq('status', 'active')
-        .gte('end_date', today);
+        .eq('status', 'active');
+
+      console.log('Raw query result:', { data, error });
 
       if (error) {
         console.error('Error fetching active programs:', error);
@@ -82,6 +83,11 @@ export const useActivePrograms = () => {
         
         // Filter programs that are active today or start within next week
         const filteredPrograms = (data || []).filter(assignment => {
+          if (!assignment.start_date || !assignment.end_date) {
+            console.log('Assignment missing dates:', assignment);
+            return false;
+          }
+
           const startDate = new Date(assignment.start_date);
           const endDate = new Date(assignment.end_date);
           const todayDate = new Date(today);
@@ -92,6 +98,16 @@ export const useActivePrograms = () => {
           // 2. It starts within the next week (coming soon)
           const isActive = startDate <= todayDate && endDate >= todayDate;
           const isComingSoon = startDate > todayDate && startDate <= nextWeekDateObj;
+          
+          console.log('Assignment filter check:', {
+            assignment: assignment.id,
+            programName: assignment.programs?.name,
+            startDate: assignment.start_date,
+            endDate: assignment.end_date,
+            isActive,
+            isComingSoon,
+            willInclude: isActive || isComingSoon
+          });
           
           return isActive || isComingSoon;
         });
