@@ -2,6 +2,15 @@
 import { useState, useCallback } from 'react';
 import { Exercise, Program } from '../../types';
 
+// Use the types from the main types file to avoid conflicts
+import type { 
+  ProgramStructure as MainProgramStructure,
+  Week as MainWeek,
+  Day as MainDay,
+  Block as MainBlock,
+  ProgramExercise as MainProgramExercise
+} from '../../types';
+
 export interface ProgramExercise {
   id: string;
   exercise_id: string;
@@ -37,16 +46,9 @@ export interface Week {
   days: Day[];
 }
 
-export interface ProgramStructure {
-  id?: string;
-  name: string;
-  description: string;
-  user_id: string;
-  start_date?: Date;
-  training_days?: string[];
-  training_dates?: string[]; // Added training_dates
+// Use the main ProgramStructure type to ensure compatibility
+export interface ProgramStructure extends Omit<MainProgramStructure, 'weeks'> {
   weeks: Week[];
-  status?: string;
 }
 
 export const useProgramBuilderState = (exercises: Exercise[]) => {
@@ -56,7 +58,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     user_id: '',
     start_date: undefined,
     training_days: [],
-    training_dates: [], // Added training_dates
+    training_dates: [],
     weeks: []
   });
 
@@ -85,7 +87,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       user_id: programData.athlete_id || '',
       start_date: undefined,
       training_days: [],
-      training_dates: [], // Added training_dates
+      training_dates: [],
       weeks: programData.program_weeks?.map(week => ({
         id: week.id,
         name: week.name,

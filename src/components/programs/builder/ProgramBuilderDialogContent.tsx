@@ -7,7 +7,8 @@ import { TrainingWeeks } from './TrainingWeeks';
 import { TrainingDateSelector } from './TrainingDateSelector';
 import { Button } from "@/components/ui/button";
 import { Save, Users } from "lucide-react";
-import type { User, Exercise, ProgramStructure } from '../types';
+import type { User, Exercise } from '../types';
+import type { ProgramStructure } from './hooks/useProgramBuilderState';
 
 interface ProgramBuilderDialogContentProps {
   program: ProgramStructure;
@@ -31,14 +32,14 @@ interface ProgramBuilderDialogContentProps {
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
   onUpdateBlockName: (weekId: string, dayId: string, blockId: string, name: string) => void;
-  onAddExercise: (weekId: string, dayId: string, blockId: string) => void;
+  onAddExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
-  onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, exerciseData: any) => void;
+  onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
   onDuplicateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
-  onReorderWeeks: (weeks: any[]) => void;
-  onReorderDays: (weekId: string, days: any[]) => void;
-  onReorderBlocks: (weekId: string, dayId: string, blocks: any[]) => void;
-  onReorderExercises: (weekId: string, dayId: string, blockId: string, exercises: any[]) => void;
+  onReorderWeeks: (oldIndex: number, newIndex: number) => void;
+  onReorderDays: (weekId: string, oldIndex: number, newIndex: number) => void;
+  onReorderBlocks: (weekId: string, dayId: string, oldIndex: number, newIndex: number) => void;
+  onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onSave: () => void;
   onAssignments: () => void;
 }
