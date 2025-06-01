@@ -15,6 +15,9 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
   const [previewProgram, setPreviewProgram] = useState<any>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  console.log('🎯 ActiveProgramsList received programs:', programs);
+  console.log('📏 Programs array length:', programs?.length || 0);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('el-GR');
   };
@@ -65,10 +68,8 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
     setPreviewProgram(null);
   };
 
-  console.log('ActiveProgramsList received programs:', programs);
-  console.log('Programs length:', programs.length);
-
-  if (programs.length === 0) {
+  if (!programs || programs.length === 0) {
+    console.log('⚠️ No programs to display');
     return (
       <Card className="rounded-none">
         <CardContent className="p-6">
@@ -76,21 +77,34 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <p className="text-lg font-medium mb-2">Δεν έχετε ενεργά προγράμματα</p>
             <p className="text-sm">Δεν βρέθηκαν προγράμματα που να είναι ενεργά ή να ξεκινούν σύντομα</p>
+            <div className="mt-4 p-3 bg-blue-50 rounded text-xs text-blue-700">
+              Debugging: Έλεγχος δεδομένων σε εξέλιξη...
+            </div>
           </div>
         </CardContent>
       </Card>
     );
   }
 
+  console.log('✅ Rendering programs list with', programs.length, 'programs');
+
   return (
     <>
       <div className="grid gap-4">
-        {programs.map((assignment) => {
-          console.log('Rendering assignment:', assignment);
+        {programs.map((assignment, index) => {
+          console.log(`🔍 Rendering assignment ${index + 1}:`, assignment);
           const program = assignment.programs;
           if (!program) {
-            console.warn('Program not found for assignment:', assignment);
-            return null;
+            console.warn('⚠️ Program not found for assignment:', assignment);
+            return (
+              <Card key={assignment.id} className="rounded-none border-red-200">
+                <CardContent className="p-4">
+                  <div className="text-red-600">
+                    Σφάλμα: Δεν βρέθηκε πρόγραμμα για το assignment {assignment.id}
+                  </div>
+                </CardContent>
+              </Card>
+            );
           }
           
           const comingSoon = isComingSoon(assignment.start_date);
@@ -98,8 +112,7 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
           const daysRemaining = comingSoon ? 0 : getDaysRemaining(assignment.end_date);
           const daysUntilStart = comingSoon ? getDaysUntilStart(assignment.start_date) : 0;
           
-          console.log('Program render data:', {
-            programName: program.name,
+          console.log(`📊 Program ${program.name} render data:`, {
             comingSoon,
             progress,
             daysRemaining,
