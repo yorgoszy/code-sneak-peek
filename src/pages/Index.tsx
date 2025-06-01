@@ -48,7 +48,7 @@ const Index = () => {
                       </Button>
                     </Link>
                     <span className="text-sm text-white">
-                      {user?.email}
+                      όνομα
                     </span>
                     <Button 
                       variant="ghost" 
