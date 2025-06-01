@@ -69,13 +69,8 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
       <ProgramBasicInfo
         name={program.name}
         description={program.description}
-        user_id={program.user_id}
-        users={users}
-        start_date={program.start_date}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
-        onAthleteChange={onAthleteChange}
-        onStartDateChange={onStartDateChange}
       />
       
       <TrainingWeeks
