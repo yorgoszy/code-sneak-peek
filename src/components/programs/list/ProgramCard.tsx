@@ -39,7 +39,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
       remainingSessions,
       progressPercentage,
       assignmentDate: new Date().toLocaleDateString('el-GR'),
-      athletePhoto: null
+      athletePhoto: program.app_users?.photo_url || null
     };
   };
 
@@ -48,7 +48,6 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
 
   return (
     <div
-      key={program.id}
       className={`p-4 border cursor-pointer hover:bg-gray-50 transition-colors ${
         selectedProgram?.id === program.id ? 'bg-blue-50 border-blue-300' : ''
       } ${isAssigned ? 'min-w-[900px]' : 'min-w-[600px]'}`}
