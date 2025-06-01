@@ -95,19 +95,76 @@
   }
 }
 
-/* Custom animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
+/* Lightning animations */
+@keyframes lightning-fall-1 {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 0;
+    font-size: 2rem;
   }
-  25% {
-    transform: translateY(-15px) rotate(5deg);
+  10% {
+    opacity: 1;
   }
   50% {
-    transform: translateY(-20px) rotate(0deg);
+    opacity: 1;
+    font-size: 3rem;
   }
-  75% {
-    transform: translateY(-10px) rotate(-5deg);
+  90% {
+    opacity: 0.8;
+    font-size: 2.5rem;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+    font-size: 1.5rem;
+  }
+}
+
+@keyframes lightning-fall-2 {
+  0% {
+    transform: translateY(-100vh) rotate(0deg) translateX(0px);
+    opacity: 0;
+    font-size: 1.5rem;
+  }
+  15% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+    font-size: 2.5rem;
+    transform: translateY(50vh) rotate(180deg) translateX(20px);
+  }
+  85% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg) translateX(-10px);
+    opacity: 0;
+    font-size: 2rem;
+  }
+}
+
+@keyframes lightning-fall-3 {
+  0% {
+    transform: translateY(-100vh) rotate(0deg) scale(0.5);
+    opacity: 0;
+    font-size: 2.5rem;
+  }
+  20% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+    font-size: 3.5rem;
+    transform: translateY(50vh) rotate(270deg) scale(1.2);
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg) scale(0.8);
+    opacity: 0;
+    font-size: 2rem;
   }
 }
 
@@ -122,27 +179,26 @@
   }
 }
 
-@keyframes geometric-drift {
-  0% {
-    transform: translateX(0px) translateY(0px) rotate(0deg);
-  }
-  33% {
-    transform: translateX(30px) translateY(-20px) rotate(120deg);
-  }
-  66% {
-    transform: translateX(-20px) translateY(30px) rotate(240deg);
-  }
-  100% {
-    transform: translateX(0px) translateY(0px) rotate(360deg);
-  }
+.animate-lightning-fall-1 {
+  animation: lightning-fall-1 4s linear infinite;
+  color: #ffff00;
+  text-shadow: 0 0 10px #ffff00, 0 0 20px #ffff00, 0 0 30px #ffff00;
+}
+
+.animate-lightning-fall-2 {
+  animation: lightning-fall-2 5s linear infinite;
+  color: #ffffff;
+  text-shadow: 0 0 10px #ffffff, 0 0 20px #ffff00, 0 0 30px #ffff00;
+}
+
+.animate-lightning-fall-3 {
+  animation: lightning-fall-3 6s linear infinite;
+  color: #ffff88;
+  text-shadow: 0 0 10px #ffff88, 0 0 20px #ffff00, 0 0 30px #ffffff;
 }
 
 .animate-fade-in {
   animation: fade-in 0.8s ease-out forwards;
-}
-
-.animate-geometric-drift {
-  animation: geometric-drift 20s ease-in-out infinite;
 }
 
 .animation-delay-200 {
