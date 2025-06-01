@@ -164,9 +164,10 @@ export const useActivePrograms = () => {
 
       console.log('✅ Enriched assignments:', enrichedAssignments);
 
-      // Filter by date
+      // Filter by date - only include assignments that have program data
       const validPrograms = enrichedAssignments.filter(assignment => {
-        if (!assignment?.programs) {
+        // Check if assignment has enriched program data
+        if (!('programs' in assignment) || !assignment.programs) {
           console.log('❌ Assignment without valid program:', assignment?.id);
           return false;
         }
