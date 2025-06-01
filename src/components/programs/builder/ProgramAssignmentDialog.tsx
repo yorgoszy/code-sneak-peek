@@ -3,11 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Search, X, Users, Calendar as CalendarIcon } from "lucide-react";
-import { format, parseISO, getWeek, getYear, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { format, parseISO, getWeek, getYear } from "date-fns";
 import { el } from "date-fns/locale";
 import type { User } from '../types';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
@@ -27,35 +25,21 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   users,
   onAssign
 }) => {
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Υπολογισμός απαιτούμενων προπονήσεων
   const totalWeeks = program.weeks?.length || 0;
   const daysPerWeek = program.weeks?.[0]?.days?.length || 0;
   const totalRequiredSessions = totalWeeks * daysPerWeek;
 
+  // Χρησιμοποιούμε τον ήδη επιλεγμένο χρήστη από το πρόγραμμα
+  const selectedUserId = program.user_id || '';
+
   useEffect(() => {
     if (!isOpen) {
-      setSelectedUserId('');
       setSelectedDates([]);
-      setSearchTerm('');
     }
   }, [isOpen]);
-
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const selectedUser = users.find(user => user.id === selectedUserId);
-
-  const handleUserSelect = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsSearchOpen(false);
-    setSearchTerm('');
-  };
 
   // Βελτιωμένη λογική επιλογής ημερομηνιών
   const handleDateSelect = (date: Date | undefined) => {
@@ -135,13 +119,15 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
 
   const canAssign = selectedUserId && selectedDates.length === totalRequiredSessions;
 
+  const selectedUser = users.find(user => user.id === selectedUserId);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl h-[80vh] rounded-none flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Ανάθεση Προγράμματος σε Ασκούμενο
+            <CalendarIcon className="w-5 h-5" />
+            Ανάθεση Προγράμματος
           </DialogTitle>
         </DialogHeader>
 
@@ -157,68 +143,18 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
                   <span className="font-medium">Όνομα:</span> {program.name}
                 </div>
                 <div>
+                  <span className="font-medium">Ασκούμενος:</span> {selectedUser ? selectedUser.name : 'Δεν έχει επιλεγεί'}
+                </div>
+                <div>
                   <span className="font-medium">Εβδομάδες:</span> {totalWeeks}
                 </div>
                 <div>
                   <span className="font-medium">Ημέρες/Εβδομάδα:</span> {daysPerWeek}
                 </div>
-                <div>
+                <div className="col-span-2">
                   <span className="font-medium">Συνολικές Προπονήσεις:</span> {totalRequiredSessions}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* User Selection */}
-          <Card className="rounded-none">
-            <CardHeader>
-              <CardTitle>Επιλογή Ασκούμενου</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedUser ? (
-                <div className="flex items-center justify-between bg-blue-50 text-blue-700 p-3 border border-blue-200 rounded-none">
-                  <span className="font-medium">{selectedUser.name}</span>
-                  <button
-                    onClick={() => setSelectedUserId('')}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ) : (
-                <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal rounded-none"
-                    >
-                      <Search className="mr-2 h-4 w-4" />
-                      Αναζήτηση ασκούμενου...
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0 rounded-none" align="start">
-                    <Command className="border-0">
-                      <CommandInput 
-                        placeholder="Αναζήτηση ασκούμενου..." 
-                        value={searchTerm}
-                        onValueChange={setSearchTerm}
-                      />
-                      <CommandList className="max-h-48">
-                        <CommandEmpty>Δεν βρέθηκε ασκούμενος</CommandEmpty>
-                        {filteredUsers.map(user => (
-                          <CommandItem
-                            key={user.id}
-                            className="cursor-pointer p-3 hover:bg-gray-100"
-                            onSelect={() => handleUserSelect(user.id)}
-                          >
-                            {user.name}
-                          </CommandItem>
-                        ))}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              )}
             </CardContent>
           </Card>
 
@@ -282,7 +218,7 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
             disabled={!canAssign}
             className="rounded-none"
           >
-            <Users className="w-4 h-4 mr-2" />
+            <CalendarIcon className="w-4 h-4 mr-2" />
             Ανάθεση Προγράμματος
           </Button>
         </div>
