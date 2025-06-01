@@ -43,12 +43,12 @@ const Index = () => {
                 isAuthenticated ? (
                   <div className="flex items-center space-x-4">
                     <Link to="/dashboard">
-                      <Button variant="ghost" size="icon" style={{ borderRadius: '0' }} className="text-white hover:bg-white/10">
+                      <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
                         <User className="h-4 w-4" />
                       </Button>
                     </Link>
                     <span className="text-sm text-white">
-                      όνομα
+                      {user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Χρήστης'}
                     </span>
                     <Button 
                       variant="ghost" 
