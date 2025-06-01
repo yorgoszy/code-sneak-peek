@@ -3,6 +3,7 @@ export interface EnrichedAssignment {
   id: string;
   program_id: string;
   athlete_id?: string;
+  user_id?: string;
   assigned_by?: string;
   start_date?: string;
   end_date?: string;
@@ -33,4 +34,9 @@ export interface EnrichedAssignment {
       }>;
     }>;
   };
+  app_users?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
 }
