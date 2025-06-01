@@ -11,6 +11,8 @@ export const useActivePrograms = () => {
   useEffect(() => {
     if (user) {
       fetchActivePrograms();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
@@ -19,6 +21,21 @@ export const useActivePrograms = () => {
       setLoading(true);
       console.log('🔍 Fetching active programs for user:', user?.id);
       
+      // Test Supabase connection first
+      const { data: testData, error: testError } = await supabase
+        .from('app_users')
+        .select('count')
+        .limit(1);
+      
+      if (testError) {
+        console.error('❌ Supabase connection error:', testError);
+        setPrograms([]);
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ Supabase connection successful');
+
       // Fetch user data first to get the user ID from app_users
       const { data: userData, error: userError } = await supabase
         .from('app_users')

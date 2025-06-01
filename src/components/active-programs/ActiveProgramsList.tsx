@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Calendar, User, Clock } from "lucide-react";
+import { Eye, Calendar, User, Clock, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { ProgramPreviewDialog } from "@/components/programs/ProgramPreviewDialog";
 
@@ -30,8 +30,8 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
     const totalDuration = end.getTime() - start.getTime();
     const elapsed = now.getTime() - start.getTime();
     
-    if (elapsed < 0) return 0; // Δεν έχει ξεκινήσει ακόμα
-    if (elapsed > totalDuration) return 100; // Έχει τελειώσει
+    if (elapsed < 0) return 0;
+    if (elapsed > totalDuration) return 100;
     
     return Math.round((elapsed / totalDuration) * 100);
   };
@@ -68,7 +68,23 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
     setPreviewProgram(null);
   };
 
-  if (!programs || programs.length === 0) {
+  // Show connection error message if needed
+  if (!programs) {
+    return (
+      <Card className="rounded-none border-red-200">
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4" />
+            <p className="text-lg font-medium mb-2">Σφάλμα σύνδεσης</p>
+            <p className="text-sm">Υπάρχει πρόβλημα με τη σύνδεση στη βάση δεδομένων</p>
+            <p className="text-xs mt-2 text-gray-500">Ελέγξτε το console για περισσότερες πληροφορίες</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (programs.length === 0) {
     console.log('⚠️ No programs to display');
     return (
       <Card className="rounded-none">
@@ -77,9 +93,6 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <p className="text-lg font-medium mb-2">Δεν έχετε ενεργά προγράμματα</p>
             <p className="text-sm">Δεν βρέθηκαν προγράμματα που να είναι ενεργά ή να ξεκινούν σύντομα</p>
-            <div className="mt-4 p-3 bg-blue-50 rounded text-xs text-blue-700">
-              Debugging: Έλεγχος δεδομένων σε εξέλιξη...
-            </div>
           </div>
         </CardContent>
       </Card>
