@@ -4,9 +4,9 @@ import { toast } from "sonner";
 import { ProgramAssignment } from "@/components/programs/types";
 
 export const useProgramAssignments = () => {
-  const createOrUpdateAssignment = async (programId: string, userId: string) => {
+  const createOrUpdateAssignment = async (programId: string, userId: string, startDate?: string, endDate?: string) => {
     try {
-      console.log('Creating/updating assignment for program:', programId, 'user:', userId);
+      console.log('Creating/updating assignment for program:', programId, 'user:', userId, 'dates:', { startDate, endDate });
       
       // Check if assignment already exists using user_id
       const { data: existingAssignment } = await supabase
@@ -16,28 +16,43 @@ export const useProgramAssignments = () => {
         .eq('user_id', userId)
         .single();
 
+      const assignmentData: any = {
+        status: 'active',
+        updated_at: new Date().toISOString()
+      };
+
+      // Add dates if provided
+      if (startDate) {
+        assignmentData.start_date = startDate;
+      }
+      if (endDate) {
+        assignmentData.end_date = endDate;
+      }
+
       if (existingAssignment) {
         // Update existing assignment
         const { error } = await supabase
           .from('program_assignments')
-          .update({ status: 'active', updated_at: new Date().toISOString() })
+          .update(assignmentData)
           .eq('id', existingAssignment.id);
         
         if (error) throw error;
-        console.log('Assignment updated');
+        console.log('Assignment updated with dates:', assignmentData);
         toast.success('Η ανάθεση ενημερώθηκε επιτυχώς');
       } else {
         // Create new assignment using user_id
+        const newAssignmentData = {
+          program_id: programId,
+          user_id: userId,
+          ...assignmentData
+        };
+
         const { error } = await supabase
           .from('program_assignments')
-          .insert([{
-            program_id: programId,
-            user_id: userId,
-            status: 'active'
-          }]);
+          .insert([newAssignmentData]);
         
         if (error) throw error;
-        console.log('New assignment created');
+        console.log('New assignment created with dates:', newAssignmentData);
         toast.success('Η ανάθεση δημιουργήθηκε επιτυχώς');
       }
     } catch (error) {
@@ -84,13 +99,14 @@ export const useProgramAssignments = () => {
           assignment.programs !== null && 
           'id' in assignment.programs;
 
-        // Safe check for app_users with explicit null handling
+        // Safe check for app_users with complete null safety
         let validAppUsers: any = null;
-        if (assignment.app_users && 
-            typeof assignment.app_users === 'object' && 
-            assignment.app_users !== null && 
-            'id' in assignment.app_users) {
-          validAppUsers = assignment.app_users;
+        const appUsersData = assignment.app_users;
+        if (appUsersData && 
+            typeof appUsersData === 'object' && 
+            appUsersData !== null && 
+            'id' in appUsersData) {
+          validAppUsers = appUsersData;
         }
 
         return {

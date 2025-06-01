@@ -5,6 +5,7 @@ import { User, Exercise, Program } from './types';
 import { ProgramBuilderDialogContent } from './builder/ProgramBuilderDialogContent';
 import { useProgramBuilderState } from './builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from './builder/hooks/useProgramBuilderActions';
+import { useProgramAssignments } from '@/hooks/programs/useProgramAssignments';
 import { toast } from "sonner";
 
 interface ProgramBuilderDialogProps {
@@ -25,6 +26,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   isOpen
 }) => {
   const { program, updateProgram, resetProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises);
+  const { createOrUpdateAssignment } = useProgramAssignments();
   
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises);
 
@@ -71,6 +73,11 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       return;
     }
     
+    if (!program.user_id) {
+      toast.error('Επιλέξτε έναν ασκούμενο για την ανάθεση');
+      return;
+    }
+    
     console.log('Creating program with assignments:', program);
     const programToSave = {
       ...program,
@@ -80,7 +87,37 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     };
     
     try {
-      await onCreateProgram(programToSave);
+      // First save the program
+      const savedProgram = await onCreateProgram(programToSave);
+      const programId = savedProgram?.id || program.id;
+      
+      if (programId && program.user_id) {
+        // Calculate end date if start date is provided
+        let endDate: string | undefined;
+        if (program.start_date && program.program_weeks?.length) {
+          const startDate = new Date(program.start_date);
+          const weeksToAdd = program.program_weeks.length;
+          const calculatedEndDate = new Date(startDate);
+          calculatedEndDate.setDate(calculatedEndDate.getDate() + (weeksToAdd * 7));
+          endDate = calculatedEndDate.toISOString().split('T')[0];
+        }
+        
+        // Create assignment with dates
+        await createOrUpdateAssignment(
+          programId, 
+          program.user_id, 
+          program.start_date, 
+          endDate
+        );
+        
+        console.log('Assignment created with dates:', {
+          programId,
+          userId: program.user_id,
+          startDate: program.start_date,
+          endDate
+        });
+      }
+      
       handleClose();
       // Navigate to active programs after creating assignment
       setTimeout(() => {
@@ -99,7 +136,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         exercises={exercises}
         onNameChange={(name) => updateProgram({ name })}
         onDescriptionChange={(description) => updateProgram({ description })}
-        onAthleteChange={(user_id) => updateProgram({ user_id })} // Changed from athlete_id to user_id
+        onAthleteChange={(user_id) => updateProgram({ user_id })}
         onStartDateChange={(start_date) => updateProgram({ start_date })}
         onTrainingDaysChange={(training_days) => updateProgram({ training_days })}
         onAddWeek={actions.addWeek}
