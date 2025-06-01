@@ -1,10 +1,8 @@
 
 import React from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { User, Exercise } from '../types';
 import { ProgramBasicInfo } from './ProgramBasicInfo';
 import { TrainingWeeks } from './TrainingWeeks';
-import { User, Exercise } from '../types';
 import { ProgramStructure } from './hooks/useProgramBuilderState';
 
 interface ProgramBuilderProps {
@@ -13,7 +11,7 @@ interface ProgramBuilderProps {
   exercises: Exercise[];
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
-  onAthleteChange: (athlete_id: string) => void;
+  onAthleteChange: (user_id: string) => void; // Changed from athlete_id to user_id
   onStartDateChange?: (date: Date | undefined) => void;
   onTrainingDaysChange?: (days: string[]) => void;
   onAddWeek: () => void;
@@ -47,39 +45,63 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onAthleteChange,
   onStartDateChange,
   onTrainingDaysChange,
-  ...actions
+  onAddWeek,
+  onRemoveWeek,
+  onDuplicateWeek,
+  onUpdateWeekName,
+  onAddDay,
+  onRemoveDay,
+  onDuplicateDay,
+  onUpdateDayName,
+  onAddBlock,
+  onRemoveBlock,
+  onDuplicateBlock,
+  onUpdateBlockName,
+  onAddExercise,
+  onRemoveExercise,
+  onUpdateExercise,
+  onDuplicateExercise,
+  onReorderWeeks,
+  onReorderDays,
+  onReorderBlocks,
+  onReorderExercises
 }) => {
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   return (
     <div className="space-y-6">
       <ProgramBasicInfo
-        name={program.name}
-        description={program.description}
-        athleteId={program.athlete_id}
+        program={program}
         users={users}
-        startDate={program.start_date}
-        trainingDays={program.training_days || []}
-        totalWeeks={program.weeks.length}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
         onAthleteChange={onAthleteChange}
         onStartDateChange={onStartDateChange}
         onTrainingDaysChange={onTrainingDaysChange}
       />
-
-      <DndContext sensors={sensors} collisionDetection={closestCenter}>
-        <TrainingWeeks
-          weeks={program.weeks}
-          exercises={exercises}
-          {...actions}
-        />
-      </DndContext>
+      
+      <TrainingWeeks
+        program={program}
+        exercises={exercises}
+        onAddWeek={onAddWeek}
+        onRemoveWeek={onRemoveWeek}
+        onDuplicateWeek={onDuplicateWeek}
+        onUpdateWeekName={onUpdateWeekName}
+        onAddDay={onAddDay}
+        onRemoveDay={onRemoveDay}
+        onDuplicateDay={onDuplicateDay}
+        onUpdateDayName={onUpdateDayName}
+        onAddBlock={onAddBlock}
+        onRemoveBlock={onRemoveBlock}
+        onDuplicateBlock={onDuplicateBlock}
+        onUpdateBlockName={onUpdateBlockName}
+        onAddExercise={onAddExercise}
+        onRemoveExercise={onRemoveExercise}
+        onUpdateExercise={onUpdateExercise}
+        onDuplicateExercise={onDuplicateExercise}
+        onReorderWeeks={onReorderWeeks}
+        onReorderDays={onReorderDays}
+        onReorderBlocks={onReorderBlocks}
+        onReorderExercises={onReorderExercises}
+      />
     </div>
   );
 };

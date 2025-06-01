@@ -12,7 +12,7 @@ interface ProgramBuilderDialogContentProps {
   exercises: Exercise[];
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
-  onAthleteChange: (athlete_id: string) => void;
+  onAthleteChange: (user_id: string) => void; // Changed from athlete_id to user_id
   onStartDateChange?: (date: Date | undefined) => void;
   onTrainingDaysChange?: (days: string[]) => void;
   onAddWeek: () => void;

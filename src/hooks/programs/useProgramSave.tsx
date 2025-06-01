@@ -58,7 +58,7 @@ export const useProgramSave = () => {
           .update({
             name: programData.name,
             description: programData.description,
-            athlete_id: programData.athlete_id || null,
+            athlete_id: programData.user_id || null, // Changed from athlete_id to user_id
             status: programData.status || 'draft'
           })
           .eq('id', programData.id);
@@ -76,9 +76,9 @@ export const useProgramSave = () => {
           await createOrUpdateAssignment(programData.id, appUserId);
         }
         
-        // If athlete_id is provided and different from creator, create additional assignment
-        if (programData.athlete_id && programData.athlete_id !== appUserId && programData.createAssignment) {
-          await createOrUpdateAssignment(programData.id, programData.athlete_id);
+        // If user_id is provided and different from creator, create additional assignment
+        if (programData.user_id && programData.user_id !== appUserId && programData.createAssignment) {
+          await createOrUpdateAssignment(programData.id, programData.user_id);
         }
         
         toast.success('Το πρόγραμμα ενημερώθηκε επιτυχώς');
@@ -89,7 +89,7 @@ export const useProgramSave = () => {
           .insert([{
             name: programData.name,
             description: programData.description,
-            athlete_id: programData.athlete_id || null,
+            athlete_id: programData.user_id || null, // Changed from athlete_id to user_id
             created_by: appUserId,
             status: programData.status || 'draft'
           }])
@@ -111,7 +111,7 @@ export const useProgramSave = () => {
             .from('program_assignments')
             .insert([{
               program_id: program.id,
-              athlete_id: appUserId,
+              athlete_id: appUserId, // This will be changed to user_id after DB migration
               status: 'active',
               start_date: startDate.toISOString().split('T')[0],
               end_date: endDate.toISOString().split('T')[0],
@@ -125,9 +125,9 @@ export const useProgramSave = () => {
           }
         }
         
-        // If athlete_id is provided and different from creator, create additional assignment
-        if (programData.athlete_id && programData.athlete_id !== appUserId && programData.createAssignment) {
-          await createOrUpdateAssignment(program.id, programData.athlete_id);
+        // If user_id is provided and different from creator, create additional assignment
+        if (programData.user_id && programData.user_id !== appUserId && programData.createAssignment) {
+          await createOrUpdateAssignment(program.id, programData.user_id);
         }
         
         const successMessage = programData.createAssignment 

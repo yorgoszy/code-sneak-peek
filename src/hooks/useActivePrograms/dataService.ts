@@ -38,11 +38,11 @@ export const fetchUserData = async (authUserId: string) => {
   return userData;
 };
 
-export const fetchProgramAssignments = async (athleteId: string) => {
+export const fetchProgramAssignments = async (userId: string) => {
   const { data: assignments, error: assignmentsError } = await supabase
     .from('program_assignments')
     .select('*')
-    .eq('athlete_id', athleteId)
+    .eq('athlete_id', userId) // This will be changed to user_id after DB migration
     .eq('status', 'active');
 
   if (assignmentsError) {
@@ -53,7 +53,7 @@ export const fetchProgramAssignments = async (athleteId: string) => {
   console.log('📊 Program assignments fetched:', assignments);
 
   if (!assignments || assignments.length === 0) {
-    console.log('⚠️ No program assignments found for athlete_id:', athleteId);
+    console.log('⚠️ No program assignments found for user_id:', userId);
     return [];
   }
 

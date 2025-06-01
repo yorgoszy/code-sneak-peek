@@ -90,7 +90,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         exercises={exercises}
         onNameChange={(name) => updateProgram({ name })}
         onDescriptionChange={(description) => updateProgram({ description })}
-        onAthleteChange={(athlete_id) => updateProgram({ athlete_id })}
+        onAthleteChange={(user_id) => updateProgram({ user_id })} // Changed from athlete_id to user_id
         onStartDateChange={(start_date) => updateProgram({ start_date })}
         onTrainingDaysChange={(training_days) => updateProgram({ training_days })}
         onAddWeek={actions.addWeek}
