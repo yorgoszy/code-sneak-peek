@@ -11,9 +11,10 @@ export const useActivePrograms = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       fetchActivePrograms();
     } else {
+      console.log('⚠️ No user found, setting loading to false');
       setLoading(false);
     }
   }, [user]);
@@ -21,7 +22,14 @@ export const useActivePrograms = () => {
   const fetchActivePrograms = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching active programs for user:', user?.id);
+      
+      if (!user?.id) {
+        console.error('❌ No user ID available');
+        setPrograms([]);
+        return;
+      }
+
+      console.log('🔍 Fetching active programs for user:', user.id);
       
       // Test Supabase connection first
       const connectionValid = await testSupabaseConnection();
@@ -32,11 +40,14 @@ export const useActivePrograms = () => {
       }
 
       // Fetch user data first to get the user ID from app_users
-      const userData = await fetchUserData(user?.id);
-      if (!userData) {
+      const userData = await fetchUserData(user.id);
+      if (!userData || !userData.id) {
+        console.log('⚠️ No valid userData found or missing userData.id');
         setPrograms([]);
         return;
       }
+
+      console.log('✅ Valid userData found:', userData);
 
       // Fetch program assignments
       const assignments = await fetchProgramAssignments(userData.id);

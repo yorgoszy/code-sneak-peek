@@ -18,6 +18,13 @@ export const testSupabaseConnection = async () => {
 };
 
 export const fetchUserData = async (authUserId: string) => {
+  if (!authUserId) {
+    console.error('❌ No auth user ID provided');
+    return null;
+  }
+
+  console.log('🔍 Fetching user data for auth_user_id:', authUserId);
+
   const { data: userData, error: userError } = await supabase
     .from('app_users')
     .select('id')
@@ -29,8 +36,8 @@ export const fetchUserData = async (authUserId: string) => {
     return null;
   }
 
-  if (!userData) {
-    console.log('⚠️ No user data found');
+  if (!userData || !userData.id) {
+    console.log('⚠️ No valid user data found or missing user ID');
     return null;
   }
 
@@ -39,6 +46,11 @@ export const fetchUserData = async (authUserId: string) => {
 };
 
 export const fetchProgramAssignments = async (userId: string) => {
+  if (!userId) {
+    console.error('❌ No user ID provided for fetching assignments');
+    return null;
+  }
+
   console.log('🔍 Fetching assignments for user_id:', userId);
   
   const { data: assignments, error: assignmentsError } = await supabase
