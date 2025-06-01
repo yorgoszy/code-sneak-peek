@@ -36,6 +36,7 @@ interface ProgramBuilderDialogContentProps {
   onReorderBlocks: (weekId: string, dayId: string, oldIndex: number, newIndex: number) => void;
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onSave: () => void;
+  onAssignments?: () => void;
 }
 
 export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentProps> = ({
@@ -67,7 +68,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onReorderDays,
   onReorderBlocks,
   onReorderExercises,
-  onSave
+  onSave,
+  onAssignments
 }) => {
   return (
     <DialogContent className="rounded-none w-screen h-screen max-w-none max-h-none m-0 p-0 overflow-hidden flex flex-col">
@@ -108,7 +110,16 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
         />
       </div>
 
-      <div className="flex justify-end px-6 py-4 border-t">
+      <div className="flex justify-end gap-3 px-6 py-4 border-t">
+        {onAssignments && (
+          <Button 
+            onClick={onAssignments} 
+            variant="outline"
+            className="rounded-none"
+          >
+            Αναθέσεις
+          </Button>
+        )}
         <Button 
           onClick={onSave} 
           className="rounded-none text-white hover:opacity-90"

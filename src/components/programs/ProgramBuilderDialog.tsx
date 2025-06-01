@@ -59,6 +59,13 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     handleClose();
   };
 
+  const handleAssignments = () => {
+    // Για τώρα, θα κλείσουμε το dialog και θα πάμε στη σελίδα ενεργών προγραμμάτων
+    // Μπορείς να το αλλάξεις αργότερα για να ανοίξει ένα assignments dialog
+    handleClose();
+    window.location.href = '/dashboard/active-programs';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <ProgramBuilderDialogContent
@@ -91,6 +98,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onReorderBlocks={actions.reorderBlocks}
         onReorderExercises={actions.reorderExercises}
         onSave={handleSave}
+        onAssignments={handleAssignments}
       />
     </Dialog>
   );

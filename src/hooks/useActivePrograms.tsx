@@ -116,7 +116,7 @@ export const useActivePrograms = () => {
         // For debugging, let's not filter by date initially to see all assignments
         console.log('🎯 All assignments before date filtering:', data.map(a => ({
           id: a.id,
-          programName: a.programs?.name,
+          programName: a.programs && typeof a.programs === 'object' && 'name' in a.programs ? a.programs.name : 'Unknown',
           startDate: a.start_date,
           endDate: a.end_date,
           status: a.status
@@ -124,8 +124,8 @@ export const useActivePrograms = () => {
 
         // If no dates are set, show the program anyway
         const validPrograms = data.filter(assignment => {
-          if (!assignment.programs) {
-            console.log('❌ Assignment without program:', assignment.id);
+          if (!assignment.programs || typeof assignment.programs !== 'object' || !('name' in assignment.programs)) {
+            console.log('❌ Assignment without valid program:', assignment.id);
             return false;
           }
           
