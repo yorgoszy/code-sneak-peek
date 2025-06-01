@@ -69,8 +69,13 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   return (
     <div className="space-y-6">
       <ProgramBasicInfo
-        program={program}
+        name={program.name}
+        description={program.description}
+        athleteId={program.user_id}
         users={users}
+        startDate={program.start_date}
+        trainingDays={program.training_days || []}
+        totalWeeks={program.weeks.length}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
         onAthleteChange={onAthleteChange}
@@ -79,7 +84,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
       />
       
       <TrainingWeeks
-        program={program}
+        weeks={program.weeks}
         exercises={exercises}
         onAddWeek={onAddWeek}
         onRemoveWeek={onRemoveWeek}

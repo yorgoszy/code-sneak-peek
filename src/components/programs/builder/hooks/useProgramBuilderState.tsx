@@ -1,38 +1,7 @@
+import { useState, useCallback } from 'react';
+import { Exercise } from '../../types';
 
-import { useState } from 'react';
-import { Exercise, Program } from '../../types';
-
-interface ProgramStructure {
-  name: string;
-  description: string;
-  athlete_id: string;
-  start_date?: Date;
-  training_days?: string[];
-  weeks: Week[];
-}
-
-interface Week {
-  id: string;
-  name: string;
-  week_number: number;
-  days: Day[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  blocks: Block[];
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
-
-interface ProgramExercise {
+export interface ProgramExercise {
   id: string;
   exercise_id: string;
   exercise_name: string;
@@ -46,11 +15,43 @@ interface ProgramExercise {
   exercise_order: number;
 }
 
+export interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
+
+export interface Day {
+  id: string;
+  name: string;
+  day_number: number;
+  blocks: Block[];
+}
+
+export interface Week {
+  id: string;
+  name: string;
+  week_number: number;
+  days: Day[];
+}
+
+export interface ProgramStructure {
+  id?: string;
+  name: string;
+  description: string;
+  user_id: string; // Changed from athlete_id to user_id
+  start_date?: Date;
+  training_days?: string[];
+  weeks: Week[];
+  status?: string;
+}
+
 export const useProgramBuilderState = (exercises: Exercise[]) => {
   const [program, setProgram] = useState<ProgramStructure>({
     name: '',
     description: '',
-    athlete_id: '',
+    user_id: '',
     start_date: undefined,
     training_days: [],
     weeks: []
@@ -59,7 +60,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const updateProgram = (updates: Partial<ProgramStructure> | ProgramStructure) => {
-    if ('name' in updates || 'description' in updates || 'athlete_id' in updates || 'start_date' in updates || 'training_days' in updates || 'weeks' in updates) {
+    if ('name' in updates || 'description' in updates || 'user_id' in updates || 'start_date' in updates || 'training_days' in updates || 'weeks' in updates) {
       if ('weeks' in updates && Array.isArray(updates.weeks)) {
         setProgram(updates as ProgramStructure);
       } else {
@@ -69,7 +70,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   };
 
   const resetProgram = () => {
-    setProgram({ name: '', description: '', athlete_id: '', start_date: undefined, training_days: [], weeks: [] });
+    setProgram({ name: '', description: '', user_id: '', start_date: undefined, training_days: [], weeks: [] });
   };
 
   const loadProgramFromData = (programData: Program) => {
@@ -78,7 +79,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     const loadedProgram: ProgramStructure = {
       name: programData.name,
       description: programData.description || '',
-      athlete_id: programData.athlete_id || '',
+      user_id: programData.athlete_id || '',
       start_date: undefined,
       training_days: [],
       weeks: programData.program_weeks?.map(week => ({
