@@ -21,7 +21,35 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#5271ff' }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#5271ff' }}>
+      {/* Animated Background Logo */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="relative">
+          {/* Main logo with pulse animation */}
+          <img 
+            src="/lovable-uploads/a5651e72-baad-4a26-94dd-10b93aa942b9.png" 
+            alt="HyperKids Background Logo" 
+            className="h-96 w-auto opacity-10 animate-pulse"
+          />
+          {/* Floating logos */}
+          <img 
+            src="/lovable-uploads/a5651e72-baad-4a26-94dd-10b93aa942b9.png" 
+            alt="Floating Logo 1" 
+            className="absolute -top-20 -left-20 h-24 w-auto opacity-5 animate-[float_6s_ease-in-out_infinite]"
+          />
+          <img 
+            src="/lovable-uploads/a5651e72-baad-4a26-94dd-10b93aa942b9.png" 
+            alt="Floating Logo 2" 
+            className="absolute -bottom-16 -right-16 h-32 w-auto opacity-5 animate-[float_8s_ease-in-out_infinite_reverse]"
+          />
+          <img 
+            src="/lovable-uploads/a5651e72-baad-4a26-94dd-10b93aa942b9.png" 
+            alt="Floating Logo 3" 
+            className="absolute top-32 -right-32 h-20 w-auto opacity-5 animate-[float_10s_ease-in-out_infinite]"
+          />
+        </div>
+      </div>
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50" style={{ backgroundColor: '#5271ff' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,6 +99,23 @@ const Index = () => {
           </div>
         </div>
       </nav>
+
+      {/* Hero Content */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen">
+        <div className="text-center text-white px-4">
+          <h1 className="text-6xl font-bold mb-4 animate-fade-in">HyperKids</h1>
+          <p className="text-xl mb-8 animate-fade-in animation-delay-200">
+            Το μέλλον της παιδικής φυσικής κατάστασης
+          </p>
+          <Button 
+            onClick={handleGetStarted}
+            className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg animate-fade-in animation-delay-400"
+            style={{ borderRadius: '0' }}
+          >
+            {isAuthenticated ? "Πηγαίνετε στο Dashboard" : "Ξεκινήστε τώρα"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
