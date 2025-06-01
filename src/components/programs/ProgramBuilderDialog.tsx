@@ -80,14 +80,19 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     
     console.log('Creating program with assignments:', program);
     
-    // Prepare start date string before saving
+    // Prepare start date string before saving - FIXED DATE HANDLING
     let startDateString: string | undefined;
     if (program.start_date) {
       if (typeof program.start_date === 'string') {
         startDateString = program.start_date;
       } else if (program.start_date instanceof Date) {
-        startDateString = program.start_date.toISOString().split('T')[0];
+        // Convert Date to YYYY-MM-DD format
+        const year = program.start_date.getFullYear();
+        const month = String(program.start_date.getMonth() + 1).padStart(2, '0');
+        const day = String(program.start_date.getDate()).padStart(2, '0');
+        startDateString = `${year}-${month}-${day}`;
       }
+      console.log('✅ Processed start date:', startDateString, 'from original:', program.start_date);
     }
     
     const programToSave = {
@@ -95,7 +100,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       id: editingProgram?.id || undefined,
       status: 'active', // Mark as active
       createAssignment: true, // Flag to create assignment
-      start_date: startDateString // Ensure start_date is a string
+      start_date: startDateString // Ensure start_date is a string in correct format
     };
     
     try {
@@ -103,24 +108,29 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       await onCreateProgram(programToSave);
       const programId = editingProgram?.id || program.id;
       
-      if (programId && program.user_id) {
+      if (programId && program.user_id && startDateString) {
         // Calculate end date if start date is provided
         let endDate: string | undefined;
-        if (startDateString && program.weeks?.length) {
+        if (program.weeks?.length) {
           const startDate = new Date(startDateString);
           const weeksToAdd = program.weeks.length;
           const calculatedEndDate = new Date(startDate);
           calculatedEndDate.setDate(calculatedEndDate.getDate() + (weeksToAdd * 7));
-          endDate = calculatedEndDate.toISOString().split('T')[0];
+          const endYear = calculatedEndDate.getFullYear();
+          const endMonth = String(calculatedEndDate.getMonth() + 1).padStart(2, '0');
+          const endDay = String(calculatedEndDate.getDate()).padStart(2, '0');
+          endDate = `${endYear}-${endMonth}-${endDay}`;
         }
         
-        console.log('Assignment dates:', {
+        console.log('🎯 Creating assignment with dates:', {
+          programId,
+          userId: program.user_id,
           startDate: startDateString,
           endDate: endDate,
           programWeeks: program.weeks?.length
         });
         
-        // Create assignment with dates
+        // Create assignment with correct dates
         await createOrUpdateAssignment(
           programId, 
           program.user_id, 
@@ -128,12 +138,22 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           endDate
         );
         
-        console.log('Assignment created successfully with dates:', {
+        console.log('✅ Assignment created successfully with dates:', {
           programId,
           userId: program.user_id,
           startDate: startDateString,
           endDate
         });
+        
+        toast.success('Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς');
+      } else {
+        console.error('❌ Missing required data for assignment:', {
+          programId,
+          userId: program.user_id,
+          startDate: startDateString
+        });
+        toast.error('Απαιτείται ημερομηνία έναρξης για την ανάθεση');
+        return;
       }
       
       handleClose();
@@ -142,7 +162,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         window.location.href = '/dashboard/active-programs';
       }, 1500);
     } catch (error) {
-      console.error('Error creating assignments:', error);
+      console.error('❌ Error creating assignments:', error);
+      toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
     }
   };
 
@@ -155,7 +176,10 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onNameChange={(name) => updateProgram({ name })}
         onDescriptionChange={(description) => updateProgram({ description })}
         onAthleteChange={(user_id) => updateProgram({ user_id })}
-        onStartDateChange={(start_date) => updateProgram({ start_date })}
+        onStartDateChange={(start_date) => {
+          console.log('📅 Start date changed in dialog:', start_date);
+          updateProgram({ start_date });
+        }}
         onTrainingDaysChange={(training_days) => updateProgram({ training_days })}
         onAddWeek={actions.addWeek}
         onRemoveWeek={actions.removeWeek}

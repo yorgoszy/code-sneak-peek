@@ -6,7 +6,7 @@ import { ProgramAssignment } from "@/components/programs/types";
 export const useProgramAssignments = () => {
   const createOrUpdateAssignment = async (programId: string, userId: string, startDate?: string, endDate?: string) => {
     try {
-      console.log('Creating/updating assignment for program:', programId, 'user:', userId, 'dates:', { startDate, endDate });
+      console.log('🎯 Creating/updating assignment for program:', programId, 'user:', userId, 'dates:', { startDate, endDate });
       
       // Check if assignment already exists using user_id
       const { data: existingAssignment } = await supabase
@@ -21,25 +21,30 @@ export const useProgramAssignments = () => {
         updated_at: new Date().toISOString()
       };
 
-      // Add dates if provided
+      // CRITICAL: Add dates if provided - this was the missing piece
       if (startDate) {
         assignmentData.start_date = startDate;
-        console.log('Setting start_date:', startDate);
+        console.log('✅ Setting start_date in assignment:', startDate);
       }
       if (endDate) {
         assignmentData.end_date = endDate;
-        console.log('Setting end_date:', endDate);
+        console.log('✅ Setting end_date in assignment:', endDate);
       }
 
       if (existingAssignment) {
         // Update existing assignment
-        const { error } = await supabase
+        console.log('📝 Updating existing assignment with data:', assignmentData);
+        const { data: updatedData, error } = await supabase
           .from('program_assignments')
           .update(assignmentData)
-          .eq('id', existingAssignment.id);
+          .eq('id', existingAssignment.id)
+          .select();
         
-        if (error) throw error;
-        console.log('Assignment updated with dates:', assignmentData);
+        if (error) {
+          console.error('❌ Error updating assignment:', error);
+          throw error;
+        }
+        console.log('✅ Assignment updated successfully:', updatedData);
         toast.success('Η ανάθεση ενημερώθηκε επιτυχώς');
       } else {
         // Create new assignment using user_id
@@ -49,16 +54,21 @@ export const useProgramAssignments = () => {
           ...assignmentData
         };
 
-        const { error } = await supabase
+        console.log('🆕 Creating new assignment with data:', newAssignmentData);
+        const { data: newData, error } = await supabase
           .from('program_assignments')
-          .insert([newAssignmentData]);
+          .insert([newAssignmentData])
+          .select();
         
-        if (error) throw error;
-        console.log('New assignment created with dates:', newAssignmentData);
+        if (error) {
+          console.error('❌ Error creating assignment:', error);
+          throw error;
+        }
+        console.log('✅ New assignment created successfully:', newData);
         toast.success('Η ανάθεση δημιουργήθηκε επιτυχώς');
       }
     } catch (error) {
-      console.error('Error creating/updating assignment:', error);
+      console.error('❌ Error creating/updating assignment:', error);
       toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
       throw error; // Re-throw to handle in the calling function
     }

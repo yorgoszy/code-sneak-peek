@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCalendarProps {
@@ -13,193 +13,139 @@ interface ProgramCalendarProps {
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  console.log('📅 ProgramCalendar received programs:', programs.length);
+  console.log('📅 ProgramCalendar rendering with programs:', programs.length);
   programs.forEach(program => {
-    console.log('📅 Program in calendar:', {
+    console.log('📊 Program in calendar:', {
       id: program.id,
       name: program.programs?.name,
       start_date: program.start_date,
       end_date: program.end_date,
-      start_date_type: typeof program.start_date,
-      end_date_type: typeof program.end_date
+      status: program.status
     });
   });
 
-  const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  const goToPreviousMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
   };
 
-  const getFirstDayOfMonth = (date: Date) => {
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-    return firstDay === 0 ? 6 : firstDay - 1; // Convert Sunday (0) to 6, Monday (1) to 0, etc.
+  const goToNextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => {
-      const newDate = new Date(prev);
-      if (direction === 'prev') {
-        newDate.setMonth(newDate.getMonth() - 1);
-      } else {
-        newDate.setMonth(newDate.getMonth() + 1);
-      }
-      return newDate;
-    });
-  };
-
-  const getProgramsForDate = (day: number) => {
-    const dateToCheck = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    const dateString = dateToCheck.toISOString().split('T')[0];
+  const getProgramsForDay = (day: Date) => {
+    const dayString = format(day, 'yyyy-MM-dd');
+    console.log('🔍 Checking programs for day:', dayString);
     
-    console.log('🔍 Checking date:', dateString, 'for programs');
-    
-    const matchingPrograms = programs.filter(assignment => {
-      if (!assignment.start_date) {
-        console.log('⚠️ Assignment without start_date:', assignment.id);
+    const dayPrograms = programs.filter(program => {
+      if (!program.start_date || !program.end_date) {
+        console.log('⚠️ Program missing dates:', program.id);
         return false;
       }
       
-      const startDate = new Date(assignment.start_date);
-      const endDate = assignment.end_date ? new Date(assignment.end_date) : new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
-      
-      const startDateString = startDate.toISOString().split('T')[0];
-      const endDateString = endDate.toISOString().split('T')[0];
-      
-      const isInRange = dateString >= startDateString && dateString <= endDateString;
-      
-      console.log('📊 Date range check for assignment:', assignment.id, {
-        dateToCheck: dateString,
-        startDate: startDateString,
-        endDate: endDateString,
-        isInRange
-      });
-      
-      return isInRange;
+      try {
+        const startDate = parseISO(program.start_date);
+        const endDate = parseISO(program.end_date);
+        const isInRange = day >= startDate && day <= endDate;
+        
+        console.log('📊 Date check for program:', program.id, {
+          dayString,
+          start_date: program.start_date,
+          end_date: program.end_date,
+          isInRange
+        });
+        
+        return isInRange;
+      } catch (error) {
+        console.error('❌ Error parsing dates for program:', program.id, error);
+        return false;
+      }
     });
-
-    console.log('✅ Programs found for date', dateString, ':', matchingPrograms.length);
-    return matchingPrograms;
+    
+    console.log(`📅 Programs for ${dayString}:`, dayPrograms.length);
+    return dayPrograms;
   };
 
-  const daysInMonth = getDaysInMonth(currentDate);
-  const firstDay = getFirstDayOfMonth(currentDate);
-  const monthNames = [
-    'Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος', 'Μάιος', 'Ιούνιος',
-    'Ιούλιος', 'Αύγουστος', 'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'
-  ];
-  const dayNames = ['Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ', 'Κυρ'];
-
-  if (programs.length === 0) {
-    return (
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Ημερολόγιο Προγραμμάτων
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Δεν έχετε ενεργά προγράμματα</p>
-            <p className="text-sm">Επικοινωνήστε με τον προπονητή σας για ανάθεση προγράμματος</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Ημερολόγιο Προγραμμάτων
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateMonth('prev')}
-              className="rounded-none"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <span className="font-medium min-w-[120px] text-center">
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateMonth('next')}
-              className="rounded-none"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-xl font-bold">
+          {format(currentDate, 'MMMM yyyy')}
+        </CardTitle>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToPreviousMonth}
+            className="rounded-none"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToNextMonth}
+            className="rounded-none"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       </CardHeader>
-      
       <CardContent>
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200">
-          <p className="text-sm text-blue-800">
-            <strong>Debug Info:</strong> Συνολικά προγράμματα: {programs.length}
-          </p>
-          {programs.map(program => (
-            <div key={program.id} className="text-xs text-blue-600">
-              {program.programs?.name}: {program.start_date} - {program.end_date}
+        <div className="grid grid-cols-7 gap-1 mb-4">
+          {['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'].map((day) => (
+            <div key={day} className="p-2 text-center font-medium text-gray-600 text-sm">
+              {day}
             </div>
           ))}
         </div>
         
         <div className="grid grid-cols-7 gap-1">
-          {/* Day headers */}
-          {dayNames.map(day => (
-            <div key={day} className="p-2 text-center font-medium text-sm border-b">
-              {day}
-            </div>
-          ))}
-          
-          {/* Empty cells for days before month starts */}
-          {Array.from({ length: firstDay }).map((_, index) => (
-            <div key={`empty-${index}`} className="p-2 h-24" />
-          ))}
-          
-          {/* Calendar days */}
-          {Array.from({ length: daysInMonth }).map((_, index) => {
-            const day = index + 1;
-            const programsForDay = getProgramsForDate(day);
-            const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+          {days.map((day) => {
+            const dayPrograms = getProgramsForDay(day);
+            const isCurrentMonth = isSameMonth(day, currentDate);
+            const isDayToday = isToday(day);
             
             return (
               <div
-                key={day}
-                className={`p-1 h-24 border border-gray-200 ${isToday ? 'bg-blue-50' : ''}`}
+                key={day.toISOString()}
+                className={`
+                  min-h-[80px] p-1 border border-gray-200 rounded
+                  ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
+                  ${isDayToday ? 'ring-2 ring-blue-500' : ''}
+                `}
               >
-                <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : ''}`}>
-                  {day}
+                <div className={`
+                  text-sm font-medium mb-1
+                  ${isDayToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
+                `}>
+                  {format(day, 'd')}
                 </div>
+                
                 <div className="space-y-1">
-                  {programsForDay.slice(0, 2).map(assignment => (
-                    <Badge 
-                      key={assignment.id} 
-                      variant="secondary" 
-                      className="text-xs rounded-none block truncate"
-                      title={assignment.programs?.name || 'Άγνωστο Πρόγραμμα'}
+                  {dayPrograms.map((program) => (
+                    <div
+                      key={program.id}
+                      className="text-xs p-1 bg-blue-100 text-blue-800 rounded truncate"
+                      title={program.programs?.name || 'Άγνωστο πρόγραμμα'}
                     >
-                      {assignment.programs?.name || 'Πρόγραμμα'}
-                    </Badge>
-                  ))}
-                  {programsForDay.length > 2 && (
-                    <div className="text-xs text-gray-500">
-                      +{programsForDay.length - 2} ακόμη
+                      {program.programs?.name || 'Άγνωστο πρόγραμμα'}
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
             );
           })}
         </div>
+        
+        {programs.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            Δεν υπάρχουν ενεργά προγράμματα
+          </div>
+        )}
       </CardContent>
     </Card>
   );
