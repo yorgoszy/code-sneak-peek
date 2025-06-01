@@ -1500,6 +1500,20 @@ export type Database = {
             referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "programs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
         ]
       }
       site_images: {
@@ -1983,6 +1997,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_programs_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programs_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "app_users"

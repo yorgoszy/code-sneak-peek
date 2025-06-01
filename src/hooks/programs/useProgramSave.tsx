@@ -1,152 +1,232 @@
 
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useProgramStructure } from './useProgramStructure';
-import { useProgramAssignments } from './useProgramAssignments';
-import { useAuth } from '../useAuth';
+import { ProgramStructure } from "@/components/programs/types";
 
 export const useProgramSave = () => {
   const [loading, setLoading] = useState(false);
-  const { createProgramStructure } = useProgramStructure();
-  const { createOrUpdateAssignment } = useProgramAssignments();
-  const { user } = useAuth();
 
-  const saveProgram = async (programData: any) => {
-    setLoading(true);
+  const saveProgram = async (programData: ProgramStructure): Promise<void> => {
     try {
-      console.log('Saving program data:', programData);
-      
-      // First, ensure the current user exists in app_users table
-      let appUserId = null;
-      if (user?.id) {
-        const { data: existingUser, error: userCheckError } = await supabase
-          .from('app_users')
-          .select('id')
-          .eq('auth_user_id', user.id)
-          .single();
+      setLoading(true);
+      console.log('💾 Starting program save...', programData);
 
-        if (userCheckError && userCheckError.code === 'PGRST116') {
-          // User doesn't exist in app_users, create them
-          console.log('Creating user in app_users table');
-          const { data: newUser, error: createUserError } = await supabase
-            .from('app_users')
-            .insert([{
-              auth_user_id: user.id,
-              email: user.email || 'unknown@example.com',
-              name: user.email?.split('@')[0] || 'Unknown User',
-              role: 'trainer'
-            }])
-            .select()
-            .single();
+      // Prepare program data for database
+      const programPayload = {
+        name: programData.name,
+        description: programData.description || null,
+        user_id: programData.user_id || null,
+        start_date: programData.start_date ? programData.start_date.toISOString().split('T')[0] : null,
+        status: programData.status || 'draft'
+      };
 
-          if (createUserError) {
-            console.error('Error creating user:', createUserError);
-            toast.error('Σφάλμα δημιουργίας χρήστη');
-            return null;
-          }
-          appUserId = newUser.id;
-        } else if (existingUser) {
-          appUserId = existingUser.id;
-        }
-      }
-      
+      let programId: string;
+
       if (programData.id) {
         // Update existing program
-        const { data: updatedProgram, error: programError } = await supabase
+        console.log('🔄 Updating existing program:', programData.id);
+        const { error: updateError } = await supabase
           .from('programs')
-          .update({
-            name: programData.name,
-            description: programData.description,
-            user_id: programData.user_id || null,
-            status: programData.status || 'draft'
-          })
-          .eq('id', programData.id)
-          .select()
-          .single();
+          .update(programPayload)
+          .eq('id', programData.id);
 
-        if (programError) throw programError;
-
-        // Delete old structure completely
-        console.log('Deleting old program structure for program:', programData.id);
-        const { error: deleteWeeksError } = await supabase
-          .from('program_weeks')
-          .delete()
-          .eq('program_id', programData.id);
-        
-        if (deleteWeeksError) {
-          console.error('Error deleting old weeks:', deleteWeeksError);
+        if (updateError) {
+          console.error('❌ Error updating program:', updateError);
+          throw updateError;
         }
-        
-        // Create new structure
-        console.log('Creating new program structure');
-        await createProgramStructure(programData.id, programData);
-        
-        // If createAssignment flag is set, create assignment for current user
-        if (programData.createAssignment && appUserId) {
-          console.log('Creating assignment for current user');
-          await createOrUpdateAssignment(programData.id, appUserId);
-        }
-        
-        // If user_id is provided and different from creator, create additional assignment
-        if (programData.user_id && programData.user_id !== appUserId && programData.createAssignment) {
-          console.log('Creating assignment for selected user');
-          await createOrUpdateAssignment(programData.id, programData.user_id);
-        }
-        
-        const successMessage = programData.createAssignment 
-          ? 'Το πρόγραμμα ενημερώθηκε και ανατέθηκε επιτυχώς'
-          : 'Το πρόγραμμα ενημερώθηκε επιτυχώς';
-        toast.success(successMessage);
-        
-        return updatedProgram;
+        programId = programData.id;
       } else {
         // Create new program
-        const { data: program, error: programError } = await supabase
+        console.log('➕ Creating new program');
+        const { data: newProgram, error: insertError } = await supabase
           .from('programs')
-          .insert([{
-            name: programData.name,
-            description: programData.description,
-            user_id: programData.user_id || null,
-            created_by: appUserId,
-            status: programData.status || 'draft'
-          }])
-          .select()
+          .insert(programPayload)
+          .select('id')
           .single();
 
-        if (programError) throw programError;
-
-        console.log('Creating program structure for new program:', program.id);
-        await createProgramStructure(program.id, programData);
-        
-        // Only create assignments if createAssignment flag is set
-        if (programData.createAssignment) {
-          if (appUserId) {
-            console.log('Creating assignment for creator');
-            await createOrUpdateAssignment(program.id, appUserId);
-          }
-          
-          // If user_id is provided and different from creator, create additional assignment
-          if (programData.user_id && programData.user_id !== appUserId) {
-            console.log('Creating assignment for selected user');
-            await createOrUpdateAssignment(program.id, programData.user_id);
-          }
+        if (insertError || !newProgram) {
+          console.error('❌ Error creating program:', insertError);
+          throw insertError;
         }
-        
-        const successMessage = programData.createAssignment 
-          ? 'Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς'
-          : 'Το πρόγραμμα αποθηκεύτηκε επιτυχώς';
-        toast.success(successMessage);
-        
-        return program;
+        programId = newProgram.id;
       }
+
+      console.log('✅ Program saved with ID:', programId);
+
+      // Save weeks structure if provided
+      if (programData.weeks && programData.weeks.length > 0) {
+        await saveWeeksStructure(programId, programData.weeks);
+      }
+
+      // Handle program assignments with training dates
+      if (programData.training_dates && programData.training_dates.length > 0 && programData.user_id) {
+        await handleProgramAssignment(programId, programData.user_id, programData.training_dates);
+      }
+
+      console.log('✅ Program saved successfully');
     } catch (error) {
-      console.error('Error saving program:', error);
-      toast.error('Σφάλμα αποθήκευσης προγράμματος');
+      console.error('❌ Error saving program:', error);
       throw error;
     } finally {
       setLoading(false);
     }
+  };
+
+  const saveWeeksStructure = async (programId: string, weeks: any[]) => {
+    console.log('💾 Saving weeks structure for program:', programId);
+
+    // Delete existing weeks and their children
+    const { error: deleteError } = await supabase
+      .from('program_weeks')
+      .delete()
+      .eq('program_id', programId);
+
+    if (deleteError) {
+      console.error('❌ Error deleting existing weeks:', deleteError);
+      throw deleteError;
+    }
+
+    // Save new weeks
+    for (const week of weeks) {
+      const { data: savedWeek, error: weekError } = await supabase
+        .from('program_weeks')
+        .insert({
+          program_id: programId,
+          name: week.name,
+          week_number: week.week_number
+        })
+        .select('id')
+        .single();
+
+      if (weekError || !savedWeek) {
+        console.error('❌ Error saving week:', weekError);
+        throw weekError;
+      }
+
+      // Save days for this week
+      if (week.program_days && week.program_days.length > 0) {
+        await saveDaysStructure(savedWeek.id, week.program_days);
+      }
+    }
+  };
+
+  const saveDaysStructure = async (weekId: string, days: any[]) => {
+    for (const day of days) {
+      const { data: savedDay, error: dayError } = await supabase
+        .from('program_days')
+        .insert({
+          week_id: weekId,
+          name: day.name,
+          day_number: day.day_number
+        })
+        .select('id')
+        .single();
+
+      if (dayError || !savedDay) {
+        console.error('❌ Error saving day:', dayError);
+        throw dayError;
+      }
+
+      // Save blocks for this day
+      if (day.program_blocks && day.program_blocks.length > 0) {
+        await saveBlocksStructure(savedDay.id, day.program_blocks);
+      }
+    }
+  };
+
+  const saveBlocksStructure = async (dayId: string, blocks: any[]) => {
+    for (const block of blocks) {
+      const { data: savedBlock, error: blockError } = await supabase
+        .from('program_blocks')
+        .insert({
+          day_id: dayId,
+          name: block.name,
+          block_order: block.block_order
+        })
+        .select('id')
+        .single();
+
+      if (blockError || !savedBlock) {
+        console.error('❌ Error saving block:', blockError);
+        throw blockError;
+      }
+
+      // Save exercises for this block
+      if (block.program_exercises && block.program_exercises.length > 0) {
+        await saveExercisesStructure(savedBlock.id, block.program_exercises);
+      }
+    }
+  };
+
+  const saveExercisesStructure = async (blockId: string, exercises: any[]) => {
+    for (const exercise of exercises) {
+      const { error: exerciseError } = await supabase
+        .from('program_exercises')
+        .insert({
+          block_id: blockId,
+          exercise_id: exercise.exercise_id,
+          sets: exercise.sets,
+          reps: exercise.reps || null,
+          kg: exercise.kg || null,
+          percentage_1rm: exercise.percentage_1rm || null,
+          velocity_ms: exercise.velocity_ms || null,
+          tempo: exercise.tempo || null,
+          rest: exercise.rest || null,
+          notes: exercise.notes || null,
+          exercise_order: exercise.exercise_order
+        });
+
+      if (exerciseError) {
+        console.error('❌ Error saving exercise:', exerciseError);
+        throw exerciseError;
+      }
+    }
+  };
+
+  const handleProgramAssignment = async (programId: string, userId: string, trainingDates: string[]) => {
+    console.log('📅 Handling program assignment with training dates:', trainingDates);
+
+    // Check if assignment already exists
+    const { data: existingAssignment } = await supabase
+      .from('program_assignments')
+      .select('id')
+      .eq('program_id', programId)
+      .eq('user_id', userId)
+      .single();
+
+    const assignmentData = {
+      program_id: programId,
+      user_id: userId,
+      status: 'active',
+      training_dates: trainingDates,
+      start_date: trainingDates.length > 0 ? trainingDates[0] : null,
+      end_date: trainingDates.length > 0 ? trainingDates[trainingDates.length - 1] : null
+    };
+
+    if (existingAssignment) {
+      // Update existing assignment
+      const { error: updateError } = await supabase
+        .from('program_assignments')
+        .update(assignmentData)
+        .eq('id', existingAssignment.id);
+
+      if (updateError) {
+        console.error('❌ Error updating program assignment:', updateError);
+        throw updateError;
+      }
+    } else {
+      // Create new assignment
+      const { error: insertError } = await supabase
+        .from('program_assignments')
+        .insert(assignmentData);
+
+      if (insertError) {
+        console.error('❌ Error creating program assignment:', insertError);
+        throw insertError;
+      }
+    }
+
+    console.log('✅ Program assignment saved successfully');
   };
 
   return {
