@@ -65,6 +65,8 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
     setPreviewProgram(null);
   };
 
+  console.log('ActiveProgramsList received programs:', programs);
+
   if (programs.length === 0) {
     return (
       <Card className="rounded-none">
@@ -83,6 +85,11 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
       <div className="grid gap-4">
         {programs.map((assignment) => {
           const program = assignment.programs;
+          if (!program) {
+            console.warn('Program not found for assignment:', assignment);
+            return null;
+          }
+          
           const comingSoon = isComingSoon(assignment.start_date);
           const progress = comingSoon ? 0 : calculateProgress(assignment.start_date, assignment.end_date);
           const daysRemaining = comingSoon ? 0 : getDaysRemaining(assignment.end_date);

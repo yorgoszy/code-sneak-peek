@@ -17,23 +17,35 @@ export const useActivePrograms = () => {
   const fetchActivePrograms = async () => {
     try {
       setLoading(true);
+      console.log('Fetching active programs for user:', user?.id);
       
       // Fetch user data first to get the user ID from app_users
-      const { data: userData } = await supabase
+      const { data: userData, error: userError } = await supabase
         .from('app_users')
         .select('id')
         .eq('auth_user_id', user?.id)
         .single();
 
-      if (!userData) {
+      if (userError) {
+        console.error('Error fetching user data:', userError);
         setPrograms([]);
         return;
       }
+
+      if (!userData) {
+        console.log('No user data found');
+        setPrograms([]);
+        return;
+      }
+
+      console.log('Found user data:', userData);
 
       const today = new Date().toISOString().split('T')[0];
       const nextWeek = new Date();
       nextWeek.setDate(nextWeek.getDate() + 7);
       const nextWeekDate = nextWeek.toISOString().split('T')[0];
+
+      console.log('Date filters:', { today, nextWeekDate });
 
       // Fetch active program assignments and coming soon programs
       const { data, error } = await supabase
@@ -42,7 +54,7 @@ export const useActivePrograms = () => {
           *,
           programs(
             *,
-            app_users(name),
+            app_users!programs_created_by_fkey(name),
             program_weeks(
               *,
               program_days(
@@ -60,14 +72,32 @@ export const useActivePrograms = () => {
         `)
         .eq('athlete_id', userData.id)
         .eq('status', 'active')
-        .or(`and(start_date.lte.${today},end_date.gte.${today}),and(start_date.gt.${today},start_date.lte.${nextWeekDate})`)
-        .order('start_date', { ascending: true });
+        .gte('end_date', today);
 
       if (error) {
         console.error('Error fetching active programs:', error);
         setPrograms([]);
       } else {
-        setPrograms(data || []);
+        console.log('Fetched programs:', data);
+        
+        // Filter programs that are active today or start within next week
+        const filteredPrograms = (data || []).filter(assignment => {
+          const startDate = new Date(assignment.start_date);
+          const endDate = new Date(assignment.end_date);
+          const todayDate = new Date(today);
+          const nextWeekDateObj = new Date(nextWeekDate);
+          
+          // Program is active if:
+          // 1. It has started and not ended (active)
+          // 2. It starts within the next week (coming soon)
+          const isActive = startDate <= todayDate && endDate >= todayDate;
+          const isComingSoon = startDate > todayDate && startDate <= nextWeekDateObj;
+          
+          return isActive || isComingSoon;
+        });
+        
+        console.log('Filtered programs:', filteredPrograms);
+        setPrograms(filteredPrograms);
       }
     } catch (error) {
       console.error('Error fetching active programs:', error);
