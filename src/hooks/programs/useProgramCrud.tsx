@@ -12,12 +12,11 @@ export const useProgramCrud = () => {
       setLoading(true);
       console.log('🔍 Fetching programs...');
 
-      // First try with foreign key references
+      // Simple query to get all programs with their structure
       const { data, error } = await supabase
         .from('programs')
         .select(`
           *,
-          app_users!fk_programs_created_by(name),
           program_weeks(
             *,
             program_days(
@@ -35,42 +34,17 @@ export const useProgramCrud = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error with foreign key query:', error);
-        // Fallback to simple query without joins that might fail
-        const { data: simpleData, error: simpleError } = await supabase
-          .from('programs')
-          .select(`
-            *,
-            program_weeks(
-              *,
-              program_days(
-                *,
-                program_blocks(
-                  *,
-                  program_exercises(
-                    *,
-                    exercises(name)
-                  )
-                )
-              )
-            )
-          `)
-          .order('created_at', { ascending: false });
-
-        if (simpleError) throw simpleError;
-        
-        return (simpleData || []).map(program => ({
-          ...program,
-          app_users: null
-        }));
+        console.error('Error fetching programs:', error);
+        toast.error('Σφάλμα φόρτωσης προγραμμάτων');
+        return [];
       }
 
-      // Transform data to handle potential query errors
+      console.log('✅ Programs fetched successfully:', data?.length || 0);
+      
+      // Transform data to match the expected format
       return (data || []).map(program => ({
         ...program,
-        app_users: program.app_users && typeof program.app_users === 'object' && 'name' in program.app_users 
-          ? program.app_users as any 
-          : null
+        app_users: null // Set to null since we're not fetching user data for now
       }));
     } catch (error) {
       console.error('Error fetching programs:', error);

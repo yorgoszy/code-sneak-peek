@@ -17,6 +17,40 @@ export const useProgramSave = () => {
     try {
       console.log('Saving program data:', programData);
       
+      // First, ensure the current user exists in app_users table
+      let appUserId = null;
+      if (user?.id) {
+        const { data: existingUser, error: userCheckError } = await supabase
+          .from('app_users')
+          .select('id')
+          .eq('auth_user_id', user.id)
+          .single();
+
+        if (userCheckError && userCheckError.code === 'PGRST116') {
+          // User doesn't exist in app_users, create them
+          console.log('Creating user in app_users table');
+          const { data: newUser, error: createUserError } = await supabase
+            .from('app_users')
+            .insert([{
+              auth_user_id: user.id,
+              email: user.email || 'unknown@example.com',
+              name: user.email?.split('@')[0] || 'Unknown User',
+              role: 'trainer'
+            }])
+            .select()
+            .single();
+
+          if (createUserError) {
+            console.error('Error creating user:', createUserError);
+            toast.error('Σφάλμα δημιουργίας χρήστη');
+            return;
+          }
+          appUserId = newUser.id;
+        } else if (existingUser) {
+          appUserId = existingUser.id;
+        }
+      }
+      
       if (programData.id) {
         // Update existing program
         const { error: programError } = await supabase
@@ -43,14 +77,14 @@ export const useProgramSave = () => {
         
         toast.success('Το πρόγραμμα ενημερώθηκε επιτυχώς');
       } else {
-        // Create new program with created_by field
+        // Create new program - use appUserId if available, otherwise null
         const { data: program, error: programError } = await supabase
           .from('programs')
           .insert([{
             name: programData.name,
             description: programData.description,
             athlete_id: programData.athlete_id || null,
-            created_by: user?.id
+            created_by: appUserId // This will be null if user doesn't exist in app_users
           }])
           .select()
           .single();
