@@ -13,7 +13,6 @@ interface ProgramBuilderProps {
   onDescriptionChange: (description: string) => void;
   onAthleteChange: (user_id: string) => void;
   onStartDateChange?: (date: Date | undefined) => void;
-  onTrainingDaysChange?: (days: string[]) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -44,7 +43,6 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onDescriptionChange,
   onAthleteChange,
   onStartDateChange,
-  onTrainingDaysChange,
   onAddWeek,
   onRemoveWeek,
   onDuplicateWeek,
@@ -74,13 +72,10 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         user_id={program.user_id}
         users={users}
         start_date={program.start_date}
-        training_days={program.training_days || []}
-        totalWeeks={program.weeks.length}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
         onAthleteChange={onAthleteChange}
         onStartDateChange={onStartDateChange}
-        onTrainingDaysChange={onTrainingDaysChange}
       />
       
       <TrainingWeeks
