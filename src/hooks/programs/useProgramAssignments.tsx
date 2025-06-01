@@ -108,7 +108,9 @@ export const useProgramAssignments = () => {
         if (appUsersData && 
             typeof appUsersData === 'object' && 
             appUsersData !== null && 
-            'id' in appUsersData) {
+            'id' in appUsersData &&
+            'name' in appUsersData &&
+            'email' in appUsersData) {
           validAppUsers = appUsersData;
         }
 
