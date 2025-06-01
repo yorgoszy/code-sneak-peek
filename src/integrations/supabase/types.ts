@@ -1253,6 +1253,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_program_assignments_athlete_id"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_program_assignments_program_id"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "program_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_program_assignments_program_id"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "program_assignments_program_id_fkey"
             columns: ["program_id"]
             isOneToOne: false
@@ -1523,6 +1544,20 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_programs_athlete_id"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_programs_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "programs_athlete_id_fkey"
             columns: ["athlete_id"]
@@ -2010,7 +2045,15 @@ export type Database = {
           updated_at: string | null
           weeks_count: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_programs_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {

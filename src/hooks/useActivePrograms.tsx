@@ -57,14 +57,14 @@ export const useActivePrograms = () => {
 
       console.log('✅ Found user data:', userData);
 
-      // Fetch active program assignments with full program details
+      // Fetch active program assignments with program details
       const { data, error } = await supabase
         .from('program_assignments')
         .select(`
           *,
-          programs(
+          programs!fk_program_assignments_program_id(
             *,
-            app_users!programs_created_by_fkey(name),
+            app_users!fk_programs_created_by(name),
             program_weeks(
               *,
               program_days(
@@ -87,12 +87,12 @@ export const useActivePrograms = () => {
 
       if (error) {
         console.error('❌ Error fetching active programs:', error);
-        // Fallback: try simpler query without the created_by join
+        // Fallback: try simpler query
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('program_assignments')
           .select(`
             *,
-            programs(*)
+            programs!fk_program_assignments_program_id(*)
           `)
           .eq('athlete_id', userData.id)
           .eq('status', 'active');
