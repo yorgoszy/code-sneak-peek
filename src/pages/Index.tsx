@@ -43,7 +43,7 @@ const Index = () => {
                 isAuthenticated ? (
                   <div className="flex items-center space-x-4">
                     <Link to="/dashboard">
-                      <Button variant="outline" size="icon" style={{ borderRadius: '0', backgroundColor: 'white', color: '#5271ff' }}>
+                      <Button variant="ghost" size="icon" style={{ borderRadius: '0' }} className="text-white hover:bg-white/10">
                         <User className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -55,7 +55,7 @@ const Index = () => {
                       size="icon"
                       style={{ borderRadius: '0' }}
                       onClick={handleSignOut}
-                      className="text-white hover:bg-white/20"
+                      className="text-white hover:bg-white/10"
                     >
                       <LogOut className="h-4 w-4" />
                     </Button>
