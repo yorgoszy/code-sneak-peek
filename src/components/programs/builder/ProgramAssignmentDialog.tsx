@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, User } from "lucide-react";
 import { format, parseISO, getWeek, getYear } from "date-fns";
-import type { User } from '../types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { User as UserType } from '../types';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { ProgramInfoCard } from './ProgramInfoCard';
 import { DateSelectionCard } from './DateSelectionCard';
@@ -12,7 +14,7 @@ interface ProgramAssignmentDialogProps {
   isOpen: boolean;
   onClose: () => void;
   program: ProgramStructure;
-  users: User[];
+  users: UserType[];
   onAssign: (userId: string, trainingDates: string[]) => void;
 }
 
@@ -24,14 +26,13 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   onAssign
 }) => {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   // Υπολογισμός απαιτούμενων προπονήσεων
   const totalWeeks = program.weeks?.length || 0;
   const daysPerWeek = program.weeks?.[0]?.days?.length || 0;
   const totalRequiredSessions = totalWeeks * daysPerWeek;
 
-  // Χρησιμοποιούμε τον ήδη επιλεγμένο χρήστη από το πρόγραμμα
-  const selectedUserId = program.user_id || '';
   const selectedUser = users.find(user => user.id === selectedUserId);
 
   console.log('Program in assignment dialog:', program);
@@ -41,8 +42,14 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   useEffect(() => {
     if (!isOpen) {
       setSelectedDates([]);
+      setSelectedUserId('');
+    } else {
+      // Αν το πρόγραμμα έχει ήδη επιλεγμένο χρήστη, τον θέτουμε ως προεπιλογή
+      if (program.user_id) {
+        setSelectedUserId(program.user_id);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, program.user_id]);
 
   // Βελτιωμένη λογική επιλογής ημερομηνιών
   const handleDateSelect = (date: Date | undefined) => {
@@ -124,6 +131,33 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
         </DialogHeader>
 
         <div className="flex-1 overflow-auto space-y-6 p-6">
+          {/* Επιλογή Ασκούμενου */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Επιλογή Ασκούμενου</h3>
+            <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε ασκούμενο">
+                  {selectedUser && (
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      {selectedUser.name}
+                    </div>
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {users.map(user => (
+                  <SelectItem key={user.id} value={user.id}>
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      {user.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <ProgramInfoCard
             program={program}
             selectedUser={selectedUser}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { User, Exercise, Program } from './types';
@@ -142,8 +141,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     }
   };
 
-  // Filter users: exclude the one already selected in the program
-  const availableUsers = users.filter(user => user.id !== program.user_id);
+  // Δεν φιλτράρουμε τους χρήστες - εμφανίζουμε όλους
+  const availableUsers = users;
 
   return (
     <>
