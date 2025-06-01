@@ -102,18 +102,30 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           endDate = calculatedEndDate.toISOString().split('T')[0];
         }
         
+        // Prepare dates as strings
+        const startDateString = program.start_date ? 
+          (typeof program.start_date === 'string' ? program.start_date : program.start_date.toISOString().split('T')[0]) 
+          : undefined;
+        
+        console.log('Calling createOrUpdateAssignment with:', {
+          programId,
+          userId: program.user_id,
+          startDate: startDateString,
+          endDate
+        });
+        
         // Create assignment with dates
         await createOrUpdateAssignment(
           programId, 
           program.user_id, 
-          program.start_date ? new Date(program.start_date).toISOString().split('T')[0] : undefined, 
+          startDateString, 
           endDate
         );
         
         console.log('Assignment created with dates:', {
           programId,
           userId: program.user_id,
-          startDate: program.start_date,
+          startDate: startDateString,
           endDate
         });
       }

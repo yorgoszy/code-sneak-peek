@@ -24,9 +24,11 @@ export const useProgramAssignments = () => {
       // Add dates if provided
       if (startDate) {
         assignmentData.start_date = startDate;
+        console.log('Setting start_date:', startDate);
       }
       if (endDate) {
         assignmentData.end_date = endDate;
+        console.log('Setting end_date:', endDate);
       }
 
       if (existingAssignment) {
