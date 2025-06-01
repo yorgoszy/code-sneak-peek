@@ -1,5 +1,6 @@
+
 import { useState, useCallback } from 'react';
-import { Exercise } from '../../types';
+import { Exercise, Program } from '../../types';
 
 export interface ProgramExercise {
   id: string;
@@ -126,5 +127,3 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     loadProgramFromData
   };
 };
-
-export type { ProgramStructure, Week, Day, Block, ProgramExercise };
