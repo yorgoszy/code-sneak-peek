@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO, getDay } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -9,17 +9,6 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 interface ProgramCalendarProps {
   programs: EnrichedAssignment[];
 }
-
-// Mapping for training days to JavaScript day numbers
-const TRAINING_DAY_MAP: Record<string, number> = {
-  'sunday': 0,
-  'monday': 1,
-  'tuesday': 2,
-  'wednesday': 3,
-  'thursday': 4,
-  'friday': 5,
-  'saturday': 6
-};
 
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -29,10 +18,9 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
     console.log('📊 Program in calendar:', {
       id: program.id,
       name: program.programs?.name,
-      start_date: program.start_date,
-      end_date: program.end_date,
-      status: program.status,
-      training_days: program.programs?.training_days
+      user_name: program.app_users?.name,
+      training_dates: program.training_dates,
+      status: program.status
     });
   });
 
@@ -50,53 +38,19 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
 
   const getProgramsForDay = (day: Date) => {
     const dayString = format(day, 'yyyy-MM-dd');
-    const dayOfWeek = getDay(day); // 0 = Sunday, 1 = Monday, etc.
     
-    console.log('🔍 Checking programs for day:', dayString, 'Day of week:', dayOfWeek);
+    console.log('🔍 Checking programs for day:', dayString);
     
     const dayPrograms = programs.filter(program => {
-      if (!program.start_date || !program.end_date) {
-        console.log('⚠️ Program missing dates:', program.id);
-        return false;
+      // Check if this specific date is in the training_dates array
+      if (program.training_dates && Array.isArray(program.training_dates)) {
+        const isTrainingDate = program.training_dates.includes(dayString);
+        console.log(`📊 Program ${program.id} - Training dates:`, program.training_dates, 'Checking:', dayString, 'Match:', isTrainingDate);
+        return isTrainingDate;
       }
       
-      try {
-        const startDate = parseISO(program.start_date);
-        const endDate = parseISO(program.end_date);
-        const isInDateRange = day >= startDate && day <= endDate;
-        
-        if (!isInDateRange) {
-          return false;
-        }
-
-        // Check if we have training days defined for the program
-        const trainingDays = program.programs?.training_days;
-        if (!trainingDays || !Array.isArray(trainingDays) || trainingDays.length === 0) {
-          console.log('⚠️ No training days data for program:', program.id);
-          return isInDateRange; // Fall back to showing every day in range
-        }
-
-        // Convert training day strings to day numbers and check if current day matches
-        const trainingDayNumbers = trainingDays
-          .map(day => TRAINING_DAY_MAP[day.toLowerCase()])
-          .filter(dayNum => dayNum !== undefined);
-
-        const isTrainingDay = trainingDayNumbers.includes(dayOfWeek);
-        
-        console.log('📊 Training day check for program:', program.id, {
-          dayString,
-          dayOfWeek,
-          trainingDays,
-          trainingDayNumbers,
-          isTrainingDay,
-          isInDateRange
-        });
-        
-        return isInDateRange && isTrainingDay;
-      } catch (error) {
-        console.error('❌ Error parsing dates for program:', program.id, error);
-        return false;
-      }
+      console.log('⚠️ No training_dates data for program:', program.id);
+      return false;
     });
     
     console.log(`📅 Programs for ${dayString}:`, dayPrograms.length);
@@ -104,7 +58,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full rounded-none">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-xl font-bold">
           {format(currentDate, 'MMMM yyyy')}
@@ -147,7 +101,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
               <div
                 key={day.toISOString()}
                 className={`
-                  min-h-[80px] p-1 border border-gray-200 rounded
+                  min-h-[80px] p-1 border border-gray-200 rounded-none
                   ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
                   ${isDayToday ? 'ring-2 ring-blue-500' : ''}
                 `}
@@ -163,10 +117,11 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
                   {dayPrograms.map((program) => (
                     <div
                       key={program.id}
-                      className="text-xs p-1 bg-blue-100 text-blue-800 rounded truncate"
-                      title={program.programs?.name || 'Άγνωστο πρόγραμμα'}
+                      className="text-xs p-1 bg-blue-100 text-blue-800 rounded-none truncate"
+                      title={`${program.programs?.name || 'Άγνωστο πρόγραμμα'} - ${program.app_users?.name || 'Άγνωστος χρήστης'}`}
                     >
-                      {program.programs?.name || 'Άγνωστο πρόγραμμα'}
+                      <div className="font-medium">{program.programs?.name || 'Άγνωστο πρόγραμμα'}</div>
+                      <div className="text-gray-600">{program.app_users?.name || 'Άγνωστος χρήστης'}</div>
                     </div>
                   ))}
                 </div>

@@ -14,6 +14,7 @@ export interface EnrichedAssignment {
   assignment_type?: string;
   group_id?: string;
   progress?: number;
+  training_dates?: string[]; // Array of specific dates instead of training_days pattern
   programs?: {
     id: string;
     name: string;

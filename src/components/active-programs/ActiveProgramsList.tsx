@@ -10,22 +10,31 @@ interface ActiveProgramsListProps {
 }
 
 export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs }) => {
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Δεν έχει οριστεί';
-    return new Date(dateString).toLocaleDateString('el-GR');
+  const formatTrainingDates = (dates: string[] | undefined) => {
+    if (!dates || dates.length === 0) return 'Δεν έχουν οριστεί ημερομηνίες';
+    
+    // Sort dates and show first few
+    const sortedDates = [...dates].sort();
+    if (sortedDates.length <= 3) {
+      return sortedDates.map(date => new Date(date).toLocaleDateString('el-GR')).join(', ');
+    }
+    
+    const firstTwo = sortedDates.slice(0, 2).map(date => new Date(date).toLocaleDateString('el-GR'));
+    return `${firstTwo.join(', ')} και ${sortedDates.length - 2} ακόμη`;
   };
 
   const getProgramStats = (program: any) => {
     if (!program?.programs?.program_weeks) {
-      return { weeksCount: 0, daysCount: 0, exercisesCount: 0 };
+      return { weeksCount: 0, daysCount: 0, trainingDatesCount: 0 };
     }
     
     const weeks = program.programs.program_weeks;
     const weeksCount = weeks.length;
     const daysCount = weeks.reduce((total: number, week: any) => 
       total + (week.program_days?.length || 0), 0);
+    const trainingDatesCount = program.training_dates?.length || 0;
     
-    return { weeksCount, daysCount, exercisesCount: 0 };
+    return { weeksCount, daysCount, trainingDatesCount };
   };
 
   if (programs.length === 0) {
@@ -54,7 +63,7 @@ export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs
       
       <div className="grid gap-4">
         {programs.map((assignment) => {
-          const { weeksCount, daysCount } = getProgramStats(assignment);
+          const { weeksCount, daysCount, trainingDatesCount } = getProgramStats(assignment);
           
           return (
             <Card key={assignment.id} className="rounded-none">
@@ -77,28 +86,26 @@ export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs
               </CardHeader>
               
               <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="w-4 h-4 text-gray-500" />
+                  <span>Ασκούμενος: {assignment.app_users?.name || 'Άγνωστος χρήστης'}</span>
+                </div>
+                
+                <div className="text-sm">
+                  <div className="flex items-center gap-2 mb-1">
                     <Calendar className="w-4 h-4 text-gray-500" />
-                    <span>Έναρξη: {formatDate(assignment.start_date)}</span>
+                    <span className="font-medium">Ημερομηνίες προπόνησης:</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-500" />
-                    <span>Λήξη: {formatDate(assignment.end_date)}</span>
+                  <div className="text-gray-600 ml-6">
+                    {formatTrainingDates(assignment.training_dates)}
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <span>{weeksCount} εβδομάδες</span>
                   <span>{daysCount} ημέρες προπόνησης</span>
+                  <span>{trainingDatesCount} ημερομηνίες ανατεθιμένες</span>
                 </div>
-                
-                {assignment.app_users && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <User className="w-4 h-4 text-gray-500" />
-                    <span>Ασκούμενος: {assignment.app_users.name}</span>
-                  </div>
-                )}
                 
                 {assignment.notes && (
                   <div className="text-sm">
