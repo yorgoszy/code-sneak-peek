@@ -57,28 +57,12 @@ export const useActivePrograms = () => {
 
       console.log('✅ Found user data:', userData);
 
-      // Fetch active program assignments
+      // Fetch active program assignments with simplified query
       const { data, error } = await supabase
         .from('program_assignments')
         .select(`
           *,
-          programs(
-            *,
-            app_users!programs_created_by_fkey(name),
-            program_weeks(
-              *,
-              program_days(
-                *,
-                program_blocks(
-                  *,
-                  program_exercises(
-                    *,
-                    exercises(name)
-                  )
-                )
-              )
-            )
-          )
+          programs(*)
         `)
         .eq('athlete_id', userData.id)
         .eq('status', 'active');
