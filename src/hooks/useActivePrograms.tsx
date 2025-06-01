@@ -11,6 +11,12 @@ export const useActivePrograms = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    // 🔍 STEP 1: Show current user's auth_user_id
+    console.log('=== USER DEBUG INFO ===');
+    console.log('1. Current user from useAuth:', user);
+    console.log('2. Auth user ID:', user?.id);
+    console.log('3. User email:', user?.email);
+    
     if (user?.id) {
       fetchActivePrograms();
     } else {
@@ -39,24 +45,45 @@ export const useActivePrograms = () => {
         return;
       }
 
-      // Fetch user data first to get the user ID from app_users
+      // 🔍 STEP 2: Check if user exists in app_users table
+      console.log('=== APP_USERS TABLE DEBUG ===');
       const userData = await fetchUserData(user.id);
+      console.log('4. userData from app_users table:', userData);
+      
       if (!userData || !userData.id) {
         console.log('⚠️ No valid userData found or missing userData.id');
+        console.log('5. This means the user does NOT exist in app_users table with auth_user_id:', user.id);
         setPrograms([]);
         return;
       }
 
       console.log('✅ Valid userData found:', userData);
+      console.log('6. User exists in app_users with ID:', userData.id);
 
-      // Fetch program assignments
+      // 🔍 STEP 3: Check program_assignments table
+      console.log('=== PROGRAM_ASSIGNMENTS TABLE DEBUG ===');
       const assignments = await fetchProgramAssignments(userData.id);
+      console.log('7. Raw assignments from program_assignments table:', assignments);
+      
+      if (assignments) {
+        assignments.forEach((assignment, index) => {
+          console.log(`8.${index + 1}. Assignment ID: ${assignment.id}`);
+          console.log(`   - user_id: ${assignment.user_id}`);
+          console.log(`   - program_id: ${assignment.program_id}`);
+          console.log(`   - start_date: ${assignment.start_date} (type: ${typeof assignment.start_date})`);
+          console.log(`   - end_date: ${assignment.end_date} (type: ${typeof assignment.end_date})`);
+          console.log(`   - status: ${assignment.status}`);
+          console.log(`   - created_at: ${assignment.created_at}`);
+        });
+      }
+      
       if (!assignments) {
         setPrograms([]);
         return;
       }
 
       if (assignments.length === 0) {
+        console.log('9. No assignments found for user_id:', userData.id);
         setPrograms([]);
         return;
       }

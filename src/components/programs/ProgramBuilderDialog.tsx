@@ -78,21 +78,32 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       return;
     }
     
+    console.log('=== ASSIGNMENT CREATION DEBUG ===');
     console.log('Creating program with assignments:', program);
+    
+    // 🔍 STEP 4: Show what date is being selected
+    console.log('10. Selected start_date from program object:', program.start_date);
+    console.log('11. Type of start_date:', typeof program.start_date);
+    console.log('12. Selected user_id:', program.user_id);
+    console.log('13. Program weeks length:', program.weeks?.length);
     
     // Prepare start date string before saving - FIXED DATE HANDLING
     let startDateString: string | undefined;
     if (program.start_date) {
       if (typeof program.start_date === 'string') {
         startDateString = program.start_date;
+        console.log('14. Using string start_date as-is:', startDateString);
       } else if (program.start_date instanceof Date) {
         // Convert Date to YYYY-MM-DD format
         const year = program.start_date.getFullYear();
         const month = String(program.start_date.getMonth() + 1).padStart(2, '0');
         const day = String(program.start_date.getDate()).padStart(2, '0');
         startDateString = `${year}-${month}-${day}`;
+        console.log('15. Converted Date to string:', startDateString);
       }
-      console.log('✅ Processed start date:', startDateString, 'from original:', program.start_date);
+      console.log('16. Final startDateString that will be saved:', startDateString);
+    } else {
+      console.log('17. ❌ NO START DATE PROVIDED - program.start_date is:', program.start_date);
     }
     
     const programToSave = {
@@ -102,6 +113,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       createAssignment: true, // Flag to create assignment
       start_date: startDateString // Ensure start_date is a string in correct format
     };
+    
+    console.log('18. Final programToSave object:', programToSave);
     
     try {
       // First save the program with the correct start_date
@@ -122,13 +135,12 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           endDate = `${endYear}-${endMonth}-${endDay}`;
         }
         
-        console.log('🎯 Creating assignment with dates:', {
-          programId,
-          userId: program.user_id,
-          startDate: startDateString,
-          endDate: endDate,
-          programWeeks: program.weeks?.length
-        });
+        console.log('19. Assignment data being sent:');
+        console.log('    - programId:', programId);
+        console.log('    - userId:', program.user_id);
+        console.log('    - startDate:', startDateString);
+        console.log('    - endDate:', endDate);
+        console.log('    - programWeeks:', program.weeks?.length);
         
         // Create assignment with correct dates
         await createOrUpdateAssignment(
@@ -177,7 +189,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onDescriptionChange={(description) => updateProgram({ description })}
         onAthleteChange={(user_id) => updateProgram({ user_id })}
         onStartDateChange={(start_date) => {
-          console.log('📅 Start date changed in dialog:', start_date);
+          console.log('📅 Start date changed in dialog to:', start_date);
+          console.log('📅 Type of new start_date:', typeof start_date);
           updateProgram({ start_date });
         }}
         onTrainingDaysChange={(training_days) => updateProgram({ training_days })}
