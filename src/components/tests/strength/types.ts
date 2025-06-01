@@ -5,6 +5,28 @@ export interface Exercise {
   usage_count?: number;
 }
 
+export interface Attempt {
+  attempt_number: number;
+  weight_kg: number;
+  velocity_ms?: number;
+  is_1rm: boolean;
+}
+
+export interface ExerciseTest {
+  exercise_id: string;
+  test_date: string;
+  attempts: Attempt[];
+}
+
+export interface StrengthSession {
+  id?: string;
+  user_id: string;
+  start_date: string;
+  end_date: string;
+  notes: string;
+  exercise_tests: ExerciseTest[];
+}
+
 export interface SessionWithDetails {
   id: string;
   user_id: string;

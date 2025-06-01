@@ -14,7 +14,7 @@ export const useStrengthSessionManager = (
   const { toast } = useToast();
   const { user } = useAuth();
   const [currentSession, setCurrentSession] = useState<StrengthSession>({
-    athlete_id: selectedAthleteId,
+    user_id: selectedAthleteId,
     start_date: selectedDate,
     end_date: selectedDate,
     notes: '',
@@ -23,7 +23,7 @@ export const useStrengthSessionManager = (
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
   const saveSession = async () => {
-    if (!currentSession.athlete_id || currentSession.exercise_tests.length === 0) {
+    if (!currentSession.user_id || currentSession.exercise_tests.length === 0) {
       toast({
         title: "Σφάλμα",
         description: "Παρακαλώ προσθέστε τουλάχιστον μία άσκηση",
@@ -62,7 +62,7 @@ export const useStrengthSessionManager = (
         const { error: updateError } = await supabase
           .from('strength_test_sessions')
           .update({
-            athlete_id: currentSession.athlete_id,
+            user_id: currentSession.user_id,
             test_date: startDate,
             notes: currentSession.notes,
             created_by: user.id
@@ -81,7 +81,7 @@ export const useStrengthSessionManager = (
         const { data: sessionData, error: sessionError } = await supabase
           .from('strength_test_sessions')
           .insert({
-            athlete_id: currentSession.athlete_id,
+            user_id: currentSession.user_id,
             test_date: startDate,
             notes: currentSession.notes,
             created_by: user.id
@@ -158,7 +158,7 @@ export const useStrengthSessionManager = (
 
   const resetForm = () => {
     setCurrentSession({
-      athlete_id: selectedAthleteId,
+      user_id: selectedAthleteId,
       start_date: selectedDate,
       end_date: selectedDate,
       notes: '',
@@ -170,7 +170,7 @@ export const useStrengthSessionManager = (
   const editSession = (session: SessionWithDetails) => {
     setCurrentSession({
       id: session.id,
-      athlete_id: session.athlete_id,
+      user_id: session.user_id,
       start_date: session.start_date,
       end_date: session.end_date,
       notes: session.notes || '',

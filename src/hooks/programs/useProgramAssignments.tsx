@@ -73,7 +73,7 @@ export const useProgramAssignments = () => {
         }));
       }
       
-      // Transform data to handle potential query errors
+      // Transform data to handle potential query errors and null checks
       return (data || []).map(assignment => ({
         ...assignment,
         programs: assignment.programs && typeof assignment.programs === 'object' && 'id' in assignment.programs 
