@@ -31,8 +31,11 @@ export const useActivePrograms = () => {
       }
 
       const today = new Date().toISOString().split('T')[0];
-      
-      // Fetch active program assignments with full program details
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      const nextWeekDate = nextWeek.toISOString().split('T')[0];
+
+      // Fetch active program assignments and coming soon programs
       const { data, error } = await supabase
         .from('program_assignments')
         .select(`
@@ -57,8 +60,8 @@ export const useActivePrograms = () => {
         `)
         .eq('athlete_id', userData.id)
         .eq('status', 'active')
-        .gte('end_date', today) // Μόνο προγράμματα που δεν έχουν λήξει
-        .order('end_date', { ascending: true });
+        .or(`and(start_date.lte.${today},end_date.gte.${today}),and(start_date.gt.${today},start_date.lte.${nextWeekDate})`)
+        .order('start_date', { ascending: true });
 
       if (error) {
         console.error('Error fetching active programs:', error);

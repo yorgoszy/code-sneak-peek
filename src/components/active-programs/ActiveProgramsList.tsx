@@ -2,7 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Eye, Calendar, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Eye, Calendar, User, Clock } from "lucide-react";
 import { useState } from "react";
 import { ProgramPreviewDialog } from "@/components/programs/ProgramPreviewDialog";
 
@@ -40,6 +41,20 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
     return Math.max(0, diffDays);
   };
 
+  const getDaysUntilStart = (startDate: string) => {
+    const start = new Date(startDate);
+    const now = new Date();
+    const diffTime = start.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
+
+  const isComingSoon = (startDate: string) => {
+    const start = new Date(startDate);
+    const now = new Date();
+    return start > now;
+  };
+
   const handlePreviewProgram = (program: any) => {
     setPreviewProgram(program);
     setPreviewOpen(true);
@@ -52,7 +67,7 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
 
   if (programs.length === 0) {
     return (
-      <Card>
+      <Card className="rounded-none">
         <CardContent className="p-6">
           <div className="text-center text-gray-500">
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
@@ -68,15 +83,25 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
       <div className="grid gap-4">
         {programs.map((assignment) => {
           const program = assignment.programs;
-          const progress = calculateProgress(assignment.start_date, assignment.end_date);
-          const daysRemaining = getDaysRemaining(assignment.end_date);
+          const comingSoon = isComingSoon(assignment.start_date);
+          const progress = comingSoon ? 0 : calculateProgress(assignment.start_date, assignment.end_date);
+          const daysRemaining = comingSoon ? 0 : getDaysRemaining(assignment.end_date);
+          const daysUntilStart = comingSoon ? getDaysUntilStart(assignment.start_date) : 0;
           
           return (
-            <Card key={assignment.id}>
+            <Card key={assignment.id} className="rounded-none">
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <CardTitle className="text-lg">{program.name}</CardTitle>
+                    <div className="flex items-center gap-2 mb-1">
+                      <CardTitle className="text-lg">{program.name}</CardTitle>
+                      {comingSoon && (
+                        <Badge variant="secondary" className="rounded-none">
+                          <Clock className="w-3 h-3 mr-1" />
+                          Coming Soon
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-600 mt-1">{program.description}</p>
                   </div>
                   <Button
@@ -109,21 +134,37 @@ export const ActiveProgramsList = ({ programs }: ActiveProgramsListProps) => {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">Πρόοδος προγράμματος</span>
-                    <span className="font-medium">
-                      {daysRemaining > 0 ? `${daysRemaining} ημέρες απομένουν` : 'Έχει λήξει'}
-                    </span>
+                {comingSoon ? (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Ξεκινά σε</span>
+                      <span className="font-medium text-blue-600">
+                        {daysUntilStart === 0 ? 'Σήμερα' : 
+                         daysUntilStart === 1 ? 'Αύριο' : 
+                         `${daysUntilStart} ημέρες`}
+                      </span>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded p-3 text-center text-blue-700 text-sm">
+                      Το πρόγραμμα θα ξεκινήσει στις {formatDate(assignment.start_date)}
+                    </div>
                   </div>
-                  <Progress value={progress} className="h-2" />
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>{progress}% ολοκληρωμένο</span>
-                    <span>
-                      {progress === 100 ? 'Ολοκληρώθηκε' : `${100 - progress}% απομένει`}
-                    </span>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Πρόοδος προγράμματος</span>
+                      <span className="font-medium">
+                        {daysRemaining > 0 ? `${daysRemaining} ημέρες απομένουν` : 'Έχει λήξει'}
+                      </span>
+                    </div>
+                    <Progress value={progress} className="h-2" />
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{progress}% ολοκληρωμένο</span>
+                      <span>
+                        {progress === 100 ? 'Ολοκληρώθηκε' : `${100 - progress}% απομένει`}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {assignment.notes && (
                   <div className="text-sm">
