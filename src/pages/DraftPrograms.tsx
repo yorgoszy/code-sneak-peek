@@ -24,6 +24,18 @@ const DraftPrograms = () => {
 
   useEffect(() => {
     loadPrograms();
+    
+    // Listen for program assignment changes
+    const handleProgramAssignmentChanged = () => {
+      console.log('📡 Program assignment changed - refreshing draft programs');
+      loadPrograms();
+    };
+
+    window.addEventListener('programAssignmentChanged', handleProgramAssignmentChanged);
+
+    return () => {
+      window.removeEventListener('programAssignmentChanged', handleProgramAssignmentChanged);
+    };
   }, []);
 
   const loadPrograms = async () => {
@@ -111,29 +123,36 @@ const DraftPrograms = () => {
     <div className="min-h-screen flex w-full">
       <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
       <div className="flex-1 p-6">
-        <ProgramsLayout
-          programs={programs}
-          selectedProgram={selectedProgram}
-          users={users}
-          exercises={exercises}
-          editingProgram={editingProgram}
-          builderDialogOpen={builderOpen}
-          previewProgram={previewProgram}
-          previewDialogOpen={previewOpen}
-          onSelectProgram={setSelectedProgram}
-          onDeleteProgram={handleDeleteProgram}
-          onEditProgram={handleEditProgram}
-          onCreateProgram={handleCreateProgram}
-          onBuilderDialogClose={handleBuilderClose}
-          onDuplicateProgram={handleDuplicateProgram}
-          onPreviewProgram={handlePreviewProgram}
-          onPreviewDialogClose={handlePreviewClose}
-          onDeleteWeek={() => {}}
-          onDeleteDay={() => {}}
-          onDeleteBlock={() => {}}
-          onDeleteExercise={() => {}}
-          onOpenBuilder={handleOpenBuilder}
-        />
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Πρόχειρα Προγράμματα</h1>
+            <p className="text-gray-600">Προγράμματα που δεν έχουν ανατεθεί ακόμα</p>
+          </div>
+          
+          <ProgramsLayout
+            programs={programs}
+            selectedProgram={selectedProgram}
+            users={users}
+            exercises={exercises}
+            editingProgram={editingProgram}
+            builderDialogOpen={builderOpen}
+            previewProgram={previewProgram}
+            previewDialogOpen={previewOpen}
+            onSelectProgram={setSelectedProgram}
+            onDeleteProgram={handleDeleteProgram}
+            onEditProgram={handleEditProgram}
+            onCreateProgram={handleCreateProgram}
+            onBuilderDialogClose={handleBuilderClose}
+            onDuplicateProgram={handleDuplicateProgram}
+            onPreviewProgram={handlePreviewProgram}
+            onPreviewDialogClose={handlePreviewClose}
+            onDeleteWeek={() => {}}
+            onDeleteDay={() => {}}
+            onDeleteBlock={() => {}}
+            onDeleteExercise={() => {}}
+            onOpenBuilder={handleOpenBuilder}
+          />
+        </div>
       </div>
     </div>
   );

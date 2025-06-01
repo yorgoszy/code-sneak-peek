@@ -32,9 +32,9 @@ const Programs = () => {
           </div>
           
           <Tabs defaultValue="calendar" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="calendar">Ημερολόγιο</TabsTrigger>
-              <TabsTrigger value="list">Λίστα</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 rounded-none">
+              <TabsTrigger value="calendar" className="rounded-none">Ημερολόγιο</TabsTrigger>
+              <TabsTrigger value="list" className="rounded-none">Λίστα</TabsTrigger>
             </TabsList>
             
             <TabsContent value="calendar" className="space-y-4">
