@@ -88,15 +88,15 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     
     try {
       // First save the program
-      const savedProgram = await onCreateProgram(programToSave);
-      const programId = savedProgram?.id || program.id;
+      await onCreateProgram(programToSave);
+      const programId = editingProgram?.id || program.id;
       
       if (programId && program.user_id) {
         // Calculate end date if start date is provided
         let endDate: string | undefined;
-        if (program.start_date && program.program_weeks?.length) {
+        if (program.start_date && program.weeks?.length) {
           const startDate = new Date(program.start_date);
-          const weeksToAdd = program.program_weeks.length;
+          const weeksToAdd = program.weeks.length;
           const calculatedEndDate = new Date(startDate);
           calculatedEndDate.setDate(calculatedEndDate.getDate() + (weeksToAdd * 7));
           endDate = calculatedEndDate.toISOString().split('T')[0];
@@ -106,7 +106,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         await createOrUpdateAssignment(
           programId, 
           program.user_id, 
-          program.start_date, 
+          program.start_date ? new Date(program.start_date).toISOString().split('T')[0] : undefined, 
           endDate
         );
         

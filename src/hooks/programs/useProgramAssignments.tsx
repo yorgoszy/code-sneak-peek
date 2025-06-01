@@ -100,8 +100,9 @@ export const useProgramAssignments = () => {
           'id' in assignment.programs;
 
         // Safe check for app_users with complete null safety
-        let validAppUsers: any = null;
         const appUsersData = assignment.app_users;
+        let validAppUsers: any = null;
+        
         if (appUsersData && 
             typeof appUsersData === 'object' && 
             appUsersData !== null && 
