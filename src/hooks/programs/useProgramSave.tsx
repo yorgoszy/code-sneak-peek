@@ -58,7 +58,7 @@ export const useProgramSave = () => {
           .update({
             name: programData.name,
             description: programData.description,
-            athlete_id: programData.user_id || null, // Changed from athlete_id to user_id
+            user_id: programData.user_id || null,
             status: programData.status || 'draft'
           })
           .eq('id', programData.id);
@@ -89,7 +89,7 @@ export const useProgramSave = () => {
           .insert([{
             name: programData.name,
             description: programData.description,
-            athlete_id: programData.user_id || null, // Changed from athlete_id to user_id
+            user_id: programData.user_id || null,
             created_by: appUserId,
             status: programData.status || 'draft'
           }])
@@ -111,7 +111,7 @@ export const useProgramSave = () => {
             .from('program_assignments')
             .insert([{
               program_id: program.id,
-              athlete_id: appUserId, // This will be changed to user_id after DB migration
+              user_id: appUserId,
               status: 'active',
               start_date: startDate.toISOString().split('T')[0],
               end_date: endDate.toISOString().split('T')[0],

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "./types";
 
@@ -42,7 +41,7 @@ export const fetchProgramAssignments = async (userId: string) => {
   const { data: assignments, error: assignmentsError } = await supabase
     .from('program_assignments')
     .select('*')
-    .eq('athlete_id', userId) // This will be changed to user_id after DB migration
+    .eq('user_id', userId)
     .eq('status', 'active');
 
   if (assignmentsError) {

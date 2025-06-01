@@ -123,36 +123,36 @@ export type Database = {
       }
       anthropometric_test_sessions: {
         Row: {
-          athlete_id: string
           created_at: string | null
           created_by: string | null
           id: string
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string
         }
         Insert: {
-          athlete_id: string
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id: string
         }
         Update: {
-          athlete_id?: string
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "anthropometric_test_sessions_athlete_id_fkey"
-            columns: ["athlete_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -237,7 +237,6 @@ export type Database = {
       }
       athlete_memberships: {
         Row: {
-          athlete_id: string | null
           created_at: string | null
           end_date: string
           id: string
@@ -246,9 +245,9 @@ export type Database = {
           start_date: string
           status: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
-          athlete_id?: string | null
           created_at?: string | null
           end_date: string
           id?: string
@@ -257,9 +256,9 @@ export type Database = {
           start_date: string
           status?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          athlete_id?: string | null
           created_at?: string | null
           end_date?: string
           id?: string
@@ -268,6 +267,7 @@ export type Database = {
           start_date?: string
           status?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -281,7 +281,6 @@ export type Database = {
       }
       bookings: {
         Row: {
-          athlete_id: string | null
           created_at: string | null
           description: string | null
           end_time: string
@@ -291,9 +290,9 @@ export type Database = {
           title: string
           trainer_id: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
-          athlete_id?: string | null
           created_at?: string | null
           description?: string | null
           end_time: string
@@ -303,9 +302,9 @@ export type Database = {
           title: string
           trainer_id?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          athlete_id?: string | null
           created_at?: string | null
           description?: string | null
           end_time?: string
@@ -315,6 +314,7 @@ export type Database = {
           title?: string
           trainer_id?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -400,36 +400,36 @@ export type Database = {
       }
       endurance_test_sessions: {
         Row: {
-          athlete_id: string
           created_at: string | null
           created_by: string | null
           id: string
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string
         }
         Insert: {
-          athlete_id: string
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id: string
         }
         Update: {
-          athlete_id?: string
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "endurance_test_sessions_athlete_id_fkey"
-            columns: ["athlete_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -688,36 +688,36 @@ export type Database = {
       }
       functional_test_sessions: {
         Row: {
-          athlete_id: string
           created_at: string | null
           created_by: string | null
           id: string
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string
         }
         Insert: {
-          athlete_id: string
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id: string
         }
         Update: {
-          athlete_id?: string
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "functional_test_sessions_athlete_id_fkey"
-            columns: ["athlete_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -919,36 +919,36 @@ export type Database = {
       }
       jump_test_sessions: {
         Row: {
-          athlete_id: string
           created_at: string | null
           created_by: string | null
           id: string
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string
         }
         Insert: {
-          athlete_id: string
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id: string
         }
         Update: {
-          athlete_id?: string
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "jump_test_sessions_athlete_id_fkey"
-            columns: ["athlete_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -1117,7 +1117,6 @@ export type Database = {
       payments: {
         Row: {
           amount: number
-          athlete_id: string
           created_at: string | null
           id: string
           last_four: string | null
@@ -1127,10 +1126,10 @@ export type Database = {
           status: string | null
           transaction_id: string | null
           updated_at: string | null
+          user_id: string
         }
         Insert: {
           amount: number
-          athlete_id: string
           created_at?: string | null
           id?: string
           last_four?: string | null
@@ -1140,10 +1139,10 @@ export type Database = {
           status?: string | null
           transaction_id?: string | null
           updated_at?: string | null
+          user_id: string
         }
         Update: {
           amount?: number
-          athlete_id?: string
           created_at?: string | null
           id?: string
           last_four?: string | null
@@ -1153,6 +1152,7 @@ export type Database = {
           status?: string | null
           transaction_id?: string | null
           updated_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -1195,7 +1195,6 @@ export type Database = {
         Row: {
           assigned_by: string | null
           assignment_type: string | null
-          athlete_id: string | null
           created_at: string | null
           end_date: string | null
           group_id: string | null
@@ -1206,11 +1205,11 @@ export type Database = {
           start_date: string | null
           status: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           assigned_by?: string | null
           assignment_type?: string | null
-          athlete_id?: string | null
           created_at?: string | null
           end_date?: string | null
           group_id?: string | null
@@ -1221,11 +1220,11 @@ export type Database = {
           start_date?: string | null
           status?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           assigned_by?: string | null
           assignment_type?: string | null
-          athlete_id?: string | null
           created_at?: string | null
           end_date?: string | null
           group_id?: string | null
@@ -1236,6 +1235,7 @@ export type Database = {
           start_date?: string | null
           status?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1254,7 +1254,7 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_program_assignments_athlete_id"
-            columns: ["athlete_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -1499,7 +1499,6 @@ export type Database = {
       }
       programs: {
         Row: {
-          athlete_id: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -1512,9 +1511,9 @@ export type Database = {
           training_days: number | null
           type: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
-          athlete_id?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -1527,9 +1526,9 @@ export type Database = {
           training_days?: number | null
           type?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          athlete_id?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -1542,11 +1541,12 @@ export type Database = {
           training_days?: number | null
           type?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "fk_programs_athlete_id"
-            columns: ["athlete_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -1560,7 +1560,7 @@ export type Database = {
           },
           {
             foreignKeyName: "programs_athlete_id_fkey"
-            columns: ["athlete_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -1689,36 +1689,36 @@ export type Database = {
       }
       strength_test_sessions: {
         Row: {
-          athlete_id: string | null
           created_at: string | null
           created_by: string | null
           id: string
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
-          athlete_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          athlete_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "strength_test_sessions_athlete_id_fkey"
-            columns: ["athlete_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -1893,7 +1893,6 @@ export type Database = {
       }
       test_results_summary: {
         Row: {
-          athlete_id: string
           chart_data: Json | null
           created_at: string | null
           id: string
@@ -1901,9 +1900,9 @@ export type Database = {
           test_date: string
           test_type: string
           updated_at: string | null
+          user_id: string
         }
         Insert: {
-          athlete_id: string
           chart_data?: Json | null
           created_at?: string | null
           id?: string
@@ -1911,9 +1910,9 @@ export type Database = {
           test_date: string
           test_type: string
           updated_at?: string | null
+          user_id: string
         }
         Update: {
-          athlete_id?: string
           chart_data?: Json | null
           created_at?: string | null
           id?: string
@@ -1921,11 +1920,12 @@ export type Database = {
           test_date?: string
           test_type?: string
           updated_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "test_results_summary_athlete_id_fkey"
-            columns: ["athlete_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -1961,7 +1961,6 @@ export type Database = {
       }
       tests: {
         Row: {
-          athlete_id: string | null
           created_at: string | null
           created_by: string | null
           date: string
@@ -1970,9 +1969,9 @@ export type Database = {
           test_type: string | null
           test_type_id: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
-          athlete_id?: string | null
           created_at?: string | null
           created_by?: string | null
           date: string
@@ -1981,9 +1980,9 @@ export type Database = {
           test_type?: string | null
           test_type_id?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          athlete_id?: string | null
           created_at?: string | null
           created_by?: string | null
           date?: string
@@ -1992,6 +1991,7 @@ export type Database = {
           test_type?: string | null
           test_type_id?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {

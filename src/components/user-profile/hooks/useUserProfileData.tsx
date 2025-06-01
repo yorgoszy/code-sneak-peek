@@ -49,7 +49,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
         const { count } = await supabase
           .from('program_assignments')
           .select('*', { count: 'exact', head: true })
-          .eq('athlete_id', user.id);
+          .eq('user_id', user.id);
         programsCount = count || 0;
       }
 
@@ -57,13 +57,13 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
       const { count: testsCount } = await supabase
         .from('tests')
         .select('*', { count: 'exact', head: true })
-        .eq('athlete_id', user.id);
+        .eq('user_id', user.id);
 
       // Count payments for any user role
       const { count: paymentsCount } = await supabase
         .from('payments')
         .select('*', { count: 'exact', head: true })
-        .eq('athlete_id', user.id);
+        .eq('user_id', user.id);
 
       setStats({
         athletesCount,
@@ -128,7 +128,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
               )
             )
           `)
-          .eq('athlete_id', user.id)
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
         
         // Extract programs from assignments
@@ -146,7 +146,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
       const { data } = await supabase
         .from('tests')
         .select('*')
-        .eq('athlete_id', user.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
       setTests(data || []);
@@ -160,7 +160,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
       const { data } = await supabase
         .from('payments')
         .select('*')
-        .eq('athlete_id', user.id)
+        .eq('user_id', user.id)
         .order('payment_date', { ascending: false });
       
       setPayments(data || []);
