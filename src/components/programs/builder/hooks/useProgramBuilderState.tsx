@@ -41,9 +41,10 @@ export interface ProgramStructure {
   id?: string;
   name: string;
   description: string;
-  user_id: string; // Changed from athlete_id to user_id
+  user_id: string;
   start_date?: Date;
   training_days?: string[];
+  training_dates?: string[]; // Added training_dates
   weeks: Week[];
   status?: string;
 }
@@ -55,13 +56,14 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     user_id: '',
     start_date: undefined,
     training_days: [],
+    training_dates: [], // Added training_dates
     weeks: []
   });
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const updateProgram = (updates: Partial<ProgramStructure> | ProgramStructure) => {
-    if ('name' in updates || 'description' in updates || 'user_id' in updates || 'start_date' in updates || 'training_days' in updates || 'weeks' in updates) {
+    if ('name' in updates || 'description' in updates || 'user_id' in updates || 'start_date' in updates || 'training_days' in updates || 'training_dates' in updates || 'weeks' in updates) {
       if ('weeks' in updates && Array.isArray(updates.weeks)) {
         setProgram(updates as ProgramStructure);
       } else {
@@ -71,7 +73,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   };
 
   const resetProgram = () => {
-    setProgram({ name: '', description: '', user_id: '', start_date: undefined, training_days: [], weeks: [] });
+    setProgram({ name: '', description: '', user_id: '', start_date: undefined, training_days: [], training_dates: [], weeks: [] });
   };
 
   const loadProgramFromData = (programData: Program) => {
@@ -83,6 +85,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       user_id: programData.athlete_id || '',
       start_date: undefined,
       training_days: [],
+      training_dates: [], // Added training_dates
       weeks: programData.program_weeks?.map(week => ({
         id: week.id,
         name: week.name,
