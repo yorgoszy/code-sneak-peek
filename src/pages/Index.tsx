@@ -22,7 +22,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#5271ff' }}>
-      {/* Animated Background Logo */}
+      {/* Animated Background Elements */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="relative">
           {/* Main logo with pulse animation */}
@@ -31,21 +31,39 @@ const Index = () => {
             alt="HyperKids Background Logo" 
             className="h-96 w-auto opacity-10 animate-pulse"
           />
-          {/* Floating logos */}
+          
+          {/* Floating geometric shapes from uploaded images */}
+          <img 
+            src="/lovable-uploads/ec22b41e-e622-40e5-92b9-18ade9c2742f.png" 
+            alt="Floating Shape 1" 
+            className="absolute -top-32 -left-40 h-32 w-auto opacity-15 animate-[float_8s_ease-in-out_infinite]"
+          />
+          <img 
+            src="/lovable-uploads/7bc134c9-d639-4909-95ce-155fed5ffedc.png" 
+            alt="Floating Shape 2" 
+            className="absolute -bottom-24 -right-32 h-40 w-auto opacity-20 animate-[float_12s_ease-in-out_infinite_reverse] rotate-45"
+          />
+          <img 
+            src="/lovable-uploads/ec22b41e-e622-40e5-92b9-18ade9c2742f.png" 
+            alt="Floating Shape 3" 
+            className="absolute top-16 -right-20 h-24 w-auto opacity-10 animate-[float_6s_ease-in-out_infinite] rotate-12"
+          />
+          <img 
+            src="/lovable-uploads/7bc134c9-d639-4909-95ce-155fed5ffedc.png" 
+            alt="Floating Shape 4" 
+            className="absolute -top-10 left-20 h-28 w-auto opacity-15 animate-[float_10s_ease-in-out_infinite] -rotate-30"
+          />
+          
+          {/* Additional floating logos */}
           <img 
             src="/lovable-uploads/a5651e72-baad-4a26-94dd-10b93aa942b9.png" 
             alt="Floating Logo 1" 
-            className="absolute -top-20 -left-20 h-24 w-auto opacity-5 animate-[float_6s_ease-in-out_infinite]"
+            className="absolute top-32 -left-24 h-20 w-auto opacity-5 animate-[float_7s_ease-in-out_infinite]"
           />
           <img 
             src="/lovable-uploads/a5651e72-baad-4a26-94dd-10b93aa942b9.png" 
             alt="Floating Logo 2" 
-            className="absolute -bottom-16 -right-16 h-32 w-auto opacity-5 animate-[float_8s_ease-in-out_infinite_reverse]"
-          />
-          <img 
-            src="/lovable-uploads/a5651e72-baad-4a26-94dd-10b93aa942b9.png" 
-            alt="Floating Logo 3" 
-            className="absolute top-32 -right-32 h-20 w-auto opacity-5 animate-[float_10s_ease-in-out_infinite]"
+            className="absolute -bottom-8 left-16 h-16 w-auto opacity-8 animate-[float_9s_ease-in-out_infinite_reverse]"
           />
         </div>
       </div>
