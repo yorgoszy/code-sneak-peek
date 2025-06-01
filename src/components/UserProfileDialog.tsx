@@ -252,7 +252,7 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
 
           {/* Detailed Information Tabs */}
           <Tabs defaultValue="programs" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className={`grid w-full ${user.role === 'athlete' ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <TabsTrigger value="programs">Προγράμματα</TabsTrigger>
               {user.role === 'athlete' && <TabsTrigger value="tests">Τεστ</TabsTrigger>}
               <TabsTrigger value="payments">Πληρωμές</TabsTrigger>
