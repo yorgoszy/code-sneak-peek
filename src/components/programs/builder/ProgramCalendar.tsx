@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { CalendarIcon } from "lucide-react";
-import { format, addDays, addWeeks } from "date-fns";
+import { format, addWeeks, getDay } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface ProgramCalendarProps {
@@ -18,13 +18,13 @@ interface ProgramCalendarProps {
 }
 
 const weekDays = [
-  { id: 'monday', label: 'Δευτέρα' },
-  { id: 'tuesday', label: 'Τρίτη' },
-  { id: 'wednesday', label: 'Τετάρτη' },
-  { id: 'thursday', label: 'Πέμπτη' },
-  { id: 'friday', label: 'Παρασκευή' },
-  { id: 'saturday', label: 'Σάββατο' },
-  { id: 'sunday', label: 'Κυριακή' }
+  { id: 'sunday', label: 'Κυριακή', dayNumber: 0 },
+  { id: 'monday', label: 'Δευτέρα', dayNumber: 1 },
+  { id: 'tuesday', label: 'Τρίτη', dayNumber: 2 },
+  { id: 'wednesday', label: 'Τετάρτη', dayNumber: 3 },
+  { id: 'thursday', label: 'Πέμπτη', dayNumber: 4 },
+  { id: 'friday', label: 'Παρασκευή', dayNumber: 5 },
+  { id: 'saturday', label: 'Σάββατο', dayNumber: 6 }
 ];
 
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
@@ -41,11 +41,22 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
     return addWeeks(startDate, totalWeeks);
   };
 
-  const handleDayToggle = (dayId: string) => {
-    const newDays = trainingDays.includes(dayId)
-      ? trainingDays.filter(d => d !== dayId)
-      : [...trainingDays, dayId];
-    onTrainingDaysChange(newDays);
+  const handleDayClick = (date: Date) => {
+    const dayOfWeek = getDay(date);
+    const dayId = weekDays.find(day => day.dayNumber === dayOfWeek)?.id;
+    
+    if (dayId) {
+      const newDays = trainingDays.includes(dayId)
+        ? trainingDays.filter(d => d !== dayId)
+        : [...trainingDays, dayId];
+      onTrainingDaysChange(newDays);
+    }
+  };
+
+  const isTrainingDay = (date: Date) => {
+    const dayOfWeek = getDay(date);
+    const dayId = weekDays.find(day => day.dayNumber === dayOfWeek)?.id;
+    return dayId ? trainingDays.includes(dayId) : false;
   };
 
   const endDate = calculateEndDate();
@@ -56,9 +67,9 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
         <CardTitle className="text-lg">Χρονοδιάγραμμα Προγράμματος</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Ημερομηνίες */}
-          <div className="flex gap-4">
+          <div className="space-y-4">
             {/* Ημερομηνία Έναρξης */}
             <div>
               <Label className="text-sm font-medium mb-2 block">Ημερομηνία Έναρξης</Label>
@@ -104,31 +115,54 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
             </div>
           </div>
 
-          {/* Μέρες Προπόνησης */}
-          <div className="lg:col-span-2">
-            <Label className="text-sm font-medium mb-2 block">Μέρες Προπόνησης</Label>
-            <div className="flex flex-wrap gap-1">
-              {weekDays.map(day => (
-                <div
-                  key={day.id}
-                  className={cn(
-                    "flex items-center space-x-1 p-1 rounded cursor-pointer hover:bg-gray-50 text-xs",
-                    trainingDays.includes(day.id) && "bg-blue-50 text-blue-700"
-                  )}
-                  onClick={() => handleDayToggle(day.id)}
-                >
-                  <div
-                    className={cn(
-                      "w-2 h-2 rounded border",
-                      trainingDays.includes(day.id)
-                        ? "bg-blue-600 border-blue-600"
-                        : "border-gray-300"
-                    )}
-                  />
-                  <span className="text-xs">{day.label}</span>
-                </div>
-              ))}
+          {/* Ημερολόγιο Επιλογής Μερών */}
+          <div>
+            <Label className="text-sm font-medium mb-2 block">
+              Επιλογή Μερών Προπόνησης
+              <span className="block text-xs text-gray-500 mt-1">
+                Κάντε κλικ στις μέρες για να τις επιλέξετε
+              </span>
+            </Label>
+            <div className="border border-gray-300 rounded-none p-2">
+              <Calendar
+                mode="multiple"
+                selected={[]} // Δεν χρησιμοποιούμε την επιλογή του Calendar
+                onDayClick={handleDayClick}
+                className={cn("p-2 pointer-events-auto")}
+                modifiers={{
+                  trainingDay: isTrainingDay
+                }}
+                modifiersClassNames={{
+                  trainingDay: "bg-blue-500 text-white hover:bg-blue-600"
+                }}
+                components={{
+                  Caption: ({ displayMonth }) => (
+                    <div className="flex justify-center items-center py-2">
+                      <h4 className="text-sm font-medium">
+                        {format(displayMonth, "MMMM yyyy")}
+                      </h4>
+                    </div>
+                  )
+                }}
+              />
             </div>
+            
+            {/* Επιλεγμένες Μέρες */}
+            {trainingDays.length > 0 && (
+              <div className="mt-2">
+                <p className="text-xs text-gray-600 mb-1">Επιλεγμένες μέρες:</p>
+                <div className="flex flex-wrap gap-1">
+                  {trainingDays.map(dayId => {
+                    const day = weekDays.find(d => d.id === dayId);
+                    return day ? (
+                      <span key={dayId} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                        {day.label}
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
