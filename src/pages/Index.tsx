@@ -47,9 +47,6 @@ const Index = () => {
                         <User className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <span className="text-sm text-white">
-                      {user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Χρήστης'}
-                    </span>
                     <Button 
                       variant="ghost" 
                       size="icon"
