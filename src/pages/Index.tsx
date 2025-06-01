@@ -22,47 +22,87 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#5271ff' }}>
-      {/* Falling Lightning Bolts Background */}
+      {/* Falling Shapes Background */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Lightning bolt 1 */}
-        <div className="absolute animate-lightning-fall-1" style={{ left: '10%', animationDelay: '0s' }}>
-          ⚡
+        {/* Shape 1 */}
+        <div className="absolute animate-shape-fall-1" style={{ left: '10%', animationDelay: '0s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-12 h-12 opacity-80"
+          />
         </div>
-        {/* Lightning bolt 2 */}
-        <div className="absolute animate-lightning-fall-2" style={{ left: '25%', animationDelay: '1s' }}>
-          ⚡
+        {/* Shape 2 */}
+        <div className="absolute animate-shape-fall-2" style={{ left: '25%', animationDelay: '1s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-8 h-8 opacity-60"
+          />
         </div>
-        {/* Lightning bolt 3 */}
-        <div className="absolute animate-lightning-fall-3" style={{ left: '45%', animationDelay: '2s' }}>
-          ⚡
+        {/* Shape 3 */}
+        <div className="absolute animate-shape-fall-3" style={{ left: '45%', animationDelay: '2s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-16 h-16 opacity-70"
+          />
         </div>
-        {/* Lightning bolt 4 */}
-        <div className="absolute animate-lightning-fall-1" style={{ left: '65%', animationDelay: '0.5s' }}>
-          ⚡
+        {/* Shape 4 */}
+        <div className="absolute animate-shape-fall-1" style={{ left: '65%', animationDelay: '0.5s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-10 h-10 opacity-50"
+          />
         </div>
-        {/* Lightning bolt 5 */}
-        <div className="absolute animate-lightning-fall-2" style={{ left: '80%', animationDelay: '1.5s' }}>
-          ⚡
+        {/* Shape 5 */}
+        <div className="absolute animate-shape-fall-2" style={{ left: '80%', animationDelay: '1.5s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-14 h-14 opacity-65"
+          />
         </div>
-        {/* Lightning bolt 6 */}
-        <div className="absolute animate-lightning-fall-3" style={{ left: '5%', animationDelay: '3s' }}>
-          ⚡
+        {/* Shape 6 */}
+        <div className="absolute animate-shape-fall-3" style={{ left: '5%', animationDelay: '3s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-6 h-6 opacity-40"
+          />
         </div>
-        {/* Lightning bolt 7 */}
-        <div className="absolute animate-lightning-fall-1" style={{ left: '35%', animationDelay: '2.5s' }}>
-          ⚡
+        {/* Shape 7 */}
+        <div className="absolute animate-shape-fall-1" style={{ left: '35%', animationDelay: '2.5s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-12 h-12 opacity-75"
+          />
         </div>
-        {/* Lightning bolt 8 */}
-        <div className="absolute animate-lightning-fall-2" style={{ left: '55%', animationDelay: '3.5s' }}>
-          ⚡
+        {/* Shape 8 */}
+        <div className="absolute animate-shape-fall-2" style={{ left: '55%', animationDelay: '3.5s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-10 h-10 opacity-55"
+          />
         </div>
-        {/* Lightning bolt 9 */}
-        <div className="absolute animate-lightning-fall-3" style={{ left: '75%', animationDelay: '4s' }}>
-          ⚡
+        {/* Shape 9 */}
+        <div className="absolute animate-shape-fall-3" style={{ left: '75%', animationDelay: '4s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-8 h-8 opacity-45"
+          />
         </div>
-        {/* Lightning bolt 10 */}
-        <div className="absolute animate-lightning-fall-1" style={{ left: '90%', animationDelay: '4.5s' }}>
-          ⚡
+        {/* Shape 10 */}
+        <div className="absolute animate-shape-fall-1" style={{ left: '90%', animationDelay: '4.5s' }}>
+          <img 
+            src="/lovable-uploads/eb612ce9-ca13-44cc-b798-61bda46cebca.png" 
+            alt=""
+            className="w-14 h-14 opacity-70"
+          />
         </div>
       </div>
 

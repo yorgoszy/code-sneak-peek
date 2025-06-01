@@ -95,67 +95,53 @@
   }
 }
 
-/* Lightning animations */
-@keyframes lightning-fall-1 {
+/* Shape falling animations */
+@keyframes shape-fall-1 {
   0% {
     transform: translateY(-100vh) rotate(0deg);
     opacity: 0;
-    font-size: 2rem;
   }
   10% {
     opacity: 1;
   }
-  50% {
-    opacity: 1;
-    font-size: 3rem;
-  }
   90% {
     opacity: 0.8;
-    font-size: 2.5rem;
   }
   100% {
     transform: translateY(100vh) rotate(360deg);
     opacity: 0;
-    font-size: 1.5rem;
   }
 }
 
-@keyframes lightning-fall-2 {
+@keyframes shape-fall-2 {
   0% {
     transform: translateY(-100vh) rotate(0deg) translateX(0px);
     opacity: 0;
-    font-size: 1.5rem;
   }
   15% {
     opacity: 1;
   }
   50% {
-    opacity: 1;
-    font-size: 2.5rem;
-    transform: translateY(50vh) rotate(180deg) translateX(20px);
+    transform: translateY(50vh) rotate(180deg) translateX(30px);
   }
   85% {
     opacity: 0.7;
   }
   100% {
-    transform: translateY(100vh) rotate(360deg) translateX(-10px);
+    transform: translateY(100vh) rotate(360deg) translateX(-20px);
     opacity: 0;
-    font-size: 2rem;
   }
 }
 
-@keyframes lightning-fall-3 {
+@keyframes shape-fall-3 {
   0% {
     transform: translateY(-100vh) rotate(0deg) scale(0.5);
     opacity: 0;
-    font-size: 2.5rem;
   }
   20% {
     opacity: 1;
   }
   50% {
-    opacity: 1;
-    font-size: 3.5rem;
     transform: translateY(50vh) rotate(270deg) scale(1.2);
   }
   80% {
@@ -164,7 +150,6 @@
   100% {
     transform: translateY(100vh) rotate(720deg) scale(0.8);
     opacity: 0;
-    font-size: 2rem;
   }
 }
 
@@ -179,22 +164,16 @@
   }
 }
 
-.animate-lightning-fall-1 {
-  animation: lightning-fall-1 4s linear infinite;
-  color: #ffff00;
-  text-shadow: 0 0 10px #ffff00, 0 0 20px #ffff00, 0 0 30px #ffff00;
+.animate-shape-fall-1 {
+  animation: shape-fall-1 6s linear infinite;
 }
 
-.animate-lightning-fall-2 {
-  animation: lightning-fall-2 5s linear infinite;
-  color: #ffffff;
-  text-shadow: 0 0 10px #ffffff, 0 0 20px #ffff00, 0 0 30px #ffff00;
+.animate-shape-fall-2 {
+  animation: shape-fall-2 7s linear infinite;
 }
 
-.animate-lightning-fall-3 {
-  animation: lightning-fall-3 6s linear infinite;
-  color: #ffff88;
-  text-shadow: 0 0 10px #ffff88, 0 0 20px #ffff00, 0 0 30px #ffffff;
+.animate-shape-fall-3 {
+  animation: shape-fall-3 8s linear infinite;
 }
 
 .animate-fade-in {
