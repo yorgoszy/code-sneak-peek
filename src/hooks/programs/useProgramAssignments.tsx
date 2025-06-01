@@ -85,16 +85,15 @@ export const useProgramAssignments = () => {
           'id' in assignment.programs;
 
         // Safe check for app_users with proper null handling
-        const appUsersData = assignment.app_users;
-        const hasValidAppUsers = appUsersData && 
-          typeof appUsersData === 'object' && 
-          appUsersData !== null && 
-          'id' in appUsersData;
+        const hasValidAppUsers = assignment.app_users && 
+          typeof assignment.app_users === 'object' && 
+          assignment.app_users !== null && 
+          'id' in assignment.app_users;
 
         return {
           ...assignment,
           programs: hasValidPrograms ? assignment.programs as any : null,
-          app_users: hasValidAppUsers ? appUsersData as any : null
+          app_users: hasValidAppUsers ? assignment.app_users as any : null
         };
       });
     } catch (error) {
