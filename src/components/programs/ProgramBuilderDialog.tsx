@@ -92,26 +92,30 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       const programId = editingProgram?.id || program.id;
       
       if (programId && program.user_id) {
+        // Get the start date from the program
+        let startDateString: string | undefined;
+        if (program.start_date) {
+          if (typeof program.start_date === 'string') {
+            startDateString = program.start_date;
+          } else if (program.start_date instanceof Date) {
+            startDateString = program.start_date.toISOString().split('T')[0];
+          }
+        }
+        
         // Calculate end date if start date is provided
         let endDate: string | undefined;
-        if (program.start_date && program.weeks?.length) {
-          const startDate = new Date(program.start_date);
+        if (startDateString && program.weeks?.length) {
+          const startDate = new Date(startDateString);
           const weeksToAdd = program.weeks.length;
           const calculatedEndDate = new Date(startDate);
           calculatedEndDate.setDate(calculatedEndDate.getDate() + (weeksToAdd * 7));
           endDate = calculatedEndDate.toISOString().split('T')[0];
         }
         
-        // Prepare dates as strings
-        const startDateString = program.start_date ? 
-          (typeof program.start_date === 'string' ? program.start_date : program.start_date.toISOString().split('T')[0]) 
-          : undefined;
-        
-        console.log('Calling createOrUpdateAssignment with:', {
-          programId,
-          userId: program.user_id,
+        console.log('Assignment dates:', {
           startDate: startDateString,
-          endDate
+          endDate: endDate,
+          programWeeks: program.weeks?.length
         });
         
         // Create assignment with dates
@@ -122,7 +126,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           endDate
         );
         
-        console.log('Assignment created with dates:', {
+        console.log('Assignment created successfully with dates:', {
           programId,
           userId: program.user_id,
           startDate: startDateString,
