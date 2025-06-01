@@ -57,111 +57,148 @@ export const useActivePrograms = () => {
 
       console.log('✅ Found user data:', userData);
 
-      // Fetch active program assignments with program details
-      const { data, error } = await supabase
+      // First, fetch program assignments with basic program info only
+      const { data: assignments, error: assignmentsError } = await supabase
         .from('program_assignments')
         .select(`
           *,
           programs(
-            *,
-            program_weeks(
-              *,
-              program_days(
-                *,
-                program_blocks(
-                  *,
-                  program_exercises(
-                    *,
-                    exercises(name)
-                  )
-                )
-              )
-            )
+            id,
+            name,
+            description
           )
         `)
         .eq('athlete_id', userData.id)
         .eq('status', 'active');
 
-      console.log('📊 Raw query result:', { data, error, queryCount: data?.length || 0 });
+      if (assignmentsError) {
+        console.error('❌ Error fetching program assignments:', assignmentsError);
+        setPrograms([]);
+        return;
+      }
 
-      if (error) {
-        console.error('❌ Error fetching active programs:', error);
-        // Fallback: try simpler query
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('program_assignments')
-          .select(`
-            *,
-            programs(*)
-          `)
-          .eq('athlete_id', userData.id)
-          .eq('status', 'active');
+      console.log('📊 Program assignments fetched:', assignments);
 
-        if (fallbackError) {
-          console.error('❌ Fallback query also failed:', fallbackError);
-          setPrograms([]);
-          return;
-        }
+      if (!assignments || assignments.length === 0) {
+        console.log('⚠️ No program assignments found for athlete_id:', userData.id);
+        setPrograms([]);
+        return;
+      }
 
-        console.log('✅ Fallback query successful:', fallbackData);
-        setPrograms(fallbackData || []);
-      } else {
-        console.log('📋 All program assignments found:', data);
-        
-        if (!data || data.length === 0) {
-          console.log('⚠️ No program assignments found for athlete_id:', userData.id);
-          setPrograms([]);
-          return;
-        }
-
-        // For debugging, let's not filter by date initially to see all assignments
-        console.log('🎯 All assignments before date filtering:', data.map(a => ({
-          id: a.id,
-          programName: (a.programs && typeof a.programs === 'object' && 'name' in a.programs) ? a.programs.name : 'Unknown',
-          startDate: a.start_date,
-          endDate: a.end_date,
-          status: a.status
-        })));
-
-        // If no dates are set, show the program anyway
-        const validPrograms = data.filter(assignment => {
-          if (!assignment.programs || typeof assignment.programs !== 'object' || !('name' in assignment.programs)) {
+      // Now fetch detailed program structure for each program separately
+      const enrichedAssignments = await Promise.all(
+        assignments.map(async (assignment) => {
+          if (!assignment.programs || !assignment.program_id) {
             console.log('❌ Assignment without valid program:', assignment.id);
-            return false;
+            return assignment;
           }
-          
-          // If no dates are set, include the assignment
-          if (!assignment.start_date || !assignment.end_date) {
-            console.log('✅ Including assignment without dates:', assignment.id);
-            return true;
+
+          try {
+            // Fetch program weeks
+            const { data: weeks, error: weeksError } = await supabase
+              .from('program_weeks')
+              .select('*')
+              .eq('program_id', assignment.program_id)
+              .order('week_number');
+
+            if (weeksError) {
+              console.error('❌ Error fetching weeks for program:', assignment.program_id, weeksError);
+              return assignment;
+            }
+
+            // Fetch days for each week
+            const weeksWithDays = await Promise.all(
+              (weeks || []).map(async (week) => {
+                const { data: days, error: daysError } = await supabase
+                  .from('program_days')
+                  .select('*')
+                  .eq('week_id', week.id)
+                  .order('day_number');
+
+                if (daysError) {
+                  console.error('❌ Error fetching days for week:', week.id, daysError);
+                  return { ...week, program_days: [] };
+                }
+
+                // Fetch blocks for each day
+                const daysWithBlocks = await Promise.all(
+                  (days || []).map(async (day) => {
+                    const { data: blocks, error: blocksError } = await supabase
+                      .from('program_blocks')
+                      .select('*')
+                      .eq('day_id', day.id)
+                      .order('block_order');
+
+                    if (blocksError) {
+                      console.error('❌ Error fetching blocks for day:', day.id, blocksError);
+                      return { ...day, program_blocks: [] };
+                    }
+
+                    return { ...day, program_blocks: blocks || [] };
+                  })
+                );
+
+                return { ...week, program_days: daysWithBlocks };
+              })
+            );
+
+            // Update the assignment with enriched program data
+            return {
+              ...assignment,
+              programs: {
+                ...assignment.programs,
+                program_weeks: weeksWithDays
+              }
+            };
+          } catch (error) {
+            console.error('❌ Error enriching program data:', error);
+            return assignment;
           }
-          
-          const today = new Date();
-          const nextWeek = new Date();
-          nextWeek.setDate(nextWeek.getDate() + 7);
-          
-          const startDate = new Date(assignment.start_date);
-          const endDate = new Date(assignment.end_date);
-          
-          // Program is active if:
-          // 1. It has started and not ended (active)
-          // 2. It starts within the next week (coming soon)
-          const isActive = startDate <= today && endDate >= today;
-          const isComingSoon = startDate > today && startDate <= nextWeek;
-          
-          console.log('📊 Date check for assignment:', assignment.id, {
-            startDate: assignment.start_date,
-            endDate: assignment.end_date,
-            isActive,
-            isComingSoon,
-            willInclude: isActive || isComingSoon
-          });
-          
-          return isActive || isComingSoon;
+        })
+      );
+
+      console.log('✅ Enriched assignments:', enrichedAssignments);
+
+      // Filter by date
+      const validPrograms = enrichedAssignments.filter(assignment => {
+        if (!assignment.programs) {
+          console.log('❌ Assignment without valid program:', assignment.id);
+          return false;
+        }
+        
+        // If no dates are set, include the assignment
+        if (!assignment.start_date || !assignment.end_date) {
+          console.log('✅ Including assignment without dates:', assignment.id);
+          return true;
+        }
+        
+        const today = new Date();
+        const nextWeek = new Date();
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        
+        const startDate = new Date(assignment.start_date);
+        const endDate = new Date(assignment.end_date);
+        
+        // Program is active if:
+        // 1. It has started and not ended (active)
+        // 2. It starts within the next week (coming soon)
+        const isActive = startDate <= today && endDate >= today;
+        const isComingSoon = startDate > today && startDate <= nextWeek;
+        
+        console.log('📊 Date check for assignment:', assignment.id, {
+          startDate: assignment.start_date,
+          endDate: assignment.end_date,
+          isActive,
+          isComingSoon,
+          willInclude: isActive || isComingSoon
         });
         
-        console.log('✅ Final filtered programs:', validPrograms.length, validPrograms);
-        setPrograms(validPrograms);
-      }
+        return isActive || isComingSoon;
+      });
+      
+      console.log('✅ Final filtered programs:', validPrograms.length, validPrograms);
+      setPrograms(validPrograms);
+
     } catch (error) {
       console.error('❌ Unexpected error fetching active programs:', error);
       setPrograms([]);
