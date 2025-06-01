@@ -36,7 +36,6 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   };
 
   const getAssignmentInfo = (program: Program) => {
-    // Mock data for assignment info - in real implementation this would come from program_assignments
     const totalSessions = program.program_weeks?.reduce((total, week) => 
       total + (week.program_days?.length || 0), 0) || 0;
     const completedSessions = Math.floor(totalSessions * 0.3); // Mock: 30% completed
@@ -48,8 +47,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
       completedSessions,
       remainingSessions,
       progressPercentage,
-      assignmentDate: new Date().toLocaleDateString('el-GR'), // Mock assignment date
-      athletePhoto: null // Will be populated from actual data
+      assignmentDate: new Date().toLocaleDateString('el-GR'),
+      athletePhoto: null
     };
   };
 
@@ -63,26 +62,26 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
           {programs.map(program => {
             const { weeksCount, avgDaysPerWeek } = getProgramStats(program);
             const assignmentInfo = getAssignmentInfo(program);
-            const isAssigned = program.app_users; // Check if program has assigned user
+            const isAssigned = program.app_users;
             
             return (
               <div
                 key={program.id}
                 className={`p-4 border cursor-pointer hover:bg-gray-50 transition-colors ${
                   selectedProgram?.id === program.id ? 'bg-blue-50 border-blue-300' : ''
-                } ${isAssigned ? 'min-w-[800px]' : ''}`}
+                } ${isAssigned ? 'min-w-[900px]' : 'min-w-[600px]'}`}
                 onClick={() => onSelectProgram(program)}
               >
                 <div className="space-y-3">
                   {/* Header with title and actions */}
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-4 flex-1">
-                      {/* Athlete Photo - only show for assigned programs */}
+                      {/* Athlete Photo - show for assigned programs */}
                       {isAssigned && (
-                        <Avatar className="w-12 h-12 flex-shrink-0">
+                        <Avatar className="w-16 h-16 flex-shrink-0">
                           <AvatarImage src={assignmentInfo.athletePhoto || undefined} />
                           <AvatarFallback className="bg-gray-200">
-                            <User className="w-6 h-6 text-gray-500" />
+                            <User className="w-8 h-8 text-gray-500" />
                           </AvatarFallback>
                         </Avatar>
                       )}
@@ -156,16 +155,16 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                     </div>
                   </div>
 
-                  {/* Assignment Details - only show for assigned programs */}
+                  {/* Assignment Details - show for assigned programs */}
                   {isAssigned && (
-                    <div className="space-y-2 pl-16">
+                    <div className="space-y-3 pl-20">
                       {/* Assignment Date */}
                       <div className="text-sm text-gray-600">
                         <span className="font-medium">Ημερομηνία Ανάθεσης:</span> {assignmentInfo.assignmentDate}
                       </div>
                       
-                      {/* Progress Bar */}
-                      <div className="space-y-1">
+                      {/* Progress Section */}
+                      <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="font-medium">Πρόοδος Προγράμματος</span>
                           <span className="text-gray-600">
@@ -174,10 +173,11 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                         </div>
                         <Progress 
                           value={assignmentInfo.progressPercentage} 
-                          className="h-2"
+                          className="h-3 w-full"
                         />
-                        <div className="text-xs text-gray-500 text-right">
-                          {assignmentInfo.remainingSessions} προπονήσεις απομένουν
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>Ολοκληρώθηκαν: {assignmentInfo.completedSessions}</span>
+                          <span>Απομένουν: {assignmentInfo.remainingSessions}</span>
                         </div>
                       </div>
                     </div>
