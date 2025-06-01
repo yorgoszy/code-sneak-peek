@@ -1,14 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format, parseISO, getWeek, getYear } from "date-fns";
-import { el } from "date-fns/locale";
 import type { User } from '../types';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
+import { ProgramInfoCard } from './ProgramInfoCard';
+import { DateSelectionCard } from './DateSelectionCard';
+import { AssignmentDialogActions } from './AssignmentDialogActions';
 
 interface ProgramAssignmentDialogProps {
   isOpen: boolean;
@@ -132,96 +131,31 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
         </DialogHeader>
 
         <div className="flex-1 overflow-auto space-y-6 p-6">
-          {/* Program Info */}
-          <Card className="rounded-none">
-            <CardHeader>
-              <CardTitle className="text-lg">Στοιχεία Προγράμματος</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Όνομα:</span> {program.name}
-                </div>
-                <div>
-                  <span className="font-medium">Ασκούμενος:</span> {selectedUser ? selectedUser.name : 'Δεν έχει επιλεγεί'}
-                </div>
-                <div>
-                  <span className="font-medium">Εβδομάδες:</span> {totalWeeks}
-                </div>
-                <div>
-                  <span className="font-medium">Ημέρες/Εβδομάδα:</span> {daysPerWeek}
-                </div>
-                <div className="col-span-2">
-                  <span className="font-medium">Συνολικές Προπονήσεις:</span> {totalRequiredSessions}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ProgramInfoCard
+            program={program}
+            selectedUser={selectedUser}
+            totalWeeks={totalWeeks}
+            daysPerWeek={daysPerWeek}
+            totalRequiredSessions={totalRequiredSessions}
+          />
 
-          {/* Date Selection */}
-          <Card className="rounded-none">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5" />
-                Επιλογή Ημερομηνιών Προπόνησης
-              </CardTitle>
-              <p className="text-sm text-gray-600">
-                Επιλέξτε {daysPerWeek} ημέρες την εβδομάδα για {totalWeeks} εβδομάδες 
-                ({selectedDates.length}/{totalRequiredSessions} προπονήσεις)
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center gap-4">
-                {/* Calendar */}
-                <Calendar
-                  mode="single"
-                  selected={undefined}
-                  onSelect={handleDateSelect}
-                  className="rounded-none border pointer-events-auto"
-                  locale={el}
-                  modifiers={{
-                    selected: isDateSelected
-                  }}
-                  modifiersClassNames={{
-                    selected: "bg-blue-500 text-white hover:bg-blue-600"
-                  }}
-                  disabled={isDateDisabled}
-                />
-
-                {/* Clear All Button */}
-                {selectedDates.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={clearAllDates}
-                    className="rounded-none"
-                  >
-                    Αποεπιλογή Όλων ({selectedDates.length})
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <DateSelectionCard
+            selectedDates={selectedDates}
+            daysPerWeek={daysPerWeek}
+            totalWeeks={totalWeeks}
+            totalRequiredSessions={totalRequiredSessions}
+            onDateSelect={handleDateSelect}
+            onClearAllDates={clearAllDates}
+            isDateSelected={isDateSelected}
+            isDateDisabled={isDateDisabled}
+          />
         </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="rounded-none"
-          >
-            Ακύρωση
-          </Button>
-          
-          <Button
-            onClick={handleAssign}
-            disabled={!canAssign}
-            className="rounded-none"
-          >
-            <CalendarIcon className="w-4 h-4 mr-2" />
-            Ανάθεση Προγράμματος
-          </Button>
-        </div>
+        <AssignmentDialogActions
+          onClose={onClose}
+          onAssign={handleAssign}
+          canAssign={canAssign}
+        />
       </DialogContent>
     </Dialog>
   );
