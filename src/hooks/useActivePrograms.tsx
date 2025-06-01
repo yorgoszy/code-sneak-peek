@@ -116,7 +116,7 @@ export const useActivePrograms = () => {
         // For debugging, let's not filter by date initially to see all assignments
         console.log('🎯 All assignments before date filtering:', data.map(a => ({
           id: a.id,
-          programName: a.programs && typeof a.programs === 'object' && 'name' in a.programs ? a.programs.name : 'Unknown',
+          programName: (a.programs && typeof a.programs === 'object' && 'name' in a.programs) ? a.programs.name : 'Unknown',
           startDate: a.start_date,
           endDate: a.end_date,
           status: a.status
