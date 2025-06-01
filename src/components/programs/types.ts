@@ -83,7 +83,7 @@ export interface ProgramAssignment {
   app_users?: User | null; // Allow null for failed queries
 }
 
-// Program structure interface for the builder
+// Program structure interface for the builder - unified version
 export interface ProgramStructure {
   id?: string;
   name: string;

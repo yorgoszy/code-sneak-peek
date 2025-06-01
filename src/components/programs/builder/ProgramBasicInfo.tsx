@@ -14,14 +14,14 @@ import { ProgramCalendar } from './ProgramCalendar';
 interface ProgramBasicInfoProps {
   name: string;
   description: string;
-  athleteId: string;
+  user_id: string;
   users: User[];
-  startDate?: Date;
-  trainingDays?: string[];
-  totalWeeks: number;
+  start_date?: Date;
+  training_days?: string[];
+  totalWeeks?: number;
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
-  onAthleteChange: (athleteId: string) => void;
+  onAthleteChange: (user_id: string) => void;
   onStartDateChange?: (date: Date | undefined) => void;
   onTrainingDaysChange?: (days: string[]) => void;
 }
@@ -29,11 +29,11 @@ interface ProgramBasicInfoProps {
 export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   name,
   description,
-  athleteId,
+  user_id,
   users,
-  startDate,
-  trainingDays = [],
-  totalWeeks,
+  start_date,
+  training_days = [],
+  totalWeeks = 0,
   onNameChange,
   onDescriptionChange,
   onAthleteChange,
@@ -47,7 +47,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const selectedUser = users.find(user => user.id === athleteId);
+  const selectedUser = users.find(user => user.id === user_id);
 
   const handleUserSelect = (userId: string) => {
     onAthleteChange(userId === "no-user" ? "" : userId);
@@ -146,8 +146,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
 
       {onStartDateChange && onTrainingDaysChange && (
         <ProgramCalendar
-          startDate={startDate}
-          trainingDays={trainingDays}
+          startDate={start_date}
+          trainingDays={training_days}
           totalWeeks={totalWeeks}
           onStartDateChange={onStartDateChange}
           onTrainingDaysChange={onTrainingDaysChange}
