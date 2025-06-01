@@ -13,6 +13,18 @@ interface ProgramCalendarProps {
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
+  console.log('📅 ProgramCalendar received programs:', programs.length);
+  programs.forEach(program => {
+    console.log('📅 Program in calendar:', {
+      id: program.id,
+      name: program.programs?.name,
+      start_date: program.start_date,
+      end_date: program.end_date,
+      start_date_type: typeof program.start_date,
+      end_date_type: typeof program.end_date
+    });
+  });
+
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   };
@@ -36,15 +48,36 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
 
   const getProgramsForDate = (day: number) => {
     const dateToCheck = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const dateString = dateToCheck.toISOString().split('T')[0];
     
-    return programs.filter(assignment => {
-      if (!assignment.start_date) return false;
+    console.log('🔍 Checking date:', dateString, 'for programs');
+    
+    const matchingPrograms = programs.filter(assignment => {
+      if (!assignment.start_date) {
+        console.log('⚠️ Assignment without start_date:', assignment.id);
+        return false;
+      }
       
       const startDate = new Date(assignment.start_date);
       const endDate = assignment.end_date ? new Date(assignment.end_date) : new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
       
-      return dateToCheck >= startDate && dateToCheck <= endDate;
+      const startDateString = startDate.toISOString().split('T')[0];
+      const endDateString = endDate.toISOString().split('T')[0];
+      
+      const isInRange = dateString >= startDateString && dateString <= endDateString;
+      
+      console.log('📊 Date range check for assignment:', assignment.id, {
+        dateToCheck: dateString,
+        startDate: startDateString,
+        endDate: endDateString,
+        isInRange
+      });
+      
+      return isInRange;
     });
+
+    console.log('✅ Programs found for date', dateString, ':', matchingPrograms.length);
+    return matchingPrograms;
   };
 
   const daysInMonth = getDaysInMonth(currentDate);
@@ -108,6 +141,17 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
       </CardHeader>
       
       <CardContent>
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200">
+          <p className="text-sm text-blue-800">
+            <strong>Debug Info:</strong> Συνολικά προγράμματα: {programs.length}
+          </p>
+          {programs.map(program => (
+            <div key={program.id} className="text-xs text-blue-600">
+              {program.programs?.name}: {program.start_date} - {program.end_date}
+            </div>
+          ))}
+        </div>
+        
         <div className="grid grid-cols-7 gap-1">
           {/* Day headers */}
           {dayNames.map(day => (

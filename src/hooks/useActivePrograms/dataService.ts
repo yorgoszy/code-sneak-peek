@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "./types";
 
@@ -38,6 +39,8 @@ export const fetchUserData = async (authUserId: string) => {
 };
 
 export const fetchProgramAssignments = async (userId: string) => {
+  console.log('🔍 Fetching assignments for user_id:', userId);
+  
   const { data: assignments, error: assignmentsError } = await supabase
     .from('program_assignments')
     .select('*')
@@ -49,17 +52,32 @@ export const fetchProgramAssignments = async (userId: string) => {
     return null;
   }
 
-  console.log('📊 Program assignments fetched:', assignments);
+  console.log('📊 Raw assignments from database:', assignments);
 
   if (!assignments || assignments.length === 0) {
     console.log('⚠️ No program assignments found for user_id:', userId);
     return [];
   }
 
+  // Log each assignment's dates
+  assignments.forEach(assignment => {
+    console.log(`📅 Assignment ${assignment.id} dates:`, {
+      start_date: assignment.start_date,
+      end_date: assignment.end_date,
+      start_date_type: typeof assignment.start_date,
+      end_date_type: typeof assignment.end_date
+    });
+  });
+
   return assignments;
 };
 
 export const enrichAssignmentWithProgramData = async (assignment: any): Promise<EnrichedAssignment> => {
+  console.log('🔄 Enriching assignment:', assignment.id, 'with dates:', {
+    start_date: assignment.start_date,
+    end_date: assignment.end_date
+  });
+
   if (!assignment.program_id) {
     console.log('❌ Assignment without valid program_id:', assignment.id);
     return assignment;
@@ -126,14 +144,23 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
       })
     );
 
-    // Return assignment with enriched program data
-    return {
+    // Return assignment with enriched program data - preserve original dates
+    const enrichedAssignment = {
       ...assignment,
       programs: {
         ...programData,
         program_weeks: weeksWithDays
       }
     };
+
+    console.log('✅ Enriched assignment with preserved dates:', {
+      id: enrichedAssignment.id,
+      start_date: enrichedAssignment.start_date,
+      end_date: enrichedAssignment.end_date,
+      program_name: enrichedAssignment.programs?.name
+    });
+
+    return enrichedAssignment;
   } catch (error) {
     console.error('❌ Error enriching program data:', error);
     return assignment;
