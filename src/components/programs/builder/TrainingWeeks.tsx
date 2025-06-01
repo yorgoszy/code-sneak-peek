@@ -48,6 +48,7 @@ interface Week {
 interface TrainingWeeksProps {
   weeks: Week[];
   exercises: Exercise[];
+  selectedUserId?: string;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -186,6 +187,7 @@ const SortableWeekTab: React.FC<{
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   weeks,
   exercises,
+  selectedUserId,
   onAddWeek,
   onRemoveWeek,
   onDuplicateWeek,

@@ -12,7 +12,7 @@ import { toast } from "sonner";
 interface ProgramBuilderDialogProps {
   users: User[];
   exercises: Exercise[];
-  onCreateProgram: (program: any) => void;
+  onCreateProgram: (program: any) => Promise<any>;
   onOpenChange: () => void;
   editingProgram?: Program | null;
   isOpen: boolean;
@@ -62,8 +62,9 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     };
     
     try {
-      await onCreateProgram(programToSave);
+      const savedProgram = await onCreateProgram(programToSave);
       handleClose();
+      return savedProgram;
     } catch (error) {
       console.error('Error saving program:', error);
     }
