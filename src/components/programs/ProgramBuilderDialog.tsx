@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { User, Exercise, Program } from './types';
