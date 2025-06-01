@@ -57,12 +57,28 @@ export const useActivePrograms = () => {
 
       console.log('✅ Found user data:', userData);
 
-      // Fetch active program assignments with simplified query
+      // Fetch active program assignments with full program details
       const { data, error } = await supabase
         .from('program_assignments')
         .select(`
           *,
-          programs(*)
+          programs(
+            *,
+            app_users!programs_created_by_fkey(name),
+            program_weeks(
+              *,
+              program_days(
+                *,
+                program_blocks(
+                  *,
+                  program_exercises(
+                    *,
+                    exercises(name)
+                  )
+                )
+              )
+            )
+          )
         `)
         .eq('athlete_id', userData.id)
         .eq('status', 'active');
@@ -71,7 +87,24 @@ export const useActivePrograms = () => {
 
       if (error) {
         console.error('❌ Error fetching active programs:', error);
-        setPrograms([]);
+        // Fallback: try simpler query without the created_by join
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('program_assignments')
+          .select(`
+            *,
+            programs(*)
+          `)
+          .eq('athlete_id', userData.id)
+          .eq('status', 'active');
+
+        if (fallbackError) {
+          console.error('❌ Fallback query also failed:', fallbackError);
+          setPrograms([]);
+          return;
+        }
+
+        console.log('✅ Fallback query successful:', fallbackData);
+        setPrograms(fallbackData || []);
       } else {
         console.log('📋 All program assignments found:', data);
         
