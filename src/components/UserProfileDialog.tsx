@@ -61,8 +61,8 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
           .select('*', { count: 'exact', head: true })
           .eq('created_by', user.id);
         programsCount = count || 0;
-      } else if (user.role === 'athlete') {
-        // For athletes, count programs assigned to them
+      } else if (user.role === 'athlete' || user.role === 'general' || user.role === 'parent') {
+        // For athletes, general, and parent users, count programs assigned to them
         const { count } = await supabase
           .from('program_assignments')
           .select('*', { count: 'exact', head: true })
@@ -109,8 +109,8 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
           .eq('created_by', user.id)
           .order('created_at', { ascending: false });
         data = programsData;
-      } else if (user.role === 'athlete') {
-        // For athletes, fetch programs assigned to them
+      } else if (user.role === 'athlete' || user.role === 'general' || user.role === 'parent') {
+        // For athletes, general, and parent users, fetch programs assigned to them
         const { data: assignmentsData } = await supabase
           .from('program_assignments')
           .select(`
@@ -231,7 +231,7 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
                   <Dumbbell className="h-8 w-8 mx-auto text-green-500 mb-2" />
                   <p className="text-2xl font-bold">{stats.programsCount}</p>
                   <p className="text-sm text-gray-600">
-                    {user.role === 'athlete' ? 'Ανατεθέντα Προγράμματα' : 'Προγράμματα'}
+                    {(user.role === 'athlete' || user.role === 'general' || user.role === 'parent') ? 'Ανατεθέντα Προγράμματα' : 'Προγράμματα'}
                   </p>
                 </div>
                 {user.role === 'athlete' && (
@@ -262,7 +262,7 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    {user.role === 'athlete' ? 'Ανατεθέντα Προγράμματα' : 'Προγράμματα Προπόνησης'}
+                    {(user.role === 'athlete' || user.role === 'general' || user.role === 'parent') ? 'Ανατεθέντα Προγράμματα' : 'Προγράμματα Προπόνησης'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
