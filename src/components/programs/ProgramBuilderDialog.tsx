@@ -79,29 +79,31 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     }
     
     console.log('Creating program with assignments:', program);
+    
+    // Prepare start date string before saving
+    let startDateString: string | undefined;
+    if (program.start_date) {
+      if (typeof program.start_date === 'string') {
+        startDateString = program.start_date;
+      } else if (program.start_date instanceof Date) {
+        startDateString = program.start_date.toISOString().split('T')[0];
+      }
+    }
+    
     const programToSave = {
       ...program,
       id: editingProgram?.id || undefined,
       status: 'active', // Mark as active
-      createAssignment: true // Flag to create assignment
+      createAssignment: true, // Flag to create assignment
+      start_date: startDateString // Ensure start_date is a string
     };
     
     try {
-      // First save the program
+      // First save the program with the correct start_date
       await onCreateProgram(programToSave);
       const programId = editingProgram?.id || program.id;
       
       if (programId && program.user_id) {
-        // Get the start date from the program
-        let startDateString: string | undefined;
-        if (program.start_date) {
-          if (typeof program.start_date === 'string') {
-            startDateString = program.start_date;
-          } else if (program.start_date instanceof Date) {
-            startDateString = program.start_date.toISOString().split('T')[0];
-          }
-        }
-        
         // Calculate end date if start date is provided
         let endDate: string | undefined;
         if (startDateString && program.weeks?.length) {
