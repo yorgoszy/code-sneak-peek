@@ -40,8 +40,16 @@ export const useProgramCrud = () => {
         return [];
       }
 
-      console.log('✅ Programs fetched successfully:', data?.length);
-      return data || [];
+      // Transform the data to match our Program interface
+      const transformedData = data?.map((program: any) => ({
+        ...program,
+        app_users: Array.isArray(program.app_users) && program.app_users.length > 0 
+          ? program.app_users[0] 
+          : null
+      })) || [];
+
+      console.log('✅ Programs fetched successfully:', transformedData?.length);
+      return transformedData;
     } catch (error) {
       console.error('❌ Unexpected error:', error);
       return [];
