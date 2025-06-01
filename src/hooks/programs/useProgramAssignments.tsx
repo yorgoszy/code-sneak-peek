@@ -85,10 +85,11 @@ export const useProgramAssignments = () => {
           'id' in assignment.programs;
 
         // Safe check for app_users with proper null handling
-        const validAppUsers = assignment.app_users && 
-          typeof assignment.app_users === 'object' && 
-          assignment.app_users !== null && 
-          'id' in assignment.app_users ? assignment.app_users : null;
+        const appUsers = assignment.app_users;
+        const validAppUsers = appUsers && 
+          typeof appUsers === 'object' && 
+          appUsers !== null && 
+          'id' in appUsers ? appUsers : null;
 
         return {
           ...assignment,
