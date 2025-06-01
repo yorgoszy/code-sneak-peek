@@ -92,13 +92,11 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             description={program.description || ''}
             user_id={program.user_id || ''}
             start_date={program.start_date}
-            training_days={program.training_days || []}
             users={users}
             onNameChange={onNameChange}
             onDescriptionChange={onDescriptionChange}
             onAthleteChange={onAthleteChange}
             onStartDateChange={onStartDateChange}
-            onTrainingDaysChange={onTrainingDaysChange}
           />
 
           {/* Training Dates Selector */}
