@@ -52,11 +52,11 @@ const Index = () => {
                     </span>
                     <Button 
                       variant="outline" 
+                      size="icon"
                       style={{ borderRadius: '0', backgroundColor: 'white', color: '#5271ff' }}
                       onClick={handleSignOut}
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Αποσύνδεση
+                      <LogOut className="h-4 w-4" />
                     </Button>
                   </div>
                 ) : (
