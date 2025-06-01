@@ -78,18 +78,23 @@ export const useProgramAssignments = () => {
       
       // Transform data to handle potential query errors and null checks
       return (data || []).map(assignment => {
-        // Safe check for app_users
-        const hasValidAppUsers = assignment.app_users && 
-          typeof assignment.app_users === 'object' && 
-          assignment.app_users !== null && 
-          'id' in assignment.app_users;
+        // Safe check for programs
+        const hasValidPrograms = assignment.programs && 
+          typeof assignment.programs === 'object' && 
+          assignment.programs !== null && 
+          'id' in assignment.programs;
+
+        // Safe check for app_users with proper null handling
+        const appUsersData = assignment.app_users;
+        const hasValidAppUsers = appUsersData && 
+          typeof appUsersData === 'object' && 
+          appUsersData !== null && 
+          'id' in appUsersData;
 
         return {
           ...assignment,
-          programs: assignment.programs && typeof assignment.programs === 'object' && 'id' in assignment.programs 
-            ? assignment.programs as any 
-            : null,
-          app_users: hasValidAppUsers ? assignment.app_users as any : null
+          programs: hasValidPrograms ? assignment.programs as any : null,
+          app_users: hasValidAppUsers ? appUsersData as any : null
         };
       });
     } catch (error) {
