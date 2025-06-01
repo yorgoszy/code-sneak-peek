@@ -12,6 +12,78 @@ export const useProgramCrud = () => {
     try {
       console.log('🔄 Starting fetchPrograms...');
       
+      // Fetch all programs (both assigned and unassigned)
+      const { data: programs, error } = await supabase
+        .from('programs')
+        .select(`
+          *,
+          app_users(id, name, email),
+          program_weeks(
+            id,
+            name,
+            week_number,
+            program_days(
+              id,
+              name,
+              day_number,
+              program_blocks(
+                id,
+                name,
+                block_order,
+                program_exercises(
+                  id,
+                  sets,
+                  reps,
+                  kg,
+                  percentage_1rm,
+                  velocity_ms,
+                  rest,
+                  tempo,
+                  notes,
+                  exercise_order,
+                  exercises(id, name, description, video_url)
+                )
+              )
+            )
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ Error fetching programs:', error);
+        toast.error('Σφάλμα φόρτωσης προγραμμάτων');
+        return [];
+      }
+
+      console.log('✅ Raw programs data:', programs?.length || 0, 'programs');
+      
+      // Transform the data to match the Program type
+      const transformedPrograms = programs?.map(program => {
+        console.log('🔄 Transforming program:', program.name, 'app_users:', program.app_users);
+        return {
+          ...program,
+          app_users: Array.isArray(program.app_users) && program.app_users.length > 0 
+            ? program.app_users[0] 
+            : null
+        };
+      }) || [];
+
+      console.log('✅ Transformed programs:', transformedPrograms.length);
+      return transformedPrograms as Program[];
+    } catch (error) {
+      console.error('💥 Unexpected error fetching programs:', error);
+      toast.error('Απροσδόκητο σφάλμα φόρτωσης προγραμμάτων');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDraftPrograms = async (): Promise<Program[]> => {
+    setLoading(true);
+    try {
+      console.log('🔄 Starting fetchDraftPrograms...');
+      
       // First, get all program IDs that have active assignments
       const { data: assignedProgramIds, error: assignmentsError } = await supabase
         .from('program_assignments')
@@ -70,17 +142,16 @@ export const useProgramCrud = () => {
         console.log(`🚫 Excluding ${assignedIds.length} assigned programs`);
       }
 
-      console.log('🔍 Executing programs query...');
+      console.log('🔍 Executing draft programs query...');
       const { data: programs, error } = await query;
 
       if (error) {
-        console.error('❌ Error fetching programs:', error);
+        console.error('❌ Error fetching draft programs:', error);
         toast.error('Σφάλμα φόρτωσης προγραμμάτων');
         return [];
       }
 
-      console.log('✅ Raw programs data:', programs?.length || 0, 'programs');
-      console.log('📊 First program structure:', programs?.[0]);
+      console.log('✅ Raw draft programs data:', programs?.length || 0, 'programs');
       
       // Transform the data to match the Program type
       const transformedPrograms = programs?.map(program => {
@@ -93,10 +164,10 @@ export const useProgramCrud = () => {
         };
       }) || [];
 
-      console.log('✅ Transformed programs:', transformedPrograms.length);
+      console.log('✅ Transformed draft programs:', transformedPrograms.length);
       return transformedPrograms as Program[];
     } catch (error) {
-      console.error('💥 Unexpected error fetching programs:', error);
+      console.error('💥 Unexpected error fetching draft programs:', error);
       toast.error('Απροσδόκητο σφάλμα φόρτωσης προγραμμάτων');
       return [];
     } finally {
@@ -179,6 +250,7 @@ export const useProgramCrud = () => {
   return {
     loading,
     fetchPrograms,
+    fetchDraftPrograms,
     deleteProgram,
     duplicateProgram
   };

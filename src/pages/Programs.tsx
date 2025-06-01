@@ -1,108 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
-import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
-import { Program } from "@/components/programs/types";
-import { usePrograms } from "@/hooks/usePrograms";
-import { useProgramsData } from "@/hooks/useProgramsData";
+import { ActiveProgramsList } from "@/components/active-programs/ActiveProgramsList";
+import { ProgramCalendar } from "@/components/active-programs/ProgramCalendar";
+import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Programs = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-  
-  // Builder dialog state
-  const [builderOpen, setBuilderOpen] = useState(false);
-  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
-  
-  // Preview dialog state
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
-
-  const { users, exercises } = useProgramsData();
-  const { loading, fetchPrograms, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
-
-  useEffect(() => {
-    loadPrograms();
-  }, []);
-
-  const loadPrograms = async () => {
-    try {
-      const data = await fetchPrograms();
-      setPrograms(data);
-    } catch (error) {
-      console.error('Error loading programs:', error);
-    }
-  };
-
-  const handleCreateProgram = async (programData: any) => {
-    try {
-      console.log('Creating/updating program:', programData);
-      await saveProgram(programData);
-      await loadPrograms();
-      setBuilderOpen(false);
-      setEditingProgram(null);
-    } catch (error) {
-      console.error('Error creating program:', error);
-    }
-  };
-
-  const handleEditProgram = (program: Program) => {
-    console.log('Editing program:', program);
-    setEditingProgram(program);
-    setBuilderOpen(true);
-  };
-
-  const handleDeleteProgram = async (programId: string) => {
-    try {
-      const success = await deleteProgram(programId);
-      if (success) {
-        if (selectedProgram?.id === programId) {
-          setSelectedProgram(null);
-        }
-        await loadPrograms();
-      }
-    } catch (error) {
-      console.error('Error deleting program:', error);
-    }
-  };
-
-  const handleDuplicateProgram = async (program: Program) => {
-    try {
-      await duplicateProgram(program);
-      await loadPrograms();
-    } catch (error) {
-      console.error('Error duplicating program:', error);
-    }
-  };
-
-  const handlePreviewProgram = (program: Program) => {
-    setPreviewProgram(program);
-    setPreviewOpen(true);
-  };
-
-  const handleBuilderClose = () => {
-    console.log('Closing builder dialog');
-    setBuilderOpen(false);
-    setEditingProgram(null);
-  };
-
-  const handlePreviewClose = () => {
-    setPreviewOpen(false);
-    setPreviewProgram(null);
-  };
-
-  const handleOpenBuilder = () => {
-    console.log('Opening new program builder');
-    setEditingProgram(null);
-    setBuilderOpen(true);
-  };
+  const { programs, loading, refetch } = useActivePrograms();
 
   if (loading) {
     return (
       <div className="min-h-screen flex w-full">
         <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
-        <div className="flex-1 p-6">Φόρτωση...</div>
+        <div className="flex-1 p-6">
+          <div className="text-center">Φόρτωση...</div>
+        </div>
       </div>
     );
   }
@@ -111,29 +25,30 @@ const Programs = () => {
     <div className="min-h-screen flex w-full">
       <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
       <div className="flex-1 p-6">
-        <ProgramsLayout
-          programs={programs}
-          selectedProgram={selectedProgram}
-          users={users}
-          exercises={exercises}
-          editingProgram={editingProgram}
-          builderDialogOpen={builderOpen}
-          previewProgram={previewProgram}
-          previewDialogOpen={previewOpen}
-          onSelectProgram={setSelectedProgram}
-          onDeleteProgram={handleDeleteProgram}
-          onEditProgram={handleEditProgram}
-          onCreateProgram={handleCreateProgram}
-          onBuilderDialogClose={handleBuilderClose}
-          onDuplicateProgram={handleDuplicateProgram}
-          onPreviewProgram={handlePreviewProgram}
-          onPreviewDialogClose={handlePreviewClose}
-          onDeleteWeek={() => {}}
-          onDeleteDay={() => {}}
-          onDeleteBlock={() => {}}
-          onDeleteExercise={() => {}}
-          onOpenBuilder={handleOpenBuilder}
-        />
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Ενεργά Προγράμματα</h1>
+            <p className="text-gray-600">Προγράμματα που έχουν ανατεθεί σε ασκούμενους</p>
+          </div>
+          
+          <Tabs defaultValue="calendar" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="calendar">Ημερολόγιο</TabsTrigger>
+              <TabsTrigger value="list">Λίστα</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="calendar" className="space-y-4">
+              <ProgramCalendar programs={programs} />
+            </TabsContent>
+
+            <TabsContent value="list" className="space-y-4">
+              <ActiveProgramsList 
+                programs={programs} 
+                onRefresh={refetch}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

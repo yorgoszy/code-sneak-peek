@@ -38,11 +38,16 @@ export const ActiveProgramsActions: React.FC<ActiveProgramsActionsProps> = ({
       }
 
       console.log('✅ Assignment deleted successfully');
-      toast.success('Η ανάθεση διαγράφηκε επιτυχώς - το πρόγραμμα επέστρεψε στα Προγράμματα');
+      toast.success('Η ανάθεση διαγράφηκε επιτυχώς - το πρόγραμμα επέστρεψε στα Πρόχειρα Προγράμματα');
       
+      // Refresh current page data
       if (onRefresh) {
         onRefresh();
       }
+
+      // Force refresh by dispatching a custom event that other pages can listen to
+      window.dispatchEvent(new CustomEvent('programAssignmentChanged'));
+      
     } catch (error) {
       console.error('❌ Error in handleDeleteAssignment:', error);
       toast.error('Σφάλμα κατά τη διαγραφή της ανάθεσης');
