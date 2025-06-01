@@ -96,10 +96,10 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
   }
 
   try {
-    // Fetch basic program info
+    // Fetch basic program info including training_days
     const { data: programData, error: programError } = await supabase
       .from('programs')
-      .select('id, name, description')
+      .select('id, name, description, training_days')
       .eq('id', assignment.program_id)
       .single();
 
@@ -107,6 +107,8 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
       console.error('❌ Error fetching program:', assignment.program_id, programError);
       return assignment;
     }
+
+    console.log('📊 Program data with training_days:', programData);
 
     // Fetch program weeks
     const { data: weeks, error: weeksError } = await supabase
@@ -165,11 +167,12 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
       }
     };
 
-    console.log('✅ Enriched assignment with preserved dates:', {
+    console.log('✅ Enriched assignment with preserved dates and training_days:', {
       id: enrichedAssignment.id,
       start_date: enrichedAssignment.start_date,
       end_date: enrichedAssignment.end_date,
-      program_name: enrichedAssignment.programs?.name
+      program_name: enrichedAssignment.programs?.name,
+      training_days: enrichedAssignment.programs?.training_days
     });
 
     return enrichedAssignment;

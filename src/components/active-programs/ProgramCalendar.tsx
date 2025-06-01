@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO, getDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -9,6 +9,17 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 interface ProgramCalendarProps {
   programs: EnrichedAssignment[];
 }
+
+// Mapping for training days to JavaScript day numbers
+const TRAINING_DAY_MAP: Record<string, number> = {
+  'sunday': 0,
+  'monday': 1,
+  'tuesday': 2,
+  'wednesday': 3,
+  'thursday': 4,
+  'friday': 5,
+  'saturday': 6
+};
 
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -20,7 +31,8 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
       name: program.programs?.name,
       start_date: program.start_date,
       end_date: program.end_date,
-      status: program.status
+      status: program.status,
+      training_days: program.programs?.training_days
     });
   });
 
@@ -38,7 +50,9 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
 
   const getProgramsForDay = (day: Date) => {
     const dayString = format(day, 'yyyy-MM-dd');
-    console.log('🔍 Checking programs for day:', dayString);
+    const dayOfWeek = getDay(day); // 0 = Sunday, 1 = Monday, etc.
+    
+    console.log('🔍 Checking programs for day:', dayString, 'Day of week:', dayOfWeek);
     
     const dayPrograms = programs.filter(program => {
       if (!program.start_date || !program.end_date) {
@@ -49,16 +63,36 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
       try {
         const startDate = parseISO(program.start_date);
         const endDate = parseISO(program.end_date);
-        const isInRange = day >= startDate && day <= endDate;
+        const isInDateRange = day >= startDate && day <= endDate;
         
-        console.log('📊 Date check for program:', program.id, {
+        if (!isInDateRange) {
+          return false;
+        }
+
+        // Check if we have training days defined for the program
+        const trainingDays = program.programs?.training_days;
+        if (!trainingDays || !Array.isArray(trainingDays) || trainingDays.length === 0) {
+          console.log('⚠️ No training days data for program:', program.id);
+          return isInDateRange; // Fall back to showing every day in range
+        }
+
+        // Convert training day strings to day numbers and check if current day matches
+        const trainingDayNumbers = trainingDays
+          .map(day => TRAINING_DAY_MAP[day.toLowerCase()])
+          .filter(dayNum => dayNum !== undefined);
+
+        const isTrainingDay = trainingDayNumbers.includes(dayOfWeek);
+        
+        console.log('📊 Training day check for program:', program.id, {
           dayString,
-          start_date: program.start_date,
-          end_date: program.end_date,
-          isInRange
+          dayOfWeek,
+          trainingDays,
+          trainingDayNumbers,
+          isTrainingDay,
+          isInDateRange
         });
         
-        return isInRange;
+        return isInDateRange && isTrainingDay;
       } catch (error) {
         console.error('❌ Error parsing dates for program:', program.id, error);
         return false;
