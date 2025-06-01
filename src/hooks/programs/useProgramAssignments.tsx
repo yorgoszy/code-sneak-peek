@@ -105,18 +105,18 @@ export const useProgramAssignments = () => {
         const appUsersData = assignment.app_users;
         let validAppUsers: any = null;
         
-        // Check if appUsersData exists and has all required properties
-        if (appUsersData && 
-            typeof appUsersData === 'object' && 
-            appUsersData !== null) {
-          // Now we can safely check for properties since we know it's not null
-          const hasId = 'id' in appUsersData;
-          const hasName = 'name' in appUsersData;
-          const hasEmail = 'email' in appUsersData;
-          
-          if (hasId && hasName && hasEmail) {
-            validAppUsers = appUsersData;
-          }
+        // Type guard function to check if appUsersData has required properties
+        const isValidAppUser = (data: any): data is { id: string; name: string; email: string } => {
+          return data && 
+                 typeof data === 'object' && 
+                 data !== null &&
+                 typeof data.id === 'string' &&
+                 typeof data.name === 'string' &&
+                 typeof data.email === 'string';
+        };
+
+        if (isValidAppUser(appUsersData)) {
+          validAppUsers = appUsersData;
         }
 
         return {
