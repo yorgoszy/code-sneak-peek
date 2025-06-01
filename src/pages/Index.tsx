@@ -41,10 +41,10 @@ const Index = () => {
               
               {!loading && (
                 isAuthenticated ? (
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
                     <Link to="/dashboard">
-                      <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-                        <User className="h-4 w-4" />
+                      <Button variant="outline" style={{ borderRadius: '0', backgroundColor: 'white', color: '#5271ff' }}>
+                        Dashboard
                       </Button>
                     </Link>
                     <Button 
