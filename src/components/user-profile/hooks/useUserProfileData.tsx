@@ -13,15 +13,6 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
   const [tests, setTests] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (user && isOpen) {
-      fetchUserStats();
-      fetchUserPrograms();
-      fetchUserTests();
-      fetchUserPayments();
-    }
-  }, [user, isOpen]);
-
   const fetchUserStats = async () => {
     try {
       // Count athletes if user is trainer
@@ -169,10 +160,24 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
     }
   };
 
+  const refetchData = () => {
+    if (user && isOpen) {
+      fetchUserStats();
+      fetchUserPrograms();
+      fetchUserTests();
+      fetchUserPayments();
+    }
+  };
+
+  useEffect(() => {
+    refetchData();
+  }, [user, isOpen]);
+
   return {
     stats,
     programs,
     tests,
-    payments
+    payments,
+    refetchData
   };
 };

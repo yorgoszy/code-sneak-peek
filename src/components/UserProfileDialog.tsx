@@ -18,7 +18,11 @@ interface UserProfileDialogProps {
 }
 
 export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogProps) => {
-  const { stats, programs, tests, payments } = useUserProfileData(user, isOpen);
+  const { stats, programs, tests, payments, refetchData } = useUserProfileData(user, isOpen);
+
+  const handleTestDeleted = () => {
+    refetchData();
+  };
 
   if (!user) return null;
 
@@ -40,6 +44,7 @@ export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogPr
             programs={programs}
             tests={tests}
             payments={payments}
+            onTestDeleted={handleTestDeleted}
           />
         </div>
       </DialogContent>

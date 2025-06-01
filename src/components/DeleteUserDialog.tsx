@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface AppUser {
   id: string;
@@ -34,7 +34,6 @@ interface DeleteUserDialogProps {
 
 export const DeleteUserDialog = ({ isOpen, onClose, onUserDeleted, user }: DeleteUserDialogProps) => {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleDelete = async () => {
     if (!user) return;
@@ -42,32 +41,25 @@ export const DeleteUserDialog = ({ isOpen, onClose, onUserDeleted, user }: Delet
     setLoading(true);
 
     try {
+      console.log('Attempting to delete user:', user.id);
+      
       const { error } = await supabase
         .from('app_users')
         .delete()
         .eq('id', user.id);
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Σφάλμα",
-          description: "Δεν ήταν δυνατή η διαγραφή του χρήστη",
-        });
+        console.error('Delete error:', error);
+        toast.error(`Σφάλμα: ${error.message}`);
       } else {
-        toast({
-          title: "Επιτυχία",
-          description: "Ο χρήστης διαγράφηκε επιτυχώς",
-        });
+        console.log('User deleted successfully');
+        toast.success("Ο χρήστης και όλα τα σχετικά δεδομένα διαγράφηκαν επιτυχώς");
         onUserDeleted();
         onClose();
       }
     } catch (error) {
       console.error('Error deleting user:', error);
-      toast({
-        variant: "destructive",
-        title: "Σφάλμα",
-        description: "Προέκυψε σφάλμα κατά τη διαγραφή του χρήστη",
-      });
+      toast.error("Προέκυψε σφάλμα κατά τη διαγραφή του χρήστη");
     } finally {
       setLoading(false);
     }
@@ -80,15 +72,24 @@ export const DeleteUserDialog = ({ isOpen, onClose, onUserDeleted, user }: Delet
           <AlertDialogTitle>Διαγραφή Χρήστη</AlertDialogTitle>
           <AlertDialogDescription>
             Είστε σίγουροι ότι θέλετε να διαγράψετε τον χρήστη "{user?.name}"? 
+            <br /><br />
+            <strong>Προσοχή:</strong> Θα διαγραφούν επίσης όλα τα σχετικά δεδομένα:
+            <ul className="list-disc list-inside mt-2 text-sm">
+              <li>Όλα τα τεστ του χρήστη</li>
+              <li>Πληρωμές</li>
+              <li>Κρατήσεις</li>
+              <li>Αποτελέσματα τεστ</li>
+            </ul>
+            <br />
             Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+          <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleDelete} 
             disabled={loading}
-            className="rounded-none bg-red-600 hover:bg-red-700"
+            className="bg-red-600 hover:bg-red-700"
           >
             {loading ? "Διαγραφή..." : "Διαγραφή"}
           </AlertDialogAction>
