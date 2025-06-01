@@ -10,7 +10,7 @@ export const useProgramCrud = () => {
   const fetchPrograms = async (): Promise<Program[]> => {
     setLoading(true);
     try {
-      console.log('Fetching programs...');
+      console.log('🔄 Starting fetchPrograms...');
       
       // First, get all program IDs that have active assignments
       const { data: assignedProgramIds, error: assignmentsError } = await supabase
@@ -19,18 +19,20 @@ export const useProgramCrud = () => {
         .eq('status', 'active');
 
       if (assignmentsError) {
-        console.error('Error fetching assigned programs:', assignmentsError);
+        console.error('❌ Error fetching assigned programs:', assignmentsError);
+        toast.error('Σφάλμα φόρτωσης αναθέσεων');
+        return [];
       }
 
       const assignedIds = assignedProgramIds?.map(a => a.program_id) || [];
-      console.log('Assigned program IDs:', assignedIds);
+      console.log('📋 Assigned program IDs:', assignedIds);
 
       // Then fetch programs, excluding those that are assigned
       let query = supabase
         .from('programs')
         .select(`
           *,
-          app_users!programs_user_id_fkey(id, name, email),
+          app_users(id, name, email),
           program_weeks(
             id,
             name,
@@ -65,29 +67,36 @@ export const useProgramCrud = () => {
       // Exclude assigned programs if there are any
       if (assignedIds.length > 0) {
         query = query.not('id', 'in', `(${assignedIds.join(',')})`);
+        console.log(`🚫 Excluding ${assignedIds.length} assigned programs`);
       }
 
+      console.log('🔍 Executing programs query...');
       const { data: programs, error } = await query;
 
       if (error) {
-        console.error('Error fetching programs:', error);
+        console.error('❌ Error fetching programs:', error);
         toast.error('Σφάλμα φόρτωσης προγραμμάτων');
         return [];
       }
 
-      console.log('Fetched programs (excluding assigned):', programs?.length || 0);
+      console.log('✅ Raw programs data:', programs?.length || 0, 'programs');
+      console.log('📊 First program structure:', programs?.[0]);
       
       // Transform the data to match the Program type
-      const transformedPrograms = programs?.map(program => ({
-        ...program,
-        app_users: Array.isArray(program.app_users) && program.app_users.length > 0 
-          ? program.app_users[0] 
-          : null
-      })) || [];
+      const transformedPrograms = programs?.map(program => {
+        console.log('🔄 Transforming program:', program.name, 'app_users:', program.app_users);
+        return {
+          ...program,
+          app_users: Array.isArray(program.app_users) && program.app_users.length > 0 
+            ? program.app_users[0] 
+            : null
+        };
+      }) || [];
 
+      console.log('✅ Transformed programs:', transformedPrograms.length);
       return transformedPrograms as Program[];
     } catch (error) {
-      console.error('Unexpected error fetching programs:', error);
+      console.error('💥 Unexpected error fetching programs:', error);
       toast.error('Απροσδόκητο σφάλμα φόρτωσης προγραμμάτων');
       return [];
     } finally {
@@ -97,7 +106,7 @@ export const useProgramCrud = () => {
 
   const deleteProgram = async (programId: string): Promise<boolean> => {
     try {
-      console.log('Deleting program:', programId);
+      console.log('🗑️ Starting deleteProgram for:', programId);
       
       // Check if program has active assignments
       const { data: assignments, error: assignmentsError } = await supabase
@@ -107,31 +116,36 @@ export const useProgramCrud = () => {
         .eq('status', 'active');
 
       if (assignmentsError) {
-        console.error('Error checking assignments:', assignmentsError);
+        console.error('❌ Error checking assignments:', assignmentsError);
         toast.error('Σφάλμα ελέγχου αναθέσεων');
         return false;
       }
 
+      console.log('📋 Found assignments for program:', assignments?.length || 0);
+
       if (assignments && assignments.length > 0) {
+        console.log('🚫 Cannot delete program with active assignments');
         toast.error('Δεν μπορείτε να διαγράψετε πρόγραμμα που έχει ενεργές αναθέσεις');
         return false;
       }
 
+      console.log('🔄 Proceeding with program deletion...');
       const { error } = await supabase
         .from('programs')
         .delete()
         .eq('id', programId);
 
       if (error) {
-        console.error('Error deleting program:', error);
+        console.error('❌ Error deleting program:', error);
         toast.error('Σφάλμα διαγραφής προγράμματος');
         return false;
       }
 
+      console.log('✅ Program deleted successfully');
       toast.success('Το πρόγραμμα διαγράφηκε επιτυχώς');
       return true;
     } catch (error) {
-      console.error('Unexpected error deleting program:', error);
+      console.error('💥 Unexpected error deleting program:', error);
       toast.error('Απροσδόκητο σφάλμα διαγραφής');
       return false;
     }
@@ -139,7 +153,7 @@ export const useProgramCrud = () => {
 
   const duplicateProgram = async (program: Program, saveProgram: (data: any) => Promise<any>): Promise<boolean> => {
     try {
-      console.log('Duplicating program:', program.name);
+      console.log('📋 Duplicating program:', program.name);
       
       const duplicatedProgram = {
         ...program,
@@ -152,10 +166,11 @@ export const useProgramCrud = () => {
       };
 
       await saveProgram(duplicatedProgram);
+      console.log('✅ Program duplicated successfully');
       toast.success('Το πρόγραμμα αντιγράφηκε επιτυχώς');
       return true;
     } catch (error) {
-      console.error('Error duplicating program:', error);
+      console.error('❌ Error duplicating program:', error);
       toast.error('Σφάλμα αντιγραφής προγράμματος');
       return false;
     }
