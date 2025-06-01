@@ -18,6 +18,7 @@ export interface EnrichedAssignment {
     id: string;
     name: string;
     description?: string;
+    training_days?: string[];
     program_weeks: Array<{
       id: string;
       name: string;
