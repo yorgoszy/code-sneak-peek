@@ -1,20 +1,24 @@
 
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ProgramBasicInfo } from './ProgramBasicInfo';
+import { TrainingWeeks } from './TrainingWeeks';
+import { TrainingDateSelector } from './TrainingDateSelector';
 import { Button } from "@/components/ui/button";
-import { User, Exercise } from '../types';
-import { ProgramBuilder } from './ProgramBuilder';
-import { ProgramStructure } from './hooks/useProgramBuilderState';
+import { Save, Users } from "lucide-react";
+import type { User, Exercise } from '../types';
 
 interface ProgramBuilderDialogContentProps {
-  program: ProgramStructure;
+  program: any;
   users: User[];
   exercises: Exercise[];
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
-  onAthleteChange: (user_id: string) => void; // Changed from athlete_id to user_id
-  onStartDateChange?: (date: Date | undefined) => void;
-  onTrainingDaysChange?: (days: string[]) => void;
+  onAthleteChange: (user_id: string) => void;
+  onStartDateChange: (start_date: Date | undefined) => void;
+  onTrainingDaysChange: (training_days: string[]) => void;
+  onTrainingDatesChange?: (dates: string[]) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -27,16 +31,16 @@ interface ProgramBuilderDialogContentProps {
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
   onUpdateBlockName: (weekId: string, dayId: string, blockId: string, name: string) => void;
-  onAddExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
+  onAddExercise: (weekId: string, dayId: string, blockId: string) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
-  onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
+  onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, exerciseData: any) => void;
   onDuplicateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
-  onReorderWeeks: (oldIndex: number, newIndex: number) => void;
-  onReorderDays: (weekId: string, oldIndex: number, newIndex: number) => void;
-  onReorderBlocks: (weekId: string, dayId: string, oldIndex: number, newIndex: number) => void;
-  onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
+  onReorderWeeks: (weeks: any[]) => void;
+  onReorderDays: (weekId: string, days: any[]) => void;
+  onReorderBlocks: (weekId: string, dayId: string, blocks: any[]) => void;
+  onReorderExercises: (weekId: string, dayId: string, blockId: string, exercises: any[]) => void;
   onSave: () => void;
-  onAssignments?: () => void;
+  onAssignments: () => void;
 }
 
 export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentProps> = ({
@@ -48,6 +52,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onAthleteChange,
   onStartDateChange,
   onTrainingDaysChange,
+  onTrainingDatesChange,
   onAddWeek,
   onRemoveWeek,
   onDuplicateWeek,
@@ -72,61 +77,78 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onAssignments
 }) => {
   return (
-    <DialogContent className="rounded-none w-screen h-screen max-w-none max-h-none m-0 p-0 overflow-hidden flex flex-col">
-      <DialogHeader className="px-6 py-4 border-b">
-        <DialogTitle>Βοηθός Πληροφοριών</DialogTitle>
+    <DialogContent className="max-w-7xl max-h-[90vh] rounded-none">
+      <DialogHeader>
+        <DialogTitle>
+          {program.id ? 'Επεξεργασία Προγράμματος' : 'Δημιουργία Νέου Προγράμματος'}
+        </DialogTitle>
       </DialogHeader>
       
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        <ProgramBuilder
-          program={program}
-          users={users}
-          exercises={exercises}
-          onNameChange={onNameChange}
-          onDescriptionChange={onDescriptionChange}
-          onAthleteChange={onAthleteChange}
-          onStartDateChange={onStartDateChange}
-          onTrainingDaysChange={onTrainingDaysChange}
-          onAddWeek={onAddWeek}
-          onRemoveWeek={onRemoveWeek}
-          onDuplicateWeek={onDuplicateWeek}
-          onUpdateWeekName={onUpdateWeekName}
-          onAddDay={onAddDay}
-          onRemoveDay={onRemoveDay}
-          onDuplicateDay={onDuplicateDay}
-          onUpdateDayName={onUpdateDayName}
-          onAddBlock={onAddBlock}
-          onRemoveBlock={onRemoveBlock}
-          onDuplicateBlock={onDuplicateBlock}
-          onUpdateBlockName={onUpdateBlockName}
-          onAddExercise={onAddExercise}
-          onRemoveExercise={onRemoveExercise}
-          onUpdateExercise={onUpdateExercise}
-          onDuplicateExercise={onDuplicateExercise}
-          onReorderWeeks={onReorderWeeks}
-          onReorderDays={onReorderDays}
-          onReorderBlocks={onReorderBlocks}
-          onReorderExercises={onReorderExercises}
-        />
-      </div>
+      <ScrollArea className="flex-1 pr-6">
+        <div className="space-y-6">
+          <ProgramBasicInfo
+            program={program}
+            users={users}
+            onNameChange={onNameChange}
+            onDescriptionChange={onDescriptionChange}
+            onAthleteChange={onAthleteChange}
+            onStartDateChange={onStartDateChange}
+            onTrainingDaysChange={onTrainingDaysChange}
+          />
 
-      <div className="flex justify-end gap-3 px-6 py-4 border-t">
-        <Button 
-          onClick={onSave} 
+          {/* Training Dates Selector */}
+          {onTrainingDatesChange && (
+            <TrainingDateSelector
+              selectedDates={program.training_dates || []}
+              onDatesChange={onTrainingDatesChange}
+              programWeeks={program.weeks?.length || 0}
+            />
+          )}
+
+          <TrainingWeeks
+            weeks={program.weeks || []}
+            exercises={exercises}
+            onAddWeek={onAddWeek}
+            onRemoveWeek={onRemoveWeek}
+            onDuplicateWeek={onDuplicateWeek}
+            onUpdateWeekName={onUpdateWeekName}
+            onAddDay={onAddDay}
+            onRemoveDay={onRemoveDay}
+            onDuplicateDay={onDuplicateDay}
+            onUpdateDayName={onUpdateDayName}
+            onAddBlock={onAddBlock}
+            onRemoveBlock={onRemoveBlock}
+            onDuplicateBlock={onDuplicateBlock}
+            onUpdateBlockName={onUpdateBlockName}
+            onAddExercise={onAddExercise}
+            onRemoveExercise={onRemoveExercise}
+            onUpdateExercise={onUpdateExercise}
+            onDuplicateExercise={onDuplicateExercise}
+            onReorderWeeks={onReorderWeeks}
+            onReorderDays={onReorderDays}
+            onReorderBlocks={onReorderBlocks}
+            onReorderExercises={onReorderExercises}
+          />
+        </div>
+      </ScrollArea>
+
+      <div className="flex justify-end gap-2 pt-4 border-t">
+        <Button
+          onClick={onSave}
           variant="outline"
           className="rounded-none"
         >
-          Αποθήκευση Προγράμματος
+          <Save className="w-4 h-4 mr-2" />
+          Αποθήκευση ως Προσχέδιο
         </Button>
-        {onAssignments && (
-          <Button 
-            onClick={onAssignments} 
-            className="rounded-none text-white hover:opacity-90"
-            style={{ backgroundColor: '#004aad' }}
-          >
-            Αναθέσεις
-          </Button>
-        )}
+        
+        <Button
+          onClick={onAssignments}
+          className="rounded-none"
+        >
+          <Users className="w-4 h-4 mr-2" />
+          Ανάθεση σε Ασκούμενο
+        </Button>
       </div>
     </DialogContent>
   );

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ActivePrograms = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { programs, loading } = useActivePrograms();
+  const { programs, loading, refetch } = useActivePrograms();
 
   if (loading) {
     return (
@@ -42,7 +42,7 @@ const ActivePrograms = () => {
             </TabsContent>
 
             <TabsContent value="list" className="space-y-4">
-              <ActiveProgramsList programs={programs} />
+              <ActiveProgramsList programs={programs} onRefresh={refetch} />
             </TabsContent>
           </Tabs>
         </div>

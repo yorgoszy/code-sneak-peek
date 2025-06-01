@@ -27,7 +27,7 @@ export const fetchUserData = async (authUserId: string) => {
 
   const { data: userData, error: userError } = await supabase
     .from('app_users')
-    .select('id')
+    .select('id, name, email')
     .eq('auth_user_id', authUserId)
     .single();
 
@@ -53,9 +53,13 @@ export const fetchProgramAssignments = async (userId: string) => {
 
   console.log('🔍 Fetching assignments for user_id:', userId);
   
+  // Fetch assignments with user data included
   const { data: assignments, error: assignmentsError } = await supabase
     .from('program_assignments')
-    .select('*')
+    .select(`
+      *,
+      app_users!fk_program_assignments_user_id(id, name, email)
+    `)
     .eq('user_id', userId)
     .eq('status', 'active');
 
@@ -71,24 +75,11 @@ export const fetchProgramAssignments = async (userId: string) => {
     return [];
   }
 
-  // Log each assignment's dates
-  assignments.forEach(assignment => {
-    console.log(`📅 Assignment ${assignment.id} dates:`, {
-      start_date: assignment.start_date,
-      end_date: assignment.end_date,
-      start_date_type: typeof assignment.start_date,
-      end_date_type: typeof assignment.end_date
-    });
-  });
-
   return assignments;
 };
 
 export const enrichAssignmentWithProgramData = async (assignment: any): Promise<EnrichedAssignment> => {
-  console.log('🔄 Enriching assignment:', assignment.id, 'with dates:', {
-    start_date: assignment.start_date,
-    end_date: assignment.end_date
-  });
+  console.log('🔄 Enriching assignment:', assignment.id, 'with training_dates:', assignment.training_dates);
 
   if (!assignment.program_id) {
     console.log('❌ Assignment without valid program_id:', assignment.id);
@@ -108,7 +99,7 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
       return assignment;
     }
 
-    console.log('📊 Program data with training_days:', programData);
+    console.log('📊 Program data:', programData);
 
     // Fetch program weeks
     const { data: weeks, error: weeksError } = await supabase
@@ -158,7 +149,7 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
       })
     );
 
-    // Return assignment with enriched program data - preserve original dates
+    // Return assignment with enriched program data
     const enrichedAssignment = {
       ...assignment,
       programs: {
@@ -167,12 +158,11 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
       }
     };
 
-    console.log('✅ Enriched assignment with preserved dates and training_days:', {
+    console.log('✅ Enriched assignment with training_dates:', {
       id: enrichedAssignment.id,
-      start_date: enrichedAssignment.start_date,
-      end_date: enrichedAssignment.end_date,
+      training_dates: enrichedAssignment.training_dates,
       program_name: enrichedAssignment.programs?.name,
-      training_days: enrichedAssignment.programs?.training_days
+      user_name: enrichedAssignment.app_users?.name
     });
 
     return enrichedAssignment;

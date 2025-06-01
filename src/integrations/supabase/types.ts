@@ -1204,6 +1204,7 @@ export type Database = {
           progress: number | null
           start_date: string | null
           status: string | null
+          training_dates: string[] | null
           updated_at: string | null
           user_id: string | null
         }
@@ -1219,6 +1220,7 @@ export type Database = {
           progress?: number | null
           start_date?: string | null
           status?: string | null
+          training_dates?: string[] | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -1234,6 +1236,7 @@ export type Database = {
           progress?: number | null
           start_date?: string | null
           status?: string | null
+          training_dates?: string[] | null
           updated_at?: string | null
           user_id?: string | null
         }

@@ -3,13 +3,15 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, User } from "lucide-react";
+import { ActiveProgramsActions } from './ActiveProgramsActions';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ActiveProgramsListProps {
   programs: EnrichedAssignment[];
+  onRefresh?: () => void;
 }
 
-export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs }) => {
+export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs, onRefresh }) => {
   const formatTrainingDates = (dates: string[] | undefined) => {
     if (!dates || dates.length === 0) return 'Δεν έχουν οριστεί ημερομηνίες';
     
@@ -79,9 +81,15 @@ export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs
                       </p>
                     )}
                   </div>
-                  <Badge variant="outline" className="rounded-none">
-                    {assignment.status === 'active' ? 'Ενεργό' : assignment.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="rounded-none">
+                      {assignment.status === 'active' ? 'Ενεργό' : assignment.status}
+                    </Badge>
+                    <ActiveProgramsActions 
+                      assignment={assignment} 
+                      onRefresh={onRefresh}
+                    />
+                  </div>
                 </div>
               </CardHeader>
               
