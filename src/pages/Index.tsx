@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -43,8 +43,8 @@ const Index = () => {
                 isAuthenticated ? (
                   <div className="flex items-center space-x-4">
                     <Link to="/dashboard">
-                      <Button variant="outline" style={{ borderRadius: '0', backgroundColor: 'white', color: '#5271ff' }}>
-                        Dashboard
+                      <Button variant="outline" size="icon" style={{ borderRadius: '0', backgroundColor: 'white', color: '#5271ff' }}>
+                        <User className="h-4 w-4" />
                       </Button>
                     </Link>
                     <span className="text-sm text-white">
