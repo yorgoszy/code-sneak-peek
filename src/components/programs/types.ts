@@ -78,6 +78,20 @@ export interface ProgramAssignment {
   assignment_type?: string;
   group_id?: string;
   progress?: number;
+  training_dates?: string[]; // Added training_dates
   programs?: ProgramInfo | null; // Allow null for failed queries
   app_users?: User | null; // Allow null for failed queries
+}
+
+// Program structure interface for the builder
+export interface ProgramStructure {
+  id?: string;
+  name: string;
+  description?: string;
+  user_id?: string;
+  start_date?: Date;
+  training_days?: string[];
+  training_dates?: string[]; // Added training_dates
+  weeks?: Week[];
+  status?: string;
 }

@@ -7,10 +7,10 @@ import { TrainingWeeks } from './TrainingWeeks';
 import { TrainingDateSelector } from './TrainingDateSelector';
 import { Button } from "@/components/ui/button";
 import { Save, Users } from "lucide-react";
-import type { User, Exercise } from '../types';
+import type { User, Exercise, ProgramStructure } from '../types';
 
 interface ProgramBuilderDialogContentProps {
-  program: any;
+  program: ProgramStructure;
   users: User[];
   exercises: Exercise[];
   onNameChange: (name: string) => void;
@@ -87,7 +87,11 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
       <ScrollArea className="flex-1 pr-6">
         <div className="space-y-6">
           <ProgramBasicInfo
-            program={program}
+            name={program.name}
+            description={program.description || ''}
+            user_id={program.user_id || ''}
+            start_date={program.start_date}
+            training_days={program.training_days || []}
             users={users}
             onNameChange={onNameChange}
             onDescriptionChange={onDescriptionChange}
