@@ -49,10 +49,11 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       return;
     }
     
-    console.log('Saving program:', program);
+    console.log('Saving program as draft:', program);
     const programToSave = {
       ...program,
-      id: editingProgram?.id || undefined
+      id: editingProgram?.id || undefined,
+      status: 'draft' // Save as draft
     };
     
     onCreateProgram(programToSave);
@@ -60,10 +61,25 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   };
 
   const handleAssignments = () => {
-    // Για τώρα, θα κλείσουμε το dialog και θα πάμε στη σελίδα ενεργών προγραμμάτων
-    // Μπορείς να το αλλάξεις αργότερα για να ανοίξει ένα assignments dialog
+    if (!program.name.trim()) {
+      alert('Το όνομα προγράμματος είναι υποχρεωτικό');
+      return;
+    }
+    
+    console.log('Creating program with assignments:', program);
+    const programToSave = {
+      ...program,
+      id: editingProgram?.id || undefined,
+      status: 'active', // Mark as active
+      createAssignment: true // Flag to create assignment
+    };
+    
+    onCreateProgram(programToSave);
     handleClose();
-    window.location.href = '/dashboard/active-programs';
+    // Navigate to active programs after creating assignment
+    setTimeout(() => {
+      window.location.href = '/dashboard/active-programs';
+    }, 1000);
   };
 
   return (

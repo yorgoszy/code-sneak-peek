@@ -58,7 +58,8 @@ export const useProgramSave = () => {
           .update({
             name: programData.name,
             description: programData.description,
-            athlete_id: programData.athlete_id || null
+            athlete_id: programData.athlete_id || null,
+            status: programData.status || 'draft'
           })
           .eq('id', programData.id);
 
@@ -70,21 +71,27 @@ export const useProgramSave = () => {
         // Create new structure
         await createProgramStructure(programData.id, programData);
         
-        // If athlete_id is provided, create or update assignment
-        if (programData.athlete_id) {
+        // If createAssignment flag is set, create assignment
+        if (programData.createAssignment && appUserId) {
+          await createOrUpdateAssignment(programData.id, appUserId);
+        }
+        
+        // If athlete_id is provided and different from creator, create additional assignment
+        if (programData.athlete_id && programData.athlete_id !== appUserId && programData.createAssignment) {
           await createOrUpdateAssignment(programData.id, programData.athlete_id);
         }
         
         toast.success('Το πρόγραμμα ενημερώθηκε επιτυχώς');
       } else {
-        // Create new program - use appUserId if available, otherwise null
+        // Create new program
         const { data: program, error: programError } = await supabase
           .from('programs')
           .insert([{
             name: programData.name,
             description: programData.description,
             athlete_id: programData.athlete_id || null,
-            created_by: appUserId // This will be null if user doesn't exist in app_users
+            created_by: appUserId,
+            status: programData.status || 'draft'
           }])
           .select()
           .single();
@@ -93,37 +100,40 @@ export const useProgramSave = () => {
 
         await createProgramStructure(program.id, programData);
         
-        // Always create an assignment for the creator so the program appears in active programs
-        if (appUserId) {
-          console.log('Creating auto-assignment for creator');
+        // Only create assignments if createAssignment flag is set
+        if (programData.createAssignment && appUserId) {
+          console.log('Creating assignment for creator');
           const startDate = new Date();
           const endDate = new Date();
-          endDate.setDate(endDate.getDate() + 30); // Default 30 days duration
+          endDate.setDate(endDate.getDate() + 30);
           
           const { error: assignmentError } = await supabase
             .from('program_assignments')
             .insert([{
               program_id: program.id,
-              athlete_id: appUserId, // Assign to creator
+              athlete_id: appUserId,
               status: 'active',
               start_date: startDate.toISOString().split('T')[0],
               end_date: endDate.toISOString().split('T')[0],
-              notes: 'Αυτόματη ανάθεση για δημιουργό'
+              notes: 'Ενεργό πρόγραμμα'
             }]);
             
           if (assignmentError) {
-            console.error('Error creating auto-assignment:', assignmentError);
+            console.error('Error creating assignment:', assignmentError);
           } else {
-            console.log('Auto-assignment created successfully');
+            console.log('Assignment created successfully');
           }
         }
         
-        // If athlete_id is provided, create additional assignment
-        if (programData.athlete_id && programData.athlete_id !== appUserId) {
+        // If athlete_id is provided and different from creator, create additional assignment
+        if (programData.athlete_id && programData.athlete_id !== appUserId && programData.createAssignment) {
           await createOrUpdateAssignment(program.id, programData.athlete_id);
         }
         
-        toast.success('Το πρόγραμμα δημιουργήθηκε επιτυχώς');
+        const successMessage = programData.createAssignment 
+          ? 'Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς'
+          : 'Το πρόγραμμα αποθηκεύτηκε επιτυχώς';
+        toast.success(successMessage);
       }
     } catch (error) {
       console.error('Error saving program:', error);

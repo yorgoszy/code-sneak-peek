@@ -111,22 +111,22 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
       </div>
 
       <div className="flex justify-end gap-3 px-6 py-4 border-t">
+        <Button 
+          onClick={onSave} 
+          variant="outline"
+          className="rounded-none"
+        >
+          Αποθήκευση Προγράμματος
+        </Button>
         {onAssignments && (
           <Button 
             onClick={onAssignments} 
-            variant="outline"
-            className="rounded-none"
+            className="rounded-none text-white hover:opacity-90"
+            style={{ backgroundColor: '#004aad' }}
           >
             Αναθέσεις
           </Button>
         )}
-        <Button 
-          onClick={onSave} 
-          className="rounded-none text-white hover:opacity-90"
-          style={{ backgroundColor: '#004aad' }}
-        >
-          Αποθήκευση Προγράμματος
-        </Button>
       </div>
     </DialogContent>
   );
