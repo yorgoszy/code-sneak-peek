@@ -211,74 +211,6 @@ export type Database = {
         }
         Relationships: []
       }
-      athlete_groups: {
-        Row: {
-          athlete_ids: string[]
-          created_at: string | null
-          id: string
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          athlete_ids?: string[]
-          created_at?: string | null
-          id?: string
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          athlete_ids?: string[]
-          created_at?: string | null
-          id?: string
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      athlete_memberships: {
-        Row: {
-          created_at: string | null
-          end_date: string
-          id: string
-          membership_id: string | null
-          payment_status: string | null
-          start_date: string
-          status: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          end_date: string
-          id?: string
-          membership_id?: string | null
-          payment_status?: string | null
-          start_date: string
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          end_date?: string
-          id?: string
-          membership_id?: string | null
-          payment_status?: string | null
-          start_date?: string
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "athlete_memberships_membership_id_fkey"
-            columns: ["membership_id"]
-            isOneToOne: false
-            referencedRelation: "memberships"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       bookings: {
         Row: {
           created_at: string | null
@@ -1246,13 +1178,6 @@ export type Database = {
             columns: ["assigned_by"]
             isOneToOne: false
             referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_group_id"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "athlete_groups"
             referencedColumns: ["id"]
           },
           {
