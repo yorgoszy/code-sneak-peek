@@ -28,7 +28,7 @@ const ActivePrograms = () => {
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Ενεργά Προγράμματα</h1>
-            <p className="text-gray-600">Προγράμματα που έχουν ανατεθεί σε ασκούμενους</p>
+            <p className="text-gray-600">Προγράμματα που σας έχουν ανατεθεί και είναι ενεργά</p>
           </div>
           
           <Tabs defaultValue="calendar" className="w-full">
@@ -42,10 +42,7 @@ const ActivePrograms = () => {
             </TabsContent>
 
             <TabsContent value="list" className="space-y-4">
-              <ActiveProgramsList 
-                programs={programs} 
-                onRefresh={refetch}
-              />
+              <ActiveProgramsList programs={programs} onRefresh={refetch} />
             </TabsContent>
           </Tabs>
         </div>

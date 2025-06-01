@@ -13,7 +13,7 @@ import Exercises from "./pages/Exercises";
 import Tests from "./pages/Tests";
 import Results from "./pages/Results";
 import Programs from "./pages/Programs";
-import DraftPrograms from "./pages/DraftPrograms";
+import ActivePrograms from "./pages/ActivePrograms";
 import ProgramBuilder from "./pages/ProgramBuilder";
 import NotFound from "./pages/NotFound";
 
@@ -99,10 +99,10 @@ function App() {
               } 
             />
             <Route 
-              path="/dashboard/draft-programs" 
+              path="/dashboard/active-programs" 
               element={
                 <ProtectedRoute>
-                  <DraftPrograms />
+                  <ActivePrograms />
                 </ProtectedRoute>
               } 
             />

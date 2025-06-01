@@ -8,40 +8,24 @@ export const useProgramCrud = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchPrograms = async (): Promise<Program[]> => {
-    setLoading(true);
     try {
-      console.log('🔄 Starting fetchPrograms...');
-      
-      // Fetch all programs (both assigned and unassigned)
-      const { data: programs, error } = await supabase
+      setLoading(true);
+      console.log('🔍 Fetching programs...');
+
+      // Simple query to get all programs with their structure
+      const { data, error } = await supabase
         .from('programs')
         .select(`
           *,
-          app_users(id, name, email),
           program_weeks(
-            id,
-            name,
-            week_number,
+            *,
             program_days(
-              id,
-              name,
-              day_number,
+              *,
               program_blocks(
-                id,
-                name,
-                block_order,
+                *,
                 program_exercises(
-                  id,
-                  sets,
-                  reps,
-                  kg,
-                  percentage_1rm,
-                  velocity_ms,
-                  rest,
-                  tempo,
-                  notes,
-                  exercise_order,
-                  exercises(id, name, description, video_url)
+                  *,
+                  exercises(name)
                 )
               )
             )
@@ -50,125 +34,21 @@ export const useProgramCrud = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ Error fetching programs:', error);
+        console.error('Error fetching programs:', error);
         toast.error('Σφάλμα φόρτωσης προγραμμάτων');
         return [];
       }
 
-      console.log('✅ Raw programs data:', programs?.length || 0, 'programs');
+      console.log('✅ Programs fetched successfully:', data?.length || 0);
       
-      // Transform the data to match the Program type
-      const transformedPrograms = programs?.map(program => {
-        console.log('🔄 Transforming program:', program.name, 'app_users:', program.app_users);
-        return {
-          ...program,
-          app_users: Array.isArray(program.app_users) && program.app_users.length > 0 
-            ? program.app_users[0] 
-            : null
-        };
-      }) || [];
-
-      console.log('✅ Transformed programs:', transformedPrograms.length);
-      return transformedPrograms as Program[];
+      // Transform data to match the expected format
+      return (data || []).map(program => ({
+        ...program,
+        app_users: null // Set to null since we're not fetching user data for now
+      }));
     } catch (error) {
-      console.error('💥 Unexpected error fetching programs:', error);
-      toast.error('Απροσδόκητο σφάλμα φόρτωσης προγραμμάτων');
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchDraftPrograms = async (): Promise<Program[]> => {
-    setLoading(true);
-    try {
-      console.log('🔄 Starting fetchDraftPrograms...');
-      
-      // First, get all program IDs that have active assignments
-      const { data: assignedProgramIds, error: assignmentsError } = await supabase
-        .from('program_assignments')
-        .select('program_id')
-        .eq('status', 'active');
-
-      if (assignmentsError) {
-        console.error('❌ Error fetching assigned programs:', assignmentsError);
-        toast.error('Σφάλμα φόρτωσης αναθέσεων');
-        return [];
-      }
-
-      const assignedIds = assignedProgramIds?.map(a => a.program_id) || [];
-      console.log('📋 Assigned program IDs:', assignedIds);
-
-      // Then fetch programs, excluding those that are assigned
-      let query = supabase
-        .from('programs')
-        .select(`
-          *,
-          app_users(id, name, email),
-          program_weeks(
-            id,
-            name,
-            week_number,
-            program_days(
-              id,
-              name,
-              day_number,
-              program_blocks(
-                id,
-                name,
-                block_order,
-                program_exercises(
-                  id,
-                  sets,
-                  reps,
-                  kg,
-                  percentage_1rm,
-                  velocity_ms,
-                  rest,
-                  tempo,
-                  notes,
-                  exercise_order,
-                  exercises(id, name, description, video_url)
-                )
-              )
-            )
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      // Exclude assigned programs if there are any
-      if (assignedIds.length > 0) {
-        query = query.not('id', 'in', `(${assignedIds.join(',')})`);
-        console.log(`🚫 Excluding ${assignedIds.length} assigned programs`);
-      }
-
-      console.log('🔍 Executing draft programs query...');
-      const { data: programs, error } = await query;
-
-      if (error) {
-        console.error('❌ Error fetching draft programs:', error);
-        toast.error('Σφάλμα φόρτωσης προγραμμάτων');
-        return [];
-      }
-
-      console.log('✅ Raw draft programs data:', programs?.length || 0, 'programs');
-      
-      // Transform the data to match the Program type
-      const transformedPrograms = programs?.map(program => {
-        console.log('🔄 Transforming program:', program.name, 'app_users:', program.app_users);
-        return {
-          ...program,
-          app_users: Array.isArray(program.app_users) && program.app_users.length > 0 
-            ? program.app_users[0] 
-            : null
-        };
-      }) || [];
-
-      console.log('✅ Transformed draft programs:', transformedPrograms.length);
-      return transformedPrograms as Program[];
-    } catch (error) {
-      console.error('💥 Unexpected error fetching draft programs:', error);
-      toast.error('Απροσδόκητο σφάλμα φόρτωσης προγραμμάτων');
+      console.error('Error fetching programs:', error);
+      toast.error('Σφάλμα φόρτωσης προγραμμάτων');
       return [];
     } finally {
       setLoading(false);
@@ -177,80 +57,72 @@ export const useProgramCrud = () => {
 
   const deleteProgram = async (programId: string): Promise<boolean> => {
     try {
-      console.log('🗑️ Starting deleteProgram for:', programId);
-      
-      // Check if program has active assignments
-      const { data: assignments, error: assignmentsError } = await supabase
-        .from('program_assignments')
-        .select('id')
-        .eq('program_id', programId)
-        .eq('status', 'active');
-
-      if (assignmentsError) {
-        console.error('❌ Error checking assignments:', assignmentsError);
-        toast.error('Σφάλμα ελέγχου αναθέσεων');
-        return false;
-      }
-
-      console.log('📋 Found assignments for program:', assignments?.length || 0);
-
-      if (assignments && assignments.length > 0) {
-        console.log('🚫 Cannot delete program with active assignments');
-        toast.error('Δεν μπορείτε να διαγράψετε πρόγραμμα που έχει ενεργές αναθέσεις');
-        return false;
-      }
-
-      console.log('🔄 Proceeding with program deletion...');
+      setLoading(true);
       const { error } = await supabase
         .from('programs')
         .delete()
         .eq('id', programId);
 
-      if (error) {
-        console.error('❌ Error deleting program:', error);
-        toast.error('Σφάλμα διαγραφής προγράμματος');
-        return false;
-      }
-
-      console.log('✅ Program deleted successfully');
+      if (error) throw error;
+      
       toast.success('Το πρόγραμμα διαγράφηκε επιτυχώς');
       return true;
     } catch (error) {
-      console.error('💥 Unexpected error deleting program:', error);
-      toast.error('Απροσδόκητο σφάλμα διαγραφής');
+      console.error('Error deleting program:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή του προγράμματος');
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const duplicateProgram = async (program: Program, saveProgram: (data: any) => Promise<any>): Promise<boolean> => {
+  const duplicateProgram = async (program: Program, saveProgram: (data: any) => Promise<any>): Promise<any> => {
     try {
-      console.log('📋 Duplicating program:', program.name);
+      setLoading(true);
       
       const duplicatedProgram = {
         ...program,
-        id: undefined, // Remove ID to create new program
+        id: undefined,
         name: `${program.name} (Αντίγραφο)`,
         created_at: undefined,
         updated_at: undefined,
-        user_id: null, // Reset user assignment
-        status: 'draft' // Reset to draft status
+        program_weeks: program.program_weeks?.map(week => ({
+          ...week,
+          id: undefined,
+          program_id: undefined,
+          program_days: week.program_days?.map(day => ({
+            ...day,
+            id: undefined,
+            week_id: undefined,
+            program_blocks: day.program_blocks?.map(block => ({
+              ...block,
+              id: undefined,
+              day_id: undefined,
+              program_exercises: block.program_exercises?.map(exercise => ({
+                ...exercise,
+                id: undefined,
+                block_id: undefined
+              })) || []
+            })) || []
+          })) || []
+        })) || []
       };
 
-      await saveProgram(duplicatedProgram);
-      console.log('✅ Program duplicated successfully');
+      const savedProgram = await saveProgram(duplicatedProgram);
       toast.success('Το πρόγραμμα αντιγράφηκε επιτυχώς');
-      return true;
+      return savedProgram;
     } catch (error) {
-      console.error('❌ Error duplicating program:', error);
-      toast.error('Σφάλμα αντιγραφής προγράμματος');
-      return false;
+      console.error('Error duplicating program:', error);
+      toast.error('Σφάλμα κατά την αντιγραφή του προγράμματος');
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
     loading,
     fetchPrograms,
-    fetchDraftPrograms,
     deleteProgram,
     duplicateProgram
   };

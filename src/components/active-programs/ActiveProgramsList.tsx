@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User } from "lucide-react";
+import { Calendar, Clock, User } from "lucide-react";
 import { ActiveProgramsActions } from './ActiveProgramsActions';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -11,10 +11,7 @@ interface ActiveProgramsListProps {
   onRefresh?: () => void;
 }
 
-export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ 
-  programs, 
-  onRefresh
-}) => {
+export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs, onRefresh }) => {
   const formatTrainingDates = (dates: string[] | undefined) => {
     if (!dates || dates.length === 0) return 'Δεν έχουν οριστεί ημερομηνίες';
     
@@ -54,8 +51,8 @@ export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({
         <CardContent>
           <div className="text-center py-8 text-gray-500">
             <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Δεν υπάρχουν ενεργά προγράμματα</p>
-            <p className="text-sm">Τα προγράμματα που έχουν ανατεθεί θα εμφανίζονται εδώ</p>
+            <p>Δεν έχετε ενεργά προγράμματα</p>
+            <p className="text-sm">Επικοινωνήστε με τον προπονητή σας για ανάθεση προγράμματος</p>
           </div>
         </CardContent>
       </Card>
