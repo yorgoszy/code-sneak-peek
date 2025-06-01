@@ -167,24 +167,52 @@ export const useProgramAssignments = () => {
 
   const deleteAssignment = async (assignmentId: string) => {
     try {
-      console.log('🗑️ Deleting assignment:', assignmentId);
+      console.log('🗑️ Starting deletion process for assignment:', assignmentId);
       
-      const { error } = await supabase
+      if (!assignmentId) {
+        console.error('❌ No assignment ID provided');
+        toast.error('Δεν βρέθηκε αναγνωριστικό ανάθεσης');
+        return false;
+      }
+
+      // First check if the assignment exists
+      const { data: existingAssignment, error: checkError } = await supabase
+        .from('program_assignments')
+        .select('id, program_id, user_id')
+        .eq('id', assignmentId)
+        .single();
+
+      if (checkError) {
+        console.error('❌ Error checking assignment existence:', checkError);
+        toast.error('Σφάλμα κατά τον έλεγχο της ανάθεσης');
+        return false;
+      }
+
+      if (!existingAssignment) {
+        console.error('❌ Assignment not found with ID:', assignmentId);
+        toast.error('Η ανάθεση δεν βρέθηκε');
+        return false;
+      }
+
+      console.log('✅ Assignment found, proceeding with deletion:', existingAssignment);
+      
+      const { error: deleteError } = await supabase
         .from('program_assignments')
         .delete()
         .eq('id', assignmentId);
 
-      if (error) {
-        console.error('❌ Error deleting assignment:', error);
-        throw error;
+      if (deleteError) {
+        console.error('❌ Error deleting assignment:', deleteError);
+        toast.error('Σφάλμα κατά τη διαγραφή της ανάθεσης');
+        return false;
       }
 
       console.log('✅ Assignment deleted successfully');
       toast.success('Η ανάθεση διαγράφηκε επιτυχώς');
       return true;
     } catch (error) {
-      console.error('❌ Error deleting assignment:', error);
-      toast.error('Σφάλμα κατά τη διαγραφή της ανάθεσης');
+      console.error('❌ Unexpected error deleting assignment:', error);
+      toast.error('Απροσδόκητο σφάλμα κατά τη διαγραφή');
       return false;
     }
   };

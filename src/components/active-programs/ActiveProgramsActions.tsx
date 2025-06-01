@@ -22,13 +22,18 @@ export const ActiveProgramsActions: React.FC<ActiveProgramsActionsProps> = ({
       return;
     }
 
+    console.log('🗑️ Attempting to delete assignment:', assignment.id);
+    console.log('🗑️ Assignment object:', assignment);
+
     try {
       const success = await deleteAssignment(assignment.id);
       if (success && onRefresh) {
+        console.log('✅ Assignment deleted successfully, refreshing list');
         onRefresh();
       }
     } catch (error) {
-      console.error('Error deleting assignment:', error);
+      console.error('❌ Error in handleDeleteAssignment:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή της ανάθεσης');
     }
   };
 
