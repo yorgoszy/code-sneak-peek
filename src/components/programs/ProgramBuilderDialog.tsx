@@ -106,10 +106,16 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     try {
       // First save the program
       const savedProgram = await onCreateProgram(programToSave);
-      const programId = savedProgram?.id || editingProgram?.id || program.id;
+      const programId = savedProgram?.id || editingProgram?.id;
       
       if (programId && userId && trainingDates?.length > 0) {
         // Create assignment with specific training dates
+        console.log('Creating assignment:', {
+          programId,
+          userId,
+          trainingDates
+        });
+        
         await createOrUpdateAssignment(
           programId, 
           userId, 
@@ -135,6 +141,9 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
     }
   };
+
+  // Filter users: exclude the one already selected in the program
+  const availableUsers = users.filter(user => user.id !== program.user_id);
 
   return (
     <>
@@ -175,7 +184,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         isOpen={assignmentDialogOpen}
         onClose={() => setAssignmentDialogOpen(false)}
         program={program}
-        users={users}
+        users={availableUsers}
         onAssign={handleAssign}
       />
     </>

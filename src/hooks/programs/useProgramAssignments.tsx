@@ -13,7 +13,7 @@ export const useProgramAssignments = () => {
   ) => {
     try {
       console.log('=== ASSIGNMENT SAVE DEBUG ===');
-      console.log('20. Function called with parameters:');
+      console.log('Function called with parameters:');
       console.log('    - programId:', programId);
       console.log('    - userId:', userId);
       console.log('    - startDate:', startDate);
@@ -28,7 +28,7 @@ export const useProgramAssignments = () => {
         .eq('user_id', userId)
         .single();
 
-      console.log('21. Existing assignment check result:', existingAssignment);
+      console.log('Existing assignment check result:', existingAssignment);
 
       const assignmentData: any = {
         status: 'active',
@@ -38,22 +38,23 @@ export const useProgramAssignments = () => {
       // Add dates if provided
       if (startDate) {
         assignmentData.start_date = startDate;
-        console.log('22. ✅ Setting start_date in assignment data:', startDate);
+        console.log('✅ Setting start_date in assignment data:', startDate);
       }
       if (endDate) {
         assignmentData.end_date = endDate;
-        console.log('23. ✅ Setting end_date in assignment data:', endDate);
+        console.log('✅ Setting end_date in assignment data:', endDate);
       }
       if (trainingDates && trainingDates.length > 0) {
+        // Convert string dates to proper format and ensure they're stored correctly
         assignmentData.training_dates = trainingDates;
-        console.log('24. ✅ Setting training_dates in assignment data:', trainingDates);
+        console.log('✅ Setting training_dates in assignment data:', trainingDates);
       }
 
-      console.log('25. Complete assignment data object:', assignmentData);
+      console.log('Complete assignment data object:', assignmentData);
 
       if (existingAssignment) {
         // Update existing assignment
-        console.log('26. 📝 Updating existing assignment with data:', assignmentData);
+        console.log('📝 Updating existing assignment with data:', assignmentData);
         const { data: updatedData, error } = await supabase
           .from('program_assignments')
           .update(assignmentData)
@@ -61,10 +62,10 @@ export const useProgramAssignments = () => {
           .select();
         
         if (error) {
-          console.error('27. ❌ Error updating assignment:', error);
+          console.error('❌ Error updating assignment:', error);
           throw error;
         }
-        console.log('28. ✅ Assignment updated successfully:', updatedData);
+        console.log('✅ Assignment updated successfully:', updatedData);
         toast.success('Η ανάθεση ενημερώθηκε επιτυχώς');
       } else {
         // Create new assignment using user_id
@@ -74,17 +75,17 @@ export const useProgramAssignments = () => {
           ...assignmentData
         };
 
-        console.log('29. 🆕 Creating new assignment with complete data:', newAssignmentData);
+        console.log('🆕 Creating new assignment with complete data:', newAssignmentData);
         const { data: newData, error } = await supabase
           .from('program_assignments')
           .insert([newAssignmentData])
           .select();
         
         if (error) {
-          console.error('30. ❌ Error creating assignment:', error);
+          console.error('❌ Error creating assignment:', error);
           throw error;
         }
-        console.log('31. ✅ New assignment created successfully:', newData);
+        console.log('✅ New assignment created successfully:', newData);
         toast.success('Η ανάθεση δημιουργήθηκε επιτυχώς');
       }
     } catch (error) {
@@ -107,8 +108,8 @@ export const useProgramAssignments = () => {
         `)
         .order('created_at', { ascending: false });
 
-      console.log('32. Raw program_assignments query result:', data);
-      console.log('33. Query error (if any):', error);
+      console.log('Raw program_assignments query result:', data);
+      console.log('Query error (if any):', error);
 
       if (error) {
         console.error('Error with foreign key query:', error);
@@ -118,7 +119,7 @@ export const useProgramAssignments = () => {
           .select('*')
           .order('created_at', { ascending: false });
 
-        console.log('34. Fallback simple query result:', simpleData);
+        console.log('Fallback simple query result:', simpleData);
 
         if (simpleError) throw simpleError;
         

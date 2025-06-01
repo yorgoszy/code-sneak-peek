@@ -53,7 +53,7 @@ export const fetchProgramAssignments = async (userId: string) => {
 
   console.log('🔍 Fetching assignments for user_id:', userId);
   
-  // Fetch assignments with user data included
+  // Fetch assignments with user data included using the correct foreign key constraint
   const { data: assignments, error: assignmentsError } = await supabase
     .from('program_assignments')
     .select(`
@@ -65,7 +65,21 @@ export const fetchProgramAssignments = async (userId: string) => {
 
   if (assignmentsError) {
     console.error('❌ Error fetching program assignments:', assignmentsError);
-    return null;
+    
+    // Fallback to simple query if foreign key fails
+    const { data: simpleAssignments, error: simpleError } = await supabase
+      .from('program_assignments')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active');
+
+    if (simpleError) {
+      console.error('❌ Error with fallback query:', simpleError);
+      return null;
+    }
+
+    console.log('📊 Fallback assignments from database:', simpleAssignments);
+    return simpleAssignments || [];
   }
 
   console.log('📊 Raw assignments from database:', assignments);
@@ -87,7 +101,7 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
   }
 
   try {
-    // Fetch basic program info including training_days
+    // Fetch basic program info
     const { data: programData, error: programError } = await supabase
       .from('programs')
       .select('id, name, description, training_days')
@@ -149,9 +163,10 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
       })
     );
 
-    // Return assignment with enriched program data
+    // Return assignment with enriched program data and ensure training_dates are preserved
     const enrichedAssignment = {
       ...assignment,
+      training_dates: assignment.training_dates || [], // Ensure this field is preserved
       programs: {
         ...programData,
         program_weeks: weeksWithDays
@@ -161,6 +176,7 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
     console.log('✅ Enriched assignment with training_dates:', {
       id: enrichedAssignment.id,
       training_dates: enrichedAssignment.training_dates,
+      training_dates_length: enrichedAssignment.training_dates?.length,
       program_name: enrichedAssignment.programs?.name,
       user_name: enrichedAssignment.app_users?.name
     });
