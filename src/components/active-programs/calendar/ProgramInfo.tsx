@@ -27,20 +27,20 @@ export const ProgramInfo: React.FC<ProgramInfoProps> = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-none p-4">
-      <div className="flex items-center justify-between mb-3">
+    <div className="bg-white border border-gray-200 rounded-none p-3">
+      <div className="flex items-center justify-between mb-2">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-base font-semibold text-gray-900">
             {program.programs?.name}
           </h3>
           {program.programs?.description && (
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-xs text-gray-600 mt-0.5">
               {program.programs.description}
             </p>
           )}
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-sm text-gray-600 text-right">
+          <div className="text-xs text-gray-600 text-right">
             <div className="flex items-center gap-2 mb-1">
               <span className="font-medium">Αθλητής:</span> 
               <span>{userName}</span>
