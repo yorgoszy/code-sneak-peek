@@ -13,16 +13,20 @@ interface ProgramViewerProps {
   isOpen: boolean;
   onClose: () => void;
   mode: 'view' | 'start';
+  selectedWeek?: number;
+  selectedDay?: number;
 }
 
 export const ProgramViewer: React.FC<ProgramViewerProps> = ({ 
   assignment, 
   isOpen, 
   onClose, 
-  mode 
+  mode,
+  selectedWeek = 0,
+  selectedDay = 0
 }) => {
-  const [selectedWeek, setSelectedWeek] = useState(0);
-  const [selectedDay, setSelectedDay] = useState(0);
+  const [currentSelectedWeek, setCurrentSelectedWeek] = useState(selectedWeek);
+  const [currentSelectedDay, setCurrentSelectedDay] = useState(selectedDay);
   const [completions, setCompletions] = useState<any[]>([]);
   const { getWorkoutCompletions, completeWorkout, loading } = useWorkoutCompletions();
 
@@ -31,6 +35,13 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
       fetchCompletions();
     }
   }, [isOpen, assignment.id]);
+
+  useEffect(() => {
+    if (mode === 'start' && selectedWeek !== undefined && selectedDay !== undefined) {
+      setCurrentSelectedWeek(selectedWeek);
+      setCurrentSelectedDay(selectedDay);
+    }
+  }, [mode, selectedWeek, selectedDay]);
 
   const fetchCompletions = async () => {
     try {
@@ -44,8 +55,8 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
   const handleCompleteWorkout = async () => {
     if (!assignment.programs?.program_weeks) return;
     
-    const currentWeek = assignment.programs.program_weeks[selectedWeek];
-    const currentDay = currentWeek?.program_days?.[selectedDay];
+    const currentWeek = assignment.programs.program_weeks[currentSelectedWeek];
+    const currentDay = currentWeek?.program_days?.[currentSelectedDay];
     
     if (!currentWeek || !currentDay) return;
 
@@ -74,59 +85,65 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
     );
   };
 
-  const currentWeek = assignment.programs?.program_weeks?.[selectedWeek];
-  const currentDay = currentWeek?.program_days?.[selectedDay];
+  const currentWeek = assignment.programs?.program_weeks?.[currentSelectedWeek];
+  const currentDay = currentWeek?.program_days?.[currentSelectedDay];
+
+  const title = mode === 'start' 
+    ? `Έναρξη Προπονήσης - ${currentWeek?.name} - ${currentDay?.name}`
+    : `Προβολή Προγράμματος - ${assignment.programs?.name}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle>
-            {mode === 'start' ? 'Έναρξη Προπονήσης' : 'Προβολή Προγράμματος'} - {assignment.programs?.name}
-          </DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Week Selection */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Επιλογή Εβδομάδας</h3>
-            <div className="flex gap-2 flex-wrap">
-              {assignment.programs?.program_weeks?.map((week, index) => (
-                <Button
-                  key={week.id}
-                  variant={selectedWeek === index ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedWeek(index)}
-                  className="rounded-none"
-                >
-                  {week.name}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Day Selection */}
-          {currentWeek && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium">Επιλογή Ημέρας</h3>
-              <div className="flex gap-2 flex-wrap">
-                {currentWeek.program_days?.map((day, index) => {
-                  const completed = isWorkoutCompleted(currentWeek.week_number, day.day_number);
-                  return (
+          {mode === 'view' && (
+            <>
+              {/* Week Selection - Only in view mode */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Επιλογή Εβδομάδας</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {assignment.programs?.program_weeks?.map((week, index) => (
                     <Button
-                      key={day.id}
-                      variant={selectedDay === index ? "default" : "outline"}
+                      key={week.id}
+                      variant={currentSelectedWeek === index ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setSelectedDay(index)}
-                      className="rounded-none flex items-center gap-2"
+                      onClick={() => setCurrentSelectedWeek(index)}
+                      className="rounded-none"
                     >
-                      {day.name}
-                      {completed && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                      {week.name}
                     </Button>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
+
+              {/* Day Selection - Only in view mode */}
+              {currentWeek && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Επιλογή Ημέρας</h3>
+                  <div className="flex gap-2 flex-wrap">
+                    {currentWeek.program_days?.map((day, index) => {
+                      const completed = isWorkoutCompleted(currentWeek.week_number, day.day_number);
+                      return (
+                        <Button
+                          key={day.id}
+                          variant={currentSelectedDay === index ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentSelectedDay(index)}
+                          className="rounded-none flex items-center gap-2"
+                        >
+                          {day.name}
+                          {completed && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Workout Details */}
