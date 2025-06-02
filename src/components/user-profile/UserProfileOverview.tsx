@@ -2,10 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
-import { WorkoutStatsCards } from "./WorkoutStatsCards";
-import { DayWeekStatsCards } from "./DayWeekStatsCards";
-import { useWorkoutStats } from "./hooks/useWorkoutStats";
-import { useDayWeekStats } from "./hooks/useDayWeekStats";
+import { WorkoutStatsTabsSection } from "./WorkoutStatsTabsSection";
 import { Activity, Calendar, FileText, CreditCard } from "lucide-react";
 
 interface UserProfileOverviewProps {
@@ -23,8 +20,6 @@ export const UserProfileOverview = ({
   tests,
   payments
 }: UserProfileOverviewProps) => {
-  const { stats: workoutStats, loading: workoutStatsLoading } = useWorkoutStats(userProfile.id);
-  const { stats: dayWeekStats, loading: dayWeekStatsLoading } = useDayWeekStats(userProfile.id);
   
   return (
     <div className="space-y-6">
@@ -34,29 +29,8 @@ export const UserProfileOverview = ({
       {/* General Stats Overview */}
       <UserProfileStats user={userProfile} stats={stats} />
 
-      {/* Στατιστικά Ημέρας/Εβδομάδας */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800">Στατιστικά Ημέρας/Εβδομάδας</h3>
-        {dayWeekStatsLoading ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Φόρτωση στατιστικών...</p>
-          </div>
-        ) : (
-          <DayWeekStatsCards stats={dayWeekStats} />
-        )}
-      </div>
-
-      {/* Workout Stats για τον τρέχοντα μήνα */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800">Στατιστικά Προπονήσεων - {new Date().toLocaleDateString('el-GR', { month: 'long', year: 'numeric' })}</h3>
-        {workoutStatsLoading ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Φόρτωση στατιστικών...</p>
-          </div>
-        ) : (
-          <WorkoutStatsCards stats={workoutStats} />
-        )}
-      </div>
+      {/* Workout Stats Tabs Section */}
+      <WorkoutStatsTabsSection userId={userProfile.id} />
       
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
