@@ -159,6 +159,7 @@ const Index = () => {
       {/* Hero Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen">
         <div className="text-center text-white px-4">
+          <h1 className="text-6xl font-bold mb-4 animate-fade-in">The Champion's Journey Starts Here</h1>
         </div>
       </div>
     </div>
