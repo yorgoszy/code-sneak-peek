@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ProgramInfoProps {
   program: any;
@@ -14,6 +15,17 @@ export const ProgramInfo: React.FC<ProgramInfoProps> = ({
   workoutInProgress,
   workoutStatus
 }) => {
+  const userName = program.app_users?.name || 'Άγνωστος χρήστης';
+  
+  const getUserInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-none p-4">
       <div className="flex items-center justify-between mb-3">
@@ -27,11 +39,25 @@ export const ProgramInfo: React.FC<ProgramInfoProps> = ({
             </p>
           )}
         </div>
-        <div className="text-sm text-gray-600">
-          <div><span className="font-medium">Αθλητής:</span> {program.app_users?.name}</div>
-          {dayProgram?.estimated_duration_minutes && (
-            <div><span className="font-medium">Διάρκεια:</span> {dayProgram.estimated_duration_minutes} λεπτά</div>
-          )}
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-600 text-right">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-medium">Αθλητής:</span> 
+              <span>{userName}</span>
+            </div>
+            {dayProgram?.estimated_duration_minutes && (
+              <div><span className="font-medium">Διάρκεια:</span> {dayProgram.estimated_duration_minutes} λεπτά</div>
+            )}
+          </div>
+          <Avatar className="w-12 h-12">
+            <AvatarImage 
+              src={program.app_users?.photo_url} 
+              alt={userName}
+            />
+            <AvatarFallback className="bg-blue-100 text-blue-700">
+              {getUserInitials(userName)}
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
       
