@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 import { CalendarProgramItem } from './CalendarProgramItem';
+import { DayProgramDialog } from './DayProgramDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface CalendarDayProps {
@@ -17,6 +18,12 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   programs,
   allCompletions
 }) => {
+  const [selectedProgram, setSelectedProgram] = useState<{
+    program: EnrichedAssignment;
+    date: Date;
+    status: string;
+  } | null>(null);
+
   const isCurrentMonth = isSameMonth(day, currentDate);
   const isDayToday = isToday(day);
   const dayString = format(day, 'yyyy-MM-dd');
@@ -62,36 +69,58 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     return 'scheduled'; // Προγραμματισμένη αλλά όχι ολοκληρωμένη
   };
 
+  const handleProgramClick = (program: EnrichedAssignment) => {
+    const workoutStatus = getWorkoutStatus(program, dayString);
+    setSelectedProgram({
+      program,
+      date: day,
+      status: workoutStatus
+    });
+  };
+
   const dayPrograms = getProgramsForDay(day);
 
   return (
-    <div
-      className={`
-        min-h-[80px] p-1 border border-gray-200 rounded-none
-        ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
-        ${isDayToday ? 'ring-2 ring-blue-500' : ''}
-      `}
-    >
-      <div className={`
-        text-sm font-medium mb-1
-        ${isDayToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
-      `}>
-        {format(day, 'd')}
+    <>
+      <div
+        className={`
+          min-h-[80px] p-1 border border-gray-200 rounded-none
+          ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
+          ${isDayToday ? 'ring-2 ring-blue-500' : ''}
+        `}
+      >
+        <div className={`
+          text-sm font-medium mb-1
+          ${isDayToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
+        `}>
+          {format(day, 'd')}
+        </div>
+        
+        <div className="space-y-1">
+          {dayPrograms.map((program) => {
+            const workoutStatus = getWorkoutStatus(program, dayString);
+            
+            return (
+              <CalendarProgramItem
+                key={program.id}
+                program={program}
+                workoutStatus={workoutStatus}
+                onClick={() => handleProgramClick(program)}
+              />
+            );
+          })}
+        </div>
       </div>
-      
-      <div className="space-y-1">
-        {dayPrograms.map((program) => {
-          const workoutStatus = getWorkoutStatus(program, dayString);
-          
-          return (
-            <CalendarProgramItem
-              key={program.id}
-              program={program}
-              workoutStatus={workoutStatus}
-            />
-          );
-        })}
-      </div>
-    </div>
+
+      {selectedProgram && (
+        <DayProgramDialog
+          isOpen={!!selectedProgram}
+          onClose={() => setSelectedProgram(null)}
+          program={selectedProgram.program}
+          selectedDate={selectedProgram.date}
+          workoutStatus={selectedProgram.status}
+        />
+      )}
+    </>
   );
 };

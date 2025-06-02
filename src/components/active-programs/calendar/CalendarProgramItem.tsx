@@ -5,11 +5,13 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 interface CalendarProgramItemProps {
   program: EnrichedAssignment;
   workoutStatus: string;
+  onClick?: () => void;
 }
 
 export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   program,
-  workoutStatus
+  workoutStatus,
+  onClick
 }) => {
   console.log('🎨 Setting colors for status:', workoutStatus);
   
@@ -29,8 +31,9 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   
   return (
     <div
-      className={`text-xs p-1 rounded-none truncate border ${statusColor}`}
+      className={`text-xs p-1 rounded-none truncate border cursor-pointer hover:opacity-80 transition-opacity ${statusColor}`}
       title={`${program.programs?.name || 'Άγνωστο πρόγραμμα'} - ${program.app_users?.name || 'Άγνωστος χρήστης'} - ${statusText}`}
+      onClick={onClick}
     >
       <div className="font-medium">{program.programs?.name || 'Άγνωστο πρόγραμμα'}</div>
       <div className="text-gray-600">{program.app_users?.name || 'Άγνωστος χρήστης'}</div>
