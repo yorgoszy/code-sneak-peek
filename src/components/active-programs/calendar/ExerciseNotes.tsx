@@ -48,7 +48,7 @@ export const ExerciseNotes: React.FC<ExerciseNotesProps> = ({
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
           placeholder={workoutInProgress ? "Προσθήκη σημειώσεων..." : "Πάτησε έναρξη για σημειώσεις"}
-          className="min-h-[46px] text-xs rounded-none resize-none"
+          className="min-h-[41px] text-xs rounded-none resize-none"
           disabled={!workoutInProgress}
         />
       </div>
