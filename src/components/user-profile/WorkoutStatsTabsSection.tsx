@@ -4,6 +4,7 @@ import { WorkoutStatsCards } from "./WorkoutStatsCards";
 import { DayWeekStatsCards } from "./DayWeekStatsCards";
 import { useWorkoutStats } from "./hooks/useWorkoutStats";
 import { useDayWeekStats } from "./hooks/useDayWeekStats";
+import { useWeekStats } from "./hooks/useWeekStats";
 
 interface WorkoutStatsTabsSectionProps {
   userId: string;
@@ -12,6 +13,7 @@ interface WorkoutStatsTabsSectionProps {
 export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps) => {
   const { stats: workoutStats, loading: workoutStatsLoading } = useWorkoutStats(userId);
   const { stats: dayWeekStats, loading: dayWeekStatsLoading } = useDayWeekStats(userId);
+  const { stats: weekStats, loading: weekStatsLoading } = useWeekStats(userId);
 
   return (
     <div className="space-y-4">
@@ -35,29 +37,55 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
         </TabsContent>
         
         <TabsContent value="week" className="space-y-4">
-          {dayWeekStatsLoading ? (
+          {weekStatsLoading ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Φόρτωση στατιστικών εβδομάδας...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white p-6 border rounded-none">
-                <h4 className="text-md font-medium text-gray-700 mb-4">Στατιστικά Εβδομάδας</h4>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm text-gray-600">Όγκος:</span>
-                    <span className="ml-2 text-lg font-semibold">
-                      {dayWeekStats.currentWeek.volume >= 1000 
-                        ? `${(dayWeekStats.currentWeek.volume / 1000).toFixed(1)}tn`
-                        : `${dayWeekStats.currentWeek.volume}kg`
-                      }
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Ώρες:</span>
-                    <span className="ml-2 text-lg font-semibold">{dayWeekStats.currentWeek.hours}h</span>
-                  </div>
+                <h4 className="text-md font-medium text-gray-700 mb-4">Προγραμματισμένες Ώρες</h4>
+                <div className="text-2xl font-semibold text-blue-600">
+                  {weekStats.scheduledHours}h
                 </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Αυτή την εβδομάδα
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 border rounded-none">
+                <h4 className="text-md font-medium text-gray-700 mb-4">Πραγματικές Ώρες</h4>
+                <div className="text-2xl font-semibold text-green-600">
+                  {weekStats.actualHours}h
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Ολοκληρώθηκαν
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 border rounded-none">
+                <h4 className="text-md font-medium text-gray-700 mb-4">Διαφορά</h4>
+                <div className={`text-2xl font-semibold ${
+                  weekStats.actualHours >= weekStats.scheduledHours 
+                    ? 'text-green-600' 
+                    : 'text-red-600'
+                }`}>
+                  {weekStats.actualHours >= weekStats.scheduledHours ? '+' : ''}
+                  {(weekStats.actualHours - weekStats.scheduledHours).toFixed(1)}h
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Από προγραμματισμένες
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 border rounded-none">
+                <h4 className="text-md font-medium text-gray-700 mb-4">Προπονήσεις</h4>
+                <div className="text-2xl font-semibold text-purple-600">
+                  {weekStats.completedWorkouts}/{weekStats.totalScheduledWorkouts}
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Ολοκληρωμένες
+                </p>
               </div>
             </div>
           )}

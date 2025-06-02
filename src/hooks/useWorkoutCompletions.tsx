@@ -14,6 +14,9 @@ export interface WorkoutCompletion {
   completed_date: string;
   status: 'completed' | 'missed' | 'makeup';
   notes?: string;
+  start_time?: string;
+  end_time?: string;
+  actual_duration_minutes?: number;
   created_at: string;
   updated_at: string;
 }
@@ -52,26 +55,43 @@ export const useWorkoutCompletions = () => {
     weekNumber: number,
     dayNumber: number,
     scheduledDate: string,
-    notes?: string
+    notes?: string,
+    startTime?: Date,
+    endTime?: Date,
+    actualDurationMinutes?: number
   ) => {
     try {
       setLoading(true);
       const userId = await getUserId();
       if (!userId) throw new Error('User not found');
 
+      const workoutData: any = {
+        assignment_id: assignmentId,
+        user_id: userId,
+        program_id: programId,
+        week_number: weekNumber,
+        day_number: dayNumber,
+        scheduled_date: scheduledDate,
+        completed_date: new Date().toISOString().split('T')[0],
+        status: 'completed',
+        notes
+      };
+
+      if (startTime) {
+        workoutData.start_time = startTime.toISOString();
+      }
+
+      if (endTime) {
+        workoutData.end_time = endTime.toISOString();
+      }
+
+      if (actualDurationMinutes) {
+        workoutData.actual_duration_minutes = actualDurationMinutes;
+      }
+
       const { data, error } = await supabase
         .from('workout_completions')
-        .insert({
-          assignment_id: assignmentId,
-          user_id: userId,
-          program_id: programId,
-          week_number: weekNumber,
-          day_number: dayNumber,
-          scheduled_date: scheduledDate,
-          completed_date: new Date().toISOString().split('T')[0],
-          status: 'completed',
-          notes
-        })
+        .insert(workoutData)
         .select()
         .single();
 

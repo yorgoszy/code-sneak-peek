@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, Play, Square } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 
@@ -28,6 +27,8 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
   const [currentSelectedWeek, setCurrentSelectedWeek] = useState(selectedWeek);
   const [currentSelectedDay, setCurrentSelectedDay] = useState(selectedDay);
   const [completions, setCompletions] = useState<any[]>([]);
+  const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
+  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const { getWorkoutCompletions, completeWorkout, loading } = useWorkoutCompletions();
 
   useEffect(() => {
@@ -52,8 +53,18 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
     }
   };
 
+  const handleStartWorkout = () => {
+    const startTime = new Date();
+    setWorkoutStartTime(startTime);
+    setIsWorkoutActive(true);
+    console.log('Έναρξη προπόνησης:', startTime);
+  };
+
   const handleCompleteWorkout = async () => {
-    if (!assignment.programs?.program_weeks) return;
+    if (!assignment.programs?.program_weeks || !workoutStartTime) return;
+    
+    const endTime = new Date();
+    const durationMinutes = Math.round((endTime.getTime() - workoutStartTime.getTime()) / 60000);
     
     const currentWeek = assignment.programs.program_weeks[currentSelectedWeek];
     const currentDay = currentWeek?.program_days?.[currentSelectedDay];
@@ -67,14 +78,25 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
         assignment.program_id,
         currentWeek.week_number,
         currentDay.day_number,
-        scheduledDate
+        scheduledDate,
+        undefined,
+        workoutStartTime,
+        endTime,
+        durationMinutes
       );
       
+      setIsWorkoutActive(false);
+      setWorkoutStartTime(null);
       await fetchCompletions();
       onClose();
     } catch (error) {
       console.error('Error completing workout:', error);
     }
+  };
+
+  const handleStopWorkout = () => {
+    setIsWorkoutActive(false);
+    setWorkoutStartTime(null);
   };
 
   const isWorkoutCompleted = (weekNumber: number, dayNumber: number) => {
@@ -146,6 +168,18 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
             </>
           )}
 
+          {/* Workout Timer Display */}
+          {mode === 'start' && isWorkoutActive && workoutStartTime && (
+            <div className="bg-blue-50 p-4 border border-blue-200 rounded-none">
+              <div className="flex items-center justify-center space-x-2">
+                <Clock className="w-5 h-5 text-blue-600" />
+                <span className="text-blue-800 font-medium">
+                  Προπόνηση σε εξέλιξη - Ξεκίνησε στις {workoutStartTime.toLocaleTimeString('el-GR')}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Workout Details */}
           {currentDay && (
             <Card className="rounded-none">
@@ -190,24 +224,44 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
                 ))}
 
                 {mode === 'start' && !isWorkoutCompleted(currentWeek.week_number, currentDay.day_number) && (
-                  <div className="pt-4 border-t">
-                    <Button 
-                      onClick={handleCompleteWorkout}
-                      disabled={loading}
-                      className="w-full rounded-none"
-                    >
-                      {loading ? (
-                        <>
-                          <Clock className="w-4 h-4 mr-2 animate-spin" />
-                          Ολοκλήρωση...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="w-4 h-4 mr-2" />
-                          Ολοκλήρωση Προπονήσης
-                        </>
-                      )}
-                    </Button>
+                  <div className="pt-4 border-t space-y-3">
+                    {!isWorkoutActive ? (
+                      <Button 
+                        onClick={handleStartWorkout}
+                        className="w-full rounded-none"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Έναρξη Προπονήσης
+                      </Button>
+                    ) : (
+                      <div className="space-y-2">
+                        <Button 
+                          onClick={handleCompleteWorkout}
+                          disabled={loading}
+                          className="w-full rounded-none"
+                        >
+                          {loading ? (
+                            <>
+                              <Clock className="w-4 h-4 mr-2 animate-spin" />
+                              Ολοκλήρωση...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 mr-2" />
+                              Ολοκλήρωση Προπονήσης
+                            </>
+                          )}
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={handleStopWorkout}
+                          className="w-full rounded-none"
+                        >
+                          <Square className="w-4 h-4 mr-2" />
+                          Διακοπή Προπονήσης
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

@@ -1357,6 +1357,7 @@ export type Database = {
         Row: {
           created_at: string | null
           day_number: number
+          estimated_duration_minutes: number | null
           id: string
           name: string
           updated_at: string | null
@@ -1365,6 +1366,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           day_number: number
+          estimated_duration_minutes?: number | null
           id?: string
           name: string
           updated_at?: string | null
@@ -1373,6 +1375,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           day_number?: number
+          estimated_duration_minutes?: number | null
           id?: string
           name?: string
           updated_at?: string | null
@@ -2093,42 +2096,51 @@ export type Database = {
       }
       workout_completions: {
         Row: {
+          actual_duration_minutes: number | null
           assignment_id: string
           completed_date: string
           created_at: string
           day_number: number
+          end_time: string | null
           id: string
           notes: string | null
           program_id: string
           scheduled_date: string
+          start_time: string | null
           status: string
           updated_at: string
           user_id: string
           week_number: number
         }
         Insert: {
+          actual_duration_minutes?: number | null
           assignment_id: string
           completed_date: string
           created_at?: string
           day_number: number
+          end_time?: string | null
           id?: string
           notes?: string | null
           program_id: string
           scheduled_date: string
+          start_time?: string | null
           status?: string
           updated_at?: string
           user_id: string
           week_number: number
         }
         Update: {
+          actual_duration_minutes?: number | null
           assignment_id?: string
           completed_date?: string
           created_at?: string
           day_number?: number
+          end_time?: string | null
           id?: string
           notes?: string | null
           program_id?: string
           scheduled_date?: string
+          start_time?: string | null
           status?: string
           updated_at?: string
           user_id?: string
