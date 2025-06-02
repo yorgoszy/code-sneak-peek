@@ -6,6 +6,7 @@ import { el } from "date-fns/locale";
 import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
 import { useExerciseCompletion } from '@/hooks/useExerciseCompletion';
+import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { WorkoutTimer } from './WorkoutTimer';
 import { WorkoutControls } from './WorkoutControls';
 import { ProgramInfo } from './ProgramInfo';
@@ -32,6 +33,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const [workoutInProgress, setWorkoutInProgress] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const { completeWorkout, loading } = useWorkoutCompletions();
+  
   const { 
     completeSet, 
     getRemainingText, 
@@ -97,14 +100,56 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     setElapsedTime(0);
   };
 
-  const handleCompleteWorkout = () => {
-    console.log('✅ Ολοκλήρωση προπόνησης');
-    console.log('⏱️ Συνολικός χρόνος:', elapsedTime);
-    
-    setWorkoutInProgress(false);
-    setStartTime(null);
-    setElapsedTime(0);
-    // Εδώ θα μπορούσαμε να αποθηκεύσουμε τα δεδομένα της προπόνησης
+  const handleCompleteWorkout = async () => {
+    if (!program || !selectedDate || !startTime) {
+      console.error('❌ Missing required data for workout completion');
+      return;
+    }
+
+    try {
+      console.log('✅ Ολοκλήρωση προπόνησης');
+      console.log('⏱️ Συνολικός χρόνος:', elapsedTime);
+      
+      const endTime = new Date();
+      const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / 60000);
+      const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
+      
+      // Βρίσκουμε την σωστή ημέρα βάσει των training_dates
+      const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+      const trainingDates = program.training_dates || [];
+      const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
+      
+      if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
+        const programDays = program.programs.program_weeks[0].program_days;
+        const dayProgram = programDays[dateIndex % programDays.length];
+        
+        if (dayProgram) {
+          await completeWorkout(
+            program.id,
+            program.program_id,
+            1, // week_number - assuming first week for now
+            dayProgram.day_number,
+            scheduledDate,
+            undefined, // notes
+            startTime,
+            endTime,
+            durationMinutes
+          );
+          
+          console.log('✅ Workout completion saved successfully');
+          
+          // Reset workout state
+          setWorkoutInProgress(false);
+          setStartTime(null);
+          setElapsedTime(0);
+          
+          // Close dialog
+          onClose();
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error completing workout:', error);
+    }
   };
 
   const handleCancelWorkout = () => {
