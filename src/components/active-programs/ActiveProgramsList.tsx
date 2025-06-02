@@ -16,15 +16,15 @@ export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Λίστα Προγραμμάτων</h2>
         <Badge variant="outline" className="rounded-none">
           {programs.length} {programs.length === 1 ? 'Πρόγραμμα' : 'Προγράμματα'}
         </Badge>
       </div>
       
-      <div className="grid gap-4">
+      <div className="space-y-1">
         {programs.map((assignment) => (
           <ProgramCard 
             key={assignment.id}
