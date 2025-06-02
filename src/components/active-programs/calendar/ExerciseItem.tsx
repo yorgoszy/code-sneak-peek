@@ -88,7 +88,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     const videoUrl = exercise.exercises?.video_url;
     if (!videoUrl || !isValidVideoUrl(videoUrl)) {
       return (
-        <div className="w-16 h-12 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
+        <div className="w-12 h-9 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
           <span className="text-sm text-gray-400">-</span>
         </div>
       );
@@ -98,7 +98,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     
     return (
       <div 
-        className="relative w-16 h-12 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail"
+        className="relative w-12 h-9 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail"
         onClick={() => onVideoClick(exercise)}
       >
         {thumbnailUrl ? (
@@ -109,11 +109,11 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <Play className="w-4 h-4 text-gray-400" />
+            <Play className="w-3 h-3 text-gray-400" />
           </div>
         )}
         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Play className="w-4 h-4 text-white" />
+          <Play className="w-3 h-3 text-white" />
         </div>
       </div>
     );
@@ -128,10 +128,6 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         } ${isComplete ? 'bg-green-50' : ''}`}
         onClick={(e) => onExerciseClick(exercise, e)}
       >
-        <div className="flex-shrink-0">
-          {renderVideoThumbnail(exercise)}
-        </div>
-        
         <div className="flex-1 min-w-0">
           <h6 className={`text-sm font-medium truncate ${
             isComplete ? 'text-green-800' : 'text-gray-900'
@@ -145,6 +141,13 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
       <div className="flex">
         <div className="p-1 bg-gray-50" style={{ width: '70%' }}>
           <div className="flex text-xs" style={{ height: '64px' }}>
+            {/* Video */}
+            <div className="flex items-center justify-center" style={{ width: '48px' }}>
+              {renderVideoThumbnail(exercise)}
+            </div>
+            
+            <Separator orientation="vertical" className="h-full mx-0.5" />
+            
             {/* Sets */}
             <div className="flex-1 text-center min-w-0">
               <div className="font-medium text-gray-600 mb-1 text-xs">Sets</div>
