@@ -1,197 +1,150 @@
 
+import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ProgramAssignment } from "@/components/programs/types";
 
 export const useProgramAssignments = () => {
+  const [loading, setLoading] = useState(false);
+
   const createOrUpdateAssignment = async (
     programId: string, 
     userId: string, 
     startDate?: string, 
-    endDate?: string,
+    endDate?: string, 
     trainingDates?: string[]
   ) => {
+    setLoading(true);
     try {
-      console.log('=== ASSIGNMENT SAVE DEBUG ===');
-      console.log('Function called with parameters:');
-      console.log('    - programId:', programId);
-      console.log('    - userId:', userId);
-      console.log('    - startDate:', startDate);
-      console.log('    - endDate:', endDate);
-      console.log('    - trainingDates:', trainingDates);
-      
-      // Check if assignment already exists using user_id
-      const { data: existingAssignment } = await supabase
+      console.log('Creating/updating assignment with params:', {
+        programId,
+        userId,
+        startDate,
+        endDate,
+        trainingDates
+      });
+
+      // Check if assignment already exists
+      const { data: existingAssignment, error: fetchError } = await supabase
         .from('program_assignments')
-        .select('id')
+        .select('*')
         .eq('program_id', programId)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      console.log('Existing assignment check result:', existingAssignment);
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error checking existing assignment:', fetchError);
+        throw fetchError;
+      }
 
-      const assignmentData: any = {
+      const assignmentData = {
+        program_id: programId,
+        user_id: userId,
+        start_date: startDate || null,
+        end_date: endDate || null,
         status: 'active',
-        updated_at: new Date().toISOString()
+        assignment_type: 'individual',
+        training_dates: trainingDates || []
       };
 
-      // Add dates if provided
-      if (startDate) {
-        assignmentData.start_date = startDate;
-        console.log('✅ Setting start_date in assignment data:', startDate);
-      }
-      if (endDate) {
-        assignmentData.end_date = endDate;
-        console.log('✅ Setting end_date in assignment data:', endDate);
-      }
-      if (trainingDates && trainingDates.length > 0) {
-        // Convert string dates to proper format and ensure they're stored correctly
-        assignmentData.training_dates = trainingDates;
-        console.log('✅ Setting training_dates in assignment data:', trainingDates);
-      }
-
-      console.log('Complete assignment data object:', assignmentData);
+      console.log('Assignment data to save:', assignmentData);
 
       if (existingAssignment) {
         // Update existing assignment
-        console.log('📝 Updating existing assignment with data:', assignmentData);
-        const { data: updatedData, error } = await supabase
+        const { data, error } = await supabase
           .from('program_assignments')
           .update(assignmentData)
           .eq('id', existingAssignment.id)
-          .select();
-        
+          .select()
+          .single();
+
         if (error) {
-          console.error('❌ Error updating assignment:', error);
+          console.error('Error updating assignment:', error);
           throw error;
         }
-        console.log('✅ Assignment updated successfully:', updatedData);
+
+        console.log('✅ Assignment updated successfully:', data);
         toast.success('Η ανάθεση ενημερώθηκε επιτυχώς');
+        return data;
       } else {
-        // Create new assignment using user_id
-        const newAssignmentData = {
-          program_id: programId,
-          user_id: userId,
-          ...assignmentData
-        };
-
-        console.log('🆕 Creating new assignment with complete data:', newAssignmentData);
-        const { data: newData, error } = await supabase
+        // Create new assignment
+        const { data, error } = await supabase
           .from('program_assignments')
-          .insert([newAssignmentData])
-          .select();
-        
+          .insert([assignmentData])
+          .select()
+          .single();
+
         if (error) {
-          console.error('❌ Error creating assignment:', error);
+          console.error('Error creating assignment:', error);
           throw error;
         }
-        console.log('✅ New assignment created successfully:', newData);
+
+        console.log('✅ Assignment created successfully:', data);
         toast.success('Η ανάθεση δημιουργήθηκε επιτυχώς');
+        return data;
       }
     } catch (error) {
-      console.error('❌ Error creating/updating assignment:', error);
-      toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
+      console.error('Error in createOrUpdateAssignment:', error);
+      toast.error('Σφάλμα κατά τη δημιουργία/ενημέρωση της ανάθεσης');
       throw error;
-    }
-  };
-
-  const fetchProgramAssignments = async (): Promise<ProgramAssignment[]> => {
-    try {
-      console.log('=== FETCHING ALL ASSIGNMENTS DEBUG ===');
-      
-      const { data, error } = await supabase
-        .from('program_assignments')
-        .select(`
-          *,
-          programs!fk_program_assignments_program_id(id, name, description),
-          app_users!fk_program_assignments_user_id(id, name, email)
-        `)
-        .order('created_at', { ascending: false });
-
-      console.log('Raw program_assignments query result:', data);
-      console.log('Query error (if any):', error);
-
-      if (error) {
-        console.error('Error with foreign key query:', error);
-        // Fallback to simple query without joins
-        const { data: simpleData, error: simpleError } = await supabase
-          .from('program_assignments')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        console.log('Fallback simple query result:', simpleData);
-
-        if (simpleError) throw simpleError;
-        
-        return (simpleData || []).map(assignment => ({
-          ...assignment,
-          programs: null,
-          app_users: null
-        }));
-      }
-      
-      return (data || []).map(assignment => {
-        const hasValidPrograms = assignment.programs && 
-          typeof assignment.programs === 'object' && 
-          assignment.programs !== null && 
-          'id' in assignment.programs;
-
-        const appUsersData = assignment.app_users;
-        let validAppUsers: any = null;
-        
-        const isValidAppUser = (data: any): data is { id: string; name: string; email: string } => {
-          return data && 
-                 typeof data === 'object' && 
-                 data !== null &&
-                 typeof data.id === 'string' &&
-                 typeof data.name === 'string' &&
-                 typeof data.email === 'string';
-        };
-
-        if (isValidAppUser(appUsersData)) {
-          validAppUsers = appUsersData;
-        }
-
-        return {
-          ...assignment,
-          programs: hasValidPrograms ? assignment.programs as any : null,
-          app_users: validAppUsers
-        };
-      });
-    } catch (error) {
-      console.error('Error fetching program assignments:', error);
-      toast.error('Σφάλμα φόρτωσης αναθέσεων');
-      return [];
+    } finally {
+      setLoading(false);
     }
   };
 
   const deleteAssignment = async (assignmentId: string) => {
+    setLoading(true);
     try {
-      console.log('🗑️ Deleting assignment:', assignmentId);
-      
       const { error } = await supabase
         .from('program_assignments')
         .delete()
         .eq('id', assignmentId);
 
-      if (error) {
-        console.error('❌ Error deleting assignment:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('✅ Assignment deleted successfully');
       toast.success('Η ανάθεση διαγράφηκε επιτυχώς');
       return true;
     } catch (error) {
-      console.error('❌ Error deleting assignment:', error);
+      console.error('Error deleting assignment:', error);
       toast.error('Σφάλμα κατά τη διαγραφή της ανάθεσης');
       return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProgramAssignments = async (programId?: string) => {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from('program_assignments')
+        .select(`
+          *,
+          programs!inner(id, name, description),
+          app_users!inner(id, name, email)
+        `);
+
+      if (programId) {
+        query = query.eq('program_id', programId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+      toast.error('Σφάλμα κατά την ανάκτηση των αναθέσεων');
+      return [];
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
+    loading,
     createOrUpdateAssignment,
-    fetchProgramAssignments,
-    deleteAssignment
+    deleteAssignment,
+    fetchProgramAssignments
   };
 };

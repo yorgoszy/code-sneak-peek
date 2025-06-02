@@ -82,16 +82,29 @@ export const useProgramSave = () => {
         console.log('Creating new program structure');
         await createProgramStructure(programData.id, programData);
         
-        // If createAssignment flag is set, create assignment for current user
-        if (programData.createAssignment && appUserId) {
-          console.log('Creating assignment for current user');
-          await createOrUpdateAssignment(programData.id, appUserId);
-        }
-        
-        // If user_id is provided and different from creator, create additional assignment
-        if (programData.user_id && programData.user_id !== appUserId && programData.createAssignment) {
-          console.log('Creating assignment for selected user');
-          await createOrUpdateAssignment(programData.id, programData.user_id);
+        // Handle assignments with training dates
+        if (programData.createAssignment && programData.training_dates) {
+          console.log('Creating assignment with training dates:', programData.training_dates);
+          
+          if (appUserId) {
+            await createOrUpdateAssignment(
+              programData.id, 
+              appUserId, 
+              undefined, 
+              undefined, 
+              programData.training_dates
+            );
+          }
+          
+          if (programData.user_id && programData.user_id !== appUserId) {
+            await createOrUpdateAssignment(
+              programData.id, 
+              programData.user_id, 
+              undefined, 
+              undefined, 
+              programData.training_dates
+            );
+          }
         }
         
         const successMessage = programData.createAssignment 
@@ -119,17 +132,28 @@ export const useProgramSave = () => {
         console.log('Creating program structure for new program:', program.id);
         await createProgramStructure(program.id, programData);
         
-        // Only create assignments if createAssignment flag is set
-        if (programData.createAssignment) {
+        // Handle assignments with training dates
+        if (programData.createAssignment && programData.training_dates) {
+          console.log('Creating assignment with training dates for new program:', programData.training_dates);
+          
           if (appUserId) {
-            console.log('Creating assignment for creator');
-            await createOrUpdateAssignment(program.id, appUserId);
+            await createOrUpdateAssignment(
+              program.id, 
+              appUserId, 
+              undefined, 
+              undefined, 
+              programData.training_dates
+            );
           }
           
-          // If user_id is provided and different from creator, create additional assignment
           if (programData.user_id && programData.user_id !== appUserId) {
-            console.log('Creating assignment for selected user');
-            await createOrUpdateAssignment(program.id, programData.user_id);
+            await createOrUpdateAssignment(
+              program.id, 
+              programData.user_id, 
+              undefined, 
+              undefined, 
+              programData.training_dates
+            );
           }
         }
         

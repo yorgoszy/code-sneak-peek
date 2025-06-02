@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { User, Exercise, Program } from './types';
@@ -90,17 +91,24 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   };
 
   const handleAssign = async (userId: string, trainingDates: string[]) => {
-    console.log('=== ASSIGNMENT CREATION DEBUG ===');
-    console.log('Creating program with specific training dates:', trainingDates);
+    console.log('=== PROGRAM ASSIGNMENT WITH DATES ===');
+    console.log('User ID:', userId);
+    console.log('Training Dates:', trainingDates);
+    
+    if (!trainingDates || trainingDates.length === 0) {
+      toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης');
+      return;
+    }
     
     const programToSave = {
       ...program,
       id: editingProgram?.id || undefined,
       status: 'active',
-      createAssignment: true
+      createAssignment: true,
+      training_dates: trainingDates
     };
     
-    console.log('Program to save:', programToSave);
+    console.log('Program data being saved:', programToSave);
     
     try {
       // First save the program
@@ -108,14 +116,13 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       const programId = savedProgram?.id || editingProgram?.id;
       
       if (programId && userId && trainingDates?.length > 0) {
-        // Create assignment with specific training dates
-        console.log('Creating assignment:', {
+        console.log('Creating assignment with specific dates:', {
           programId,
           userId,
           trainingDates
         });
         
-        // Pass the training dates as the 5th parameter to createOrUpdateAssignment
+        // Create assignment with specific training dates
         await createOrUpdateAssignment(
           programId, 
           userId, 
@@ -124,7 +131,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           trainingDates // specific training dates
         );
         
-        console.log('✅ Assignment created with training dates:', trainingDates);
+        console.log('✅ Assignment created successfully with dates:', trainingDates);
         toast.success('Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς');
         
         handleClose();
@@ -146,7 +153,6 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     }
   };
 
-  // Δεν φιλτράρουμε τους χρήστες - εμφανίζουμε όλους
   const availableUsers = users;
 
   return (
