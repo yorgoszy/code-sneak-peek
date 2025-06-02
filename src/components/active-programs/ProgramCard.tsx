@@ -4,11 +4,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Play, Eye, Edit, CheckCircle2 } from "lucide-react";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProgramViewer } from './ProgramViewer';
 import { DaySelector } from './DaySelector';
 import { AttendanceDialog } from './AttendanceDialog';
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardProps {
@@ -23,6 +25,34 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
   const [attendanceOpen, setAttendanceOpen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(0);
   const [selectedDay, setSelectedDay] = useState(0);
+  const [workoutStats, setWorkoutStats] = useState({
+    completed: 0,
+    total: 0,
+    missed: 0
+  });
+
+  const { getWorkoutCompletions } = useWorkoutCompletions();
+
+  useEffect(() => {
+    const fetchWorkoutStats = async () => {
+      try {
+        const completions = await getWorkoutCompletions(assignment.id);
+        const totalWorkouts = assignment.training_dates?.length || 0;
+        const completedWorkouts = completions.filter(c => c.status === 'completed').length;
+        const missedWorkouts = completions.filter(c => c.status === 'missed').length;
+        
+        setWorkoutStats({
+          completed: completedWorkouts,
+          total: totalWorkouts,
+          missed: missedWorkouts
+        });
+      } catch (error) {
+        console.error('Error fetching workout stats:', error);
+      }
+    };
+
+    fetchWorkoutStats();
+  }, [assignment.id, getWorkoutCompletions]);
 
   const userName = assignment.app_users?.name || 'Άγνωστος χρήστης';
   
@@ -68,6 +98,8 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
     setAttendanceOpen(true);
   };
 
+  const progressPercentage = workoutStats.total > 0 ? Math.round((workoutStats.completed / workoutStats.total) * 100) : 0;
+
   return (
     <>
       <Card className="rounded-none hover:shadow-md transition-shadow h-12">
@@ -92,6 +124,21 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
               <p className="text-xs text-gray-600 truncate">
                 {userName}
               </p>
+            </div>
+            
+            {/* Progress Stats */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="text-xs text-gray-700">
+                {workoutStats.completed}/{workoutStats.total}
+              </div>
+              {workoutStats.missed > 0 && (
+                <div className="text-xs text-red-600 font-medium">
+                  -{workoutStats.missed}
+                </div>
+              )}
+              <div className="w-12">
+                <Progress value={progressPercentage} className="h-1" />
+              </div>
             </div>
             
             {/* Status Badge */}
