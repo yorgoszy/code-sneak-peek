@@ -145,7 +145,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
             </div>
             
             {/* Right side - All other elements */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
               {/* Training Days */}
               <div className="text-xs text-blue-600 font-medium">
                 {getTrainingDaysInitials()}
@@ -163,6 +163,9 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
                 )}
                 <div className="w-8">
                   <Progress value={progressPercentage} className="h-1" />
+                </div>
+                <div className="text-xs text-gray-600 font-medium min-w-8">
+                  {progressPercentage}%
                 </div>
               </div>
               
