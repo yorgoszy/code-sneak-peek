@@ -31,6 +31,20 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
     return "text-gray-600";
   };
 
+  const formatVolume = (volume: number) => {
+    if (volume >= 1000) {
+      return `${(volume / 1000).toFixed(1)}tn`;
+    }
+    return `${volume}kg`;
+  };
+
+  const formatVolumeImprovement = (volume: number) => {
+    if (Math.abs(volume) >= 1000) {
+      return `${(volume / 1000).toFixed(1)}tn`;
+    }
+    return `${volume}kg`;
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Προπονήσεις αυτόν τον μήνα */}
@@ -83,9 +97,9 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="text-2xl font-bold">{stats.currentMonth.totalVolume}kg</div>
+          <div className="text-2xl font-bold">{formatVolume(stats.currentMonth.totalVolume)}</div>
           <div className={`text-xs ${getTrendColor(stats.improvements.volumeImprovement)}`}>
-            {stats.improvements.volumeImprovement > 0 ? '+' : ''}{stats.improvements.volumeImprovement}kg από προηγ. μήνα
+            {stats.improvements.volumeImprovement > 0 ? '+' : ''}{formatVolumeImprovement(stats.improvements.volumeImprovement)} από προηγ. μήνα
           </div>
         </CardContent>
       </Card>
