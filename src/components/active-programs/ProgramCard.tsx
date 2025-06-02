@@ -74,6 +74,23 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
     }
   };
 
+  const getTrainingDaysInitials = () => {
+    if (!assignment.training_dates || assignment.training_dates.length === 0) {
+      return '';
+    }
+
+    const dayInitials = ['Κ', 'Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ']; // Κυριακή, Δευτέρα, Τρίτη, Τετάρτη, Πέμπτη, Παρασκευή, Σάββατο
+    
+    const uniqueDays = new Set();
+    assignment.training_dates.forEach(dateStr => {
+      const date = new Date(dateStr);
+      const dayIndex = date.getDay();
+      uniqueDays.add(dayInitials[dayIndex]);
+    });
+
+    return Array.from(uniqueDays).join('-');
+  };
+
   const handleStart = () => {
     setDaySelectorOpen(true);
   };
@@ -124,6 +141,13 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
               <p className="text-xs text-gray-600 truncate">
                 {userName}
               </p>
+            </div>
+            
+            {/* Training Days */}
+            <div className="flex-shrink-0">
+              <div className="text-xs text-blue-600 font-medium">
+                {getTrainingDaysInitials()}
+              </div>
             </div>
             
             {/* Progress Stats */}
