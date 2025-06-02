@@ -69,7 +69,7 @@ export const useProgramsData = () => {
             start_date,
             end_date,
             created_at,
-            app_users(
+            app_users:user_id(
               id,
               name,
               email,
