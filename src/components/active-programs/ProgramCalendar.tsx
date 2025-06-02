@@ -75,6 +75,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRe
           currentDate={currentDate}
           programs={programs}
           allCompletions={allCompletions}
+          onRefresh={onRefresh}
         />
         
         {programs.length === 0 && (

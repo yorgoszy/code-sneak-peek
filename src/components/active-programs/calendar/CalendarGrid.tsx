@@ -8,13 +8,15 @@ interface CalendarGridProps {
   currentDate: Date;
   programs: EnrichedAssignment[];
   allCompletions: any[];
+  onRefresh?: () => void;
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
   days,
   currentDate,
   programs,
-  allCompletions
+  allCompletions,
+  onRefresh
 }) => {
   return (
     <>
@@ -34,6 +36,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             currentDate={currentDate}
             programs={programs}
             allCompletions={allCompletions}
+            onRefresh={onRefresh}
           />
         ))}
       </div>

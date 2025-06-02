@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ interface DayProgramDialogProps {
   program: EnrichedAssignment | null;
   selectedDate: Date | null;
   workoutStatus: string;
+  onRefresh?: () => void;
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -26,7 +28,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   onClose,
   program,
   selectedDate,
-  workoutStatus
+  workoutStatus,
+  onRefresh
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
@@ -220,6 +223,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
           setWorkoutInProgress(false);
           setStartTime(null);
           setElapsedTime(0);
+          
+          // Refresh data in parent component
+          if (onRefresh) {
+            console.log('🔄 Triggering data refresh after workout completion');
+            onRefresh();
+          }
           
           // Close dialog
           onClose();

@@ -10,13 +10,15 @@ interface CalendarDayProps {
   currentDate: Date;
   programs: EnrichedAssignment[];
   allCompletions: any[];
+  onRefresh?: () => void;
 }
 
 export const CalendarDay: React.FC<CalendarDayProps> = ({
   day,
   currentDate,
   programs,
-  allCompletions
+  allCompletions,
+  onRefresh
 }) => {
   const [selectedProgram, setSelectedProgram] = useState<{
     program: EnrichedAssignment;
@@ -119,6 +121,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           program={selectedProgram.program}
           selectedDate={selectedProgram.date}
           workoutStatus={selectedProgram.status}
+          onRefresh={onRefresh}
         />
       )}
     </>
