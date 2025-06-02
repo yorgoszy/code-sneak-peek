@@ -34,10 +34,12 @@ const Index = () => {
               />
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#home" className="text-white hover:text-gray-200 transition-colors">Αρχική</a>
-              <a href="#features" className="text-white hover:text-gray-200 transition-colors">Χαρακτηριστικά</a>
+              <a href="#home" className="text-white hover:text-gray-200 transition-colors">Home</a>
+              <a href="#programs" className="text-white hover:text-gray-200 transition-colors">Programs</a>
               <a href="#blog" className="text-white hover:text-gray-200 transition-colors">Blog</a>
-              <a href="#contact" className="text-white hover:text-gray-200 transition-colors">Επικοινωνία</a>
+              <a href="#about" className="text-white hover:text-gray-200 transition-colors">About Us</a>
+              <a href="#results" className="text-white hover:text-gray-200 transition-colors">Results</a>
+              <a href="#contact" className="text-white hover:text-gray-200 transition-colors">Contact Us</a>
               
               {!loading && (
                 isAuthenticated ? (
