@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableDay } from './SortableDay';
 import { Exercise } from '../types';
 
@@ -107,33 +107,34 @@ export const WeekCard: React.FC<WeekCardProps> = ({
       </CardHeader>
       <CardContent>
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={week.days.map(d => d.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-4">
+          <SortableContext items={week.days.map(d => d.id)} strategy={horizontalListSortingStrategy}>
+            <div className="flex gap-4 overflow-x-auto">
               {week.days.map((day) => (
-                <SortableDay
-                  key={day.id}
-                  day={day}
-                  exercises={exercises}
-                  onAddBlock={() => onAddBlock(day.id)}
-                  onRemoveDay={() => onRemoveDay(day.id)}
-                  onDuplicateDay={() => onDuplicateDay(day.id)}
-                  onUpdateDayName={(name) => onUpdateDayName(day.id, name)}
-                  onAddExercise={(blockId, exerciseId) => onAddExercise(day.id, blockId, exerciseId)}
-                  onRemoveBlock={(blockId) => onRemoveBlock(day.id, blockId)}
-                  onDuplicateBlock={(blockId) => onDuplicateBlock(day.id, blockId)}
-                  onUpdateBlockName={(blockId, name) => onUpdateBlockName(day.id, blockId, name)}
-                  onUpdateExercise={(blockId, exerciseId, field, value) => 
-                    onUpdateExercise(day.id, blockId, exerciseId, field, value)
-                  }
-                  onRemoveExercise={(blockId, exerciseId) => 
-                    onRemoveExercise(day.id, blockId, exerciseId)
-                  }
-                  onDuplicateExercise={(blockId, exerciseId) => 
-                    onDuplicateExercise(day.id, blockId, exerciseId)
-                  }
-                  onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(day.id, oldIndex, newIndex)}
-                  onReorderExercises={(blockId, oldIndex, newIndex) => onReorderExercises(day.id, blockId, oldIndex, newIndex)}
-                />
+                <div key={day.id} className="min-w-[33%] flex-shrink-0">
+                  <SortableDay
+                    day={day}
+                    exercises={exercises}
+                    onAddBlock={() => onAddBlock(day.id)}
+                    onRemoveDay={() => onRemoveDay(day.id)}
+                    onDuplicateDay={() => onDuplicateDay(day.id)}
+                    onUpdateDayName={(name) => onUpdateDayName(day.id, name)}
+                    onAddExercise={(blockId, exerciseId) => onAddExercise(day.id, blockId, exerciseId)}
+                    onRemoveBlock={(blockId) => onRemoveBlock(day.id, blockId)}
+                    onDuplicateBlock={(blockId) => onDuplicateBlock(day.id, blockId)}
+                    onUpdateBlockName={(blockId, name) => onUpdateBlockName(day.id, blockId, name)}
+                    onUpdateExercise={(blockId, exerciseId, field, value) => 
+                      onUpdateExercise(day.id, blockId, exerciseId, field, value)
+                    }
+                    onRemoveExercise={(blockId, exerciseId) => 
+                      onRemoveExercise(day.id, blockId, exerciseId)
+                    }
+                    onDuplicateExercise={(blockId, exerciseId) => 
+                      onDuplicateExercise(day.id, blockId, exerciseId)
+                    }
+                    onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(day.id, oldIndex, newIndex)}
+                    onReorderExercises={(blockId, oldIndex, newIndex) => onReorderExercises(day.id, blockId, oldIndex, newIndex)}
+                  />
+                </div>
               ))}
             </div>
           </SortableContext>
