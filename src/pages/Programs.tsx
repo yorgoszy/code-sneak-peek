@@ -28,10 +28,12 @@ const Programs = () => {
 
   const loadPrograms = async () => {
     try {
+      console.log('🔄 Loading programs with assignments...');
       const data = await fetchProgramsWithAssignments();
+      console.log('✅ Programs loaded:', data.length);
       setPrograms(data);
     } catch (error) {
-      console.error('Error loading programs:', error);
+      console.error('❌ Error loading programs:', error);
     }
   };
 

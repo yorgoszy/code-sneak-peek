@@ -14,6 +14,11 @@ const ActivePrograms = () => {
 
   console.log('📋 ActivePrograms - programs:', programs.length, 'loading:', loading);
 
+  const handleRefresh = async () => {
+    console.log('🔄 Refreshing active programs data...');
+    await refetch();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex w-full">
@@ -44,13 +49,13 @@ const ActivePrograms = () => {
             <TabsContent value="list" className="mt-6">
               <Card className="rounded-none">
                 <CardContent className="p-6">
-                  <ActiveProgramsList programs={programs} onRefresh={refetch} />
+                  <ActiveProgramsList programs={programs} onRefresh={handleRefresh} />
                 </CardContent>
               </Card>
             </TabsContent>
             
             <TabsContent value="calendar" className="mt-6">
-              <ProgramCalendar programs={programs} onRefresh={refetch} />
+              <ProgramCalendar programs={programs} onRefresh={handleRefresh} />
             </TabsContent>
           </Tabs>
         </div>

@@ -21,6 +21,12 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRe
 
   useEffect(() => {
     const fetchAllCompletions = async () => {
+      if (programs.length === 0) {
+        console.log('⚠️ No programs available, skipping completions fetch');
+        setAllCompletions([]);
+        return;
+      }
+
       console.log('🔄 Fetching completions for programs:', programs.length);
       const completionsData: any[] = [];
       
@@ -37,17 +43,10 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRe
       
       console.log('📊 All completions data:', completionsData);
       setAllCompletions(completionsData);
-      
-      // Καλούμε το onRefresh για να ενημερωθούν οι γονικές συνιστώσες
-      if (onRefresh) {
-        onRefresh();
-      }
     };
 
-    if (programs.length > 0) {
-      fetchAllCompletions();
-    }
-  }, [programs, getWorkoutCompletions, onRefresh]);
+    fetchAllCompletions();
+  }, [programs, getWorkoutCompletions]);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
