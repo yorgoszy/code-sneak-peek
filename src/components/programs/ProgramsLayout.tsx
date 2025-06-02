@@ -58,7 +58,7 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
-        <ProgramBuilderTrigger />
+        <ProgramBuilderTrigger onClick={onOpenBuilder} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

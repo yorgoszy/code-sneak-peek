@@ -36,11 +36,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   ];
 
   return (
-    <div className={`transition-all duration-300 ${
+    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-64'
-    }`} style={{ backgroundColor: '#5271ff' }}>
+    }`}>
       {/* Header */}
-      <div className="p-4 border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+      <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <img 
@@ -53,8 +53,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
             variant="ghost"
             size="sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-white hover:bg-white/10"
-            style={{ borderRadius: '0' }}
+            className="rounded-none"
           >
             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
@@ -70,8 +69,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 text-white ${
-                  isActive ? 'bg-white/20 border-r-2 border-white' : ''
+                className={`flex items-center space-x-3 px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 ${
+                  isActive ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700'
                 }`}
               >
                 <item.icon className="h-5 w-5 flex-shrink-0" />

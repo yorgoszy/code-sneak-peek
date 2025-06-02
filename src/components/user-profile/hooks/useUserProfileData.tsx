@@ -13,6 +13,15 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
   const [tests, setTests] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
 
+  useEffect(() => {
+    if (user && isOpen) {
+      fetchUserStats();
+      fetchUserPrograms();
+      fetchUserTests();
+      fetchUserPayments();
+    }
+  }, [user, isOpen]);
+
   const fetchUserStats = async () => {
     try {
       // Count athletes if user is trainer
@@ -44,7 +53,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
         programsCount = count || 0;
       }
 
-      // Count tests for user
+      // Count tests for any user role
       const { count: testsCount } = await supabase
         .from('tests')
         .select('*', { count: 'exact', head: true })
@@ -134,17 +143,13 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
 
   const fetchUserTests = async () => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('tests')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error fetching tests:', error);
-      } else {
-        setTests(data || []);
-      }
+      setTests(data || []);
     } catch (error) {
       console.error('Error fetching tests:', error);
     }
@@ -164,24 +169,10 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
     }
   };
 
-  const refetchData = () => {
-    if (user && isOpen) {
-      fetchUserStats();
-      fetchUserPrograms();
-      fetchUserTests();
-      fetchUserPayments();
-    }
-  };
-
-  useEffect(() => {
-    refetchData();
-  }, [user, isOpen]);
-
   return {
     stats,
     programs,
     tests,
-    payments,
-    refetchData
+    payments
   };
 };
