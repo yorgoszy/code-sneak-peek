@@ -58,18 +58,13 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     
     const dateString = format(date, 'yyyy-MM-dd');
     
-    // Αν η ημερομηνία είναι ήδη επιλεγμένη, την αφαιρούμε (αποεπιλογή)
+    // ΑΠΛΗ ΛΟΓΙΚΗ: Αν η ημερομηνία είναι ήδη επιλεγμένη, την αφαιρούμε
     if (selectedDates.includes(dateString)) {
       setSelectedDates(selectedDates.filter(d => d !== dateString));
       return;
     }
     
-    // Αν έχουμε φτάσει το όριο των προπονήσεων, δεν επιτρέπουμε άλλες επιλογές
-    if (selectedDates.length >= totalRequiredSessions) {
-      return;
-    }
-    
-    // Ελέγχουμε αν μπορούμε να προσθέσουμε αυτή την ημερομηνία
+    // Αλλιώς, ελέγχουμε αν μπορούμε να την προσθέσουμε
     if (canAddDate(date)) {
       setSelectedDates([...selectedDates, dateString].sort());
     }
@@ -77,13 +72,6 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
 
   // Λογική για έλεγχο αν μπορούμε να προσθέσουμε μια ημερομηνία
   const canAddDate = (date: Date): boolean => {
-    const dateString = format(date, 'yyyy-MM-dd');
-    
-    // Αν η ημερομηνία είναι ήδη επιλεγμένη, επιτρέπουμε την αποεπιλογή
-    if (selectedDates.includes(dateString)) {
-      return true;
-    }
-    
     // Αν έχουμε φτάσει το όριο των συνολικών προπονήσεων
     if (selectedDates.length >= totalRequiredSessions) {
       return false;
@@ -121,7 +109,7 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     
     const dateString = format(date, 'yyyy-MM-dd');
     
-    // ΑΝ η ημερομηνία είναι ήδη επιλεγμένη, δεν είναι ποτέ disabled (για να μπορούμε να την αποεπιλέξουμε)
+    // Αν η ημερομηνία είναι ήδη επιλεγμένη, ΠΟΤΕ δεν είναι disabled (για αποεπιλογή)
     if (selectedDates.includes(dateString)) {
       return false;
     }
