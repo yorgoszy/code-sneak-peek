@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 
 interface ProgramCalendarProps {
   programs: EnrichedAssignment[];
@@ -12,17 +13,31 @@ interface ProgramCalendarProps {
 
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [allCompletions, setAllCompletions] = useState<any[]>([]);
+  const { getWorkoutCompletions } = useWorkoutCompletions();
 
   console.log('📅 ProgramCalendar rendering with programs:', programs.length);
-  programs.forEach(program => {
-    console.log('📊 Program in calendar:', {
-      id: program.id,
-      name: program.programs?.name,
-      user_name: program.app_users?.name,
-      training_dates: program.training_dates,
-      status: program.status
-    });
-  });
+
+  useEffect(() => {
+    const fetchAllCompletions = async () => {
+      const completionsData: any[] = [];
+      
+      for (const program of programs) {
+        try {
+          const completions = await getWorkoutCompletions(program.id);
+          completionsData.push(...completions.map(c => ({ ...c, assignment_id: program.id })));
+        } catch (error) {
+          console.error('Error fetching completions for program:', program.id, error);
+        }
+      }
+      
+      setAllCompletions(completionsData);
+    };
+
+    if (programs.length > 0) {
+      fetchAllCompletions();
+    }
+  }, [programs, getWorkoutCompletions]);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -42,7 +57,6 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
     console.log('🔍 Checking programs for day:', dayString);
     
     const dayPrograms = programs.filter(program => {
-      // Check if this specific date is in the training_dates array
       if (program.training_dates && Array.isArray(program.training_dates)) {
         const isTrainingDate = program.training_dates.includes(dayString);
         console.log(`📊 Program ${program.id} - Training dates:`, program.training_dates, 'Checking:', dayString, 'Match:', isTrainingDate);
@@ -55,6 +69,42 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
     
     console.log(`📅 Programs for ${dayString}:`, dayPrograms.length);
     return dayPrograms;
+  };
+
+  const getWorkoutStatus = (program: EnrichedAssignment, dayString: string) => {
+    // Βρίσκουμε τη συγκεκριμένη ημέρα προπόνησης
+    const programWeeks = program.programs?.program_weeks || [];
+    let targetWeekNumber = 1;
+    let targetDayNumber = 1;
+    
+    // Βρίσκουμε την εβδομάδα και ημέρα από τις training_dates
+    if (program.training_dates) {
+      const dayIndex = program.training_dates.indexOf(dayString);
+      if (dayIndex >= 0) {
+        // Υπολογίζουμε εβδομάδα και ημέρα βάσει του index
+        const totalDays = dayIndex + 1;
+        programWeeks.forEach((week, weekIndex) => {
+          const daysInWeek = week.program_days?.length || 0;
+          if (totalDays <= (weekIndex + 1) * daysInWeek) {
+            targetWeekNumber = week.week_number;
+            targetDayNumber = totalDays - (weekIndex * daysInWeek);
+            return;
+          }
+        });
+      }
+    }
+
+    // Ελέγχουμε αν υπάρχει completion για αυτή την ημέρα
+    const completion = allCompletions.find(c => 
+      c.assignment_id === program.id && 
+      c.scheduled_date === dayString
+    );
+
+    if (completion) {
+      return completion.status; // 'completed', 'missed', 'makeup'
+    }
+
+    return 'scheduled'; // Προγραμματισμένη αλλά όχι ολοκληρωμένη
   };
 
   return (
@@ -96,6 +146,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
             const dayPrograms = getProgramsForDay(day);
             const isCurrentMonth = isSameMonth(day, currentDate);
             const isDayToday = isToday(day);
+            const dayString = format(day, 'yyyy-MM-dd');
             
             return (
               <div
@@ -114,16 +165,30 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
                 </div>
                 
                 <div className="space-y-1">
-                  {dayPrograms.map((program) => (
-                    <div
-                      key={program.id}
-                      className="text-xs p-1 bg-blue-100 text-blue-800 rounded-none truncate"
-                      title={`${program.programs?.name || 'Άγνωστο πρόγραμμα'} - ${program.app_users?.name || 'Άγνωστος χρήστης'}`}
-                    >
-                      <div className="font-medium">{program.programs?.name || 'Άγνωστο πρόγραμμα'}</div>
-                      <div className="text-gray-600">{program.app_users?.name || 'Άγνωστος χρήστης'}</div>
-                    </div>
-                  ))}
+                  {dayPrograms.map((program) => {
+                    const workoutStatus = getWorkoutStatus(program, dayString);
+                    
+                    let statusColor = 'bg-blue-100 text-blue-800'; // Default (scheduled)
+                    
+                    if (workoutStatus === 'completed') {
+                      statusColor = 'bg-green-100 text-green-800';
+                    } else if (workoutStatus === 'missed') {
+                      statusColor = 'bg-red-100 text-red-800';
+                    } else if (workoutStatus === 'makeup') {
+                      statusColor = 'bg-yellow-100 text-yellow-800';
+                    }
+                    
+                    return (
+                      <div
+                        key={program.id}
+                        className={`text-xs p-1 rounded-none truncate ${statusColor}`}
+                        title={`${program.programs?.name || 'Άγνωστο πρόγραμμα'} - ${program.app_users?.name || 'Άγνωστος χρήστης'} - ${workoutStatus === 'completed' ? 'Ολοκληρωμένη' : workoutStatus === 'missed' ? 'Χαμένη' : workoutStatus === 'makeup' ? 'Αναπλήρωση' : 'Προγραμματισμένη'}`}
+                      >
+                        <div className="font-medium">{program.programs?.name || 'Άγνωστο πρόγραμμα'}</div>
+                        <div className="text-gray-600">{program.app_users?.name || 'Άγνωστος χρήστης'}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
