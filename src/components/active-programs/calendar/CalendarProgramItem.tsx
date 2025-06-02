@@ -19,10 +19,10 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'border-l-[#d4ebd1]';
+      case 'completed': return 'border-l-[#5bb659]';
       case 'missed': return 'border-l-red-500';
       case 'makeup': return 'border-l-yellow-500';
-      default: return 'border-l-[#d1dbeb]';
+      default: return 'border-l-[#597cb6]';
     }
   };
 
