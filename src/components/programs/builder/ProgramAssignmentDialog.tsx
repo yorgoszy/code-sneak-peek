@@ -38,6 +38,7 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   console.log('Program in assignment dialog:', program);
   console.log('Selected user ID:', selectedUserId);
   console.log('Found user:', selectedUser);
+  console.log('Total required sessions:', totalRequiredSessions);
 
   useEffect(() => {
     if (!isOpen) {
@@ -57,11 +58,18 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     
     const dateString = format(date, 'yyyy-MM-dd');
     
+    // Αν η ημερομηνία είναι ήδη επιλεγμένη, την αφαιρούμε (αποεπιλογή)
     if (selectedDates.includes(dateString)) {
       setSelectedDates(selectedDates.filter(d => d !== dateString));
       return;
     }
     
+    // Αν έχουμε φτάσει το όριο των προπονήσεων, δεν επιτρέπουμε άλλες επιλογές
+    if (selectedDates.length >= totalRequiredSessions) {
+      return;
+    }
+    
+    // Ελέγχουμε αν μπορούμε να προσθέσουμε αυτή την ημερομηνία
     if (canAddDate(date)) {
       setSelectedDates([...selectedDates, dateString].sort());
     }
@@ -71,8 +79,14 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   const canAddDate = (date: Date): boolean => {
     const dateString = format(date, 'yyyy-MM-dd');
     
+    // Αν η ημερομηνία είναι ήδη επιλεγμένη, επιτρέπουμε την αποεπιλογή
     if (selectedDates.includes(dateString)) {
       return true;
+    }
+    
+    // Αν έχουμε φτάσει το όριο των συνολικών προπονήσεων
+    if (selectedDates.length >= totalRequiredSessions) {
+      return false;
     }
     
     const weekNumber = getWeek(date, { weekStartsOn: 1, firstWeekContainsDate: 4 });
@@ -85,6 +99,7 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
       return selectedWeek === weekNumber && selectedYear === year;
     });
     
+    // Δεν επιτρέπουμε περισσότερες από daysPerWeek προπονήσεις την εβδομάδα
     return datesInThisWeek.length < daysPerWeek;
   };
 
@@ -104,8 +119,15 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     }
     
     const dateString = format(date, 'yyyy-MM-dd');
+    
+    // Αν η ημερομηνία είναι ήδη επιλεγμένη, την επιτρέπουμε (για αποεπιλογή)
     if (selectedDates.includes(dateString)) {
       return false;
+    }
+    
+    // Αν έχουμε φτάσει το όριο των συνολικών προπονήσεων
+    if (selectedDates.length >= totalRequiredSessions) {
+      return true;
     }
     
     return !canAddDate(date);
