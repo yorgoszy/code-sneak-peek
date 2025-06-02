@@ -27,10 +27,10 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment }) => {
   const totalDuration = todayDay.estimated_duration_minutes || 0;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-none p-4">
-      <div className="flex items-center justify-between mb-3">
+    <div className="bg-white border border-gray-200 rounded-none p-3">
+      <div className="flex items-center justify-between mb-2">
         <div>
-          <h3 className="text-base font-semibold text-gray-900">
+          <h3 className="text-sm font-semibold text-gray-900">
             {program.name}
           </h3>
           {program.description && (
@@ -39,7 +39,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment }) => {
             </p>
           )}
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           {totalDuration > 0 && (
             <div className="flex items-center space-x-1 text-xs text-gray-600">
               <Clock className="h-3 w-3" />
@@ -52,7 +52,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment }) => {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1">
         <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
           <Dumbbell className="h-4 w-4" />
           <span>{todayDay.name}</span>

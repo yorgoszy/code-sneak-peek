@@ -50,8 +50,8 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
     const videoUrl = exercise.exercises?.video_url;
     if (!videoUrl || !isValidVideoUrl(videoUrl)) {
       return (
-        <div className="w-12 h-9 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
-          <span className="text-xs text-gray-400">Χωρίς βίντεο</span>
+        <div className="w-8 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
+          <span className="text-xs text-gray-400">-</span>
         </div>
       );
     }
@@ -59,7 +59,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
     const thumbnailUrl = getVideoThumbnail(videoUrl);
     
     return (
-      <div className="relative w-12 h-9 rounded-none overflow-hidden cursor-pointer group flex-shrink-0">
+      <div className="relative w-8 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -68,11 +68,11 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <Play className="w-3 h-3 text-gray-400" />
+            <Play className="w-2 h-2 text-gray-400" />
           </div>
         )}
         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Play className="w-3 h-3 text-white" />
+          <Play className="w-2 h-2 text-white" />
         </div>
       </div>
     );
@@ -80,8 +80,8 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
 
   return (
     <>
-      <div className="bg-gray-700 rounded-none p-3 mb-2">
-        <h6 className="text-xs font-medium text-white mb-2">
+      <div className="bg-gray-700 rounded-none p-2 mb-1">
+        <h6 className="text-xs font-medium text-white mb-1">
           {block.name}
         </h6>
         
@@ -91,7 +91,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
             .map((exercise) => (
               <div key={exercise.id} className="bg-white rounded-none">
                 {/* Exercise Header */}
-                <div className="flex items-center gap-2 p-2 border-b border-gray-100">
+                <div className="flex items-center gap-2 p-1 border-b border-gray-100">
                   <div 
                     onClick={() => handleExerciseClick(exercise)}
                     className="flex-shrink-0"
@@ -101,7 +101,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
                   
                   <div className="flex-1 min-w-0">
                     <h6 
-                      className={`text-sm font-medium text-gray-900 truncate ${
+                      className={`text-xs font-medium text-gray-900 truncate ${
                         exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url) 
                           ? 'cursor-pointer hover:text-blue-600' 
                           : ''
@@ -114,8 +114,8 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
                 </div>
                 
                 {/* Exercise Details Grid */}
-                <div className="p-2 bg-gray-50">
-                  <div className="grid grid-cols-6 gap-2 text-xs">
+                <div className="p-1 bg-gray-50">
+                  <div className="grid grid-cols-6 gap-1 text-xs">
                     <div className="text-center">
                       <div className="font-medium text-gray-600 mb-1">Sets</div>
                       <div className="text-gray-900">{exercise.sets}</div>
@@ -157,7 +157,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
                   </div>
                   
                   {exercise.notes && (
-                    <div className="mt-2 text-xs text-gray-600 italic">
+                    <div className="mt-1 text-xs text-gray-600 italic">
                       {exercise.notes}
                     </div>
                   )}
