@@ -32,6 +32,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises);
 
+  console.log('ProgramBuilderDialog - actions.addWeek type:', typeof actions.addWeek);
+
   useEffect(() => {
     if (isOpen) {
       if (editingProgram) {
@@ -150,6 +152,11 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   // Δεν φιλτράρουμε τους χρήστες - εμφανίζουμε όλους
   const availableUsers = users;
 
+  const handleAddWeek = () => {
+    console.log('ProgramBuilderDialog handleAddWeek called');
+    actions.addWeek();
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -160,7 +167,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           onNameChange={(name) => updateProgram({ name })}
           onDescriptionChange={(description) => updateProgram({ description })}
           onAthleteChange={(user_id) => updateProgram({ user_id })}
-          onAddWeek={actions.addWeek}
+          onAddWeek={handleAddWeek}
           onRemoveWeek={actions.removeWeek}
           onDuplicateWeek={actions.duplicateWeek}
           onUpdateWeekName={actions.updateWeekName}
