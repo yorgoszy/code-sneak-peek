@@ -5,6 +5,7 @@ import { testSupabaseConnection, fetchUserData, fetchProgramAssignments, enrichA
 import { isValidAssignment } from "./useActivePrograms/dateFilters";
 import type { EnrichedAssignment } from "./useActivePrograms/types";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useActivePrograms = () => {
   const [programs, setPrograms] = useState<EnrichedAssignment[]>([]);
@@ -26,6 +27,43 @@ export const useActivePrograms = () => {
       setLoading(false);
     }
   }, [user]);
+
+  // Real-time updates για workout completions
+  useEffect(() => {
+    if (!user?.id || programs.length === 0) return;
+
+    console.log('🔄 Setting up real-time updates for workout completions');
+    
+    const channel = supabase
+      .channel('workout-completions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_completions'
+        },
+        async (payload) => {
+          console.log('📊 Workout completion changed:', payload);
+          
+          // Ξαναυπολογισμός progress για όλα τα προγράμματα
+          const updatedPrograms = await Promise.all(
+            programs.map(async (program) => {
+              const progress = await calculateProgress(program);
+              return { ...program, progress };
+            })
+          );
+          
+          setPrograms(updatedPrograms);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔌 Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, programs.length]);
 
   const calculateProgress = async (assignment: EnrichedAssignment) => {
     try {
