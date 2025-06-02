@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Trash2, Edit, Copy, Eye, User } from "lucide-react";
+import { Trash2, Edit, Copy, Eye, User, Calendar } from "lucide-react";
 import { Program } from './types';
+import { format } from 'date-fns';
+import { el } from 'date-fns/locale';
 
 interface ProgramsListProps {
   programs: Program[];
@@ -36,8 +38,10 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   };
 
   const getAssignmentInfo = (program: Program) => {
-    const totalSessions = program.program_weeks?.reduce((total, week) => 
-      total + (week.program_days?.length || 0), 0) || 0;
+    const assignment = program.program_assignments?.[0];
+    if (!assignment) return null;
+
+    const totalSessions = assignment.training_dates?.length || 0;
     const completedSessions = Math.floor(totalSessions * 0.3); // Mock: 30% completed
     const remainingSessions = totalSessions - completedSessions;
     const progressPercentage = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
@@ -47,8 +51,10 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
       completedSessions,
       remainingSessions,
       progressPercentage,
-      assignmentDate: new Date().toLocaleDateString('el-GR'),
-      athletePhoto: null
+      assignmentDate: assignment.created_at ? format(new Date(assignment.created_at), 'dd/MM/yyyy', { locale: el }) : '',
+      athletePhoto: assignment.app_users?.photo_url,
+      athleteName: assignment.app_users?.name,
+      trainingDates: assignment.training_dates || []
     };
   };
 
@@ -70,7 +76,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
         {programs.map(program => {
           const { weeksCount, avgDaysPerWeek } = getProgramStats(program);
           const assignmentInfo = getAssignmentInfo(program);
-          const isAssigned = program.app_users;
+          const isAssigned = assignmentInfo !== null;
           
           return (
             <div
@@ -85,7 +91,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-4 flex-1">
                     {/* Athlete Photo - show for assigned programs */}
-                    {isAssigned && (
+                    {isAssigned && assignmentInfo && (
                       <Avatar className="w-16 h-16 flex-shrink-0">
                         <AvatarImage src={assignmentInfo.athletePhoto || undefined} />
                         <AvatarFallback className="bg-gray-200">
@@ -97,8 +103,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                     {/* Program Info */}
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-lg">{program.name}</h4>
-                      {program.app_users && (
-                        <p className="text-sm text-gray-600 font-medium">{program.app_users.name}</p>
+                      {isAssigned && assignmentInfo && (
+                        <p className="text-sm text-gray-600 font-medium">{assignmentInfo.athleteName}</p>
                       )}
                       <div className="text-xs text-gray-500 mt-1">
                         {weeksCount} εβδομάδες • {avgDaysPerWeek} ημέρες/εβδομάδα
@@ -164,12 +170,37 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                 </div>
 
                 {/* Assignment Details - show for assigned programs */}
-                {isAssigned && (
+                {isAssigned && assignmentInfo && (
                   <div className="space-y-3 pl-20">
                     {/* Assignment Date */}
                     <div className="text-sm text-gray-600">
                       <span className="font-medium">Ημερομηνία Ανάθεσης:</span> {assignmentInfo.assignmentDate}
                     </div>
+                    
+                    {/* Training Dates */}
+                    {assignmentInfo.trainingDates.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          Ημερομηνίες Προπόνησης ({assignmentInfo.trainingDates.length})
+                        </div>
+                        <div className="flex flex-wrap gap-1 max-w-md">
+                          {assignmentInfo.trainingDates.slice(0, 8).map((date, index) => (
+                            <span 
+                              key={index}
+                              className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded"
+                            >
+                              {format(new Date(date), 'dd/MM', { locale: el })}
+                            </span>
+                          ))}
+                          {assignmentInfo.trainingDates.length > 8 && (
+                            <span className="text-xs text-gray-500 px-2 py-1">
+                              +{assignmentInfo.trainingDates.length - 8} ακόμα
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     
                     {/* Progress Section */}
                     <div className="space-y-2">

@@ -4,7 +4,7 @@ import { useProgramSave } from './programs/useProgramSave';
 import { useProgramAssignments } from './programs/useProgramAssignments';
 
 export const usePrograms = () => {
-  const { loading: crudLoading, fetchPrograms, deleteProgram, duplicateProgram } = useProgramCrud();
+  const { loading: crudLoading, fetchPrograms, deleteProgram, duplicateProgram, fetchProgramsWithAssignments } = useProgramCrud();
   const { loading: saveLoading, saveProgram } = useProgramSave();
   const { fetchProgramAssignments } = useProgramAssignments();
 
@@ -13,6 +13,7 @@ export const usePrograms = () => {
   return {
     loading,
     fetchPrograms,
+    fetchProgramsWithAssignments,
     saveProgram,
     deleteProgram,
     duplicateProgram: async (program: any) => {

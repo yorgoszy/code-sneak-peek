@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
@@ -20,7 +19,7 @@ const Programs = () => {
   const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
 
   const { users, exercises } = useProgramsData();
-  const { loading, fetchPrograms, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+  const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
 
   useEffect(() => {
     loadPrograms();
@@ -28,7 +27,7 @@ const Programs = () => {
 
   const loadPrograms = async () => {
     try {
-      const data = await fetchPrograms();
+      const data = await fetchProgramsWithAssignments();
       setPrograms(data);
     } catch (error) {
       console.error('Error loading programs:', error);
