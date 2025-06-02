@@ -34,24 +34,11 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
         athletesCount = count || 0;
       }
 
-      // Count programs created by user or assigned to user
-      let programsCount = 0;
-      
-      if (user.role === 'trainer' || user.role === 'admin') {
-        // For trainers/admins, count programs they created
-        const { count } = await supabase
-          .from('programs')
-          .select('*', { count: 'exact', head: true })
-          .eq('created_by', user.id);
-        programsCount = count || 0;
-      } else {
-        // For all other roles, count programs assigned to them
-        const { count } = await supabase
-          .from('program_assignments')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-        programsCount = count || 0;
-      }
+      // Count programs assigned to this specific user (regardless of their role)
+      const { count: programsCount } = await supabase
+        .from('program_assignments')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
 
       // Count tests for any user role
       const { count: testsCount } = await supabase
@@ -67,7 +54,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
 
       setStats({
         athletesCount,
-        programsCount: programsCount,
+        programsCount: programsCount || 0,
         testsCount: testsCount || 0,
         paymentsCount: paymentsCount || 0
       });
@@ -78,13 +65,14 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
 
   const fetchUserPrograms = async () => {
     try {
-      let data = null;
+      console.log('🔍 Fetching programs for user profile:', user.id);
       
-      if (user.role === 'trainer' || user.role === 'admin') {
-        // For trainers/admins, fetch programs they created with full details
-        const { data: programsData } = await supabase
-          .from('programs')
-          .select(`
+      // Always fetch programs assigned to this specific user (regardless of role)
+      const { data: assignmentsData } = await supabase
+        .from('program_assignments')
+        .select(`
+          *,
+          programs(
             *,
             app_users(name),
             program_weeks(
@@ -100,44 +88,24 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
                 )
               )
             )
-          `)
-          .eq('created_by', user.id)
-          .order('created_at', { ascending: false });
-        data = programsData;
-      } else {
-        // For all other roles, fetch programs assigned to them with full details
-        const { data: assignmentsData } = await supabase
-          .from('program_assignments')
-          .select(`
-            *,
-            programs(
-              *,
-              app_users(name),
-              program_weeks(
-                *,
-                program_days(
-                  *,
-                  program_blocks(
-                    *,
-                    program_exercises(
-                      *,
-                      exercises(name)
-                    )
-                  )
-                )
-              )
-            )
-          `)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        // Extract programs from assignments
-        data = assignmentsData?.map(assignment => assignment.programs).filter(Boolean) || [];
-      }
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
       
-      setPrograms(data || []);
+      console.log('📊 User profile assignments:', assignmentsData);
+      
+      // Extract programs from assignments and add assignment data
+      const programsWithAssignments = assignmentsData?.map(assignment => ({
+        ...assignment.programs,
+        program_assignments: [assignment]
+      })).filter(Boolean) || [];
+      
+      console.log('✅ Programs for user profile:', programsWithAssignments.length);
+      setPrograms(programsWithAssignments);
     } catch (error) {
       console.error('Error fetching programs:', error);
+      setPrograms([]);
     }
   };
 
