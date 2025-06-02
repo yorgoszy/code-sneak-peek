@@ -27,7 +27,7 @@ export const fetchUserData = async (authUserId: string) => {
 
   const { data: userData, error: userError } = await supabase
     .from('app_users')
-    .select('id, name, email')
+    .select('id, name, email, photo_url')
     .eq('auth_user_id', authUserId)
     .single();
 
@@ -58,7 +58,7 @@ export const fetchProgramAssignments = async (userId: string) => {
     .from('program_assignments')
     .select(`
       *,
-      app_users!fk_program_assignments_user_id(id, name, email)
+      app_users!fk_program_assignments_user_id(id, name, email, photo_url)
     `)
     .eq('user_id', userId)
     .eq('status', 'active');
