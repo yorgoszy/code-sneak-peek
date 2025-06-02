@@ -53,7 +53,17 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
               <Calendar
                 mode="single"
                 selected={undefined}
-                onSelect={onDateSelect}
+                onSelect={(date) => {
+                  // Αν δεν είναι επιλεγμένη η ημερομηνία, χρησιμοποιούμε την κανονική λογική
+                  if (!date) return;
+                  const dateString = format(date, 'yyyy-MM-dd');
+                  const isSelected = selectedDates.includes(dateString);
+                  
+                  if (!isSelected) {
+                    onDateSelect(date);
+                  }
+                  // Αν είναι επιλεγμένη, δεν κάνουμε τίποτα εδώ - το χειρίζεται το custom DayContent
+                }}
                 className="rounded-none border pointer-events-auto"
                 locale={el}
                 modifiers={{
@@ -69,18 +79,20 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
                     const isSelected = selectedDates.includes(dateString);
                     
                     return (
-                      <div className="relative w-full h-full flex items-center justify-center">
+                      <div 
+                        className="relative w-full h-full flex items-center justify-center cursor-pointer"
+                        onClick={(e) => {
+                          if (isSelected) {
+                            e.stopPropagation();
+                            removeDate(dateString);
+                          }
+                        }}
+                      >
                         <span>{date.getDate()}</span>
                         {isSelected && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeDate(dateString);
-                            }}
-                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 text-xs"
-                          >
-                            <X className="w-2 h-2" />
-                          </button>
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                            <X className="w-2 h-2 text-white" />
+                          </div>
                         )}
                       </div>
                     );
