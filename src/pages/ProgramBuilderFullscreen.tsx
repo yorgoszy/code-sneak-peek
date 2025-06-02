@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Sidebar } from "@/components/Sidebar";
@@ -101,8 +100,8 @@ const ProgramBuilderFullscreen = () => {
     };
     
     try {
-      const savedProgram = await saveProgram(programToSave);
-      const finalProgramId = savedProgram?.id || editingProgram?.id;
+      await saveProgram(programToSave);
+      const finalProgramId = editingProgram?.id;
       
       if (finalProgramId && userId && trainingDates?.length > 0) {
         await createOrUpdateAssignment(
