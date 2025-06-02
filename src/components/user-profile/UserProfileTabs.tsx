@@ -9,9 +9,10 @@ interface UserProfileTabsProps {
   programs: any[];
   tests: any[];
   payments: any[];
+  onTestDeleted: () => void;
 }
 
-export const UserProfileTabs = ({ user, programs, tests, payments }: UserProfileTabsProps) => {
+export const UserProfileTabs = ({ user, programs, tests, payments, onTestDeleted }: UserProfileTabsProps) => {
   return (
     <Tabs defaultValue="programs" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
@@ -25,7 +26,7 @@ export const UserProfileTabs = ({ user, programs, tests, payments }: UserProfile
       </TabsContent>
 
       <TabsContent value="tests" className="space-y-4">
-        <UserProfileTests tests={tests} />
+        <UserProfileTests tests={tests} onTestDeleted={onTestDeleted} />
       </TabsContent>
 
       <TabsContent value="payments" className="space-y-4">

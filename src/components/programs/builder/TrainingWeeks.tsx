@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -213,6 +212,17 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
   const [editingWeekName, setEditingWeekName] = useState('');
 
+  console.log('🔍 TrainingWeeks rendered with weeks:', weeks);
+
+  const handleAddWeekClick = () => {
+    console.log('🎯 handleAddWeekClick called, onAddWeek type:', typeof onAddWeek);
+    if (typeof onAddWeek === 'function') {
+      onAddWeek();
+    } else {
+      console.error('❌ onAddWeek is not a function:', onAddWeek);
+    }
+  };
+
   const handleWeekNameDoubleClick = (week: Week) => {
     setEditingWeekId(week.id);
     setEditingWeekName(week.name);
@@ -256,7 +266,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>Εβδομάδες Προπόνησης</CardTitle>
-          <Button onClick={onAddWeek} className="rounded-none">
+          <Button onClick={handleAddWeekClick} className="rounded-none">
             <Plus className="w-4 h-4 mr-2" />
             +Week
           </Button>
