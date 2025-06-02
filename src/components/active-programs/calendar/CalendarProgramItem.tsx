@@ -57,17 +57,17 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
     <div
       onClick={onClick}
       className={`
-        text-xs p-1 rounded-none cursor-pointer hover:bg-gray-50 border-l-2
+        text-xs p-0.5 rounded-none cursor-pointer hover:bg-gray-50 border-l-2 mb-0.5
         ${getStatusColor(workoutStatus)} border-l-2
       `}
     >
-      <div className="flex items-center justify-between mb-1">
-        <div className="font-medium text-gray-900 truncate flex-1">
+      <div className="flex items-center justify-between">
+        <div className="font-medium text-gray-900 truncate flex-1 text-xs leading-3">
           {program.programs?.name || 'Άγνωστο'}
         </div>
         <Badge 
           variant={getBadgeVariant(workoutStatus)} 
-          className="rounded-none text-xs px-1 py-0 ml-1"
+          className="rounded-none text-xs px-0.5 py-0 ml-0.5 h-3 min-w-3 text-center"
         >
           {workoutStatus === 'completed' ? 'Ε' : 
            workoutStatus === 'missed' ? 'Χ' : 
@@ -75,16 +75,16 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
         </Badge>
       </div>
       
-      <div className="text-xs text-gray-600 mb-1">
+      <div className="text-xs text-gray-600 leading-3 mb-0.5">
         {program.app_users?.name?.split(' ')[0] || 'Άγνωστος'}
       </div>
 
-      {/* Progress Bar με ποσοστό */}
-      <div className="flex items-center gap-1">
+      {/* Compact Progress Bar */}
+      <div className="flex items-center gap-0.5">
         <div className="flex-1">
-          <Progress value={progressPercentage} className="h-1" />
+          <Progress value={progressPercentage} className="h-0.5" />
         </div>
-        <div className="text-xs text-gray-600 font-medium min-w-8">
+        <div className="text-xs text-gray-600 font-medium min-w-6 text-right">
           {progressPercentage}%
         </div>
       </div>

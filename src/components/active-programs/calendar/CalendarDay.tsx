@@ -86,19 +86,19 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     <>
       <div
         className={`
-          min-h-[80px] p-1 border border-gray-200 rounded-none
+          min-h-[60px] p-0.5 border border-gray-200 rounded-none
           ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
           ${isDayToday ? 'ring-2 ring-blue-500' : ''}
         `}
       >
         <div className={`
-          text-sm font-medium mb-1
+          text-xs font-medium mb-0.5 leading-3
           ${isDayToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
         `}>
           {format(day, 'd')}
         </div>
         
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {dayPrograms.map((program) => {
             const workoutStatus = getWorkoutStatus(program, dayString);
             
