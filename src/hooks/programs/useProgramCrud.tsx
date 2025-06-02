@@ -44,7 +44,8 @@ export const useProgramCrud = () => {
   const fetchProgramsWithAssignments = async (): Promise<Program[]> => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // First fetch programs with their basic structure
+      const { data: programsData, error: programsError } = await supabase
         .from('programs')
         .select(`
           *,
@@ -60,27 +61,54 @@ export const useProgramCrud = () => {
                 )
               )
             )
-          ),
-          program_assignments(
-            id,
-            user_id,
-            training_dates,
-            status,
-            start_date,
-            end_date,
-            created_at,
-            app_users:user_id(
-              id,
-              name,
-              email,
-              photo_url
-            )
           )
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
+      if (programsError) throw programsError;
+
+      // Then fetch assignments separately and join them manually
+      const { data: assignmentsData, error: assignmentsError } = await supabase
+        .from('program_assignments')
+        .select(`
+          id,
+          program_id,
+          user_id,
+          training_dates,
+          status,
+          start_date,
+          end_date,
+          created_at
+        `);
+
+      if (assignmentsError) throw assignmentsError;
+
+      // Fetch user data separately
+      const { data: usersData, error: usersError } = await supabase
+        .from('app_users')
+        .select('id, name, email, photo_url');
+
+      if (usersError) throw usersError;
+
+      // Manually join the data
+      const programsWithAssignments = (programsData || []).map(program => {
+        const assignments = (assignmentsData || [])
+          .filter(assignment => assignment.program_id === program.id)
+          .map(assignment => {
+            const user = (usersData || []).find(user => user.id === assignment.user_id);
+            return {
+              ...assignment,
+              app_users: user || null
+            };
+          });
+
+        return {
+          ...program,
+          program_assignments: assignments
+        };
+      });
+
+      return programsWithAssignments;
     } catch (error) {
       console.error('Error fetching programs with assignments:', error);
       toast.error('Σφάλμα φόρτωσης προγραμμάτων');

@@ -64,7 +64,8 @@ export interface ProgramAssignment {
   start_date?: string;
   end_date?: string;
   created_at: string;
-  app_users?: ProgramAssignmentUser;
+  // Make app_users optional and flexible to handle join failures
+  app_users?: ProgramAssignmentUser | null;
 }
 
 export interface Program {
@@ -75,6 +76,7 @@ export interface Program {
   user_id?: string;
   app_users?: { name: string } | null;
   program_weeks: Week[];
+  // Make program_assignments optional since not all programs have assignments
   program_assignments?: ProgramAssignment[];
 }
 
