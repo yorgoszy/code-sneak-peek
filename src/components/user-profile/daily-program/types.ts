@@ -1,0 +1,53 @@
+
+export interface TodaysProgramAssignment {
+  id: string;
+  program_id: string;
+  user_id: string;
+  status: string;
+  training_dates?: string[];
+  programs?: {
+    id: string;
+    name: string;
+    description?: string;
+    program_weeks: Array<{
+      id: string;
+      name: string;
+      week_number: number;
+      program_days: Array<{
+        id: string;
+        name: string;
+        day_number: number;
+        estimated_duration_minutes?: number;
+        program_blocks: Array<{
+          id: string;
+          name: string;
+          block_order: number;
+          program_exercises: Array<{
+            id: string;
+            exercise_id: string;
+            sets: number;
+            reps: string;
+            kg?: string;
+            percentage_1rm?: number;
+            velocity_ms?: number;
+            tempo?: string;
+            rest?: string;
+            notes?: string;
+            exercise_order: number;
+            exercises?: {
+              id: string;
+              name: string;
+              description?: string;
+            };
+          }>;
+        }>;
+      }>;
+    }>;
+  };
+  app_users?: {
+    id: string;
+    name: string;
+    email: string;
+    photo_url?: string;
+  } | null;
+}
