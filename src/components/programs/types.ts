@@ -38,6 +38,7 @@ export interface Day {
   id: string;
   name: string;
   day_number: number;
+  estimated_duration_minutes?: number;
   program_blocks: Block[];
 }
 
