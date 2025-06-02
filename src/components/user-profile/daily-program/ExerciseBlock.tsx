@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Play } from 'lucide-react';
+import { Separator } from "@/components/ui/separator";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from './ExerciseVideoDialog';
 
@@ -115,44 +116,67 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
                 
                 {/* Exercise Details Grid */}
                 <div className="p-1 bg-gray-50">
-                  <div className="grid grid-cols-6 gap-1 text-xs">
-                    <div className="text-center">
+                  <div className="flex text-xs">
+                    <div className="flex-1 text-center">
                       <div className="font-medium text-gray-600 mb-1">Sets</div>
                       <div className="text-gray-900">{exercise.sets}</div>
                     </div>
-                    <div className="text-center">
+                    
+                    <Separator orientation="vertical" className="h-10 mx-1" />
+                    
+                    <div className="flex-1 text-center">
                       <div className="font-medium text-gray-600 mb-1">Reps</div>
                       <div className="text-gray-900">{exercise.reps}</div>
                     </div>
+                    
                     {exercise.kg && (
-                      <div className="text-center">
-                        <div className="font-medium text-gray-600 mb-1">Kg</div>
-                        <div className="text-gray-900">{exercise.kg}</div>
-                      </div>
+                      <>
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">Kg</div>
+                          <div className="text-gray-900">{exercise.kg}</div>
+                        </div>
+                      </>
                     )}
+                    
                     {exercise.percentage_1rm && (
-                      <div className="text-center">
-                        <div className="font-medium text-gray-600 mb-1">%1RM</div>
-                        <div className="text-gray-900">{exercise.percentage_1rm}%</div>
-                      </div>
+                      <>
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">%1RM</div>
+                          <div className="text-gray-900">{exercise.percentage_1rm}%</div>
+                        </div>
+                      </>
                     )}
+                    
                     {exercise.velocity_ms && (
-                      <div className="text-center">
-                        <div className="font-medium text-gray-600 mb-1">m/s</div>
-                        <div className="text-gray-900">{exercise.velocity_ms}</div>
-                      </div>
+                      <>
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">m/s</div>
+                          <div className="text-gray-900">{exercise.velocity_ms}</div>
+                        </div>
+                      </>
                     )}
+                    
                     {exercise.tempo && (
-                      <div className="text-center">
-                        <div className="font-medium text-gray-600 mb-1">Tempo</div>
-                        <div className="text-gray-900">{exercise.tempo}</div>
-                      </div>
+                      <>
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">Tempo</div>
+                          <div className="text-gray-900">{exercise.tempo}</div>
+                        </div>
+                      </>
                     )}
+                    
                     {exercise.rest && (
-                      <div className="text-center">
-                        <div className="font-medium text-gray-600 mb-1">Rest</div>
-                        <div className="text-gray-900">{exercise.rest}</div>
-                      </div>
+                      <>
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">Rest</div>
+                          <div className="text-gray-900">{exercise.rest}</div>
+                        </div>
+                      </>
                     )}
                   </div>
                   
