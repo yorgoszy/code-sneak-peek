@@ -9,9 +9,10 @@ import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 
 interface ProgramCalendarProps {
   programs: EnrichedAssignment[];
+  onRefresh?: () => void;
 }
 
-export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) => {
+export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRefresh }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [allCompletions, setAllCompletions] = useState<any[]>([]);
   const { getWorkoutCompletions } = useWorkoutCompletions();
@@ -36,12 +37,17 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
       
       console.log('📊 All completions data:', completionsData);
       setAllCompletions(completionsData);
+      
+      // Καλούμε το onRefresh για να ενημερωθούν οι γονικές συνιστώσες
+      if (onRefresh) {
+        onRefresh();
+      }
     };
 
     if (programs.length > 0) {
       fetchAllCompletions();
     }
-  }, [programs, getWorkoutCompletions]);
+  }, [programs, getWorkoutCompletions, onRefresh]);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);

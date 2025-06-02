@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
@@ -38,7 +39,7 @@ const Programs = () => {
     try {
       console.log('Creating/updating program:', programData);
       await saveProgram(programData);
-      await loadPrograms();
+      await loadPrograms(); // Ξαναφόρτωση για να ενημερωθούν τα δεδομένα
       setBuilderOpen(false);
       setEditingProgram(null);
     } catch (error) {
@@ -59,7 +60,7 @@ const Programs = () => {
         if (selectedProgram?.id === programId) {
           setSelectedProgram(null);
         }
-        await loadPrograms();
+        await loadPrograms(); // Ξαναφόρτωση μετά τη διαγραφή
       }
     } catch (error) {
       console.error('Error deleting program:', error);
@@ -69,7 +70,7 @@ const Programs = () => {
   const handleDuplicateProgram = async (program: Program) => {
     try {
       await duplicateProgram(program);
-      await loadPrograms();
+      await loadPrograms(); // Ξαναφόρτωση μετά την αντιγραφή
     } catch (error) {
       console.error('Error duplicating program:', error);
     }
