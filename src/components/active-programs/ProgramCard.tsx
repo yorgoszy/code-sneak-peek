@@ -119,7 +119,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
 
   return (
     <>
-      <Card className="rounded-none hover:shadow-md transition-shadow h-12 w-80">
+      <Card className="rounded-none hover:shadow-md transition-shadow h-12 w-96">
         <CardContent className="p-1.5 h-full">
           <div className="flex items-center gap-1 h-full">
             {/* Avatar */}
@@ -134,7 +134,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
             </Avatar>
             
             {/* Program Info */}
-            <div className="flex-1 min-w-0 max-w-20">
+            <div className="flex-1 min-w-0 max-w-28">
               <h3 className="text-xs font-semibold text-gray-900 truncate">
                 {assignment.programs?.name || 'Άγνωστο'}
               </h3>
