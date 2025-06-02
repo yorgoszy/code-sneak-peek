@@ -14,7 +14,6 @@ export const useProgramCrud = () => {
         .from('programs')
         .select(`
           *,
-          app_users(*),
           program_weeks(
             *,
             program_days(
@@ -49,7 +48,6 @@ export const useProgramCrud = () => {
         .from('programs')
         .select(`
           *,
-          app_users(*),
           program_weeks(
             *,
             program_days(

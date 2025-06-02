@@ -48,7 +48,6 @@ export const useProgramsData = () => {
         .from('programs')
         .select(`
           *,
-          app_users(*),
           program_weeks(
             *,
             program_days(
@@ -63,8 +62,19 @@ export const useProgramsData = () => {
             )
           ),
           program_assignments(
-            *,
-            app_users(*)
+            id,
+            user_id,
+            training_dates,
+            status,
+            start_date,
+            end_date,
+            created_at,
+            app_users(
+              id,
+              name,
+              email,
+              photo_url
+            )
           )
         `)
         .order('created_at', { ascending: false });

@@ -3,6 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  photo_url?: string;
 }
 
 export interface Exercise {
@@ -47,13 +48,34 @@ export interface Week {
   program_days: Day[];
 }
 
+// Program assignment interface
+export interface ProgramAssignmentUser {
+  id: string;
+  name: string;
+  email: string;
+  photo_url?: string;
+}
+
+export interface ProgramAssignment {
+  id: string;
+  user_id: string;
+  training_dates?: string[];
+  status: string;
+  start_date?: string;
+  end_date?: string;
+  created_at: string;
+  app_users?: ProgramAssignmentUser;
+}
+
 export interface Program {
   id: string;
   name: string;
   description?: string;
   athlete_id?: string;
+  user_id?: string;
   app_users?: { name: string } | null;
   program_weeks: Week[];
+  program_assignments?: ProgramAssignment[];
 }
 
 // Simplified program info for assignments
@@ -61,26 +83,6 @@ export interface ProgramInfo {
   id: string;
   name: string;
   description?: string;
-}
-
-// Updated to match actual database schema and handle query errors
-export interface ProgramAssignment {
-  id: string;
-  program_id: string;
-  athlete_id?: string;
-  assigned_by?: string;
-  start_date?: string;
-  end_date?: string;
-  status: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-  assignment_type?: string;
-  group_id?: string;
-  progress?: number;
-  training_dates?: string[]; // Added training_dates
-  programs?: ProgramInfo | null; // Allow null for failed queries
-  app_users?: User | null; // Allow null for failed queries
 }
 
 // Program structure interface for the builder - unified version
