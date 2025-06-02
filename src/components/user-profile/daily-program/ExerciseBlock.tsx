@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from './ExerciseVideoDialog';
+import { useExerciseCompletion } from '@/hooks/useExerciseCompletion';
 
 interface Exercise {
   id: string;
@@ -40,12 +41,20 @@ interface ExerciseBlockProps {
 export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const { completeSet, getRemainingText, isExerciseComplete } = useExerciseCompletion();
 
-  const handleExerciseClick = (exercise: Exercise) => {
-    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-      setSelectedExercise(exercise);
-      setIsVideoDialogOpen(true);
+  const handleExerciseClick = (exercise: Exercise, event: React.MouseEvent) => {
+    // Αν κλικάρουμε στο video thumbnail, ανοίγει το video
+    if ((event.target as HTMLElement).closest('.video-thumbnail')) {
+      if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+        setSelectedExercise(exercise);
+        setIsVideoDialogOpen(true);
+      }
+      return;
     }
+
+    // Αλλιώς, ολοκληρώνουμε ένα σετ
+    completeSet(exercise.id, exercise.sets);
   };
 
   const renderVideoThumbnail = (exercise: Exercise) => {
@@ -61,7 +70,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
     const thumbnailUrl = getVideoThumbnail(videoUrl);
     
     return (
-      <div className="relative w-8 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0">
+      <div className="relative w-8 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -97,141 +106,27 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
           <div className="space-y-0">
             {block.program_exercises
               .sort((a, b) => a.exercise_order - b.exercise_order)
-              .map((exercise) => (
-                <div key={exercise.id} className="bg-white rounded-none">
-                  {/* Exercise Header */}
-                  <div className="flex items-center gap-2 p-1 border-b border-gray-100">
-                    <div 
-                      onClick={() => handleExerciseClick(exercise)}
-                      className="flex-shrink-0"
-                    >
-                      {renderVideoThumbnail(exercise)}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h6 
-                        className={`text-xs font-medium text-gray-900 truncate ${
-                          exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url) 
-                            ? 'cursor-pointer hover:text-blue-600' 
-                            : ''
-                        }`}
-                        onClick={() => handleExerciseClick(exercise)}
-                      >
-                        {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-                      </h6>
-                    </div>
-                  </div>
-                  
-                  {/* Exercise Details Grid */}
-                  <div className="p-1 bg-gray-50">
-                    <div className="flex text-xs" style={{ width: '70%' }}>
-                      <div className="flex-1 text-center">
-                        <div className="font-medium text-gray-600 mb-1">Sets</div>
-                        <div className="text-gray-900">{exercise.sets || '-'}</div>
-                      </div>
-                      
-                      <Separator orientation="vertical" className="h-10 mx-1" />
-                      
-                      <div className="flex-1 text-center">
-                        <div className="font-medium text-gray-600 mb-1">Reps</div>
-                        <div className="text-gray-900">{exercise.reps || '-'}</div>
-                      </div>
-                      
-                      <Separator orientation="vertical" className="h-10 mx-1" />
-                      
-                      <div className="flex-1 text-center">
-                        <div className="font-medium text-gray-600 mb-1">%1RM</div>
-                        <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
-                      </div>
-                      
-                      <Separator orientation="vertical" className="h-10 mx-1" />
-                      
-                      <div className="flex-1 text-center">
-                        <div className="font-medium text-gray-600 mb-1">Kg</div>
-                        <div className="text-gray-900">{exercise.kg || '-'}</div>
-                      </div>
-                      
-                      <Separator orientation="vertical" className="h-10 mx-1" />
-                      
-                      <div className="flex-1 text-center">
-                        <div className="font-medium text-gray-600 mb-1">m/s</div>
-                        <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
-                      </div>
-                      
-                      <Separator orientation="vertical" className="h-10 mx-1" />
-                      
-                      <div className="flex-1 text-center">
-                        <div className="font-medium text-gray-600 mb-1">Tempo</div>
-                        <div className="text-gray-900">{exercise.tempo || '-'}</div>
-                      </div>
-                      
-                      <Separator orientation="vertical" className="h-10 mx-1" />
-                      
-                      <div className="flex-1 text-center">
-                        <div className="font-medium text-gray-600 mb-1">Rest</div>
-                        <div className="text-gray-900">{exercise.rest || '-'}</div>
-                      </div>
-                    </div>
-                    
-                    {exercise.notes && (
-                      <div className="mt-1 text-xs text-gray-600 italic">
-                        {exercise.notes}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        <ExerciseVideoDialog
-          isOpen={isVideoDialogOpen}
-          onClose={() => setIsVideoDialogOpen(false)}
-          exercise={selectedExercise}
-        />
-      </>
-    );
-  }
-
-  // Αν έχουμε πολλαπλά blocks, τα εμφανίζουμε ως tabs
-  return (
-    <>
-      <Tabs defaultValue={blocks[0]?.id} className="w-full">
-        <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
-          {blocks
-            .sort((a, b) => a.block_order - b.block_order)
-            .map((block) => (
-              <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
-                {block.name}
-              </TabsTrigger>
-            ))}
-        </TabsList>
-        
-        {blocks.map((block) => (
-          <TabsContent key={block.id} value={block.id} className="mt-2">
-            <div className="space-y-0">
-              {block.program_exercises
-                .sort((a, b) => a.exercise_order - b.exercise_order)
-                .map((exercise) => (
-                  <div key={exercise.id} className="bg-white rounded-none border border-gray-200">
+              .map((exercise) => {
+                const remainingText = getRemainingText(exercise.id, exercise.sets);
+                const isComplete = isExerciseComplete(exercise.id, exercise.sets);
+                
+                return (
+                  <div key={exercise.id} className="bg-white rounded-none">
                     {/* Exercise Header */}
-                    <div className="flex items-center gap-2 p-1 border-b border-gray-100">
-                      <div 
-                        onClick={() => handleExerciseClick(exercise)}
-                        className="flex-shrink-0"
-                      >
+                    <div 
+                      className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
+                        isComplete ? 'bg-green-50' : ''
+                      }`}
+                      onClick={(e) => handleExerciseClick(exercise, e)}
+                    >
+                      <div className="flex-shrink-0">
                         {renderVideoThumbnail(exercise)}
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h6 
-                          className={`text-xs font-medium text-gray-900 truncate ${
-                            exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url) 
-                              ? 'cursor-pointer hover:text-blue-600' 
-                              : ''
-                          }`}
-                          onClick={() => handleExerciseClick(exercise)}
-                        >
+                        <h6 className={`text-xs font-medium truncate ${
+                          isComplete ? 'text-green-800' : 'text-gray-900'
+                        }`}>
                           {exercise.exercises?.name || 'Άγνωστη άσκηση'}
                         </h6>
                       </div>
@@ -242,7 +137,9 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
                       <div className="flex text-xs" style={{ width: '70%' }}>
                         <div className="flex-1 text-center">
                           <div className="font-medium text-gray-600 mb-1">Sets</div>
-                          <div className="text-gray-900">{exercise.sets || '-'}</div>
+                          <div className={`${isComplete ? 'text-green-700 font-semibold' : 'text-gray-900'}`}>
+                            {exercise.sets || '-'}{remainingText}
+                          </div>
                         </div>
                         
                         <Separator orientation="vertical" className="h-10 mx-1" />
@@ -295,7 +192,127 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
                       )}
                     </div>
                   </div>
-                ))}
+                );
+              })}
+          </div>
+        </div>
+
+        <ExerciseVideoDialog
+          isOpen={isVideoDialogOpen}
+          onClose={() => setIsVideoDialogOpen(false)}
+          exercise={selectedExercise}
+        />
+      </>
+    );
+  }
+
+  // Αν έχουμε πολλαπλά blocks, τα εμφανίζουμε ως tabs
+  return (
+    <>
+      <Tabs defaultValue={blocks[0]?.id} className="w-full">
+        <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
+          {blocks
+            .sort((a, b) => a.block_order - b.block_order)
+            .map((block) => (
+              <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
+                {block.name}
+              </TabsTrigger>
+            ))}
+        </TabsList>
+        
+        {blocks.map((block) => (
+          <TabsContent key={block.id} value={block.id} className="mt-2">
+            <div className="space-y-0">
+              {block.program_exercises
+                .sort((a, b) => a.exercise_order - b.exercise_order)
+                .map((exercise) => {
+                  const remainingText = getRemainingText(exercise.id, exercise.sets);
+                  const isComplete = isExerciseComplete(exercise.id, exercise.sets);
+                  
+                  return (
+                    <div key={exercise.id} className="bg-white rounded-none border border-gray-200">
+                      {/* Exercise Header */}
+                      <div 
+                        className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
+                          isComplete ? 'bg-green-50' : ''
+                        }`}
+                        onClick={(e) => handleExerciseClick(exercise, e)}
+                      >
+                        <div className="flex-shrink-0">
+                          {renderVideoThumbnail(exercise)}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <h6 className={`text-xs font-medium truncate ${
+                            isComplete ? 'text-green-800' : 'text-gray-900'
+                          }`}>
+                            {exercise.exercises?.name || 'Άγνωστη άσκηση'}
+                          </h6>
+                        </div>
+                      </div>
+                      
+                      {/* Exercise Details Grid */}
+                      <div className="p-1 bg-gray-50">
+                        <div className="flex text-xs" style={{ width: '70%' }}>
+                          <div className="flex-1 text-center">
+                            <div className="font-medium text-gray-600 mb-1">Sets</div>
+                            <div className={`${isComplete ? 'text-green-700 font-semibold' : 'text-gray-900'}`}>
+                              {exercise.sets || '-'}{remainingText}
+                            </div>
+                          </div>
+                          
+                          <Separator orientation="vertical" className="h-10 mx-1" />
+                          
+                          <div className="flex-1 text-center">
+                            <div className="font-medium text-gray-600 mb-1">Reps</div>
+                            <div className="text-gray-900">{exercise.reps || '-'}</div>
+                          </div>
+                          
+                          <Separator orientation="vertical" className="h-10 mx-1" />
+                          
+                          <div className="flex-1 text-center">
+                            <div className="font-medium text-gray-600 mb-1">%1RM</div>
+                            <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
+                          </div>
+                          
+                          <Separator orientation="vertical" className="h-10 mx-1" />
+                          
+                          <div className="flex-1 text-center">
+                            <div className="font-medium text-gray-600 mb-1">Kg</div>
+                            <div className="text-gray-900">{exercise.kg || '-'}</div>
+                          </div>
+                          
+                          <Separator orientation="vertical" className="h-10 mx-1" />
+                          
+                          <div className="flex-1 text-center">
+                            <div className="font-medium text-gray-600 mb-1">m/s</div>
+                            <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
+                          </div>
+                          
+                          <Separator orientation="vertical" className="h-10 mx-1" />
+                          
+                          <div className="flex-1 text-center">
+                            <div className="font-medium text-gray-600 mb-1">Tempo</div>
+                            <div className="text-gray-900">{exercise.tempo || '-'}</div>
+                          </div>
+                          
+                          <Separator orientation="vertical" className="h-10 mx-1" />
+                          
+                          <div className="flex-1 text-center">
+                            <div className="font-medium text-gray-600 mb-1">Rest</div>
+                            <div className="text-gray-900">{exercise.rest || '-'}</div>
+                          </div>
+                        </div>
+                        
+                        {exercise.notes && (
+                          <div className="mt-1 text-xs text-gray-600 italic">
+                            {exercise.notes}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </TabsContent>
         ))}
