@@ -32,6 +32,24 @@ export interface EnrichedAssignment {
           id: string;
           name: string;
           block_order: number;
+          program_exercises: Array<{
+            id: string;
+            exercise_id: string;
+            sets: number;
+            reps: string;
+            kg?: string;
+            percentage_1rm?: number;
+            velocity_ms?: number;
+            tempo?: string;
+            rest?: string;
+            notes?: string;
+            exercise_order: number;
+            exercises?: {
+              id: string;
+              name: string;
+              description?: string;
+            };
+          }>;
         }>;
       }>;
     }>;
