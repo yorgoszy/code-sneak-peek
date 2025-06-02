@@ -57,7 +57,7 @@ export const useTodaysPrograms = (userId: string) => {
               )
             )
           ),
-          app_users!program_assignments_user_id_fkey (
+          app_users (
             id,
             name,
             email,
@@ -73,7 +73,16 @@ export const useTodaysPrograms = (userId: string) => {
         return;
       }
 
-      setTodaysPrograms(assignments || []);
+      // Transform the data to match our expected type structure
+      const transformedAssignments = (assignments || []).map(assignment => ({
+        ...assignment,
+        // Ensure app_users is a single object or null, not an array
+        app_users: Array.isArray(assignment.app_users) 
+          ? assignment.app_users[0] || null 
+          : assignment.app_users
+      }));
+
+      setTodaysPrograms(transformedAssignments as TodaysProgramAssignment[]);
     } catch (error) {
       console.error('Error:', error);
     } finally {
