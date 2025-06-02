@@ -97,7 +97,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
       
       // Extract programs from assignments and add assignment data
       const programsWithAssignments = assignmentsData?.map(assignment => {
-        if (!assignment.programs || typeof assignment.programs !== 'object') return null;
+        if (!assignment.programs || assignment.programs === null || Array.isArray(assignment.programs)) return null;
         return {
           ...assignment.programs,
           program_assignments: [assignment]
