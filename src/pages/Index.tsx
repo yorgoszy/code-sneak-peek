@@ -21,7 +21,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#5271ff' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#5271ff' }}>
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50" style={{ backgroundColor: '#5271ff' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,12 +34,10 @@ const Index = () => {
               />
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#home" className="text-white hover:text-gray-200 transition-colors">Home</a>
-              <a href="#programs" className="text-white hover:text-gray-200 transition-colors">Programs</a>
+              <a href="#home" className="text-white hover:text-gray-200 transition-colors">Αρχική</a>
+              <a href="#features" className="text-white hover:text-gray-200 transition-colors">Χαρακτηριστικά</a>
               <a href="#blog" className="text-white hover:text-gray-200 transition-colors">Blog</a>
-              <a href="#about" className="text-white hover:text-gray-200 transition-colors">About Us</a>
-              <a href="#results" className="text-white hover:text-gray-200 transition-colors">Results</a>
-              <a href="#contact" className="text-white hover:text-gray-200 transition-colors">Contact Us</a>
+              <a href="#contact" className="text-white hover:text-gray-200 transition-colors">Επικοινωνία</a>
               
               {!loading && (
                 isAuthenticated ? (
@@ -71,17 +69,6 @@ const Index = () => {
           </div>
         </div>
       </nav>
-
-      {/* Hero Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen">
-        <div className="text-center text-white px-4">
-          <h1 className="text-6xl font-bold mb-4 animate-fade-in">
-            The Champion's Journey
-            <br />
-            <span className="text-left block">Starts Here</span>
-          </h1>
-        </div>
-      </div>
     </div>
   );
 };

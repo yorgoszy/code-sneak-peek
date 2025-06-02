@@ -70,8 +70,6 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onSave,
   onAssignments
 }) => {
-  console.log('ProgramBuilderDialogContent - onAddWeek function:', typeof onAddWeek);
-  
   return (
     <DialogContent className="max-w-7xl h-[90vh] rounded-none flex flex-col">
       <DialogHeader className="flex-shrink-0">
