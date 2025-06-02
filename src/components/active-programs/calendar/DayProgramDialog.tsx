@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -127,6 +126,19 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
     // Αλλιώς, ολοκληρώνουμε ένα σετ
     completeSet(exercise.id, exercise.sets);
+  };
+
+  const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    // Αν δεν έχει ξεκινήσει η προπόνηση, δεν επιτρέπουμε κλικ στα sets
+    if (!workoutInProgress) {
+      console.log('⚠️ Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
+      return;
+    }
+
+    // Ολοκληρώνουμε ένα σετ
+    completeSet(exerciseId, totalSets);
   };
 
   const renderVideoThumbnail = (exercise: any) => {
@@ -334,7 +346,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                         <div className="flex text-xs" style={{ width: '70%' }}>
                           <div className="flex-1 text-center">
                             <div className="font-medium text-gray-600 mb-1">Sets</div>
-                            <div className={`${isComplete ? 'text-green-700 font-semibold' : 'text-gray-900'}`}>
+                            <div 
+                              className={`${
+                                workoutInProgress ? 'cursor-pointer hover:bg-blue-100 rounded px-1 py-0.5' : 'cursor-not-allowed opacity-50'
+                              } ${isComplete ? 'text-green-700 font-semibold' : 'text-gray-900'}`}
+                              onClick={(e) => handleSetClick(exercise.id, exercise.sets, e)}
+                            >
                               {exercise.sets || '-'}{remainingText}
                             </div>
                           </div>
@@ -482,7 +499,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
               {!workoutInProgress && workoutStatus !== 'completed' && (
                 <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-none">
                   <p className="text-xs text-blue-700">
-                    💡 Πάτησε "Έναρξη" για να ξεκινήσεις την προπόνηση και να μπορείς να κάνεις κλικ στις ασκήσεις για να μειώνεις τα sets.
+                    💡 Πάτησε "Έναρξη" για να ξεκινήσεις την προπόνηση και να μπορείς να κάνεις κλικ στα Sets για να τα μειώνεις.
                   </p>
                 </div>
               )}
@@ -490,7 +507,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
               {workoutInProgress && (
                 <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-none">
                   <p className="text-xs text-green-700">
-                    🏋️‍♂️ Προπόνηση σε εξέλιξη! Κάνε κλικ στις ασκήσεις για να ολοκληρώνεις τα sets.
+                    🏋️‍♂️ Προπόνηση σε εξέλιξη! Κάνε κλικ στα Sets για να ολοκληρώνεις τα sets.
                   </p>
                 </div>
               )}
