@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play } from "lucide-react";
+import { Play, Square, CheckCircle, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
@@ -29,7 +30,28 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const [workoutInProgress, setWorkoutInProgress] = useState(false);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const { completeSet, getRemainingText, isExerciseComplete } = useExerciseCompletion();
+
+  // Χρονόμετρο
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (workoutInProgress && startTime) {
+      interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime.getTime()) / 1000));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [workoutInProgress, startTime]);
+
+  // Format elapsed time to MM:SS
+  const formatElapsedTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   if (!program || !selectedDate) return null;
 
@@ -63,10 +85,37 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     console.log('🏋️‍♂️ Έναρξη προπόνησης για ημερομηνία:', format(selectedDate, 'dd/MM/yyyy'));
     console.log('📋 Program ID:', program.id);
     console.log('👤 User:', program.app_users?.name);
-    // Εδώ θα μπορούσαμε να προσθέσουμε επιπλέον λογική για την έναρξη της προπόνησης
+    
+    setWorkoutInProgress(true);
+    setStartTime(new Date());
+    setElapsedTime(0);
+  };
+
+  const handleCompleteWorkout = () => {
+    console.log('✅ Ολοκλήρωση προπόνησης');
+    console.log('⏱️ Συνολικός χρόνος:', formatElapsedTime(elapsedTime));
+    
+    setWorkoutInProgress(false);
+    setStartTime(null);
+    setElapsedTime(0);
+    // Εδώ θα μπορούσαμε να αποθηκεύσουμε τα δεδομένα της προπόνησης
+  };
+
+  const handleCancelWorkout = () => {
+    console.log('❌ Ακύρωση προπόνησης');
+    
+    setWorkoutInProgress(false);
+    setStartTime(null);
+    setElapsedTime(0);
   };
 
   const handleExerciseClick = (exercise: any, event: React.MouseEvent) => {
+    // Αν δεν έχει ξεκινήσει η προπόνηση, δεν επιτρέπουμε κλικ στις ασκήσεις
+    if (!workoutInProgress) {
+      console.log('⚠️ Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
+      return;
+    }
+
     // Αν κλικάρουμε στο video thumbnail, ανοίγει το video
     if ((event.target as HTMLElement).closest('.video-thumbnail')) {
       if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
@@ -121,11 +170,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   console.log('📅 Available training dates:', trainingDates);
   console.log('📍 Date index found:', dateIndex);
 
-  // Βρίσκουμε την ημέρα προπόνησης που αντιστοιχεί στον δείκτη
   let dayProgram = null;
   if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
     const programDays = program.programs.program_weeks[0].program_days;
-    // Αντιστοιχούμε τον δείκτη με την ημέρα προπόνησης
     dayProgram = programDays[dateIndex % programDays.length];
     console.log('✅ Found day program:', dayProgram?.name);
   }
@@ -153,9 +200,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                   <div key={exercise.id} className="bg-white rounded-none">
                     {/* Exercise Header */}
                     <div 
-                      className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                        isComplete ? 'bg-green-50' : ''
-                      }`}
+                      className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
+                        workoutInProgress ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-50'
+                      } ${isComplete ? 'bg-green-50' : ''}`}
                       onClick={(e) => handleExerciseClick(exercise, e)}
                     >
                       <div className="flex-shrink-0">
@@ -264,9 +311,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                     <div key={exercise.id} className="bg-white rounded-none border border-gray-200">
                       {/* Exercise Header */}
                       <div 
-                        className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                          isComplete ? 'bg-green-50' : ''
-                        }`}
+                        className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
+                          workoutInProgress ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-50'
+                        } ${isComplete ? 'bg-green-50' : ''}`}
                         onClick={(e) => handleExerciseClick(exercise, e)}
                       >
                         <div className="flex-shrink-0">
@@ -361,7 +408,15 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                 Πρόγραμμα Προπόνησης - {format(selectedDate, 'dd MMMM yyyy', { locale: el })}
               </span>
               <div className="flex items-center gap-2">
-                {workoutStatus !== 'completed' && (
+                {/* Χρονόμετρο */}
+                {workoutInProgress && (
+                  <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-none text-sm font-mono">
+                    ⏱️ {formatElapsedTime(elapsedTime)}
+                  </div>
+                )}
+                
+                {/* Κουμπιά ελέγχου προπόνησης */}
+                {!workoutInProgress && workoutStatus !== 'completed' && (
                   <Button
                     onClick={handleStartWorkout}
                     size="sm"
@@ -371,6 +426,29 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                     Έναρξη
                   </Button>
                 )}
+                
+                {workoutInProgress && (
+                  <>
+                    <Button
+                      onClick={handleCompleteWorkout}
+                      size="sm"
+                      className="rounded-none flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Ολοκλήρωση
+                    </Button>
+                    <Button
+                      onClick={handleCancelWorkout}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-none flex items-center gap-2"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      Ακύρωση
+                    </Button>
+                  </>
+                )}
+                
                 <Badge className={`rounded-none ${getStatusBadgeColor(workoutStatus)}`}>
                   {getStatusText(workoutStatus)}
                 </Badge>
@@ -399,6 +477,23 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                   )}
                 </div>
               </div>
+              
+              {/* Οδηγίες για τον χρήστη */}
+              {!workoutInProgress && workoutStatus !== 'completed' && (
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-none">
+                  <p className="text-xs text-blue-700">
+                    💡 Πάτησε "Έναρξη" για να ξεκινήσεις την προπόνηση και να μπορείς να κάνεις κλικ στις ασκήσεις για να μειώνεις τα sets.
+                  </p>
+                </div>
+              )}
+              
+              {workoutInProgress && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-none">
+                  <p className="text-xs text-green-700">
+                    🏋️‍♂️ Προπόνηση σε εξέλιξη! Κάνε κλικ στις ασκήσεις για να ολοκληρώνεις τα sets.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Πρόγραμμα Ημέρας */}
