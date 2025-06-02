@@ -61,8 +61,8 @@ const Index = () => {
                   </div>
                 ) : (
                   <Link to="/auth">
-                    <Button variant="outline" size="icon" style={{ borderRadius: '0', backgroundColor: 'white', color: '#5271ff' }}>
-                      <User className="h-4 w-4" />
+                    <Button variant="outline" style={{ borderRadius: '0', backgroundColor: 'white', color: '#5271ff' }}>
+                      Σύνδεση
                     </Button>
                   </Link>
                 )
