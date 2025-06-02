@@ -10,17 +10,13 @@ export const usePrograms = () => {
 
   const loading = crudLoading || saveLoading;
 
-  const wrappedSaveProgram = async (data: any): Promise<void> => {
-    await saveProgram(data);
-  };
-
   return {
     loading,
     fetchPrograms,
-    saveProgram: wrappedSaveProgram,
+    saveProgram,
     deleteProgram,
     duplicateProgram: async (program: any) => {
-      return await duplicateProgram(program, wrappedSaveProgram);
+      return await duplicateProgram(program, saveProgram);
     },
     fetchProgramAssignments
   };

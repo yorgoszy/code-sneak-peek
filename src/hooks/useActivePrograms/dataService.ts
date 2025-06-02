@@ -89,16 +89,7 @@ export const fetchProgramAssignments = async (userId: string) => {
     return [];
   }
 
-  // Ensure training_dates are properly handled
-  const processedAssignments = assignments.map(assignment => ({
-    ...assignment,
-    training_dates: Array.isArray(assignment.training_dates) 
-      ? assignment.training_dates 
-      : []
-  }));
-
-  console.log('📅 Processed assignments with training_dates:', processedAssignments);
-  return processedAssignments;
+  return assignments;
 };
 
 export const enrichAssignmentWithProgramData = async (assignment: any): Promise<EnrichedAssignment> => {
@@ -175,9 +166,7 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
     // Return assignment with enriched program data and ensure training_dates are preserved
     const enrichedAssignment = {
       ...assignment,
-      training_dates: Array.isArray(assignment.training_dates) 
-        ? assignment.training_dates 
-        : [], // Ensure this field is preserved as array
+      training_dates: assignment.training_dates || [], // Ensure this field is preserved
       programs: {
         ...programData,
         program_weeks: weeksWithDays

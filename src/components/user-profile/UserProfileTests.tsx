@@ -1,17 +1,19 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TestCard } from "./TestCard";
 
 interface UserProfileTestsProps {
   tests: any[];
-  onTestDeleted: () => void;
 }
 
-export const UserProfileTests = ({ tests, onTestDeleted }: UserProfileTestsProps) => {
+export const UserProfileTests = ({ tests }: UserProfileTestsProps) => {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('el-GR');
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Τεστ Αξιολόγησης ({tests.length})</CardTitle>
+        <CardTitle>Τεστ Αξιολόγησης</CardTitle>
       </CardHeader>
       <CardContent>
         {tests.length === 0 ? (
@@ -19,13 +21,19 @@ export const UserProfileTests = ({ tests, onTestDeleted }: UserProfileTestsProps
             Δεν βρέθηκαν τεστ
           </p>
         ) : (
-          <div className="grid gap-4">
+          <div className="space-y-3">
             {tests.map((test) => (
-              <TestCard 
-                key={test.id} 
-                test={test} 
-                onTestDeleted={onTestDeleted}
-              />
+              <div key={test.id} className="border p-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-medium">{test.test_type || 'Τεστ'}</h4>
+                    <p className="text-sm text-gray-600">{test.notes}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Ημερομηνία: {formatDate(test.date)}
+                    </p>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}

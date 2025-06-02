@@ -164,13 +164,6 @@ export type Database = {
             referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "anthropometric_test_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       app_users: {
@@ -218,6 +211,74 @@ export type Database = {
         }
         Relationships: []
       }
+      athlete_groups: {
+        Row: {
+          athlete_ids: string[]
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          athlete_ids?: string[]
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          athlete_ids?: string[]
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      athlete_memberships: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          membership_id: string | null
+          payment_status: string | null
+          start_date: string
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          membership_id?: string | null
+          payment_status?: string | null
+          start_date: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          membership_id?: string | null
+          payment_status?: string | null
+          start_date?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_memberships_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           created_at: string | null
@@ -255,15 +316,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       endurance_test_data: {
         Row: {
@@ -384,13 +437,6 @@ export type Database = {
           {
             foreignKeyName: "endurance_test_sessions_created_by_fkey"
             columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "endurance_test_sessions_user_id_fkey"
-            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -683,13 +729,6 @@ export type Database = {
             referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "functional_test_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       functional_tests: {
@@ -921,13 +960,6 @@ export type Database = {
             referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "jump_test_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       jump_tests: {
@@ -1130,13 +1162,6 @@ export type Database = {
             referencedRelation: "memberships"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "payments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       profiles: {
@@ -1221,6 +1246,13 @@ export type Database = {
             columns: ["assigned_by"]
             isOneToOne: false
             referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_group_id"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_groups"
             referencedColumns: ["id"]
           },
           {
@@ -1543,20 +1575,6 @@ export type Database = {
             referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "programs_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "programs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       site_images: {
@@ -1710,13 +1728,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "strength_test_sessions_athlete_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "strength_test_sessions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
@@ -1929,13 +1940,6 @@ export type Database = {
             referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "test_results_summary_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       test_types: {
@@ -2007,13 +2011,6 @@ export type Database = {
             referencedRelation: "test_types"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "tests_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_roles: {
@@ -2061,13 +2058,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_programs_created_by"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "programs_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "app_users"
