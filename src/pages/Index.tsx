@@ -159,10 +159,6 @@ const Index = () => {
       {/* Hero Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen">
         <div className="text-center text-white px-4">
-          <h1 className="text-6xl font-bold mb-4 animate-fade-in">HyperKids</h1>
-          <p className="text-xl mb-8 animate-fade-in animation-delay-200">
-            Το μέλλον της παιδικής φυσικής κατάστασης
-          </p>
         </div>
       </div>
     </div>
