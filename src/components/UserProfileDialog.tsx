@@ -1,4 +1,5 @@
 
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -6,10 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UserProfileHeader } from "./user-profile/UserProfileHeader";
-import { UserProfileStats } from "./user-profile/UserProfileStats";
-import { UserProfileTabs } from "./user-profile/UserProfileTabs";
-import { useUserProfileData } from "./user-profile/hooks/useUserProfileData";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 interface UserProfileDialogProps {
   isOpen: boolean;
@@ -18,29 +17,48 @@ interface UserProfileDialogProps {
 }
 
 export const UserProfileDialog = ({ isOpen, onClose, user }: UserProfileDialogProps) => {
-  const { stats, programs, tests, payments } = useUserProfileData(user, isOpen);
+  const navigate = useNavigate();
 
   if (!user) return null;
 
+  const handleOpenProfile = () => {
+    navigate(`/dashboard/user-profile/${user.id}`);
+    onClose();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[400px] rounded-none">
         <DialogHeader>
           <DialogTitle>Προφίλ Χρήστη</DialogTitle>
           <DialogDescription>
-            Στοιχεία και δραστηριότητες του χρήστη
+            Ανοίξτε το πλήρες προφίλ του χρήστη σε νέα σελίδα
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          <UserProfileHeader user={user} />
-          <UserProfileStats user={user} stats={stats} />
-          <UserProfileTabs 
-            user={user}
-            programs={programs}
-            tests={tests}
-            payments={payments}
-          />
+        <div className="space-y-4">
+          <div className="text-center p-6 border rounded-none">
+            <h3 className="font-semibold text-lg">{user.name}</h3>
+            <p className="text-gray-600">{user.email}</p>
+            <p className="text-sm text-gray-500 capitalize mt-2">Ρόλος: {user.role}</p>
+          </div>
+
+          <div className="flex gap-3">
+            <Button 
+              onClick={handleOpenProfile}
+              className="flex-1 rounded-none"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Άνοιγμα Προφίλ
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={onClose}
+              className="rounded-none"
+            >
+              Ακύρωση
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
