@@ -163,13 +163,6 @@ const Index = () => {
           <p className="text-xl mb-8 animate-fade-in animation-delay-200">
             Το μέλλον της παιδικής φυσικής κατάστασης
           </p>
-          <Button 
-            onClick={handleGetStarted}
-            className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg animate-fade-in animation-delay-400"
-            style={{ borderRadius: '0' }}
-          >
-            {isAuthenticated ? "Πηγαίνετε στο Dashboard" : "Ξεκινήστε τώρα"}
-          </Button>
         </div>
       </div>
     </div>
