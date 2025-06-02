@@ -35,7 +35,7 @@ export const ExerciseNotes: React.FC<ExerciseNotesProps> = ({
       const previousWeekDateStr = format(previousWeekDate, 'yyyy-MM-dd');
       const previousWeekKey = `${previousWeekDateStr}-${exerciseId}`;
       
-      // Προσπαθούμε να βρούμε τα notes στο localStorage ή στο state
+      // Προσπαθούμε να βρούμε τα notes στο localStorage
       const savedNotes = localStorage.getItem(`exercise-notes-${previousWeekKey}`);
       if (savedNotes && savedNotes.trim()) {
         console.log(`📝 Φόρτωση notes από προηγούμενη εβδομάδα για άσκηση ${exerciseId}:`, savedNotes);

@@ -71,6 +71,7 @@ export const useExerciseCompletion = () => {
   }, [getExerciseState]);
 
   const updateKg = useCallback((exerciseId: string, kg: string) => {
+    console.log(`⚖️ Updating kg for ${exerciseId}:`, kg);
     const currentState = getExerciseState(exerciseId);
     updateExerciseState(exerciseId, {
       adjustments: { ...currentState.adjustments, kg }
@@ -78,6 +79,7 @@ export const useExerciseCompletion = () => {
   }, [getExerciseState, updateExerciseState]);
 
   const clearKg = useCallback((exerciseId: string) => {
+    console.log(`🗑️ Clearing kg for ${exerciseId}`);
     const currentState = getExerciseState(exerciseId);
     const { kg, ...restAdjustments } = currentState.adjustments;
     updateExerciseState(exerciseId, {
@@ -86,6 +88,7 @@ export const useExerciseCompletion = () => {
   }, [getExerciseState, updateExerciseState]);
 
   const updateVelocity = useCallback((exerciseId: string, velocity: number) => {
+    console.log(`🏃 Updating velocity for ${exerciseId}:`, velocity);
     const currentState = getExerciseState(exerciseId);
     updateExerciseState(exerciseId, {
       adjustments: { ...currentState.adjustments, velocity }
@@ -93,6 +96,7 @@ export const useExerciseCompletion = () => {
   }, [getExerciseState, updateExerciseState]);
 
   const clearVelocity = useCallback((exerciseId: string) => {
+    console.log(`🗑️ Clearing velocity for ${exerciseId}`);
     const currentState = getExerciseState(exerciseId);
     const { velocity, ...restAdjustments } = currentState.adjustments;
     updateExerciseState(exerciseId, {
@@ -101,6 +105,7 @@ export const useExerciseCompletion = () => {
   }, [getExerciseState, updateExerciseState]);
 
   const updateReps = useCallback((exerciseId: string, reps: number) => {
+    console.log(`🔢 Updating reps for ${exerciseId}:`, reps);
     const currentState = getExerciseState(exerciseId);
     updateExerciseState(exerciseId, {
       adjustments: { ...currentState.adjustments, reps }
@@ -108,6 +113,7 @@ export const useExerciseCompletion = () => {
   }, [getExerciseState, updateExerciseState]);
 
   const clearReps = useCallback((exerciseId: string) => {
+    console.log(`🗑️ Clearing reps for ${exerciseId}`);
     const currentState = getExerciseState(exerciseId);
     const { reps, ...restAdjustments } = currentState.adjustments;
     updateExerciseState(exerciseId, {

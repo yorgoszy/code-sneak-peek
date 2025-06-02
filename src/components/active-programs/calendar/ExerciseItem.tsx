@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Separator } from "@/components/ui/separator";
 import { Play, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseNotes } from './ExerciseNotes';
+import { format, subDays } from "date-fns";
 
 interface ExerciseItemProps {
   exercise: any;
@@ -50,6 +52,39 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   const [actualVelocity, setActualVelocity] = useState('');
   const [actualReps, setActualReps] = useState('');
 
+  // Φόρτωση δεδομένων από την προηγούμενη εβδομάδα
+  useEffect(() => {
+    if (selectedDate && program) {
+      const previousWeekDate = subDays(selectedDate, 7);
+      const previousWeekDateStr = format(previousWeekDate, 'yyyy-MM-dd');
+      const previousWeekKey = `${previousWeekDateStr}-${exercise.id}`;
+      
+      // Φόρτωση kg από localStorage
+      const savedKg = localStorage.getItem(`exercise-kg-${previousWeekKey}`);
+      if (savedKg && !actualKg) {
+        console.log(`⚖️ Φόρτωση kg από προηγούμενη εβδομάδα για άσκηση ${exercise.id}:`, savedKg);
+        setActualKg(savedKg);
+        updateKg(exercise.id, savedKg);
+      }
+      
+      // Φόρτωση velocity από localStorage
+      const savedVelocity = localStorage.getItem(`exercise-velocity-${previousWeekKey}`);
+      if (savedVelocity && !actualVelocity) {
+        console.log(`🏃 Φόρτωση velocity από προηγούμενη εβδομάδα για άσκηση ${exercise.id}:`, savedVelocity);
+        setActualVelocity(savedVelocity);
+        updateVelocity(exercise.id, parseFloat(savedVelocity));
+      }
+      
+      // Φόρτωση reps από localStorage
+      const savedReps = localStorage.getItem(`exercise-reps-${previousWeekKey}`);
+      if (savedReps && !actualReps) {
+        console.log(`🔢 Φόρτωση reps από προηγούμενη εβδομάδα για άσκηση ${exercise.id}:`, savedReps);
+        setActualReps(savedReps);
+        updateReps(exercise.id, parseInt(savedReps));
+      }
+    }
+  }, [selectedDate, program, exercise.id, actualKg, actualVelocity, actualReps, updateKg, updateVelocity, updateReps]);
+
   // Calculate new 1RM percentage based on actual kg
   const calculateNew1RMPercentage = (actualWeight: string) => {
     if (!actualWeight || !exercise.kg || !exercise.percentage_1rm) return null;
@@ -67,6 +102,13 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   const handleKgChange = (value: string) => {
     setActualKg(value);
     updateKg(exercise.id, value);
+    
+    // Αποθήκευση στο localStorage
+    if (selectedDate) {
+      const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
+      const storageKey = `exercise-kg-${currentDateStr}-${exercise.id}`;
+      localStorage.setItem(storageKey, value);
+    }
   };
 
   const handleVelocityChange = (value: string) => {
@@ -74,6 +116,13 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     const numValue = parseFloat(value);
     if (!isNaN(numValue)) {
       updateVelocity(exercise.id, numValue);
+      
+      // Αποθήκευση στο localStorage
+      if (selectedDate) {
+        const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
+        const storageKey = `exercise-velocity-${currentDateStr}-${exercise.id}`;
+        localStorage.setItem(storageKey, value);
+      }
     }
   };
 
@@ -82,6 +131,13 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     const numValue = parseInt(value);
     if (!isNaN(numValue)) {
       updateReps(exercise.id, numValue);
+      
+      // Αποθήκευση στο localStorage
+      if (selectedDate) {
+        const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
+        const storageKey = `exercise-reps-${currentDateStr}-${exercise.id}`;
+        localStorage.setItem(storageKey, value);
+      }
     }
   };
 
@@ -91,7 +147,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     const videoUrl = exercise.exercises?.video_url;
     if (!videoUrl || !isValidVideoUrl(videoUrl)) {
       return (
-        <div className="w-16 h-12 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
+        <div className="w-20 h-16 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
           <span className="text-sm text-gray-400">-</span>
         </div>
       );
@@ -101,7 +157,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     
     return (
       <div 
-        className="relative w-16 h-12 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail"
+        className="relative w-20 h-16 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail"
         onClick={() => onVideoClick(exercise)}
       >
         {thumbnailUrl ? (
@@ -145,7 +201,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         <div className="p-1 bg-gray-50" style={{ width: '70%' }}>
           <div className="flex text-xs" style={{ height: '64px' }}>
             {/* Video */}
-            <div className="flex items-center justify-center" style={{ width: '64px' }}>
+            <div className="flex items-center justify-center" style={{ width: '80px' }}>
               {renderVideoThumbnail(exercise)}
             </div>
             
@@ -184,6 +240,11 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
                       onClick={() => {
                         setActualReps('');
                         clearReps(exercise.id);
+                        if (selectedDate) {
+                          const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
+                          const storageKey = `exercise-reps-${currentDateStr}-${exercise.id}`;
+                          localStorage.removeItem(storageKey);
+                        }
                       }}
                       className="text-red-500 hover:text-red-700 p-0.5"
                     >
@@ -227,6 +288,11 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
                       onClick={() => {
                         setActualKg('');
                         clearKg(exercise.id);
+                        if (selectedDate) {
+                          const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
+                          const storageKey = `exercise-kg-${currentDateStr}-${exercise.id}`;
+                          localStorage.removeItem(storageKey);
+                        }
                       }}
                       className="text-red-500 hover:text-red-700 p-0.5"
                     >
@@ -258,6 +324,11 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
                       onClick={() => {
                         setActualVelocity('');
                         clearVelocity(exercise.id);
+                        if (selectedDate) {
+                          const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
+                          const storageKey = `exercise-velocity-${currentDateStr}-${exercise.id}`;
+                          localStorage.removeItem(storageKey);
+                        }
                       }}
                       className="text-red-500 hover:text-red-700 p-0.5"
                     >
