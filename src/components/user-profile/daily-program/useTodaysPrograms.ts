@@ -57,7 +57,7 @@ export const useTodaysPrograms = (userId: string) => {
               )
             )
           ),
-          app_users (
+          app_users!program_assignments_user_id_fkey (
             id,
             name,
             email,
