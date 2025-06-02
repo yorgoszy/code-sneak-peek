@@ -28,6 +28,7 @@ export interface EnrichedAssignment {
         id: string;
         name: string;
         day_number: number;
+        estimated_duration_minutes?: number;
         program_blocks: Array<{
           id: string;
           name: string;
