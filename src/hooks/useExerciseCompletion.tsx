@@ -13,6 +13,7 @@ interface ExerciseAdjustments {
   [exerciseId: string]: {
     actualKg?: string;
     actualVelocity?: number;
+    actualReps?: number;
   };
 }
 
@@ -96,6 +97,26 @@ export const useExerciseCompletion = () => {
     }));
   };
 
+  const updateReps = (exerciseId: string, reps: number) => {
+    setExerciseAdjustments(prev => ({
+      ...prev,
+      [exerciseId]: {
+        ...prev[exerciseId],
+        actualReps: reps
+      }
+    }));
+  };
+
+  const clearReps = (exerciseId: string) => {
+    setExerciseAdjustments(prev => ({
+      ...prev,
+      [exerciseId]: {
+        ...prev[exerciseId],
+        actualReps: undefined
+      }
+    }));
+  };
+
   const getProgress = (exerciseId: string) => {
     return exerciseProgress[exerciseId] || 0;
   };
@@ -134,6 +155,8 @@ export const useExerciseCompletion = () => {
     clearKg,
     updateVelocity,
     clearVelocity,
+    updateReps,
+    clearReps,
     getAdjustments
   };
 };

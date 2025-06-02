@@ -18,6 +18,8 @@ interface ProgramBlocksProps {
   clearKg: (exerciseId: string) => void;
   updateVelocity: (exerciseId: string, velocity: number) => void;
   clearVelocity: (exerciseId: string) => void;
+  updateReps: (exerciseId: string, reps: number) => void;
+  clearReps: (exerciseId: string) => void;
 }
 
 export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
@@ -34,7 +36,9 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   updateKg,
   clearKg,
   updateVelocity,
-  clearVelocity
+  clearVelocity,
+  updateReps,
+  clearReps
 }) => {
   if (!blocks || blocks.length === 0) return null;
 
@@ -62,6 +66,8 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
             clearKg={clearKg}
             updateVelocity={updateVelocity}
             clearVelocity={clearVelocity}
+            updateReps={updateReps}
+            clearReps={clearReps}
           />
         );
       });

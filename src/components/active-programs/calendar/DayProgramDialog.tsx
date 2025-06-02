@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +43,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     clearKg,
     updateVelocity,
     clearVelocity,
+    updateReps,
+    clearReps,
     getAdjustments
   } = useExerciseCompletion();
 
@@ -227,6 +228,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                   clearKg={clearKg}
                   updateVelocity={updateVelocity}
                   clearVelocity={clearVelocity}
+                  updateReps={updateReps}
+                  clearReps={clearReps}
                 />
               </div>
             ) : (
