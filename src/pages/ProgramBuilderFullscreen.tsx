@@ -102,11 +102,11 @@ const ProgramBuilderFullscreen = () => {
     
     try {
       const savedProgram = await saveProgram(programToSave);
-      const programId = savedProgram?.id || editingProgram?.id;
+      const finalProgramId = savedProgram?.id || editingProgram?.id;
       
-      if (programId && userId && trainingDates?.length > 0) {
+      if (finalProgramId && userId && trainingDates?.length > 0) {
         await createOrUpdateAssignment(
-          programId, 
+          finalProgramId, 
           userId, 
           undefined,
           undefined,

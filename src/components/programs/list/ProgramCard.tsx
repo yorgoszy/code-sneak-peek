@@ -80,10 +80,10 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
           {/* Action Buttons */}
           <ProgramActions
             program={program}
-            onEditProgram={onEditProgram}
-            onDeleteProgram={onDeleteProgram}
-            onDuplicateProgram={onDuplicateProgram}
-            onPreviewProgram={onPreviewProgram}
+            onEdit={onEditProgram}
+            onDelete={onDeleteProgram}
+            onDuplicate={onDuplicateProgram || (() => {})}
+            onPreview={onPreviewProgram || (() => {})}
           />
         </div>
 
