@@ -4,14 +4,13 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, Dumbbell } from 'lucide-react';
-import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface UserProfileDailyProgramProps {
   user: any;
 }
 
 export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = ({ user }) => {
-  const [todaysPrograms, setTodaysPrograms] = useState<EnrichedAssignment[]>([]);
+  const [todaysPrograms, setTodaysPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const today = new Date();
   const todayString = format(today, 'yyyy-MM-dd');
@@ -122,7 +121,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
             Πρόγραμμα για σήμερα
           </h2>
           <p className="text-sm text-gray-600">
-            {format(today, 'EEEE, dd MMMM yyyy', { locale: { localize: { day: () => '' } } })}
+            {format(today, 'dd/MM/yyyy')}
           </p>
         </div>
       </div>
