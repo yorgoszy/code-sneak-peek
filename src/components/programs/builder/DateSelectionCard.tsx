@@ -47,47 +47,47 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4">
-          {/* Επιλεγμένες Ημερομηνίες */}
-          {selectedDates.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Επιλεγμένες Ημερομηνίες:</h4>
-              <div className="flex flex-wrap gap-2">
-                {selectedDates.map((dateString) => (
-                  <div
-                    key={dateString}
-                    className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 text-xs"
-                  >
-                    <span>{format(parseISO(dateString), 'dd/MM/yyyy', { locale: el })}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 w-4 p-0 hover:bg-red-100"
-                      onClick={() => removeDate(dateString)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Calendar */}
+          {/* Calendar με custom day content */}
           <div className="flex justify-center">
-            <Calendar
-              mode="single"
-              selected={undefined}
-              onSelect={onDateSelect}
-              className="rounded-none border pointer-events-auto"
-              locale={el}
-              modifiers={{
-                selected: isDateSelected
-              }}
-              modifiersClassNames={{
-                selected: "bg-blue-500 text-white hover:bg-blue-600"
-              }}
-              disabled={isDateDisabled}
-            />
+            <div className="relative">
+              <Calendar
+                mode="single"
+                selected={undefined}
+                onSelect={onDateSelect}
+                className="rounded-none border pointer-events-auto"
+                locale={el}
+                modifiers={{
+                  selected: isDateSelected
+                }}
+                modifiersClassNames={{
+                  selected: "bg-blue-500 text-white hover:bg-blue-600"
+                }}
+                disabled={isDateDisabled}
+                components={{
+                  DayContent: ({ date }) => {
+                    const dateString = format(date, 'yyyy-MM-dd');
+                    const isSelected = selectedDates.includes(dateString);
+                    
+                    return (
+                      <div className="relative w-full h-full flex items-center justify-center">
+                        <span>{date.getDate()}</span>
+                        {isSelected && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeDate(dateString);
+                            }}
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 text-xs"
+                          >
+                            <X className="w-2 h-2" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  }
+                }}
+              />
+            </div>
           </div>
 
           {/* Clear All Button */}
