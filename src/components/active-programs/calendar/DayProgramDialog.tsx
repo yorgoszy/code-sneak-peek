@@ -1,16 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Square, CheckCircle, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
+import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
-import { ExerciseNotes } from './ExerciseNotes';
 import { useExerciseCompletion } from '@/hooks/useExerciseCompletion';
+import { WorkoutTimer } from './WorkoutTimer';
+import { WorkoutControls } from './WorkoutControls';
+import { ProgramInfo } from './ProgramInfo';
+import { ProgramBlocks } from './ProgramBlocks';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -58,13 +58,6 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     return () => clearInterval(interval);
   }, [workoutInProgress, startTime]);
 
-  // Format elapsed time to MM:SS
-  const formatElapsedTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   if (!program || !selectedDate) return null;
 
   const getStatusBadgeColor = (status: string) => {
@@ -105,7 +98,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   const handleCompleteWorkout = () => {
     console.log('✅ Ολοκλήρωση προπόνησης');
-    console.log('⏱️ Συνολικός χρόνος:', formatElapsedTime(elapsedTime));
+    console.log('⏱️ Συνολικός χρόνος:', elapsedTime);
     
     setWorkoutInProgress(false);
     setStartTime(null);
@@ -136,9 +129,6 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
       }
       return;
     }
-
-    // Αλλιώς, ολοκληρώνουμε ένα σετ
-    completeSet(exercise.id, exercise.sets);
   };
 
   const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {
@@ -154,36 +144,11 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     completeSet(exerciseId, totalSets);
   };
 
-  const renderVideoThumbnail = (exercise: any) => {
-    const videoUrl = exercise.exercises?.video_url;
-    if (!videoUrl || !isValidVideoUrl(videoUrl)) {
-      return (
-        <div className="w-8 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
-          <span className="text-xs text-gray-400">-</span>
-        </div>
-      );
+  const handleVideoClick = (exercise: any) => {
+    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+      setSelectedExercise(exercise);
+      setIsVideoDialogOpen(true);
     }
-
-    const thumbnailUrl = getVideoThumbnail(videoUrl);
-    
-    return (
-      <div className="relative w-8 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail">
-        {thumbnailUrl ? (
-          <img
-            src={thumbnailUrl}
-            alt={`${exercise.exercises?.name} thumbnail`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <Play className="w-2 h-2 text-gray-400" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Play className="w-2 h-2 text-white" />
-        </div>
-      </div>
-    );
   };
 
   // Βρίσκουμε την σωστή ημέρα βάσει των training_dates
@@ -202,273 +167,6 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     console.log('✅ Found day program:', dayProgram?.name);
   }
 
-  const renderBlockTabs = (blocks: any[]) => {
-    if (!blocks || blocks.length === 0) return null;
-
-    // Αν έχουμε μόνο ένα block, το εμφανίζουμε χωρίς tabs
-    if (blocks.length === 1) {
-      const block = blocks[0];
-      return (
-        <div className="bg-gray-700 rounded-none p-2 mb-1">
-          <h6 className="text-xs font-medium text-white mb-1">
-            {block.name}
-          </h6>
-          
-          <div className="space-y-0">
-            {block.program_exercises
-              ?.sort((a: any, b: any) => a.exercise_order - b.exercise_order)
-              .map((exercise: any) => {
-                const remainingText = getRemainingText(exercise.id, exercise.sets);
-                const isComplete = isExerciseComplete(exercise.id, exercise.sets);
-                
-                return (
-                  <div key={exercise.id} className="bg-white rounded-none">
-                    {/* Exercise Header */}
-                    <div 
-                      className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
-                        workoutInProgress ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-50'
-                      } ${isComplete ? 'bg-green-50' : ''}`}
-                      onClick={(e) => handleExerciseClick(exercise, e)}
-                    >
-                      <div className="flex-shrink-0">
-                        {renderVideoThumbnail(exercise)}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h6 className={`text-xs font-medium truncate ${
-                          isComplete ? 'text-green-800' : 'text-gray-900'
-                        }`}>
-                          {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-                        </h6>
-                      </div>
-                    </div>
-                    
-                    {/* Exercise Details Grid */}
-                    <div className="flex">
-                      <div className="p-1 bg-gray-50" style={{ width: '70%' }}>
-                        <div className="flex text-xs">
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Sets</div>
-                            <div 
-                              className={`${
-                                workoutInProgress ? 'cursor-pointer hover:bg-blue-100 rounded px-1 py-0.5' : 'cursor-not-allowed opacity-50'
-                              } ${isComplete ? 'text-green-700 font-semibold' : 'text-gray-900'}`}
-                              onClick={(e) => handleSetClick(exercise.id, exercise.sets, e)}
-                            >
-                              {exercise.sets || '-'}{remainingText}
-                            </div>
-                          </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Reps</div>
-                            <div className="text-gray-900">{exercise.reps || '-'}</div>
-                          </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">%1RM</div>
-                            <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
-                          </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Kg</div>
-                            <div className="text-gray-900">{exercise.kg || '-'}</div>
-                          </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">m/s</div>
-                            <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
-                          </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Tempo</div>
-                            <div className="text-gray-900">{exercise.tempo || '-'}</div>
-                          </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Rest</div>
-                            <div className="text-gray-900">{exercise.rest || '-'}</div>
-                          </div>
-                        </div>
-                        
-                        {exercise.notes && (
-                          <div className="mt-1 text-xs text-gray-600 italic">
-                            {exercise.notes}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Notes and Adjustments Section */}
-                      <ExerciseNotes
-                        exerciseId={exercise.id}
-                        initialNotes={getNotes(exercise.id)}
-                        initialKg={exercise.kg}
-                        initialVelocity={exercise.velocity_ms}
-                        percentage1rm={exercise.percentage_1rm}
-                        workoutInProgress={workoutInProgress}
-                        onNotesChange={updateNotes}
-                        onKgChange={updateKg}
-                        onVelocityChange={updateVelocity}
-                        onClearNotes={clearNotes}
-                        onClearKg={clearKg}
-                        onClearVelocity={clearVelocity}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-      );
-    }
-
-    // Αν έχουμε πολλαπλά blocks, τα εμφανίζουμε ως tabs
-    return (
-      <Tabs defaultValue={blocks[0]?.id} className="w-full">
-        <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
-          {blocks
-            .sort((a, b) => a.block_order - b.block_order)
-            .map((block) => (
-              <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
-                {block.name}
-              </TabsTrigger>
-            ))}
-        </TabsList>
-        
-        {blocks.map((block) => (
-          <TabsContent key={block.id} value={block.id} className="mt-2">
-            <div className="space-y-0">
-              {block.program_exercises
-                ?.sort((a: any, b: any) => a.exercise_order - b.exercise_order)
-                .map((exercise: any) => {
-                  const remainingText = getRemainingText(exercise.id, exercise.sets);
-                  const isComplete = isExerciseComplete(exercise.id, exercise.sets);
-                  
-                  return (
-                    <div key={exercise.id} className="bg-white rounded-none border border-gray-200">
-                      {/* Exercise Header */}
-                      <div 
-                        className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
-                          workoutInProgress ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-50'
-                        } ${isComplete ? 'bg-green-50' : ''}`}
-                        onClick={(e) => handleExerciseClick(exercise, e)}
-                      >
-                        <div className="flex-shrink-0">
-                          {renderVideoThumbnail(exercise)}
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <h6 className={`text-xs font-medium truncate ${
-                            isComplete ? 'text-green-800' : 'text-gray-900'
-                          }`}>
-                            {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-                          </h6>
-                        </div>
-                      </div>
-                      
-                      {/* Exercise Details Grid */}
-                      <div className="flex">
-                        <div className="p-1 bg-gray-50" style={{ width: '70%' }}>
-                          <div className="flex text-xs">
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-gray-600 mb-1">Sets</div>
-                              <div 
-                                className={`${
-                                  workoutInProgress ? 'cursor-pointer hover:bg-blue-100 rounded px-1 py-0.5' : 'cursor-not-allowed opacity-50'
-                                } ${isComplete ? 'text-green-700 font-semibold' : 'text-gray-900'}`}
-                                onClick={(e) => handleSetClick(exercise.id, exercise.sets, e)}
-                              >
-                                {exercise.sets || '-'}{remainingText}
-                              </div>
-                            </div>
-                            
-                            <Separator orientation="vertical" className="h-10 mx-1" />
-                            
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-gray-600 mb-1">Reps</div>
-                              <div className="text-gray-900">{exercise.reps || '-'}</div>
-                            </div>
-                            
-                            <Separator orientation="vertical" className="h-10 mx-1" />
-                            
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-gray-600 mb-1">%1RM</div>
-                              <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
-                            </div>
-                            
-                            <Separator orientation="vertical" className="h-10 mx-1" />
-                            
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-gray-600 mb-1">Kg</div>
-                              <div className="text-gray-900">{exercise.kg || '-'}</div>
-                            </div>
-                            
-                            <Separator orientation="vertical" className="h-10 mx-1" />
-                            
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-gray-600 mb-1">m/s</div>
-                              <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
-                            </div>
-                            
-                            <Separator orientation="vertical" className="h-10 mx-1" />
-                            
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-gray-600 mb-1">Tempo</div>
-                              <div className="text-gray-900">{exercise.tempo || '-'}</div>
-                            </div>
-                            
-                            <Separator orientation="vertical" className="h-10 mx-1" />
-                            
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-gray-600 mb-1">Rest</div>
-                              <div className="text-gray-900">{exercise.rest || '-'}</div>
-                            </div>
-                          </div>
-                          
-                          {exercise.notes && (
-                            <div className="mt-1 text-xs text-gray-600 italic">
-                              {exercise.notes}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Notes and Adjustments Section */}
-                        <ExerciseNotes
-                          exerciseId={exercise.id}
-                          initialNotes={getNotes(exercise.id)}
-                          initialKg={exercise.kg}
-                          initialVelocity={exercise.velocity_ms}
-                          percentage1rm={exercise.percentage_1rm}
-                          workoutInProgress={workoutInProgress}
-                          onNotesChange={updateNotes}
-                          onKgChange={updateKg}
-                          onVelocityChange={updateVelocity}
-                          onClearNotes={clearNotes}
-                          onClearKg={clearKg}
-                          onClearVelocity={clearVelocity}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
-    );
-  };
-
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -479,46 +177,18 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                 Πρόγραμμα Προπόνησης - {format(selectedDate, 'dd MMMM yyyy', { locale: el })}
               </span>
               <div className="flex items-center gap-2">
-                {/* Χρονόμετρο */}
-                {workoutInProgress && (
-                  <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-none text-sm font-mono">
-                    ⏱️ {formatElapsedTime(elapsedTime)}
-                  </div>
-                )}
+                <WorkoutTimer
+                  workoutInProgress={workoutInProgress}
+                  elapsedTime={elapsedTime}
+                />
                 
-                {/* Κουμπιά ελέγχου προπόνησης */}
-                {!workoutInProgress && workoutStatus !== 'completed' && (
-                  <Button
-                    onClick={handleStartWorkout}
-                    size="sm"
-                    className="rounded-none flex items-center gap-2"
-                  >
-                    <Play className="w-4 h-4" />
-                    Έναρξη
-                  </Button>
-                )}
-                
-                {workoutInProgress && (
-                  <>
-                    <Button
-                      onClick={handleCompleteWorkout}
-                      size="sm"
-                      className="rounded-none flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Ολοκλήρωση
-                    </Button>
-                    <Button
-                      onClick={handleCancelWorkout}
-                      size="sm"
-                      variant="outline"
-                      className="rounded-none flex items-center gap-2"
-                    >
-                      <XCircle className="w-4 h-4" />
-                      Ακύρωση
-                    </Button>
-                  </>
-                )}
+                <WorkoutControls
+                  workoutInProgress={workoutInProgress}
+                  workoutStatus={workoutStatus}
+                  onStartWorkout={handleStartWorkout}
+                  onCompleteWorkout={handleCompleteWorkout}
+                  onCancelWorkout={handleCancelWorkout}
+                />
                 
                 <Badge className={`rounded-none ${getStatusBadgeColor(workoutStatus)}`}>
                   {getStatusText(workoutStatus)}
@@ -528,44 +198,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Πληροφορίες Προγράμματος */}
-            <div className="bg-white border border-gray-200 rounded-none p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {program.programs?.name}
-                  </h3>
-                  {program.programs?.description && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      {program.programs.description}
-                    </p>
-                  )}
-                </div>
-                <div className="text-sm text-gray-600">
-                  <div><span className="font-medium">Αθλητής:</span> {program.app_users?.name}</div>
-                  {dayProgram?.estimated_duration_minutes && (
-                    <div><span className="font-medium">Διάρκεια:</span> {dayProgram.estimated_duration_minutes} λεπτά</div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Οδηγίες για τον χρήστη */}
-              {!workoutInProgress && workoutStatus !== 'completed' && (
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-none">
-                  <p className="text-xs text-blue-700">
-                    💡 Πάτησε "Έναρξη" για να ξεκινήσεις την προπόνηση και να μπορείς να κάνεις κλικ στα Sets για να τα μειώνεις.
-                  </p>
-                </div>
-              )}
-              
-              {workoutInProgress && (
-                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-none">
-                  <p className="text-xs text-green-700">
-                    🏋️‍♂️ Προπόνηση σε εξέλιξη! Κάνε κλικ στα Sets για να ολοκληρώνεις τα sets.
-                  </p>
-                </div>
-              )}
-            </div>
+            <ProgramInfo
+              program={program}
+              dayProgram={dayProgram}
+              workoutInProgress={workoutInProgress}
+              workoutStatus={workoutStatus}
+            />
 
             {/* Πρόγραμμα Ημέρας */}
             {dayProgram ? (
@@ -574,7 +212,22 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                   <span>{dayProgram.name}</span>
                 </h4>
 
-                {renderBlockTabs(dayProgram.program_blocks)}
+                <ProgramBlocks
+                  blocks={dayProgram.program_blocks}
+                  workoutInProgress={workoutInProgress}
+                  getRemainingText={getRemainingText}
+                  isExerciseComplete={isExerciseComplete}
+                  onExerciseClick={handleExerciseClick}
+                  onSetClick={handleSetClick}
+                  onVideoClick={handleVideoClick}
+                  getNotes={getNotes}
+                  updateNotes={updateNotes}
+                  clearNotes={clearNotes}
+                  updateKg={updateKg}
+                  clearKg={clearKg}
+                  updateVelocity={updateVelocity}
+                  clearVelocity={clearVelocity}
+                />
               </div>
             ) : (
               <div className="bg-white border border-gray-200 rounded-none p-6 text-center text-gray-500">
