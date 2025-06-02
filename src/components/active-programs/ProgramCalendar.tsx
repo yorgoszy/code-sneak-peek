@@ -20,17 +20,21 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
 
   useEffect(() => {
     const fetchAllCompletions = async () => {
+      console.log('🔄 Fetching completions for programs:', programs.length);
       const completionsData: any[] = [];
       
       for (const program of programs) {
         try {
+          console.log('🔍 Fetching completions for program:', program.id);
           const completions = await getWorkoutCompletions(program.id);
+          console.log('✅ Completions received:', completions);
           completionsData.push(...completions.map(c => ({ ...c, assignment_id: program.id })));
         } catch (error) {
-          console.error('Error fetching completions for program:', program.id, error);
+          console.error('❌ Error fetching completions for program:', program.id, error);
         }
       }
       
+      console.log('📊 All completions data:', completionsData);
       setAllCompletions(completionsData);
     };
 
@@ -72,38 +76,23 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
   };
 
   const getWorkoutStatus = (program: EnrichedAssignment, dayString: string) => {
-    // Βρίσκουμε τη συγκεκριμένη ημέρα προπόνησης
-    const programWeeks = program.programs?.program_weeks || [];
-    let targetWeekNumber = 1;
-    let targetDayNumber = 1;
+    console.log('🔍 Getting workout status for program:', program.id, 'day:', dayString);
+    console.log('🔍 Available completions:', allCompletions.filter(c => c.assignment_id === program.id));
     
-    // Βρίσκουμε την εβδομάδα και ημέρα από τις training_dates
-    if (program.training_dates) {
-      const dayIndex = program.training_dates.indexOf(dayString);
-      if (dayIndex >= 0) {
-        // Υπολογίζουμε εβδομάδα και ημέρα βάσει του index
-        const totalDays = dayIndex + 1;
-        programWeeks.forEach((week, weekIndex) => {
-          const daysInWeek = week.program_days?.length || 0;
-          if (totalDays <= (weekIndex + 1) * daysInWeek) {
-            targetWeekNumber = week.week_number;
-            targetDayNumber = totalDays - (weekIndex * daysInWeek);
-            return;
-          }
-        });
-      }
-    }
-
-    // Ελέγχουμε αν υπάρχει completion για αυτή την ημέρα
+    // Ελέγχουμε αν υπάρχει completion για αυτή την ημέρα και assignment
     const completion = allCompletions.find(c => 
       c.assignment_id === program.id && 
       c.scheduled_date === dayString
     );
 
+    console.log('🔍 Found completion:', completion);
+
     if (completion) {
+      console.log('✅ Completion status:', completion.status);
       return completion.status; // 'completed', 'missed', 'makeup'
     }
 
+    console.log('📝 No completion found, returning scheduled');
     return 'scheduled'; // Προγραμματισμένη αλλά όχι ολοκληρωμένη
   };
 
@@ -168,21 +157,27 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs }) =>
                   {dayPrograms.map((program) => {
                     const workoutStatus = getWorkoutStatus(program, dayString);
                     
-                    let statusColor = 'bg-blue-100 text-blue-800'; // Default (scheduled)
+                    console.log('🎨 Setting colors for status:', workoutStatus);
+                    
+                    let statusColor = 'bg-blue-100 text-blue-800 border-blue-200'; // Default (scheduled)
                     
                     if (workoutStatus === 'completed') {
-                      statusColor = 'bg-green-100 text-green-800';
+                      statusColor = 'bg-green-100 text-green-800 border-green-200';
                     } else if (workoutStatus === 'missed') {
-                      statusColor = 'bg-red-100 text-red-800';
+                      statusColor = 'bg-red-100 text-red-800 border-red-200';
                     } else if (workoutStatus === 'makeup') {
-                      statusColor = 'bg-yellow-100 text-yellow-800';
+                      statusColor = 'bg-yellow-100 text-yellow-800 border-yellow-200';
                     }
+                    
+                    const statusText = workoutStatus === 'completed' ? 'Ολοκληρωμένη' : 
+                                     workoutStatus === 'missed' ? 'Χαμένη' : 
+                                     workoutStatus === 'makeup' ? 'Αναπλήρωση' : 'Προγραμματισμένη';
                     
                     return (
                       <div
                         key={program.id}
-                        className={`text-xs p-1 rounded-none truncate ${statusColor}`}
-                        title={`${program.programs?.name || 'Άγνωστο πρόγραμμα'} - ${program.app_users?.name || 'Άγνωστος χρήστης'} - ${workoutStatus === 'completed' ? 'Ολοκληρωμένη' : workoutStatus === 'missed' ? 'Χαμένη' : workoutStatus === 'makeup' ? 'Αναπλήρωση' : 'Προγραμματισμένη'}`}
+                        className={`text-xs p-1 rounded-none truncate border ${statusColor}`}
+                        title={`${program.programs?.name || 'Άγνωστο πρόγραμμα'} - ${program.app_users?.name || 'Άγνωστος χρήστης'} - ${statusText}`}
                       >
                         <div className="font-medium">{program.programs?.name || 'Άγνωστο πρόγραμμα'}</div>
                         <div className="text-gray-600">{program.app_users?.name || 'Άγνωστος χρήστης'}</div>

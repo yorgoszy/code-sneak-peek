@@ -4,11 +4,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { testSupabaseConnection, fetchUserData, fetchProgramAssignments, enrichAssignmentWithProgramData } from "./useActivePrograms/dataService";
 import { isValidAssignment } from "./useActivePrograms/dateFilters";
 import type { EnrichedAssignment } from "./useActivePrograms/types";
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 
 export const useActivePrograms = () => {
   const [programs, setPrograms] = useState<EnrichedAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { getWorkoutCompletions } = useWorkoutCompletions();
 
   useEffect(() => {
     // 🔍 STEP 1: Show current user's auth_user_id
@@ -24,6 +26,26 @@ export const useActivePrograms = () => {
       setLoading(false);
     }
   }, [user]);
+
+  const calculateProgress = async (assignment: EnrichedAssignment) => {
+    try {
+      if (!assignment.training_dates || assignment.training_dates.length === 0) {
+        return 0;
+      }
+
+      const completions = await getWorkoutCompletions(assignment.id);
+      const completedWorkouts = completions.filter(c => c.status === 'completed').length;
+      const totalWorkouts = assignment.training_dates.length;
+      
+      const progress = Math.round((completedWorkouts / totalWorkouts) * 100);
+      console.log(`📊 Progress for assignment ${assignment.id}: ${completedWorkouts}/${totalWorkouts} = ${progress}%`);
+      
+      return progress;
+    } catch (error) {
+      console.error('Error calculating progress:', error);
+      return 0;
+    }
+  };
 
   const fetchActivePrograms = async () => {
     try {
@@ -98,8 +120,16 @@ export const useActivePrograms = () => {
       // Filter by date - only include assignments that have program data
       const validPrograms = enrichedAssignments.filter(isValidAssignment);
       
-      console.log('✅ Final filtered programs:', validPrograms.length, validPrograms);
-      setPrograms(validPrograms);
+      // Calculate progress for each program
+      const programsWithProgress = await Promise.all(
+        validPrograms.map(async (program) => {
+          const progress = await calculateProgress(program);
+          return { ...program, progress };
+        })
+      );
+      
+      console.log('✅ Final filtered programs with progress:', programsWithProgress.length, programsWithProgress);
+      setPrograms(programsWithProgress);
 
     } catch (error) {
       console.error('❌ Unexpected error fetching active programs:', error);
