@@ -119,11 +119,11 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
 
   return (
     <>
-      <Card className="rounded-none hover:shadow-md transition-shadow h-12">
-        <CardContent className="p-2 h-full">
-          <div className="flex items-center gap-2 h-full">
+      <Card className="rounded-none hover:shadow-md transition-shadow h-12 w-72">
+        <CardContent className="p-1.5 h-full">
+          <div className="flex items-center gap-1 h-full">
             {/* Avatar */}
-            <Avatar className="w-8 h-8 flex-shrink-0">
+            <Avatar className="w-6 h-6 flex-shrink-0">
               <AvatarImage 
                 src={assignment.app_users?.photo_url} 
                 alt={userName}
@@ -134,12 +134,12 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
             </Avatar>
             
             {/* Program Info */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 max-w-16">
               <h3 className="text-xs font-semibold text-gray-900 truncate">
-                {assignment.programs?.name || 'Άγνωστο Πρόγραμμα'}
+                {assignment.programs?.name || 'Άγνωστο'}
               </h3>
               <p className="text-xs text-gray-600 truncate">
-                {userName}
+                {userName.split(' ')[0]}
               </p>
             </div>
             
@@ -151,7 +151,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
             </div>
             
             {/* Progress Stats */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <div className="text-xs text-gray-700">
                 {workoutStats.completed}/{workoutStats.total}
               </div>
@@ -160,7 +160,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
                   -{workoutStats.missed}
                 </div>
               )}
-              <div className="w-12">
+              <div className="w-8">
                 <Progress value={progressPercentage} className="h-1" />
               </div>
             </div>
@@ -168,48 +168,48 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
             {/* Status Badge */}
             <Badge 
               variant={getStatusBadgeVariant(assignment.status)} 
-              className="rounded-none text-xs px-1 py-0.5 flex-shrink-0"
+              className="rounded-none text-xs px-1 py-0 flex-shrink-0"
             >
-              {assignment.status === 'active' ? 'Ενεργό' : assignment.status}
+              {assignment.status === 'active' ? 'Ε' : assignment.status}
             </Badge>
             
             {/* Action Buttons */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-0.5 flex-shrink-0">
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="rounded-none h-6 w-6 p-0"
+                className="rounded-none h-5 w-5 p-0"
                 onClick={handleStart}
                 title="Έναρξη"
               >
-                <Play className="w-3 h-3" />
+                <Play className="w-2.5 h-2.5" />
               </Button>
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="rounded-none h-6 w-6 p-0"
+                className="rounded-none h-5 w-5 p-0"
                 onClick={handleView}
                 title="Προβολή"
               >
-                <Eye className="w-3 h-3" />
+                <Eye className="w-2.5 h-2.5" />
               </Button>
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="rounded-none h-6 w-6 p-0"
+                className="rounded-none h-5 w-5 p-0"
                 onClick={handleEdit}
                 title="Επεξεργασία"
               >
-                <Edit className="w-3 h-3" />
+                <Edit className="w-2.5 h-2.5" />
               </Button>
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="rounded-none h-6 w-6 p-0"
+                className="rounded-none h-5 w-5 p-0"
                 onClick={handleComplete}
                 title="Ολοκλήρωση"
               >
-                <CheckCircle2 className="w-3 h-3" />
+                <CheckCircle2 className="w-2.5 h-2.5" />
               </Button>
             </div>
           </div>
