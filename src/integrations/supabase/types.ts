@@ -218,6 +218,57 @@ export type Database = {
         }
         Relationships: []
       }
+      assignment_attendance: {
+        Row: {
+          assignment_id: string
+          attendance_percentage: number | null
+          completed_workouts: number
+          id: string
+          last_updated: string
+          makeup_workouts: number
+          missed_workouts: number
+          total_scheduled_workouts: number
+          user_id: string
+        }
+        Insert: {
+          assignment_id: string
+          attendance_percentage?: number | null
+          completed_workouts?: number
+          id?: string
+          last_updated?: string
+          makeup_workouts?: number
+          missed_workouts?: number
+          total_scheduled_workouts?: number
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string
+          attendance_percentage?: number | null
+          completed_workouts?: number
+          id?: string
+          last_updated?: string
+          makeup_workouts?: number
+          missed_workouts?: number
+          total_scheduled_workouts?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_attendance_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: true
+            referencedRelation: "program_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_attendance_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           created_at: string | null
@@ -2039,6 +2090,80 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      workout_completions: {
+        Row: {
+          assignment_id: string
+          completed_date: string
+          created_at: string
+          day_number: number
+          id: string
+          notes: string | null
+          program_id: string
+          scheduled_date: string
+          status: string
+          updated_at: string
+          user_id: string
+          week_number: number
+        }
+        Insert: {
+          assignment_id: string
+          completed_date: string
+          created_at?: string
+          day_number: number
+          id?: string
+          notes?: string | null
+          program_id: string
+          scheduled_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          week_number: number
+        }
+        Update: {
+          assignment_id?: string
+          completed_date?: string
+          created_at?: string
+          day_number?: number
+          id?: string
+          notes?: string | null
+          program_id?: string
+          scheduled_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_completions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "program_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_completions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "program_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_completions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_completions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

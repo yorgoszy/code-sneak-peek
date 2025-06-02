@@ -20,7 +20,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
       
       <CardContent className="space-y-4">
         <ProgramCardStats assignment={assignment} />
-        <ProgramCardActions />
+        <ProgramCardActions assignment={assignment} />
       </CardContent>
     </Card>
   );

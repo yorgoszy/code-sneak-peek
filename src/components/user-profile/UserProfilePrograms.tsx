@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, Calendar } from "lucide-react";
 import { ProgramPreviewDialog } from "@/components/programs/ProgramPreviewDialog";
+import { AttendanceDialog } from "@/components/active-programs/AttendanceDialog";
 
 interface UserProfileProgramsProps {
   user: any;
@@ -14,6 +15,8 @@ interface UserProfileProgramsProps {
 export const UserProfilePrograms = ({ user, programs }: UserProfileProgramsProps) => {
   const [previewProgram, setPreviewProgram] = useState<any>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [attendanceOpen, setAttendanceOpen] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('el-GR');
@@ -27,6 +30,16 @@ export const UserProfilePrograms = ({ user, programs }: UserProfileProgramsProps
   const handlePreviewClose = () => {
     setPreviewOpen(false);
     setPreviewProgram(null);
+  };
+
+  const handleViewAttendance = (assignment: any) => {
+    setSelectedAssignment(assignment);
+    setAttendanceOpen(true);
+  };
+
+  const handleAttendanceClose = () => {
+    setAttendanceOpen(false);
+    setSelectedAssignment(null);
   };
 
   return (
@@ -45,7 +58,7 @@ export const UserProfilePrograms = ({ user, programs }: UserProfileProgramsProps
           ) : (
             <div className="space-y-3">
               {programs.map((program) => (
-                <div key={program.id} className="border p-3">
+                <div key={program.id} className="border p-3 rounded-none">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h4 className="font-medium">{program.name}</h4>
@@ -55,7 +68,7 @@ export const UserProfilePrograms = ({ user, programs }: UserProfileProgramsProps
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">{program.status}</Badge>
+                      <Badge variant="outline" className="rounded-none">{program.status}</Badge>
                       <Button
                         onClick={() => handlePreviewProgram(program)}
                         variant="outline"
@@ -65,6 +78,17 @@ export const UserProfilePrograms = ({ user, programs }: UserProfileProgramsProps
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
+                      {program.program_assignments && program.program_assignments.length > 0 && (
+                        <Button
+                          onClick={() => handleViewAttendance(program.program_assignments[0])}
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none"
+                          title="Προβολή Παρουσιών"
+                        >
+                          <Calendar className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -79,6 +103,14 @@ export const UserProfilePrograms = ({ user, programs }: UserProfileProgramsProps
         isOpen={previewOpen}
         onOpenChange={handlePreviewClose}
       />
+
+      {selectedAssignment && (
+        <AttendanceDialog
+          assignment={selectedAssignment}
+          isOpen={attendanceOpen}
+          onClose={handleAttendanceClose}
+        />
+      )}
     </>
   );
 };
