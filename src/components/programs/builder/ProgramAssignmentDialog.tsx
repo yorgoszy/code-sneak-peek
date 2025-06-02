@@ -114,13 +114,14 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
 
   // Ελέγχουμε αν μια ημερομηνία είναι απενεργοποιημένη
   const isDateDisabled = (date: Date) => {
+    // Παρελθόν ημερομηνίες είναι πάντα απενεργοποιημένες
     if (date < new Date(new Date().setHours(0, 0, 0, 0))) {
       return true;
     }
     
     const dateString = format(date, 'yyyy-MM-dd');
     
-    // Αν η ημερομηνία είναι ήδη επιλεγμένη, την επιτρέπουμε ΠΑΝΤΑ (για αποεπιλογή)
+    // ΑΝ η ημερομηνία είναι ήδη επιλεγμένη, δεν είναι ποτέ disabled (για να μπορούμε να την αποεπιλέξουμε)
     if (selectedDates.includes(dateString)) {
       return false;
     }
