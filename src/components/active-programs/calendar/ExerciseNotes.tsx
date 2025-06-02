@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from 'lucide-react';
@@ -47,7 +48,7 @@ export const ExerciseNotes: React.FC<ExerciseNotesProps> = ({
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
           placeholder={workoutInProgress ? "Προσθήκη σημειώσεων..." : "Πάτησε έναρξη για σημειώσεις"}
-          className="min-h-[80px] text-xs rounded-none resize-none"
+          className="min-h-[64px] text-xs rounded-none resize-none"
           disabled={!workoutInProgress}
         />
       </div>
