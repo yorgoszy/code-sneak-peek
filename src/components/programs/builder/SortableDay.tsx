@@ -84,7 +84,7 @@ export const SortableDay: React.FC<SortableDayProps> = ({
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <DayCard
         day={day}
         exercises={exercises}
@@ -101,7 +101,6 @@ export const SortableDay: React.FC<SortableDayProps> = ({
         onDuplicateExercise={onDuplicateExercise}
         onReorderBlocks={onReorderBlocks}
         onReorderExercises={onReorderExercises}
-        dragHandle={listeners}
       />
     </div>
   );
