@@ -194,68 +194,53 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                             
                             {/* Exercise Details Grid */}
                             <div className="p-1 bg-gray-50">
-                              <div className="flex text-xs">
+                              <div className="flex text-xs" style={{ width: '70%' }}>
                                 <div className="flex-1 text-center">
                                   <div className="font-medium text-gray-600 mb-1">Sets</div>
-                                  <div className="text-gray-900">{exercise.sets}</div>
+                                  <div className="text-gray-900">{exercise.sets || '-'}</div>
                                 </div>
                                 
                                 <Separator orientation="vertical" className="h-10 mx-1" />
                                 
                                 <div className="flex-1 text-center">
                                   <div className="font-medium text-gray-600 mb-1">Reps</div>
-                                  <div className="text-gray-900">{exercise.reps}</div>
+                                  <div className="text-gray-900">{exercise.reps || '-'}</div>
                                 </div>
                                 
-                                {exercise.kg && (
-                                  <>
-                                    <Separator orientation="vertical" className="h-10 mx-1" />
-                                    <div className="flex-1 text-center">
-                                      <div className="font-medium text-gray-600 mb-1">Kg</div>
-                                      <div className="text-gray-900">{exercise.kg}</div>
-                                    </div>
-                                  </>
-                                )}
+                                <Separator orientation="vertical" className="h-10 mx-1" />
                                 
-                                {exercise.percentage_1rm && (
-                                  <>
-                                    <Separator orientation="vertical" className="h-10 mx-1" />
-                                    <div className="flex-1 text-center">
-                                      <div className="font-medium text-gray-600 mb-1">%1RM</div>
-                                      <div className="text-gray-900">{exercise.percentage_1rm}%</div>
-                                    </div>
-                                  </>
-                                )}
+                                <div className="flex-1 text-center">
+                                  <div className="font-medium text-gray-600 mb-1">%1RM</div>
+                                  <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
+                                </div>
                                 
-                                {exercise.velocity_ms && (
-                                  <>
-                                    <Separator orientation="vertical" className="h-10 mx-1" />
-                                    <div className="flex-1 text-center">
-                                      <div className="font-medium text-gray-600 mb-1">m/s</div>
-                                      <div className="text-gray-900">{exercise.velocity_ms}</div>
-                                    </div>
-                                  </>
-                                )}
+                                <Separator orientation="vertical" className="h-10 mx-1" />
                                 
-                                {exercise.tempo && (
-                                  <>
-                                    <Separator orientation="vertical" className="h-10 mx-1" />
-                                    <div className="flex-1 text-center">
-                                      <div className="font-medium text-gray-600 mb-1">Tempo</div>
-                                      <div className="text-gray-900">{exercise.tempo}</div>
-                                    </div>
-                                  </>
-                                )}
+                                <div className="flex-1 text-center">
+                                  <div className="font-medium text-gray-600 mb-1">Kg</div>
+                                  <div className="text-gray-900">{exercise.kg || '-'}</div>
+                                </div>
                                 
-                                {exercise.rest && (
-                                  <>
-                                    <Separator orientation="vertical" className="h-10 mx-1" />
-                                    <div className="flex-1 text-center">
-                                      <div className="font-medium text-gray-600 mb-1">Rest</div>
-                                      <div className="text-gray-900">{exercise.rest}</div>
-                                    </div>
-                                  </>
-                                )}
+                                <Separator orientation="vertical" className="h-10 mx-1" />
+                                
+                                <div className="flex-1 text-center">
+                                  <div className="font-medium text-gray-600 mb-1">m/s</div>
+                                  <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
+                                </div>
+                                
+                                <Separator orientation="vertical" className="h-10 mx-1" />
+                                
+                                <div className="flex-1 text-center">
+                                  <div className="font-medium text-gray-600 mb-1">Tempo</div>
+                                  <div className="text-gray-900">{exercise.tempo || '-'}</div>
+                                </div>
+                                
+                                <Separator orientation="vertical" className="h-10 mx-1" />
+                                
+                                <div className="flex-1 text-center">
+                                  <div className="font-medium text-gray-600 mb-1">Rest</div>
+                                  <div className="text-gray-900">{exercise.rest || '-'}</div>
+                                </div>
                               </div>
                               
                               {exercise.notes && (
