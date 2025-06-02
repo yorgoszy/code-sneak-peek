@@ -58,9 +58,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment }) => {
           <span>{todayDay.name}</span>
         </h4>
 
-        {todayDay.program_blocks.map((block) => (
-          <ExerciseBlock key={block.id} block={block} />
-        ))}
+        <ExerciseBlock blocks={todayDay.program_blocks} />
       </div>
     </div>
   );

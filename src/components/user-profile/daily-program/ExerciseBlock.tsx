@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Play } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from './ExerciseVideoDialog';
 
@@ -33,10 +34,10 @@ interface Block {
 }
 
 interface ExerciseBlockProps {
-  block: Block;
+  blocks: Block[];
 }
 
-export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
+export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
 
@@ -79,102 +80,226 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
     );
   };
 
+  if (!blocks || blocks.length === 0) {
+    return null;
+  }
+
+  // Αν έχουμε μόνο ένα block, το εμφανίζουμε χωρίς tabs
+  if (blocks.length === 1) {
+    const block = blocks[0];
+    return (
+      <>
+        <div className="bg-gray-700 rounded-none p-2 mb-1">
+          <h6 className="text-xs font-medium text-white mb-1">
+            {block.name}
+          </h6>
+          
+          <div className="space-y-0">
+            {block.program_exercises
+              .sort((a, b) => a.exercise_order - b.exercise_order)
+              .map((exercise) => (
+                <div key={exercise.id} className="bg-white rounded-none">
+                  {/* Exercise Header */}
+                  <div className="flex items-center gap-2 p-1 border-b border-gray-100">
+                    <div 
+                      onClick={() => handleExerciseClick(exercise)}
+                      className="flex-shrink-0"
+                    >
+                      {renderVideoThumbnail(exercise)}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h6 
+                        className={`text-xs font-medium text-gray-900 truncate ${
+                          exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url) 
+                            ? 'cursor-pointer hover:text-blue-600' 
+                            : ''
+                        }`}
+                        onClick={() => handleExerciseClick(exercise)}
+                      >
+                        {exercise.exercises?.name || 'Άγνωστη άσκηση'}
+                      </h6>
+                    </div>
+                  </div>
+                  
+                  {/* Exercise Details Grid */}
+                  <div className="p-1 bg-gray-50">
+                    <div className="flex text-xs" style={{ width: '70%' }}>
+                      <div className="flex-1 text-center">
+                        <div className="font-medium text-gray-600 mb-1">Sets</div>
+                        <div className="text-gray-900">{exercise.sets || '-'}</div>
+                      </div>
+                      
+                      <Separator orientation="vertical" className="h-10 mx-1" />
+                      
+                      <div className="flex-1 text-center">
+                        <div className="font-medium text-gray-600 mb-1">Reps</div>
+                        <div className="text-gray-900">{exercise.reps || '-'}</div>
+                      </div>
+                      
+                      <Separator orientation="vertical" className="h-10 mx-1" />
+                      
+                      <div className="flex-1 text-center">
+                        <div className="font-medium text-gray-600 mb-1">%1RM</div>
+                        <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
+                      </div>
+                      
+                      <Separator orientation="vertical" className="h-10 mx-1" />
+                      
+                      <div className="flex-1 text-center">
+                        <div className="font-medium text-gray-600 mb-1">Kg</div>
+                        <div className="text-gray-900">{exercise.kg || '-'}</div>
+                      </div>
+                      
+                      <Separator orientation="vertical" className="h-10 mx-1" />
+                      
+                      <div className="flex-1 text-center">
+                        <div className="font-medium text-gray-600 mb-1">m/s</div>
+                        <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
+                      </div>
+                      
+                      <Separator orientation="vertical" className="h-10 mx-1" />
+                      
+                      <div className="flex-1 text-center">
+                        <div className="font-medium text-gray-600 mb-1">Tempo</div>
+                        <div className="text-gray-900">{exercise.tempo || '-'}</div>
+                      </div>
+                      
+                      <Separator orientation="vertical" className="h-10 mx-1" />
+                      
+                      <div className="flex-1 text-center">
+                        <div className="font-medium text-gray-600 mb-1">Rest</div>
+                        <div className="text-gray-900">{exercise.rest || '-'}</div>
+                      </div>
+                    </div>
+                    
+                    {exercise.notes && (
+                      <div className="mt-1 text-xs text-gray-600 italic">
+                        {exercise.notes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+
+        <ExerciseVideoDialog
+          isOpen={isVideoDialogOpen}
+          onClose={() => setIsVideoDialogOpen(false)}
+          exercise={selectedExercise}
+        />
+      </>
+    );
+  }
+
+  // Αν έχουμε πολλαπλά blocks, τα εμφανίζουμε ως tabs
   return (
     <>
-      <div className="bg-gray-700 rounded-none p-2 mb-1">
-        <h6 className="text-xs font-medium text-white mb-1">
-          {block.name}
-        </h6>
-        
-        <div className="space-y-0">
-          {block.program_exercises
-            .sort((a, b) => a.exercise_order - b.exercise_order)
-            .map((exercise) => (
-              <div key={exercise.id} className="bg-white rounded-none">
-                {/* Exercise Header */}
-                <div className="flex items-center gap-2 p-1 border-b border-gray-100">
-                  <div 
-                    onClick={() => handleExerciseClick(exercise)}
-                    className="flex-shrink-0"
-                  >
-                    {renderVideoThumbnail(exercise)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <h6 
-                      className={`text-xs font-medium text-gray-900 truncate ${
-                        exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url) 
-                          ? 'cursor-pointer hover:text-blue-600' 
-                          : ''
-                      }`}
-                      onClick={() => handleExerciseClick(exercise)}
-                    >
-                      {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-                    </h6>
-                  </div>
-                </div>
-                
-                {/* Exercise Details Grid */}
-                <div className="p-1 bg-gray-50">
-                  <div className="flex text-xs" style={{ width: '70%' }}>
-                    <div className="flex-1 text-center">
-                      <div className="font-medium text-gray-600 mb-1">Sets</div>
-                      <div className="text-gray-900">{exercise.sets || '-'}</div>
-                    </div>
-                    
-                    <Separator orientation="vertical" className="h-10 mx-1" />
-                    
-                    <div className="flex-1 text-center">
-                      <div className="font-medium text-gray-600 mb-1">Reps</div>
-                      <div className="text-gray-900">{exercise.reps || '-'}</div>
-                    </div>
-                    
-                    <Separator orientation="vertical" className="h-10 mx-1" />
-                    
-                    <div className="flex-1 text-center">
-                      <div className="font-medium text-gray-600 mb-1">%1RM</div>
-                      <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
-                    </div>
-                    
-                    <Separator orientation="vertical" className="h-10 mx-1" />
-                    
-                    <div className="flex-1 text-center">
-                      <div className="font-medium text-gray-600 mb-1">Kg</div>
-                      <div className="text-gray-900">{exercise.kg || '-'}</div>
-                    </div>
-                    
-                    <Separator orientation="vertical" className="h-10 mx-1" />
-                    
-                    <div className="flex-1 text-center">
-                      <div className="font-medium text-gray-600 mb-1">m/s</div>
-                      <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
-                    </div>
-                    
-                    <Separator orientation="vertical" className="h-10 mx-1" />
-                    
-                    <div className="flex-1 text-center">
-                      <div className="font-medium text-gray-600 mb-1">Tempo</div>
-                      <div className="text-gray-900">{exercise.tempo || '-'}</div>
-                    </div>
-                    
-                    <Separator orientation="vertical" className="h-10 mx-1" />
-                    
-                    <div className="flex-1 text-center">
-                      <div className="font-medium text-gray-600 mb-1">Rest</div>
-                      <div className="text-gray-900">{exercise.rest || '-'}</div>
-                    </div>
-                  </div>
-                  
-                  {exercise.notes && (
-                    <div className="mt-1 text-xs text-gray-600 italic">
-                      {exercise.notes}
-                    </div>
-                  )}
-                </div>
-              </div>
+      <Tabs defaultValue={blocks[0]?.id} className="w-full">
+        <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
+          {blocks
+            .sort((a, b) => a.block_order - b.block_order)
+            .map((block) => (
+              <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
+                {block.name}
+              </TabsTrigger>
             ))}
-        </div>
-      </div>
+        </TabsList>
+        
+        {blocks.map((block) => (
+          <TabsContent key={block.id} value={block.id} className="mt-2">
+            <div className="space-y-0">
+              {block.program_exercises
+                .sort((a, b) => a.exercise_order - b.exercise_order)
+                .map((exercise) => (
+                  <div key={exercise.id} className="bg-white rounded-none border border-gray-200">
+                    {/* Exercise Header */}
+                    <div className="flex items-center gap-2 p-1 border-b border-gray-100">
+                      <div 
+                        onClick={() => handleExerciseClick(exercise)}
+                        className="flex-shrink-0"
+                      >
+                        {renderVideoThumbnail(exercise)}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h6 
+                          className={`text-xs font-medium text-gray-900 truncate ${
+                            exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url) 
+                              ? 'cursor-pointer hover:text-blue-600' 
+                              : ''
+                          }`}
+                          onClick={() => handleExerciseClick(exercise)}
+                        >
+                          {exercise.exercises?.name || 'Άγνωστη άσκηση'}
+                        </h6>
+                      </div>
+                    </div>
+                    
+                    {/* Exercise Details Grid */}
+                    <div className="p-1 bg-gray-50">
+                      <div className="flex text-xs" style={{ width: '70%' }}>
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">Sets</div>
+                          <div className="text-gray-900">{exercise.sets || '-'}</div>
+                        </div>
+                        
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">Reps</div>
+                          <div className="text-gray-900">{exercise.reps || '-'}</div>
+                        </div>
+                        
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">%1RM</div>
+                          <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
+                        </div>
+                        
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">Kg</div>
+                          <div className="text-gray-900">{exercise.kg || '-'}</div>
+                        </div>
+                        
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">m/s</div>
+                          <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
+                        </div>
+                        
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">Tempo</div>
+                          <div className="text-gray-900">{exercise.tempo || '-'}</div>
+                        </div>
+                        
+                        <Separator orientation="vertical" className="h-10 mx-1" />
+                        
+                        <div className="flex-1 text-center">
+                          <div className="font-medium text-gray-600 mb-1">Rest</div>
+                          <div className="text-gray-900">{exercise.rest || '-'}</div>
+                        </div>
+                      </div>
+                      
+                      {exercise.notes && (
+                        <div className="mt-1 text-xs text-gray-600 italic">
+                          {exercise.notes}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
 
       <ExerciseVideoDialog
         isOpen={isVideoDialogOpen}
