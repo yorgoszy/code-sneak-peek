@@ -153,79 +153,6 @@
   }
 }
 
-/* Lightning Strike Animation for Logo */
-@keyframes lightning-strike {
-  0% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: brightness(1) contrast(1);
-  }
-  5% {
-    opacity: 0;
-    transform: translateY(-5px) scale(1.02);
-  }
-  10% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: brightness(3) contrast(2);
-    box-shadow: 0 0 30px #ffff00, 0 0 60px #ffff00, 0 0 90px #ffff00;
-  }
-  15% {
-    opacity: 0.8;
-    transform: translateY(-2px) scale(1.01);
-    filter: brightness(2.5) contrast(1.8);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(1px) scale(0.99);
-    filter: brightness(3.5) contrast(2.2);
-    box-shadow: 0 0 40px #ffffff, 0 0 80px #ffff00;
-  }
-  25% {
-    opacity: 0.9;
-    transform: translateY(0) scale(1);
-    filter: brightness(2) contrast(1.5);
-  }
-  30% {
-    opacity: 1;
-    transform: translateY(-1px) scale(1.005);
-    filter: brightness(2.8) contrast(1.9);
-    box-shadow: 0 0 35px #ffff00, 0 0 70px #ffffff;
-  }
-  40% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: brightness(1.5) contrast(1.2);
-    box-shadow: 0 0 20px #ffff00;
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: brightness(1.2) contrast(1.1);
-    box-shadow: 0 0 10px #ffff00;
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: brightness(1) contrast(1);
-    box-shadow: none;
-  }
-}
-
-/* Comic-style shake effect */
-@keyframes comic-shake {
-  0%, 100% { transform: translateX(0); }
-  10% { transform: translateX(-2px) rotate(-0.5deg); }
-  20% { transform: translateX(2px) rotate(0.5deg); }
-  30% { transform: translateX(-2px) rotate(-0.5deg); }
-  40% { transform: translateX(2px) rotate(0.5deg); }
-  50% { transform: translateX(-1px) rotate(-0.25deg); }
-  60% { transform: translateX(1px) rotate(0.25deg); }
-  70% { transform: translateX(-1px) rotate(-0.25deg); }
-  80% { transform: translateX(1px) rotate(0.25deg); }
-  90% { transform: translateX(0) rotate(0deg); }
-}
-
 @keyframes fade-in {
   0% {
     opacity: 0;
@@ -251,10 +178,6 @@
 
 .animate-fade-in {
   animation: fade-in 0.8s ease-out forwards;
-}
-
-.animate-lightning-strike {
-  animation: lightning-strike 3s ease-in-out infinite, comic-shake 0.5s ease-in-out 0.5s;
 }
 
 .animation-delay-200 {
