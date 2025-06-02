@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play } from "lucide-react";
@@ -57,6 +57,11 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
       default:
         return 'Προγραμματισμένη';
     }
+  };
+
+  const handleStartWorkout = () => {
+    console.log('🏋️‍♂️ Έναρξη προπόνησης για ημερομηνία:', format(selectedDate, 'dd/MM/yyyy'));
+    // Εδώ θα μπορούσαμε να προσθέσουμε επιπλέον λογική για την έναρξη της προπόνησης
   };
 
   const handleExerciseClick = (exercise: any, event: React.MouseEvent) => {
@@ -353,9 +358,21 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
               <span>
                 Πρόγραμμα Προπόνησης - {format(selectedDate, 'dd MMMM yyyy', { locale: el })}
               </span>
-              <Badge className={`rounded-none ${getStatusBadgeColor(workoutStatus)}`}>
-                {getStatusText(workoutStatus)}
-              </Badge>
+              <div className="flex items-center gap-2">
+                {workoutStatus !== 'completed' && (
+                  <Button
+                    onClick={handleStartWorkout}
+                    size="sm"
+                    className="rounded-none flex items-center gap-2"
+                  >
+                    <Play className="w-4 h-4" />
+                    Έναρξη
+                  </Button>
+                )}
+                <Badge className={`rounded-none ${getStatusBadgeColor(workoutStatus)}`}>
+                  {getStatusText(workoutStatus)}
+                </Badge>
+              </div>
             </DialogTitle>
           </DialogHeader>
 
