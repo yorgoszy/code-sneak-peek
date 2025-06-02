@@ -50,7 +50,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
     const videoUrl = exercise.exercises?.video_url;
     if (!videoUrl || !isValidVideoUrl(videoUrl)) {
       return (
-        <div className="w-16 h-12 bg-gray-200 rounded-none flex items-center justify-center">
+        <div className="w-12 h-9 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
           <span className="text-xs text-gray-400">Χωρίς βίντεο</span>
         </div>
       );
@@ -59,7 +59,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
     const thumbnailUrl = getVideoThumbnail(videoUrl);
     
     return (
-      <div className="relative w-16 h-12 rounded-none overflow-hidden cursor-pointer group">
+      <div className="relative w-12 h-9 rounded-none overflow-hidden cursor-pointer group flex-shrink-0">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -68,11 +68,11 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <Play className="w-4 h-4 text-gray-400" />
+            <Play className="w-3 h-3 text-gray-400" />
           </div>
         )}
         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Play className="w-4 h-4 text-white" />
+          <Play className="w-3 h-3 text-white" />
         </div>
       </div>
     );
@@ -80,59 +80,87 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ block }) => {
 
   return (
     <>
-      <div className="border border-gray-100 rounded-none p-4">
-        <h5 className="font-medium text-gray-800 mb-3">
+      <div className="bg-gray-700 rounded-none p-3 mb-2">
+        <h6 className="text-xs font-medium text-white mb-2">
           {block.name}
-        </h5>
+        </h6>
         
-        <div className="space-y-3">
+        <div className="space-y-0">
           {block.program_exercises
             .sort((a, b) => a.exercise_order - b.exercise_order)
             .map((exercise) => (
-              <div 
-                key={exercise.id} 
-                className="flex items-center gap-4 p-3 border border-gray-50 rounded-none hover:bg-gray-50 transition-colors"
-              >
-                {/* Video Thumbnail */}
-                <div 
-                  onClick={() => handleExerciseClick(exercise)}
-                  className="flex-shrink-0"
-                >
-                  {renderVideoThumbnail(exercise)}
-                </div>
-
-                {/* Exercise Details */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h6 
-                        className={`font-medium text-gray-900 ${
-                          exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url) 
-                            ? 'cursor-pointer hover:text-blue-600' 
-                            : ''
-                        }`}
-                        onClick={() => handleExerciseClick(exercise)}
-                      >
-                        {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-                      </h6>
-                      
-                      <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
-                        <span className="font-medium">{exercise.sets} sets</span>
-                        <span>{exercise.reps} reps</span>
-                        {exercise.kg && <span>{exercise.kg} kg</span>}
-                        {exercise.percentage_1rm && <span>{exercise.percentage_1rm}% 1RM</span>}
-                        {exercise.velocity_ms && <span>{exercise.velocity_ms} m/s</span>}
-                        {exercise.tempo && <span>Tempo: {exercise.tempo}</span>}
-                        {exercise.rest && <span>Ανάπαυση: {exercise.rest}</span>}
-                      </div>
-                      
-                      {exercise.notes && (
-                        <p className="text-xs text-gray-500 mt-2 italic">
-                          {exercise.notes}
-                        </p>
-                      )}
-                    </div>
+              <div key={exercise.id} className="bg-white rounded-none">
+                {/* Exercise Header */}
+                <div className="flex items-center gap-2 p-2 border-b border-gray-100">
+                  <div 
+                    onClick={() => handleExerciseClick(exercise)}
+                    className="flex-shrink-0"
+                  >
+                    {renderVideoThumbnail(exercise)}
                   </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h6 
+                      className={`text-sm font-medium text-gray-900 truncate ${
+                        exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url) 
+                          ? 'cursor-pointer hover:text-blue-600' 
+                          : ''
+                      }`}
+                      onClick={() => handleExerciseClick(exercise)}
+                    >
+                      {exercise.exercises?.name || 'Άγνωστη άσκηση'}
+                    </h6>
+                  </div>
+                </div>
+                
+                {/* Exercise Details Grid */}
+                <div className="p-2 bg-gray-50">
+                  <div className="grid grid-cols-6 gap-2 text-xs">
+                    <div className="text-center">
+                      <div className="font-medium text-gray-600 mb-1">Sets</div>
+                      <div className="text-gray-900">{exercise.sets}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium text-gray-600 mb-1">Reps</div>
+                      <div className="text-gray-900">{exercise.reps}</div>
+                    </div>
+                    {exercise.kg && (
+                      <div className="text-center">
+                        <div className="font-medium text-gray-600 mb-1">Kg</div>
+                        <div className="text-gray-900">{exercise.kg}</div>
+                      </div>
+                    )}
+                    {exercise.percentage_1rm && (
+                      <div className="text-center">
+                        <div className="font-medium text-gray-600 mb-1">%1RM</div>
+                        <div className="text-gray-900">{exercise.percentage_1rm}%</div>
+                      </div>
+                    )}
+                    {exercise.velocity_ms && (
+                      <div className="text-center">
+                        <div className="font-medium text-gray-600 mb-1">m/s</div>
+                        <div className="text-gray-900">{exercise.velocity_ms}</div>
+                      </div>
+                    )}
+                    {exercise.tempo && (
+                      <div className="text-center">
+                        <div className="font-medium text-gray-600 mb-1">Tempo</div>
+                        <div className="text-gray-900">{exercise.tempo}</div>
+                      </div>
+                    )}
+                    {exercise.rest && (
+                      <div className="text-center">
+                        <div className="font-medium text-gray-600 mb-1">Rest</div>
+                        <div className="text-gray-900">{exercise.rest}</div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {exercise.notes && (
+                    <div className="mt-2 text-xs text-gray-600 italic">
+                      {exercise.notes}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

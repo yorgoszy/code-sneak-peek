@@ -27,33 +27,33 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment }) => {
   const totalDuration = todayDay.estimated_duration_minutes || 0;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-none p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white border border-gray-200 rounded-none p-4">
+      <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-base font-semibold text-gray-900">
             {program.name}
           </h3>
           {program.description && (
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-xs text-gray-600 mt-1">
               {program.description}
             </p>
           )}
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           {totalDuration > 0 && (
-            <div className="flex items-center space-x-1 text-sm text-gray-600">
-              <Clock className="h-4 w-4" />
+            <div className="flex items-center space-x-1 text-xs text-gray-600">
+              <Clock className="h-3 w-3" />
               <span>{totalDuration} λεπτά</span>
             </div>
           )}
-          <Badge variant="outline" className="rounded-none">
+          <Badge variant="outline" className="rounded-none text-xs">
             {assignment.status}
           </Badge>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h4 className="font-medium text-gray-900 flex items-center space-x-2">
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
           <Dumbbell className="h-4 w-4" />
           <span>{todayDay.name}</span>
         </h4>
