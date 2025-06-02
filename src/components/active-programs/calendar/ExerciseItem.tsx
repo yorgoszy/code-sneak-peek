@@ -144,7 +144,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
       {/* Exercise Details Grid */}
       <div className="flex">
         <div className="p-1 bg-gray-50" style={{ width: '70%' }}>
-          <div className="flex text-xs">
+          <div className="flex text-xs" style={{ height: '64px' }}>
             {/* Sets */}
             <div className="flex-1 text-center">
               <div className="font-medium text-gray-600 mb-1">Sets</div>
@@ -158,20 +158,20 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
               </div>
             </div>
             
-            <Separator orientation="vertical" className="h-16 mx-1" />
+            <Separator orientation="vertical" className="h-full mx-1" />
             
             {/* Reps */}
             <div className="flex-1 text-center">
               <div className="font-medium text-gray-600 mb-1">Reps</div>
               <div className="text-gray-900">{exercise.reps || '-'}</div>
               {workoutInProgress && (
-                <div className="mt-1 flex items-center justify-center gap-1">
+                <div className="mt-0.5 flex items-center justify-center gap-1">
                   <Input
                     type="number"
                     value={actualReps}
                     onChange={(e) => handleRepsChange(e.target.value)}
                     placeholder="Πραγματικά"
-                    className="text-xs rounded-none h-6 w-16 text-center"
+                    className="text-xs rounded-none h-5 w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   {actualReps && (
                     <button
@@ -181,40 +181,40 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
                       }}
                       className="text-red-500 hover:text-red-700 p-0.5"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-2.5 h-2.5" />
                     </button>
                   )}
                 </div>
               )}
             </div>
             
-            <Separator orientation="vertical" className="h-16 mx-1" />
+            <Separator orientation="vertical" className="h-full mx-1" />
             
             {/* %1RM */}
             <div className="flex-1 text-center">
               <div className="font-medium text-gray-600 mb-1">%1RM</div>
               <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
               {newPercentage && (
-                <div className="text-xs text-red-600 font-medium mt-1">
+                <div className="text-xs text-red-600 font-medium mt-0.5">
                   {newPercentage}%
                 </div>
               )}
             </div>
             
-            <Separator orientation="vertical" className="h-16 mx-1" />
+            <Separator orientation="vertical" className="h-full mx-1" />
             
             {/* Kg */}
             <div className="flex-1 text-center">
               <div className="font-medium text-gray-600 mb-1">Kg</div>
               <div className="text-gray-900">{exercise.kg || '-'}</div>
               {workoutInProgress && (
-                <div className="mt-1 flex items-center justify-center gap-1">
+                <div className="mt-0.5 flex items-center justify-center gap-1">
                   <Input
                     type="number"
                     value={actualKg}
                     onChange={(e) => handleKgChange(e.target.value)}
                     placeholder="Πραγματικά"
-                    className="text-xs rounded-none h-6 w-16 text-center"
+                    className="text-xs rounded-none h-5 w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   {actualKg && (
                     <button
@@ -224,28 +224,28 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
                       }}
                       className="text-red-500 hover:text-red-700 p-0.5"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-2.5 h-2.5" />
                     </button>
                   )}
                 </div>
               )}
             </div>
             
-            <Separator orientation="vertical" className="h-16 mx-1" />
+            <Separator orientation="vertical" className="h-full mx-1" />
             
             {/* m/s */}
             <div className="flex-1 text-center">
               <div className="font-medium text-gray-600 mb-1">m/s</div>
               <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
               {workoutInProgress && (
-                <div className="mt-1 flex items-center justify-center gap-1">
+                <div className="mt-0.5 flex items-center justify-center gap-1">
                   <Input
                     type="number"
                     step="0.01"
                     value={actualVelocity}
                     onChange={(e) => handleVelocityChange(e.target.value)}
                     placeholder="Πραγματικά"
-                    className="text-xs rounded-none h-6 w-16 text-center"
+                    className="text-xs rounded-none h-5 w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   {actualVelocity && (
                     <button
@@ -255,14 +255,14 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
                       }}
                       className="text-red-500 hover:text-red-700 p-0.5"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-2.5 h-2.5" />
                     </button>
                   )}
                 </div>
               )}
             </div>
             
-            <Separator orientation="vertical" className="h-16 mx-1" />
+            <Separator orientation="vertical" className="h-full mx-1" />
             
             {/* Tempo */}
             <div className="flex-1 text-center">
@@ -270,7 +270,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
               <div className="text-gray-900">{exercise.tempo || '-'}</div>
             </div>
             
-            <Separator orientation="vertical" className="h-16 mx-1" />
+            <Separator orientation="vertical" className="h-full mx-1" />
             
             {/* Rest */}
             <div className="flex-1 text-center">
