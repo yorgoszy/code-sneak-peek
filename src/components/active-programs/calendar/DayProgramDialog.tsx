@@ -61,6 +61,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   const handleStartWorkout = () => {
     console.log('🏋️‍♂️ Έναρξη προπόνησης για ημερομηνία:', format(selectedDate, 'dd/MM/yyyy'));
+    console.log('📋 Program ID:', program.id);
+    console.log('👤 User:', program.app_users?.name);
     // Εδώ θα μπορούσαμε να προσθέσουμε επιπλέον λογική για την έναρξη της προπόνησης
   };
 
