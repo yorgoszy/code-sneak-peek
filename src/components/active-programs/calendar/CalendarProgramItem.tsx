@@ -7,12 +7,14 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 interface CalendarProgramItemProps {
   program: EnrichedAssignment;
   workoutStatus: string;
+  allCompletions: any[];
   onClick: () => void;
 }
 
 export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   program,
   workoutStatus,
+  allCompletions,
   onClick
 }) => {
   const getStatusColor = (status: string) => {
@@ -33,8 +35,23 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
     }
   };
 
-  // Υπολογισμός progress από τα existing data
-  const progressPercentage = program.progress || 0;
+  // Calculate real-time progress from completions
+  const calculateProgress = () => {
+    if (!program.training_dates || program.training_dates.length === 0) {
+      return 0;
+    }
+
+    const programCompletions = allCompletions.filter(c => 
+      c.assignment_id === program.id && c.status === 'completed'
+    );
+    
+    const completedWorkouts = programCompletions.length;
+    const totalWorkouts = program.training_dates.length;
+    
+    return Math.round((completedWorkouts / totalWorkouts) * 100);
+  };
+
+  const progressPercentage = calculateProgress();
 
   return (
     <div

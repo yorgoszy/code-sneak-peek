@@ -107,6 +107,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
                 key={program.id}
                 program={program}
                 workoutStatus={workoutStatus}
+                allCompletions={allCompletions}
                 onClick={() => handleProgramClick(program)}
               />
             );

@@ -54,6 +54,45 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
     fetchAllCompletions();
   }, [programs, getWorkoutCompletions]);
 
+  // Real-time updates for workout completions
+  useEffect(() => {
+    if (!user?.id || programs.length === 0) return;
+
+    console.log('🔄 Setting up real-time updates for user profile calendar');
+    
+    const channel = supabase
+      .channel('user-profile-workout-completions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_completions'
+        },
+        async (payload) => {
+          console.log('📊 User profile workout completion changed:', payload);
+          
+          // Refetch all completions to get updated data
+          const completionsData: any[] = [];
+          for (const program of programs) {
+            try {
+              const completions = await getWorkoutCompletions(program.id);
+              completionsData.push(...completions.map(c => ({ ...c, assignment_id: program.id })));
+            } catch (error) {
+              console.error('❌ Error fetching completions for program:', program.id, error);
+            }
+          }
+          setAllCompletions(completionsData);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔌 Cleaning up user profile real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, programs, getWorkoutCompletions]);
+
   const fetchUserPrograms = async () => {
     try {
       setLoading(true);
@@ -85,6 +124,11 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    console.log('🔄 Refreshing user profile calendar data...');
+    await fetchUserPrograms();
   };
 
   const monthStart = startOfMonth(currentDate);
@@ -129,6 +173,7 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
           currentDate={currentDate}
           programs={programs}
           allCompletions={allCompletions}
+          onRefresh={handleRefresh}
         />
         
         {programs.length === 0 && (

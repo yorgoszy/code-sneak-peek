@@ -53,6 +53,20 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     exerciseCompletion.completeSet(exerciseId, totalSets);
   };
 
+  const handleExerciseClick = (exercise: any, event: React.MouseEvent) => {
+    if (!workoutInProgress) {
+      console.log('⚠️ Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
+      return;
+    }
+
+    if ((event.target as HTMLElement).closest('.video-thumbnail')) {
+      if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+        handleVideoClick(exercise);
+      }
+      return;
+    }
+  };
+
   // Find the correct day program
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
   const trainingDates = program.training_dates || [];
@@ -102,6 +116,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                     workoutInProgress={workoutInProgress}
                     getRemainingText={exerciseCompletion.getRemainingText}
                     isExerciseComplete={exerciseCompletion.isExerciseComplete}
+                    onExerciseClick={handleExerciseClick}
+                    onSetClick={handleSetClick}
                     onVideoClick={handleVideoClick}
                     getNotes={exerciseCompletion.getNotes}
                     updateNotes={exerciseCompletion.updateNotes}
