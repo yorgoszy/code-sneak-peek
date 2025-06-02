@@ -4,6 +4,7 @@ import { UserProfilePrograms } from "./UserProfilePrograms";
 import { UserProfileCalendar } from "./UserProfileCalendar";
 import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
+import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -37,6 +38,8 @@ export const UserProfileContent = ({
         );
       case "programs":
         return <UserProfilePrograms user={userProfile} programs={programs} />;
+      case "daily-program":
+        return <UserProfileDailyProgram user={userProfile} />;
       case "calendar":
         return <UserProfileCalendar user={userProfile} />;
       case "tests":
