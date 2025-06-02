@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { el } from "date-fns/locale";
 import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
@@ -100,6 +101,58 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     setElapsedTime(0);
   };
 
+  const transferNotesToNextWeek = () => {
+    if (!program || !selectedDate) return;
+
+    console.log('📝 Μεταφορά notes στην επόμενη εβδομάδα...');
+    
+    // Βρίσκουμε την επόμενη εβδομάδα (προσθέτουμε 7 μέρες)
+    const nextWeekDate = addDays(selectedDate, 7);
+    const nextWeekDateStr = format(nextWeekDate, 'yyyy-MM-dd');
+    
+    console.log('📅 Επόμενη εβδομάδα:', nextWeekDateStr);
+    
+    // Ελέγχουμε αν η επόμενη εβδομάδα υπάρχει στις training_dates
+    const trainingDates = program.training_dates || [];
+    const nextWeekExists = trainingDates.includes(nextWeekDateStr);
+    
+    if (!nextWeekExists) {
+      console.log('✅ Το πρόγραμμα έχει ολοκληρωθεί - δεν μεταφέρονται notes');
+      return;
+    }
+
+    // Βρίσκουμε τις ασκήσεις της τρέχουσας ημέρας και συλλέγουμε τα notes
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
+    
+    if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
+      const programDays = program.programs.program_weeks[0].program_days;
+      const dayProgram = programDays[dateIndex % programDays.length];
+      
+      if (dayProgram?.program_blocks) {
+        // Συλλέγουμε όλα τα notes από τις ασκήσεις
+        dayProgram.program_blocks.forEach(block => {
+          if (block.program_exercises) {
+            block.program_exercises.forEach(exercise => {
+              const currentNotes = getNotes(exercise.id);
+              if (currentNotes && currentNotes.trim()) {
+                // Δημιουργούμε unique key για την επόμενη εβδομάδα
+                const nextWeekExerciseKey = `${nextWeekDateStr}-${exercise.id}`;
+                console.log(`📝 Μεταφορά notes από ${exercise.exercises?.name}:`, currentNotes);
+                console.log(`🔑 Next week key:`, nextWeekExerciseKey);
+                
+                // Αποθηκεύουμε τα notes για την επόμενη εβδομάδα
+                updateNotes(nextWeekExerciseKey, currentNotes);
+              }
+            });
+          }
+        });
+      }
+    }
+    
+    console.log('✅ Μεταφορά notes ολοκληρώθηκε');
+  };
+
   const handleCompleteWorkout = async () => {
     if (!program || !selectedDate || !startTime) {
       console.error('❌ Missing required data for workout completion');
@@ -109,6 +162,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     try {
       console.log('✅ Ολοκλήρωση προπόνησης');
       console.log('⏱️ Συνολικός χρόνος:', elapsedTime);
+      
+      // Μεταφέρουμε τα notes στην επόμενη εβδομάδα πριν ολοκληρώσουμε
+      transferNotesToNextWeek();
       
       const endTime = new Date();
       const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / 60000);

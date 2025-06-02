@@ -22,6 +22,8 @@ interface ExerciseItemProps {
   clearVelocity: (exerciseId: string) => void;
   updateReps: (exerciseId: string, reps: number) => void;
   clearReps: (exerciseId: string) => void;
+  selectedDate?: Date;
+  program?: any;
 }
 
 export const ExerciseItem: React.FC<ExerciseItemProps> = ({
@@ -40,7 +42,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   updateVelocity,
   clearVelocity,
   updateReps,
-  clearReps
+  clearReps,
+  selectedDate,
+  program
 }) => {
   const [actualKg, setActualKg] = useState('');
   const [actualVelocity, setActualVelocity] = useState('');
@@ -295,6 +299,8 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           workoutInProgress={workoutInProgress}
           onNotesChange={updateNotes}
           onClearNotes={clearNotes}
+          selectedDate={selectedDate}
+          program={program}
         />
       </div>
     </div>

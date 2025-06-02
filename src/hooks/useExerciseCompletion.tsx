@@ -1,153 +1,129 @@
 
-import { useState } from 'react';
-
-interface ExerciseProgress {
-  [exerciseId: string]: number; // πόσα σετ έχουν ολοκληρωθεί
-}
-
-interface ExerciseNotes {
-  [exerciseId: string]: string;
-}
+import { useState, useCallback } from 'react';
 
 interface ExerciseAdjustments {
-  [exerciseId: string]: {
-    actualKg?: string;
-    actualVelocity?: number;
-    actualReps?: number;
-  };
+  kg?: string;
+  velocity?: number;
+  reps?: number;
+}
+
+interface ExerciseState {
+  completedSets: number;
+  notes: string;
+  adjustments: ExerciseAdjustments;
 }
 
 export const useExerciseCompletion = () => {
-  const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress>({});
-  const [exerciseNotes, setExerciseNotes] = useState<ExerciseNotes>({});
-  const [exerciseAdjustments, setExerciseAdjustments] = useState<ExerciseAdjustments>({});
+  const [exerciseStates, setExerciseStates] = useState<Record<string, ExerciseState>>({});
 
-  const completeSet = (exerciseId: string, totalSets: number) => {
-    setExerciseProgress(prev => {
-      const currentProgress = prev[exerciseId] || 0;
-      const newProgress = Math.min(currentProgress + 1, totalSets);
-      
-      return {
-        ...prev,
-        [exerciseId]: newProgress
-      };
-    });
-  };
+  const getExerciseState = useCallback((exerciseId: string): ExerciseState => {
+    return exerciseStates[exerciseId] || {
+      completedSets: 0,
+      notes: '',
+      adjustments: {}
+    };
+  }, [exerciseStates]);
 
-  const resetExercise = (exerciseId: string) => {
-    setExerciseProgress(prev => {
-      const newProgress = { ...prev };
-      delete newProgress[exerciseId];
-      return newProgress;
-    });
-  };
-
-  const updateNotes = (exerciseId: string, notes: string) => {
-    setExerciseNotes(prev => ({
-      ...prev,
-      [exerciseId]: notes
-    }));
-  };
-
-  const clearNotes = (exerciseId: string) => {
-    setExerciseNotes(prev => {
-      const newNotes = { ...prev };
-      delete newNotes[exerciseId];
-      return newNotes;
-    });
-  };
-
-  const updateKg = (exerciseId: string, kg: string) => {
-    setExerciseAdjustments(prev => ({
+  const updateExerciseState = useCallback((exerciseId: string, updates: Partial<ExerciseState>) => {
+    setExerciseStates(prev => ({
       ...prev,
       [exerciseId]: {
-        ...prev[exerciseId],
-        actualKg: kg
+        ...getExerciseState(exerciseId),
+        ...updates
       }
     }));
-  };
+  }, [getExerciseState]);
 
-  const clearKg = (exerciseId: string) => {
-    setExerciseAdjustments(prev => ({
-      ...prev,
-      [exerciseId]: {
-        ...prev[exerciseId],
-        actualKg: undefined
-      }
-    }));
-  };
-
-  const updateVelocity = (exerciseId: string, velocity: number) => {
-    setExerciseAdjustments(prev => ({
-      ...prev,
-      [exerciseId]: {
-        ...prev[exerciseId],
-        actualVelocity: velocity
-      }
-    }));
-  };
-
-  const clearVelocity = (exerciseId: string) => {
-    setExerciseAdjustments(prev => ({
-      ...prev,
-      [exerciseId]: {
-        ...prev[exerciseId],
-        actualVelocity: undefined
-      }
-    }));
-  };
-
-  const updateReps = (exerciseId: string, reps: number) => {
-    setExerciseAdjustments(prev => ({
-      ...prev,
-      [exerciseId]: {
-        ...prev[exerciseId],
-        actualReps: reps
-      }
-    }));
-  };
-
-  const clearReps = (exerciseId: string) => {
-    setExerciseAdjustments(prev => ({
-      ...prev,
-      [exerciseId]: {
-        ...prev[exerciseId],
-        actualReps: undefined
-      }
-    }));
-  };
-
-  const getProgress = (exerciseId: string) => {
-    return exerciseProgress[exerciseId] || 0;
-  };
-
-  const isExerciseComplete = (exerciseId: string, totalSets: number) => {
-    return getProgress(exerciseId) >= totalSets;
-  };
-
-  const getRemainingText = (exerciseId: string, totalSets: number) => {
-    const completed = getProgress(exerciseId);
-    if (completed === 0) return '';
+  const completeSet = useCallback((exerciseId: string, totalSets: number) => {
+    const currentState = getExerciseState(exerciseId);
+    const newCompletedSets = Math.min(currentState.completedSets + 1, totalSets);
     
-    const remaining = totalSets - completed;
-    if (remaining <= 0) return ' ✓';
-    return ` -${remaining}`;
-  };
+    updateExerciseState(exerciseId, { completedSets: newCompletedSets });
+    
+    console.log(`✅ Set completed for exercise ${exerciseId}: ${newCompletedSets}/${totalSets}`);
+  }, [getExerciseState, updateExerciseState]);
 
-  const getNotes = (exerciseId: string) => {
-    return exerciseNotes[exerciseId] || '';
-  };
+  const getRemainingText = useCallback((exerciseId: string, totalSets: number) => {
+    const currentState = getExerciseState(exerciseId);
+    const remaining = totalSets - currentState.completedSets;
+    if (remaining <= 0) return ' ✅';
+    return ` (${remaining} left)`;
+  }, [getExerciseState]);
 
-  const getAdjustments = (exerciseId: string) => {
-    return exerciseAdjustments[exerciseId] || {};
-  };
+  const isExerciseComplete = useCallback((exerciseId: string, totalSets: number) => {
+    const currentState = getExerciseState(exerciseId);
+    return currentState.completedSets >= totalSets;
+  }, [getExerciseState]);
+
+  const updateNotes = useCallback((exerciseId: string, notes: string) => {
+    console.log(`📝 Updating notes for ${exerciseId}:`, notes);
+    updateExerciseState(exerciseId, { notes });
+  }, [updateExerciseState]);
+
+  const clearNotes = useCallback((exerciseId: string) => {
+    console.log(`🗑️ Clearing notes for ${exerciseId}`);
+    updateExerciseState(exerciseId, { notes: '' });
+  }, [updateExerciseState]);
+
+  const getNotes = useCallback((exerciseId: string) => {
+    const state = getExerciseState(exerciseId);
+    return state.notes;
+  }, [getExerciseState]);
+
+  const updateKg = useCallback((exerciseId: string, kg: string) => {
+    const currentState = getExerciseState(exerciseId);
+    updateExerciseState(exerciseId, {
+      adjustments: { ...currentState.adjustments, kg }
+    });
+  }, [getExerciseState, updateExerciseState]);
+
+  const clearKg = useCallback((exerciseId: string) => {
+    const currentState = getExerciseState(exerciseId);
+    const { kg, ...restAdjustments } = currentState.adjustments;
+    updateExerciseState(exerciseId, {
+      adjustments: restAdjustments
+    });
+  }, [getExerciseState, updateExerciseState]);
+
+  const updateVelocity = useCallback((exerciseId: string, velocity: number) => {
+    const currentState = getExerciseState(exerciseId);
+    updateExerciseState(exerciseId, {
+      adjustments: { ...currentState.adjustments, velocity }
+    });
+  }, [getExerciseState, updateExerciseState]);
+
+  const clearVelocity = useCallback((exerciseId: string) => {
+    const currentState = getExerciseState(exerciseId);
+    const { velocity, ...restAdjustments } = currentState.adjustments;
+    updateExerciseState(exerciseId, {
+      adjustments: restAdjustments
+    });
+  }, [getExerciseState, updateExerciseState]);
+
+  const updateReps = useCallback((exerciseId: string, reps: number) => {
+    const currentState = getExerciseState(exerciseId);
+    updateExerciseState(exerciseId, {
+      adjustments: { ...currentState.adjustments, reps }
+    });
+  }, [getExerciseState, updateExerciseState]);
+
+  const clearReps = useCallback((exerciseId: string) => {
+    const currentState = getExerciseState(exerciseId);
+    const { reps, ...restAdjustments } = currentState.adjustments;
+    updateExerciseState(exerciseId, {
+      adjustments: restAdjustments
+    });
+  }, [getExerciseState, updateExerciseState]);
+
+  const getAdjustments = useCallback((exerciseId: string) => {
+    const state = getExerciseState(exerciseId);
+    return state.adjustments;
+  }, [getExerciseState]);
 
   return {
     completeSet,
-    resetExercise,
-    getProgress,
-    isExerciseComplete,
     getRemainingText,
+    isExerciseComplete,
     updateNotes,
     clearNotes,
     getNotes,
