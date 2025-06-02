@@ -19,10 +19,10 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-500';
-      case 'missed': return 'bg-red-500';
-      case 'makeup': return 'bg-yellow-500';
-      default: return 'bg-blue-500';
+      case 'completed': return 'border-l-[#d4ebd1]';
+      case 'missed': return 'border-l-red-500';
+      case 'makeup': return 'border-l-yellow-500';
+      default: return 'border-l-[#d1dbeb]';
     }
   };
 
@@ -58,7 +58,7 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
       onClick={onClick}
       className={`
         text-xs p-1 rounded-none cursor-pointer hover:bg-gray-50 border-l-2
-        ${getStatusColor(workoutStatus)} border-l-2
+        ${getStatusColor(workoutStatus)}
       `}
     >
       <div className="flex items-center justify-between mb-1">
