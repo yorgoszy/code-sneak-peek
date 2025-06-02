@@ -54,7 +54,10 @@ export const useActivePrograms = () => {
             })
           );
           
-          setPrograms(updatedPrograms);
+          // Φιλτράρισμα για να αφαιρεθούν τα ολοκληρωμένα προγράμματα
+          const activePrograms = updatedPrograms.filter(program => program.progress < 100);
+          
+          setPrograms(activePrograms);
         }
       )
       .subscribe();
@@ -166,8 +169,11 @@ export const useActivePrograms = () => {
         })
       );
       
-      console.log('✅ Final filtered programs with progress:', programsWithProgress.length, programsWithProgress);
-      setPrograms(programsWithProgress);
+      // Φιλτράρισμα για να κρατήσουμε μόνο τα μη ολοκληρωμένα προγράμματα (progress < 100%)
+      const activePrograms = programsWithProgress.filter(program => program.progress < 100);
+      
+      console.log('✅ Final active programs (excluding completed):', activePrograms.length, activePrograms);
+      setPrograms(activePrograms);
 
     } catch (error) {
       console.error('❌ Unexpected error fetching active programs:', error);
