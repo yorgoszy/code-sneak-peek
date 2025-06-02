@@ -1,11 +1,13 @@
 
 import React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface CalendarProgramItemProps {
   program: EnrichedAssignment;
   workoutStatus: string;
-  onClick?: () => void;
+  onClick: () => void;
 }
 
 export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
@@ -13,30 +15,62 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   workoutStatus,
   onClick
 }) => {
-  console.log('🎨 Setting colors for status:', workoutStatus);
-  
-  let statusColor = 'bg-blue-100 text-blue-800 border-blue-200'; // Default (scheduled)
-  
-  if (workoutStatus === 'completed') {
-    statusColor = 'bg-green-100 text-green-800 border-green-200';
-  } else if (workoutStatus === 'missed') {
-    statusColor = 'bg-red-100 text-red-800 border-red-200';
-  } else if (workoutStatus === 'makeup') {
-    statusColor = 'bg-yellow-100 text-yellow-800 border-yellow-200';
-  }
-  
-  const statusText = workoutStatus === 'completed' ? 'Ολοκληρωμένη' : 
-                   workoutStatus === 'missed' ? 'Χαμένη' : 
-                   workoutStatus === 'makeup' ? 'Αναπλήρωση' : 'Προγραμματισμένη';
-  
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-500';
+      case 'missed': return 'bg-red-500';
+      case 'makeup': return 'bg-yellow-500';
+      default: return 'bg-blue-500';
+    }
+  };
+
+  const getBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'completed': return 'default';
+      case 'missed': return 'destructive';
+      case 'makeup': return 'secondary';
+      default: return 'outline';
+    }
+  };
+
+  // Υπολογισμός progress από τα existing data
+  const progressPercentage = program.progress || 0;
+
   return (
     <div
-      className={`text-xs p-1 rounded-none truncate border cursor-pointer hover:opacity-80 transition-opacity ${statusColor}`}
-      title={`${program.programs?.name || 'Άγνωστο πρόγραμμα'} - ${program.app_users?.name || 'Άγνωστος χρήστης'} - ${statusText}`}
       onClick={onClick}
+      className={`
+        text-xs p-1 rounded-none cursor-pointer hover:bg-gray-50 border-l-2
+        ${getStatusColor(workoutStatus)} border-l-2
+      `}
     >
-      <div className="font-medium">{program.programs?.name || 'Άγνωστο πρόγραμμα'}</div>
-      <div className="text-gray-600">{program.app_users?.name || 'Άγνωστος χρήστης'}</div>
+      <div className="flex items-center justify-between mb-1">
+        <div className="font-medium text-gray-900 truncate flex-1">
+          {program.programs?.name || 'Άγνωστο'}
+        </div>
+        <Badge 
+          variant={getBadgeVariant(workoutStatus)} 
+          className="rounded-none text-xs px-1 py-0 ml-1"
+        >
+          {workoutStatus === 'completed' ? 'Ε' : 
+           workoutStatus === 'missed' ? 'Χ' : 
+           workoutStatus === 'makeup' ? 'Α' : 'Π'}
+        </Badge>
+      </div>
+      
+      <div className="text-xs text-gray-600 mb-1">
+        {program.app_users?.name?.split(' ')[0] || 'Άγνωστος'}
+      </div>
+
+      {/* Progress Bar με ποσοστό */}
+      <div className="flex items-center gap-1">
+        <div className="flex-1">
+          <Progress value={progressPercentage} className="h-1" />
+        </div>
+        <div className="text-xs text-gray-600 font-medium min-w-8">
+          {progressPercentage}%
+        </div>
+      </div>
     </div>
   );
 };
