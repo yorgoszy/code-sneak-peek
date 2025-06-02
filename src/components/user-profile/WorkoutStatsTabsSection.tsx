@@ -19,37 +19,18 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
       
       <Tabs defaultValue="month" className="w-full">
         <TabsList className="grid w-full grid-cols-3 rounded-none">
-          <TabsTrigger value="day" className="rounded-none">Ημέρα</TabsTrigger>
-          <TabsTrigger value="week" className="rounded-none">Εβδομάδα</TabsTrigger>
           <TabsTrigger value="month" className="rounded-none">Μήνας</TabsTrigger>
+          <TabsTrigger value="week" className="rounded-none">Εβδομάδα</TabsTrigger>
+          <TabsTrigger value="day" className="rounded-none">Ημέρα</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="day" className="space-y-4">
-          {dayWeekStatsLoading ? (
+        <TabsContent value="month" className="space-y-4">
+          {workoutStatsLoading ? (
             <div className="text-center py-8">
-              <p className="text-gray-500">Φόρτωση στατιστικών ημέρας...</p>
+              <p className="text-gray-500">Φόρτωση στατιστικών μήνα...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white p-6 border rounded-none">
-                <h4 className="text-md font-medium text-gray-700 mb-4">Στατιστικά Σήμερα</h4>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm text-gray-600">Όγκος:</span>
-                    <span className="ml-2 text-lg font-semibold">
-                      {dayWeekStats.currentDay.volume >= 1000 
-                        ? `${(dayWeekStats.currentDay.volume / 1000).toFixed(1)}tn`
-                        : `${dayWeekStats.currentDay.volume}kg`
-                      }
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Ώρες:</span>
-                    <span className="ml-2 text-lg font-semibold">{dayWeekStats.currentDay.hours}h</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <WorkoutStatsCards stats={workoutStats} />
           )}
         </TabsContent>
         
@@ -82,13 +63,32 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
           )}
         </TabsContent>
         
-        <TabsContent value="month" className="space-y-4">
-          {workoutStatsLoading ? (
+        <TabsContent value="day" className="space-y-4">
+          {dayWeekStatsLoading ? (
             <div className="text-center py-8">
-              <p className="text-gray-500">Φόρτωση στατιστικών μήνα...</p>
+              <p className="text-gray-500">Φόρτωση στατιστικών ημέρας...</p>
             </div>
           ) : (
-            <WorkoutStatsCards stats={workoutStats} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white p-6 border rounded-none">
+                <h4 className="text-md font-medium text-gray-700 mb-4">Στατιστικά Σήμερα</h4>
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm text-gray-600">Όγκος:</span>
+                    <span className="ml-2 text-lg font-semibold">
+                      {dayWeekStats.currentDay.volume >= 1000 
+                        ? `${(dayWeekStats.currentDay.volume / 1000).toFixed(1)}tn`
+                        : `${dayWeekStats.currentDay.volume}kg`
+                      }
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-600">Ώρες:</span>
+                    <span className="ml-2 text-lg font-semibold">{dayWeekStats.currentDay.hours}h</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </TabsContent>
       </Tabs>
