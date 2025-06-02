@@ -96,10 +96,13 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
       console.log('📊 User profile assignments:', assignmentsData);
       
       // Extract programs from assignments and add assignment data
-      const programsWithAssignments = assignmentsData?.map(assignment => ({
-        ...assignment.programs,
-        program_assignments: [assignment]
-      })).filter(Boolean) || [];
+      const programsWithAssignments = assignmentsData?.map(assignment => {
+        if (!assignment.programs) return null;
+        return {
+          ...assignment.programs,
+          program_assignments: [assignment]
+        };
+      }).filter(Boolean) || [];
       
       console.log('✅ Programs for user profile:', programsWithAssignments.length);
       setPrograms(programsWithAssignments);
