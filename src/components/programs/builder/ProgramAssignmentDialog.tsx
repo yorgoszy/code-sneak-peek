@@ -120,16 +120,12 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     
     const dateString = format(date, 'yyyy-MM-dd');
     
-    // Αν η ημερομηνία είναι ήδη επιλεγμένη, την επιτρέπουμε (για αποεπιλογή)
+    // Αν η ημερομηνία είναι ήδη επιλεγμένη, την επιτρέπουμε ΠΑΝΤΑ (για αποεπιλογή)
     if (selectedDates.includes(dateString)) {
       return false;
     }
     
-    // Αν έχουμε φτάσει το όριο των συνολικών προπονήσεων
-    if (selectedDates.length >= totalRequiredSessions) {
-      return true;
-    }
-    
+    // Για μη επιλεγμένες ημερομηνίες, ελέγχουμε αν μπορούμε να τις προσθέσουμε
     return !canAddDate(date);
   };
 
