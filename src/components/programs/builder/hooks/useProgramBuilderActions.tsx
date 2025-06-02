@@ -1,15 +1,33 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Exercise } from "../../types";
 
 export const useProgramBuilderActions = (
   programStructure: any,
-  setProgramStructure: any,
+  updateProgram: any,
   generateId: () => string,
   exercises: Exercise[]
 ) => {
   const { toast } = useToast();
+
+  const addWeek = () => {
+    console.log('🔄 addWeek called, current weeks:', programStructure.weeks);
+    
+    const newWeek = {
+      id: generateId(),
+      name: `Εβδομάδα ${(programStructure.weeks || []).length + 1}`,
+      week_number: (programStructure.weeks || []).length + 1,
+      days: []
+    };
+
+    console.log('📝 Creating new week:', newWeek);
+    
+    updateProgram({ 
+      weeks: [...(programStructure.weeks || []), newWeek] 
+    });
+    
+    console.log('✅ Week added successfully');
+  };
 
   const saveProgram = async (saveProgram: (data: any) => Promise<void>, selectedUserId?: string) => {
     try {
@@ -46,20 +64,6 @@ export const useProgramBuilderActions = (
         variant: "destructive",
       });
     }
-  };
-
-  const addWeek = () => {
-    const newWeek = {
-      id: generateId(),
-      name: `Εβδομάδα ${(programStructure.weeks || []).length + 1}`,
-      week_number: (programStructure.weeks || []).length + 1,
-      days: []
-    };
-
-    setProgramStructure((prev: any) => ({
-      ...prev,
-      weeks: [...(prev.weeks || []), newWeek]
-    }));
   };
 
   const removeWeek = (weekId: string) => {
