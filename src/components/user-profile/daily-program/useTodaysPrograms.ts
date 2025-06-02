@@ -18,7 +18,7 @@ export const useTodaysPrograms = (userId: string) => {
         .from('program_assignments')
         .select(`
           *,
-          programs!inner (
+          programs!program_assignments_program_id_fkey (
             id,
             name,
             description,
