@@ -28,10 +28,14 @@ const Programs = () => {
 
   const loadPrograms = async () => {
     try {
-      console.log('🔄 Loading programs with assignments...');
+      console.log('🔄 Loading draft/template programs...');
       const data = await fetchProgramsWithAssignments();
-      console.log('✅ Programs loaded:', data.length);
-      setPrograms(data);
+      // Filter to show only programs without assignments (draft/template programs)
+      const draftPrograms = data.filter(program => 
+        !program.program_assignments || program.program_assignments.length === 0
+      );
+      console.log('✅ Draft programs loaded:', draftPrograms.length);
+      setPrograms(draftPrograms);
     } catch (error) {
       console.error('❌ Error loading programs:', error);
     }
