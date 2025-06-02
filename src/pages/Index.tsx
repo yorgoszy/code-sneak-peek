@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { LogOut, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -114,7 +113,7 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/a5651e72-baad-4a26-94dd-10b93aa942b9.png" 
                 alt="HyperKids Logo" 
-                className="h-8 w-auto"
+                className="h-8 w-auto animate-lightning-strike"
               />
             </div>
             <div className="hidden md:flex items-center space-x-8">
