@@ -35,15 +35,6 @@ export const ProgramInfo: React.FC<ProgramInfoProps> = ({
         </div>
       </div>
       
-      {/* Οδηγίες για τον χρήστη */}
-      {!workoutInProgress && workoutStatus !== 'completed' && (
-        <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-none">
-          <p className="text-xs text-blue-700">
-            💡 Πάτησε "Έναρξη" για να ξεκινήσεις την προπόνηση και να μπορείς να κάνεις κλικ στα Sets για να τα μειώνεις.
-          </p>
-        </div>
-      )}
-      
       {workoutInProgress && (
         <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-none">
           <p className="text-xs text-green-700">
