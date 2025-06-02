@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Sidebar } from "@/components/Sidebar";
@@ -92,6 +93,11 @@ const ProgramBuilderFullscreen = () => {
   };
 
   const handleAssign = async (userId: string, trainingDates: string[]) => {
+    console.log('🎯 Starting program assignment process');
+    console.log('📋 Program data:', program);
+    console.log('👤 User ID:', userId);
+    console.log('📅 Training dates:', trainingDates);
+    
     const programToSave = {
       ...program,
       id: editingProgram?.id || undefined,
@@ -100,10 +106,18 @@ const ProgramBuilderFullscreen = () => {
     };
     
     try {
+      console.log('💾 Saving program with data:', programToSave);
       await saveProgram(programToSave);
       const finalProgramId = editingProgram?.id;
+      console.log('✅ Program saved, final ID:', finalProgramId);
       
       if (finalProgramId && userId && trainingDates?.length > 0) {
+        console.log('🔗 Creating assignment with:', {
+          programId: finalProgramId,
+          userId,
+          trainingDates
+        });
+        
         await createOrUpdateAssignment(
           finalProgramId, 
           userId, 
@@ -112,13 +126,19 @@ const ProgramBuilderFullscreen = () => {
           trainingDates
         );
         
+        console.log('✅ Assignment created successfully');
         toast.success('Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς');
         navigate('/dashboard/active-programs');
       } else {
+        console.error('❌ Missing required data for assignment:', {
+          finalProgramId,
+          userId,
+          trainingDatesLength: trainingDates?.length
+        });
         toast.error('Απαιτούνται συγκεκριμένες ημερομηνίες προπόνησης');
       }
     } catch (error) {
-      console.error('Error creating assignments:', error);
+      console.error('❌ Error creating assignments:', error);
       toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
     }
   };
