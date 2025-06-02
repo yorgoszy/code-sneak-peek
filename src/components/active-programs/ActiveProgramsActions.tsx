@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { usePrograms } from "@/hooks/usePrograms";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ActiveProgramsActionsProps {
@@ -14,11 +14,21 @@ export const ActiveProgramsActions: React.FC<ActiveProgramsActionsProps> = ({
   assignment, 
   onRefresh 
 }) => {
-  const navigate = useNavigate();
+  const { deleteProgram } = usePrograms();
 
-  const handleDeleteProgram = () => {
-    // Navigate to programs page where user can delete the actual program
-    navigate('/dashboard/programs');
+  const handleDeleteProgram = async () => {
+    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;')) {
+      return;
+    }
+
+    try {
+      const success = await deleteProgram(assignment.program_id);
+      if (success && onRefresh) {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error('Error deleting program:', error);
+    }
   };
 
   return (
