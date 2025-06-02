@@ -97,9 +97,19 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
       
       // Extract programs from assignments and add assignment data
       const programsWithAssignments = assignmentsData?.map(assignment => {
-        if (!assignment.programs || assignment.programs === null || Array.isArray(assignment.programs)) return null;
+        // Check if programs exists and is a valid object (not null, not array)
+        if (!assignment.programs || 
+            assignment.programs === null || 
+            Array.isArray(assignment.programs) ||
+            typeof assignment.programs !== 'object') {
+          return null;
+        }
+        
+        // Type assertion to ensure TypeScript knows this is an object
+        const programData = assignment.programs as Record<string, any>;
+        
         return {
-          ...assignment.programs,
+          ...programData,
           program_assignments: [assignment]
         };
       }).filter(Boolean) || [];
