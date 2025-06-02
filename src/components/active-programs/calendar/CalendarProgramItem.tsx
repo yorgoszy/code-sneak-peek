@@ -52,6 +52,7 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   };
 
   const progressPercentage = calculateProgress();
+  const trainerName = program.app_users?.name?.split(' ')[0] || 'Άγνωστος';
 
   return (
     <div
@@ -61,31 +62,24 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
         ${getStatusColor(workoutStatus)}
       `}
     >
-      <div className="flex items-center justify-between mb-1">
-        <div className="font-medium text-gray-900 truncate flex-1">
-          {program.programs?.name || 'Άγνωστο'}
-        </div>
+      <div className="flex items-center justify-end mb-1">
         <Badge 
           variant={getBadgeVariant(workoutStatus)} 
-          className="rounded-none text-xs px-1 py-0 ml-1"
+          className="rounded-none text-xs px-1 py-0"
         >
           {workoutStatus === 'completed' ? 'Ε' : 
            workoutStatus === 'missed' ? 'Χ' : 
            workoutStatus === 'makeup' ? 'Α' : 'Π'}
         </Badge>
       </div>
-      
-      <div className="text-xs text-gray-600 mb-1">
-        {program.app_users?.name?.split(' ')[0] || 'Άγνωστος'}
-      </div>
 
-      {/* Progress Bar με ποσοστό */}
-      <div className="flex items-center gap-1">
-        <div className="flex-1">
-          <Progress value={progressPercentage} className="h-1" />
-        </div>
-        <div className="text-xs text-gray-600 font-medium min-w-8">
-          {progressPercentage}%
+      {/* Progress Bar με το όνομα μέσα */}
+      <div className="relative">
+        <Progress value={progressPercentage} className="h-4" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-xs font-medium text-gray-800 truncate px-1">
+            {trainerName}
+          </span>
         </div>
       </div>
     </div>
