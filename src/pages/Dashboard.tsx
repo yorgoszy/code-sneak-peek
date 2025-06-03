@@ -10,6 +10,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
+import { useRealtimePrograms } from "@/hooks/useRealtimePrograms";
 
 const Dashboard = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -34,6 +35,22 @@ const Dashboard = () => {
   const { programs: activePrograms, refetch: activeProgramsRefetch } = useActivePrograms(false);
   
   const { getWorkoutCompletions } = useWorkoutCompletions();
+
+  // Setup realtime subscriptions for automatic updates
+  useRealtimePrograms({
+    onProgramsChange: () => {
+      console.log('🔄 Refreshing programs due to realtime change...');
+      refetch();
+      activeProgramsRefetch();
+    },
+    onAssignmentsChange: () => {
+      console.log('🔄 Refreshing assignments due to realtime change...');
+      refetch();
+      activeProgramsRefetch();
+      // Also refresh workout completions
+      getWorkoutCompletions().then(setAllCompletions);
+    }
+  });
 
   useEffect(() => {
     if (user) {

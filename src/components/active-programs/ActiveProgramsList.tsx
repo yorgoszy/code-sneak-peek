@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Wifi } from "lucide-react";
 import { ProgramCard } from './ProgramCard';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -38,7 +38,10 @@ export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Ενεργά Προγράμματα ({programs.length})</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-semibold">Ενεργά Προγράμματα ({programs.length})</h2>
+          <Wifi className="w-4 h-4 text-green-500" title="Realtime ενημερώσεις ενεργές" />
+        </div>
         <Button
           onClick={handleRefresh}
           variant="outline"
