@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Eye, Edit, CheckCircle2 } from "lucide-react";
 import { DayProgramDialog } from './calendar/DayProgramDialog';
+import { ProgramViewDialog } from './ProgramViewDialog';
 import { DaySelector } from './DaySelector';
 import { AttendanceDialog } from './AttendanceDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -17,6 +18,7 @@ interface ProgramCardActionsProps {
 
 export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignment, onRefresh }) => {
   const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
+  const [programViewDialogOpen, setProgramViewDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
@@ -57,12 +59,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
   };
 
   const handleView = () => {
-    // Για προβολή, παίρνουμε την πρώτη διαθέσιμη ημερομηνία
-    const trainingDates = assignment.training_dates || [];
-    if (trainingDates.length > 0) {
-      setSelectedDate(new Date(trainingDates[0]));
-      setDayProgramDialogOpen(true);
-    }
+    setProgramViewDialogOpen(true);
   };
 
   const handleEdit = () => {
@@ -157,6 +154,12 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
         isOpen={daySelectorOpen}
         onClose={() => setDaySelectorOpen(false)}
         onSelectDay={handleDaySelected}
+      />
+
+      <ProgramViewDialog
+        isOpen={programViewDialogOpen}
+        onClose={() => setProgramViewDialogOpen(false)}
+        assignment={assignment}
       />
 
       <DayProgramDialog
