@@ -23,13 +23,11 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   onClick
 }) => {
   const getStatusColor = () => {
-    if (workoutStatus === 'completed') return '#00ffba80'; // Αχνό πράσινο (50% διαφάνεια)
+    if (workoutStatus === 'completed') return 'rgba(0, 255, 186, 0.5)'; // Αχνό πράσινο (50% διαφάνεια)
     if (workoutStatus === 'missed') return '#ef4444';
     return '#3b82f6';
   };
 
-  // Υπολογισμός progress
-  const progressPercentage = program.progress || 0;
   const userName = program.app_users?.name || 'Άγνωστος χρήστης';
 
   return (
@@ -39,11 +37,9 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
     >
       <div className="relative">
         <Progress 
-          value={progressPercentage} 
-          className="h-6 bg-gray-200 rounded-none"
-          style={{
-            '--progress-background': getStatusColor()
-          } as React.CSSProperties}
+          value={100}
+          indicatorColor={getStatusColor()}
+          className="h-5 bg-gray-200 rounded-none"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-xs font-medium text-white truncate px-2">
