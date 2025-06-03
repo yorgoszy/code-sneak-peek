@@ -84,6 +84,23 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white font-robert">
+      <style>{`
+        .nav-link:hover {
+          color: #00ffba !important;
+        }
+        .dashboard-btn:hover {
+          background-color: #00ffba !important;
+          border-color: #00ffba !important;
+        }
+        .logout-btn:hover {
+          background-color: #00ffba !important;
+          border-color: #00ffba !important;
+        }
+        .carousel-btn:hover {
+          background-color: #00ffba !important;
+        }
+      `}</style>
+      
       {/* Black Navigation */}
       <nav className="fixed top-0 w-full bg-black border-b border-gray-800 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -102,10 +119,7 @@ const Index = () => {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-white transition-colors duration-200 text-sm font-medium"
-                  style={{ '&:hover': { color: '#00ffba' } }}
-                  onMouseEnter={(e) => e.target.style.color = '#00ffba'}
-                  onMouseLeave={(e) => e.target.style.color = 'white'}
+                  className="nav-link text-white transition-colors duration-200 text-sm font-medium"
                 >
                   {item.name}
                 </a>
@@ -119,33 +133,15 @@ const Index = () => {
                     <Link to="/dashboard">
                       <Button 
                         variant="outline" 
-                        className="rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
-                        style={{ '&:hover': { backgroundColor: '#00ffba', borderColor: '#00ffba' } }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#00ffba';
-                          e.target.style.borderColor = '#00ffba';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = 'transparent';
-                          e.target.style.borderColor = 'white';
-                        }}
+                        className="dashboard-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
                       >
                         Dashboard
                       </Button>
                     </Link>
                     <Button 
                       variant="outline" 
-                      className="rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
-                      style={{ '&:hover': { backgroundColor: '#00ffba', borderColor: '#00ffba' } }}
+                      className="logout-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
                       onClick={handleSignOut}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#00ffba';
-                        e.target.style.borderColor = '#00ffba';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = 'transparent';
-                        e.target.style.borderColor = 'white';
-                      }}
                     >
                       <LogOut className="h-4 w-4" />
                     </Button>
@@ -245,24 +241,10 @@ const Index = () => {
               ))}
             </CarouselContent>
             <CarouselPrevious 
-              className="rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 -left-12"
-              style={{ '&:hover': { backgroundColor: '#00ffba' } }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#00ffba';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 -left-12"
             />
             <CarouselNext 
-              className="rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 -right-12"
-              style={{ '&:hover': { backgroundColor: '#00ffba' } }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#00ffba';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 -right-12"
             />
           </Carousel>
         </div>
