@@ -1,5 +1,3 @@
-
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -230,6 +228,13 @@ const Index = () => {
               {!loading && (
                 isAuthenticated ? (
                   <div className="flex items-center space-x-4">
+                    <Button 
+                      variant="outline" 
+                      className="language-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                      onClick={toggleLanguage}
+                    >
+                      <Globe className="h-4 w-4" />
+                    </Button>
                     <Link to="/dashboard">
                       <Button 
                         variant="outline" 
@@ -240,14 +245,6 @@ const Index = () => {
                     </Link>
                     <Button 
                       variant="outline" 
-                      className="language-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
-                      onClick={toggleLanguage}
-                    >
-                      <Globe className="h-4 w-4 mr-1" />
-                      {language === 'el' ? 'EN' : 'ΕΛ'}
-                    </Button>
-                    <Button 
-                      variant="outline" 
                       className="logout-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
                       onClick={handleSignOut}
                     >
@@ -256,19 +253,18 @@ const Index = () => {
                   </div>
                 ) : (
                   <div className="flex items-center space-x-4">
-                    <Link to="/auth">
-                      <Button variant="outline" className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black">
-                        {t.login}
-                      </Button>
-                    </Link>
                     <Button 
                       variant="outline" 
                       className="language-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
                       onClick={toggleLanguage}
                     >
-                      <Globe className="h-4 w-4 mr-1" />
-                      {language === 'el' ? 'EN' : 'ΕΛ'}
+                      <Globe className="h-4 w-4" />
                     </Button>
+                    <Link to="/auth">
+                      <Button variant="outline" className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black">
+                        {t.login}
+                      </Button>
+                    </Link>
                   </div>
                 )
               )}
@@ -368,20 +364,21 @@ const Index = () => {
               {programs.map((program) => (
                 <CarouselItem key={program.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/4">
                   <div className="group cursor-pointer">
-                    {/* Program number positioned directly above image */}
-                    <div className="flex justify-start mb-2">
-                      <span 
-                        className="text-3xl font-bold"
-                        style={{ color: program.color }}
-                      >
-                        {program.id}
-                      </span>
-                    </div>
-                    
-                    {/* Program content with gray outline */}
+                    {/* Program content with gray outline extending above the image */}
                     <div 
-                      className="border-l-2 border-gray-500 pl-6"
+                      className="border-l-2 border-gray-500 pl-6 pt-5"
                     >
+                      {/* Program number and title positioned above image */}
+                      <div className="flex items-center mb-4">
+                        <span 
+                          className="text-3xl font-bold mr-4"
+                          style={{ color: program.color }}
+                        >
+                          {program.id}
+                        </span>
+                        <h3 className="text-white text-xl font-bold">{program.title}</h3>
+                      </div>
+                      
                       <div className="relative h-64 mb-6 overflow-hidden">
                         <img
                           src={program.image}
@@ -392,7 +389,6 @@ const Index = () => {
                           <p className="text-white text-sm mb-2">{program.description}</p>
                         </div>
                       </div>
-                      <h3 className="text-white text-xl font-bold mb-2">{program.title}</h3>
                     </div>
                   </div>
                 </CarouselItem>
