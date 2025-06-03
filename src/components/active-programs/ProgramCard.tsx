@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Play, Eye, Edit, CheckCircle2 } from "lucide-react";
 import { useState, useEffect } from 'react';
-import { ProgramViewer } from './ProgramViewer';
+import { DayProgramDialog } from './calendar/DayProgramDialog';
 import { DaySelector } from './DaySelector';
 import { AttendanceDialog } from './AttendanceDialog';
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardProps {
@@ -19,12 +20,10 @@ interface ProgramCardProps {
 }
 
 export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh }) => {
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerMode, setViewerMode] = useState<'view' | 'start'>('view');
+  const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
-  const [selectedWeek, setSelectedWeek] = useState(0);
-  const [selectedDay, setSelectedDay] = useState(0);
   const [workoutStats, setWorkoutStats] = useState({
     completed: 0,
     total: 0,
@@ -96,15 +95,33 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
   };
 
   const handleDaySelected = (weekIndex: number, dayIndex: number) => {
-    setSelectedWeek(weekIndex);
-    setSelectedDay(dayIndex);
-    setViewerMode('start');
-    setViewerOpen(true);
+    setDaySelectorOpen(false);
+    
+    // Βρίσκουμε την ημερομηνία για την επιλεγμένη ημέρα
+    const trainingDates = assignment.training_dates || [];
+    if (trainingDates.length > 0) {
+      // Υπολογίζουμε ποια ημερομηνία αντιστοιχεί στην επιλεγμένη εβδομάδα/ημέρα
+      const program = assignment.programs;
+      if (program?.program_weeks?.[0]?.program_days) {
+        const daysPerWeek = program.program_weeks[0].program_days.length;
+        const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+        
+        if (totalDayIndex < trainingDates.length) {
+          const dateStr = trainingDates[totalDayIndex];
+          setSelectedDate(new Date(dateStr));
+          setDayProgramDialogOpen(true);
+        }
+      }
+    }
   };
 
   const handleView = () => {
-    setViewerMode('view');
-    setViewerOpen(true);
+    // Για προβολή, παίρνουμε την πρώτη διαθέσιμη ημερομηνία
+    const trainingDates = assignment.training_dates || [];
+    if (trainingDates.length > 0) {
+      setSelectedDate(new Date(trainingDates[0]));
+      setDayProgramDialogOpen(true);
+    }
   };
 
   const handleEdit = () => {
@@ -113,6 +130,32 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
 
   const handleComplete = () => {
     setAttendanceOpen(true);
+  };
+
+  const getWorkoutStatus = async () => {
+    if (!selectedDate) return 'not_started';
+    
+    try {
+      const completions = await getWorkoutCompletions(assignment.id);
+      const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+      
+      const completion = completions.find(c => 
+        c.scheduled_date === selectedDateStr && c.status === 'completed'
+      );
+      
+      return completion ? 'completed' : 'not_started';
+    } catch (error) {
+      console.error('Error getting workout status:', error);
+      return 'not_started';
+    }
+  };
+
+  const handleDialogClose = () => {
+    setDayProgramDialogOpen(false);
+    setSelectedDate(null);
+    if (onRefresh) {
+      onRefresh();
+    }
   };
 
   const progressPercentage = workoutStats.total > 0 ? Math.round((workoutStats.completed / workoutStats.total) * 100) : 0;
@@ -228,13 +271,13 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
         onSelectDay={handleDaySelected}
       />
 
-      <ProgramViewer
-        assignment={assignment}
-        isOpen={viewerOpen}
-        onClose={() => setViewerOpen(false)}
-        mode={viewerMode}
-        selectedWeek={selectedWeek}
-        selectedDay={selectedDay}
+      <DayProgramDialog
+        isOpen={dayProgramDialogOpen}
+        onClose={handleDialogClose}
+        program={assignment}
+        selectedDate={selectedDate}
+        workoutStatus="not_started"
+        onRefresh={onRefresh}
       />
 
       <AttendanceDialog

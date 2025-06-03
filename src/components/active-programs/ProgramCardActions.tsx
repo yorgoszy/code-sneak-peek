@@ -19,7 +19,6 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<'view' | 'start'>('view');
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   const handleStart = () => {
@@ -41,7 +40,6 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
         if (totalDayIndex < trainingDates.length) {
           const dateStr = trainingDates[totalDayIndex];
           setSelectedDate(new Date(dateStr));
-          setDialogMode('start');
           setDayProgramDialogOpen(true);
         }
       }
@@ -53,7 +51,6 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
     const trainingDates = assignment.training_dates || [];
     if (trainingDates.length > 0) {
       setSelectedDate(new Date(trainingDates[0]));
-      setDialogMode('view');
       setDayProgramDialogOpen(true);
     }
   };
