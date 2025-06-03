@@ -1,13 +1,16 @@
 
+
 import { Button } from "@/components/ui/button";
-import { ArrowRight, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { useState } from "react";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [language, setLanguage] = useState<'el' | 'en'>('el');
 
   const handleSignOut = async () => {
     await signOut();
@@ -21,62 +24,147 @@ const Index = () => {
     }
   };
 
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'el' ? 'en' : 'el');
+  };
+
+  const translations = {
+    el: {
+      home: "Αρχική",
+      programs: "Προγράμματα",
+      blog: "Blog",
+      about: "Σχετικά με εμάς",
+      results: "Αποτελέσματα",
+      contact: "Επικοινωνία",
+      login: "Σύνδεση",
+      dashboard: "Dashboard",
+      getStarted: "ΞΕΚΙΝΑ ΤΩΡΑ",
+      contactBtn: "ΕΠΙΚΟΙΝΩΝΙΑ",
+      heroTitle: "Το Ταξίδι του Πρωταθλητή",
+      heroSubtitle: "Ξεκινάει Εδώ",
+      explorePrograms: "Εξερεύνηση Όλων των Προγραμμάτων",
+      blogSection: "Blog",
+      blogDescription: "Διαβάστε τα τελευταία άρθρα και συμβουλές από τους ειδικούς μας",
+      aboutSection: "Σχετικά με εμάς",
+      aboutDescription: "Μάθετε περισσότερα για την ομάδα μας και την αποστολή μας",
+      resultsSection: "Αποτελέσματα",
+      resultsDescription: "Δείτε τα εντυπωσιακά αποτελέσματα των συμμετεχόντων μας",
+      contactSection: "Επικοινωνία",
+      contactDescription: "Επικοινωνήστε μαζί μας για περισσότερες πληροφορίες",
+      copyright: "© 2024 HyperKids. Όλα τα δικαιώματα διατηρούνται.",
+      movementLearning: "Εκμάθηση Κίνησης",
+      movementLearningDesc: "Εισαγωγικές τεχνικές κίνησης",
+      movementDevelopment: "Ανάπτυξη Κίνησης",
+      movementDevelopmentDesc: "Χτίζοντας αθλητικές βάσεις για όλα τα σπορ",
+      youthStrength: "Δύναμη Νέων",
+      youthStrengthDesc: "Προχωρημένες τεχνικές και φυσική κατάσταση",
+      fitness: "Φυσική Κατάσταση",
+      fitnessDesc: "Προσαρμοσμένες λύσεις φυσικής κατάστασης για όλα τα επίπεδα",
+      muayThai: "Muay Thai",
+      muayThaiDesc: "Μέθοδοι Προπόνησης Νέας Γενιάς",
+      oneByOne: "Προπόνηση Ένας προς Έναν",
+      oneByOneDesc: "Εξατομικευμένη προπονητική για μέγιστα αποτελέσματα",
+      athletePerformance: "Αθλητική Απόδοση",
+      athletePerformanceDesc: "Ελίτ Στρατηγικές Δύναμης & Φυσικής Κατάστασης"
+    },
+    en: {
+      home: "Home",
+      programs: "Programs",
+      blog: "Blog",
+      about: "About Us",
+      results: "Results",
+      contact: "Contact",
+      login: "Login",
+      dashboard: "Dashboard",
+      getStarted: "GET STARTED",
+      contactBtn: "CONTACT",
+      heroTitle: "The Champion's Journey",
+      heroSubtitle: "Starts Here",
+      explorePrograms: "Explore All Programs",
+      blogSection: "Blog",
+      blogDescription: "Read the latest articles and tips from our experts",
+      aboutSection: "About Us",
+      aboutDescription: "Learn more about our team and mission",
+      resultsSection: "Results",
+      resultsDescription: "See the impressive results of our participants",
+      contactSection: "Contact",
+      contactDescription: "Contact us for more information",
+      copyright: "© 2024 HyperKids. All rights reserved.",
+      movementLearning: "Movement Learning",
+      movementLearningDesc: "Introductory movement techniques",
+      movementDevelopment: "Movement Development",
+      movementDevelopmentDesc: "Building athletic foundations for all sports",
+      youthStrength: "Youth Strength",
+      youthStrengthDesc: "Advanced techniques and conditioning",
+      fitness: "Fitness",
+      fitnessDesc: "Customized fitness solutions for all levels",
+      muayThai: "Muay Thai",
+      muayThaiDesc: "Next-Gen Training Methods",
+      oneByOne: "One by One Training",
+      oneByOneDesc: "Personalized coaching for maximum results",
+      athletePerformance: "Athlete Performance",
+      athletePerformanceDesc: "Elite Strength & Conditioning Strategies"
+    }
+  };
+
+  const t = translations[language];
+
   const navigationItems = [
-    { name: "Home", href: "#home" },
-    { name: "Programs", href: "#programs" },
-    { name: "Blog", href: "#blog" },
-    { name: "About Us", href: "#about" },
-    { name: "Results", href: "#results" },
-    { name: "Contact", href: "#contact" }
+    { name: t.home, href: "#home" },
+    { name: t.programs, href: "#programs" },
+    { name: t.blog, href: "#blog" },
+    { name: t.about, href: "#about" },
+    { name: t.results, href: "#results" },
+    { name: t.contact, href: "#contact" }
   ];
 
   const programs = [
     {
       id: "01",
-      title: "Movement Learning",
-      description: "Introductory movement techniques",
+      title: t.movementLearning,
+      description: t.movementLearningDesc,
       image: "/lovable-uploads/32d7b875-008c-4cca-a559-c707588d97de.png",
       color: "#00ffba"
     },
     {
       id: "02", 
-      title: "Movement Development",
-      description: "Building athletic foundations for all sports",
+      title: t.movementDevelopment,
+      description: t.movementDevelopmentDesc,
       image: "/lovable-uploads/5c575238-ffcf-4f84-aa73-21fa6377ba7d.png",
       color: "#00ffba"
     },
     {
       id: "03",
-      title: "Youth Strength", 
-      description: "Advanced techniques and conditioning",
+      title: t.youthStrength, 
+      description: t.youthStrengthDesc,
       image: "/lovable-uploads/f8f84c19-d969-4da5-a85d-fe764201fc6b.png",
       color: "#00ffba"
     },
     {
       id: "04",
-      title: "Fitness",
-      description: "Customized fitness solutions for all levels",
+      title: t.fitness,
+      description: t.fitnessDesc,
       image: "/lovable-uploads/a21faccb-2749-42ef-9686-c8e65fadcc5f.png",
       color: "#00ffba"
     },
     {
       id: "05",
-      title: "Muay Thai",
-      description: "Next-Gen Training Methods",
+      title: t.muayThai,
+      description: t.muayThaiDesc,
       image: "/lovable-uploads/27d8d572-b93f-4f3c-8f89-cc9e10930c87.png",
       color: "#00ffba"
     },
     {
       id: "06",
-      title: "One by One Training",
-      description: "Personalized coaching for maximum results",
+      title: t.oneByOne,
+      description: t.oneByOneDesc,
       image: "/lovable-uploads/bff0a31f-54a3-4c49-9e8a-702d714be8d6.png",
       color: "#00ffba"
     },
     {
       id: "07",
-      title: "Athlete Performance",
-      description: "Elite Strength & Conditioning Strategies",
+      title: t.athletePerformance,
+      description: t.athletePerformanceDesc,
       image: "/lovable-uploads/a29fcea9-97f7-45a5-8b9f-a0f30b314aa4.png",
       color: "#00ffba"
     }
@@ -93,6 +181,10 @@ const Index = () => {
           border-color: #00ffba !important;
         }
         .logout-btn:hover {
+          background-color: #00ffba !important;
+          border-color: #00ffba !important;
+        }
+        .language-btn:hover {
           background-color: #00ffba !important;
           border-color: #00ffba !important;
         }
@@ -148,6 +240,14 @@ const Index = () => {
                     </Link>
                     <Button 
                       variant="outline" 
+                      className="language-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                      onClick={toggleLanguage}
+                    >
+                      <Globe className="h-4 w-4 mr-1" />
+                      {language === 'el' ? 'EN' : 'ΕΛ'}
+                    </Button>
+                    <Button 
+                      variant="outline" 
                       className="logout-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
                       onClick={handleSignOut}
                     >
@@ -155,11 +255,21 @@ const Index = () => {
                     </Button>
                   </div>
                 ) : (
-                  <Link to="/auth">
-                    <Button variant="outline" className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black">
-                      Σύνδεση
+                  <div className="flex items-center space-x-4">
+                    <Link to="/auth">
+                      <Button variant="outline" className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black">
+                        {t.login}
+                      </Button>
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      className="language-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                      onClick={toggleLanguage}
+                    >
+                      <Globe className="h-4 w-4 mr-1" />
+                      {language === 'el' ? 'EN' : 'ΕΛ'}
                     </Button>
-                  </Link>
+                  </div>
                 )
               )}
             </div>
@@ -181,8 +291,8 @@ const Index = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="text-left">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              The Champion's Journey<br />
-              <span style={{ color: '#00ffba' }}>Starts Here</span>
+              {t.heroTitle}<br />
+              <span style={{ color: '#00ffba' }}>{t.heroSubtitle}</span>
             </h1>
             <div className="flex space-x-4">
               <Button 
@@ -190,13 +300,13 @@ const Index = () => {
                 style={{ backgroundColor: '#00ffba' }}
                 onClick={handleGetStarted}
               >
-                GET STARTED
+                {t.getStarted}
               </Button>
               <Button 
                 variant="outline" 
                 className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black"
               >
-                CONTACT
+                {t.contactBtn}
               </Button>
             </div>
           </div>
@@ -209,7 +319,7 @@ const Index = () => {
           <div className="flex justify-between items-center mb-16">
             <div>
               <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                Explore All<br />Programs
+                {t.explorePrograms}
               </h2>
             </div>
             {/* Navigation arrows positioned at top right */}
@@ -257,34 +367,26 @@ const Index = () => {
             <CarouselContent className="-ml-2 md:-ml-4">
               {programs.map((program) => (
                 <CarouselItem key={program.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/4">
-                  <div className="group cursor-pointer flex">
-                    {/* Gray outline with number - positioned left of image */}
-                    <div 
-                      className="w-8 h-64 flex items-start justify-center pt-4 mr-8 relative"
-                      style={{ 
-                        borderLeft: '2px solid #808080'
-                      }}
-                    >
+                  <div className="group cursor-pointer">
+                    {/* Program number positioned directly above image */}
+                    <div className="flex justify-start mb-2">
                       <span 
-                        className="text-2xl font-bold absolute"
-                        style={{ 
-                          color: program.color,
-                          left: '30px',
-                          top: '16px'
-                        }}
+                        className="text-3xl font-bold"
+                        style={{ color: program.color }}
                       >
                         {program.id}
                       </span>
                     </div>
                     
-                    {/* Program content */}
-                    <div className="flex-1">
+                    {/* Program content with gray outline */}
+                    <div 
+                      className="border-l-2 border-gray-500 pl-6"
+                    >
                       <div className="relative h-64 mb-6 overflow-hidden">
                         <img
                           src={program.image}
                           alt={program.title}
                           className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
-                          style={{ width: '90%', height: '200px' }}
                         />
                         <div className="absolute bottom-4 left-4 right-4">
                           <p className="text-white text-sm mb-2">{program.description}</p>
@@ -312,9 +414,9 @@ const Index = () => {
       <section id="blog" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Blog</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.blogSection}</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Διαβάστε τα τελευταία άρθρα και συμβουλές από τους ειδικούς μας
+              {t.blogDescription}
             </p>
           </div>
         </div>
@@ -324,9 +426,9 @@ const Index = () => {
       <section id="about" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Σχετικά με εμάς</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.aboutSection}</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Μάθετε περισσότερα για την ομάδα μας και την αποστολή μας
+              {t.aboutDescription}
             </p>
           </div>
         </div>
@@ -336,9 +438,9 @@ const Index = () => {
       <section id="results" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Αποτελέσματα</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.resultsSection}</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Δείτε τα εντυπωσιακά αποτελέσματα των συμμετεχόντων μας
+              {t.resultsDescription}
             </p>
           </div>
         </div>
@@ -348,9 +450,9 @@ const Index = () => {
       <section id="contact" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Επικοινωνία</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.contactSection}</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Επικοινωνήστε μαζί μας για περισσότερες πληροφορίες
+              {t.contactDescription}
             </p>
           </div>
         </div>
@@ -360,7 +462,7 @@ const Index = () => {
       <footer className="bg-black text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-gray-400">© 2024 HyperKids. Όλα τα δικαιώματα διατηρούνται.</p>
+            <p className="text-gray-400">{t.copyright}</p>
           </div>
         </div>
       </footer>
