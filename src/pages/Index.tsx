@@ -196,13 +196,34 @@ const Index = () => {
       </section>
 
       {/* Programs Section */}
-      <section id="programs" className="py-20 bg-black">
+      <section id="programs" className="py-20 bg-black relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-16">
             <div>
               <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
                 Explore All<br />Programs
               </h2>
+            </div>
+            {/* Navigation arrows positioned at top right */}
+            <div className="flex space-x-4">
+              <button 
+                className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 h-8 w-8 flex items-center justify-center"
+                onClick={() => {
+                  const carousel = document.querySelector('[data-carousel="previous"]');
+                  if (carousel) carousel.click();
+                }}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button 
+                className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 h-8 w-8 flex items-center justify-center"
+                onClick={() => {
+                  const carousel = document.querySelector('[data-carousel="next"]');
+                  if (carousel) carousel.click();
+                }}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
@@ -216,35 +237,49 @@ const Index = () => {
             <CarouselContent className="-ml-2 md:-ml-4">
               {programs.map((program) => (
                 <CarouselItem key={program.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/4">
-                  <div className="group cursor-pointer">
-                    <div className="relative h-80 mb-6 overflow-hidden">
-                      <img
-                        src={program.image}
-                        alt={program.title}
-                        className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
-                      />
-                      <div className="absolute top-4 left-4">
-                        <span 
-                          className="text-2xl font-bold"
-                          style={{ color: program.color }}
-                        >
-                          {program.id}
-                        </span>
-                      </div>
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-white text-sm mb-2">{program.description}</p>
-                      </div>
+                  <div className="group cursor-pointer flex">
+                    {/* Gray outline with number */}
+                    <div 
+                      className="w-8 h-64 flex items-start justify-center pt-4 mr-8"
+                      style={{ 
+                        borderLeft: '2px solid #808080',
+                        marginLeft: '-30px'
+                      }}
+                    >
+                      <span 
+                        className="text-2xl font-bold"
+                        style={{ color: program.color }}
+                      >
+                        {program.id}
+                      </span>
                     </div>
-                    <h3 className="text-white text-xl font-bold mb-2">{program.title}</h3>
+                    
+                    {/* Program content */}
+                    <div className="flex-1">
+                      <div className="relative h-64 mb-6 overflow-hidden">
+                        <img
+                          src={program.image}
+                          alt={program.title}
+                          className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                          style={{ width: '80%', height: '200px' }}
+                        />
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <p className="text-white text-sm mb-2">{program.description}</p>
+                        </div>
+                      </div>
+                      <h3 className="text-white text-xl font-bold mb-2">{program.title}</h3>
+                    </div>
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
             <CarouselPrevious 
-              className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 -left-12"
+              data-carousel="previous"
+              className="hidden"
             />
             <CarouselNext 
-              className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 -right-12"
+              data-carousel="next"
+              className="hidden"
             />
           </Carousel>
         </div>
