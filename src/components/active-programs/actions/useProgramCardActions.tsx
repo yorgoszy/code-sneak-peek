@@ -8,6 +8,7 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 export const useProgramCardActions = (assignment: EnrichedAssignment, onRefresh?: () => void) => {
   const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
   const [programViewDialogOpen, setProgramViewDialogOpen] = useState(false);
+  const [programViewerOpen, setProgramViewerOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
@@ -17,7 +18,8 @@ export const useProgramCardActions = (assignment: EnrichedAssignment, onRefresh?
   const { saveProgram } = usePrograms();
 
   const handleStart = () => {
-    setDaySelectorOpen(true);
+    // Άνοιγμα του ProgramViewer αντί για DaySelector
+    setProgramViewerOpen(true);
   };
 
   const handleDaySelected = async (weekIndex: number, dayIndex: number) => {
@@ -95,6 +97,7 @@ export const useProgramCardActions = (assignment: EnrichedAssignment, onRefresh?
     // State
     dayProgramDialogOpen,
     programViewDialogOpen,
+    programViewerOpen,
     selectedDate,
     daySelectorOpen,
     attendanceOpen,
@@ -113,6 +116,7 @@ export const useProgramCardActions = (assignment: EnrichedAssignment, onRefresh?
     // Dialog close handlers
     onDaySelectorClose: () => setDaySelectorOpen(false),
     onProgramViewClose: () => setProgramViewDialogOpen(false),
+    onProgramViewerClose: () => setProgramViewerOpen(false),
     onAttendanceClose: () => setAttendanceOpen(false),
     onEditDialogClose: () => setEditDialogOpen(false)
   };

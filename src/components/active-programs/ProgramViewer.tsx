@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Clock, AlertCircle, Play, Square } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, Play, Square, XCircle } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 
@@ -107,7 +108,30 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
     );
   };
 
-  const currentWeek = assignment.programs?.program_weeks?.[currentSelectedWeek];
+  const isWorkoutMissed = (weekNumber: number, dayNumber: number) => {
+    return completions.some(c => 
+      c.week_number === weekNumber && 
+      c.day_number === dayNumber && 
+      c.status === 'missed'
+    );
+  };
+
+  // Φιλτράρουμε μόνο τις μη ολοκληρωμένες εβδομάδες και ημέρες για mode 'start'
+  const getFilteredWeeks = () => {
+    if (mode !== 'start') {
+      return assignment.programs?.program_weeks || [];
+    }
+
+    return (assignment.programs?.program_weeks || []).map(week => ({
+      ...week,
+      program_days: (week.program_days || []).filter(day => 
+        !isWorkoutCompleted(week.week_number, day.day_number)
+      )
+    })).filter(week => week.program_days.length > 0);
+  };
+
+  const filteredWeeks = getFilteredWeeks();
+  const currentWeek = filteredWeeks[currentSelectedWeek];
   const currentDay = currentWeek?.program_days?.[currentSelectedDay];
 
   const title = mode === 'start' 
@@ -128,7 +152,7 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
               <div className="space-y-2">
                 <h3 className="text-sm font-medium">Επιλογή Εβδομάδας</h3>
                 <div className="flex gap-2 flex-wrap">
-                  {assignment.programs?.program_weeks?.map((week, index) => (
+                  {filteredWeeks.map((week, index) => (
                     <Button
                       key={week.id}
                       variant={currentSelectedWeek === index ? "default" : "outline"}
@@ -149,16 +173,70 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
                   <div className="flex gap-2 flex-wrap">
                     {currentWeek.program_days?.map((day, index) => {
                       const completed = isWorkoutCompleted(currentWeek.week_number, day.day_number);
+                      const missed = isWorkoutMissed(currentWeek.week_number, day.day_number);
+                      
                       return (
                         <Button
                           key={day.id}
                           variant={currentSelectedDay === index ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentSelectedDay(index)}
-                          className="rounded-none flex items-center gap-2"
+                          className={`rounded-none flex items-center gap-2 ${
+                            missed ? 'opacity-60' : ''
+                          }`}
                         >
                           {day.name}
                           {completed && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                          {missed && <XCircle className="w-4 h-4 text-red-500" />}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {mode === 'start' && (
+            <>
+              {/* Week Selection για start mode - μόνο μη ολοκληρωμένες */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Επιλογή Εβδομάδας</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {filteredWeeks.map((week, index) => (
+                    <Button
+                      key={week.id}
+                      variant={currentSelectedWeek === index ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentSelectedWeek(index)}
+                      className="rounded-none"
+                    >
+                      {week.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Day Selection για start mode - μόνο μη ολοκληρωμένες */}
+              {currentWeek && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Επιλογή Ημέρας</h3>
+                  <div className="flex gap-2 flex-wrap">
+                    {currentWeek.program_days?.map((day, index) => {
+                      const missed = isWorkoutMissed(currentWeek.week_number, day.day_number);
+                      
+                      return (
+                        <Button
+                          key={day.id}
+                          variant={currentSelectedDay === index ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentSelectedDay(index)}
+                          className={`rounded-none flex items-center gap-2 ${
+                            missed ? 'opacity-60 border-red-300' : ''
+                          }`}
+                        >
+                          {day.name}
+                          {missed && <XCircle className="w-4 h-4 text-red-500" />}
                         </Button>
                       );
                     })}
@@ -186,10 +264,10 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   {currentDay.name}
-                  {isWorkoutCompleted(currentWeek.week_number, currentDay.day_number) && (
-                    <Badge variant="secondary" className="rounded-none">
-                      <CheckCircle2 className="w-4 h-4 mr-1" />
-                      Ολοκληρωμένο
+                  {isWorkoutMissed(currentWeek.week_number, currentDay.day_number) && (
+                    <Badge variant="destructive" className="rounded-none">
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Χαμένη
                     </Badge>
                   )}
                 </CardTitle>
@@ -223,7 +301,7 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
                   </div>
                 ))}
 
-                {mode === 'start' && !isWorkoutCompleted(currentWeek.week_number, currentDay.day_number) && (
+                {mode === 'start' && (
                   <div className="pt-4 border-t space-y-3">
                     {!isWorkoutActive ? (
                       <Button 

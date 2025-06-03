@@ -18,6 +18,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
   const {
     dayProgramDialogOpen,
     programViewDialogOpen,
+    programViewerOpen,
     selectedDate,
     daySelectorOpen,
     attendanceOpen,
@@ -31,6 +32,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
     handleDialogClose,
     onDaySelectorClose,
     onProgramViewClose,
+    onProgramViewerClose,
     onAttendanceClose,
     onEditDialogClose
   } = useProgramCardActions(assignment, onRefresh);
@@ -52,6 +54,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
         assignment={assignment}
         daySelectorOpen={daySelectorOpen}
         programViewDialogOpen={programViewDialogOpen}
+        programViewerOpen={programViewerOpen}
         dayProgramDialogOpen={dayProgramDialogOpen}
         attendanceOpen={attendanceOpen}
         editDialogOpen={editDialogOpen}
@@ -60,6 +63,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
         exercises={exercises}
         onDaySelectorClose={onDaySelectorClose}
         onProgramViewClose={onProgramViewClose}
+        onProgramViewerClose={onProgramViewerClose}
         onDayProgramClose={handleDialogClose}
         onAttendanceClose={onAttendanceClose}
         onEditDialogClose={onEditDialogClose}

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar as CalendarIcon, User, AlertTriangle } from "lucide-react";
+import { Calendar as CalendarIcon, User, AlertTriangle, X } from "lucide-react";
 import { format, parseISO, getWeek, getYear } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,14 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     }
   }, [isOpen, program.user_id, editingAssignment, isReassignment]);
 
+  // Αφαίρεση επιλεγμένης ημερομηνίας
+  const removeSelectedDate = (dateToRemove: string) => {
+    // Μόνο αν δεν είναι ολοκληρωμένη ημερομηνία
+    if (!completedDates.includes(dateToRemove)) {
+      setSelectedDates(selectedDates.filter(date => date !== dateToRemove));
+    }
+  };
+
   // Βελτιωμένη λογική επιλογής ημερομηνιών
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
@@ -115,7 +123,12 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   };
 
   const clearAllDates = () => {
-    setSelectedDates([]);
+    // Κρατάμε μόνο τις ολοκληρωμένες ημερομηνίες αν δεν είναι επανα-ανάθεση
+    if (!isReassignment) {
+      setSelectedDates(selectedDates.filter(date => completedDates.includes(date)));
+    } else {
+      setSelectedDates([]);
+    }
   };
 
   const handleReassignmentToggle = (checked: boolean) => {
@@ -225,6 +238,46 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
                     </label>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Επιλεγμένες Ημερομηνίες με δυνατότητα αφαίρεσης */}
+          {editingAssignment && selectedDates.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Επιλεγμένες Ημερομηνίες</h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedDates.map(date => {
+                  const isCompleted = completedDates.includes(date);
+                  const canRemove = !isCompleted || isReassignment;
+                  
+                  return (
+                    <div
+                      key={date}
+                      className={`flex items-center gap-2 px-3 py-1 rounded-none border ${
+                        isCompleted 
+                          ? 'bg-green-100 border-green-300 text-green-800' 
+                          : 'bg-blue-100 border-blue-300 text-blue-800'
+                      }`}
+                    >
+                      <span className="text-sm font-medium">
+                        {format(parseISO(date), 'dd/MM/yyyy')}
+                      </span>
+                      {isCompleted && (
+                        <span className="text-xs">(Ολοκληρωμένη)</span>
+                      )}
+                      {canRemove && (
+                        <button
+                          onClick={() => removeSelectedDate(date)}
+                          className="p-0.5 hover:bg-black/10 rounded-none"
+                          title="Αφαίρεση ημερομηνίας"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
