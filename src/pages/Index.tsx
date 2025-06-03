@@ -1,4 +1,5 @@
 
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -361,18 +362,19 @@ const Index = () => {
             }}
             className="w-full"
           >
-            <CarouselContent className="-ml-2 md:-ml-4">
+            <CarouselContent className="ml-0">
               {programs.map((program) => (
-                <CarouselItem key={program.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/4">
+                <CarouselItem key={program.id} className="pl-0 md:basis-1/2 lg:basis-1/4">
                   <div className="group cursor-pointer">
                     {/* Program content with gray outline extending above the image */}
                     <div 
-                      className="border-l-2 border-gray-500 pl-6 pt-5"
+                      className="border-l-2 border-gray-500 pl-6"
+                      style={{ paddingTop: '20px' }}
                     >
                       {/* Program number and title positioned above image */}
                       <div className="flex items-start mb-2">
                         <span 
-                          className="text-2xl font-bold mr-3 flex-shrink-0"
+                          className="text-2xl font-bold mr-4 flex-shrink-0"
                           style={{ color: program.color }}
                         >
                           {program.id}
@@ -380,13 +382,16 @@ const Index = () => {
                         <h3 className="text-white text-lg font-bold leading-tight">{program.title}</h3>
                       </div>
                       
-                      <div className="relative h-64 overflow-hidden" style={{ marginTop: '0px' }}>
+                      <div className="relative h-64 overflow-hidden">
                         <img
                           src={program.image}
                           alt={program.title}
                           className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                          style={{ opacity: '0.7' }}
                         />
-                        <div className="absolute bottom-4 left-4 right-4">
+                        {/* Gradient overlay from bottom */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                        <div className="absolute bottom-4 left-4 right-4 z-10">
                           <p className="text-white text-sm mb-2">{program.description}</p>
                         </div>
                       </div>
@@ -468,3 +473,4 @@ const Index = () => {
 };
 
 export default Index;
+
