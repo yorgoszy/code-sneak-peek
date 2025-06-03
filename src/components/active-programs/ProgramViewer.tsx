@@ -162,7 +162,11 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
 
           {currentDay && (
             <>
-              <WorkoutDetailsView currentDay={currentDay} />
+              <WorkoutDetailsView 
+                currentDay={currentDay} 
+                workoutInProgress={isWorkoutActive}
+                assignment={assignment}
+              />
               <WorkoutControls
                 mode={mode}
                 isWorkoutActive={isWorkoutActive}
