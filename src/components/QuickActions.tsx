@@ -5,6 +5,8 @@ import { useState } from "react";
 import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
 import { AddExerciseDialog } from "@/components/AddExerciseDialog";
 import { NewUserDialog } from "@/components/NewUserDialog";
+import { useProgramsData } from "@/hooks/useProgramsData";
+import { usePrograms } from "@/hooks/usePrograms";
 
 const quickActions = [
   {
@@ -37,6 +39,9 @@ export const QuickActions = () => {
   const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
   const [userDialogOpen, setUserDialogOpen] = useState(false);
 
+  const { users, exercises } = useProgramsData();
+  const { saveProgram } = usePrograms();
+
   const handleActionClick = (action: string) => {
     switch (action) {
       case "program":
@@ -57,6 +62,15 @@ export const QuickActions = () => {
 
   const handleExerciseAdded = () => {
     // Refresh exercise data if needed
+  };
+
+  const handleCreateProgram = async (programData: any) => {
+    try {
+      await saveProgram(programData);
+      setProgramDialogOpen(false);
+    } catch (error) {
+      console.error('Error creating program:', error);
+    }
   };
 
   return (
@@ -86,8 +100,11 @@ export const QuickActions = () => {
       </Card>
 
       <ProgramBuilderDialog
-        open={programDialogOpen}
+        isOpen={programDialogOpen}
         onOpenChange={() => setProgramDialogOpen(false)}
+        users={users}
+        exercises={exercises}
+        onCreateProgram={handleCreateProgram}
       />
 
       <AddExerciseDialog
