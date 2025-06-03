@@ -7,7 +7,7 @@ import type { EnrichedAssignment } from "./useActivePrograms/types";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useActivePrograms = () => {
+export const useActivePrograms = (includeCompleted: boolean = false) => {
   const [programs, setPrograms] = useState<EnrichedAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -19,6 +19,7 @@ export const useActivePrograms = () => {
     console.log('1. Current user from useAuth:', user);
     console.log('2. Auth user ID:', user?.id);
     console.log('3. User email:', user?.email);
+    console.log('4. Include completed programs:', includeCompleted);
     
     if (user?.id) {
       fetchActivePrograms();
@@ -26,7 +27,7 @@ export const useActivePrograms = () => {
       console.log('⚠️ No user found, setting loading to false');
       setLoading(false);
     }
-  }, [user]);
+  }, [user, includeCompleted]);
 
   // Real-time updates για workout completions
   useEffect(() => {
@@ -54,10 +55,12 @@ export const useActivePrograms = () => {
             })
           );
           
-          // Φιλτράρισμα για να αφαιρεθούν τα ολοκληρωμένα προγράμματα
-          const activePrograms = updatedPrograms.filter(program => program.progress < 100);
+          // Φιλτράρισμα ανάλογα με το includeCompleted flag
+          const filteredPrograms = includeCompleted 
+            ? updatedPrograms 
+            : updatedPrograms.filter(program => program.progress < 100);
           
-          setPrograms(activePrograms);
+          setPrograms(filteredPrograms);
         }
       )
       .subscribe();
@@ -66,7 +69,7 @@ export const useActivePrograms = () => {
       console.log('🔌 Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, [user?.id, programs.length]);
+  }, [user?.id, programs.length, includeCompleted]);
 
   const calculateProgress = async (assignment: EnrichedAssignment) => {
     try {
@@ -98,7 +101,7 @@ export const useActivePrograms = () => {
         return;
       }
 
-      console.log('🔍 Fetching active programs for user:', user.id);
+      console.log('🔍 Fetching programs for user:', user.id, 'includeCompleted:', includeCompleted);
       
       // Test Supabase connection first
       const connectionValid = await testSupabaseConnection();
@@ -169,14 +172,16 @@ export const useActivePrograms = () => {
         })
       );
       
-      // Φιλτράρισμα για να κρατήσουμε μόνο τα μη ολοκληρωμένα προγράμματα (progress < 100%)
-      const activePrograms = programsWithProgress.filter(program => program.progress < 100);
+      // Φιλτράρισμα ανάλογα με το includeCompleted flag
+      const finalPrograms = includeCompleted 
+        ? programsWithProgress 
+        : programsWithProgress.filter(program => program.progress < 100);
       
-      console.log('✅ Final active programs (excluding completed):', activePrograms.length, activePrograms);
-      setPrograms(activePrograms);
+      console.log('✅ Final programs:', includeCompleted ? 'all programs' : 'active only', finalPrograms.length, finalPrograms);
+      setPrograms(finalPrograms);
 
     } catch (error) {
-      console.error('❌ Unexpected error fetching active programs:', error);
+      console.error('❌ Unexpected error fetching programs:', error);
       setPrograms([]);
     } finally {
       setLoading(false);

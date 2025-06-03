@@ -10,16 +10,29 @@ import { ProgramCalendar } from "@/components/active-programs/ProgramCalendar";
 
 const ActivePrograms = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { programs, loading, refetch } = useActivePrograms();
+  const [activeTab, setActiveTab] = useState('list');
+  
+  // Για τη λίστα: μόνο ενεργά προγράμματα (includeCompleted = false)
+  const { programs: listPrograms, loading: listLoading, refetch: listRefetch } = useActivePrograms(false);
+  
+  // Για το ημερολόγιο: όλα τα προγράμματα (includeCompleted = true)
+  const { programs: calendarPrograms, loading: calendarLoading, refetch: calendarRefetch } = useActivePrograms(true);
 
-  console.log('📋 ActivePrograms - programs:', programs.length, 'loading:', loading);
+  console.log('📋 ActivePrograms - listPrograms:', listPrograms.length, 'calendarPrograms:', calendarPrograms.length);
 
-  const handleRefresh = async () => {
-    console.log('🔄 Refreshing active programs data...');
-    await refetch();
+  const handleListRefresh = async () => {
+    console.log('🔄 Refreshing list programs data...');
+    await listRefetch();
   };
 
-  if (loading) {
+  const handleCalendarRefresh = async () => {
+    console.log('🔄 Refreshing calendar programs data...');
+    await calendarRefetch();
+  };
+
+  const isLoading = activeTab === 'list' ? listLoading : calendarLoading;
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex w-full">
         <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
@@ -40,7 +53,7 @@ const ActivePrograms = () => {
             <p className="text-gray-600">Διαχείριση και παρακολούθηση ενεργών προγραμμάτων προπόνησης</p>
           </div>
 
-          <Tabs defaultValue="list" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 rounded-none">
               <TabsTrigger value="list" className="rounded-none">Λίστα Προγραμμάτων</TabsTrigger>
               <TabsTrigger value="calendar" className="rounded-none">Ημερολόγιο</TabsTrigger>
@@ -49,13 +62,13 @@ const ActivePrograms = () => {
             <TabsContent value="list" className="mt-6">
               <Card className="rounded-none">
                 <CardContent className="p-6">
-                  <ActiveProgramsList programs={programs} onRefresh={handleRefresh} />
+                  <ActiveProgramsList programs={listPrograms} onRefresh={handleListRefresh} />
                 </CardContent>
               </Card>
             </TabsContent>
             
             <TabsContent value="calendar" className="mt-6">
-              <ProgramCalendar programs={programs} onRefresh={handleRefresh} />
+              <ProgramCalendar programs={calendarPrograms} onRefresh={handleCalendarRefresh} />
             </TabsContent>
           </Tabs>
         </div>

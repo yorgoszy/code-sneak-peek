@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
@@ -96,9 +95,9 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
   const fetchUserPrograms = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching programs for user:', user.id);
+      console.log('🔍 Fetching ALL programs for user (including completed):', user.id);
       
-      // Παίρνουμε τα assignments του χρήστη (όλα, συμπεριλαμβανομένων των ολοκληρωμένων)
+      // Παίρνουμε όλα τα assignments του χρήστη (συμπεριλαμβανομένων των ολοκληρωμένων)
       const assignments = await fetchProgramAssignments(user.id);
       
       if (!assignments || assignments.length === 0) {
@@ -112,10 +111,10 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
         assignments.map(enrichAssignmentWithProgramData)
       );
 
-      // Filter by date - only include assignments that have program data
+      // Filter by date - include ALL valid assignments (both completed and active)
       const validPrograms = enrichedAssignments.filter(isValidAssignment);
       
-      console.log('✅ User programs loaded:', validPrograms.length);
+      console.log('✅ User programs loaded (all including completed):', validPrograms.length);
       setPrograms(validPrograms);
 
     } catch (error) {
