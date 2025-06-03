@@ -1,6 +1,7 @@
 
 import { QuickActions } from "@/components/QuickActions";
 import { UserProfileDailyProgram } from "@/components/user-profile/UserProfileDailyProgram";
+import { LazyActiveProgramsList } from "@/components/dashboard/LazyActiveProgramsList";
 
 interface DashboardContentProps {
   isAdmin: boolean;
@@ -11,6 +12,11 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="space-y-6">
+        {/* Ενεργά Προγράμματα για Admin */}
+        {isAdmin && (
+          <LazyActiveProgramsList />
+        )}
+        
         <QuickActions />
       </div>
       
