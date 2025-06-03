@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -193,23 +192,23 @@ const Index = () => {
           color: black !important;
         }
         .login-btn:hover {
-          background-color: #00e6a6 !important;
-          border-color: #00e6a6 !important;
+          background-color: #00cc99 !important;
+          border-color: #00cc99 !important;
         }
         .get-started-btn {
           background-color: #00ffba !important;
           color: black !important;
         }
         .get-started-btn:hover {
-          background-color: #00e6a6 !important;
+          background-color: #00cc99 !important;
         }
         .carousel-btn {
-          border: none !important;
+          border: 1px solid rgba(255, 255, 255, 0.3) !important;
           background: transparent !important;
         }
         .carousel-btn:hover {
           background: transparent !important;
-          border: none !important;
+          border: 1px solid #00ffba !important;
         }
         .carousel-btn:hover svg {
           color: #00ffba !important;
@@ -337,7 +336,7 @@ const Index = () => {
             {/* Navigation arrows positioned at top right */}
             <div className="flex space-x-4">
               <button 
-                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
+                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center rounded"
                 onClick={() => {
                   const carousel = document.querySelector('[data-carousel="previous"]') as HTMLButtonElement;
                   if (carousel) {
@@ -352,7 +351,7 @@ const Index = () => {
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button 
-                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
+                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center rounded"
                 onClick={() => {
                   const carousel = document.querySelector('[data-carousel="next"]') as HTMLButtonElement;
                   if (carousel) {
