@@ -5,14 +5,12 @@ import { ProgramViewDialog } from '../ProgramViewDialog';
 import { DayProgramDialog } from '../calendar/DayProgramDialog';
 import { AttendanceDialog } from '../AttendanceDialog';
 import { ProgramBuilderDialog } from '@/components/programs/ProgramBuilderDialog';
-import { ProgramViewer } from '../ProgramViewer';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardDialogManagerProps {
   assignment: EnrichedAssignment;
   daySelectorOpen: boolean;
   programViewDialogOpen: boolean;
-  programViewerOpen: boolean;
   dayProgramDialogOpen: boolean;
   attendanceOpen: boolean;
   editDialogOpen: boolean;
@@ -21,7 +19,6 @@ interface ProgramCardDialogManagerProps {
   exercises: any[];
   onDaySelectorClose: () => void;
   onProgramViewClose: () => void;
-  onProgramViewerClose: () => void;
   onDayProgramClose: () => void;
   onAttendanceClose: () => void;
   onEditDialogClose: () => void;
@@ -34,7 +31,6 @@ export const ProgramCardDialogManager: React.FC<ProgramCardDialogManagerProps> =
   assignment,
   daySelectorOpen,
   programViewDialogOpen,
-  programViewerOpen,
   dayProgramDialogOpen,
   attendanceOpen,
   editDialogOpen,
@@ -43,7 +39,6 @@ export const ProgramCardDialogManager: React.FC<ProgramCardDialogManagerProps> =
   exercises,
   onDaySelectorClose,
   onProgramViewClose,
-  onProgramViewerClose,
   onDayProgramClose,
   onAttendanceClose,
   onEditDialogClose,
@@ -71,13 +66,6 @@ export const ProgramCardDialogManager: React.FC<ProgramCardDialogManagerProps> =
         isOpen={programViewDialogOpen}
         onClose={onProgramViewClose}
         assignment={assignment}
-      />
-
-      <ProgramViewer
-        assignment={assignment}
-        isOpen={programViewerOpen}
-        onClose={onProgramViewerClose}
-        mode="start"
       />
 
       <DayProgramDialog
