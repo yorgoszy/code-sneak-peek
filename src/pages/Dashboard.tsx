@@ -34,6 +34,10 @@ const Dashboard = () => {
   // Get active programs for list (exclude completed)
   const { programs: activePrograms, refetch: activeProgramsRefetch } = useActivePrograms(false);
   
+  // Get completed programs (include only completed)
+  const { programs: allPrograms, refetch: allProgramsRefetch } = useActivePrograms(true);
+  const completedPrograms = allPrograms.filter(program => program.progress === 100);
+  
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   // Setup realtime subscriptions for automatic updates
@@ -42,11 +46,13 @@ const Dashboard = () => {
       console.log('🔄 Refreshing programs due to realtime change...');
       refetch();
       activeProgramsRefetch();
+      allProgramsRefetch();
     },
     onAssignmentsChange: () => {
       console.log('🔄 Refreshing assignments due to realtime change...');
       refetch();
       activeProgramsRefetch();
+      allProgramsRefetch();
       // Refresh workout completions for all today's programs
       fetchAllCompletions();
     }
@@ -154,6 +160,12 @@ const Dashboard = () => {
     }
   };
 
+  const handleRefreshAll = () => {
+    refetch();
+    activeProgramsRefetch();
+    allProgramsRefetch();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -203,9 +215,10 @@ const Dashboard = () => {
             isAdmin={isAdmin}
             todaysPrograms={todaysPrograms}
             activePrograms={activePrograms}
+            completedPrograms={completedPrograms}
             allCompletions={allCompletions}
             onRefresh={refetch}
-            onActiveProgramsRefresh={activeProgramsRefetch}
+            onActiveProgramsRefresh={handleRefreshAll}
           />
         </div>
       </div>
