@@ -20,6 +20,15 @@ const Index = () => {
     }
   };
 
+  const navigationItems = [
+    { name: "Home", href: "#home" },
+    { name: "Programs", href: "#programs" },
+    { name: "Blog", href: "#blog" },
+    { name: "About Us", href: "#about" },
+    { name: "Results", href: "#results" },
+    { name: "Contact", href: "#contact" }
+  ];
+
   return (
     <div className="min-h-screen bg-white font-robert">
       {/* Black Navigation */}
@@ -27,8 +36,26 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <span className="text-xl font-bold text-white">HyperKids</span>
+              <img 
+                src="/lovable-uploads/e6f77be6-7f24-4357-88b6-55d1fec4139d.png" 
+                alt="HyperKids Logo" 
+                className="h-10 w-auto"
+              />
             </div>
+            
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navigationItems.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="text-white hover:text-gray-300 transition-colors duration-200 text-sm font-medium"
+                >
+                  {item.name}
+                </a>
+              ))}
+            </div>
+
             <div className="flex items-center space-x-8">
               {!loading && (
                 isAuthenticated ? (
@@ -64,7 +91,7 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-16 min-h-screen flex items-center justify-center">
+      <section id="home" className="relative pt-16 min-h-screen flex items-center justify-center">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
@@ -91,6 +118,75 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Programs Section */}
+      <section id="programs" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Τα Προγράμματά μας</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Ανακαλύψτε τα εξειδικευμένα προγράμματα που προσφέρουμε για την ανάπτυξη των παιδιών σας
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Blog Section */}
+      <section id="blog" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Blog</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Διαβάστε τα τελευταία άρθρα και συμβουλές από τους ειδικούς μας
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* About Us Section */}
+      <section id="about" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Σχετικά με εμάς</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Μάθετε περισσότερα για την ομάδα μας και την αποστολή μας
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Results Section */}
+      <section id="results" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Αποτελέσματα</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Δείτε τα εντυπωσιακά αποτελέσματα των συμμετεχόντων μας
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Επικοινωνία</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Επικοινωνήστε μαζί μας για περισσότερες πληροφορίες
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-black text-white py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-400">© 2024 HyperKids. Όλα τα δικαιώματα διατηρούνται.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
