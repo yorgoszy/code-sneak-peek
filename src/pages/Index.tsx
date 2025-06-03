@@ -34,49 +34,49 @@ const Index = () => {
       id: "01",
       title: "Movement Learning",
       description: "Introductory movement techniques",
-      image: "/lovable-uploads/29ceb456-3fe1-4f11-82f7-f66e683312bb.png",
+      image: "/lovable-uploads/32d7b875-008c-4cca-a559-c707588d97de.png",
       color: "#00ffba"
     },
     {
       id: "02", 
       title: "Movement Development",
       description: "Building athletic foundations for all sports",
-      image: "/lovable-uploads/62fc768d-b98f-4885-96a1-5840c86bfc39.png",
+      image: "/lovable-uploads/5c575238-ffcf-4f84-aa73-21fa6377ba7d.png",
       color: "#00ffba"
     },
     {
       id: "03",
       title: "Youth Strength", 
       description: "Advanced techniques and conditioning",
-      image: "/lovable-uploads/81100ffe-6e78-4faa-a6f7-46163c4fdc57.png",
+      image: "/lovable-uploads/f8f84c19-d969-4da5-a85d-fe764201fc6b.png",
       color: "#00ffba"
     },
     {
       id: "04",
       title: "Fitness",
       description: "Customized fitness solutions for all levels",
-      image: "/lovable-uploads/97800d53-e9d6-4b5d-876a-69015555d90b.png",
+      image: "/lovable-uploads/a21faccb-2749-42ef-9686-c8e65fadcc5f.png",
       color: "#00ffba"
     },
     {
       id: "05",
       title: "Muay Thai",
       description: "Next-Gen Training Methods",
-      image: "/lovable-uploads/63c66fb6-c015-4d95-8fd2-123c9a7561c4.png",
+      image: "/lovable-uploads/27d8d572-b93f-4f3c-8f89-cc9e10930c87.png",
       color: "#00ffba"
     },
     {
       id: "06",
       title: "One by One Training",
       description: "Personalized coaching for maximum results",
-      image: "/lovable-uploads/63c66fb6-c015-4d95-8fd2-123c9a7561c4.png",
+      image: "/lovable-uploads/bff0a31f-54a3-4c49-9e8a-702d714be8d6.png",
       color: "#00ffba"
     },
     {
       id: "07",
       title: "Athlete Performance",
       description: "Elite Strength & Conditioning Strategies",
-      image: "/lovable-uploads/63c66fb6-c015-4d95-8fd2-123c9a7561c4.png",
+      image: "/lovable-uploads/a29fcea9-97f7-45a5-8b9f-a0f30b314aa4.png",
       color: "#00ffba"
     }
   ];
@@ -249,17 +249,20 @@ const Index = () => {
               {programs.map((program) => (
                 <CarouselItem key={program.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/4">
                   <div className="group cursor-pointer flex">
-                    {/* Gray outline with number */}
+                    {/* Gray outline with number - positioned left of image */}
                     <div 
-                      className="w-8 h-64 flex items-start justify-center pt-4 mr-8"
+                      className="w-8 h-48 flex items-start justify-center pt-4 mr-8 relative"
                       style={{ 
-                        borderLeft: '2px solid #808080',
-                        marginLeft: '-30px'
+                        borderLeft: '2px solid #808080'
                       }}
                     >
                       <span 
-                        className="text-2xl font-bold"
-                        style={{ color: program.color }}
+                        className="text-2xl font-bold absolute"
+                        style={{ 
+                          color: program.color,
+                          left: '30px',
+                          top: '16px'
+                        }}
                       >
                         {program.id}
                       </span>
@@ -267,12 +270,12 @@ const Index = () => {
                     
                     {/* Program content */}
                     <div className="flex-1">
-                      <div className="relative h-64 mb-6 overflow-hidden">
+                      <div className="relative h-48 mb-6 overflow-hidden">
                         <img
                           src={program.image}
                           alt={program.title}
                           className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
-                          style={{ width: '80%', height: '200px' }}
+                          style={{ width: '70%', height: '160px' }}
                         />
                         <div className="absolute bottom-4 left-4 right-4">
                           <p className="text-white text-sm mb-2">{program.description}</p>
