@@ -16,9 +16,7 @@ export const DashboardContainer = () => {
   
   const {
     userProfile,
-    stats,
-    activePrograms,
-    handleRefreshAll
+    stats
   } = useDashboard();
 
   if (loading) {
@@ -68,8 +66,7 @@ export const DashboardContainer = () => {
           {/* Lower Section */}
           <DashboardContent
             isAdmin={isAdmin}
-            activePrograms={activePrograms}
-            onActiveProgramsRefresh={handleRefreshAll}
+            userProfile={userProfile}
           />
         </div>
       </div>

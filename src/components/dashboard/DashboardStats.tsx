@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Activity, Dumbbell, UserPlus } from "lucide-react";
+import { Users, Dumbbell } from "lucide-react";
 
 interface DashboardStatsProps {
   stats: {
@@ -12,6 +12,7 @@ interface DashboardStatsProps {
 }
 
 export const DashboardStats = ({ stats }: DashboardStatsProps) => {
+  // Μόνο τα βασικά stats για ταχύτητα
   const statCards = [
     {
       title: "Συνολικοί Χρήστες",
@@ -20,27 +21,15 @@ export const DashboardStats = ({ stats }: DashboardStatsProps) => {
       color: "text-blue-600"
     },
     {
-      title: "Ενεργά Προγράμματα",
-      value: stats.activePrograms,
-      icon: Activity,
-      color: "text-green-600"
-    },
-    {
       title: "Συνολικές Ασκήσεις",
       value: stats.totalExercises,
       icon: Dumbbell,
       color: "text-purple-600"
-    },
-    {
-      title: "Νέοι Χρήστες (Μήνας)",
-      value: stats.newUsersThisMonth,
-      icon: UserPlus,
-      color: "text-orange-600"
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
       {statCards.map((stat, index) => {
         const IconComponent = stat.icon;
         return (

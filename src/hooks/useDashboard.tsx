@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useActivePrograms } from "@/hooks/useActivePrograms";
 
 interface DashboardStats {
   totalUsers: number;
@@ -21,40 +20,27 @@ export const useDashboard = () => {
     newUsersThisMonth: 0
   });
 
-  // Μόνο active programs για admin
-  const { programs: activePrograms, refetch: activeProgramsRefetch } = useActivePrograms(false);
-
   const fetchDashboardStats = async () => {
     try {
-      // Παράλληλα queries για ταχύτητα
+      // Μόνο βασικά stats - παράλληλα για ταχύτητα
       const [
         { count: totalUsers },
-        { count: activeProgramsCount },
-        { count: totalExercises },
-        { count: newUsersThisMonth }
+        { count: totalExercises }
       ] = await Promise.all([
         supabase.from('app_users').select('*', { count: 'exact', head: true }),
-        supabase.from('programs').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('exercises').select('*', { count: 'exact', head: true }),
-        supabase.from('app_users').select('*', { count: 'exact', head: true })
-          .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+        supabase.from('exercises').select('*', { count: 'exact', head: true })
       ]);
 
       setStats({
         totalUsers: totalUsers || 0,
-        activePrograms: activeProgramsCount || 0,
+        activePrograms: 0, // Θα φορτωθεί lazy
         totalExercises: totalExercises || 0,
-        newUsersThisMonth: newUsersThisMonth || 0
+        newUsersThisMonth: 0 // Θα φορτωθεί lazy
       });
 
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
     }
-  };
-
-  const handleRefreshAll = () => {
-    activeProgramsRefetch();
-    fetchDashboardStats();
   };
 
   useEffect(() => {
@@ -77,8 +63,6 @@ export const useDashboard = () => {
 
   return {
     userProfile,
-    stats,
-    activePrograms,
-    handleRefreshAll
+    stats
   };
 };
