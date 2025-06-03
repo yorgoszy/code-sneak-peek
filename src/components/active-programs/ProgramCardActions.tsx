@@ -7,8 +7,11 @@ import { DayProgramDialog } from './calendar/DayProgramDialog';
 import { ProgramViewDialog } from './ProgramViewDialog';
 import { DaySelector } from './DaySelector';
 import { AttendanceDialog } from './AttendanceDialog';
+import { ProgramBuilderDialog } from '@/components/programs/ProgramBuilderDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { usePrograms } from "@/hooks/usePrograms";
+import { useProgramsData } from "@/hooks/useProgramsData";
 import { format } from "date-fns";
 
 interface ProgramCardActionsProps {
@@ -22,7 +25,10 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { getWorkoutCompletions } = useWorkoutCompletions();
+  const { saveProgram } = usePrograms();
+  const { users, exercises } = useProgramsData();
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -63,12 +69,23 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
   };
 
   const handleEdit = () => {
-    // TODO: Implement edit functionality
-    console.log('Edit program:', assignment.id);
+    setEditDialogOpen(true);
   };
 
   const handleComplete = () => {
     setAttendanceOpen(true);
+  };
+
+  const handleEditSave = async (programData: any) => {
+    try {
+      await saveProgram(programData);
+      setEditDialogOpen(false);
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error('Error saving program:', error);
+    }
   };
 
   const getWorkoutStatus = async () => {
@@ -175,6 +192,15 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
         assignment={assignment}
         isOpen={attendanceOpen}
         onClose={() => setAttendanceOpen(false)}
+      />
+
+      <ProgramBuilderDialog
+        users={users}
+        exercises={exercises}
+        onCreateProgram={handleEditSave}
+        onOpenChange={() => setEditDialogOpen(false)}
+        editingProgram={assignment.programs}
+        isOpen={editDialogOpen}
       />
     </>
   );
