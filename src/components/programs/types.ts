@@ -17,7 +17,7 @@ export interface ProgramExercise {
   exercise_id: string;
   sets: number;
   reps: string;
-  kg: string;
+  kg?: string;  // Changed from required to optional
   percentage_1rm?: number;
   velocity_ms?: number;
   tempo?: string;
