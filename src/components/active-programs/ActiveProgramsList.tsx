@@ -55,7 +55,7 @@ export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col gap-2">
         {programs.map((assignment) => (
           <ProgramCard key={assignment.id} assignment={assignment} onRefresh={onRefresh} />
         ))}
