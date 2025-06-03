@@ -17,11 +17,7 @@ export const DashboardContainer = () => {
   const {
     userProfile,
     stats,
-    todaysPrograms,
     activePrograms,
-    completedPrograms,
-    allCompletions,
-    refetch,
     handleRefreshAll
   } = useDashboard();
 
@@ -72,11 +68,7 @@ export const DashboardContainer = () => {
           {/* Lower Section */}
           <DashboardContent
             isAdmin={isAdmin}
-            todaysPrograms={todaysPrograms}
             activePrograms={activePrograms}
-            completedPrograms={completedPrograms}
-            allCompletions={allCompletions}
-            onRefresh={refetch}
             onActiveProgramsRefresh={handleRefreshAll}
           />
         </div>

@@ -1,14 +1,10 @@
 
-import { StatCard } from "@/components/StatCard";
-import { Users, TrendingUp, Activity, Dumbbell } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Activity, Dumbbell, UserPlus } from "lucide-react";
 
 interface DashboardStatsProps {
   stats: {
     totalUsers: number;
-    athletes: number;
-    trainers: number;
-    parents: number;
-    general: number;
     activePrograms: number;
     totalExercises: number;
     newUsersThisMonth: number;
@@ -16,36 +12,49 @@ interface DashboardStatsProps {
 }
 
 export const DashboardStats = ({ stats }: DashboardStatsProps) => {
+  const statCards = [
+    {
+      title: "Συνολικοί Χρήστες",
+      value: stats.totalUsers,
+      icon: Users,
+      color: "text-blue-600"
+    },
+    {
+      title: "Ενεργά Προγράμματα",
+      value: stats.activePrograms,
+      icon: Activity,
+      color: "text-green-600"
+    },
+    {
+      title: "Συνολικές Ασκήσεις",
+      value: stats.totalExercises,
+      icon: Dumbbell,
+      color: "text-purple-600"
+    },
+    {
+      title: "Νέοι Χρήστες (Μήνας)",
+      value: stats.newUsersThisMonth,
+      icon: UserPlus,
+      color: "text-orange-600"
+    }
+  ];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <StatCard
-        title="Σύνολο Χρηστών"
-        value={stats.totalUsers}
-        subtitle={`Αθλητές: ${stats.athletes} | Προπονητές: ${stats.trainers} | Γονείς: ${stats.parents} | Γενικοί: ${stats.general}`}
-        icon={<Users className="h-5 w-5" />}
-        trend="up"
-      />
-      <StatCard
-        title="Νέοι Χρήστες"
-        value={stats.newUsersThisMonth}
-        subtitle="Αυτόν τον μήνα"
-        icon={<TrendingUp className="h-5 w-5" />}
-        trend={stats.newUsersThisMonth > 0 ? "up" : "neutral"}
-      />
-      <StatCard
-        title="Ενεργά Προγράμματα"
-        value={stats.activePrograms}
-        subtitle="Προγράμματα προπόνησης"
-        icon={<Activity className="h-5 w-5" />}
-        trend={stats.activePrograms > 0 ? "up" : "neutral"}
-      />
-      <StatCard
-        title="Διαθέσιμες Ασκήσεις"
-        value={stats.totalExercises}
-        subtitle="Στη βάση δεδομένων"
-        icon={<Dumbbell className="h-5 w-5" />}
-        trend="neutral"
-      />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      {statCards.map((stat, index) => {
+        const IconComponent = stat.icon;
+        return (
+          <Card key={index} className="rounded-none">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <IconComponent className={`h-4 w-4 ${stat.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };
