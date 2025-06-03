@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -95,8 +96,16 @@ const Index = () => {
           background-color: #00ffba !important;
           border-color: #00ffba !important;
         }
+        .carousel-btn {
+          border: none !important;
+          background: transparent !important;
+        }
         .carousel-btn:hover {
-          background-color: #00ffba !important;
+          background: transparent !important;
+          border: none !important;
+        }
+        .carousel-btn:hover svg {
+          color: #00ffba !important;
         }
       `}</style>
       
@@ -206,7 +215,7 @@ const Index = () => {
             {/* Navigation arrows positioned at top right */}
             <div className="flex space-x-4">
               <button 
-                className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 h-8 w-8 flex items-center justify-center"
+                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
                 onClick={() => {
                   const carousel = document.querySelector('[data-carousel="previous"]') as HTMLButtonElement;
                   if (carousel) {
@@ -221,7 +230,7 @@ const Index = () => {
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button 
-                className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 h-8 w-8 flex items-center justify-center"
+                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
                 onClick={() => {
                   const carousel = document.querySelector('[data-carousel="next"]') as HTMLButtonElement;
                   if (carousel) {
@@ -251,7 +260,7 @@ const Index = () => {
                   <div className="group cursor-pointer flex">
                     {/* Gray outline with number - positioned left of image */}
                     <div 
-                      className="w-8 h-48 flex items-start justify-center pt-4 mr-8 relative"
+                      className="w-8 h-64 flex items-start justify-center pt-4 mr-8 relative"
                       style={{ 
                         borderLeft: '2px solid #808080'
                       }}
@@ -270,12 +279,12 @@ const Index = () => {
                     
                     {/* Program content */}
                     <div className="flex-1">
-                      <div className="relative h-48 mb-6 overflow-hidden">
+                      <div className="relative h-64 mb-6 overflow-hidden">
                         <img
                           src={program.image}
                           alt={program.title}
                           className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
-                          style={{ width: '70%', height: '160px' }}
+                          style={{ width: '90%', height: '200px' }}
                         />
                         <div className="absolute bottom-4 left-4 right-4">
                           <p className="text-white text-sm mb-2">{program.description}</p>
