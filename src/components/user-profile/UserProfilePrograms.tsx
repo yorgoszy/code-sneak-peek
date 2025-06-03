@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Calendar } from "lucide-react";
-import { ProgramPreviewDialog } from "@/components/programs/ProgramPreviewDialog";
+import { Eye, Calendar, Play } from "lucide-react";
+import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { AttendanceDialog } from "@/components/active-programs/AttendanceDialog";
+import { format } from "date-fns";
 
 interface UserProfileProgramsProps {
   user: any;
@@ -13,8 +14,9 @@ interface UserProfileProgramsProps {
 }
 
 export const UserProfilePrograms = ({ user, programs }: UserProfileProgramsProps) => {
-  const [previewProgram, setPreviewProgram] = useState<any>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
 
@@ -23,13 +25,24 @@ export const UserProfilePrograms = ({ user, programs }: UserProfileProgramsProps
   };
 
   const handlePreviewProgram = (program: any) => {
-    setPreviewProgram(program);
-    setPreviewOpen(true);
+    // Βρίσκουμε το assignment για αυτό το πρόγραμμα
+    const assignment = program.program_assignments?.[0];
+    if (assignment) {
+      setSelectedProgram(assignment);
+      
+      // Παίρνουμε την πρώτη διαθέσιμη ημερομηνία προπόνησης
+      const trainingDates = assignment.training_dates || [];
+      if (trainingDates.length > 0) {
+        setSelectedDate(new Date(trainingDates[0]));
+        setDayProgramDialogOpen(true);
+      }
+    }
   };
 
-  const handlePreviewClose = () => {
-    setPreviewOpen(false);
-    setPreviewProgram(null);
+  const handleDialogClose = () => {
+    setDayProgramDialogOpen(false);
+    setSelectedProgram(null);
+    setSelectedDate(null);
   };
 
   const handleViewAttendance = (assignment: any) => {
@@ -98,10 +111,12 @@ export const UserProfilePrograms = ({ user, programs }: UserProfileProgramsProps
         </CardContent>
       </Card>
 
-      <ProgramPreviewDialog
-        program={previewProgram}
-        isOpen={previewOpen}
-        onOpenChange={handlePreviewClose}
+      <DayProgramDialog
+        isOpen={dayProgramDialogOpen}
+        onClose={handleDialogClose}
+        program={selectedProgram}
+        selectedDate={selectedDate}
+        workoutStatus="not_started"
       />
 
       {selectedAssignment && (

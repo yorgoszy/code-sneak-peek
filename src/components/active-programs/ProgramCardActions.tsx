@@ -2,37 +2,60 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Play, Eye, Edit, CheckCircle2 } from "lucide-react";
-import { ProgramViewer } from './ProgramViewer';
+import { DayProgramDialog } from './calendar/DayProgramDialog';
 import { DaySelector } from './DaySelector';
 import { AttendanceDialog } from './AttendanceDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { format } from "date-fns";
 
 interface ProgramCardActionsProps {
   assignment: EnrichedAssignment;
+  onRefresh?: () => void;
 }
 
-export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignment }) => {
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerMode, setViewerMode] = useState<'view' | 'start'>('view');
+export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignment, onRefresh }) => {
+  const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
-  const [selectedWeek, setSelectedWeek] = useState(0);
-  const [selectedDay, setSelectedDay] = useState(0);
+  const [dialogMode, setDialogMode] = useState<'view' | 'start'>('view');
+  const { getWorkoutCompletions } = useWorkoutCompletions();
 
   const handleStart = () => {
     setDaySelectorOpen(true);
   };
 
-  const handleDaySelected = (weekIndex: number, dayIndex: number) => {
-    setSelectedWeek(weekIndex);
-    setSelectedDay(dayIndex);
-    setViewerMode('start');
-    setViewerOpen(true);
+  const handleDaySelected = async (weekIndex: number, dayIndex: number) => {
+    setDaySelectorOpen(false);
+    
+    // Βρίσκουμε την ημερομηνία για την επιλεγμένη ημέρα
+    const trainingDates = assignment.training_dates || [];
+    if (trainingDates.length > 0) {
+      // Υπολογίζουμε ποια ημερομηνία αντιστοιχεί στην επιλεγμένη εβδομάδα/ημέρα
+      const program = assignment.programs;
+      if (program?.program_weeks?.[0]?.program_days) {
+        const daysPerWeek = program.program_weeks[0].program_days.length;
+        const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+        
+        if (totalDayIndex < trainingDates.length) {
+          const dateStr = trainingDates[totalDayIndex];
+          setSelectedDate(new Date(dateStr));
+          setDialogMode('start');
+          setDayProgramDialogOpen(true);
+        }
+      }
+    }
   };
 
   const handleView = () => {
-    setViewerMode('view');
-    setViewerOpen(true);
+    // Για προβολή, παίρνουμε την πρώτη διαθέσιμη ημερομηνία
+    const trainingDates = assignment.training_dates || [];
+    if (trainingDates.length > 0) {
+      setSelectedDate(new Date(trainingDates[0]));
+      setDialogMode('view');
+      setDayProgramDialogOpen(true);
+    }
   };
 
   const handleEdit = () => {
@@ -42,6 +65,32 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
 
   const handleComplete = () => {
     setAttendanceOpen(true);
+  };
+
+  const getWorkoutStatus = async () => {
+    if (!selectedDate) return 'not_started';
+    
+    try {
+      const completions = await getWorkoutCompletions(assignment.id);
+      const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+      
+      const completion = completions.find(c => 
+        c.scheduled_date === selectedDateStr && c.status === 'completed'
+      );
+      
+      return completion ? 'completed' : 'not_started';
+    } catch (error) {
+      console.error('Error getting workout status:', error);
+      return 'not_started';
+    }
+  };
+
+  const handleDialogClose = () => {
+    setDayProgramDialogOpen(false);
+    setSelectedDate(null);
+    if (onRefresh) {
+      onRefresh();
+    }
   };
 
   return (
@@ -92,13 +141,13 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
         onSelectDay={handleDaySelected}
       />
 
-      <ProgramViewer
-        assignment={assignment}
-        isOpen={viewerOpen}
-        onClose={() => setViewerOpen(false)}
-        mode={viewerMode}
-        selectedWeek={selectedWeek}
-        selectedDay={selectedDay}
+      <DayProgramDialog
+        isOpen={dayProgramDialogOpen}
+        onClose={handleDialogClose}
+        program={assignment}
+        selectedDate={selectedDate}
+        workoutStatus="not_started"
+        onRefresh={onRefresh}
       />
 
       <AttendanceDialog
