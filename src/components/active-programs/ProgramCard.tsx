@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { ProgramCardUserInfo } from './ProgramCardUserInfo';
 import { ProgramCardProgress } from './ProgramCardProgress';
@@ -13,50 +13,39 @@ interface ProgramCardProps {
 }
 
 export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh }) => {
-  const [workoutStats, setWorkoutStats] = useState({
+  const { calculateWorkoutStats, getWorkoutCompletions } = useWorkoutCompletionsCache();
+
+  // Υπολογίζουμε τα stats από το cache (θα είναι διαθέσιμα από το useActivePrograms)
+  const workoutStats = React.useMemo(async () => {
+    const completions = await getWorkoutCompletions(assignment.id);
+    return calculateWorkoutStats(completions, assignment.training_dates || []);
+  }, [assignment.id, assignment.training_dates, getWorkoutCompletions, calculateWorkoutStats]);
+
+  // Προσωρινή λύση για sync stats
+  const [stats, setStats] = React.useState({
     completed: 0,
-    total: 0,
+    total: assignment.training_dates?.length || 0,
     missed: 0
   });
 
-  const { getWorkoutCompletions } = useWorkoutCompletions();
-
-  useEffect(() => {
-    const fetchWorkoutStats = async () => {
-      try {
-        const completions = await getWorkoutCompletions(assignment.id);
-        const totalWorkouts = assignment.training_dates?.length || 0;
-        
-        // Μοναδικές ημερομηνίες που έχουν ολοκληρωθεί
-        const uniqueCompletedDates = new Set();
-        completions.forEach(c => {
-          if (c.status === 'completed' && assignment.training_dates?.includes(c.scheduled_date)) {
-            uniqueCompletedDates.add(c.scheduled_date);
-          }
-        });
-        
-        const completedWorkouts = uniqueCompletedDates.size;
-        const missedWorkouts = completions.filter(c => c.status === 'missed').length;
-        
-        setWorkoutStats({
-          completed: completedWorkouts,
-          total: totalWorkouts,
-          missed: missedWorkouts
-        });
-      } catch (error) {
-        console.error('Error fetching workout stats:', error);
-      }
+  React.useEffect(() => {
+    const loadStats = async () => {
+      const result = await workoutStats;
+      setStats({
+        completed: result.completed,
+        total: result.total,
+        missed: result.missed
+      });
     };
-
-    fetchWorkoutStats();
-  }, [assignment.id, getWorkoutCompletions]);
+    loadStats();
+  }, [workoutStats]);
 
   return (
     <Card className="rounded-none hover:shadow-md transition-shadow h-12 w-[450px]">
       <CardContent className="p-1.5 h-full">
         <div className="flex items-center justify-between h-full">
           <ProgramCardUserInfo assignment={assignment} />
-          <ProgramCardProgress assignment={assignment} workoutStats={workoutStats} />
+          <ProgramCardProgress assignment={assignment} workoutStats={stats} />
           <ProgramCardActions assignment={assignment} onRefresh={onRefresh} />
         </div>
       </CardContent>

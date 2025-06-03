@@ -4,17 +4,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { testSupabaseConnection, fetchUserData, fetchProgramAssignments, enrichAssignmentWithProgramData } from "./useActivePrograms/dataService";
 import { isValidAssignment } from "./useActivePrograms/dateFilters";
 import type { EnrichedAssignment } from "./useActivePrograms/types";
-import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useActivePrograms = (includeCompleted: boolean = false) => {
   const [programs, setPrograms] = useState<EnrichedAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { getWorkoutCompletions } = useWorkoutCompletions();
+  const { fetchMultipleCompletions, calculateWorkoutStats, clearCache } = useWorkoutCompletionsCache();
 
   useEffect(() => {
-    // 🔍 STEP 1: Show current user's auth_user_id
     console.log('=== USER DEBUG INFO ===');
     console.log('1. Current user from useAuth:', user);
     console.log('2. Auth user ID:', user?.id);
@@ -29,7 +28,7 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
     }
   }, [user, includeCompleted]);
 
-  // Real-time updates για workout completions
+  // Απλοποιημένο real-time updates - μόνο για workout completions
   useEffect(() => {
     if (!user?.id || programs.length === 0) return;
 
@@ -47,20 +46,9 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
         async (payload) => {
           console.log('📊 Workout completion changed:', payload);
           
-          // Ξαναυπολογισμός progress για όλα τα προγράμματα
-          const updatedPrograms = await Promise.all(
-            programs.map(async (program) => {
-              const progress = await calculateProgress(program);
-              return { ...program, progress };
-            })
-          );
-          
-          // Φιλτράρισμα ανάλογα με το includeCompleted flag
-          const filteredPrograms = includeCompleted 
-            ? updatedPrograms 
-            : updatedPrograms.filter(program => program.progress < 100);
-          
-          setPrograms(filteredPrograms);
+          // Καθαρίζουμε το cache και ξαναφορτώνουμε
+          clearCache();
+          await fetchActivePrograms();
         }
       )
       .subscribe();
@@ -69,40 +57,7 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
       console.log('🔌 Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, [user?.id, programs.length, includeCompleted]);
-
-  const calculateProgress = async (assignment: EnrichedAssignment) => {
-    try {
-      if (!assignment.training_dates || assignment.training_dates.length === 0) {
-        return 0;
-      }
-
-      const completions = await getWorkoutCompletions(assignment.id);
-      
-      // Βρίσκουμε μοναδικές ημερομηνίες που έχουν ολοκληρωθεί
-      const uniqueCompletedDates = new Set();
-      completions.forEach(c => {
-        if (c.status === 'completed' && assignment.training_dates.includes(c.scheduled_date)) {
-          uniqueCompletedDates.add(c.scheduled_date);
-        }
-      });
-      
-      const completedWorkouts = uniqueCompletedDates.size;
-      const totalWorkouts = assignment.training_dates.length;
-      
-      // Περιορίζουμε το progress στο 100%
-      const progress = Math.min(100, Math.round((completedWorkouts / totalWorkouts) * 100));
-      
-      console.log(`📊 Progress for assignment ${assignment.id}: ${completedWorkouts}/${totalWorkouts} = ${progress}%`);
-      console.log(`📅 Training dates:`, assignment.training_dates);
-      console.log(`✅ Unique completed dates:`, Array.from(uniqueCompletedDates));
-      
-      return progress;
-    } catch (error) {
-      console.error('Error calculating progress:', error);
-      return 0;
-    }
-  };
+  }, [user?.id, programs.length]);
 
   const fetchActivePrograms = async () => {
     try {
@@ -124,45 +79,22 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
         return;
       }
 
-      // 🔍 STEP 2: Check if user exists in app_users table
-      console.log('=== APP_USERS TABLE DEBUG ===');
+      // Check if user exists in app_users table
       const userData = await fetchUserData(user.id);
-      console.log('4. userData from app_users table:', userData);
+      console.log('User data from app_users table:', userData);
       
       if (!userData || !userData.id) {
         console.log('⚠️ No valid userData found or missing userData.id');
-        console.log('5. This means the user does NOT exist in app_users table with auth_user_id:', user.id);
         setPrograms([]);
         return;
       }
 
-      console.log('✅ Valid userData found:', userData);
-      console.log('6. User exists in app_users with ID:', userData.id);
-
-      // 🔍 STEP 3: Check program_assignments table
-      console.log('=== PROGRAM_ASSIGNMENTS TABLE DEBUG ===');
+      // Fetch program assignments
       const assignments = await fetchProgramAssignments(userData.id);
-      console.log('7. Raw assignments from program_assignments table:', assignments);
+      console.log('Raw assignments from program_assignments table:', assignments);
       
-      if (assignments) {
-        assignments.forEach((assignment, index) => {
-          console.log(`8.${index + 1}. Assignment ID: ${assignment.id}`);
-          console.log(`   - user_id: ${assignment.user_id}`);
-          console.log(`   - program_id: ${assignment.program_id}`);
-          console.log(`   - start_date: ${assignment.start_date} (type: ${typeof assignment.start_date})`);
-          console.log(`   - end_date: ${assignment.end_date} (type: ${typeof assignment.end_date})`);
-          console.log(`   - status: ${assignment.status}`);
-          console.log(`   - created_at: ${assignment.created_at}`);
-        });
-      }
-      
-      if (!assignments) {
-        setPrograms([]);
-        return;
-      }
-
-      if (assignments.length === 0) {
-        console.log('9. No assignments found for user_id:', userData.id);
+      if (!assignments || assignments.length === 0) {
+        console.log('No assignments found for user_id:', userData.id);
         setPrograms([]);
         return;
       }
@@ -177,11 +109,16 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
       // Filter by date - only include assignments that have program data
       const validPrograms = enrichedAssignments.filter(isValidAssignment);
       
-      // Calculate progress for each program
+      // Bulk fetch όλων των workout completions με ένα query
+      const assignmentIds = validPrograms.map(p => p.id);
+      await fetchMultipleCompletions(assignmentIds);
+      
+      // Calculate progress for each program using cached data
       const programsWithProgress = await Promise.all(
         validPrograms.map(async (program) => {
-          const progress = await calculateProgress(program);
-          return { ...program, progress };
+          const completions = await fetchMultipleCompletions([program.id]);
+          const stats = calculateWorkoutStats(completions, program.training_dates || []);
+          return { ...program, progress: stats.progress };
         })
       );
       
@@ -190,7 +127,7 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
         ? programsWithProgress 
         : programsWithProgress.filter(program => program.progress < 100);
       
-      console.log('✅ Final programs:', includeCompleted ? 'all programs' : 'active only', finalPrograms.length, finalPrograms);
+      console.log('✅ Final programs:', includeCompleted ? 'all programs' : 'active only', finalPrograms.length);
       setPrograms(finalPrograms);
 
     } catch (error) {
