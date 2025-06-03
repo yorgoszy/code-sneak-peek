@@ -4,9 +4,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Calendar, CheckCircle2, XCircle, Clock, BarChart3, Timer, Zap } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { useWorkoutCompletions, type AssignmentAttendance } from "@/hooks/useWorkoutCompletions";
+import { useWorkoutStatistics } from "@/hooks/useWorkoutStatistics";
 
 interface AttendanceDialogProps {
   assignment: EnrichedAssignment;
@@ -22,6 +23,7 @@ export const AttendanceDialog: React.FC<AttendanceDialogProps> = ({
   const [attendance, setAttendance] = useState<AssignmentAttendance | null>(null);
   const [completions, setCompletions] = useState<any[]>([]);
   const { getAssignmentAttendance, getWorkoutCompletions } = useWorkoutCompletions();
+  const { statistics, loading: statsLoading } = useWorkoutStatistics(assignment.id);
 
   useEffect(() => {
     if (isOpen && assignment.id) {
@@ -73,9 +75,32 @@ export const AttendanceDialog: React.FC<AttendanceDialogProps> = ({
     }
   };
 
+  const formatTime = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    if (hours > 0) {
+      return `${hours}ώ ${mins}λ`;
+    }
+    return `${mins}λ`;
+  };
+
+  const getTrainingTypeLabel = (type: string) => {
+    const labels: {[key: string]: string} = {
+      speed: 'Speed',
+      speedEndurance: 'Speed Endurance',
+      speedStrength: 'Speed/Strength',
+      strengthSpeed: 'Strength/Speed',
+      strengthEndurance: 'Strength Endurance',
+      accelerativeStrength: 'Accelerative Strength',
+      maxStrength: 'Max Strength',
+      hypertrophy: 'Hypertrophy'
+    };
+    return labels[type] || type;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto rounded-none">
+      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto rounded-none">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
@@ -121,6 +146,81 @@ export const AttendanceDialog: React.FC<AttendanceDialogProps> = ({
             </Card>
           )}
 
+          {/* Στατιστικά Προπόνησης */}
+          {!statsLoading && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="rounded-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-[#00ffba]" />
+                    Όγκος
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-[#00ffba]">
+                    {statistics.totalVolume.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-600">kg συνολικά</p>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Timer className="w-5 h-5 text-blue-500" />
+                    Χρόνος
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-blue-500">
+                    {formatTime(statistics.totalTimeMinutes)}
+                  </p>
+                  <p className="text-sm text-gray-600">συνολικά</p>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-orange-500" />
+                    Ένταση
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-orange-500">
+                    {statistics.averageIntensity}
+                  </p>
+                  <p className="text-sm text-gray-600">μέση ένταση</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Κατανομή Τύπων Προπόνησης */}
+          {!statsLoading && (
+            <Card className="rounded-none">
+              <CardHeader>
+                <CardTitle>Κατανομή Τύπων Προπόνησης</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {Object.entries(statistics.trainingTypeBreakdown)
+                    .filter(([_, percentage]) => percentage > 0)
+                    .sort(([_, a], [__, b]) => b - a)
+                    .map(([type, percentage]) => (
+                      <div key={type} className="text-center p-3 bg-gray-50 rounded-none">
+                        <p className="text-lg font-bold text-[#00ffba]">{percentage}%</p>
+                        <p className="text-xs text-gray-600 break-words">
+                          {getTrainingTypeLabel(type)}
+                        </p>
+                      </div>
+                    ))
+                  }
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Ιστορικό Προπονήσεων */}
           <Card className="rounded-none">
             <CardHeader>
@@ -147,6 +247,11 @@ export const AttendanceDialog: React.FC<AttendanceDialogProps> = ({
                           {completion.completed_date !== completion.scheduled_date && (
                             <p className="text-sm text-gray-600">
                               Ολοκληρώθηκε: {formatDate(completion.completed_date)}
+                            </p>
+                          )}
+                          {completion.actual_duration_minutes && (
+                            <p className="text-xs text-blue-600">
+                              Διάρκεια: {formatTime(completion.actual_duration_minutes)}
                             </p>
                           )}
                         </div>
