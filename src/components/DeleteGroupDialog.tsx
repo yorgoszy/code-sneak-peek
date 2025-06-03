@@ -38,26 +38,35 @@ export const DeleteGroupDialog = ({ isOpen, onClose, onGroupDeleted, group }: De
     setLoading(true);
 
     try {
-      // Delete group members first (will cascade from group deletion)
-      const { error } = await supabase
+      // First delete group members
+      const { error: membersError } = await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', group.id);
+
+      if (membersError) {
+        console.error('Error deleting group members:', membersError);
+        throw membersError;
+      }
+
+      // Then delete the group
+      const { error: groupError } = await supabase
         .from('groups')
         .delete()
         .eq('id', group.id);
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Σφάλμα",
-          description: "Δεν ήταν δυνατή η διαγραφή της ομάδας",
-        });
-      } else {
-        toast({
-          title: "Επιτυχία",
-          description: "Η ομάδα διαγράφηκε επιτυχώς",
-        });
-        onGroupDeleted();
-        onClose();
+      if (groupError) {
+        console.error('Error deleting group:', groupError);
+        throw groupError;
       }
+
+      toast({
+        title: "Επιτυχία",
+        description: "Η ομάδα διαγράφηκε επιτυχώς",
+      });
+      
+      onGroupDeleted();
+      onClose();
     } catch (error) {
       console.error('Error deleting group:', error);
       toast({
@@ -72,7 +81,7 @@ export const DeleteGroupDialog = ({ isOpen, onClose, onGroupDeleted, group }: De
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
+      <AlertDialogContent className="rounded-none">
         <AlertDialogHeader>
           <AlertDialogTitle>Διαγραφή Ομάδας</AlertDialogTitle>
           <AlertDialogDescription>
