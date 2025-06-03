@@ -49,7 +49,7 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
       );
     }
     
-    return date.getDate();
+    return <span>{date.getDate()}</span>;
   };
 
   return (
