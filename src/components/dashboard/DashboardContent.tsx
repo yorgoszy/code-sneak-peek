@@ -29,7 +29,7 @@ export const DashboardContent = ({
         <RecentActivity />
       </div>
       <div className="space-y-6">
-        <QuickActions />
+        <QuickActions onProgramCreated={onActiveProgramsRefresh} />
         
         {/* Today's Programs Section for Admin */}
         {isAdmin && (

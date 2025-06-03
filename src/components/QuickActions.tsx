@@ -34,7 +34,11 @@ const quickActions = [
   }
 ];
 
-export const QuickActions = () => {
+interface QuickActionsProps {
+  onProgramCreated?: () => void;
+}
+
+export const QuickActions = ({ onProgramCreated }: QuickActionsProps) => {
   const [programDialogOpen, setProgramDialogOpen] = useState(false);
   const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
   const [userDialogOpen, setUserDialogOpen] = useState(false);
@@ -66,8 +70,15 @@ export const QuickActions = () => {
 
   const handleCreateProgram = async (programData: any) => {
     try {
+      console.log('🔄 Creating new program...', programData);
       await saveProgram(programData);
       setProgramDialogOpen(false);
+      
+      // Trigger refresh of active programs in parent component
+      if (onProgramCreated) {
+        console.log('✅ Program created, triggering refresh...');
+        onProgramCreated();
+      }
     } catch (error) {
       console.error('Error creating program:', error);
     }
