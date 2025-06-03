@@ -66,24 +66,25 @@ export const useWorkoutStatistics = (assignmentId: string) => {
       }
       setActualWorkoutTimes(timesData);
 
-      // Παίρνουμε τα δεδομένα του προγράμματος με τις ασκήσεις
+      // Παίρνουμε τα δεδομένα του προγράμματος με τις ασκήσεις - διορθώνω το query
       const { data: assignment } = await supabase
         .from('program_assignments')
         .select(`
           id,
-          programs!inner (
+          program_id,
+          programs:program_id (
             id,
             name,
-            program_weeks!inner (
+            program_weeks (
               id,
               week_number,
-              program_days!inner (
+              program_days (
                 id,
                 day_number,
-                program_blocks!inner (
+                program_blocks (
                   id,
                   name,
-                  program_exercises!inner (
+                  program_exercises (
                     id,
                     sets,
                     reps,
@@ -92,11 +93,11 @@ export const useWorkoutStatistics = (assignmentId: string) => {
                     tempo,
                     rest,
                     notes,
-                    exercises!inner (
+                    exercises (
                       id,
                       name,
-                      exercise_to_category!inner (
-                        exercise_categories!inner (
+                      exercise_to_category (
+                        exercise_categories (
                           name,
                           type
                         )
@@ -111,7 +112,7 @@ export const useWorkoutStatistics = (assignmentId: string) => {
         .eq('id', assignmentId)
         .single();
 
-      if (!assignment) return;
+      if (!assignment?.programs) return;
 
       const exerciseData: ExerciseData[] = [];
       
@@ -239,8 +240,8 @@ export const useWorkoutStatistics = (assignmentId: string) => {
     const totalTrainingTime = Object.values(typeMinutes).reduce((sum, time) => sum + time, 0);
     const trainingTypeBreakdown = Object.keys(typeMinutes).reduce((acc, key) => ({
       ...acc,
-      [key]: totalTrainingTime > 0 ? Math.round((typeMinutes[key] / totalTrainingTime) * 100) : 0
-    }), {} as any);
+      [key]: totalTrainingTime > 0 ? Math.round((typeMinutes[key as keyof typeof typeMinutes] / totalTrainingTime) * 100) : 0
+    }), {} as WorkoutStats['trainingTypeBreakdown']);
 
     return {
       totalVolume: Math.round(totalVolume),
@@ -316,7 +317,7 @@ const categorizeTrainingType = (
   categories: string[],
   blockName: string,
   exerciseName: string
-): keyof typeof typeMinutes => {
+): keyof WorkoutStats['trainingTypeBreakdown'] => {
   const isPlyo = categories.some(cat => cat.toLowerCase().includes('plyometric'));
   const isSprint = categories.some(cat => cat.toLowerCase().includes('sprint')) || 
                    exerciseName.toLowerCase().includes('sprint');
