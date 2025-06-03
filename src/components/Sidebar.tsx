@@ -13,7 +13,9 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart3,
-  Play
+  Play,
+  Home,
+  Mail
 } from "lucide-react";
 
 interface SidebarProps {
@@ -76,6 +78,31 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
           })}
         </div>
       </nav>
+
+      {/* Bottom Actions */}
+      <div className="mt-auto p-4 border-t border-gray-200">
+        <div className="space-y-2">
+          {/* Return Home Button */}
+          <Link
+            to="/"
+            className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+          >
+            <Home className="h-5 w-5 flex-shrink-0" />
+            {!isCollapsed && <span>Επιστροφή στην Αρχική</span>}
+          </Link>
+
+          {/* Webmail Link */}
+          <a
+            href="https://webmail.hyperkids.gr/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+          >
+            <Mail className="h-5 w-5 flex-shrink-0" />
+            {!isCollapsed && <span>Webmail</span>}
+          </a>
+        </div>
+      </div>
     </div>
   );
 };
