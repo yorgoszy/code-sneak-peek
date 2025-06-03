@@ -91,7 +91,7 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="relative pt-16 min-h-screen flex items-center justify-center">
+      <section id="home" className="relative pt-16 min-h-screen flex items-center">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
@@ -101,20 +101,27 @@ const Index = () => {
           <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
         
-        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-            HyperKids
-          </h1>
-          <p className="text-lg sm:text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
-            Η πλατφόρμα που μεταμορφώνει την εκπαίδευση των παιδιών σας
-          </p>
-          <div className="flex justify-center space-x-4">
-            <Button 
-              className="rounded-none bg-white text-black hover:bg-gray-100" 
-              onClick={handleGetStarted}
-            >
-              {isAuthenticated ? "Πήγαινε στο Dashboard" : "Ξεκινήστε τώρα"} <ArrowRight className="ml-2" />
-            </Button>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="text-left">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+              The Champion's Journey<br />
+              <span style={{ color: '#00ffba' }}>Starts Here</span>
+            </h1>
+            <div className="flex space-x-4">
+              <Button 
+                className="rounded-none text-black hover:bg-gray-100" 
+                style={{ backgroundColor: '#00ffba' }}
+                onClick={handleGetStarted}
+              >
+                GET STARTED
+              </Button>
+              <Button 
+                variant="outline" 
+                className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black"
+              >
+                CONTACT
+              </Button>
+            </div>
           </div>
         </div>
       </section>
