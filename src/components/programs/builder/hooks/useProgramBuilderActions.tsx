@@ -1,40 +1,37 @@
-
-import { arrayMove } from '@dnd-kit/sortable';
-import { Exercise } from '../../types';
-import { ProgramStructure, Week, Day, Block, ProgramExercise } from './useProgramBuilderState';
+import { ProgramStructure } from './useProgramBuilderState';
 
 export const useProgramBuilderActions = (
   program: ProgramStructure,
-  setProgram: (program: ProgramStructure) => void,
+  updateProgram: (updates: Partial<ProgramStructure>) => void,
   generateId: () => string,
-  exercises: Exercise[]
+  exercises: any[]
 ) => {
   const addWeek = () => {
-    const newWeek: Week = {
+    const newWeek = {
       id: generateId(),
-      name: `Εβδομάδα ${program.weeks.length + 1}`,
-      week_number: program.weeks.length + 1,
+      name: `Εβδομάδα ${(program.weeks?.length || 0) + 1}`,
+      week_number: (program.weeks?.length || 0) + 1,
       days: []
     };
-    setProgram({ ...program, weeks: [...program.weeks, newWeek] });
+
+    const updatedWeeks = [...(program.weeks || []), newWeek];
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const removeWeek = (weekId: string) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.filter(w => w.id !== weekId)
-    });
+    const updatedWeeks = (program.weeks || []).filter(week => week.id !== weekId);
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const duplicateWeek = (weekId: string) => {
-    const weekToDuplicate = program.weeks.find(w => w.id === weekId);
+    const weekToDuplicate = program.weeks?.find(week => week.id === weekId);
     if (!weekToDuplicate) return;
 
-    const newWeek: Week = {
-      ...weekToDuplicate,
+    const newWeek = {
+      ...JSON.parse(JSON.stringify(weekToDuplicate)),
       id: generateId(),
       name: `${weekToDuplicate.name} (Αντίγραφο)`,
-      week_number: program.weeks.length + 1,
+      week_number: (program.weeks?.length || 0) + 1,
       days: weekToDuplicate.days.map(day => ({
         ...day,
         id: generateId(),
@@ -49,422 +46,440 @@ export const useProgramBuilderActions = (
       }))
     };
 
-    setProgram({ ...program, weeks: [...program.weeks, newWeek] });
+    const updatedWeeks = [...(program.weeks || []), newWeek];
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const updateWeekName = (weekId: string, name: string) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId ? { ...w, name } : w
-      )
-    });
+    const updatedWeeks = (program.weeks || []).map(week =>
+      week.id === weekId ? { ...week, name } : week
+    );
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const addDay = (weekId: string) => {
-    const week = program.weeks.find(w => w.id === weekId);
-    if (!week) return;
-
-    const newDay: Day = {
-      id: generateId(),
-      name: `Ημέρα ${week.days.length + 1}`,
-      day_number: week.days.length + 1,
-      blocks: []
-    };
-
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? { ...w, days: [...w.days, newDay] }
-          : w
-      )
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        const newDay = {
+          id: generateId(),
+          name: `Ημέρα ${(week.days?.length || 0) + 1}`,
+          day_number: (week.days?.length || 0) + 1,
+          blocks: []
+        };
+        return {
+          ...week,
+          days: [...(week.days || []), newDay]
+        };
+      }
+      return week;
     });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const removeDay = (weekId: string, dayId: string) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? { ...w, days: w.days.filter(d => d.id !== dayId) }
-          : w
-      )
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).filter(day => day.id !== dayId)
+        };
+      }
+      return week;
     });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const duplicateDay = (weekId: string, dayId: string) => {
-    const week = program.weeks.find(w => w.id === weekId);
-    const dayToDuplicate = week?.days.find(d => d.id === dayId);
-    if (!week || !dayToDuplicate) return;
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        const dayToDuplicate = week.days?.find(day => day.id === dayId);
+        if (!dayToDuplicate) return week;
 
-    const newDay: Day = {
-      ...dayToDuplicate,
-      id: generateId(),
-      name: `${dayToDuplicate.name} (Αντίγραφο)`,
-      day_number: week.days.length + 1,
-      blocks: dayToDuplicate.blocks.map(block => ({
-        ...block,
-        id: generateId(),
-        exercises: block.exercises.map(exercise => ({
-          ...exercise,
-          id: generateId()
-        }))
-      }))
-    };
+        const newDay = {
+          ...JSON.parse(JSON.stringify(dayToDuplicate)),
+          id: generateId(),
+          name: `${dayToDuplicate.name} (Αντίγραφο)`,
+          day_number: (week.days?.length || 0) + 1,
+          blocks: dayToDuplicate.blocks.map(block => ({
+            ...block,
+            id: generateId(),
+            exercises: block.exercises.map(exercise => ({
+              ...exercise,
+              id: generateId()
+            }))
+          }))
+        };
 
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? { ...w, days: [...w.days, newDay] }
-          : w
-      )
+        return {
+          ...week,
+          days: [...(week.days || []), newDay]
+        };
+      }
+      return week;
     });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const updateDayName = (weekId: string, dayId: string, name: string) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId ? { ...d, name } : d
-              )
-            }
-          : w
-      )
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day =>
+            day.id === dayId ? { ...day, name } : day
+          )
+        };
+      }
+      return week;
     });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const addBlock = (weekId: string, dayId: string) => {
-    const week = program.weeks.find(w => w.id === weekId);
-    const day = week?.days.find(d => d.id === dayId);
-    if (!day) return;
-
-    const newBlock: Block = {
-      id: generateId(),
-      name: `Block ${day.blocks.length + 1}`,
-      block_order: day.blocks.length + 1,
-      exercises: []
-    };
-
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? { ...d, blocks: [...d.blocks, newBlock] }
-                  : d
-              )
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              const newBlock = {
+                id: generateId(),
+                name: `Μπλοκ ${(day.blocks?.length || 0) + 1}`,
+                block_order: (day.blocks?.length || 0) + 1,
+                exercises: []
+              };
+              return {
+                ...day,
+                blocks: [...(day.blocks || []), newBlock]
+              };
             }
-          : w
-      )
+            return day;
+          })
+        };
+      }
+      return week;
     });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const removeBlock = (weekId: string, dayId: string, blockId: string) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? { ...d, blocks: d.blocks.filter(b => b.id !== blockId) }
-                  : d
-              )
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                blocks: (day.blocks || []).filter(block => block.id !== blockId)
+              };
             }
-          : w
-      )
+            return day;
+          })
+        };
+      }
+      return week;
     });
-  };
-
-  const addExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
-    const week = program.weeks.find(w => w.id === weekId);
-    const day = week?.days.find(d => d.id === dayId);
-    const block = day?.blocks.find(b => b.id === blockId);
-    if (!block) return;
-
-    const newExercise: ProgramExercise = {
-      id: generateId(),
-      exercise_id: exerciseId,
-      exercise_name: exercises.find(ex => ex.id === exerciseId)?.name || '',
-      sets: 1,
-      reps: '',
-      percentage_1rm: 0,
-      kg: '',
-      velocity_ms: '',
-      tempo: '',
-      rest: '',
-      exercise_order: block.exercises.length + 1
-    };
-
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? {
-                      ...d,
-                      blocks: d.blocks.map(b => 
-                        b.id === blockId 
-                          ? { ...b, exercises: [...b.exercises, newExercise] }
-                          : b
-                      )
-                    }
-                  : d
-              )
-            }
-          : w
-      )
-    });
-  };
-
-  const duplicateExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
-    const week = program.weeks.find(w => w.id === weekId);
-    const day = week?.days.find(d => d.id === dayId);
-    const block = day?.blocks.find(b => b.id === blockId);
-    const exerciseToDuplicate = block?.exercises.find(e => e.id === exerciseId);
-    if (!block || !exerciseToDuplicate) return;
-
-    const newExercise: ProgramExercise = {
-      ...exerciseToDuplicate,
-      id: generateId(),
-      exercise_order: block.exercises.length + 1
-    };
-
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? {
-                      ...d,
-                      blocks: d.blocks.map(b => 
-                        b.id === blockId 
-                          ? { ...b, exercises: [...b.exercises, newExercise] }
-                          : b
-                      )
-                    }
-                  : d
-              )
-            }
-          : w
-      )
-    });
-  };
-
-  const updateBlockName = (weekId: string, dayId: string, blockId: string, name: string) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? {
-                      ...d,
-                      blocks: d.blocks.map(b => 
-                        b.id === blockId ? { ...b, name } : b
-                      )
-                    }
-                  : d
-              )
-            }
-          : w
-      )
-    });
-  };
-
-  const updateExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? {
-                      ...d,
-                      blocks: d.blocks.map(b => 
-                        b.id === blockId 
-                          ? {
-                              ...b,
-                              exercises: b.exercises.map(e => 
-                                e.id === exerciseId 
-                                  ? { 
-                                      ...e, 
-                                      [field]: value,
-                                      ...(field === 'exercise_id' && {
-                                        exercise_name: exercises.find(ex => ex.id === value)?.name || ''
-                                      })
-                                    }
-                                  : e
-                              )
-                            }
-                          : b
-                      )
-                    }
-                  : d
-              )
-            }
-          : w
-      )
-    });
-  };
-
-  const removeExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? {
-                      ...d,
-                      blocks: d.blocks.map(b => 
-                        b.id === blockId 
-                          ? { ...b, exercises: b.exercises.filter(e => e.id !== exerciseId) }
-                          : b
-                      )
-                    }
-                  : d
-              )
-            }
-          : w
-      )
-    });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const duplicateBlock = (weekId: string, dayId: string, blockId: string) => {
-    const week = program.weeks.find(w => w.id === weekId);
-    const day = week?.days.find(d => d.id === dayId);
-    const blockToDuplicate = day?.blocks.find(b => b.id === blockId);
-    if (!day || !blockToDuplicate) return;
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              const blockToDuplicate = day.blocks?.find(block => block.id === blockId);
+              if (!blockToDuplicate) return day;
 
-    const newBlock: Block = {
-      ...blockToDuplicate,
-      id: generateId(),
-      name: `${blockToDuplicate.name} (Αντίγραφο)`,
-      block_order: day.blocks.length + 1,
-      exercises: blockToDuplicate.exercises.map(exercise => ({
-        ...exercise,
-        id: generateId()
-      }))
-    };
+              const newBlock = {
+                ...JSON.parse(JSON.stringify(blockToDuplicate)),
+                id: generateId(),
+                name: `${blockToDuplicate.name} (Αντίγραφο)`,
+                block_order: (day.blocks?.length || 0) + 1,
+                exercises: blockToDuplicate.exercises.map(exercise => ({
+                  ...exercise,
+                  id: generateId()
+                }))
+              };
 
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? { ...d, blocks: [...d.blocks, newBlock] }
-                  : d
-              )
+              return {
+                ...day,
+                blocks: [...(day.blocks || []), newBlock]
+              };
             }
-          : w
-      )
+            return day;
+          })
+        };
+      }
+      return week;
     });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
+  const updateBlockName = (weekId: string, dayId: string, blockId: string, name: string) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                blocks: (day.blocks || []).map(block =>
+                  block.id === blockId ? { ...block, name } : block
+                )
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
+  const addExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
+    const selectedExercise = exercises.find(ex => ex.id === exerciseId);
+    
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                blocks: (day.blocks || []).map(block => {
+                  if (block.id === blockId) {
+                    const newExercise = {
+                      id: generateId(),
+                      exercise_id: exerciseId,
+                      exercise_name: selectedExercise?.name || '',
+                      sets: '', // Αφαιρώ την προκαθορισμένη τιμή 3
+                      reps: '',
+                      percentage_1rm: '',
+                      kg: '',
+                      velocity_ms: '',
+                      tempo: '',
+                      rest: '',
+                      exercise_order: (block.exercises?.length || 0) + 1
+                    };
+                    
+                    return {
+                      ...block,
+                      exercises: [...(block.exercises || []), newExercise]
+                    };
+                  }
+                  return block;
+                })
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
+  const removeExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                blocks: (day.blocks || []).map(block => {
+                  if (block.id === blockId) {
+                    return {
+                      ...block,
+                      exercises: (block.exercises || []).filter(exercise => exercise.id !== exerciseId)
+                    };
+                  }
+                  return block;
+                })
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
+  const updateExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                blocks: (day.blocks || []).map(block => {
+                  if (block.id === blockId) {
+                    return {
+                      ...block,
+                      exercises: (block.exercises || []).map(exercise =>
+                        exercise.id === exerciseId ? { ...exercise, [field]: value } : exercise
+                      )
+                    };
+                  }
+                  return block;
+                })
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
+  const duplicateExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                blocks: (day.blocks || []).map(block => {
+                  if (block.id === blockId) {
+                    const exerciseToDuplicate = block.exercises?.find(exercise => exercise.id === exerciseId);
+                    if (!exerciseToDuplicate) return block;
+
+                    const newExercise = {
+                      ...exerciseToDuplicate,
+                      id: generateId(),
+                      exercise_order: (block.exercises?.length || 0) + 1
+                    };
+
+                    return {
+                      ...block,
+                      exercises: [...(block.exercises || []), newExercise]
+                    };
+                  }
+                  return block;
+                })
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const reorderWeeks = (oldIndex: number, newIndex: number) => {
-    const newWeeks = arrayMove(program.weeks, oldIndex, newIndex).map((week, index) => ({
+    const weeks = [...(program.weeks || [])];
+    const [reorderedItem] = weeks.splice(oldIndex, 1);
+    weeks.splice(newIndex, 0, reorderedItem);
+    
+    // Update week numbers
+    const updatedWeeks = weeks.map((week, index) => ({
       ...week,
       week_number: index + 1
     }));
-    setProgram({ ...program, weeks: newWeeks });
+    
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const reorderDays = (weekId: string, oldIndex: number, newIndex: number) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: arrayMove(w.days, oldIndex, newIndex).map((day, index) => ({
-                ...day,
-                day_number: index + 1
-              }))
-            }
-          : w
-      )
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        const days = [...(week.days || [])];
+        const [reorderedItem] = days.splice(oldIndex, 1);
+        days.splice(newIndex, 0, reorderedItem);
+        
+        // Update day numbers
+        const updatedDays = days.map((day, index) => ({
+          ...day,
+          day_number: index + 1
+        }));
+        
+        return { ...week, days: updatedDays };
+      }
+      return week;
     });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const reorderBlocks = (weekId: string, dayId: string, oldIndex: number, newIndex: number) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? {
-                      ...d,
-                      blocks: arrayMove(d.blocks, oldIndex, newIndex).map((block, index) => ({
-                        ...block,
-                        block_order: index + 1
-                      }))
-                    }
-                  : d
-              )
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              const blocks = [...(day.blocks || [])];
+              const [reorderedItem] = blocks.splice(oldIndex, 1);
+              blocks.splice(newIndex, 0, reorderedItem);
+              
+              // Update block order
+              const updatedBlocks = blocks.map((block, index) => ({
+                ...block,
+                block_order: index + 1
+              }));
+              
+              return { ...day, blocks: updatedBlocks };
             }
-          : w
-      )
+            return day;
+          })
+        };
+      }
+      return week;
     });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   const reorderExercises = (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => {
-    setProgram({
-      ...program,
-      weeks: program.weeks.map(w => 
-        w.id === weekId 
-          ? {
-              ...w,
-              days: w.days.map(d => 
-                d.id === dayId 
-                  ? {
-                      ...d,
-                      blocks: d.blocks.map(b => 
-                        b.id === blockId 
-                          ? {
-                              ...b,
-                              exercises: arrayMove(b.exercises, oldIndex, newIndex).map((exercise, index) => ({
-                                ...exercise,
-                                exercise_order: index + 1
-                              }))
-                            }
-                          : b
-                      )
-                    }
-                  : d
-              )
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          days: (week.days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                blocks: (day.blocks || []).map(block => {
+                  if (block.id === blockId) {
+                    const exercises = [...(block.exercises || [])];
+                    const [reorderedItem] = exercises.splice(oldIndex, 1);
+                    exercises.splice(newIndex, 0, reorderedItem);
+                    
+                    // Update exercise order
+                    const updatedExercises = exercises.map((exercise, index) => ({
+                      ...exercise,
+                      exercise_order: index + 1
+                    }));
+                    
+                    return { ...block, exercises: updatedExercises };
+                  }
+                  return block;
+                })
+              };
             }
-          : w
-      )
+            return day;
+          })
+        };
+      }
+      return week;
     });
+    updateProgram({ weeks: updatedWeeks });
   };
 
   return {
@@ -478,12 +493,12 @@ export const useProgramBuilderActions = (
     updateDayName,
     addBlock,
     removeBlock,
-    addExercise,
-    duplicateExercise,
-    updateBlockName,
-    updateExercise,
-    removeExercise,
     duplicateBlock,
+    updateBlockName,
+    addExercise,
+    removeExercise,
+    updateExercise,
+    duplicateExercise,
     reorderWeeks,
     reorderDays,
     reorderBlocks,
