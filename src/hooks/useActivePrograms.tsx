@@ -79,20 +79,23 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
 
       const completions = await getWorkoutCompletions(assignment.id);
       
-      // Υπολογισμός με βάση τις scheduled_date που ταιριάζουν με τις training_dates
-      const completedWorkouts = completions.filter(c => {
-        return c.status === 'completed' && 
-               assignment.training_dates.includes(c.scheduled_date);
-      }).length;
+      // Βρίσκουμε μοναδικές ημερομηνίες που έχουν ολοκληρωθεί
+      const uniqueCompletedDates = new Set();
+      completions.forEach(c => {
+        if (c.status === 'completed' && assignment.training_dates.includes(c.scheduled_date)) {
+          uniqueCompletedDates.add(c.scheduled_date);
+        }
+      });
       
+      const completedWorkouts = uniqueCompletedDates.size;
       const totalWorkouts = assignment.training_dates.length;
       
-      const progress = Math.round((completedWorkouts / totalWorkouts) * 100);
+      // Περιορίζουμε το progress στο 100%
+      const progress = Math.min(100, Math.round((completedWorkouts / totalWorkouts) * 100));
+      
       console.log(`📊 Progress for assignment ${assignment.id}: ${completedWorkouts}/${totalWorkouts} = ${progress}%`);
       console.log(`📅 Training dates:`, assignment.training_dates);
-      console.log(`✅ Completed scheduled dates:`, completions.filter(c => 
-        c.status === 'completed' && assignment.training_dates.includes(c.scheduled_date)
-      ).map(c => c.scheduled_date));
+      console.log(`✅ Unique completed dates:`, Array.from(uniqueCompletedDates));
       
       return progress;
     } catch (error) {

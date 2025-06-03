@@ -26,7 +26,16 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
       try {
         const completions = await getWorkoutCompletions(assignment.id);
         const totalWorkouts = assignment.training_dates?.length || 0;
-        const completedWorkouts = completions.filter(c => c.status === 'completed').length;
+        
+        // Μοναδικές ημερομηνίες που έχουν ολοκληρωθεί
+        const uniqueCompletedDates = new Set();
+        completions.forEach(c => {
+          if (c.status === 'completed' && assignment.training_dates?.includes(c.scheduled_date)) {
+            uniqueCompletedDates.add(c.scheduled_date);
+          }
+        });
+        
+        const completedWorkouts = uniqueCompletedDates.size;
         const missedWorkouts = completions.filter(c => c.status === 'missed').length;
         
         setWorkoutStats({

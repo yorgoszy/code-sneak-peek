@@ -59,6 +59,7 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
     
     const dateStr = assignment.training_dates[totalDayIndex];
     
+    // Ελέγχουμε αν υπάρχει τουλάχιστον μία ολοκληρωμένη προπόνηση για αυτή την ημερομηνία
     return completions.some(c => 
       c.scheduled_date === dateStr && 
       c.status === 'completed'
@@ -77,7 +78,7 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
 
   const handleDayDoubleClick = (week: any, day: any) => {
     if (isWorkoutCompleted(week.week_number, day.day_number)) {
-      console.log('Η προπόνηση έχει ήδη ολοκληρωθεί');
+      console.log('❌ Η προπόνηση έχει ήδη ολοκληρωθεί - δεν επιτρέπεται επανάληψη');
       return;
     }
     
@@ -86,7 +87,7 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
     const weekIndex = weeks.findIndex(w => w.id === week.id);
     const dayIndex = week.program_days?.findIndex((d: any) => d.id === day.id) || 0;
     
-    console.log('Έναρξη προπόνησης:', week.name, day.name, 'Week Index:', weekIndex, 'Day Index:', dayIndex);
+    console.log('✅ Έναρξη προπόνησης:', week.name, day.name, 'Week Index:', weekIndex, 'Day Index:', dayIndex);
     
     if (onStartWorkout && weekIndex >= 0) {
       onStartWorkout(weekIndex, dayIndex);
@@ -202,7 +203,12 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
                                       <CheckCircle className="w-4 h-4 text-[#00ffba]" />
                                     )}
                                   </h4>
-                                  <p className="text-xs text-gray-500 mt-1">Διπλό κλικ για έναρξη προπόνησης</p>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {isWorkoutCompleted(week.week_number, day.day_number) 
+                                      ? 'Προπόνηση ολοκληρωμένη' 
+                                      : 'Διπλό κλικ για έναρξη προπόνησης'
+                                    }
+                                  </p>
                                 </div>
                                 {day.estimated_duration_minutes && (
                                   <div className="flex items-center space-x-1 text-xs text-gray-600">
