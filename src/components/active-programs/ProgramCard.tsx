@@ -119,7 +119,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
 
   return (
     <>
-      <Card className="rounded-none hover:shadow-md transition-shadow h-12 w-96">
+      <Card className="rounded-none hover:shadow-md transition-shadow h-12 w-[450px]">
         <CardContent className="p-1.5 h-full">
           <div className="flex items-center justify-between h-full">
             {/* Left side - Avatar and Program Info */}
@@ -161,7 +161,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
                     -{workoutStats.missed}
                   </div>
                 )}
-                <div className="w-8">
+                <div className="w-12">
                   <Progress value={progressPercentage} className="h-1" />
                 </div>
                 <div className="text-xs text-gray-600 font-medium min-w-8">
