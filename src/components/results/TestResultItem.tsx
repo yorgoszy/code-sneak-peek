@@ -1,17 +1,19 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2 } from "lucide-react";
+import { Trash2, Eye, Edit } from "lucide-react";
 import { TestResult } from "./types";
 
 interface TestResultItemProps {
   test: TestResult;
   onDelete: (testId: string, tableName: string) => void;
+  onView: (test: TestResult) => void;
+  onEdit: (test: TestResult) => void;
 }
 
-export const TestResultItem = ({ test, onDelete }: TestResultItemProps) => {
+export const TestResultItem = ({ test, onDelete, onView, onEdit }: TestResultItemProps) => {
   return (
-    <div key={`${test.table_name}-${test.id}`} className="border rounded-none p-4">
+    <div className="border rounded-none p-4">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
@@ -35,6 +37,22 @@ export const TestResultItem = ({ test, onDelete }: TestResultItemProps) => {
           )}
         </div>
         <div className="flex gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onView(test)}
+            className="rounded-none text-xs"
+          >
+            <Eye className="w-3 h-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onEdit(test)}
+            className="rounded-none text-xs"
+          >
+            <Edit className="w-3 h-3" />
+          </Button>
           <Button
             size="sm"
             variant="outline"
