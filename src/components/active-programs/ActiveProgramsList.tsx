@@ -40,7 +40,9 @@ export const ActiveProgramsList: React.FC<ActiveProgramsListProps> = ({ programs
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold">Ενεργά Προγράμματα ({programs.length})</h2>
-          <Wifi className="w-4 h-4 text-green-500" title="Realtime ενημερώσεις ενεργές" />
+          <div className="flex items-center" title="Realtime ενημερώσεις ενεργές">
+            <Wifi className="w-4 h-4 text-green-500" />
+          </div>
         </div>
         <Button
           onClick={handleRefresh}

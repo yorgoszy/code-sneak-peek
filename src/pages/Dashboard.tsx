@@ -47,8 +47,8 @@ const Dashboard = () => {
       console.log('🔄 Refreshing assignments due to realtime change...');
       refetch();
       activeProgramsRefetch();
-      // Also refresh workout completions
-      getWorkoutCompletions().then(setAllCompletions);
+      // Refresh workout completions for all today's programs
+      fetchAllCompletions();
     }
   });
 
@@ -72,33 +72,33 @@ const Dashboard = () => {
 
   // Fetch completions for today's programs
   useEffect(() => {
-    const fetchAllCompletions = async () => {
-      if (todaysPrograms.length === 0) {
-        console.log('⚠️ No programs available, skipping completions fetch');
-        setAllCompletions([]);
-        return;
-      }
-
-      console.log('🔄 Fetching completions for programs:', todaysPrograms.length);
-      const completionsData: any[] = [];
-      
-      for (const program of todaysPrograms) {
-        try {
-          console.log('🔍 Fetching completions for program:', program.id);
-          const completions = await getWorkoutCompletions(program.id);
-          console.log('✅ Completions received:', completions);
-          completionsData.push(...completions.map(c => ({ ...c, assignment_id: program.id })));
-        } catch (error) {
-          console.error('❌ Error fetching completions for program:', program.id, error);
-        }
-      }
-      
-      console.log('📊 All completions data:', completionsData);
-      setAllCompletions(completionsData);
-    };
-
     fetchAllCompletions();
   }, [todaysPrograms, getWorkoutCompletions]);
+
+  const fetchAllCompletions = async () => {
+    if (todaysPrograms.length === 0) {
+      console.log('⚠️ No programs available, skipping completions fetch');
+      setAllCompletions([]);
+      return;
+    }
+
+    console.log('🔄 Fetching completions for programs:', todaysPrograms.length);
+    const completionsData: any[] = [];
+    
+    for (const program of todaysPrograms) {
+      try {
+        console.log('🔍 Fetching completions for program:', program.id);
+        const completions = await getWorkoutCompletions(program.id);
+        console.log('✅ Completions received:', completions);
+        completionsData.push(...completions.map(c => ({ ...c, assignment_id: program.id })));
+      } catch (error) {
+        console.error('❌ Error fetching completions for program:', program.id, error);
+      }
+    }
+    
+    console.log('📊 All completions data:', completionsData);
+    setAllCompletions(completionsData);
+  };
 
   const fetchDashboardStats = async () => {
     try {
