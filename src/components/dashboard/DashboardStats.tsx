@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Activity, UserPlus, Dumbbell } from "lucide-react";
+import { Users, Activity, UserPlus } from "lucide-react";
 
 interface DashboardStatsProps {
   stats: {
@@ -32,17 +32,11 @@ export const DashboardStats = ({ stats }: DashboardStatsProps) => {
       value: stats.newUsersThisMonth,
       icon: UserPlus,
       color: "text-green-600"
-    },
-    {
-      title: "Ενεργά Προγράμματα",
-      value: stats.activePrograms,
-      icon: Dumbbell,
-      color: "text-purple-600"
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
       {statCards.map((stat, index) => {
         const IconComponent = stat.icon;
         return (
