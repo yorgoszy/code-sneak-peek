@@ -71,14 +71,14 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
           indicatorColor={getStatusColor()}
           className="h-6 bg-gray-200 rounded-none"
         />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-2">
+        <div className="absolute inset-0 flex items-center justify-between px-2">
           {showProgress ? (
             <>
-              <span className="text-xs font-medium text-white leading-tight">
-                {completed}/{total}
-              </span>
-              <span className="text-xs text-white/80 leading-tight">
+              <span className="text-xs text-white/80">
                 {userName.split(' ')[0]}
+              </span>
+              <span className="text-xs font-medium text-white">
+                {completed}/{total}
               </span>
             </>
           ) : (
