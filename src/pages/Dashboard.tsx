@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Heart } from "lucide-react";
@@ -28,8 +27,12 @@ const Dashboard = () => {
   });
   const [allCompletions, setAllCompletions] = useState<any[]>([]);
 
-  // Get today's programs for admin
+  // Get today's programs for admin (include completed for calendar view)
   const { programs: todaysPrograms, refetch } = useActivePrograms(true);
+  
+  // Get active programs for list (exclude completed)
+  const { programs: activePrograms, refetch: activeProgramsRefetch } = useActivePrograms(false);
+  
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   useEffect(() => {
@@ -182,8 +185,10 @@ const Dashboard = () => {
           <DashboardContent
             isAdmin={isAdmin}
             todaysPrograms={todaysPrograms}
+            activePrograms={activePrograms}
             allCompletions={allCompletions}
             onRefresh={refetch}
+            onActiveProgramsRefresh={activeProgramsRefetch}
           />
         </div>
       </div>
