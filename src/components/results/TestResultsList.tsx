@@ -16,7 +16,7 @@ export const TestResultsList = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [testTypeFilter, setTestTypeFilter] = useState("");
+  const [testTypeFilter, setTestTypeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
 
   const handleView = (test: TestResult) => {
@@ -37,7 +37,7 @@ export const TestResultsList = () => {
   const filteredTests = testResults.filter(test => {
     const matchesSearch = test.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          test.test_type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = !testTypeFilter || test.test_type === testTypeFilter;
+    const matchesType = testTypeFilter === "all" || test.test_type === testTypeFilter;
     const matchesDate = !dateFilter || test.test_date === dateFilter;
     
     return matchesSearch && matchesType && matchesDate;
@@ -93,7 +93,7 @@ export const TestResultsList = () => {
                   <SelectValue placeholder="Όλα τα τεστ" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Όλα τα τεστ</SelectItem>
+                  <SelectItem value="all">Όλα τα τεστ</SelectItem>
                   {testTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
