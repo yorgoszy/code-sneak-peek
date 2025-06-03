@@ -11,7 +11,7 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
   const [programs, setPrograms] = useState<EnrichedAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { fetchMultipleCompletions, calculateWorkoutStats, clearCache } = useWorkoutCompletionsCache();
+  const { fetchMultipleCompletions, calculateWorkoutStats, clearCache, getWorkoutCompletions } = useWorkoutCompletionsCache();
 
   useEffect(() => {
     console.log('=== USER DEBUG INFO ===');
@@ -116,7 +116,7 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
       // Calculate progress for each program using cached data
       const programsWithProgress = await Promise.all(
         validPrograms.map(async (program) => {
-          const completions = await fetchMultipleCompletions([program.id]);
+          const completions = await getWorkoutCompletions(program.id);
           const stats = calculateWorkoutStats(completions, program.training_dates || []);
           return { ...program, progress: stats.progress };
         })

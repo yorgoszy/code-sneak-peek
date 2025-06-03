@@ -29,7 +29,11 @@ export const useWorkoutCompletionsCache = () => {
 
       if (error) throw error;
 
-      const completions = data || [];
+      // Type cast the data to ensure status is properly typed
+      const completions = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'completed' | 'missed' | 'makeup'
+      })) as WorkoutCompletion[];
       
       // Αποθηκεύουμε στο cache
       setCompletionsCache(prev => new Map(prev.set(assignmentId, completions)));
@@ -72,7 +76,7 @@ export const useWorkoutCompletionsCache = () => {
   }, []);
 
   // Bulk fetch για πολλαπλά assignments
-  const fetchMultipleCompletions = useCallback(async (assignmentIds: string[]) => {
+  const fetchMultipleCompletions = useCallback(async (assignmentIds: string[]): Promise<void> => {
     setLoading(true);
     try {
       // Φιλτράρουμε μόνο τα IDs που δεν υπάρχουν στο cache
@@ -91,12 +95,17 @@ export const useWorkoutCompletionsCache = () => {
 
       if (error) throw error;
 
-      // Ομαδοποιούμε τα αποτελέσματα ανά assignment_id
+      // Type cast and group the results by assignment_id
       const groupedCompletions = (data || []).reduce((acc, completion) => {
+        const typedCompletion = {
+          ...completion,
+          status: completion.status as 'completed' | 'missed' | 'makeup'
+        } as WorkoutCompletion;
+        
         if (!acc[completion.assignment_id]) {
           acc[completion.assignment_id] = [];
         }
-        acc[completion.assignment_id].push(completion);
+        acc[completion.assignment_id].push(typedCompletion);
         return acc;
       }, {} as Record<string, WorkoutCompletion[]>);
 
