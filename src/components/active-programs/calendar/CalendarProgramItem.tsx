@@ -28,15 +28,10 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
     return 'bg-blue-500';
   };
 
-  const getStatusText = () => {
-    if (workoutStatus === 'completed') return 'Ολοκληρώθηκε';
-    if (workoutStatus === 'missed') return 'Απουσία';
-    return program.programs?.name || 'Πρόγραμμα';
-  };
-
   // Υπολογισμός progress
   const progressPercentage = program.progress || 0;
   const userName = program.app_users?.name || 'Άγνωστος χρήστης';
+  const programName = program.programs?.name || 'Πρόγραμμα';
 
   return (
     <div 
@@ -44,30 +39,22 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
       onClick={onClick}
     >
       <div className="space-y-1">
-        {/* Όνομα προγράμματος και χρήστη */}
-        <div className="font-medium truncate">
-          {program.programs?.name || 'Πρόγραμμα'}
-        </div>
+        {/* Όνομα χρήστη */}
         <div className="text-xs opacity-90 truncate">
           {userName.split(' ')[0]}
         </div>
         
-        {/* Progress bar */}
-        <div className="flex items-center space-x-2">
-          <div className="flex-1">
-            <Progress 
-              value={progressPercentage} 
-              className="h-1 bg-white/20"
-            />
+        {/* Progress bar με το όνομα του προγράμματος μέσα */}
+        <div className="relative">
+          <Progress 
+            value={progressPercentage} 
+            className="h-4 bg-white/20"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-xs font-medium text-white truncate px-1">
+              {programName}
+            </span>
           </div>
-          <span className="text-xs font-medium min-w-8">
-            {progressPercentage}%
-          </span>
-        </div>
-
-        {/* Status */}
-        <div className="text-xs opacity-90">
-          {getStatusText()}
         </div>
       </div>
     </div>
