@@ -45,7 +45,7 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none">
+      <DialogContent className="max-w-7xl max-h-[80vh] overflow-y-auto rounded-none">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>{program.name}</span>
@@ -59,56 +59,56 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Εβδομάδες Tabs */}
-          <Tabs value={selectedWeekIndex.toString()} onValueChange={(value) => setSelectedWeekIndex(parseInt(value))}>
-            <TabsList className="grid grid-cols-auto w-full rounded-none">
-              {weeks.map((week, index) => (
-                <TabsTrigger key={week.id} value={index.toString()} className="rounded-none">
-                  {week.name || `Εβδομάδα ${week.week_number}`}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
+          {/* Εβδομάδες - Οριζόντια Layout */}
+          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }}>
             {weeks.map((week, weekIndex) => (
-              <TabsContent key={week.id} value={weekIndex.toString()} className="mt-4">
-                {/* Ημέρες Tabs */}
-                <Tabs defaultValue="0" className="w-full">
-                  <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${days.length}, 1fr)` }}>
-                    {days.map((day, dayIndex) => (
-                      <TabsTrigger key={day.id} value={dayIndex.toString()} className="rounded-none">
-                        {day.name || `Ημέρα ${day.day_number}`}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+              <div key={week.id} className="border border-gray-200 rounded-none">
+                <div className="bg-gray-50 p-3 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-900">
+                    {week.name || `Εβδομάδα ${week.week_number}`}
+                  </h3>
+                </div>
+                
+                <div className="p-3">
+                  {/* Ημέρες Tabs για αυτή την εβδομάδα */}
+                  <Tabs defaultValue="0" className="w-full">
+                    <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${week.program_days?.length || 1}, 1fr)` }}>
+                      {week.program_days?.map((day, dayIndex) => (
+                        <TabsTrigger key={day.id} value={dayIndex.toString()} className="rounded-none text-xs">
+                          {day.name || `Ημέρα ${day.day_number}`}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
 
-                  {days.map((day, dayIndex) => (
-                    <TabsContent key={day.id} value={dayIndex.toString()} className="mt-4">
-                      <div className="bg-white border border-gray-200 rounded-none p-4">
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-                              <Dumbbell className="h-5 w-5" />
-                              <span>{day.name || `Ημέρα ${day.day_number}`}</span>
-                            </h3>
-                          </div>
-                          {day.estimated_duration_minutes && (
-                            <div className="flex items-center space-x-1 text-sm text-gray-600">
-                              <Clock className="h-4 w-4" />
-                              <span>{day.estimated_duration_minutes} λεπτά</span>
+                    {week.program_days?.map((day, dayIndex) => (
+                      <TabsContent key={day.id} value={dayIndex.toString()} className="mt-4">
+                        <div className="bg-white border border-gray-200 rounded-none p-3">
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <h4 className="text-sm font-semibold text-gray-900 flex items-center space-x-2">
+                                <Dumbbell className="h-4 w-4" />
+                                <span>{day.name || `Ημέρα ${day.day_number}`}</span>
+                              </h4>
                             </div>
-                          )}
-                        </div>
+                            {day.estimated_duration_minutes && (
+                              <div className="flex items-center space-x-1 text-xs text-gray-600">
+                                <Clock className="h-3 w-3" />
+                                <span>{day.estimated_duration_minutes} λεπτά</span>
+                              </div>
+                            )}
+                          </div>
 
-                        <div className="space-y-2">
-                          <ExerciseBlock blocks={day.program_blocks} />
+                          <div className="space-y-2">
+                            <ExerciseBlock blocks={day.program_blocks} />
+                          </div>
                         </div>
-                      </div>
-                    </TabsContent>
-                  ))}
-                </Tabs>
-              </TabsContent>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                </div>
+              </div>
             ))}
-          </Tabs>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
