@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 import { CalendarProgramItem } from './CalendarProgramItem';
 import { DayProgramDialog } from './DayProgramDialog';
+import { DayAllProgramsDialog } from './DayAllProgramsDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface CalendarDayProps {
@@ -25,6 +26,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     date: Date;
     status: string;
   } | null>(null);
+  
+  const [showAllPrograms, setShowAllPrograms] = useState(false);
 
   const isCurrentMonth = isSameMonth(day, currentDate);
   const isDayToday = isToday(day);
@@ -54,7 +57,6 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     console.log('🔍 Getting workout status for program:', program.id, 'day:', dayString);
     console.log('🔍 Available completions:', allCompletions.filter(c => c.assignment_id === program.id));
     
-    // Ελέγχουμε αν υπάρχει completion για αυτή την ημέρα και assignment
     const completion = allCompletions.find(c => 
       c.assignment_id === program.id && 
       c.scheduled_date === dayString
@@ -64,11 +66,11 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
 
     if (completion) {
       console.log('✅ Completion status:', completion.status);
-      return completion.status; // 'completed', 'missed', 'makeup'
+      return completion.status;
     }
 
     console.log('📝 No completion found, returning scheduled');
-    return 'scheduled'; // Προγραμματισμένη αλλά όχι ολοκληρωμένη
+    return 'scheduled';
   };
 
   const handleProgramClick = (program: EnrichedAssignment) => {
@@ -78,6 +80,15 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       date: day,
       status: workoutStatus
     });
+  };
+
+  const handleDayClick = () => {
+    const dayPrograms = getProgramsForDay(day);
+    if (dayPrograms.length > 1) {
+      setShowAllPrograms(true);
+    } else if (dayPrograms.length === 1) {
+      handleProgramClick(dayPrograms[0]);
+    }
   };
 
   const dayPrograms = getProgramsForDay(day);
@@ -91,15 +102,23 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           ${isDayToday ? 'ring-2 ring-blue-500' : ''}
         `}
       >
-        <div className={`
-          text-sm font-medium mb-1
-          ${isDayToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
-        `}>
+        <div 
+          className={`
+            text-sm font-medium mb-1 cursor-pointer hover:bg-gray-100 px-1 py-0.5 rounded-none
+            ${isDayToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
+          `}
+          onClick={handleDayClick}
+        >
           {format(day, 'd')}
+          {dayPrograms.length > 1 && (
+            <span className="ml-1 text-xs bg-gray-200 text-gray-600 px-1 py-0.5 rounded-none">
+              {dayPrograms.length}
+            </span>
+          )}
         </div>
         
         <div className="space-y-1">
-          {dayPrograms.map((program) => {
+          {dayPrograms.slice(0, 2).map((program) => {
             const workoutStatus = getWorkoutStatus(program, dayString);
             
             return (
@@ -112,6 +131,15 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
               />
             );
           })}
+          
+          {dayPrograms.length > 2 && (
+            <div 
+              className="text-xs text-gray-500 text-center cursor-pointer hover:text-gray-700"
+              onClick={handleDayClick}
+            >
+              +{dayPrograms.length - 2} ακόμη
+            </div>
+          )}
         </div>
       </div>
 
@@ -125,6 +153,15 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           onRefresh={onRefresh}
         />
       )}
+
+      <DayAllProgramsDialog
+        isOpen={showAllPrograms}
+        onClose={() => setShowAllPrograms(false)}
+        selectedDate={day}
+        programs={programs}
+        allCompletions={allCompletions}
+        onProgramClick={handleProgramClick}
+      />
     </>
   );
 };
