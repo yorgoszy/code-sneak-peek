@@ -258,9 +258,9 @@ export const useProgramBuilderActions = (
                       id: generateId(),
                       exercise_id: exerciseId,
                       exercise_name: selectedExercise?.name || '',
-                      sets: 0, // Changed to 0 instead of empty string to maintain number type
+                      sets: 0, // Keep as number type but will show as empty in form
                       reps: '',
-                      percentage_1rm: 0,
+                      percentage_1rm: 0, // Keep as number type but will show as empty in form
                       kg: '',
                       velocity_ms: '',
                       tempo: '',
