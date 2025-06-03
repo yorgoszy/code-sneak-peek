@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,7 +166,6 @@ const Auth = () => {
           <Link to="/" className="inline-flex items-center justify-center">
             <img src="/lovable-uploads/bafc2832-366b-43ee-a1c6-3e3ea94f5dbb.png" alt="HYPERKIDS" className="h-16" />
           </Link>
-          <p className="text-gray-600 mt-2">Καλώς ήρθατε πίσω!</p>
         </div>
 
         <Card>
@@ -190,7 +190,11 @@ const Auth = () => {
                     required 
                   />
                 </div>
-                <Button type="submit" className="w-full rounded-none" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full rounded-none bg-[#00ffba] text-black hover:bg-transparent hover:border-white hover:text-white border-2 border-transparent transition-all duration-300" 
+                  disabled={isLoading}
+                >
                   {isLoading ? "Αποστολή..." : "Αποστολή Email Επαναφοράς"}
                 </Button>
                 <Button 
@@ -219,7 +223,11 @@ const Auth = () => {
                       <Label htmlFor="password">Κωδικός</Label>
                       <Input id="password" name="password" type="password" required />
                     </div>
-                    <Button type="submit" className="w-full rounded-none" disabled={isLoading}>
+                    <Button 
+                      type="submit" 
+                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-transparent hover:border-white hover:text-white border-2 border-transparent transition-all duration-300" 
+                      disabled={isLoading}
+                    >
                       {isLoading ? "Σύνδεση..." : "Σύνδεση"}
                     </Button>
                     <div className="text-center">
@@ -248,7 +256,11 @@ const Auth = () => {
                       <Label htmlFor="signup-password">Κωδικός</Label>
                       <Input id="signup-password" name="signup-password" type="password" required />
                     </div>
-                    <Button type="submit" className="w-full rounded-none" disabled={isLoading}>
+                    <Button 
+                      type="submit" 
+                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-transparent hover:border-white hover:text-white border-2 border-transparent transition-all duration-300" 
+                      disabled={isLoading}
+                    >
                       {isLoading ? "Εγγραφή..." : "Εγγραφή"}
                     </Button>
                   </form>
