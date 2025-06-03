@@ -1,5 +1,4 @@
 
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -188,6 +187,22 @@ const Index = () => {
           background-color: #00ffba !important;
           border-color: #00ffba !important;
         }
+        .login-btn {
+          background-color: #00ffba !important;
+          border-color: #00ffba !important;
+          color: black !important;
+        }
+        .login-btn:hover {
+          background-color: #00e6a6 !important;
+          border-color: #00e6a6 !important;
+        }
+        .get-started-btn {
+          background-color: #00ffba !important;
+          color: black !important;
+        }
+        .get-started-btn:hover {
+          background-color: #00e6a6 !important;
+        }
         .carousel-btn {
           border: none !important;
           background: transparent !important;
@@ -263,7 +278,7 @@ const Index = () => {
                       <Globe className="h-4 w-4" />
                     </Button>
                     <Link to="/auth">
-                      <Button variant="outline" className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black">
+                      <Button className="login-btn rounded-none transition-colors duration-200">
                         {t.login}
                       </Button>
                     </Link>
@@ -294,8 +309,7 @@ const Index = () => {
             </h1>
             <div className="flex space-x-4">
               <Button 
-                className="rounded-none text-black hover:bg-gray-100" 
-                style={{ backgroundColor: '#00ffba' }}
+                className="get-started-btn rounded-none transition-colors duration-200" 
                 onClick={handleGetStarted}
               >
                 {t.getStarted}
@@ -473,4 +487,3 @@ const Index = () => {
 };
 
 export default Index;
-

@@ -1285,13 +1285,6 @@ export type Database = {
             foreignKeyName: "fk_program_assignments_program_id"
             columns: ["program_id"]
             isOneToOne: false
-            referencedRelation: "program_templates"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_program_assignments_program_id"
-            columns: ["program_id"]
-            isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id"]
           },
@@ -1300,13 +1293,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "program_assignments_program_id_fkey"
-            columns: ["program_id"]
-            isOneToOne: false
-            referencedRelation: "program_templates"
             referencedColumns: ["id"]
           },
           {
@@ -1513,13 +1499,6 @@ export type Database = {
           week_number?: number
         }
         Relationships: [
-          {
-            foreignKeyName: "program_weeks_program_id_fkey"
-            columns: ["program_id"]
-            isOneToOne: false
-            referencedRelation: "program_templates"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "program_weeks_program_id_fkey"
             columns: ["program_id"]
@@ -2158,13 +2137,6 @@ export type Database = {
             foreignKeyName: "workout_completions_program_id_fkey"
             columns: ["program_id"]
             isOneToOne: false
-            referencedRelation: "program_templates"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workout_completions_program_id_fkey"
-            columns: ["program_id"]
-            isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id"]
           },
@@ -2179,39 +2151,7 @@ export type Database = {
       }
     }
     Views: {
-      program_templates: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          days_count: number | null
-          description: string | null
-          duration: number | null
-          exercises_count: number | null
-          id: string | null
-          is_template: boolean | null
-          name: string | null
-          status: string | null
-          type: string | null
-          updated_at: string | null
-          weeks_count: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_programs_created_by"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "programs_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       admin_delete_athlete: {
