@@ -87,7 +87,7 @@ export const QuickActions = () => {
 
       <ProgramBuilderDialog
         open={programDialogOpen}
-        onOpenChange={setProgramDialogOpen}
+        onOpenChange={() => setProgramDialogOpen(false)}
       />
 
       <AddExerciseDialog
