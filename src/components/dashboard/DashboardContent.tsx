@@ -30,20 +30,20 @@ export const DashboardContent = ({
       <div className="space-y-6">
         <QuickActions />
         
-        {/* Active Programs List for Admin */}
-        {isAdmin && (
-          <ActiveProgramsList 
-            programs={activePrograms} 
-            onRefresh={onActiveProgramsRefresh} 
-          />
-        )}
-        
         {/* Today's Programs Section for Admin */}
         {isAdmin && (
           <TodaysProgramsCard
             todaysPrograms={todaysPrograms}
             allCompletions={allCompletions}
             onRefresh={onRefresh}
+          />
+        )}
+        
+        {/* Active Programs List for Admin - moved below today's programs */}
+        {isAdmin && (
+          <ActiveProgramsList 
+            programs={activePrograms} 
+            onRefresh={onActiveProgramsRefresh} 
           />
         )}
       </div>
