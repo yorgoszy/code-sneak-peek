@@ -8,6 +8,7 @@ import { Clock, Dumbbell, CheckCircle, Play } from "lucide-react";
 import { ExerciseBlock } from "@/components/user-profile/daily-program/ExerciseBlock";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { DaySelector } from './DaySelector';
+import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramViewDialogProps {
@@ -45,18 +46,32 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
   };
 
   const isWorkoutCompleted = (weekNumber: number, dayNumber: number) => {
+    // Χρησιμοποιούμε την ίδια λογική με το useActivePrograms
+    if (!assignment?.training_dates) return false;
+    
+    const program = assignment.programs;
+    if (!program?.program_weeks?.[0]?.program_days) return false;
+    
+    const daysPerWeek = program.program_weeks[0].program_days.length;
+    const totalDayIndex = ((weekNumber - 1) * daysPerWeek) + (dayNumber - 1);
+    
+    if (totalDayIndex >= assignment.training_dates.length) return false;
+    
+    const dateStr = assignment.training_dates[totalDayIndex];
+    
     return completions.some(c => 
-      c.week_number === weekNumber && 
-      c.day_number === dayNumber && 
+      c.scheduled_date === dateStr && 
       c.status === 'completed'
     );
   };
 
   const isWeekCompleted = (weekNumber: number, totalDaysInWeek: number) => {
-    const completedDays = completions.filter(c => 
-      c.week_number === weekNumber && 
-      c.status === 'completed'
-    ).length;
+    let completedDays = 0;
+    for (let dayNumber = 1; dayNumber <= totalDaysInWeek; dayNumber++) {
+      if (isWorkoutCompleted(weekNumber, dayNumber)) {
+        completedDays++;
+      }
+    }
     return completedDays === totalDaysInWeek;
   };
 

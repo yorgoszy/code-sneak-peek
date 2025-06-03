@@ -78,11 +78,21 @@ export const useActivePrograms = (includeCompleted: boolean = false) => {
       }
 
       const completions = await getWorkoutCompletions(assignment.id);
-      const completedWorkouts = completions.filter(c => c.status === 'completed').length;
+      
+      // Υπολογισμός με βάση τις scheduled_date που ταιριάζουν με τις training_dates
+      const completedWorkouts = completions.filter(c => {
+        return c.status === 'completed' && 
+               assignment.training_dates.includes(c.scheduled_date);
+      }).length;
+      
       const totalWorkouts = assignment.training_dates.length;
       
       const progress = Math.round((completedWorkouts / totalWorkouts) * 100);
       console.log(`📊 Progress for assignment ${assignment.id}: ${completedWorkouts}/${totalWorkouts} = ${progress}%`);
+      console.log(`📅 Training dates:`, assignment.training_dates);
+      console.log(`✅ Completed scheduled dates:`, completions.filter(c => 
+        c.status === 'completed' && assignment.training_dates.includes(c.scheduled_date)
+      ).map(c => c.scheduled_date));
       
       return progress;
     } catch (error) {
