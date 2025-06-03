@@ -14,13 +14,17 @@ interface CalendarProgramItemProps {
   workoutStatus: any;
   allCompletions: any[];
   onClick: () => void;
+  showProgress?: boolean;
+  progressValue?: number;
 }
 
 export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   program,
   workoutStatus,
   allCompletions,
-  onClick
+  onClick,
+  showProgress = false,
+  progressValue = 100
 }) => {
   const getStatusColor = () => {
     if (workoutStatus === 'completed') return '#48926c'; // Πράσινο
@@ -37,14 +41,19 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
     >
       <div className="relative">
         <Progress 
-          value={100}
+          value={showProgress ? progressValue : 100}
           indicatorColor={getStatusColor()}
           className="h-5 bg-gray-200 rounded-none"
         />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-medium text-white truncate px-2">
+        <div className="absolute inset-0 flex items-center justify-between px-2">
+          <span className="text-xs font-medium text-white truncate">
             {userName.split(' ')[0]}
           </span>
+          {showProgress && (
+            <span className="text-xs font-medium text-white">
+              {progressValue}%
+            </span>
+          )}
         </div>
       </div>
     </div>

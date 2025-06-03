@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 import { CalendarProgramItem } from './CalendarProgramItem';
 import { DayProgramDialog } from './DayProgramDialog';
 import { DayAllProgramsDialog } from './DayAllProgramsDialog';
-import { Progress } from "@/components/ui/progress";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface CalendarDayProps {
@@ -132,22 +130,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           )}
         </div>
         
-        {/* Today's progress bar */}
-        {isDayToday && dayPrograms.length > 0 && (
-          <div className="mb-2">
-            <Progress 
-              value={todaysProgress}
-              indicatorColor="#48926c"
-              className="h-2 bg-gray-200 rounded-none"
-            />
-            <div className="text-xs text-center text-gray-600 mt-1">
-              {todaysProgress}% ολοκληρωμένο
-            </div>
-          </div>
-        )}
-        
         <div className="space-y-1">
-          {dayPrograms.slice(0, 2).map((program) => {
+          {dayPrograms.slice(0, 2).map((program, index) => {
             const workoutStatus = getWorkoutStatus(program, dayString);
             
             return (
@@ -157,6 +141,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
                 workoutStatus={workoutStatus}
                 allCompletions={allCompletions}
                 onClick={() => handleProgramClick(program)}
+                showProgress={isDayToday && index === 0}
+                progressValue={isDayToday && index === 0 ? todaysProgress : 100}
               />
             );
           })}
