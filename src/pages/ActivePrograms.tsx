@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { ActiveProgramsList } from "@/components/active-programs/ActiveProgramsList";
+import { CompletedProgramsList } from "@/components/active-programs/CompletedProgramsList";
 import { ProgramCalendar } from "@/components/active-programs/ProgramCalendar";
 
 const ActivePrograms = () => {
@@ -17,8 +18,11 @@ const ActivePrograms = () => {
   
   // Για το ημερολόγιο: όλα τα προγράμματα (includeCompleted = true)
   const { programs: calendarPrograms, loading: calendarLoading, refetch: calendarRefetch } = useActivePrograms(true);
+  
+  // Για τα ολοκληρωμένα: όλα τα προγράμματα και φιλτράρουμε τα ολοκληρωμένα
+  const completedPrograms = calendarPrograms.filter(program => program.progress === 100);
 
-  console.log('📋 ActivePrograms - listPrograms:', listPrograms.length, 'calendarPrograms:', calendarPrograms.length);
+  console.log('📋 ActivePrograms - listPrograms:', listPrograms.length, 'calendarPrograms:', calendarPrograms.length, 'completedPrograms:', completedPrograms.length);
 
   const handleListRefresh = async () => {
     console.log('🔄 Refreshing list programs data...');
@@ -27,6 +31,11 @@ const ActivePrograms = () => {
 
   const handleCalendarRefresh = async () => {
     console.log('🔄 Refreshing calendar programs data...');
+    await calendarRefetch();
+  };
+
+  const handleRefreshAll = async () => {
+    await listRefetch();
     await calendarRefetch();
   };
 
@@ -60,11 +69,19 @@ const ActivePrograms = () => {
             </TabsList>
             
             <TabsContent value="list" className="mt-6">
-              <Card className="rounded-none">
-                <CardContent className="p-6">
-                  <ActiveProgramsList programs={listPrograms} onRefresh={handleListRefresh} />
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <Card className="rounded-none">
+                  <CardContent className="p-6">
+                    <ActiveProgramsList programs={listPrograms} onRefresh={handleListRefresh} />
+                  </CardContent>
+                </Card>
+                
+                <Card className="rounded-none">
+                  <CardContent className="p-6">
+                    <CompletedProgramsList programs={completedPrograms} onRefresh={handleRefreshAll} />
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
             
             <TabsContent value="calendar" className="mt-6">
