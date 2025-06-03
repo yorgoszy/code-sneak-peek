@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -209,8 +208,14 @@ const Index = () => {
               <button 
                 className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 h-8 w-8 flex items-center justify-center"
                 onClick={() => {
-                  const carousel = document.querySelector('[data-carousel="previous"]');
-                  if (carousel) carousel.click();
+                  const carousel = document.querySelector('[data-carousel="previous"]') as HTMLButtonElement;
+                  if (carousel) {
+                    carousel.dispatchEvent(new MouseEvent('click', {
+                      bubbles: true,
+                      cancelable: true,
+                      view: window
+                    }));
+                  }
                 }}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -218,8 +223,14 @@ const Index = () => {
               <button 
                 className="carousel-btn rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 h-8 w-8 flex items-center justify-center"
                 onClick={() => {
-                  const carousel = document.querySelector('[data-carousel="next"]');
-                  if (carousel) carousel.click();
+                  const carousel = document.querySelector('[data-carousel="next"]') as HTMLButtonElement;
+                  if (carousel) {
+                    carousel.dispatchEvent(new MouseEvent('click', {
+                      bubbles: true,
+                      cancelable: true,
+                      view: window
+                    }));
+                  }
                 }}
               >
                 <ChevronRight className="h-4 w-4" />
