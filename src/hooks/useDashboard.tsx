@@ -5,9 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardStats {
   totalUsers: number;
-  activePrograms: number;
-  totalExercises: number;
+  activeUsers: number;
   newUsersThisMonth: number;
+  activePrograms: number;
 }
 
 export const useDashboard = () => {
@@ -15,27 +15,41 @@ export const useDashboard = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
-    activePrograms: 0,
-    totalExercises: 0,
-    newUsersThisMonth: 0
+    activeUsers: 0,
+    newUsersThisMonth: 0,
+    activePrograms: 0
   });
 
   const fetchDashboardStats = async () => {
     try {
-      // Μόνο βασικά stats - παράλληλα για ταχύτητα
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      // Παράλληλα queries για ταχύτητα
       const [
         { count: totalUsers },
-        { count: totalExercises }
+        { count: newUsersThisMonth },
+        { count: activePrograms },
+        { data: recentActiveUsers }
       ] = await Promise.all([
         supabase.from('app_users').select('*', { count: 'exact', head: true }),
-        supabase.from('exercises').select('*', { count: 'exact', head: true })
+        supabase.from('app_users').select('*', { count: 'exact', head: true }).gte('created_at', startOfMonth.toISOString()),
+        supabase.from('program_assignments').select('*', { count: 'exact', head: true }).gte('end_date', new Date().toISOString()),
+        supabase.from('workout_completions').select('user_id').gte('created_at', thirtyDaysAgo.toISOString())
       ]);
+
+      // Υπολογισμός ενεργών χρηστών από τα workout completions
+      const uniqueActiveUsers = new Set(recentActiveUsers?.map(item => item.user_id) || []);
 
       setStats({
         totalUsers: totalUsers || 0,
-        activePrograms: 0, // Θα φορτωθεί lazy
-        totalExercises: totalExercises || 0,
-        newUsersThisMonth: 0 // Θα φορτωθεί lazy
+        activeUsers: uniqueActiveUsers.size,
+        newUsersThisMonth: newUsersThisMonth || 0,
+        activePrograms: activePrograms || 0
       });
 
     } catch (error) {
