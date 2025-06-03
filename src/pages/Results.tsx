@@ -26,6 +26,24 @@ const Results = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  // Dummy data for charts - replace with real data later
+  const loadVelocityData = [
+    { exerciseName: "Squat", velocity: 0.5, weight: 100, date: "2024-01-01" },
+    { exerciseName: "Squat", velocity: 0.6, weight: 90, date: "2024-01-15" },
+  ];
+
+  const functionalData = {
+    fms_score: 15,
+    previous_fms_score: 12,
+    muscles_need_stretching: ["Hamstrings", "Hip flexors"],
+    muscles_need_strengthening: ["Glutes", "Core"],
+    sit_and_reach: 25,
+    shoulder_mobility_left: 180,
+    shoulder_mobility_right: 175,
+    flamingo_balance: 30,
+    posture_assessment: "Καλή γενική στάση με ελαφρά κύφωση"
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
@@ -55,11 +73,11 @@ const Results = () => {
             </TabsContent>
 
             <TabsContent value="strength" className="mt-6">
-              <LoadVelocityChart />
+              <LoadVelocityChart data={loadVelocityData} exerciseName="Squat" />
             </TabsContent>
 
             <TabsContent value="functional" className="mt-6">
-              <FunctionalTestResults />
+              <FunctionalTestResults data={functionalData} />
             </TabsContent>
           </Tabs>
         </div>

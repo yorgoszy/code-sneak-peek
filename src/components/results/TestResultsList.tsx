@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Eye } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -156,10 +156,40 @@ export const TestResultsList = () => {
 
   const deleteTest = async (testId: string, tableName: string) => {
     try {
-      const { error } = await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', testId);
+      let error;
+      
+      // Use specific table names instead of dynamic ones
+      if (tableName === 'strength_test_sessions') {
+        const result = await supabase
+          .from('strength_test_sessions')
+          .delete()
+          .eq('id', testId);
+        error = result.error;
+      } else if (tableName === 'anthropometric_test_sessions') {
+        const result = await supabase
+          .from('anthropometric_test_sessions')
+          .delete()
+          .eq('id', testId);
+        error = result.error;
+      } else if (tableName === 'functional_test_sessions') {
+        const result = await supabase
+          .from('functional_test_sessions')
+          .delete()
+          .eq('id', testId);
+        error = result.error;
+      } else if (tableName === 'endurance_test_sessions') {
+        const result = await supabase
+          .from('endurance_test_sessions')
+          .delete()
+          .eq('id', testId);
+        error = result.error;
+      } else if (tableName === 'jump_test_sessions') {
+        const result = await supabase
+          .from('jump_test_sessions')
+          .delete()
+          .eq('id', testId);
+        error = result.error;
+      }
 
       if (error) throw error;
 
