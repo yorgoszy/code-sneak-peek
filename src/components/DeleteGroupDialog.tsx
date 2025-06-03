@@ -38,6 +38,8 @@ export const DeleteGroupDialog = ({ isOpen, onClose, onGroupDeleted, group }: De
     setLoading(true);
 
     try {
+      console.log('Deleting group:', group.id);
+      
       // First delete group members
       const { error: membersError } = await supabase
         .from('group_members')
@@ -46,29 +48,44 @@ export const DeleteGroupDialog = ({ isOpen, onClose, onGroupDeleted, group }: De
 
       if (membersError) {
         console.error('Error deleting group members:', membersError);
-        throw membersError;
+        toast({
+          variant: "destructive",
+          title: "Σφάλμα",
+          description: "Δεν ήταν δυνατή η διαγραφή των μελών της ομάδας",
+        });
+        return;
       }
 
+      console.log('Group members deleted successfully');
+
       // Then delete the group
-      const { error: groupError } = await supabase
+      const { error: groupError, data } = await supabase
         .from('groups')
         .delete()
-        .eq('id', group.id);
+        .eq('id', group.id)
+        .select();
 
       if (groupError) {
         console.error('Error deleting group:', groupError);
-        throw groupError;
+        toast({
+          variant: "destructive",
+          title: "Σφάλμα",
+          description: "Δεν ήταν δυνατή η διαγραφή της ομάδας",
+        });
+        return;
       }
+
+      console.log('Group deleted successfully:', data);
 
       toast({
         title: "Επιτυχία",
         description: "Η ομάδα διαγράφηκε επιτυχώς",
       });
       
-      onGroupDeleted();
       onClose();
+      onGroupDeleted();
     } catch (error) {
-      console.error('Error deleting group:', error);
+      console.error('Unexpected error deleting group:', error);
       toast({
         variant: "destructive",
         title: "Σφάλμα",
@@ -90,7 +107,7 @@ export const DeleteGroupDialog = ({ isOpen, onClose, onGroupDeleted, group }: De
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+          <AlertDialogCancel className="rounded-none" disabled={loading}>Ακύρωση</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleDelete} 
             disabled={loading}
