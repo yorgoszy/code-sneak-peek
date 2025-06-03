@@ -17,7 +17,7 @@ export const useProgramCardActions = (assignment: EnrichedAssignment, onRefresh?
   const { saveProgram } = usePrograms();
 
   const handleStart = () => {
-    // Άνοιγμα του ProgramViewDialog
+    // Άνοιγμα του ProgramViewDialog για έναρξη προπόνησης
     setProgramViewDialogOpen(true);
   };
 
