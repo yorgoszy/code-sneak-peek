@@ -57,6 +57,27 @@ const Index = () => {
       description: "Customized fitness solutions for all levels",
       image: "/lovable-uploads/97800d53-e9d6-4b5d-876a-69015555d90b.png",
       color: "#00ffba"
+    },
+    {
+      id: "05",
+      title: "Muay Thai",
+      description: "Next-Gen Training Methods",
+      image: "/lovable-uploads/63c66fb6-c015-4d95-8fd2-123c9a7561c4.png",
+      color: "#00ffba"
+    },
+    {
+      id: "06",
+      title: "One by One Training",
+      description: "Personalized coaching for maximum results",
+      image: "/lovable-uploads/63c66fb6-c015-4d95-8fd2-123c9a7561c4.png",
+      color: "#00ffba"
+    },
+    {
+      id: "07",
+      title: "Athlete Performance",
+      description: "Elite Strength & Conditioning Strategies",
+      image: "/lovable-uploads/63c66fb6-c015-4d95-8fd2-123c9a7561c4.png",
+      color: "#00ffba"
     }
   ];
 
