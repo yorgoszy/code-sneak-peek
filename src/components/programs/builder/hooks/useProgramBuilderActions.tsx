@@ -258,9 +258,9 @@ export const useProgramBuilderActions = (
                       id: generateId(),
                       exercise_id: exerciseId,
                       exercise_name: selectedExercise?.name || '',
-                      sets: '', // Αφαιρώ την προκαθορισμένη τιμή 3
+                      sets: 0, // Changed to 0 instead of empty string to maintain number type
                       reps: '',
-                      percentage_1rm: '',
+                      percentage_1rm: 0,
                       kg: '',
                       velocity_ms: '',
                       tempo: '',
