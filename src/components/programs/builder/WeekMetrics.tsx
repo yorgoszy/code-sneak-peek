@@ -49,11 +49,64 @@ interface WeekStats {
   time: number;
 }
 
+const parseTempoToSeconds = (tempo: string): number => {
+  if (!tempo || tempo.trim() === '') {
+    return 3; // Default tempo
+  }
+  
+  const parts = tempo.split('.');
+  let totalSeconds = 0;
+  
+  parts.forEach(part => {
+    if (part === 'x' || part === 'X') {
+      totalSeconds += 0.5;
+    } else {
+      totalSeconds += parseFloat(part) || 0;
+    }
+  });
+  
+  return totalSeconds;
+};
+
+const parseRepsToTotal = (reps: string): number => {
+  if (!reps) return 0;
+  
+  if (!reps.includes('.')) {
+    return parseInt(reps) || 0;
+  }
+  
+  const parts = reps.split('.');
+  let totalReps = 0;
+  
+  parts.forEach(part => {
+    totalReps += parseInt(part) || 0;
+  });
+  
+  return totalReps;
+};
+
+const parseRestTime = (rest: string): number => {
+  if (!rest) return 0;
+  
+  // Handle formats like "2'", "1:30", "90s", "2"
+  if (rest.includes(':')) {
+    const [minutes, seconds] = rest.split(':');
+    return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
+  } else if (rest.includes("'")) {
+    return (parseFloat(rest.replace("'", "")) || 0) * 60; // Convert minutes to seconds
+  } else if (rest.includes('s')) {
+    return parseFloat(rest.replace('s', '')) || 0;
+  } else {
+    const minutes = parseFloat(rest) || 0;
+    return minutes * 60; // Convert minutes to seconds
+  }
+};
+
 const calculateWeekMetrics = (week: Week): WeekStats => {
   let totalVolume = 0;
   let totalIntensity = 0;
   let totalWatts = 0;
-  let totalTime = 0;
+  let totalTimeSeconds = 0;
   let exerciseCount = 0;
 
   week.days.forEach(day => {
@@ -62,7 +115,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
         if (exercise.exercise_id) {
           // Volume calculation (sets × reps × kg)
           const sets = exercise.sets || 0;
-          const reps = parseFloat(exercise.reps) || 0;
+          const reps = parseRepsToTotal(exercise.reps);
           const kg = parseFloat(exercise.kg) || 0;
           totalVolume += sets * reps * kg;
 
@@ -76,9 +129,17 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
           const watts = parseFloat(exercise.velocity_ms) || 0;
           totalWatts += watts * sets;
 
-          // Time calculation (estimated from rest periods)
+          // Time calculation
+          const tempo = parseTempoToSeconds(exercise.tempo);
           const restSeconds = parseRestTime(exercise.rest);
-          totalTime += (sets - 1) * restSeconds; // Rest between sets
+          
+          // Work time: sets × reps × tempo (in seconds)
+          const workTime = sets * reps * tempo;
+          
+          // Rest time: (sets - 1) × rest time between sets
+          const totalRestTime = (sets - 1) * restSeconds;
+          
+          totalTimeSeconds += workTime + totalRestTime;
         }
       });
     });
@@ -88,14 +149,8 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
     volume: Math.round(totalVolume),
     intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
     watts: Math.round(totalWatts),
-    time: Math.round(totalTime / 60) // Convert to minutes
+    time: Math.round(totalTimeSeconds / 60) // Convert to minutes
   };
-};
-
-const parseRestTime = (rest: string): number => {
-  if (!rest) return 0;
-  const match = rest.match(/(\d+)/);
-  return match ? parseInt(match[1]) : 0;
 };
 
 const calculatePercentageChange = (current: number, previous: number): number => {
