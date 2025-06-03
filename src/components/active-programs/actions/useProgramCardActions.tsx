@@ -17,8 +17,8 @@ export const useProgramCardActions = (assignment: EnrichedAssignment, onRefresh?
   const { saveProgram } = usePrograms();
 
   const handleStart = () => {
-    // Άνοιγμα του ProgramViewDialog για έναρξη προπόνησης
-    setProgramViewDialogOpen(true);
+    // Άνοιγμα του DaySelector για επιλογή ημέρας
+    setDaySelectorOpen(true);
   };
 
   const handleDaySelected = async (weekIndex: number, dayIndex: number) => {
@@ -28,6 +28,24 @@ export const useProgramCardActions = (assignment: EnrichedAssignment, onRefresh?
     const trainingDates = assignment.training_dates || [];
     if (trainingDates.length > 0) {
       // Υπολογίζουμε ποια ημερομηνία αντιστοιχεί στην επιλεγμένη εβδομάδα/ημέρα
+      const program = assignment.programs;
+      if (program?.program_weeks?.[0]?.program_days) {
+        const daysPerWeek = program.program_weeks[0].program_days.length;
+        const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+        
+        if (totalDayIndex < trainingDates.length) {
+          const dateStr = trainingDates[totalDayIndex];
+          setSelectedDate(new Date(dateStr));
+          setDayProgramDialogOpen(true);
+        }
+      }
+    }
+  };
+
+  const handleStartWorkoutFromView = async (weekIndex: number, dayIndex: number) => {
+    // Ίδια λογική με το handleDaySelected αλλά καλείται από το ProgramViewDialog
+    const trainingDates = assignment.training_dates || [];
+    if (trainingDates.length > 0) {
       const program = assignment.programs;
       if (program?.program_weeks?.[0]?.program_days) {
         const daysPerWeek = program.program_weeks[0].program_days.length;
@@ -110,6 +128,7 @@ export const useProgramCardActions = (assignment: EnrichedAssignment, onRefresh?
     handleEditSave,
     getWorkoutStatus,
     handleDialogClose,
+    handleStartWorkoutFromView,
     
     // Dialog close handlers
     onDaySelectorClose: () => setDaySelectorOpen(false),

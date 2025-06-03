@@ -25,6 +25,7 @@ interface ProgramCardDialogManagerProps {
   onSelectDay: (weekIndex: number, dayIndex: number) => void;
   onEditSave: (programData: any) => Promise<void>;
   onRefresh?: () => void;
+  onStartWorkoutFromView: (weekIndex: number, dayIndex: number) => void;
 }
 
 export const ProgramCardDialogManager: React.FC<ProgramCardDialogManagerProps> = ({
@@ -44,7 +45,8 @@ export const ProgramCardDialogManager: React.FC<ProgramCardDialogManagerProps> =
   onEditDialogClose,
   onSelectDay,
   onEditSave,
-  onRefresh
+  onRefresh,
+  onStartWorkoutFromView
 }) => {
   // Prepare assignment data for editing
   const assignmentEditData = {
@@ -66,6 +68,7 @@ export const ProgramCardDialogManager: React.FC<ProgramCardDialogManagerProps> =
         isOpen={programViewDialogOpen}
         onClose={onProgramViewClose}
         assignment={assignment}
+        onStartWorkout={onStartWorkoutFromView}
       />
 
       <DayProgramDialog

@@ -29,6 +29,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
     handleComplete,
     handleEditSave,
     handleDialogClose,
+    handleStartWorkoutFromView,
     onDaySelectorClose,
     onProgramViewClose,
     onAttendanceClose,
@@ -65,6 +66,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
         onSelectDay={handleDaySelected}
         onEditSave={handleEditSave}
         onRefresh={onRefresh}
+        onStartWorkoutFromView={handleStartWorkoutFromView}
       />
     </>
   );
