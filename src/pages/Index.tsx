@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -101,32 +102,52 @@ const Index = () => {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-white hover:text-gray-300 transition-colors duration-200 text-sm font-medium"
+                  className="text-white transition-colors duration-200 text-sm font-medium"
+                  style={{ '&:hover': { color: '#00ffba' } }}
+                  onMouseEnter={(e) => e.target.style.color = '#00ffba'}
+                  onMouseLeave={(e) => e.target.style.color = 'white'}
                 >
                   {item.name}
                 </a>
               ))}
             </div>
 
-            <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-4">
               {!loading && (
                 isAuthenticated ? (
                   <div className="flex items-center space-x-4">
                     <Link to="/dashboard">
-                      <Button variant="outline" className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black">
+                      <Button 
+                        variant="outline" 
+                        className="rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                        style={{ '&:hover': { backgroundColor: '#00ffba', borderColor: '#00ffba' } }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#00ffba';
+                          e.target.style.borderColor = '#00ffba';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'transparent';
+                          e.target.style.borderColor = 'white';
+                        }}
+                      >
                         Dashboard
                       </Button>
                     </Link>
-                    <span className="text-sm text-gray-300">
-                      {user?.email}
-                    </span>
                     <Button 
                       variant="outline" 
-                      className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black"
+                      className="rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                      style={{ '&:hover': { backgroundColor: '#00ffba', borderColor: '#00ffba' } }}
                       onClick={handleSignOut}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#00ffba';
+                        e.target.style.borderColor = '#00ffba';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'transparent';
+                        e.target.style.borderColor = 'white';
+                      }}
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Αποσύνδεση
+                      <LogOut className="h-4 w-4" />
                     </Button>
                   </div>
                 ) : (
@@ -187,49 +208,63 @@ const Index = () => {
                 Explore All<br />Programs
               </h2>
             </div>
-            <div className="flex space-x-4">
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {programs.map((program) => (
-              <div key={program.id} className="group cursor-pointer">
-                <div className="relative h-80 mb-6 overflow-hidden">
-                  <img
-                    src={program.image}
-                    alt={program.title}
-                    className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span 
-                      className="text-2xl font-bold"
-                      style={{ color: program.color }}
-                    >
-                      {program.id}
-                    </span>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {programs.map((program) => (
+                <CarouselItem key={program.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/4">
+                  <div className="group cursor-pointer">
+                    <div className="relative h-80 mb-6 overflow-hidden">
+                      <img
+                        src={program.image}
+                        alt={program.title}
+                        className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span 
+                          className="text-2xl font-bold"
+                          style={{ color: program.color }}
+                        >
+                          {program.id}
+                        </span>
+                      </div>
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <p className="text-white text-sm mb-2">{program.description}</p>
+                      </div>
+                    </div>
+                    <h3 className="text-white text-xl font-bold mb-2">{program.title}</h3>
                   </div>
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-white text-sm mb-2">{program.description}</p>
-                  </div>
-                </div>
-                <h3 className="text-white text-xl font-bold mb-2">{program.title}</h3>
-              </div>
-            ))}
-          </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious 
+              className="rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 -left-12"
+              style={{ '&:hover': { backgroundColor: '#00ffba' } }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#00ffba';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            />
+            <CarouselNext 
+              className="rounded-none bg-transparent border-none text-white hover:text-black transition-colors duration-200 -right-12"
+              style={{ '&:hover': { backgroundColor: '#00ffba' } }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#00ffba';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            />
+          </Carousel>
         </div>
       </section>
 
