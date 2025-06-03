@@ -16,6 +16,8 @@ interface CalendarProgramItemProps {
   onClick: () => void;
   showProgress?: boolean;
   progressValue?: number;
+  dayPrograms?: EnrichedAssignment[];
+  dayString?: string;
 }
 
 export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
@@ -24,7 +26,9 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   allCompletions,
   onClick,
   showProgress = false,
-  progressValue = 100
+  progressValue = 100,
+  dayPrograms = [],
+  dayString
 }) => {
   const getStatusColor = () => {
     if (workoutStatus === 'completed') return '#48926c'; // Πράσινο
@@ -34,6 +38,29 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
 
   const userName = program.app_users?.name || 'Άγνωστος χρήστης';
 
+  // Υπολογισμός ολοκληρωμένων προπονήσεων για τη συγκεκριμένη μέρα
+  const getCompletedWorkoutsForDay = () => {
+    if (!dayString || dayPrograms.length === 0) {
+      return { completed: 0, total: 1 };
+    }
+
+    const completedCount = dayPrograms.filter(dayProgram => {
+      const completion = allCompletions.find(c => 
+        c.assignment_id === dayProgram.id && 
+        c.scheduled_date === dayString
+      );
+      return completion && completion.status === 'completed';
+    }).length;
+
+    return {
+      completed: completedCount,
+      total: dayPrograms.length
+    };
+  };
+
+  const { completed, total } = showProgress ? getCompletedWorkoutsForDay() : { completed: 0, total: 1 };
+  const displayText = showProgress ? `${completed}/${total}` : userName.split(' ')[0];
+
   return (
     <div 
       className="cursor-pointer hover:opacity-80 transition-opacity mb-1"
@@ -41,19 +68,14 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
     >
       <div className="relative">
         <Progress 
-          value={showProgress ? progressValue : 100}
+          value={showProgress ? (completed / total) * 100 : 100}
           indicatorColor={getStatusColor()}
           className="h-5 bg-gray-200 rounded-none"
         />
         <div className="absolute inset-0 flex items-center justify-between px-2">
           <span className="text-xs font-medium text-white truncate">
-            {userName.split(' ')[0]}
+            {displayText}
           </span>
-          {showProgress && (
-            <span className="text-xs font-medium text-white">
-              {progressValue}%
-            </span>
-          )}
         </div>
       </div>
     </div>

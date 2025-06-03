@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 import { CalendarProgramItem } from './CalendarProgramItem';
@@ -92,20 +93,6 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
 
   const dayPrograms = getProgramsForDay(day);
 
-  // Calculate today's progress (only for today)
-  const getTodaysProgress = () => {
-    if (!isDayToday || dayPrograms.length === 0) return 0;
-    
-    const completedPrograms = dayPrograms.filter(program => {
-      const workoutStatus = getWorkoutStatus(program, dayString);
-      return workoutStatus === 'completed';
-    });
-    
-    return Math.round((completedPrograms.length / dayPrograms.length) * 100);
-  };
-
-  const todaysProgress = getTodaysProgress();
-
   return (
     <>
       <div
@@ -142,7 +129,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
                 allCompletions={allCompletions}
                 onClick={() => handleProgramClick(program)}
                 showProgress={isDayToday && index === 0}
-                progressValue={isDayToday && index === 0 ? todaysProgress : 100}
+                dayPrograms={isDayToday && index === 0 ? dayPrograms : undefined}
+                dayString={isDayToday && index === 0 ? dayString : undefined}
               />
             );
           })}
