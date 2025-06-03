@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { EditGroupDialog } from "@/components/EditGroupDialog";
 import { DeleteGroupDialog } from "@/components/DeleteGroupDialog";
+import { ViewGroupDialog } from "@/components/ViewGroupDialog";
 
 interface AppUser {
   id: string;
@@ -67,6 +68,7 @@ const Groups = () => {
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
   const [creating, setCreating] = useState(false);
+  const [viewGroupDialogOpen, setViewGroupDialogOpen] = useState(false);
   
   const { toast } = useToast();
 
@@ -227,9 +229,8 @@ const Groups = () => {
   };
 
   const handleViewGroup = (group: Group) => {
-    // For now, we'll just log the group. This can be expanded to show group details
-    console.log('Viewing group:', group);
-    // You can implement a view dialog or navigate to a detailed view here
+    setSelectedGroup(group);
+    setViewGroupDialogOpen(true);
   };
 
   const filteredUsers = users.filter(user =>
@@ -534,6 +535,13 @@ const Groups = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* View Group Dialog */}
+      <ViewGroupDialog
+        isOpen={viewGroupDialogOpen}
+        onClose={() => setViewGroupDialogOpen(false)}
+        group={selectedGroup}
+      />
 
       {/* Edit Group Dialog */}
       <EditGroupDialog

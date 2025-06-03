@@ -53,17 +53,17 @@ export const DeleteGroupDialog = ({ isOpen, onClose, onGroupDeleted, group }: De
           title: "Σφάλμα",
           description: "Δεν ήταν δυνατή η διαγραφή των μελών της ομάδας",
         });
+        setLoading(false);
         return;
       }
 
       console.log('Group members deleted successfully');
 
-      // Then delete the group
-      const { error: groupError, data } = await supabase
+      // Then delete the group - χωρίς .select() για να μη χρειάζεται να επιστρέψει δεδομένα
+      const { error: groupError } = await supabase
         .from('groups')
         .delete()
-        .eq('id', group.id)
-        .select();
+        .eq('id', group.id);
 
       if (groupError) {
         console.error('Error deleting group:', groupError);
@@ -72,10 +72,11 @@ export const DeleteGroupDialog = ({ isOpen, onClose, onGroupDeleted, group }: De
           title: "Σφάλμα",
           description: "Δεν ήταν δυνατή η διαγραφή της ομάδας",
         });
+        setLoading(false);
         return;
       }
 
-      console.log('Group deleted successfully:', data);
+      console.log('Group deleted successfully');
 
       toast({
         title: "Επιτυχία",
