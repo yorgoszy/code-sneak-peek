@@ -235,7 +235,8 @@ export const useWorkoutStatistics = (assignmentId: string) => {
         intensity,
         exercise.categories,
         exercise.block_name,
-        exercise.exercise_name
+        exercise.exercise_name,
+        actualSets
       );
 
       typeMinutes[trainingType] += exerciseTime;
@@ -321,7 +322,8 @@ const categorizeTrainingType = (
   intensity: number, // προσεγγιστικό % 1RM
   categories: string[],
   blockName: string,
-  exerciseName: string
+  exerciseName: string,
+  sets: number
 ): keyof WorkoutStats['trainingTypeBreakdown'] => {
   const isPlyo = categories.some(cat => cat.toLowerCase().includes('plyometric'));
   const isSprint = categories.some(cat => cat.toLowerCase().includes('sprint')) || 
@@ -371,6 +373,11 @@ const categorizeTrainingType = (
   // Max Strength
   if (isStrength && reps <= 3 && velocity <= 0.5 && intensity >= 85) {
     return 'maxStrength';
+  }
+
+  // Hypertrophy: 3-6 sets, 6-12 reps, 55-70% intensity
+  if (sets >= 3 && sets <= 6 && reps >= 6 && reps <= 12 && intensity >= 55 && intensity <= 70) {
+    return 'hypertrophy';
   }
 
   // Hypertrophy (default για τα υπόλοιπα)
