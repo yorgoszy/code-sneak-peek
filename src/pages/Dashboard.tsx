@@ -10,8 +10,9 @@ import { RecentActivity } from "@/components/RecentActivity";
 import { QuickActions } from "@/components/QuickActions";
 import { format } from "date-fns";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { CalendarProgramItem } from "@/components/active-programs/calendar/CalendarProgramItem";
+import { CalendarDay } from "@/components/active-programs/calendar/CalendarDay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 
 const Dashboard = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -27,9 +28,11 @@ const Dashboard = () => {
     totalExercises: 0,
     newUsersThisMonth: 0
   });
+  const [allCompletions, setAllCompletions] = useState<any[]>([]);
 
   // Get today's programs for admin
-  const { programs: todaysPrograms } = useActivePrograms(true);
+  const { programs: todaysPrograms, refetch } = useActivePrograms(true);
+  const { getWorkoutCompletions } = useWorkoutCompletions();
 
   useEffect(() => {
     if (user) {
@@ -48,6 +51,36 @@ const Dashboard = () => {
       fetchDashboardStats();
     }
   }, [user]);
+
+  // Fetch completions for today's programs
+  useEffect(() => {
+    const fetchAllCompletions = async () => {
+      if (todaysPrograms.length === 0) {
+        console.log('⚠️ No programs available, skipping completions fetch');
+        setAllCompletions([]);
+        return;
+      }
+
+      console.log('🔄 Fetching completions for programs:', todaysPrograms.length);
+      const completionsData: any[] = [];
+      
+      for (const program of todaysPrograms) {
+        try {
+          console.log('🔍 Fetching completions for program:', program.id);
+          const completions = await getWorkoutCompletions(program.id);
+          console.log('✅ Completions received:', completions);
+          completionsData.push(...completions.map(c => ({ ...c, assignment_id: program.id })));
+        } catch (error) {
+          console.error('❌ Error fetching completions for program:', program.id, error);
+        }
+      }
+      
+      console.log('📊 All completions data:', completionsData);
+      setAllCompletions(completionsData);
+    };
+
+    fetchAllCompletions();
+  }, [todaysPrograms, getWorkoutCompletions]);
 
   const fetchDashboardStats = async () => {
     try {
@@ -103,18 +136,6 @@ const Dashboard = () => {
     }
   };
 
-  // Filter today's programs
-  const getTodaysPrograms = () => {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    
-    return todaysPrograms.filter(program => {
-      if (program.training_dates && Array.isArray(program.training_dates)) {
-        return program.training_dates.includes(today);
-      }
-      return false;
-    });
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -135,8 +156,6 @@ const Dashboard = () => {
   const handleSignOut = async () => {
     await signOut();
   };
-
-  const currentTodaysPrograms = getTodaysPrograms();
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -226,7 +245,7 @@ const Dashboard = () => {
             <div className="space-y-6">
               <QuickActions />
               
-              {/* Today's Programs Section for Admin */}
+              {/* Today's Programs Section for Admin - using CalendarDay component */}
               {isAdmin && (
                 <Card className="rounded-none">
                   <CardHeader>
@@ -236,31 +255,13 @@ const Dashboard = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {currentTodaysPrograms.length > 0 ? (
-                      <div className="space-y-3">
-                        {currentTodaysPrograms.map((program) => {
-                          const userName = program.app_users?.name || 'Άγνωστος χρήστης';
-                          return (
-                            <div key={program.id} className="p-3 border border-gray-200 rounded-none hover:bg-gray-50">
-                              <div className="mb-2">
-                                <p className="font-medium text-gray-900">{userName}</p>
-                                <p className="text-sm text-gray-600">{program.programs?.name}</p>
-                              </div>
-                              <CalendarProgramItem
-                                program={program}
-                                workoutStatus="scheduled"
-                                allCompletions={[]}
-                                onClick={() => {}}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        Δεν υπάρχουν προγραμματισμένα προγράμματα για σήμερα
-                      </div>
-                    )}
+                    <CalendarDay
+                      day={new Date()}
+                      currentDate={new Date()}
+                      programs={todaysPrograms}
+                      allCompletions={allCompletions}
+                      onRefresh={refetch}
+                    />
                   </CardContent>
                 </Card>
               )}
