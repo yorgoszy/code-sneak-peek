@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -200,7 +201,7 @@ const Index = () => {
       `}</style>
       
       {/* Black Navigation */}
-      <nav className="fixed top-0 w-full bg-black border-b border-gray-800 z-50">
+      <nav className="fixed top-0 w-full bg-black z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -369,17 +370,17 @@ const Index = () => {
                       className="border-l-2 border-gray-500 pl-6 pt-5"
                     >
                       {/* Program number and title positioned above image */}
-                      <div className="flex items-center mb-4">
+                      <div className="flex items-start mb-2">
                         <span 
-                          className="text-3xl font-bold mr-4"
+                          className="text-2xl font-bold mr-3 flex-shrink-0"
                           style={{ color: program.color }}
                         >
                           {program.id}
                         </span>
-                        <h3 className="text-white text-xl font-bold">{program.title}</h3>
+                        <h3 className="text-white text-lg font-bold leading-tight">{program.title}</h3>
                       </div>
                       
-                      <div className="relative h-64 mb-6 overflow-hidden">
+                      <div className="relative h-64 overflow-hidden" style={{ marginTop: '0px' }}>
                         <img
                           src={program.image}
                           alt={program.title}
