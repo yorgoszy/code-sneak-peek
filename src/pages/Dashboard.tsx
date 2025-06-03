@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,10 @@ import { Sidebar } from "@/components/Sidebar";
 import { StatCard } from "@/components/StatCard";
 import { RecentActivity } from "@/components/RecentActivity";
 import { QuickActions } from "@/components/QuickActions";
+import { format } from "date-fns";
+import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { CalendarProgramItem } from "@/components/active-programs/calendar/CalendarProgramItem";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Dashboard = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -24,6 +27,9 @@ const Dashboard = () => {
     totalExercises: 0,
     newUsersThisMonth: 0
   });
+
+  // Get today's programs for admin
+  const { programs: todaysPrograms } = useActivePrograms(true);
 
   useEffect(() => {
     if (user) {
@@ -97,6 +103,18 @@ const Dashboard = () => {
     }
   };
 
+  // Filter today's programs
+  const getTodaysPrograms = () => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    
+    return todaysPrograms.filter(program => {
+      if (program.training_dates && Array.isArray(program.training_dates)) {
+        return program.training_dates.includes(today);
+      }
+      return false;
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -117,6 +135,8 @@ const Dashboard = () => {
   const handleSignOut = async () => {
     await signOut();
   };
+
+  const currentTodaysPrograms = getTodaysPrograms();
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -197,6 +217,47 @@ const Dashboard = () => {
               trend="neutral"
             />
           </div>
+
+          {/* Today's Programs Section for Admin */}
+          {isAdmin && (
+            <div className="mb-8">
+              <Card className="rounded-none">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Activity className="h-5 w-5 mr-2" />
+                    Σημερινά Προγράμματα ({format(new Date(), 'dd/MM/yyyy')})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {currentTodaysPrograms.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {currentTodaysPrograms.map((program) => {
+                        const userName = program.app_users?.name || 'Άγνωστος χρήστης';
+                        return (
+                          <div key={program.id} className="p-3 border border-gray-200 rounded-none hover:bg-gray-50">
+                            <div className="mb-2">
+                              <p className="font-medium text-gray-900">{userName}</p>
+                              <p className="text-sm text-gray-600">{program.programs?.name}</p>
+                            </div>
+                            <CalendarProgramItem
+                              program={program}
+                              workoutStatus="scheduled"
+                              allCompletions={[]}
+                              onClick={() => {}}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      Δεν υπάρχουν προγραμματισμένα προγράμματα για σήμερα
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Lower Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
