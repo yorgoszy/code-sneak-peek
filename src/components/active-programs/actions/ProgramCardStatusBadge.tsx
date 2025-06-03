@@ -16,12 +16,21 @@ export const ProgramCardStatusBadge: React.FC<ProgramCardStatusBadgeProps> = ({ 
     }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active': return 'Active';
+      case 'completed': return 'Complete';
+      case 'paused': return 'Paused';
+      default: return status;
+    }
+  };
+
   return (
     <Badge 
       variant={getStatusBadgeVariant(status)} 
       className="rounded-none text-xs px-1 py-0"
     >
-      {status === 'active' ? 'Ε' : status}
+      {getStatusText(status)}
     </Badge>
   );
 };

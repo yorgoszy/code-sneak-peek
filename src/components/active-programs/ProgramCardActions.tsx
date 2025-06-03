@@ -39,9 +39,8 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
 
   return (
     <>
-      <div className="flex items-center gap-1 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <ProgramCardStatusBadge status={assignment.status} />
-        
         <ProgramCardActionButtons
           onStart={handleStart}
           onView={handleView}

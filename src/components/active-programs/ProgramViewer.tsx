@@ -116,7 +116,7 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
     );
   };
 
-  // Φιλτράρουμε μόνο τις μη ολοκληρωμένες εβδομάδες και ημέρες για mode 'start'
+  // Για start mode, φιλτράρουμε μόνο τις μη ολοκληρωμένες εβδομάδες και ημέρες
   const getFilteredWeeks = () => {
     if (mode !== 'start') {
       return assignment.programs?.program_weeks || [];
@@ -130,123 +130,75 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
     })).filter(week => week.program_days.length > 0);
   };
 
-  const filteredWeeks = getFilteredWeeks();
-  const currentWeek = filteredWeeks[currentSelectedWeek];
+  const weeks = mode === 'start' ? getFilteredWeeks() : assignment.programs?.program_weeks || [];
+  const currentWeek = weeks[currentSelectedWeek];
   const currentDay = currentWeek?.program_days?.[currentSelectedDay];
 
   const title = mode === 'start' 
-    ? `Έναρξη Προπονήσης - ${currentWeek?.name} - ${currentDay?.name}`
+    ? `Έναρξη Προπονήσης - ${assignment.programs?.name}`
     : `Προβολή Προγράμματος - ${assignment.programs?.name}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto rounded-none">
+      <DialogContent className="max-w-7xl max-h-[80vh] overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span>{title}</span>
+            <Badge variant="outline" className="rounded-none">
+              {assignment.status}
+            </Badge>
+          </DialogTitle>
+          {assignment.programs?.description && (
+            <p className="text-sm text-gray-600">{assignment.programs.description}</p>
+          )}
         </DialogHeader>
 
-        <div className="space-y-6">
-          {mode === 'view' && (
-            <>
-              {/* Week Selection - Only in view mode */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Επιλογή Εβδομάδας</h3>
-                <div className="flex gap-2 flex-wrap">
-                  {filteredWeeks.map((week, index) => (
-                    <Button
-                      key={week.id}
-                      variant={currentSelectedWeek === index ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCurrentSelectedWeek(index)}
-                      className="rounded-none"
-                    >
-                      {week.name}
-                    </Button>
-                  ))}
+        <div className="space-y-4">
+          {/* Εβδομάδες - Οριζόντια Layout όπως στο ProgramViewDialog */}
+          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }}>
+            {weeks.map((week, weekIndex) => (
+              <div key={week.id} className="border border-gray-200 rounded-none">
+                <div className="bg-gray-50 p-3 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-900">
+                    {week.name || `Εβδομάδα ${week.week_number}`}
+                  </h3>
                 </div>
-              </div>
-
-              {/* Day Selection - Only in view mode */}
-              {currentWeek && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Επιλογή Ημέρας</h3>
-                  <div className="flex gap-2 flex-wrap">
-                    {currentWeek.program_days?.map((day, index) => {
-                      const completed = isWorkoutCompleted(currentWeek.week_number, day.day_number);
-                      const missed = isWorkoutMissed(currentWeek.week_number, day.day_number);
+                
+                <div className="p-3">
+                  {/* Ημέρες για αυτή την εβδομάδα */}
+                  <div className="space-y-2">
+                    {week.program_days?.map((day, dayIndex) => {
+                      const completed = isWorkoutCompleted(week.week_number, day.day_number);
+                      const missed = isWorkoutMissed(week.week_number, day.day_number);
+                      const isSelected = currentSelectedWeek === weekIndex && currentSelectedDay === dayIndex;
                       
                       return (
                         <Button
                           key={day.id}
-                          variant={currentSelectedDay === index ? "default" : "outline"}
+                          variant={isSelected ? "default" : "outline"}
                           size="sm"
-                          onClick={() => setCurrentSelectedDay(index)}
-                          className={`rounded-none flex items-center gap-2 ${
-                            missed ? 'opacity-60' : ''
-                          }`}
-                        >
-                          {day.name}
-                          {completed && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                          {missed && <XCircle className="w-4 h-4 text-red-500" />}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {mode === 'start' && (
-            <>
-              {/* Week Selection για start mode - μόνο μη ολοκληρωμένες */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Επιλογή Εβδομάδας</h3>
-                <div className="flex gap-2 flex-wrap">
-                  {filteredWeeks.map((week, index) => (
-                    <Button
-                      key={week.id}
-                      variant={currentSelectedWeek === index ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCurrentSelectedWeek(index)}
-                      className="rounded-none"
-                    >
-                      {week.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Day Selection για start mode - μόνο μη ολοκληρωμένες */}
-              {currentWeek && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Επιλογή Ημέρας</h3>
-                  <div className="flex gap-2 flex-wrap">
-                    {currentWeek.program_days?.map((day, index) => {
-                      const missed = isWorkoutMissed(currentWeek.week_number, day.day_number);
-                      
-                      return (
-                        <Button
-                          key={day.id}
-                          variant={currentSelectedDay === index ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentSelectedDay(index)}
-                          className={`rounded-none flex items-center gap-2 ${
+                          onClick={() => {
+                            setCurrentSelectedWeek(weekIndex);
+                            setCurrentSelectedDay(dayIndex);
+                          }}
+                          className={`w-full justify-start rounded-none flex items-center gap-2 ${
                             missed ? 'opacity-60 border-red-300' : ''
                           }`}
                         >
-                          {day.name}
-                          {missed && <XCircle className="w-4 h-4 text-red-500" />}
+                          {day.name || `Ημέρα ${day.day_number}`}
+                          {mode === 'view' && completed && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                          {mode === 'view' && missed && <XCircle className="w-4 h-4 text-red-500" />}
+                          {mode === 'start' && missed && <XCircle className="w-4 h-4 text-red-500" />}
                         </Button>
                       );
                     })}
                   </div>
                 </div>
-              )}
-            </>
-          )}
+              </div>
+            ))}
+          </div>
 
-          {/* Workout Timer Display */}
+          {/* Workout Timer Display για start mode */}
           {mode === 'start' && isWorkoutActive && workoutStartTime && (
             <div className="bg-blue-50 p-4 border border-blue-200 rounded-none">
               <div className="flex items-center justify-center space-x-2">
@@ -260,90 +212,89 @@ export const ProgramViewer: React.FC<ProgramViewerProps> = ({
 
           {/* Workout Details */}
           {currentDay && (
-            <Card className="rounded-none">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  {currentDay.name}
-                  {isWorkoutMissed(currentWeek.week_number, currentDay.day_number) && (
-                    <Badge variant="destructive" className="rounded-none">
-                      <XCircle className="w-4 h-4 mr-1" />
-                      Χαμένη
-                    </Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {currentDay.program_blocks?.map((block) => (
-                  <div key={block.id} className="space-y-3">
-                    <h4 className="font-medium text-sm text-gray-700">{block.name}</h4>
-                    <div className="space-y-2">
-                      {block.program_exercises?.map((exercise) => (
-                        <div key={exercise.id} className="border p-3 rounded-none bg-gray-50">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium">{exercise.exercises?.name}</p>
-                              <p className="text-sm text-gray-600">
-                                {exercise.sets} series × {exercise.reps} επαναλήψεις
-                                {exercise.kg && ` - ${exercise.kg} kg`}
-                                {exercise.percentage_1rm && ` (${exercise.percentage_1rm}% 1RM)`}
-                              </p>
-                              {exercise.rest && (
-                                <p className="text-xs text-gray-500">Ανάπαυση: {exercise.rest}</p>
-                              )}
-                            </div>
-                          </div>
-                          {exercise.notes && (
-                            <p className="text-xs text-gray-600 mt-2">{exercise.notes}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-
-                {mode === 'start' && (
-                  <div className="pt-4 border-t space-y-3">
-                    {!isWorkoutActive ? (
-                      <Button 
-                        onClick={handleStartWorkout}
-                        className="w-full rounded-none"
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        Έναρξη Προπονήσης
-                      </Button>
-                    ) : (
-                      <div className="space-y-2">
-                        <Button 
-                          onClick={handleCompleteWorkout}
-                          disabled={loading}
-                          className="w-full rounded-none"
-                        >
-                          {loading ? (
-                            <>
-                              <Clock className="w-4 h-4 mr-2 animate-spin" />
-                              Ολοκλήρωση...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="w-4 h-4 mr-2" />
-                              Ολοκλήρωση Προπονήσης
-                            </>
-                          )}
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          onClick={handleStopWorkout}
-                          className="w-full rounded-none"
-                        >
-                          <Square className="w-4 h-4 mr-2" />
-                          Διακοπή Προπονήσης
-                        </Button>
-                      </div>
-                    )}
+            <div className="bg-white border border-gray-200 rounded-none p-3">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900 flex items-center space-x-2">
+                    <span>{currentDay.name || `Ημέρα ${currentDay.day_number}`}</span>
+                  </h4>
+                </div>
+                {currentDay.estimated_duration_minutes && (
+                  <div className="flex items-center space-x-1 text-xs text-gray-600">
+                    <Clock className="h-3 w-3" />
+                    <span>{currentDay.estimated_duration_minutes} λεπτά</span>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+
+              <div className="space-y-2">
+                {currentDay.program_blocks?.map((block) => (
+                  <div key={block.id} className="bg-gray-50 p-2">
+                    <h5 className="font-medium text-sm mb-1">
+                      Block {block.block_order}: {block.name}
+                    </h5>
+                    {block.program_exercises && block.program_exercises.length > 0 ? (
+                      <div className="space-y-1">
+                        {block.program_exercises.map((exercise) => (
+                          <div key={exercise.id} className="text-sm flex justify-between items-center">
+                            <span>{exercise.exercises?.name || 'Άγνωστη άσκηση'}</span>
+                            <span className="text-xs text-gray-600">
+                              {exercise.sets} sets × {exercise.reps} reps
+                              {exercise.kg && ` @ ${exercise.kg}kg`}
+                              {exercise.rest && ` (${exercise.rest})`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">Δεν υπάρχουν ασκήσεις</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {mode === 'start' && (
+                <div className="pt-4 border-t space-y-3 mt-4">
+                  {!isWorkoutActive ? (
+                    <Button 
+                      onClick={handleStartWorkout}
+                      className="w-full rounded-none"
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Έναρξη Προπονήσης
+                    </Button>
+                  ) : (
+                    <div className="space-y-2">
+                      <Button 
+                        onClick={handleCompleteWorkout}
+                        disabled={loading}
+                        className="w-full rounded-none"
+                      >
+                        {loading ? (
+                          <>
+                            <Clock className="w-4 h-4 mr-2 animate-spin" />
+                            Ολοκλήρωση...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                            Ολοκλήρωση Προπονήσης
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={handleStopWorkout}
+                        className="w-full rounded-none"
+                      >
+                        <Square className="w-4 h-4 mr-2" />
+                        Διακοπή Προπονήσης
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </DialogContent>
