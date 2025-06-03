@@ -13,19 +13,19 @@ const quickActions = [
     title: "Δημιουργία Προγράμματος",
     subtitle: "Δημιουργήστε νέο πρόγραμμα προπόνησης",
     color: "text-green-600",
-    route: "/program-builder"
+    route: "/dashboard/program-builder"
   },
   {
     title: "Προσθήκη Αθλητή",
     subtitle: "Εγγραφή νέου αθλητή",
     color: "text-purple-600",
-    route: "/users"
+    route: "/dashboard/users"
   },
   {
     title: "Νέα Άσκηση",
     subtitle: "Προσθήκη άσκησης στη βιβλιοθήκη",
     color: "text-orange-600",
-    route: "/exercises"
+    route: "/dashboard/exercises"
   }
 ];
 
