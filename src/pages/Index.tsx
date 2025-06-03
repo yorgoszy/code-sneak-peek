@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -336,7 +337,7 @@ const Index = () => {
             {/* Navigation arrows positioned at top right */}
             <div className="flex space-x-4">
               <button 
-                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center rounded"
+                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
                 onClick={() => {
                   const carousel = document.querySelector('[data-carousel="previous"]') as HTMLButtonElement;
                   if (carousel) {
@@ -351,7 +352,7 @@ const Index = () => {
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button 
-                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center rounded"
+                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
                 onClick={() => {
                   const carousel = document.querySelector('[data-carousel="next"]') as HTMLButtonElement;
                   if (carousel) {
