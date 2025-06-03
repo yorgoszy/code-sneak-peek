@@ -218,54 +218,52 @@ const Dashboard = () => {
             />
           </div>
 
-          {/* Today's Programs Section for Admin */}
-          {isAdmin && (
-            <div className="mb-8">
-              <Card className="rounded-none">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Activity className="h-5 w-5 mr-2" />
-                    Σημερινά Προγράμματα ({format(new Date(), 'dd/MM/yyyy')})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {currentTodaysPrograms.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {currentTodaysPrograms.map((program) => {
-                        const userName = program.app_users?.name || 'Άγνωστος χρήστης';
-                        return (
-                          <div key={program.id} className="p-3 border border-gray-200 rounded-none hover:bg-gray-50">
-                            <div className="mb-2">
-                              <p className="font-medium text-gray-900">{userName}</p>
-                              <p className="text-sm text-gray-600">{program.programs?.name}</p>
-                            </div>
-                            <CalendarProgramItem
-                              program={program}
-                              workoutStatus="scheduled"
-                              allCompletions={[]}
-                              onClick={() => {}}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      Δεν υπάρχουν προγραμματισμένα προγράμματα για σήμερα
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
           {/* Lower Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <RecentActivity />
             </div>
-            <div>
+            <div className="space-y-6">
               <QuickActions />
+              
+              {/* Today's Programs Section for Admin */}
+              {isAdmin && (
+                <Card className="rounded-none">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Activity className="h-5 w-5 mr-2" />
+                      Σημερινά Προγράμματα ({format(new Date(), 'dd/MM/yyyy')})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {currentTodaysPrograms.length > 0 ? (
+                      <div className="space-y-3">
+                        {currentTodaysPrograms.map((program) => {
+                          const userName = program.app_users?.name || 'Άγνωστος χρήστης';
+                          return (
+                            <div key={program.id} className="p-3 border border-gray-200 rounded-none hover:bg-gray-50">
+                              <div className="mb-2">
+                                <p className="font-medium text-gray-900">{userName}</p>
+                                <p className="text-sm text-gray-600">{program.programs?.name}</p>
+                              </div>
+                              <CalendarProgramItem
+                                program={program}
+                                workoutStatus="scheduled"
+                                allCompletions={[]}
+                                onClick={() => {}}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        Δεν υπάρχουν προγραμματισμένα προγράμματα για σήμερα
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>
