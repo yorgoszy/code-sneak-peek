@@ -66,41 +66,46 @@ export const useWorkoutStatistics = (assignmentId: string) => {
       }
       setActualWorkoutTimes(timesData);
 
-      // Παίρνουμε τα δεδομένα του προγράμματος με τις ασκήσεις - διορθώνω το query
+      // Παίρνουμε τα δεδομένα του assignment
       const { data: assignment } = await supabase
         .from('program_assignments')
+        .select('id, program_id')
+        .eq('id', assignmentId)
+        .single();
+
+      if (!assignment?.program_id) return;
+
+      // Παίρνουμε τα δεδομένα του προγράμματος με τις ασκήσεις
+      const { data: program } = await supabase
+        .from('programs')
         .select(`
           id,
-          program_id,
-          programs:program_id (
+          name,
+          program_weeks (
             id,
-            name,
-            program_weeks (
+            week_number,
+            program_days (
               id,
-              week_number,
-              program_days (
+              day_number,
+              program_blocks (
                 id,
-                day_number,
-                program_blocks (
+                name,
+                program_exercises (
                   id,
-                  name,
-                  program_exercises (
+                  sets,
+                  reps,
+                  kg,
+                  velocity_ms,
+                  tempo,
+                  rest,
+                  notes,
+                  exercises (
                     id,
-                    sets,
-                    reps,
-                    kg,
-                    velocity_ms,
-                    tempo,
-                    rest,
-                    notes,
-                    exercises (
-                      id,
-                      name,
-                      exercise_to_category (
-                        exercise_categories (
-                          name,
-                          type
-                        )
+                    name,
+                    exercise_to_category (
+                      exercise_categories (
+                        name,
+                        type
                       )
                     )
                   )
@@ -109,14 +114,14 @@ export const useWorkoutStatistics = (assignmentId: string) => {
             )
           )
         `)
-        .eq('id', assignmentId)
+        .eq('id', assignment.program_id)
         .single();
 
-      if (!assignment?.programs) return;
+      if (!program) return;
 
       const exerciseData: ExerciseData[] = [];
       
-      assignment.programs.program_weeks.forEach(week => {
+      program.program_weeks.forEach(week => {
         week.program_days.forEach(day => {
           // Ελέγχουμε αν η ημέρα έχει ολοκληρωθεί
           const weekNumber = week.week_number;
