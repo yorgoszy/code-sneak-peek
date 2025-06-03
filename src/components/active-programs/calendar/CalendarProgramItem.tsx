@@ -23,7 +23,7 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   onClick
 }) => {
   const getStatusColor = () => {
-    if (workoutStatus === 'completed') return '#4ab46b'; // Πράσινο
+    if (workoutStatus === 'completed') return '#48926c'; // Πράσινο
     if (workoutStatus === 'missed') return '#ef4444';
     return '#1c5d86'; // Μπλε
   };
