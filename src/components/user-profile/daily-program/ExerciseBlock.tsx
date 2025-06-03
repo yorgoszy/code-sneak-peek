@@ -36,9 +36,10 @@ interface Block {
 
 interface ExerciseBlockProps {
   blocks: Block[];
+  viewOnly?: boolean; // Νέα prop για να ξέρουμε αν είναι μόνο για προβολή
 }
 
-export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
+export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly = false }) => {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const { completeSet, getRemainingText, isExerciseComplete } = useExerciseCompletion();
@@ -50,6 +51,11 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
         setSelectedExercise(exercise);
         setIsVideoDialogOpen(true);
       }
+      return;
+    }
+
+    // Αν είναι μόνο για προβολή, δεν κάνουμε τίποτα άλλο
+    if (viewOnly) {
       return;
     }
 
@@ -107,16 +113,16 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
             {block.program_exercises
               .sort((a, b) => a.exercise_order - b.exercise_order)
               .map((exercise) => {
-                const remainingText = getRemainingText(exercise.id, exercise.sets);
-                const isComplete = isExerciseComplete(exercise.id, exercise.sets);
+                const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
+                const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
                 
                 return (
                   <div key={exercise.id} className="bg-white rounded-none">
                     {/* Exercise Header */}
                     <div 
-                      className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                        isComplete ? 'bg-green-50' : ''
-                      }`}
+                      className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
+                        viewOnly ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50'
+                      } ${isComplete ? 'bg-green-50' : ''}`}
                       onClick={(e) => handleExerciseClick(exercise, e)}
                     >
                       <div className="flex-shrink-0">
@@ -226,16 +232,16 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks }) => {
               {block.program_exercises
                 .sort((a, b) => a.exercise_order - b.exercise_order)
                 .map((exercise) => {
-                  const remainingText = getRemainingText(exercise.id, exercise.sets);
-                  const isComplete = isExerciseComplete(exercise.id, exercise.sets);
+                  const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
+                  const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
                   
                   return (
                     <div key={exercise.id} className="bg-white rounded-none border border-gray-200">
                       {/* Exercise Header */}
                       <div 
-                        className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                          isComplete ? 'bg-green-50' : ''
-                        }`}
+                        className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
+                          viewOnly ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50'
+                        } ${isComplete ? 'bg-green-50' : ''}`}
                         onClick={(e) => handleExerciseClick(exercise, e)}
                       >
                         <div className="flex-shrink-0">

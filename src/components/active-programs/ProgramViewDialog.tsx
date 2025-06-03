@@ -99,7 +99,7 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
                           </div>
 
                           <div className="space-y-2">
-                            <ExerciseBlock blocks={day.program_blocks} />
+                            <ExerciseBlock blocks={day.program_blocks} viewOnly={true} />
                           </div>
                         </div>
                       </TabsContent>
