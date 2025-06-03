@@ -1,0 +1,34 @@
+
+import { RecentActivity } from "@/components/RecentActivity";
+import { QuickActions } from "@/components/QuickActions";
+import { TodaysProgramsCard } from "./TodaysProgramsCard";
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+
+interface DashboardContentProps {
+  isAdmin: boolean;
+  todaysPrograms: EnrichedAssignment[];
+  allCompletions: any[];
+  onRefresh: () => void;
+}
+
+export const DashboardContent = ({ isAdmin, todaysPrograms, allCompletions, onRefresh }: DashboardContentProps) => {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2">
+        <RecentActivity />
+      </div>
+      <div className="space-y-6">
+        <QuickActions />
+        
+        {/* Today's Programs Section for Admin */}
+        {isAdmin && (
+          <TodaysProgramsCard
+            todaysPrograms={todaysPrograms}
+            allCompletions={allCompletions}
+            onRefresh={onRefresh}
+          />
+        )}
+      </div>
+    </div>
+  );
+};

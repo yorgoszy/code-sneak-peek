@@ -1,18 +1,16 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Heart, LogOut, Users, Activity, Dumbbell, TrendingUp } from "lucide-react";
-import { Link, Navigate } from "react-router-dom";
+import { Heart } from "lucide-react";
+import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
-import { StatCard } from "@/components/StatCard";
-import { RecentActivity } from "@/components/RecentActivity";
-import { QuickActions } from "@/components/QuickActions";
-import { format } from "date-fns";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { CalendarDay } from "@/components/active-programs/calendar/CalendarDay";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { DashboardContent } from "@/components/dashboard/DashboardContent";
 
 const Dashboard = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -165,108 +163,28 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-600">
-                Καλώς ήρθατε, {isAdmin ? 'Admin User!' : userProfile?.name || user?.email}
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                {userProfile?.name || user?.email}
-                {isAdmin && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
-              </span>
-              <Button 
-                variant="outline" 
-                className="rounded-none"
-                onClick={handleSignOut}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Αποσύνδεση
-              </Button>
-            </div>
-          </div>
-        </nav>
+        <DashboardHeader
+          isAdmin={isAdmin}
+          userProfile={userProfile}
+          userEmail={user?.email}
+          onSignOut={handleSignOut}
+        />
 
         {/* Dashboard Content */}
         <div className="flex-1 p-6">
           {/* Tabs */}
-          <div className="flex space-x-6 mb-6">
-            <button className="text-sm font-medium text-blue-600 border-b-2 border-blue-600 pb-2">
-              Επισκόπηση
-            </button>
-            <button className="text-sm font-medium text-gray-500 pb-2">
-              Αναλυτικά
-            </button>
-            <button className="text-sm font-medium text-gray-500 pb-2">
-              Αναφορές
-            </button>
-          </div>
+          <DashboardTabs />
 
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              title="Σύνολο Χρηστών"
-              value={stats.totalUsers}
-              subtitle={`Αθλητές: ${stats.athletes} | Προπονητές: ${stats.trainers} | Γονείς: ${stats.parents} | Γενικοί: ${stats.general}`}
-              icon={<Users className="h-5 w-5" />}
-              trend="up"
-            />
-            <StatCard
-              title="Νέοι Χρήστες"
-              value={stats.newUsersThisMonth}
-              subtitle="Αυτόν τον μήνα"
-              icon={<TrendingUp className="h-5 w-5" />}
-              trend={stats.newUsersThisMonth > 0 ? "up" : "neutral"}
-            />
-            <StatCard
-              title="Ενεργά Προγράμματα"
-              value={stats.activePrograms}
-              subtitle="Προγράμματα προπόνησης"
-              icon={<Activity className="h-5 w-5" />}
-              trend={stats.activePrograms > 0 ? "up" : "neutral"}
-            />
-            <StatCard
-              title="Διαθέσιμες Ασκήσεις"
-              value={stats.totalExercises}
-              subtitle="Στη βάση δεδομένων"
-              icon={<Dumbbell className="h-5 w-5" />}
-              trend="neutral"
-            />
-          </div>
+          <DashboardStats stats={stats} />
 
           {/* Lower Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <RecentActivity />
-            </div>
-            <div className="space-y-6">
-              <QuickActions />
-              
-              {/* Today's Programs Section for Admin - using CalendarDay component */}
-              {isAdmin && (
-                <Card className="rounded-none">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Activity className="h-5 w-5 mr-2" />
-                      Σημερινά Προγράμματα ({format(new Date(), 'dd/MM/yyyy')})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CalendarDay
-                      day={new Date()}
-                      currentDate={new Date()}
-                      programs={todaysPrograms}
-                      allCompletions={allCompletions}
-                      onRefresh={refetch}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
+          <DashboardContent
+            isAdmin={isAdmin}
+            todaysPrograms={todaysPrograms}
+            allCompletions={allCompletions}
+            onRefresh={refetch}
+          />
         </div>
       </div>
     </div>
