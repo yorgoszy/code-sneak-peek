@@ -7,6 +7,7 @@ import { ProgramAssignmentDialog } from './builder/ProgramAssignmentDialog';
 import { useProgramBuilderState } from './builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from './builder/hooks/useProgramBuilderActions';
 import { useProgramAssignments } from '@/hooks/programs/useProgramAssignments';
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { toast } from "sonner";
 
 interface ProgramBuilderDialogProps {
@@ -15,6 +16,11 @@ interface ProgramBuilderDialogProps {
   onCreateProgram: (program: any) => Promise<any>;
   onOpenChange: () => void;
   editingProgram?: Program | null;
+  editingAssignment?: {
+    id: string;
+    user_id: string;
+    training_dates: string[];
+  } | null;
   isOpen: boolean;
 }
 
@@ -24,11 +30,14 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   onCreateProgram,
   onOpenChange,
   editingProgram,
+  editingAssignment,
   isOpen
 }) => {
   const { program, updateProgram, resetProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises);
   const { createOrUpdateAssignment } = useProgramAssignments();
+  const { getWorkoutCompletions } = useWorkoutCompletions();
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+  const [completedDates, setCompletedDates] = useState<string[]>([]);
   
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises);
 
@@ -43,6 +52,27 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       }
     }
   }, [editingProgram, isOpen]);
+
+  // Fetch completed workouts when editing assignment
+  useEffect(() => {
+    const fetchCompletedDates = async () => {
+      if (editingAssignment) {
+        try {
+          const completions = await getWorkoutCompletions(editingAssignment.id);
+          const completed = completions
+            .filter(c => c.status === 'completed')
+            .map(c => c.scheduled_date);
+          setCompletedDates(completed);
+        } catch (error) {
+          console.error('Error fetching workout completions:', error);
+        }
+      }
+    };
+
+    if (isOpen && editingAssignment) {
+      fetchCompletedDates();
+    }
+  }, [isOpen, editingAssignment, getWorkoutCompletions]);
 
   const handleClose = () => {
     onOpenChange();
@@ -94,6 +124,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     console.log('=== PROGRAM ASSIGNMENT WITH DATES ===');
     console.log('User ID:', userId);
     console.log('Training Dates:', trainingDates);
+    console.log('Editing Assignment:', editingAssignment);
     
     if (!trainingDates || trainingDates.length === 0) {
       toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης');
@@ -116,13 +147,14 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       const programId = savedProgram?.id || editingProgram?.id;
       
       if (programId && userId && trainingDates?.length > 0) {
-        console.log('Creating assignment with specific dates:', {
+        console.log('Creating/updating assignment with specific dates:', {
           programId,
           userId,
-          trainingDates
+          trainingDates,
+          editingAssignment: !!editingAssignment
         });
         
-        // Create assignment with specific training dates
+        // Create or update assignment with specific training dates
         await createOrUpdateAssignment(
           programId, 
           userId, 
@@ -131,8 +163,11 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           trainingDates // specific training dates
         );
         
-        console.log('✅ Assignment created successfully with dates:', trainingDates);
-        toast.success('Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς');
+        console.log('✅ Assignment created/updated successfully with dates:', trainingDates);
+        const successMessage = editingAssignment 
+          ? 'Η ανάθεση ενημερώθηκε επιτυχώς' 
+          : 'Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς';
+        toast.success(successMessage);
         
         handleClose();
         setTimeout(() => {
@@ -148,12 +183,19 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         return;
       }
     } catch (error) {
-      console.error('❌ Error creating assignments:', error);
+      console.error('❌ Error creating/updating assignments:', error);
       toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
     }
   };
 
   const availableUsers = users;
+
+  // Prepare assignment data for editing
+  const assignmentEditData = editingAssignment ? {
+    user_id: editingAssignment.user_id,
+    training_dates: editingAssignment.training_dates,
+    completedDates: completedDates
+  } : undefined;
 
   return (
     <>
@@ -196,6 +238,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         program={program}
         users={availableUsers}
         onAssign={handleAssign}
+        editingAssignment={assignmentEditData}
       />
     </>
   );

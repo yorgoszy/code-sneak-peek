@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +73,13 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
 
   const handleComplete = () => {
     setAttendanceOpen(true);
+  };
+
+  // Prepare assignment data for editing
+  const assignmentEditData = {
+    id: assignment.id,
+    user_id: assignment.user_id,
+    training_dates: assignment.training_dates || []
   };
 
   const handleEditSave = async (programData: any) => {
@@ -200,6 +206,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
         onCreateProgram={handleEditSave}
         onOpenChange={() => setEditDialogOpen(false)}
         editingProgram={assignment.programs}
+        editingAssignment={assignmentEditData}
         isOpen={editDialogOpen}
       />
     </>
