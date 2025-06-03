@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Play, Eye, Edit, CheckCircle2 } from "lucide-react";
 import { DayProgramDialog } from './calendar/DayProgramDialog';
 import { DaySelector } from './DaySelector';
@@ -20,6 +21,15 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
   const { getWorkoutCompletions } = useWorkoutCompletions();
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'active': return 'default';
+      case 'completed': return 'secondary';
+      case 'paused': return 'outline';
+      default: return 'outline';
+    }
+  };
 
   const handleStart = () => {
     setDaySelectorOpen(true);
@@ -92,43 +102,54 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
 
   return (
     <>
-      <div className="flex items-center gap-2 pt-2 border-t">
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="rounded-none flex items-center gap-1"
-          onClick={handleStart}
+      <div className="flex items-center gap-1 flex-shrink-0">
+        {/* Status Badge */}
+        <Badge 
+          variant={getStatusBadgeVariant(assignment.status)} 
+          className="rounded-none text-xs px-1 py-0"
         >
-          <Play className="w-4 h-4" />
-          Έναρξη
-        </Button>
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="rounded-none flex items-center gap-1"
-          onClick={handleView}
-        >
-          <Eye className="w-4 h-4" />
-          Προβολή
-        </Button>
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="rounded-none flex items-center gap-1"
-          onClick={handleEdit}
-        >
-          <Edit className="w-4 h-4" />
-          Επεξεργασία
-        </Button>
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="rounded-none flex items-center gap-1"
-          onClick={handleComplete}
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          Ολοκλήρωση
-        </Button>
+          {assignment.status === 'active' ? 'Ε' : assignment.status}
+        </Badge>
+        
+        {/* Action Buttons */}
+        <div className="flex items-center gap-0.5">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="rounded-none h-5 w-5 p-0"
+            onClick={handleStart}
+            title="Έναρξη"
+          >
+            <Play className="w-2.5 h-2.5" />
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="rounded-none h-5 w-5 p-0"
+            onClick={handleView}
+            title="Προβολή"
+          >
+            <Eye className="w-2.5 h-2.5" />
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="rounded-none h-5 w-5 p-0"
+            onClick={handleEdit}
+            title="Επεξεργασία"
+          >
+            <Edit className="w-2.5 h-2.5" />
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="rounded-none h-5 w-5 p-0"
+            onClick={handleComplete}
+            title="Ολοκλήρωση"
+          >
+            <CheckCircle2 className="w-2.5 h-2.5" />
+          </Button>
+        </div>
       </div>
 
       <DaySelector
