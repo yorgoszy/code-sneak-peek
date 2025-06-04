@@ -520,29 +520,24 @@ const Index = () => {
 
             {/* Right Content */}
             <div className="lg:w-2/5 relative flex flex-col items-center" style={{ paddingTop: '80px' }}>
-              {/* Coach Image - Natural size */}
+              {/* Coach Image */}
               <div className="relative mb-8">
                 <img
                   src="/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"
                   alt="Georgios Zygouris - Head Coach"
                   className="max-w-full h-auto filter grayscale"
                 />
-                {/* Number and green line positioned lower and on same level */}
-                <div className="absolute bottom-1/4 left-8 flex items-center">
-                  <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
+                {/* Number and green line positioned at bottom of image */}
+                <div className="absolute bottom-0 left-0 right-0 flex items-center">
+                  <span className="text-4xl font-bold mr-6 ml-8" style={{ color: '#00ffba' }}>
                     {activeAboutSection.toString().padStart(2, '0')}
                   </span>
                   <div 
-                    className="h-1 w-32"
-                    style={{ backgroundColor: '#00ffba' }}
+                    className="flex-1 mr-8"
+                    style={{ backgroundColor: '#00ffba', height: '2px' }}
                   ></div>
                 </div>
               </div>
-
-              {/* Head Coach title below image */}
-              <h3 className="text-2xl font-bold text-white mb-4">
-                {t.headCoach}
-              </h3>
 
               {/* Coach Info Card */}
               <div className="bg-black bg-opacity-90 p-8 w-full max-w-2xl">
