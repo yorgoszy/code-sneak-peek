@@ -169,7 +169,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-robert">
+    <div className="min-h-screen bg-white font-robert w-full overflow-x-hidden">
       <style>{`
         .nav-link:hover {
           color: #00ffba !important;
@@ -213,12 +213,18 @@ const Index = () => {
         .carousel-btn:hover svg {
           color: #00ffba !important;
         }
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        * {
+          box-sizing: border-box;
+        }
       `}</style>
       
-      {/* Black Navigation - Keep full width container but constrain content */}
+      {/* Black Navigation - Full width, no padding */}
       <nav className="fixed top-0 w-full bg-black z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* ... keep existing code (navigation content) */}
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <img 
@@ -290,15 +296,15 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section - Full width background, constrained content */}
-      <section id="home" className="relative pt-16 min-h-screen flex items-center">
+      {/* Hero Section - Full viewport width */}
+      <section id="home" className="relative pt-16 min-h-screen flex items-center w-screen">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat w-full"
           style={{
             backgroundImage: `url('/lovable-uploads/7d78ce26-3ce9-488f-9948-1cb90eac5b9e.png')`
           }}
         >
-          <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+          <div className="absolute inset-0 bg-black bg-opacity-60 w-full"></div>
         </div>
         
         <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8">
@@ -327,8 +333,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Programs Section - Full width background, constrained content */}
-      <section id="programs" className="py-20 bg-black relative w-full">
+      {/* Programs Section - Full viewport width */}
+      <section id="programs" className="py-20 bg-black relative w-screen">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-16">
@@ -430,8 +436,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Blog Section - Full width background, constrained content */}
-      <section id="blog" className="py-20 bg-white w-full">
+      {/* Blog Section - Full viewport width */}
+      <section id="blog" className="py-20 bg-white w-screen">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
@@ -444,8 +450,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* About Us Section - Full width background, constrained content */}
-      <section id="about" className="py-20 bg-gray-50 w-full">
+      {/* About Us Section - Full viewport width */}
+      <section id="about" className="py-20 bg-gray-50 w-screen">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
@@ -458,8 +464,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Results Section - Full width background, constrained content */}
-      <section id="results" className="py-20 bg-white w-full">
+      {/* Results Section - Full viewport width */}
+      <section id="results" className="py-20 bg-white w-screen">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
@@ -472,8 +478,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Contact Section - Full width background, constrained content */}
-      <section id="contact" className="py-20 bg-gray-50 w-full">
+      {/* Contact Section - Full viewport width */}
+      <section id="contact" className="py-20 bg-gray-50 w-screen">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
@@ -486,8 +492,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer - Full width background, constrained content */}
-      <footer className="bg-black text-white py-8 w-full">
+      {/* Footer - Full viewport width */}
+      <footer className="bg-black text-white py-8 w-screen">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center">
