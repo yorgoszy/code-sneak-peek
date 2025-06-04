@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Minimize2 } from 'lucide-react';
+import { Minimize2, X } from 'lucide-react';
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
@@ -182,14 +181,24 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Πρόγραμμα για {format(selectedDate, 'dd/MM/yyyy')}</span>
-            <Button
-              onClick={handleMinimize}
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-gray-600 p-1 h-6 w-6"
-            >
-              <Minimize2 className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center space-x-1">
+              <Button
+                onClick={handleMinimize}
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-gray-600 p-1 h-6 w-6"
+              >
+                <Minimize2 className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-gray-600 p-1 h-6 w-6"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
         {content}

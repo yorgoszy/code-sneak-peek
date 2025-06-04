@@ -106,6 +106,25 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
 
   const dayPrograms = getProgramsForDay(day);
 
+  // Calculate if any program is completed for the day
+  const getDayColor = () => {
+    if (dayPrograms.length === 0) return '';
+    
+    const allCompleted = dayPrograms.every(program => {
+      const status = getWorkoutStatus(program, dayString);
+      return status === 'completed';
+    });
+    
+    const someCompleted = dayPrograms.some(program => {
+      const status = getWorkoutStatus(program, dayString);
+      return status === 'completed';
+    });
+    
+    if (allCompleted) return 'bg-[#00ffba]'; // Πράσινο αν όλα ολοκληρωμένα
+    if (someCompleted) return 'bg-gradient-to-r from-[#00ffba] to-[#3b82f6]'; // Gradient αν κάποια ολοκληρωμένα
+    return 'bg-[#3b82f6]'; // Μπλε αν κανένα δεν είναι ολοκληρωμένο
+  };
+
   if (isCompactMode) {
     return (
       <>
@@ -129,7 +148,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           <div className="flex-1 overflow-hidden">
             {dayPrograms.length > 0 && (
               <div 
-                className="w-full h-1.5 bg-[#00ffba] rounded-none cursor-pointer mt-0.5"
+                className={`w-full h-1.5 rounded-none cursor-pointer mt-0.5 ${getDayColor()}`}
                 onClick={handleDayClick}
               />
             )}

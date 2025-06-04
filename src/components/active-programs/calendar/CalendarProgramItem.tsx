@@ -33,7 +33,7 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   const getStatusColor = () => {
     if (workoutStatus === 'completed') return '#00ffba'; // Πράσινο για ολοκληρωμένα
     if (workoutStatus === 'missed') return '#ef4444'; // Κόκκινο για χαμένα
-    return '#3b82f6'; // Μπλε για προγραμματισμένα
+    return '#3b82f6'; // Μπλε για προγραμματισμένα και σε εξέλιξη
   };
 
   const userName = program.app_users?.name || 'Άγνωστος χρήστης';
