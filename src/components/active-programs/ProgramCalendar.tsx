@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import { startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek } from "date-fns";
 import { CalendarHeader } from './calendar/CalendarHeader';
 import { CalendarGrid } from './calendar/CalendarGrid';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -50,7 +50,10 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRe
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  // Ξεκινάμε από την Κυριακή της εβδομάδας που περιέχει την πρώτη μέρα του μήνα
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 }); // 0 = Κυριακή
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
+  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const goToPreviousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
@@ -61,28 +64,30 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRe
   };
 
   return (
-    <Card className="w-full rounded-none">
-      <CardHeader>
+    <Card className="w-full rounded-none h-full flex flex-col">
+      <CardHeader className="pb-2 flex-shrink-0">
         <CalendarHeader
           currentDate={currentDate}
           onPreviousMonth={goToPreviousMonth}
           onNextMonth={goToNextMonth}
         />
       </CardHeader>
-      <CardContent>
-        <CalendarGrid
-          days={days}
-          currentDate={currentDate}
-          programs={programs}
-          allCompletions={allCompletions}
-          onRefresh={onRefresh}
-        />
-        
-        {programs.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            Δεν υπάρχουν ενεργά προγράμματα
-          </div>
-        )}
+      <CardContent className="flex-1 overflow-hidden p-2">
+        <div className="h-full overflow-auto">
+          <CalendarGrid
+            days={days}
+            currentDate={currentDate}
+            programs={programs}
+            allCompletions={allCompletions}
+            onRefresh={onRefresh}
+          />
+          
+          {programs.length === 0 && (
+            <div className="text-center py-4 text-gray-500 text-sm">
+              Δεν υπάρχουν ενεργά προγράμματα
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

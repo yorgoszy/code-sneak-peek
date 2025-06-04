@@ -5,10 +5,12 @@ import { Plus, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { RunModeQuarter } from "@/components/run-mode/RunModeQuarter";
+import { useNavigate } from 'react-router-dom';
 
 const RunMode = () => {
   const [quarters, setQuarters] = useState<number[]>([1, 2, 3, 4]);
   const { programs, loading } = useActivePrograms(true);
+  const navigate = useNavigate();
   
   // Φιλτράρουμε τα προγράμματα για σήμερα
   const todayString = format(new Date(), 'yyyy-MM-dd');
@@ -28,19 +30,7 @@ const RunMode = () => {
   };
 
   const exitRunMode = () => {
-    window.history.back();
-  };
-
-  // Δυναμική λογική για το grid layout
-  const getGridClasses = (quarterCount: number) => {
-    if (quarterCount === 1) return 'grid-cols-1';
-    if (quarterCount === 2) return 'grid-cols-2';
-    if (quarterCount === 3) return 'grid-cols-3';
-    if (quarterCount === 4) return 'grid-cols-2 grid-rows-2';
-    if (quarterCount <= 6) return 'grid-cols-3 grid-rows-2';
-    if (quarterCount <= 8) return 'grid-cols-4 grid-rows-2';
-    if (quarterCount <= 9) return 'grid-cols-3 grid-rows-3';
-    return 'grid-cols-4 grid-rows-3';
+    navigate('/dashboard/active-programs');
   };
 
   if (loading) {
@@ -52,7 +42,7 @@ const RunMode = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative">
+    <div className="min-h-screen bg-black text-white relative overflow-auto">
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-[#00ffba]">
@@ -81,22 +71,29 @@ const RunMode = () => {
       </div>
 
       {/* Grid Container */}
-      <div className="pt-20 p-4 h-screen">
-        <div className={`grid gap-4 h-full ${getGridClasses(quarters.length)}`}>
-          {quarters.map((quarterId) => (
-            <RunModeQuarter
+      <div className="pt-20 p-4 min-h-screen">
+        <div className="grid grid-cols-2 gap-4 max-w-full">
+          {quarters.map((quarterId, index) => (
+            <div 
               key={quarterId}
-              quarterId={quarterId}
-              programs={todaysPrograms}
-              onRemove={() => removeQuarter(quarterId)}
-              canRemove={quarters.length > 1}
-            />
+              className={`${index >= 4 ? 'col-span-1' : ''}`}
+              style={{ 
+                height: index < 4 ? 'calc(50vh - 3rem)' : 'calc(50vh - 3rem)'
+              }}
+            >
+              <RunModeQuarter
+                quarterId={quarterId}
+                programs={todaysPrograms}
+                onRemove={() => removeQuarter(quarterId)}
+                canRemove={quarters.length > 1}
+              />
+            </div>
           ))}
         </div>
       </div>
 
       {todaysPrograms.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <h2 className="text-xl text-gray-400 mb-2">Δεν υπάρχουν προγράμματα για σήμερα</h2>
             <p className="text-gray-600">Προσθέστε προγράμματα στο ημερολόγιο για να χρησιμοποιήσετε το Run Mode</p>

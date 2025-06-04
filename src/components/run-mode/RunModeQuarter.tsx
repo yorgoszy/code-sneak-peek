@@ -20,13 +20,12 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
   canRemove
 }) => {
   const handleRefresh = () => {
-    // Refresh logic can be added here if needed
     console.log('Refreshing quarter calendar...');
   };
 
   return (
-    <Card className="rounded-none border-2 border-gray-600 bg-gray-900/50 bg-opacity-80 backdrop-blur-sm h-full">
-      <CardHeader className="pb-2">
+    <Card className="rounded-none border-2 border-gray-600 bg-gray-900/50 bg-opacity-80 backdrop-blur-sm h-full flex flex-col">
+      <CardHeader className="pb-2 flex-shrink-0">
         <div className="flex justify-between items-center">
           <h3 className="text-sm font-medium text-white">Τεταρτημόριο {quarterId}</h3>
           {canRemove && (
@@ -42,9 +41,8 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 overflow-hidden flex flex-col">
-        {/* Calendar View - Using the same component from active-programs */}
-        <div className="flex-1 overflow-hidden">
+      <CardContent className="flex-1 overflow-hidden p-2">
+        <div className="h-full overflow-auto">
           <ProgramCalendar 
             programs={programs}
             onRefresh={handleRefresh}
