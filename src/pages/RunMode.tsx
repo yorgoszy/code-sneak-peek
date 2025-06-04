@@ -9,15 +9,8 @@ import { useNavigate } from 'react-router-dom';
 
 const RunMode = () => {
   const [quarters, setQuarters] = useState<number[]>([1, 2, 3, 4]);
-  const { programs, loading } = useActivePrograms(true);
+  const { programs, loading } = useActivePrograms(true); // Παίρνουμε όλα τα προγράμματα
   const navigate = useNavigate();
-  
-  // Φιλτράρουμε τα προγράμματα για σήμερα
-  const todayString = format(new Date(), 'yyyy-MM-dd');
-  const todaysPrograms = programs.filter(program => 
-    program.training_dates && Array.isArray(program.training_dates) && 
-    program.training_dates.includes(todayString)
-  );
 
   const addQuarter = () => {
     setQuarters(prev => [...prev, Math.max(...prev) + 1]);
@@ -53,7 +46,7 @@ const RunMode = () => {
             onClick={addQuarter}
             variant="outline"
             size="sm"
-            className="bg-transparent border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black rounded-none"
+            className="bg-transparent border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black"
           >
             <Plus className="h-4 w-4 mr-2" />
             Προσθήκη Τεταρτημορίου
@@ -62,7 +55,7 @@ const RunMode = () => {
             onClick={exitRunMode}
             variant="outline"
             size="sm"
-            className="bg-transparent border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-none"
+            className="bg-transparent border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
           >
             <X className="h-4 w-4 mr-2" />
             Έξοδος
@@ -83,7 +76,7 @@ const RunMode = () => {
             >
               <RunModeQuarter
                 quarterId={quarterId}
-                programs={todaysPrograms}
+                programs={programs}
                 onRemove={() => removeQuarter(quarterId)}
                 canRemove={quarters.length > 1}
               />
@@ -92,10 +85,10 @@ const RunMode = () => {
         </div>
       </div>
 
-      {todaysPrograms.length === 0 && (
+      {programs.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            <h2 className="text-xl text-gray-400 mb-2">Δεν υπάρχουν προγράμματα για σήμερα</h2>
+            <h2 className="text-xl text-gray-400 mb-2">Δεν υπάρχουν ενεργά προγράμματα</h2>
             <p className="text-gray-600">Προσθέστε προγράμματα στο ημερολόγιο για να χρησιμοποιήσετε το Run Mode</p>
           </div>
         </div>
