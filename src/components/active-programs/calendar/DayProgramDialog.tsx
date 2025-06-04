@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
-  const { addMinimizedProgram } = useMinimizedPrograms();
+  const { addMinimizedProgram, updateMinimizedProgram } = useMinimizedPrograms();
 
   const {
     workoutInProgress,
@@ -52,12 +51,14 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     handleCompleteWorkout,
     handleCancelWorkout,
     exerciseCompletion,
-    initializeWorkoutState
+    initializeWorkoutState,
+    getCurrentWorkoutState
   } = useWorkoutState(program, selectedDate, onRefresh, onClose);
 
   // Initialize workout state from minimized program if provided
   useEffect(() => {
     if (initialWorkoutState && initializeWorkoutState) {
+      console.log('🔄 Restoring workout state:', initialWorkoutState);
       initializeWorkoutState(
         initialWorkoutState.workoutInProgress,
         initialWorkoutState.startTime,
@@ -71,17 +72,16 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const handleMinimize = () => {
     if (program && selectedDate) {
       const minimizedId = `${program.id}-${format(selectedDate, 'yyyy-MM-dd')}`;
-      const currentTime = new Date();
+      const currentWorkoutState = getCurrentWorkoutState();
+      
+      console.log('📦 Minimizing with workout state:', currentWorkoutState);
+      
       addMinimizedProgram({
         id: minimizedId,
         program,
         selectedDate,
         workoutStatus: workoutInProgress ? 'in_progress' : workoutStatus,
-        workoutState: workoutInProgress ? {
-          workoutInProgress: true,
-          startTime: currentTime,
-          elapsedTime
-        } : undefined
+        workoutState: currentWorkoutState
       });
       onClose();
     }
@@ -202,7 +202,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-none">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-none">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Πρόγραμμα για {format(selectedDate, 'dd/MM/yyyy')}</span>

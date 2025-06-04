@@ -20,6 +20,7 @@ interface MinimizedProgramsStore {
   minimizedPrograms: MinimizedProgram[];
   addMinimizedProgram: (program: MinimizedProgram) => void;
   removeMinimizedProgram: (id: string) => void;
+  updateMinimizedProgram: (id: string, updates: Partial<MinimizedProgram>) => void;
   clearAll: () => void;
   getMinimizedProgram: (id: string) => MinimizedProgram | undefined;
 }
@@ -29,7 +30,6 @@ export const useMinimizedPrograms = create<MinimizedProgramsStore>((set, get) =>
   
   addMinimizedProgram: (program) => {
     set((state) => {
-      // Αν υπάρχει ήδη, το αντικαθιστούμε
       const filtered = state.minimizedPrograms.filter(p => p.id !== program.id);
       return {
         minimizedPrograms: [...filtered, program]
@@ -40,6 +40,14 @@ export const useMinimizedPrograms = create<MinimizedProgramsStore>((set, get) =>
   removeMinimizedProgram: (id) => {
     set((state) => ({
       minimizedPrograms: state.minimizedPrograms.filter(p => p.id !== id)
+    }));
+  },
+
+  updateMinimizedProgram: (id, updates) => {
+    set((state) => ({
+      minimizedPrograms: state.minimizedPrograms.map(p => 
+        p.id === id ? { ...p, ...updates } : p
+      )
     }));
   },
   

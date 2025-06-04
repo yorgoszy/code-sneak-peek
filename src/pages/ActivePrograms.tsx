@@ -27,9 +27,15 @@ const ActivePrograms = () => {
   const activePrograms = programs.filter(p => p.status === 'active');
   const completedPrograms = programs.filter(p => p.status === 'completed');
 
+  const handleRefresh = async () => {
+    console.log('🔄 Refreshing all data...');
+    await refetch();
+  };
+
   const handleRestoreProgram = (programId: string) => {
     const minimizedProgram = getMinimizedProgram(programId);
     if (minimizedProgram) {
+      console.log('🔄 Restoring program:', minimizedProgram);
       setRestoredProgram({
         program: minimizedProgram.program,
         selectedDate: minimizedProgram.selectedDate,
@@ -94,15 +100,15 @@ const ActivePrograms = () => {
             </TabsList>
 
             <TabsContent value="calendar" className="space-y-4">
-              <ProgramCalendar programs={activePrograms} onRefresh={refetch} />
+              <ProgramCalendar programs={activePrograms} onRefresh={handleRefresh} />
             </TabsContent>
 
             <TabsContent value="list" className="space-y-4">
-              <ActiveProgramsList programs={activePrograms} onRefresh={refetch} />
+              <ActiveProgramsList programs={activePrograms} onRefresh={handleRefresh} />
             </TabsContent>
 
             <TabsContent value="completed" className="space-y-4">
-              <CompletedProgramsList programs={completedPrograms} onRefresh={refetch} />
+              <CompletedProgramsList programs={completedPrograms} onRefresh={handleRefresh} />
             </TabsContent>
           </Tabs>
         </div>
@@ -117,7 +123,7 @@ const ActivePrograms = () => {
           program={restoredProgram.program}
           selectedDate={restoredProgram.selectedDate}
           workoutStatus={restoredProgram.workoutStatus}
-          onRefresh={refetch}
+          onRefresh={handleRefresh}
           initialWorkoutState={restoredProgram.workoutState}
         />
       )}
