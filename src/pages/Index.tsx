@@ -1,4 +1,5 @@
 
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -521,8 +522,8 @@ const Index = () => {
 
             {/* Right Content */}
             <div className="lg:w-2/5 relative flex flex-col items-center">
-              {/* Coach Image - Made smaller */}
-              <div className="relative h-80 w-80 mb-8">
+              {/* Coach Image - Made larger */}
+              <div className="relative h-[640px] w-[640px] mb-8">
                 <img
                   src="/lovable-uploads/714ddad4-0373-416a-914f-163acc41a277.png"
                   alt="Georgios Zygouris - Head Coach"
@@ -636,3 +637,4 @@ const Index = () => {
 };
 
 export default Index;
+
