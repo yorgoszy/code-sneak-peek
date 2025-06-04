@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 
 export const useTranslations = () => {
@@ -55,7 +54,14 @@ export const useTranslations = () => {
       professionalAthlete: "Επαγγελματίας Αθλητής",
       professionalDescription: "Επαγγελματίας αθλητής Muay Thai με εμπειρία σε αγώνες υψηλού επιπέδου",
       coreValues: "Βασικές Αξίες",
-      coreValuesDescription: "Ο στόχος μας δεν είναι μόνο η σωματική βελτίωση, αλλά και η καλλιέργεια αυτοπεποίθησης, χαρακτήρα και βασικών αξιών"
+      coreValuesDescription: "Ο στόχος μας δεν είναι μόνο η σωματική βελτίωση, αλλά και η καλλιέργεια αυτοπεποίθησης, χαρακτήρα και βασικών αξιών",
+      // Section 02 - Vision boxes
+      moreThanPhysical: "Περισσότερο από Φυσικό",
+      moreThanPhysicalDesc: "Δεν προπονούμε απλώς σώματα. Διαμορφώνουμε χαρακτήρα. Κάθε παιδί είναι ένας κόσμος σε κίνηση, και η κίνηση είναι αυτοέκφραση, αυτοπεποίθηση και ανάπτυξη.",
+      buildingCharacter: "Χτίσιμο Χαρακτήρα",
+      buildingCharacterDesc: "Διδάσκουμε σεβασμό, πειθαρχία, επιμονή και συνεργασία. Στόχος μας είναι να δημιουργήσουμε ένα σχολείο ζωής όπου τα παιδιά μαθαίνουν να στέκονται όρθια φυσικά, ψυχικά και ηθικά.",
+      trustTheProcess: "Εμπιστοσύνη στη Διαδικασία",
+      trustTheProcessDesc: "Για εμάς, το αύριο αρχίζει σήμερα. Βήμα βήμα. Με εμπιστοσύνη στη διαδικασία. Με το κουράγιο να πάμε παραπέρα. Με τη θέληση να ξεπεράσουμε τα όρια."
     },
     en: {
       home: "Home",
@@ -107,7 +113,14 @@ export const useTranslations = () => {
       professionalAthlete: "Professional Athlete",
       professionalDescription: "Professional Muay Thai athlete with experience in high-level competitions",
       coreValues: "Core Values",
-      coreValuesDescription: "Our goal is not only physical improvement, but also the cultivation of confidence, character and core values"
+      coreValuesDescription: "Our goal is not only physical improvement, but also the cultivation of confidence, character and core values",
+      // Section 02 - Vision boxes
+      moreThanPhysical: "More Than Physical",
+      moreThanPhysicalDesc: "We don't just train bodies. We shape character. Every child is a world in motion, and movement is self-expression, confidence and development.",
+      buildingCharacter: "Building Character",
+      buildingCharacterDesc: "We teach respect, discipline, perseverance and cooperation. Our goal is to create a school of life where children learn to stand upright physically, mentally and morally.",
+      trustTheProcess: "Trust the Process",
+      trustTheProcessDesc: "For us, tomorrow starts today. Step by step. With trust in the process. With the courage to go further. With the will to push the limits."
     }
   };
 

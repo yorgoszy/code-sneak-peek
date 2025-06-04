@@ -74,7 +74,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 className="max-w-full h-auto filter grayscale"
               />
               <div className="absolute bottom-0 left-0 right-0 flex items-center">
-                <span className="text-4xl font-bold mr-6 ml-8" style={{ color: '#00ffba' }}>
+                <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
                   {activeAboutSection.toString().padStart(2, '0')}
                 </span>
                 <div 
@@ -125,6 +125,70 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     <h4 className="text-white font-bold mb-2">{translations.coreValues}</h4>
                     <p className="text-gray-400 text-sm">
                       {translations.coreValuesDescription}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {activeAboutSection === 2 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div 
+                    className="p-4 border-l-2"
+                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                  >
+                    <h4 className="text-white font-bold mb-2">{translations.moreThanPhysical}</h4>
+                    <p className="text-gray-400 text-sm">
+                      {translations.moreThanPhysicalDesc}
+                    </p>
+                  </div>
+                  <div 
+                    className="p-4 border-l-2"
+                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                  >
+                    <h4 className="text-white font-bold mb-2">{translations.buildingCharacter}</h4>
+                    <p className="text-gray-400 text-sm">
+                      {translations.buildingCharacterDesc}
+                    </p>
+                  </div>
+                  <div 
+                    className="p-4 border-l-2"
+                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                  >
+                    <h4 className="text-white font-bold mb-2">{translations.trustTheProcess}</h4>
+                    <p className="text-gray-400 text-sm">
+                      {translations.trustTheProcessDesc}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {activeAboutSection === 3 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div 
+                    className="p-4 border-l-2"
+                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                  >
+                    <h4 className="text-white font-bold mb-2">Επιστημονική Προσέγγιση</h4>
+                    <p className="text-gray-400 text-sm">
+                      Βασιζόμαστε σε σύγχρονες επιστημονικές μεθόδους και έρευνες για τη βέλτιστη αθλητική ανάπτυξη.
+                    </p>
+                  </div>
+                  <div 
+                    className="p-4 border-l-2"
+                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                  >
+                    <h4 className="text-white font-bold mb-2">Εξατομικευμένη Προσέγγιση</h4>
+                    <p className="text-gray-400 text-sm">
+                      Κάθε αθλητής είναι μοναδικός και χρειάζεται ειδική προσέγγιση ανάλογα με τις ανάγκες του.
+                    </p>
+                  </div>
+                  <div 
+                    className="p-4 border-l-2"
+                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                  >
+                    <h4 className="text-white font-bold mb-2">Ολιστική Ανάπτυξη</h4>
+                    <p className="text-gray-400 text-sm">
+                      Εστιάζουμε στη συνολική ανάπτυξη του αθλητή, φυσική, ψυχική και κοινωνική.
                     </p>
                   </div>
                 </div>
