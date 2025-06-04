@@ -1,11 +1,9 @@
-
-
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
-import { useState } from "react";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -482,7 +480,7 @@ const Index = () => {
         <div className="w-full">
           <div className="flex flex-col lg:flex-row min-h-[80vh]">
             {/* Left Content */}
-            <div className="lg:w-3/5 flex flex-col justify-center px-8 lg:px-16 xl:px-24">
+            <div className="lg:w-3/5 flex flex-col px-8 lg:px-16 xl:px-24" style={{ paddingTop: '80px' }}>
               {/* About Us Header */}
               <div className="mb-12">
                 <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
@@ -521,7 +519,7 @@ const Index = () => {
             </div>
 
             {/* Right Content */}
-            <div className="lg:w-2/5 relative flex flex-col items-center">
+            <div className="lg:w-2/5 relative flex flex-col items-center" style={{ paddingTop: '80px' }}>
               {/* Coach Image - Natural size */}
               <div className="relative mb-8">
                 <img
@@ -637,4 +635,3 @@ const Index = () => {
 };
 
 export default Index;
-
