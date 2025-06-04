@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UnifiedTestSession } from "@/components/tests/UnifiedTestSession";
 import { AnthropometricTests } from "@/components/tests/AnthropometricTests";
 import { FunctionalTests } from "@/components/tests/FunctionalTests";
 import { StrengthTests } from "@/components/tests/StrengthTests";
@@ -108,14 +109,19 @@ const Tests = () => {
           </Card>
 
           {selectedAthleteId && (
-            <Tabs defaultValue="anthropometric" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 rounded-none">
+            <Tabs defaultValue="unified" className="w-full">
+              <TabsList className="grid w-full grid-cols-6 rounded-none">
+                <TabsTrigger value="unified" className="rounded-none">Ενιαία Συνεδρία</TabsTrigger>
                 <TabsTrigger value="anthropometric" className="rounded-none">Σωματομετρικά</TabsTrigger>
                 <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
                 <TabsTrigger value="strength" className="rounded-none">Δύναμη</TabsTrigger>
                 <TabsTrigger value="endurance" className="rounded-none">Αντοχή</TabsTrigger>
                 <TabsTrigger value="jumps" className="rounded-none">Άλματα</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="unified" className="mt-6">
+                <UnifiedTestSession selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
+              </TabsContent>
 
               <TabsContent value="anthropometric" className="mt-6">
                 <AnthropometricTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
