@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface AboutSectionProps {
@@ -115,7 +114,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               {activeAboutSection === 1 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
                   <div 
-                    className="p-4 border-l-2 rounded-sm"
+                    className="p-4 border-l-2 rounded"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba', width: 'calc(33.333% - 6.67px)' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.academicBackground}</h4>
@@ -124,7 +123,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </p>
                   </div>
                   <div 
-                    className="p-4 border-l-2 rounded-sm"
+                    className="p-4 border-l-2 rounded"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba', width: 'calc(33.333% - 6.67px)' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.professionalAthlete}</h4>
@@ -133,7 +132,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </p>
                   </div>
                   <div 
-                    className="p-4 border-l-2 rounded-sm"
+                    className="p-4 border-l-2 rounded"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba', width: 'calc(33.333% - 6.67px)' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.coreValues}</h4>
@@ -147,7 +146,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               {activeAboutSection === 2 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
                   <div 
-                    className="p-4 border-l-2 rounded-sm"
+                    className="p-4 border-l-2 rounded"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba', width: 'calc(33.333% - 6.67px)' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.moreThanPhysical}</h4>
@@ -156,7 +155,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </p>
                   </div>
                   <div 
-                    className="p-4 border-l-2 rounded-sm"
+                    className="p-4 border-l-2 rounded"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba', width: 'calc(33.333% - 6.67px)' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.buildingCharacter}</h4>
@@ -165,7 +164,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </p>
                   </div>
                   <div 
-                    className="p-4 border-l-2 rounded-sm"
+                    className="p-4 border-l-2 rounded"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba', width: 'calc(33.333% - 6.67px)' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.trustTheProcess}</h4>
@@ -179,7 +178,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               {activeAboutSection === 3 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
                   <div 
-                    className="p-4 border-l-2 rounded-sm"
+                    className="p-4 border-l-2 rounded"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba', width: 'calc(33.333% - 6.67px)' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.movementSkills}</h4>
@@ -190,7 +189,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </div>
                   </div>
                   <div 
-                    className="p-4 border-l-2 rounded-sm"
+                    className="p-4 border-l-2 rounded"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba', width: 'calc(33.333% - 6.67px)' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.assessment}</h4>
@@ -202,7 +201,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </div>
                   </div>
                   <div 
-                    className="p-4 border-l-2 rounded-sm"
+                    className="p-4 border-l-2 rounded"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba', width: 'calc(33.333% - 6.67px)' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.resultsFocused}</h4>
