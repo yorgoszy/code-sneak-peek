@@ -522,12 +522,12 @@ const Index = () => {
 
             {/* Right Content */}
             <div className="lg:w-2/5 relative flex flex-col items-center">
-              {/* Coach Image - Made larger */}
-              <div className="relative h-[640px] w-[640px] mb-8">
+              {/* Coach Image - Natural size */}
+              <div className="relative mb-8">
                 <img
-                  src="/lovable-uploads/714ddad4-0373-416a-914f-163acc41a277.png"
+                  src="/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"
                   alt="Georgios Zygouris - Head Coach"
-                  className="w-full h-full object-cover filter grayscale"
+                  className="max-w-full h-auto filter grayscale"
                 />
                 {/* Green line overlay */}
                 <div 
