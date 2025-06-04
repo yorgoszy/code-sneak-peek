@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -143,7 +142,7 @@ const Tests = () => {
   };
 
   const saveAnthropometricData = async () => {
-    if (!selectedAthleteId || !user) {
+    if (!selectedAthleteId) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
       return;
     }
@@ -155,13 +154,12 @@ const Tests = () => {
         return;
       }
 
-      // Δημιουργία συνεδρίας
+      // Δημιουργία συνεδρίας χωρίς created_by
       const { data: session, error: sessionError } = await supabase
         .from('anthropometric_test_sessions')
         .insert({
           user_id: selectedAthleteId,
-          test_date: selectedDate,
-          created_by: user.id
+          test_date: selectedDate
         })
         .select()
         .single();
@@ -189,6 +187,19 @@ const Tests = () => {
       if (dataError) throw dataError;
 
       toast.success("Σωματομετρικά τεστ καταγράφηκαν επιτυχώς!");
+      
+      // Καθαρισμός φόρμας
+      setAnthropometricData({
+        height: '',
+        weight: '',
+        bodyFatPercentage: '',
+        muscleMassPercentage: '',
+        waistCircumference: '',
+        hipCircumference: '',
+        chestCircumference: '',
+        armCircumference: '',
+        thighCircumference: ''
+      });
     } catch (error) {
       console.error('Error saving anthropometric data:', error);
       toast.error("Σφάλμα κατά την καταγραφή");
@@ -196,7 +207,7 @@ const Tests = () => {
   };
 
   const saveFunctionalData = async () => {
-    if (!selectedAthleteId || !user) {
+    if (!selectedAthleteId) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
       return;
     }
@@ -212,13 +223,12 @@ const Tests = () => {
         return;
       }
 
-      // Δημιουργία συνεδρίας
+      // Δημιουργία συνεδρίας χωρίς created_by
       const { data: session, error: sessionError } = await supabase
         .from('functional_test_sessions')
         .insert({
           user_id: selectedAthleteId,
-          test_date: selectedDate,
-          created_by: user.id
+          test_date: selectedDate
         })
         .select()
         .single();
@@ -242,6 +252,14 @@ const Tests = () => {
       if (dataError) throw dataError;
 
       toast.success("Λειτουργικά τεστ καταγράφηκαν επιτυχώς!");
+      
+      // Καθαρισμός φόρμας
+      setFunctionalData({
+        fmsScores: {},
+        selectedPosture: [],
+        selectedSquatIssues: [],
+        selectedSingleLegIssues: []
+      });
     } catch (error) {
       console.error('Error saving functional data:', error);
       toast.error("Σφάλμα κατά την καταγραφή");
@@ -249,7 +267,7 @@ const Tests = () => {
   };
 
   const saveEnduranceData = async () => {
-    if (!selectedAthleteId || !user) {
+    if (!selectedAthleteId) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
       return;
     }
@@ -261,13 +279,12 @@ const Tests = () => {
         return;
       }
 
-      // Δημιουργία συνεδρίας
+      // Δημιουργία συνεδρίας χωρίς created_by
       const { data: session, error: sessionError } = await supabase
         .from('endurance_test_sessions')
         .insert({
           user_id: selectedAthleteId,
-          test_date: selectedDate,
-          created_by: user.id
+          test_date: selectedDate
         })
         .select()
         .single();
@@ -303,6 +320,27 @@ const Tests = () => {
       if (dataError) throw dataError;
 
       toast.success("Τεστ αντοχής καταγράφηκαν επιτυχώς!");
+      
+      // Καθαρισμός φόρμας
+      setEnduranceData({
+        pushUps: '',
+        pullUps: '',
+        crunches: '',
+        maxHr: '',
+        restingHr1min: '',
+        vo2Max: '',
+        farmerKg: '',
+        farmerMeters: '',
+        farmerSeconds: '',
+        sprintSeconds: '',
+        sprintMeters: '',
+        sprintResistance: '',
+        sprintWatt: '',
+        masMeters: '',
+        masMinutes: '',
+        masMs: '',
+        masKmh: ''
+      });
     } catch (error) {
       console.error('Error saving endurance data:', error);
       toast.error("Σφάλμα κατά την καταγραφή");
@@ -310,7 +348,7 @@ const Tests = () => {
   };
 
   const saveJumpData = async () => {
-    if (!selectedAthleteId || !user) {
+    if (!selectedAthleteId) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
       return;
     }
@@ -322,13 +360,12 @@ const Tests = () => {
         return;
       }
 
-      // Δημιουργία συνεδρίας
+      // Δημιουργία συνεδρίας χωρίς created_by
       const { data: session, error: sessionError } = await supabase
         .from('jump_test_sessions')
         .insert({
           user_id: selectedAthleteId,
-          test_date: selectedDate,
-          created_by: user.id
+          test_date: selectedDate
         })
         .select()
         .single();
@@ -353,6 +390,16 @@ const Tests = () => {
       if (dataError) throw dataError;
 
       toast.success("Τεστ αλμάτων καταγράφηκαν επιτυχώς!");
+      
+      // Καθαρισμός φόρμας
+      setJumpData({
+        nonCounterMovementJump: '',
+        counterMovementJump: '',
+        depthJump: '',
+        broadJump: '',
+        tripleJumpLeft: '',
+        tripleJumpRight: ''
+      });
     } catch (error) {
       console.error('Error saving jump data:', error);
       toast.error("Σφάλμα κατά την καταγραφή");
@@ -360,7 +407,7 @@ const Tests = () => {
   };
 
   const handleSaveAllTests = async () => {
-    if (!selectedAthleteId || !user) {
+    if (!selectedAthleteId) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
       return;
     }
