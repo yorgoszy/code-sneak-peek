@@ -84,9 +84,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   activeAboutSection === 3 ? "Training Methodology" :
                   "Georgios Zygouris - Head Coach"
                 }
-                className="w-full h-[420px] object-cover filter grayscale"
+                className="w-full h-[290px] object-cover filter grayscale"
               />
-              <div className="absolute flex items-center" style={{ bottom: '20px', left: '20px', right: '20px' }}>
+              <div className="absolute flex items-center" style={{ bottom: '40px', left: '0px', right: '0px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
                   {activeAboutSection.toString().padStart(2, '0')}
                 </span>
@@ -97,24 +97,26 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               </div>
             </div>
 
-            <div className="bg-black bg-opacity-90 w-full max-w-2xl">
-              <div className="p-8 mb-6">
-                <h3 className="text-xl font-bold text-white mb-4">
-                  {activeAboutSection === 1 && translations.headCoach}
-                  {activeAboutSection === 2 && translations.ourVision}
-                  {activeAboutSection === 3 && translations.trainingMethodology}
-                </h3>
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  {activeAboutSection === 1 && translations.coachDescription}
-                  {activeAboutSection === 2 && translations.visionDescription}
-                  {activeAboutSection === 3 && translations.trainingMethodologyDescription}
-                </p>
+            <div className="bg-black bg-opacity-90 w-full">
+              <div className="p-0 mb-6">
+                <div className="px-0 py-8">
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    {activeAboutSection === 1 && translations.headCoach}
+                    {activeAboutSection === 2 && translations.ourVision}
+                    {activeAboutSection === 3 && translations.trainingMethodology}
+                  </h3>
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    {activeAboutSection === 1 && translations.coachDescription}
+                    {activeAboutSection === 2 && translations.visionDescription}
+                    {activeAboutSection === 3 && translations.trainingMethodologyDescription}
+                  </p>
+                </div>
               </div>
 
               {activeAboutSection === 1 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
                   <div 
-                    className="p-4 border-l-2"
+                    className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.academicBackground}</h4>
@@ -123,7 +125,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </p>
                   </div>
                   <div 
-                    className="p-4 border-l-2"
+                    className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.professionalAthlete}</h4>
@@ -132,7 +134,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </p>
                   </div>
                   <div 
-                    className="p-4 border-l-2"
+                    className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.coreValues}</h4>
@@ -144,9 +146,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               )}
 
               {activeAboutSection === 2 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
                   <div 
-                    className="p-4 border-l-2"
+                    className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.moreThanPhysical}</h4>
@@ -155,7 +157,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </p>
                   </div>
                   <div 
-                    className="p-4 border-l-2"
+                    className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.buildingCharacter}</h4>
@@ -164,7 +166,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </p>
                   </div>
                   <div 
-                    className="p-4 border-l-2"
+                    className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.trustTheProcess}</h4>
@@ -176,9 +178,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               )}
 
               {activeAboutSection === 3 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
                   <div 
-                    className="p-4 border-l-2"
+                    className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.movementSkills}</h4>
@@ -189,7 +191,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </div>
                   </div>
                   <div 
-                    className="p-4 border-l-2"
+                    className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.assessment}</h4>
@@ -201,7 +203,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </div>
                   </div>
                   <div 
-                    className="p-4 border-l-2"
+                    className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.resultsFocused}</h4>
