@@ -10,6 +10,7 @@ interface CalendarGridProps {
   allCompletions: any[];
   onRefresh?: () => void;
   isCompactMode?: boolean;
+  containerId?: string;
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -18,9 +19,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   programs,
   allCompletions,
   onRefresh,
-  isCompactMode = false
+  isCompactMode = false,
+  containerId
 }) => {
-  const dayLabels = ['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'];
+  const dayLabels = ['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'];
   
   if (isCompactMode) {
     return (
@@ -33,7 +35,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           ))}
         </div>
         
-        <div className="grid grid-cols-7 gap-0.5 flex-1" style={{ gridTemplateRows: 'repeat(6, 1fr)' }}>
+        <div className="grid grid-cols-7 gap-0.5 flex-1 min-h-0">
           {days.map((day) => (
             <CalendarDay
               key={day.toISOString()}
@@ -43,6 +45,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               allCompletions={allCompletions}
               onRefresh={onRefresh}
               isCompactMode={true}
+              containerId={containerId}
             />
           ))}
         </div>

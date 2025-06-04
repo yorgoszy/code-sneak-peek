@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 import { CalendarProgramItem } from './CalendarProgramItem';
@@ -12,6 +13,7 @@ interface CalendarDayProps {
   allCompletions: any[];
   onRefresh?: () => void;
   isCompactMode?: boolean;
+  containerId?: string;
 }
 
 export const CalendarDay: React.FC<CalendarDayProps> = ({
@@ -20,7 +22,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   programs,
   allCompletions,
   onRefresh,
-  isCompactMode = false
+  isCompactMode = false,
+  containerId
 }) => {
   const [selectedProgram, setSelectedProgram] = useState<{
     program: EnrichedAssignment;
@@ -99,14 +102,14 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       <>
         <div
           className={`
-            aspect-square p-0.5 border border-gray-200 rounded-none flex flex-col
+            w-full h-full min-h-[2rem] p-0.5 border border-gray-200 rounded-none flex flex-col
             ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
             ${isDayToday ? 'ring-1 ring-blue-500' : ''}
           `}
         >
           <div 
             className={`
-              text-xs font-medium cursor-pointer hover:bg-gray-100 text-center flex-shrink-0
+              text-xs font-medium cursor-pointer hover:bg-gray-100 text-center flex-shrink-0 p-0.5
               ${isDayToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
             `}
             onClick={handleDayClick}
@@ -117,7 +120,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           <div className="flex-1 overflow-hidden">
             {dayPrograms.length > 0 && (
               <div 
-                className="w-full h-2 bg-[#00ffba] rounded-none cursor-pointer"
+                className="w-full h-1.5 bg-[#00ffba] rounded-none cursor-pointer mt-0.5"
                 onClick={handleDayClick}
               />
             )}
@@ -132,6 +135,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
             selectedDate={selectedProgram.date}
             workoutStatus={selectedProgram.status}
             onRefresh={onRefresh}
+            containerId={containerId}
           />
         )}
 
@@ -142,6 +146,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           programs={programs}
           allCompletions={allCompletions}
           onProgramClick={handleProgramClick}
+          containerId={containerId}
         />
       </>
     );

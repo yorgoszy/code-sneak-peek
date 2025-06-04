@@ -11,12 +11,14 @@ interface ProgramCalendarProps {
   programs: EnrichedAssignment[];
   onRefresh?: () => void;
   isCompactMode?: boolean;
+  containerId?: string;
 }
 
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ 
   programs, 
   onRefresh, 
-  isCompactMode = false 
+  isCompactMode = false,
+  containerId
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [allCompletions, setAllCompletions] = useState<any[]>([]);
@@ -55,8 +57,8 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
-  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday start
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const goToPreviousMonth = () => {
@@ -69,7 +71,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
 
   if (isCompactMode) {
     return (
-      <div className="w-full h-full flex flex-col bg-white rounded-none">
+      <div className="w-full h-full flex flex-col bg-white rounded-none overflow-hidden">
         <div className="flex-shrink-0 p-1">
           <CalendarHeader
             currentDate={currentDate}
@@ -86,11 +88,12 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
             allCompletions={allCompletions}
             onRefresh={onRefresh}
             isCompactMode={true}
+            containerId={containerId}
           />
         </div>
         
         {programs.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center text-xs text-gray-500">
               Δεν υπάρχουν ενεργά προγράμματα
             </div>
