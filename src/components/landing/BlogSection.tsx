@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef, useEffect } from 'react';
 
 interface BlogSectionProps {
   translations: any;
@@ -6,6 +7,22 @@ interface BlogSectionProps {
 
 const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        setSelectedArticle(null);
+      }
+    };
+
+    if (selectedArticle) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [selectedArticle]);
 
   const articles = {
     el: [
@@ -35,7 +52,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         excerpt: "Η σημασία του μυϊκού προφίλ στην αθλητική επιτυχία και η σχέση μεταξύ ταλέντου και σκληρής δουλειάς.",
         image: "/lovable-uploads/94ce3145-f7b9-430b-86e6-12bca58833d5.png",
         date: "10 Νοεμβρίου 2024",
-        content: `Στις δύο άκρες των κατηγοριών των αθλημάτων συναντάμε τα αθλήματα ισχύος, όπως είναι η άρση βαρών και τα 100μ σπριντ, και τα αθλήματα αντοχής, όπως είναι ο μαραθώνιος. Η βασική τους διαφορά εντοπίζεται στη διάρκεια της προσπάθειας. Στην πρώτη περίπτωση, η προσπάθεια διαρκεί 3-10-15-30 δευτερόλεπτα, ενώ στη δεύτερη, μπορεί να διαρκέσει 1-2-3, ακόμα και 4 ώρες. Αυτή είναι η αφετηρία για όλα. Κάθε άθλημα έχει το δικό του προφίλ, δηλαδή συγκεκριμένες βιολογικές και μεταβολικές απαιτήσεις από τον αθλητή. Ένας από τους πιο σημαντικούς παράγοντες είναι το βιολογικό προφίλ του αθλητή, δηλαδή ο τύπος των μυϊκών ίνεων του, που τον χαρακτηρίζει είτε ως αθλητή ισχύος είτε ως αθλητή αντοχής.
+        content: `Στις δύο άκρες των κατηγοριών των αθλημάτων συναντάμε τα αθλήματα ισχύος, όπως είναι η άρση βαρών και τα 100μ σπριντ, και τα αθλήματα αντοχής, όπως είναι ο μαραθώνιος. Η βασική τους διαφορά εντοπίζεται στη διάρκεια της προσπάθειας. Στην πρώτη περίπτωση, η προσπάθεια διαρκεί 3-10-15-30 δευτερόλεπτα, ενώ στη δεύτερη, μπορεί να διαρκέσει 1-2-3, ακόμα και 4 ώρες. Αυτή είναι η αφετηρία για όλα. Κάθε άθλημα έχει το δικό του προφίλ, δηλαδή συγκεκριμένες βιολογικές και μεταβολικές απαιτήσεις από τον αθλητή. Ένας από τους πιο σημαντικούς παράγοντες είναι το βιολογικό προφίλ του αθλητή, δηλαδή ο τύπος των μυϊκών ινών του, που τον χαρακτηρίζει είτε ως αθλητή ισχύος είτε ως αθλητή αντοχής.
 
 Εάν ένας αθλητής έχει περισσότερες τύπου Ι μυϊκές ίνες, γνωστές και ως «ερυθρές μυϊκές ίνες» λόγω της υψηλής περιεκτικότητάς τους σε αίμα και της μεγαλύτερης παροχής οξυγόνου, αυτές οι ίνες είναι ανθεκτικές στη διάρκεια και επιτρέπουν στον αθλητή να έχει καλές επιδόσεις σε αθλήματα αντοχής, όπως ο μαραθώνιος. Από την άλλη πλευρά, εάν ο αθλητής διαθέτει περισσότερες τύπου ΙΙ μυϊκές ίνες, τότε είναι πιο κατάλληλος για αθλήματα μικρής διάρκειας, όπως τα σπριντ, το άλμα εις ύψος, το ακόντιο και η άρση βαρών.
 
@@ -51,11 +68,39 @@ Join the camp to be a champ!`
       },
       {
         id: 3,
-        title: "Νεανική Δύναμη",
-        excerpt: "Η σημασία της προπόνησης δύναμης στους νέους αθλητές.",
-        image: "/lovable-uploads/f8f84c19-d969-4da5-a85d-fe764201fc6b.png",
+        title: "Ένα αποδοτικό ζέσταμα",
+        excerpt: "Η σημασία του ζεστάματος στην προπόνηση και η εφαρμογή της αρχής του μεγέθους.",
+        image: "/lovable-uploads/b535e536-1d28-4df9-bc04-904228d8bfd5.png",
         date: "5 Νοεμβρίου 2024",
-        content: "Περιεχόμενο άρθρου για τη νεανική δύναμη..."
+        content: `Ένα Αποδοτικό Ζέσταμα
+Το ζέσταμα αποτελεί ένα από τα πιο κρίσιμα στάδια της προπόνησης, καθώς προετοιμάζει το σώμα για τη σωματική δραστηριότητα και μειώνει τον κίνδυνο τραυματισμών. Μια βασική αρχή που μπορεί να κάνει το ζέσταμα πιο αποδοτικό είναι η "αρχή του μεγέθους", η οποία αφορά τη σταδιακή ενεργοποίηση των μυϊκών ινών. Μέσω αυτής της αρχής, οι μυϊκές ίνες ενεργοποιούνται με έναν προοδευτικό τρόπο που βελτιώνει την απόδοση και την ασφάλεια του σώματος κατά την άσκηση.
+
+Πώς Λειτουργεί η Αρχή του Μεγέθους
+Σύμφωνα με την αρχή του μεγέθους, οι μικρότερες και πιο αργές κινητικές μονάδες (τύπου Ι μυϊκές ίνες) ενεργοποιούνται πρώτες κατά τη διάρκεια ασκήσεων χαμηλής έντασης. Καθώς η ένταση αυξάνεται, κινητοποιούνται οι μεγαλύτερες και ταχύτερες ίνες (τύπου ΙΙ) για να παράγουν περισσότερη δύναμη. Για ένα αποδοτικό ζέσταμα, αυτή η σταδιακή ενεργοποίηση επιτρέπει στο σώμα να προσαρμοστεί σταδιακά σε μεγαλύτερα φορτία, βελτιώνοντας τόσο τη νευρομυϊκή λειτουργία όσο και την απόδοση.
+
+Οφέλη του Ζεστάματος με την Αρχή του Μεγέθους
+Βελτιωμένη Νευρομυϊκή Λειτουργία: Η σταδιακή ενεργοποίηση των κινητικών μονάδων επιτρέπει στο νευρικό σύστημα να λειτουργεί πιο αποδοτικά, εξασφαλίζοντας την κατάλληλη προετοιμασία για τις κύριες ασκήσεις.
+Προστασία από Τραυματισμούς: Η ομαλή μετάβαση από τις μικρότερες στις μεγαλύτερες κινητικές μονάδες μειώνει τον κίνδυνο ξαφνικών καταπονήσεων και τραυματισμών.
+Βέλτιστη Απόδοση: Όταν ενεργοποιούνται οι κατάλληλες μυϊκές ίνες τη σωστή στιγμή, το σώμα μπορεί να αποδώσει καλύτερα και με μεγαλύτερη ασφάλεια στην κύρια προπόνηση.
+ 
+Στάδια Ενός Αποδοτικού Ζεστάματος
+Αύξηση Θερμοκρασίας Σώματος
+Το πρώτο βήμα στο ζέσταμα είναι η αύξηση της θερμοκρασίας του σώματος. Αυτό μπορεί να επιτευχθεί με αερόβιες ασκήσεις χαμηλής έντασης, όπως ελαφρύ τρέξιμο, ποδήλατο ή σχοινάκι. Αυτό ενεργοποιεί τις τύπου Ι μυϊκές ίνες, οι οποίες είναι υπεύθυνες για τη σταθεροποίηση και την αντοχή.
+
+Βελτίωση του Εύρους Κίνησης στις Αρθρώσεις
+Στη συνέχεια, πρέπει να εστιάσουμε στην κινητικότητα των αρθρώσεων μέσω δυναμικών διατάσεων. Αυτές οι ασκήσεις διατείνουν τους σφιγμένους μύες και προετοιμάζουν τις αρθρώσεις για πιο σύνθετες και απαιτητικές κινήσεις. Παραδείγματα περιλαμβάνουν περιστροφές των ώμων, προβολές με κίνηση και δυναμικές κάμψεις.
+
+Ενεργοποίηση των Κινητικών Μονάδων
+Τώρα, μπορούμε να αρχίσουμε να ενεργοποιούμε τις κινητικές μονάδες, προχωρώντας από τις μικρότερες προς τις μεγαλύτερες. Αυτό επιτυγχάνεται με τη χρήση ελαφρών ασκήσεων σταθεροποίησης για τις τύπου Ι μυϊκές ίνες, όπως ισομετρικές ασκήσεις (π.χ. σανίδα), και συνεχίζουμε με ελαφριά φορτία ή αντίσταση.
+
+Αύξηση της Έντασης
+Σταδιακά, προχωράμε σε πιο έντονες ασκήσεις, αυξάνοντας το φορτίο ή την ταχύτητα. Αυτή η φάση προετοιμάζει το σώμα για τις απαιτητικές κινήσεις της κύριας προπόνησης, ενεργοποιώντας τις γρήγορες μυϊκές ίνες (τύπου ΙΙ). Παραδείγματα περιλαμβάνουν άλματα, εκρηκτικές προβολές και βαλλιστικές κινήσεις.
+
+Νευρική Ετοιμότητα
+Μετά την ολοκλήρωση του ζεστάματος, το νευρικό σύστημα είναι πλήρως ενεργοποιημένο και έτοιμο για την προπόνηση. Οι μυϊκές ίνες έχουν ενεργοποιηθεί σωστά, το σώμα είναι σε κατάλληλη θερμοκρασία και η κινητικότητα των αρθρώσεων έχει βελτιωθεί, παρέχοντας την ιδανική βάση για ασκήσεις υψηλής έντασης.
+
+Συμπέρασμα
+Ένα καλά σχεδιασμένο ζέσταμα με βάση την αρχή του μεγέθους προετοιμάζει τόσο το σώμα όσο και το μυαλό για τη σωματική δραστηριότητα. Με σταδιακή αύξηση της έντασης και ενεργοποίηση όλων των μυϊκών ινών, επιτυγχάνεται η βέλτιστη απόδοση και αποφεύγονται οι τραυματισμοί. Το ζέσταμα είναι το θεμέλιο για μια ασφαλή και αποτελεσματική προπόνηση.`
       }
     ],
     en: [
@@ -101,11 +146,39 @@ Join the camp to be a champ!`
       },
       {
         id: 3,
-        title: "Youth Strength",
-        excerpt: "The importance of strength training in young athletes.",
-        image: "/lovable-uploads/f8f84c19-d969-4da5-a85d-fe764201fc6b.png",
+        title: "An Efficient Warm-up",
+        excerpt: "The importance of warming up in training and the application of the size principle.",
+        image: "/lovable-uploads/b535e536-1d28-4df9-bc04-904228d8bfd5.png",
         date: "November 5, 2024",
-        content: "Content about youth strength training..."
+        content: `An Efficient Warm-up
+Warming up is one of the most critical stages of training, as it prepares the body for physical activity and reduces the risk of injury. A basic principle that can make warming up more efficient is the "size principle," which concerns the gradual activation of muscle fibers. Through this principle, muscle fibers are activated in a progressive way that improves the performance and safety of the body during exercise.
+
+How the Size Principle Works
+According to the size principle, smaller and slower motor units (Type I muscle fibers) are activated first during low-intensity exercises. As intensity increases, larger and faster fibers (Type II) are mobilized to produce more force. For an efficient warm-up, this gradual activation allows the body to gradually adapt to greater loads, improving both neuromuscular function and performance.
+
+Benefits of Warming Up with the Size Principle
+Improved Neuromuscular Function: The gradual activation of motor units allows the nervous system to function more efficiently, ensuring proper preparation for the main exercises.
+Protection from Injuries: The smooth transition from smaller to larger motor units reduces the risk of sudden stress and injuries.
+Optimal Performance: When the appropriate muscle fibers are activated at the right time, the body can perform better and with greater safety in the main training.
+
+Stages of an Efficient Warm-up
+Body Temperature Increase
+The first step in warming up is increasing body temperature. This can be achieved with low-intensity aerobic exercises, such as light running, cycling or jumping rope. This activates Type I muscle fibers, which are responsible for stabilization and endurance.
+
+Joint Range of Motion Improvement
+Next, we need to focus on joint mobility through dynamic stretches. These exercises stretch tight muscles and prepare joints for more complex and demanding movements. Examples include shoulder rotations, moving lunges and dynamic bends.
+
+Motor Unit Activation
+Now, we can begin to activate motor units, progressing from smaller to larger ones. This is achieved by using light stabilization exercises for Type I muscle fibers, such as isometric exercises (e.g. plank), and continuing with light loads or resistance.
+
+Intensity Increase
+Gradually, we progress to more intense exercises, increasing load or speed. This phase prepares the body for the demanding movements of the main training, activating fast muscle fibers (Type II). Examples include jumps, explosive lunges and ballistic movements.
+
+Neural Readiness
+After completing the warm-up, the nervous system is fully activated and ready for training. Muscle fibers have been properly activated, the body is at an appropriate temperature and joint mobility has been improved, providing the ideal foundation for high-intensity exercises.
+
+Conclusion
+A well-designed warm-up based on the size principle prepares both body and mind for physical activity. With gradual intensity increase and activation of all muscle fibers, optimal performance is achieved and injuries are avoided. Warming up is the foundation for safe and effective training.`
       }
     ]
   };
@@ -144,6 +217,23 @@ Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Tra
 Fitts, R. H., & Widrick, J. J. (1996). Muscle mechanics: adaptations with exercise-training. Exercise and Sport Sciences Reviews, 24(1), 427-473.
 Kenney, W. L., Wilmore, J., & Costill, D. (2020). Physiology of Sport and Exercise. Human Kinetics.
 Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. Medicine and Science in Sports, 9(2), 82-86.`;
+      }
+    } else if (articleId === 3) {
+      // Warm-up article bibliography
+      if (language === 'el') {
+        return `Βιβλιογραφία:
+Henneman, E., Somjen, G., & Carpenter, D. O. (1965). Excitability and inhibitability of motoneurons of different sizes. Journal of Neurophysiology, 28(3), 599-620.
+Enoka, R. M. (2008). Neuromechanics of Human Movement (4th ed.). Human Kinetics.
+Powers, S. K., & Howley, E. T. (2017). Exercise Physiology: Theory and Application to Fitness and Performance (10th ed.). McGraw-Hill.
+McArdle, W. D., Katch, F. I., & Katch, V. L. (2015). Exercise Physiology: Nutrition, Energy, and Human Performance (8th ed.). Lippincott Williams & Wilkins.
+Behm, D. G., & Chaouachi, A. (2011). A Review of the Acute Effects of Static and Dynamic Stretching on Performance. European Journal of Applied Physiology, 111(11), 2633-2651.`;
+      } else {
+        return `Bibliography:
+Henneman, E., Somjen, G., & Carpenter, D. O. (1965). Excitability and inhibitability of motoneurons of different sizes. Journal of Neurophysiology, 28(3), 599-620.
+Enoka, R. M. (2008). Neuromechanics of Human Movement (4th ed.). Human Kinetics.
+Powers, S. K., & Howley, E. T. (2017). Exercise Physiology: Theory and Application to Fitness and Performance (10th ed.). McGraw-Hill.
+McArdle, W. D., Katch, F. I., & Katch, V. L. (2015). Exercise Physiology: Nutrition, Energy, and Human Performance (8th ed.). Lippincott Williams & Wilkins.
+Behm, D. G., & Chaouachi, A. (2011). A Review of the Acute Effects of Static and Dynamic Stretching on Performance. European Journal of Applied Physiology, 111(11), 2633-2651.`;
       }
     }
     return '';
@@ -211,7 +301,7 @@ Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. 
       {/* Article Modal */}
       {selectedArticle && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div ref={modalRef} className="bg-gray-900 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="relative">
               <button
                 onClick={handleCloseArticle}
