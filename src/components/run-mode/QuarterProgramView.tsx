@@ -68,7 +68,7 @@ export const QuarterProgramView: React.FC<QuarterProgramViewProps> = ({
                 {block.program_exercises.map((exercise, exerciseIndex) => (
                   <div key={exerciseIndex} className="flex justify-between items-center text-xs">
                     <span className="text-gray-300 truncate flex-1">
-                      {exercise.exercise_name}
+                      {exercise.exercises?.name || 'Άσκηση'}
                     </span>
                     <div className="flex space-x-1 text-gray-400">
                       <span>{exercise.sets}x{exercise.reps}</span>
