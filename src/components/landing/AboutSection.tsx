@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface AboutSectionProps {
@@ -33,7 +32,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
       `}</style>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row min-h-[80vh]">
+        <div className="flex flex-col lg:flex-row min-h-[56vh]">
           <div className="lg:w-2/5 flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="mb-12">
               <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
@@ -75,7 +74,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               <img
                 src={activeAboutSection === 2 ? "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png" : "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"}
                 alt={activeAboutSection === 2 ? "Our Vision" : "Georgios Zygouris - Head Coach"}
-                className="w-full h-[600px] object-cover filter grayscale"
+                className="w-full h-[420px] object-cover filter grayscale"
               />
               <div className="absolute bottom-0 left-0 right-0 flex items-center" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
