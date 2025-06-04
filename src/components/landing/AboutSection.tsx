@@ -94,7 +94,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 <p className="text-gray-300 text-sm leading-relaxed">
                   {activeAboutSection === 1 && translations.coachDescription}
                   {activeAboutSection === 2 && translations.visionDescription}
-                  {activeAboutSection === 3 && "Η μεθοδολογία μας βασίζεται στην ολιστική προσέγγιση της αθλητικής ανάπτυξης, συνδυάζοντας σύγχρονες επιστημονικές μεθόδους με εξατομικευμένη προσέγγιση για κάθε αθλητή."}
+                  {activeAboutSection === 3 && translations.trainingMethodologyDescription}
                 </p>
               </div>
 
@@ -168,28 +168,35 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
-                    <h4 className="text-white font-bold mb-2">Επιστημονική Προσέγγιση</h4>
-                    <p className="text-gray-400 text-sm">
-                      Βασιζόμαστε σε σύγχρονες επιστημονικές μεθόδους και έρευνες για τη βέλτιστη αθλητική ανάπτυξη.
-                    </p>
+                    <h4 className="text-white font-bold mb-2">{translations.movementSkills}</h4>
+                    <div className="text-gray-400 text-sm">
+                      <p className="mb-2">• Ανάπτυξη Αθλητικών Δεξιοτήτων</p>
+                      <p className="mb-2">• Κατάλληλα για την Ηλικία</p>
+                      <p>• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός</p>
+                    </div>
                   </div>
                   <div 
                     className="p-4 border-l-2"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
-                    <h4 className="text-white font-bold mb-2">Εξατομικευμένη Προσέγγιση</h4>
-                    <p className="text-gray-400 text-sm">
-                      Κάθε αθλητής είναι μοναδικός και χρειάζεται ειδική προσέγγιση ανάλογα με τις ανάγκες του.
-                    </p>
+                    <h4 className="text-white font-bold mb-2">{translations.assessment}</h4>
+                    <div className="text-gray-400 text-sm">
+                      <p className="mb-2">• Κίνηση & Στάση</p>
+                      <p className="mb-2">• Προφίλ φορτίου - ταχύτητας</p>
+                      <p className="mb-2">• Προφίλ άλματος</p>
+                      <p>• Αντοχή</p>
+                    </div>
                   </div>
                   <div 
                     className="p-4 border-l-2"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
                   >
-                    <h4 className="text-white font-bold mb-2">Ολιστική Ανάπτυξη</h4>
-                    <p className="text-gray-400 text-sm">
-                      Εστιάζουμε στη συνολική ανάπτυξη του αθλητή, φυσική, ψυχική και κοινωνική.
-                    </p>
+                    <h4 className="text-white font-bold mb-2">{translations.resultsFocused}</h4>
+                    <div className="text-gray-400 text-sm">
+                      <p className="mb-2">• Παρακολούθηση Αποτελεσμάτων</p>
+                      <p className="mb-2">• Καθοδήγηση Απόδοσης</p>
+                      <p>• Ανάπτυξη Προσαρμοσμένου Προγράμματος</p>
+                    </div>
                   </div>
                 </div>
               )}

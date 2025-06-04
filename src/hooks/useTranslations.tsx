@@ -61,7 +61,15 @@ export const useTranslations = () => {
       buildingCharacter: "Χτίσιμο Χαρακτήρα",
       buildingCharacterDesc: "Διδάσκουμε σεβασμό, πειθαρχία, επιμονή και συνεργασία. Στόχος μας είναι να δημιουργήσουμε ένα σχολείο ζωής όπου τα παιδιά μαθαίνουν να στέκονται όρθια φυσικά, ψυχικά και ηθικά.",
       trustTheProcess: "Εμπιστοσύνη στη Διαδικασία",
-      trustTheProcessDesc: "Για εμάς, το αύριο αρχίζει σήμερα. Βήμα βήμα. Με εμπιστοσύνη στη διαδικασία. Με το κουράγιο να πάμε παραπέρα. Με τη θέληση να ξεπεράσουμε τα όρια."
+      trustTheProcessDesc: "Για εμάς, το αύριο αρχίζει σήμερα. Βήμα βήμα. Με εμπιστοσύνη στη διαδικασία. Με το κουράγιο να πάμε παραπέρα. Με τη θέληση να ξεπεράσουμε τα όρια.",
+      // Section 03 - Training Methodology
+      trainingMethodologyDescription: "Η μεθοδολογία προπόνησής μας εστιάζει στην προοδευτική ανάπτυξη δεξιοτήτων και την ενίσχυση των σωστών κινητικών προτύπων προσαρμοσμένων στις ανάγκες και στόχους κάθε ατόμου. Μέσω ολοκληρωμένης αξιολόγησης, κατανοούμε τις τρέχουσες ικανότητες και αδυναμίες σας, καθορίζουμε σαφείς στόχους προπόνησης, δημιουργούμε ένα δομημένο χρονοδιάγραμμα για την επίτευξη και σχεδιάζουμε ένα αποκλειστικό εξατομικευμένο πρόγραμμα προπόνησης ειδικά για εσάς.",
+      movementSkills: "Κινητικές Δεξιότητες",
+      movementSkillsDesc: "Ανάπτυξη Αθλητικών Δεξιοτήτων\n• Κατάλληλα για την Ηλικία\n• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός",
+      assessment: "Αξιολόγηση",
+      assessmentDesc: "Κίνηση & Στάση\n• Προφίλ φορτίου - ταχύτητας\n• Προφίλ άλματος\n• Αντοχή",
+      resultsFocused: "Εστιασμένα στα Αποτελέσματα",
+      resultsFocusedDesc: "Παρακολούθηση Αποτελεσμάτων\n• Καθοδήγηση Απόδοσης\n• Ανάπτυξη Προσαρμοσμένου Προγράμματος"
     },
     en: {
       home: "Home",
@@ -107,7 +115,7 @@ export const useTranslations = () => {
       trainingMethodology: "Training Methodology",
       coachName: "Georgios Zygouris",
       coachDescription: "My name is Georgios Zygouris, and I am a graduate of the School of Physical Education and Sport Science at the Aristotle University of Thessaloniki (2023). I am a professional Muay Thai athlete and a certified coach since 2024. Through my dual perspective as both competitor and educator, I've established a training environment where children, teenagers, and adults don't just learn movement—they discover their strengths, build character through sport, and find their unique position in the athletic world.",
-      visionDescription: "Combining scientific knowledge with real-world experience, we apply skill development and performance-focused training tailored to each age and stage. We see movement as more than physical — it's self-expression, confidence, and the power to grow through challenge. Our mission is to help young people trust the process and explore their potential in a safe, supportive space.",
+      visionDescription: "Our Vision\nCombining scientific knowledge with real-world experience, we apply skill development and performance-focused training tailored to each age and stage. We see movement as more than physical — it's self-expression, confidence, and the power to grow through challenge. Our mission is to help young people trust the process and explore their potential in a safe, supportive space.",
       academicBackground: "Academic Background",
       academicDescription: "Graduate of the School of Physical Education and Sport Science at the Aristotle University of Thessaloniki (2023)",
       professionalAthlete: "Professional Athlete",
@@ -120,7 +128,15 @@ export const useTranslations = () => {
       buildingCharacter: "Building Character",
       buildingCharacterDesc: "We teach respect, discipline, perseverance and cooperation. Our goal is to create a school of life where children learn to stand upright physically, mentally and morally.",
       trustTheProcess: "Trust the Process",
-      trustTheProcessDesc: "For us, tomorrow starts today. Step by step. With trust in the process. With the courage to go further. With the will to push the limits."
+      trustTheProcessDesc: "For us, tomorrow starts today. Step by step. With trust in the process. With the courage to go further. With the will to push the limits.",
+      // Section 03 - Training Methodology
+      trainingMethodologyDescription: "Our training methodology focuses on progressive skill development and reinforcement of proper movement patterns tailored to each individual's needs and goals. Through comprehensive assessment, we understand your current abilities and weaknesses, establish clear training objectives, create a structured timeline for achievement, and design an exclusive personalized training plan specifically for you.",
+      movementSkills: "Movement Skills",
+      movementSkillsDesc: "Athletic Skills Development\n• Age Appropriate\n• Throwing & Catching, Climbing Skills, Jumping & Landing, Agility Running, Coordination",
+      assessment: "Assessment",
+      assessmentDesc: "Movement & Posture\n• Load-velocity profile\n• Jump profile\n• Endurance",
+      resultsFocused: "Results Focused",
+      resultsFocusedDesc: "Results Tracking\n• Performance Guidance\n• Customized Program Development"
     }
   };
 
