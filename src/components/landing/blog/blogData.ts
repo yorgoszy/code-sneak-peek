@@ -1,4 +1,3 @@
-
 import { Article } from './types';
 
 export const articles: Record<string, Article[]> = {
@@ -27,7 +26,7 @@ export const articles: Record<string, Article[]> = {
       id: 2,
       title: "Πρωταθλητής γεννιέσαι ή γίνεσαι;",
       excerpt: "Η σημασία του μυϊκού προφίλ στην αθλητική επιτυχία και η σχέση μεταξύ ταλέντου και σκληρής δουλειάς.",
-      image: "/lovable-uploads/909cbd71-18ec-4a5a-9666-a58341551201.png",
+      image: "/lovable-uploads/d0e66c56-d459-4f21-959b-4fa9f7cfe5e6.png",
       date: "15 Απριλίου 2025",
       content: `Στις δύο άκρες των κατηγοριών των αθλημάτων συναντάμε τα αθλήματα ισχύος, όπως είναι η άρση βαρών και τα 100μ σπριντ, και τα αθλήματα αντοχής, όπως είναι ο μαραθώνιος. Η βασική τους διαφορά εντοπίζεται στη διάρκεια της προσπάθειας. Στην πρώτη περίπτωση, η προσπάθεια διαρκεί 3-10-15-30 δευτερόλεπτα, ενώ στη δεύτερη, μπορεί να διαρκέσει 1-2-3, ακόμα και 4 ώρες. Αυτή είναι η αφετηρία για όλα. Κάθε άθλημα έχει το δικό του προφίλ, δηλαδή συγκεκριμένες βιολογικές και μεταβολικές απαιτήσεις από τον αθλητή. Ένας από τους πιο σημαντικούς παράγοντες είναι το βιολογικό προφίλ του αθλητή, δηλαδή ο τύπος των μυϊκών ινών του, που τον χαρακτηρίζει είτε ως αθλητή ισχύος είτε ως αθλητή αντοχής.
 
@@ -105,7 +104,7 @@ You cannot become faster if you do not change your load-velocity profile, and yo
       id: 2,
       title: "Are Champions Born or Made?",
       excerpt: "The importance of muscle profile in athletic success and the relationship between talent and hard work.",
-      image: "/lovable-uploads/909cbd71-18ec-4a5a-9666-a58341551201.png",
+      image: "/lovable-uploads/d0e66c56-d459-4f21-959b-4fa9f7cfe5e6.png",
       date: "April 15, 2025",
       content: `At the two extremes of sports categories, we encounter power sports, such as weightlifting and 100m sprint, and endurance sports, such as the marathon. Their basic difference lies in the duration of the effort. In the first case, the effort lasts 3-10-15-30 seconds, while in the second, it can last 1-2-3, even 4 hours. This is the starting point for everything. Each sport has its own profile, that is, specific biological and metabolic requirements from the athlete. One of the most important factors is the biological profile of the athlete, that is, the type of muscle fibers they have, which characterizes them either as a power athlete or as an endurance athlete.
 
