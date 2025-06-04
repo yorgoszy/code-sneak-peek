@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -480,7 +481,7 @@ const Index = () => {
         <div className="w-full">
           <div className="flex flex-col lg:flex-row min-h-[80vh]">
             {/* Left Content */}
-            <div className="lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 xl:px-24">
+            <div className="lg:w-3/5 flex flex-col justify-center px-8 lg:px-16 xl:px-24">
               {/* About Us Header */}
               <div className="mb-12">
                 <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
@@ -519,9 +520,9 @@ const Index = () => {
             </div>
 
             {/* Right Content */}
-            <div className="lg:w-1/2 relative">
-              {/* Coach Image */}
-              <div className="relative h-96 lg:h-full">
+            <div className="lg:w-2/5 relative flex flex-col items-center">
+              {/* Coach Image - Made smaller */}
+              <div className="relative h-80 w-80 mb-8">
                 <img
                   src="/lovable-uploads/714ddad4-0373-416a-914f-163acc41a277.png"
                   alt="Georgios Zygouris - Head Coach"
@@ -540,10 +541,15 @@ const Index = () => {
                 </div>
               </div>
 
+              {/* Head Coach title below image */}
+              <h3 className="text-2xl font-bold text-white mb-4">
+                {t.headCoach}
+              </h3>
+
               {/* Coach Info Card */}
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-90 p-8">
+              <div className="bg-black bg-opacity-90 p-8 w-full max-w-2xl">
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                  <h3 className="text-xl font-bold text-white mb-4">
                     {activeAboutSection === 1 && t.headCoach}
                     {activeAboutSection === 2 && t.ourVision}
                     {activeAboutSection === 3 && t.trainingMethodology}
