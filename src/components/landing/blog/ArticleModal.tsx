@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Article } from './types';
 import { getBibliography } from './blogBibliography';
@@ -39,7 +38,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language 
           <img 
             src={article.image} 
             alt={article.title}
-            className={`w-full h-64 object-cover object-center ${article.id === 2 ? '-mt-8' : ''}`}
+            className={`w-full h-64 object-cover object-center ${article.id === 2 ? 'mt-8' : ''}`}
             style={{
               objectPosition: article.id === 2 ? 'center 30%' : 'center'
             }}
