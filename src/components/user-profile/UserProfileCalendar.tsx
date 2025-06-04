@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import { startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek } from "date-fns";
 import { CalendarHeader } from '../active-programs/calendar/CalendarHeader';
 import { CalendarGrid } from '../active-programs/calendar/CalendarGrid';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -132,7 +133,12 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  // Υπολογίζουμε τις μέρες του μήνα συμπεριλαμβάνοντας τις μέρες του προηγούμενου/επόμενου μήνα
+  // για να γεμίσει το grid, αρχίζοντας από Δευτέρα (weekStartsOn: 1)
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const goToPreviousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
