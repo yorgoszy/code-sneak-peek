@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
@@ -80,20 +80,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     dayProgram = programDays[dateIndex % programDays.length];
   }
 
-  // Get container element for positioning
-  const getContainer = () => {
-    if (containerId) {
-      return document.getElementById(containerId);
-    }
-    return undefined;
-  };
-
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent 
           className="max-w-sm max-h-[90vh] overflow-y-auto rounded-none"
-          container={getContainer()}
+          style={containerId ? { position: 'absolute' } : undefined}
         >
           <DayProgramDialogHeader
             selectedDate={selectedDate}

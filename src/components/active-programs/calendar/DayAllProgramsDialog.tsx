@@ -12,6 +12,7 @@ interface DayAllProgramsDialogProps {
   programs: EnrichedAssignment[];
   allCompletions: any[];
   onProgramClick: (program: EnrichedAssignment) => void;
+  containerId?: string;
 }
 
 export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
@@ -20,7 +21,8 @@ export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
   selectedDate,
   programs,
   allCompletions,
-  onProgramClick
+  onProgramClick,
+  containerId
 }) => {
   if (!selectedDate) return null;
 
@@ -50,9 +52,20 @@ export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
 
   const dayPrograms = getDayPrograms();
 
+  // Get container element for positioning
+  const getContainer = () => {
+    if (containerId) {
+      return document.getElementById(containerId);
+    }
+    return undefined;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl rounded-none">
+      <DialogContent 
+        className="max-w-2xl rounded-none"
+        style={containerId ? { position: 'absolute' } : undefined}
+      >
         <DialogHeader>
           <DialogTitle>
             Προγράμματα για {format(selectedDate, 'dd/MM/yyyy')}
