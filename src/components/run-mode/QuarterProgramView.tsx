@@ -18,11 +18,13 @@ export const QuarterProgramView: React.FC<QuarterProgramViewProps> = ({
   const programData = program.programs;
   if (!programData) return null;
 
-  // Βρίσκουμε την σημερινή ημέρα του προγράμματος
+  // Βρίσκουμε το πρόγραμμα της σημερινής ημέρας
+  // Για απλοποίηση, παίρνουμε την πρώτη ημέρα από την πρώτη εβδομάδα
   const todayDay = programData.program_weeks
     .flatMap(week => week.program_days)
     .find(day => {
-      // Απλοποιημένη λογική - παίρνουμε την πρώτη ημέρα
+      // Μπορούμε να βελτιώσουμε αυτή τη λογική αργότερα
+      // για να βρίσκουμε την ακριβή ημέρα βάσει του προγράμματος
       return day;
     });
 
