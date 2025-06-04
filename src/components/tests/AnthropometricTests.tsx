@@ -1,7 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 
 const anthropometricFields = [
   { key: 'height', label: 'Ύψος', type: 'number', step: '0.1', placeholder: 'cm' },
@@ -15,27 +14,37 @@ const anthropometricFields = [
   { key: 'thighCircumference', label: 'Περίμετρος Μηρού', type: 'number', step: '0.1', placeholder: 'cm' }
 ];
 
+interface AnthropometricData {
+  height: string;
+  weight: string;
+  bodyFatPercentage: string;
+  muscleMassPercentage: string;
+  waistCircumference: string;
+  hipCircumference: string;
+  chestCircumference: string;
+  armCircumference: string;
+  thighCircumference: string;
+}
+
 interface AnthropometricTestsProps {
   selectedAthleteId: string;
   selectedDate: string;
   hideSubmitButton?: boolean;
+  formData?: AnthropometricData;
+  onDataChange?: (data: AnthropometricData) => void;
 }
 
-export const AnthropometricTests = ({ selectedAthleteId, selectedDate, hideSubmitButton = false }: AnthropometricTestsProps) => {
-  const [formData, setFormData] = useState({
-    height: '',
-    weight: '',
-    bodyFatPercentage: '',
-    muscleMassPercentage: '',
-    waistCircumference: '',
-    hipCircumference: '',
-    chestCircumference: '',
-    armCircumference: '',
-    thighCircumference: ''
-  });
-
+export const AnthropometricTests = ({ 
+  selectedAthleteId, 
+  selectedDate, 
+  hideSubmitButton = false,
+  formData,
+  onDataChange
+}: AnthropometricTestsProps) => {
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (onDataChange && formData) {
+      onDataChange({ ...formData, [field]: value });
+    }
   };
 
   return (
@@ -50,7 +59,7 @@ export const AnthropometricTests = ({ selectedAthleteId, selectedDate, hideSubmi
               type={field.type}
               step={field.step}
               placeholder={field.placeholder}
-              value={formData[field.key as keyof typeof formData]}
+              value={formData ? formData[field.key as keyof AnthropometricData] : ''}
               onChange={(e) => handleInputChange(field.key, e.target.value)}
               className="rounded-none"
             />

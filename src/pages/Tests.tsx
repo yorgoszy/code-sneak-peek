@@ -24,6 +24,55 @@ interface User {
   email: string;
 }
 
+// State types για κάθε τύπο τεστ
+interface AnthropometricData {
+  height: string;
+  weight: string;
+  bodyFatPercentage: string;
+  muscleMassPercentage: string;
+  waistCircumference: string;
+  hipCircumference: string;
+  chestCircumference: string;
+  armCircumference: string;
+  thighCircumference: string;
+}
+
+interface FunctionalData {
+  fmsScores: Record<string, number>;
+  selectedPosture: string[];
+  selectedSquatIssues: string[];
+  selectedSingleLegIssues: string[];
+}
+
+interface EnduranceData {
+  pushUps: string;
+  pullUps: string;
+  crunches: string;
+  maxHr: string;
+  restingHr1min: string;
+  vo2Max: string;
+  farmerKg: string;
+  farmerMeters: string;
+  farmerSeconds: string;
+  sprintSeconds: string;
+  sprintMeters: string;
+  sprintResistance: string;
+  sprintWatt: string;
+  masMeters: string;
+  masMinutes: string;
+  masMs: string;
+  masKmh: string;
+}
+
+interface JumpData {
+  nonCounterMovementJump: string;
+  counterMovementJump: string;
+  depthJump: string;
+  broadJump: string;
+  tripleJumpLeft: string;
+  tripleJumpRight: string;
+}
+
 const Tests = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -31,6 +80,55 @@ const Tests = () => {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [users, setUsers] = useState<User[]>([]);
   const [activeTab, setActiveTab] = useState('anthropometric');
+
+  // State για όλα τα τεστ
+  const [anthropometricData, setAnthropometricData] = useState<AnthropometricData>({
+    height: '',
+    weight: '',
+    bodyFatPercentage: '',
+    muscleMassPercentage: '',
+    waistCircumference: '',
+    hipCircumference: '',
+    chestCircumference: '',
+    armCircumference: '',
+    thighCircumference: ''
+  });
+
+  const [functionalData, setFunctionalData] = useState<FunctionalData>({
+    fmsScores: {},
+    selectedPosture: [],
+    selectedSquatIssues: [],
+    selectedSingleLegIssues: []
+  });
+
+  const [enduranceData, setEnduranceData] = useState<EnduranceData>({
+    pushUps: '',
+    pullUps: '',
+    crunches: '',
+    maxHr: '',
+    restingHr1min: '',
+    vo2Max: '',
+    farmerKg: '',
+    farmerMeters: '',
+    farmerSeconds: '',
+    sprintSeconds: '',
+    sprintMeters: '',
+    sprintResistance: '',
+    sprintWatt: '',
+    masMeters: '',
+    masMinutes: '',
+    masMs: '',
+    masKmh: ''
+  });
+
+  const [jumpData, setJumpData] = useState<JumpData>({
+    nonCounterMovementJump: '',
+    counterMovementJump: '',
+    depthJump: '',
+    broadJump: '',
+    tripleJumpLeft: '',
+    tripleJumpRight: ''
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -44,6 +142,223 @@ const Tests = () => {
     setUsers(data || []);
   };
 
+  const saveAnthropometricData = async () => {
+    if (!selectedAthleteId || !user) {
+      toast.error("Παρακαλώ επιλέξτε αθλητή");
+      return;
+    }
+
+    try {
+      const hasData = Object.values(anthropometricData).some(value => value !== '');
+      if (!hasData) {
+        toast.error("Παρακαλώ εισάγετε τουλάχιστον ένα σωματομετρικό δεδομένο");
+        return;
+      }
+
+      // Δημιουργία συνεδρίας
+      const { data: session, error: sessionError } = await supabase
+        .from('anthropometric_test_sessions')
+        .insert({
+          user_id: selectedAthleteId,
+          test_date: selectedDate,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Αποθήκευση δεδομένων
+      const dataToInsert = {
+        test_session_id: session.id,
+        height: anthropometricData.height ? parseFloat(anthropometricData.height) : null,
+        weight: anthropometricData.weight ? parseFloat(anthropometricData.weight) : null,
+        body_fat_percentage: anthropometricData.bodyFatPercentage ? parseFloat(anthropometricData.bodyFatPercentage) : null,
+        muscle_mass_percentage: anthropometricData.muscleMassPercentage ? parseFloat(anthropometricData.muscleMassPercentage) : null,
+        waist_circumference: anthropometricData.waistCircumference ? parseFloat(anthropometricData.waistCircumference) : null,
+        hip_circumference: anthropometricData.hipCircumference ? parseFloat(anthropometricData.hipCircumference) : null,
+        chest_circumference: anthropometricData.chestCircumference ? parseFloat(anthropometricData.chestCircumference) : null,
+        arm_circumference: anthropometricData.armCircumference ? parseFloat(anthropometricData.armCircumference) : null,
+        thigh_circumference: anthropometricData.thighCircumference ? parseFloat(anthropometricData.thighCircumference) : null
+      };
+
+      const { error: dataError } = await supabase
+        .from('anthropometric_test_data')
+        .insert(dataToInsert);
+
+      if (dataError) throw dataError;
+
+      toast.success("Σωματομετρικά τεστ καταγράφηκαν επιτυχώς!");
+    } catch (error) {
+      console.error('Error saving anthropometric data:', error);
+      toast.error("Σφάλμα κατά την καταγραφή");
+    }
+  };
+
+  const saveFunctionalData = async () => {
+    if (!selectedAthleteId || !user) {
+      toast.error("Παρακαλώ επιλέξτε αθλητή");
+      return;
+    }
+
+    try {
+      const hasData = Object.keys(functionalData.fmsScores).length > 0 || 
+                     functionalData.selectedPosture.length > 0 || 
+                     functionalData.selectedSquatIssues.length > 0 || 
+                     functionalData.selectedSingleLegIssues.length > 0;
+      
+      if (!hasData) {
+        toast.error("Παρακαλώ εισάγετε τουλάχιστον ένα λειτουργικό δεδομένο");
+        return;
+      }
+
+      // Δημιουργία συνεδρίας
+      const { data: session, error: sessionError } = await supabase
+        .from('functional_test_sessions')
+        .insert({
+          user_id: selectedAthleteId,
+          test_date: selectedDate,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Αποθήκευση δεδομένων
+      const dataToInsert = {
+        test_session_id: session.id,
+        fms_score: Object.keys(functionalData.fmsScores).length > 0 ? Object.values(functionalData.fmsScores).reduce((a, b) => a + b, 0) : null,
+        fms_detailed_scores: Object.keys(functionalData.fmsScores).length > 0 ? functionalData.fmsScores : null,
+        posture_issues: functionalData.selectedPosture.length > 0 ? functionalData.selectedPosture : null,
+        squat_issues: functionalData.selectedSquatIssues.length > 0 ? functionalData.selectedSquatIssues : null,
+        single_leg_squat_issues: functionalData.selectedSingleLegIssues.length > 0 ? functionalData.selectedSingleLegIssues : null
+      };
+
+      const { error: dataError } = await supabase
+        .from('functional_test_data')
+        .insert(dataToInsert);
+
+      if (dataError) throw dataError;
+
+      toast.success("Λειτουργικά τεστ καταγράφηκαν επιτυχώς!");
+    } catch (error) {
+      console.error('Error saving functional data:', error);
+      toast.error("Σφάλμα κατά την καταγραφή");
+    }
+  };
+
+  const saveEnduranceData = async () => {
+    if (!selectedAthleteId || !user) {
+      toast.error("Παρακαλώ επιλέξτε αθλητή");
+      return;
+    }
+
+    try {
+      const hasData = Object.values(enduranceData).some(value => value !== '');
+      if (!hasData) {
+        toast.error("Παρακαλώ εισάγετε τουλάχιστον ένα δεδομένο αντοχής");
+        return;
+      }
+
+      // Δημιουργία συνεδρίας
+      const { data: session, error: sessionError } = await supabase
+        .from('endurance_test_sessions')
+        .insert({
+          user_id: selectedAthleteId,
+          test_date: selectedDate,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Αποθήκευση δεδομένων
+      const dataToInsert = {
+        test_session_id: session.id,
+        push_ups: enduranceData.pushUps ? parseInt(enduranceData.pushUps) : null,
+        pull_ups: enduranceData.pullUps ? parseInt(enduranceData.pullUps) : null,
+        crunches: enduranceData.crunches ? parseInt(enduranceData.crunches) : null,
+        max_hr: enduranceData.maxHr ? parseInt(enduranceData.maxHr) : null,
+        resting_hr_1min: enduranceData.restingHr1min ? parseInt(enduranceData.restingHr1min) : null,
+        vo2_max: enduranceData.vo2Max ? parseFloat(enduranceData.vo2Max) : null,
+        farmer_kg: enduranceData.farmerKg ? parseFloat(enduranceData.farmerKg) : null,
+        farmer_meters: enduranceData.farmerMeters ? parseFloat(enduranceData.farmerMeters) : null,
+        farmer_seconds: enduranceData.farmerSeconds ? parseFloat(enduranceData.farmerSeconds) : null,
+        sprint_seconds: enduranceData.sprintSeconds ? parseFloat(enduranceData.sprintSeconds) : null,
+        sprint_meters: enduranceData.sprintMeters ? parseFloat(enduranceData.sprintMeters) : null,
+        sprint_resistance: enduranceData.sprintResistance || null,
+        sprint_watt: enduranceData.sprintWatt ? parseFloat(enduranceData.sprintWatt) : null,
+        mas_meters: enduranceData.masMeters ? parseFloat(enduranceData.masMeters) : null,
+        mas_minutes: enduranceData.masMinutes ? parseFloat(enduranceData.masMinutes) : null,
+        mas_ms: enduranceData.masMs ? parseFloat(enduranceData.masMs) : null,
+        mas_kmh: enduranceData.masKmh ? parseFloat(enduranceData.masKmh) : null
+      };
+
+      const { error: dataError } = await supabase
+        .from('endurance_test_data')
+        .insert(dataToInsert);
+
+      if (dataError) throw dataError;
+
+      toast.success("Τεστ αντοχής καταγράφηκαν επιτυχώς!");
+    } catch (error) {
+      console.error('Error saving endurance data:', error);
+      toast.error("Σφάλμα κατά την καταγραφή");
+    }
+  };
+
+  const saveJumpData = async () => {
+    if (!selectedAthleteId || !user) {
+      toast.error("Παρακαλώ επιλέξτε αθλητή");
+      return;
+    }
+
+    try {
+      const hasData = Object.values(jumpData).some(value => value !== '');
+      if (!hasData) {
+        toast.error("Παρακαλώ εισάγετε τουλάχιστον ένα δεδομένο άλματος");
+        return;
+      }
+
+      // Δημιουργία συνεδρίας
+      const { data: session, error: sessionError } = await supabase
+        .from('jump_test_sessions')
+        .insert({
+          user_id: selectedAthleteId,
+          test_date: selectedDate,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Αποθήκευση δεδομένων
+      const dataToInsert = {
+        test_session_id: session.id,
+        non_counter_movement_jump: jumpData.nonCounterMovementJump ? parseFloat(jumpData.nonCounterMovementJump) : null,
+        counter_movement_jump: jumpData.counterMovementJump ? parseFloat(jumpData.counterMovementJump) : null,
+        depth_jump: jumpData.depthJump ? parseFloat(jumpData.depthJump) : null,
+        broad_jump: jumpData.broadJump ? parseFloat(jumpData.broadJump) : null,
+        triple_jump_left: jumpData.tripleJumpLeft ? parseFloat(jumpData.tripleJumpLeft) : null,
+        triple_jump_right: jumpData.tripleJumpRight ? parseFloat(jumpData.tripleJumpRight) : null
+      };
+
+      const { error: dataError } = await supabase
+        .from('jump_test_data')
+        .insert(dataToInsert);
+
+      if (dataError) throw dataError;
+
+      toast.success("Τεστ αλμάτων καταγράφηκαν επιτυχώς!");
+    } catch (error) {
+      console.error('Error saving jump data:', error);
+      toast.error("Σφάλμα κατά την καταγραφή");
+    }
+  };
+
   const handleSaveAllTests = async () => {
     if (!selectedAthleteId || !user) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
@@ -51,10 +366,37 @@ const Tests = () => {
     }
 
     try {
-      // Εδώ θα προσθέσουμε τη λογική αποθήκευσης για όλα τα τεστ
+      // Αποθήκευση όλων των τεστ που έχουν δεδομένα
+      const promises = [];
+      
+      if (Object.values(anthropometricData).some(value => value !== '')) {
+        promises.push(saveAnthropometricData());
+      }
+      
+      if (Object.keys(functionalData.fmsScores).length > 0 || 
+          functionalData.selectedPosture.length > 0 || 
+          functionalData.selectedSquatIssues.length > 0 || 
+          functionalData.selectedSingleLegIssues.length > 0) {
+        promises.push(saveFunctionalData());
+      }
+      
+      if (Object.values(enduranceData).some(value => value !== '')) {
+        promises.push(saveEnduranceData());
+      }
+      
+      if (Object.values(jumpData).some(value => value !== '')) {
+        promises.push(saveJumpData());
+      }
+
+      if (promises.length === 0) {
+        toast.error("Παρακαλώ εισάγετε δεδομένα σε τουλάχιστον ένα τεστ");
+        return;
+      }
+
+      await Promise.all(promises);
       toast.success("Όλα τα τεστ αποθηκεύτηκαν επιτυχώς!");
     } catch (error) {
-      console.error('Error saving tests:', error);
+      console.error('Error saving all tests:', error);
       toast.error("Σφάλμα κατά την αποθήκευση");
     }
   };
@@ -145,11 +487,45 @@ const Tests = () => {
               </TabsList>
 
               <TabsContent value="anthropometric" className="mt-6">
-                <AnthropometricTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} hideSubmitButton={true} />
+                <div className="space-y-4">
+                  <AnthropometricTests 
+                    selectedAthleteId={selectedAthleteId} 
+                    selectedDate={selectedDate} 
+                    hideSubmitButton={true}
+                    formData={anthropometricData}
+                    onDataChange={setAnthropometricData}
+                  />
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={saveAnthropometricData}
+                      className="rounded-none"
+                      disabled={!selectedAthleteId}
+                    >
+                      Καταγραφή Σωματομετρικών
+                    </Button>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="functional" className="mt-6">
-                <FunctionalTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} hideSubmitButton={true} />
+                <div className="space-y-4">
+                  <FunctionalTests 
+                    selectedAthleteId={selectedAthleteId} 
+                    selectedDate={selectedDate} 
+                    hideSubmitButton={true}
+                    formData={functionalData}
+                    onDataChange={setFunctionalData}
+                  />
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={saveFunctionalData}
+                      className="rounded-none"
+                      disabled={!selectedAthleteId}
+                    >
+                      Καταγραφή Λειτουργικών
+                    </Button>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="strength" className="mt-6">
@@ -157,11 +533,45 @@ const Tests = () => {
               </TabsContent>
 
               <TabsContent value="endurance" className="mt-6">
-                <EnduranceTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} hideSubmitButton={true} />
+                <div className="space-y-4">
+                  <EnduranceTests 
+                    selectedAthleteId={selectedAthleteId} 
+                    selectedDate={selectedDate} 
+                    hideSubmitButton={true}
+                    formData={enduranceData}
+                    onDataChange={setEnduranceData}
+                  />
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={saveEnduranceData}
+                      className="rounded-none"
+                      disabled={!selectedAthleteId}
+                    >
+                      Καταγραφή Αντοχής
+                    </Button>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="jumps" className="mt-6">
-                <JumpTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} hideSubmitButton={true} />
+                <div className="space-y-4">
+                  <JumpTests 
+                    selectedAthleteId={selectedAthleteId} 
+                    selectedDate={selectedDate} 
+                    hideSubmitButton={true}
+                    formData={jumpData}
+                    onDataChange={setJumpData}
+                  />
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={saveJumpData}
+                      className="rounded-none"
+                      disabled={!selectedAthleteId}
+                    >
+                      Καταγραφή Αλμάτων
+                    </Button>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           )}

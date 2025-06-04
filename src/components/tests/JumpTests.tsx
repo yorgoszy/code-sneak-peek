@@ -1,7 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 
 const jumpFields = [
   { key: 'nonCounterMovementJump', label: 'Non-Counter Movement Jump', type: 'number', step: '0.1', placeholder: 'cm' },
@@ -12,24 +11,34 @@ const jumpFields = [
   { key: 'tripleJumpRight', label: 'Triple Jump Δεξί', type: 'number', step: '0.01', placeholder: 'm' }
 ];
 
+interface JumpData {
+  nonCounterMovementJump: string;
+  counterMovementJump: string;
+  depthJump: string;
+  broadJump: string;
+  tripleJumpLeft: string;
+  tripleJumpRight: string;
+}
+
 interface JumpTestsProps {
   selectedAthleteId: string;
   selectedDate: string;
   hideSubmitButton?: boolean;
+  formData?: JumpData;
+  onDataChange?: (data: JumpData) => void;
 }
 
-export const JumpTests = ({ selectedAthleteId, selectedDate, hideSubmitButton = false }: JumpTestsProps) => {
-  const [formData, setFormData] = useState({
-    nonCounterMovementJump: '',
-    counterMovementJump: '',
-    depthJump: '',
-    broadJump: '',
-    tripleJumpLeft: '',
-    tripleJumpRight: ''
-  });
-
+export const JumpTests = ({ 
+  selectedAthleteId, 
+  selectedDate, 
+  hideSubmitButton = false,
+  formData,
+  onDataChange
+}: JumpTestsProps) => {
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (onDataChange && formData) {
+      onDataChange({ ...formData, [field]: value });
+    }
   };
 
   return (
@@ -44,7 +53,7 @@ export const JumpTests = ({ selectedAthleteId, selectedDate, hideSubmitButton = 
               type={field.type}
               step={field.step}
               placeholder={field.placeholder}
-              value={formData[field.key as keyof typeof formData]}
+              value={formData ? formData[field.key as keyof JumpData] : ''}
               onChange={(e) => handleInputChange(field.key, e.target.value)}
               className="rounded-none"
             />
