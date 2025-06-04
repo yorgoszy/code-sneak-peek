@@ -79,12 +79,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 </span>
                 <div 
                   className="flex-1 mr-8"
-                  style={{ backgroundColor: '#00ffba', height: '2px' }}
+                  style={{ backgroundColor: '#00ffba', height: '1px' }}
                 ></div>
               </div>
             </div>
 
-            <div className="bg-black bg-opacity-90 p-8 w-full max-w-2xl">
+            <div className="bg-black bg-opacity-90 p-8 w-full max-w-2xl ml-8">
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-white mb-4">
                   {activeAboutSection === 1 && translations.headCoach}
