@@ -45,6 +45,15 @@ export const useWorkoutCompletionsCache = () => {
     }
   }, [completionsCache]);
 
+  // New function to get all completions from cache
+  const getAllCompletions = useCallback((): WorkoutCompletion[] => {
+    const allCompletions: WorkoutCompletion[] = [];
+    completionsCache.forEach((completions) => {
+      allCompletions.push(...completions);
+    });
+    return allCompletions;
+  }, [completionsCache]);
+
   const calculateWorkoutStats = useCallback((
     completions: WorkoutCompletion[], 
     trainingDates: string[]
@@ -137,6 +146,7 @@ export const useWorkoutCompletionsCache = () => {
 
   return {
     getWorkoutCompletions,
+    getAllCompletions,
     calculateWorkoutStats,
     fetchMultipleCompletions,
     clearCache,
