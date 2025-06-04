@@ -1,6 +1,4 @@
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { BasicEnduranceFields } from "./endurance/BasicEnduranceFields";
 import { CardiacDataFields } from "./endurance/CardiacDataFields";
 import { FarmerTestCard } from "./endurance/FarmerTestCard";
@@ -11,14 +9,11 @@ import { useEnduranceTestLogic } from "./endurance/useEnduranceTestLogic";
 interface EnduranceTestsProps {
   selectedAthleteId: string;
   selectedDate: string;
+  hideSubmitButton?: boolean;
 }
 
-export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTestsProps) => {
-  const { formData, handleInputChange, handleSubmit } = useEnduranceTestLogic();
-
-  const onSubmit = () => {
-    handleSubmit(selectedAthleteId, selectedDate);
-  };
+export const EnduranceTests = ({ selectedAthleteId, selectedDate, hideSubmitButton = false }: EnduranceTestsProps) => {
+  const { formData, handleInputChange } = useEnduranceTestLogic();
 
   return (
     <div className="space-y-6">
@@ -73,14 +68,6 @@ export const EnduranceTests = ({ selectedAthleteId, selectedDate }: EnduranceTes
           onInputChange={handleInputChange}
         />
       </div>
-      
-      <Card className="rounded-none">
-        <CardContent className="p-4 flex items-center justify-center">
-          <Button onClick={onSubmit} className="rounded-none w-full max-w-md">
-            Αποθήκευση Τεστ Αντοχής
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 };

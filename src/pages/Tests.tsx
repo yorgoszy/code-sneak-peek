@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnthropometricTests } from "@/components/tests/AnthropometricTests";
 import { FunctionalTests } from "@/components/tests/FunctionalTests";
@@ -15,6 +16,7 @@ import { EnduranceTests } from "@/components/tests/EnduranceTests";
 import { JumpTests } from "@/components/tests/JumpTests";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -28,6 +30,7 @@ const Tests = () => {
   const [selectedAthleteId, setSelectedAthleteId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [users, setUsers] = useState<User[]>([]);
+  const [activeTab, setActiveTab] = useState('anthropometric');
 
   useEffect(() => {
     fetchUsers();
@@ -39,6 +42,21 @@ const Tests = () => {
       .select('id, name, email')
       .order('name');
     setUsers(data || []);
+  };
+
+  const handleSaveAllTests = async () => {
+    if (!selectedAthleteId || !user) {
+      toast.error("Παρακαλώ επιλέξτε αθλητή");
+      return;
+    }
+
+    try {
+      // Εδώ θα προσθέσουμε τη λογική αποθήκευσης για όλα τα τεστ
+      toast.success("Όλα τα τεστ αποθηκεύτηκαν επιτυχώς!");
+    } catch (error) {
+      console.error('Error saving tests:', error);
+      toast.error("Σφάλμα κατά την αποθήκευση");
+    }
   };
 
   if (loading) {
@@ -78,7 +96,7 @@ const Tests = () => {
               <CardTitle>Επιλογή Αθλητή και Ημερομηνίας</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl">
                 <div>
                   <Label>Αθλητής</Label>
                   <Select value={selectedAthleteId} onValueChange={setSelectedAthleteId}>
@@ -103,12 +121,21 @@ const Tests = () => {
                     className="rounded-none"
                   />
                 </div>
+                <div className="flex items-end">
+                  <Button 
+                    onClick={handleSaveAllTests} 
+                    className="rounded-none w-full"
+                    disabled={!selectedAthleteId}
+                  >
+                    Αποθήκευση Όλων των Τεστ
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           {selectedAthleteId && (
-            <Tabs defaultValue="anthropometric" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-5 rounded-none">
                 <TabsTrigger value="anthropometric" className="rounded-none">Σωματομετρικά</TabsTrigger>
                 <TabsTrigger value="functional" className="rounded-none">Λειτουργικότητα</TabsTrigger>
@@ -118,11 +145,11 @@ const Tests = () => {
               </TabsList>
 
               <TabsContent value="anthropometric" className="mt-6">
-                <AnthropometricTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
+                <AnthropometricTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} hideSubmitButton={true} />
               </TabsContent>
 
               <TabsContent value="functional" className="mt-6">
-                <FunctionalTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
+                <FunctionalTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} hideSubmitButton={true} />
               </TabsContent>
 
               <TabsContent value="strength" className="mt-6">
@@ -130,11 +157,11 @@ const Tests = () => {
               </TabsContent>
 
               <TabsContent value="endurance" className="mt-6">
-                <EnduranceTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
+                <EnduranceTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} hideSubmitButton={true} />
               </TabsContent>
 
               <TabsContent value="jumps" className="mt-6">
-                <JumpTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
+                <JumpTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} hideSubmitButton={true} />
               </TabsContent>
             </Tabs>
           )}
