@@ -11,10 +11,10 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
   const testimonials = [
     {
       id: 1,
-      text: "The training program at Performance has completely transformed my game. I've gained strength, speed, and my recovery time has improved significantly.",
-      name: "Alex Johnson",
-      title: "Professional Basketball Player",
-      image: "/lovable-uploads/39bb61a5-8dcb-4ba9-8855-8dc0e668ae39.png"
+      text: "Trust the process",
+      name: "Θωμάς Γιαταγανάς",
+      title: "Muay Thai Athlete",
+      image: "/lovable-uploads/092dae7d-eb76-4477-ae8f-6d3523f7a1cf.png"
     },
     {
       id: 2,
