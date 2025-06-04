@@ -74,13 +74,21 @@ export const useTestResults = () => {
         `)
         .order('test_date', { ascending: false });
 
-      // Combine all tests
+      console.log('Raw test data:', {
+        strengthTests,
+        anthropometricTests,
+        functionalTests,
+        enduranceTests,
+        jumpTests
+      });
+
+      // Combine all tests - εμφάνιση όλων ανεξάρτητα από user_id
       const allTests: TestResult[] = [
         ...(strengthTests?.map(test => ({
           id: test.id,
           test_date: test.test_date,
           test_type: 'Δύναμη',
-          user_name: (test.app_users as any)?.name || 'Άγνωστος',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος Χρήστης',
           user_id: test.user_id,
           notes: test.notes,
           exercise_count: test.strength_test_attempts?.length || 0,
@@ -90,7 +98,7 @@ export const useTestResults = () => {
           id: test.id,
           test_date: test.test_date,
           test_type: 'Σωματομετρικά',
-          user_name: (test.app_users as any)?.name || 'Άγνωστος',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος Χρήστης',
           user_id: test.user_id,
           notes: test.notes,
           table_name: 'anthropometric_test_sessions'
@@ -99,7 +107,7 @@ export const useTestResults = () => {
           id: test.id,
           test_date: test.test_date,
           test_type: 'Λειτουργικότητα',
-          user_name: (test.app_users as any)?.name || 'Άγνωστος',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος Χρήστης',
           user_id: test.user_id,
           notes: test.notes,
           table_name: 'functional_test_sessions'
@@ -108,7 +116,7 @@ export const useTestResults = () => {
           id: test.id,
           test_date: test.test_date,
           test_type: 'Αντοχή',
-          user_name: (test.app_users as any)?.name || 'Άγνωστος',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος Χρήστης',
           user_id: test.user_id,
           notes: test.notes,
           table_name: 'endurance_test_sessions'
@@ -117,7 +125,7 @@ export const useTestResults = () => {
           id: test.id,
           test_date: test.test_date,
           test_type: 'Άλματα',
-          user_name: (test.app_users as any)?.name || 'Άγνωστος',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος Χρήστης',
           user_id: test.user_id,
           notes: test.notes,
           table_name: 'jump_test_sessions'
@@ -127,6 +135,7 @@ export const useTestResults = () => {
       // Sort by date (newest first)
       allTests.sort((a, b) => new Date(b.test_date).getTime() - new Date(a.test_date).getTime());
       
+      console.log('Combined tests:', allTests);
       setTestResults(allTests);
     } catch (error) {
       console.error('Error fetching tests:', error);

@@ -41,9 +41,6 @@ export const TestResultsList = () => {
     return matchesSearch && matchesType;
   });
 
-  // Get unique test types for filter
-  const testTypes = Array.from(new Set(testResults.map(test => test.test_type)));
-
   if (loading) {
     return (
       <Card className="rounded-none">
@@ -78,10 +75,12 @@ export const TestResultsList = () => {
                   <SelectValue placeholder="Όλα τα τεστ" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Όλα τα τεστ</SelectItem>
-                  {testTypes.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
+                  <SelectItem value="all">Όλα</SelectItem>
+                  <SelectItem value="Σωματομετρικά">Σωματομετρικά</SelectItem>
+                  <SelectItem value="Λειτουργικότητα">Λειτουργικότητα</SelectItem>
+                  <SelectItem value="Δύναμη">Δύναμη</SelectItem>
+                  <SelectItem value="Αντοχή">Αντοχή</SelectItem>
+                  <SelectItem value="Άλματα">Άλματα</SelectItem>
                 </SelectContent>
               </Select>
             </div>
