@@ -32,16 +32,8 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
     }
   ];
 
-  const nextTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-  };
-
-  const prevTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
-
   return (
-    <section id="results" className="py-20 bg-black text-white">
+    <section id="results" className="py-20 bg-black text-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
@@ -92,26 +84,6 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
               }`}
             />
           ))}
-        </div>
-
-        {/* Navigation Arrows (hidden on mobile) */}
-        <div className="hidden lg:flex justify-between items-center absolute left-4 right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-          <button
-            onClick={prevTestimonial}
-            className="pointer-events-auto bg-[#00ffba] text-black p-3 rounded-full hover:bg-[#00cc96] transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={nextTestimonial}
-            className="pointer-events-auto bg-[#00ffba] text-black p-3 rounded-full hover:bg-[#00cc96] transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
         </div>
       </div>
     </section>
