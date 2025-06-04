@@ -21,7 +21,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   return (
     <>
       <div className="grid grid-cols-7 gap-1 mb-4">
-        {['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'].map((day) => (
+        {['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'].map((day) => (
           <div key={day} className="p-2 text-center font-medium text-gray-600 text-sm">
             {day}
           </div>

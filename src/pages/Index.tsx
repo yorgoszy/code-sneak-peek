@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -169,7 +170,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-robert w-full overflow-x-hidden">
+    <div className="min-h-screen bg-white font-robert">
       <style>{`
         .nav-link:hover {
           color: #00ffba !important;
@@ -213,16 +214,9 @@ const Index = () => {
         .carousel-btn:hover svg {
           color: #00ffba !important;
         }
-        body {
-          margin: 0;
-          padding: 0;
-        }
-        * {
-          box-sizing: border-box;
-        }
       `}</style>
       
-      {/* Black Navigation - Full width, no padding */}
+      {/* Black Navigation */}
       <nav className="fixed top-0 w-full bg-black z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -296,209 +290,195 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section - Full viewport width */}
-      <section id="home" className="relative pt-16 min-h-screen flex items-center w-screen">
+      {/* Hero Section */}
+      <section id="home" className="relative pt-16 min-h-screen flex items-center">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat w-full"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url('/lovable-uploads/7d78ce26-3ce9-488f-9948-1cb90eac5b9e.png')`
           }}
         >
-          <div className="absolute inset-0 bg-black bg-opacity-60 w-full"></div>
+          <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
         
-        <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-left">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-                {t.heroTitle}<br />
-                <span style={{ color: '#00ffba' }}>{t.heroSubtitle}</span>
-              </h1>
-              <div className="flex space-x-4">
-                <Button 
-                  className="get-started-btn rounded-none transition-colors duration-200" 
-                  onClick={handleGetStarted}
-                >
-                  {t.getStarted}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black"
-                >
-                  {t.contactBtn}
-                </Button>
-              </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="text-left">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+              {t.heroTitle}<br />
+              <span style={{ color: '#00ffba' }}>{t.heroSubtitle}</span>
+            </h1>
+            <div className="flex space-x-4">
+              <Button 
+                className="get-started-btn rounded-none transition-colors duration-200" 
+                onClick={handleGetStarted}
+              >
+                {t.getStarted}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black"
+              >
+                {t.contactBtn}
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Programs Section - Full viewport width */}
-      <section id="programs" className="py-20 bg-black relative w-screen">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-16">
-              <div>
-                <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                  {t.explorePrograms}
-                </h2>
-              </div>
-              {/* Navigation arrows positioned at top right */}
-              <div className="flex space-x-4">
-                <button 
-                  className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
-                  onClick={() => {
-                    const carousel = document.querySelector('[data-carousel="previous"]') as HTMLButtonElement;
-                    if (carousel) {
-                      carousel.dispatchEvent(new MouseEvent('click', {
-                        bubbles: true,
-                        cancelable: true,
-                        view: window
-                      }));
-                    }
-                  }}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button 
-                  className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
-                  onClick={() => {
-                    const carousel = document.querySelector('[data-carousel="next"]') as HTMLButtonElement;
-                    if (carousel) {
-                      carousel.dispatchEvent(new MouseEvent('click', {
-                        bubbles: true,
-                        cancelable: true,
-                        view: window
-                      }));
-                    }
-                  }}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
+      {/* Programs Section */}
+      <section id="programs" className="py-20 bg-black relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center mb-16">
+            <div>
+              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+                {t.explorePrograms}
+              </h2>
             </div>
+            {/* Navigation arrows positioned at top right */}
+            <div className="flex space-x-4">
+              <button 
+                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
+                onClick={() => {
+                  const carousel = document.querySelector('[data-carousel="previous"]') as HTMLButtonElement;
+                  if (carousel) {
+                    carousel.dispatchEvent(new MouseEvent('click', {
+                      bubbles: true,
+                      cancelable: true,
+                      view: window
+                    }));
+                  }
+                }}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button 
+                className="carousel-btn text-white transition-colors duration-200 h-8 w-8 flex items-center justify-center"
+                onClick={() => {
+                  const carousel = document.querySelector('[data-carousel="next"]') as HTMLButtonElement;
+                  if (carousel) {
+                    carousel.dispatchEvent(new MouseEvent('click', {
+                      bubbles: true,
+                      cancelable: true,
+                      view: window
+                    }));
+                  }
+                }}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
 
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="ml-0">
-                {programs.map((program) => (
-                  <CarouselItem key={program.id} className="pl-0 md:basis-1/2 lg:basis-1/4">
-                    <div className="group cursor-pointer">
-                      {/* Program content with gray outline extending above the image */}
-                      <div 
-                        className="border-l-2 border-gray-500 pl-6"
-                        style={{ paddingTop: '20px' }}
-                      >
-                        {/* Program number and title positioned above image */}
-                        <div className="flex items-start mb-2">
-                          <span 
-                            className="text-2xl font-bold mr-4 flex-shrink-0"
-                            style={{ color: program.color }}
-                          >
-                            {program.id}
-                          </span>
-                          <h3 className="text-white text-lg font-bold leading-tight">{program.title}</h3>
-                        </div>
-                        
-                        <div className="relative h-64 overflow-hidden">
-                          <img
-                            src={program.image}
-                            alt={program.title}
-                            className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
-                            style={{ opacity: '0.7' }}
-                          />
-                          {/* Gradient overlay from bottom */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-                          <div className="absolute bottom-4 left-4 right-4 z-10">
-                            <p className="text-white text-sm mb-2">{program.description}</p>
-                          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="ml-0">
+              {programs.map((program) => (
+                <CarouselItem key={program.id} className="pl-0 md:basis-1/2 lg:basis-1/4">
+                  <div className="group cursor-pointer">
+                    {/* Program content with gray outline extending above the image */}
+                    <div 
+                      className="border-l-2 border-gray-500 pl-6"
+                      style={{ paddingTop: '20px' }}
+                    >
+                      {/* Program number and title positioned above image */}
+                      <div className="flex items-start mb-2">
+                        <span 
+                          className="text-2xl font-bold mr-4 flex-shrink-0"
+                          style={{ color: program.color }}
+                        >
+                          {program.id}
+                        </span>
+                        <h3 className="text-white text-lg font-bold leading-tight">{program.title}</h3>
+                      </div>
+                      
+                      <div className="relative h-64 overflow-hidden">
+                        <img
+                          src={program.image}
+                          alt={program.title}
+                          className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                          style={{ opacity: '0.7' }}
+                        />
+                        {/* Gradient overlay from bottom */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                        <div className="absolute bottom-4 left-4 right-4 z-10">
+                          <p className="text-white text-sm mb-2">{program.description}</p>
                         </div>
                       </div>
                     </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious 
-                data-carousel="previous"
-                className="hidden"
-              />
-              <CarouselNext 
-                data-carousel="next"
-                className="hidden"
-              />
-            </Carousel>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious 
+              data-carousel="previous"
+              className="hidden"
+            />
+            <CarouselNext 
+              data-carousel="next"
+              className="hidden"
+            />
+          </Carousel>
+        </div>
+      </section>
+
+      {/* Blog Section */}
+      <section id="blog" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.blogSection}</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t.blogDescription}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Blog Section - Full viewport width */}
-      <section id="blog" className="py-20 bg-white w-screen">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.blogSection}</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                {t.blogDescription}
-              </p>
-            </div>
+      {/* About Us Section */}
+      <section id="about" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.aboutSection}</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t.aboutDescription}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* About Us Section - Full viewport width */}
-      <section id="about" className="py-20 bg-gray-50 w-screen">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.aboutSection}</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                {t.aboutDescription}
-              </p>
-            </div>
+      {/* Results Section */}
+      <section id="results" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.resultsSection}</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t.resultsDescription}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Results Section - Full viewport width */}
-      <section id="results" className="py-20 bg-white w-screen">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.resultsSection}</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                {t.resultsDescription}
-              </p>
-            </div>
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.contactSection}</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t.contactDescription}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Contact Section - Full viewport width */}
-      <section id="contact" className="py-20 bg-gray-50 w-screen">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.contactSection}</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                {t.contactDescription}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer - Full viewport width */}
-      <footer className="bg-black text-white py-8 w-screen">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center">
-              <p className="text-gray-400">{t.copyright}</p>
-            </div>
+      {/* Footer */}
+      <footer className="bg-black text-white py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-400">{t.copyright}</p>
           </div>
         </div>
       </footer>

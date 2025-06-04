@@ -15,8 +15,7 @@ import {
   BarChart3,
   Play,
   Home,
-  Mail,
-  MonitorPlay
+  Mail
 } from "lucide-react";
 
 interface SidebarProps {
@@ -36,7 +35,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     { icon: TrendingUp, label: "Αποτελέσματα", path: "/dashboard/results" },
     { icon: Calendar, label: "Προγράμματα", path: "/dashboard/programs" },
     { icon: Play, label: "Ενεργά Προγράμματα", path: "/dashboard/active-programs" },
-    { icon: MonitorPlay, label: "Run Mode", path: "/dashboard/run-mode" },
   ];
 
   return (
