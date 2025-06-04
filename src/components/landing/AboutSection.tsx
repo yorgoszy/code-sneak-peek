@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 
 interface AboutSectionProps {
@@ -33,7 +34,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
       `}</style>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row min-h-[56vh]">
+        <div className="flex flex-col lg:flex-row min-h-[39vh]">
           <div className="lg:w-2/5 flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="mb-12">
               <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
@@ -96,8 +97,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               </div>
             </div>
 
-            <div className="bg-black bg-opacity-90 p-8 w-full max-w-2xl">
-              <div className="mb-6">
+            <div className="bg-black bg-opacity-90 w-full max-w-2xl">
+              <div className="p-8 mb-6">
                 <h3 className="text-xl font-bold text-white mb-4">
                   {activeAboutSection === 1 && translations.headCoach}
                   {activeAboutSection === 2 && translations.ourVision}
@@ -111,7 +112,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               </div>
 
               {activeAboutSection === 1 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
                   <div 
                     className="p-4 border-l-2"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
@@ -143,7 +144,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               )}
 
               {activeAboutSection === 2 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
                   <div 
                     className="p-4 border-l-2"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
@@ -175,7 +176,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               )}
 
               {activeAboutSection === 3 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
                   <div 
                     className="p-4 border-l-2"
                     style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
@@ -221,3 +222,4 @@ const AboutSection: React.FC<AboutSectionProps> = ({
 };
 
 export default AboutSection;
+
