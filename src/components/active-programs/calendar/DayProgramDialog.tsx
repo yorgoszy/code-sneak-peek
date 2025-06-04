@@ -19,6 +19,7 @@ interface DayProgramDialogProps {
   workoutStatus: string;
   onRefresh?: () => void;
   containerId?: string;
+  isEmbedded?: boolean;
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -28,7 +29,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   selectedDate,
   workoutStatus,
   onRefresh,
-  containerId
+  containerId,
+  isEmbedded = false
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
@@ -80,81 +82,92 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     dayProgram = programDays[dateIndex % programDays.length];
   }
 
-  return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto rounded-none">
-          <DialogHeader>
-            <DialogTitle>
-              Πρόγραμμα για {format(selectedDate, 'dd/MM/yyyy')}
-            </DialogTitle>
-          </DialogHeader>
+  const content = (
+    <div className="space-y-2 h-full overflow-auto">
+      <DayProgramDialogHeader
+        selectedDate={selectedDate}
+        workoutInProgress={workoutInProgress}
+        elapsedTime={elapsedTime}
+        workoutStatus={workoutStatus}
+        onStartWorkout={handleStartWorkout}
+        onCompleteWorkout={handleCompleteWorkout}
+        onCancelWorkout={handleCancelWorkout}
+      />
 
-          <DayProgramDialogHeader
-            selectedDate={selectedDate}
-            workoutInProgress={workoutInProgress}
-            elapsedTime={elapsedTime}
-            workoutStatus={workoutStatus}
-            onStartWorkout={handleStartWorkout}
-            onCompleteWorkout={handleCompleteWorkout}
-            onCancelWorkout={handleCancelWorkout}
-          />
+      <div className="space-y-2">
+        <ProgramInfo
+          program={program}
+          dayProgram={dayProgram}
+          workoutInProgress={workoutInProgress}
+          workoutStatus={workoutStatus}
+        />
 
+        {dayProgram ? (
           <div className="space-y-2">
-            <ProgramInfo
-              program={program}
-              dayProgram={dayProgram}
+            <h4 className="text-xs font-medium text-gray-900 flex items-center space-x-2">
+              <span>{dayProgram.name}</span>
+            </h4>
+
+            <ExerciseInteractionHandler
               workoutInProgress={workoutInProgress}
-              workoutStatus={workoutStatus}
-            />
-
-            {dayProgram ? (
-              <div className="space-y-2">
-                <h4 className="text-xs font-medium text-gray-900 flex items-center space-x-2">
-                  <span>{dayProgram.name}</span>
-                </h4>
-
-                <ExerciseInteractionHandler
-                  workoutInProgress={workoutInProgress}
-                  onVideoClick={handleVideoClick}
-                  onSetClick={handleSetClick}
-                >
-                  <ProgramBlocks
-                    blocks={dayProgram.program_blocks}
-                    workoutInProgress={workoutInProgress}
-                    getRemainingText={exerciseCompletion.getRemainingText}
-                    isExerciseComplete={exerciseCompletion.isExerciseComplete}
-                    onExerciseClick={handleExerciseClick}
-                    onSetClick={handleSetClick}
-                    onVideoClick={handleVideoClick}
-                    getNotes={exerciseCompletion.getNotes}
-                    updateNotes={exerciseCompletion.updateNotes}
-                    clearNotes={exerciseCompletion.clearNotes}
-                    updateKg={exerciseCompletion.updateKg}
-                    clearKg={exerciseCompletion.clearKg}
-                    updateVelocity={exerciseCompletion.updateVelocity}
-                    clearVelocity={exerciseCompletion.clearVelocity}
-                    updateReps={exerciseCompletion.updateReps}
-                    clearReps={exerciseCompletion.clearReps}
-                    selectedDate={selectedDate}
-                    program={program}
-                  />
-                </ExerciseInteractionHandler>
-              </div>
-            ) : (
-              <div className="bg-white border border-gray-200 rounded-none p-4 text-center text-gray-500 text-xs">
-                Δεν βρέθηκε πρόγραμμα για αυτή την ημέρα
-              </div>
-            )}
+              onVideoClick={handleVideoClick}
+              onSetClick={handleSetClick}
+            >
+              <ProgramBlocks
+                blocks={dayProgram.program_blocks}
+                workoutInProgress={workoutInProgress}
+                getRemainingText={exerciseCompletion.getRemainingText}
+                isExerciseComplete={exerciseCompletion.isExerciseComplete}
+                onExerciseClick={handleExerciseClick}
+                onSetClick={handleSetClick}
+                onVideoClick={handleVideoClick}
+                getNotes={exerciseCompletion.getNotes}
+                updateNotes={exerciseCompletion.updateNotes}
+                clearNotes={exerciseCompletion.clearNotes}
+                updateKg={exerciseCompletion.updateKg}
+                clearKg={exerciseCompletion.clearKg}
+                updateVelocity={exerciseCompletion.updateVelocity}
+                clearVelocity={exerciseCompletion.clearVelocity}
+                updateReps={exerciseCompletion.updateReps}
+                clearReps={exerciseCompletion.clearReps}
+                selectedDate={selectedDate}
+                program={program}
+              />
+            </ExerciseInteractionHandler>
           </div>
-        </DialogContent>
-      </Dialog>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-none p-4 text-center text-gray-500 text-xs">
+            Δεν βρέθηκε πρόγραμμα για αυτή την ημέρα
+          </div>
+        )}
+      </div>
 
       <ExerciseVideoDialog
         isOpen={isVideoDialogOpen}
         onClose={() => setIsVideoDialogOpen(false)}
         exercise={selectedExercise}
       />
-    </>
+    </div>
+  );
+
+  if (isEmbedded) {
+    return (
+      <div className="h-full p-4 text-white">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto rounded-none">
+        <DialogHeader>
+          <DialogTitle>
+            Πρόγραμμα για {format(selectedDate, 'dd/MM/yyyy')}
+          </DialogTitle>
+        </DialogHeader>
+        {content}
+      </DialogContent>
+    </Dialog>
   );
 };

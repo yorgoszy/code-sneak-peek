@@ -11,6 +11,7 @@ interface CalendarGridProps {
   onRefresh?: () => void;
   isCompactMode?: boolean;
   containerId?: string;
+  onProgramClick?: (program: EnrichedAssignment, date: Date, status: string) => void;
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -20,7 +21,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   allCompletions,
   onRefresh,
   isCompactMode = false,
-  containerId
+  containerId,
+  onProgramClick
 }) => {
   const dayLabels = ['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'];
   
@@ -46,6 +48,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               onRefresh={onRefresh}
               isCompactMode={true}
               containerId={containerId}
+              onProgramClick={onProgramClick}
             />
           ))}
         </div>
@@ -72,6 +75,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             programs={programs}
             allCompletions={allCompletions}
             onRefresh={onRefresh}
+            onProgramClick={onProgramClick}
           />
         ))}
       </div>
