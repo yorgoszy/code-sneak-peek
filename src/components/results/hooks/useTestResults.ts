@@ -13,7 +13,7 @@ export const useTestResults = () => {
     try {
       setLoading(true);
       
-      // Fetch strength tests
+      // Fetch strength tests with attempt count
       const { data: strengthTests } = await supabase
         .from('strength_test_sessions')
         .select(`
@@ -22,7 +22,7 @@ export const useTestResults = () => {
           notes,
           user_id,
           app_users!user_id(name),
-          strength_test_attempts(exercise_id)
+          strength_test_attempts(id)
         `)
         .order('test_date', { ascending: false });
 
@@ -124,7 +124,7 @@ export const useTestResults = () => {
         })) || [])
       ];
 
-      // Sort by date
+      // Sort by date (newest first)
       allTests.sort((a, b) => new Date(b.test_date).getTime() - new Date(a.test_date).getTime());
       
       setTestResults(allTests);
