@@ -47,13 +47,6 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
     return acc;
   }, [] as any[]);
 
-  // Αυτόματη επιλογή του πρώτου χρήστη αν δεν έχει επιλεγεί κανένας
-  useEffect(() => {
-    if (uniqueUsers.length > 0 && !selectedUserId) {
-      setSelectedUserId(uniqueUsers[0].id);
-    }
-  }, [uniqueUsers, selectedUserId]);
-
   // Φιλτράρουμε τα προγράμματα για τον επιλεγμένο χρήστη
   const userPrograms = programs.filter(program => 
     program.app_users?.id === selectedUserId
@@ -174,65 +167,67 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
         </div>
 
         {/* Επιλογή Αθλητή */}
-        {uniqueUsers.length > 0 ? (
-          <div className="space-y-2">
-            <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-              <SelectTrigger className="h-8 text-xs bg-gray-800 border-gray-600 text-white">
-                <SelectValue placeholder="Επιλέξτε αθλητή" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-600">
-                {uniqueUsers.map((user) => (
-                  <SelectItem 
-                    key={user.id} 
-                    value={user.id}
-                    className="text-white hover:bg-gray-700"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="w-4 h-4">
-                        <AvatarImage src={user.photo_url} alt={user.name} />
-                        <AvatarFallback className="text-xs">
-                          {user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{user.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="space-y-2">
+          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+            <SelectTrigger className="h-8 text-xs bg-gray-800 border-gray-600 text-white">
+              <SelectValue placeholder="Επιλέξτε αθλητή" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-600">
+              {uniqueUsers.map((user) => (
+                <SelectItem 
+                  key={user.id} 
+                  value={user.id}
+                  className="text-white hover:bg-gray-700"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Avatar className="w-4 h-4">
+                      <AvatarImage src={user.photo_url} alt={user.name} />
+                      <AvatarFallback className="text-xs">
+                        {user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{user.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-            {/* Πληροφορίες Επιλεγμένου Αθλητή */}
-            {selectedUser && (
-              <div className="flex items-center space-x-2 p-2 bg-gray-800/50 border border-gray-600">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={selectedUser.photo_url} alt={selectedUser.name} />
-                  <AvatarFallback className="text-xs">
-                    {selectedUser.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-white truncate">{selectedUser.name}</p>
-                  <p className="text-xs text-gray-400 truncate">{selectedUser.email}</p>
-                </div>
+          {/* Πληροφορίες Επιλεγμένου Αθλητή */}
+          {selectedUser && (
+            <div className="flex items-center space-x-2 p-2 bg-gray-800/50 border border-gray-600">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={selectedUser.photo_url} alt={selectedUser.name} />
+                <AvatarFallback className="text-xs">
+                  {selectedUser.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-white truncate">{selectedUser.name}</p>
+                <p className="text-xs text-gray-400 truncate">{selectedUser.email}</p>
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center space-x-2 p-2 bg-gray-800/50 border border-gray-600">
-            <User className="h-4 w-4 text-gray-400" />
-            <span className="text-xs text-gray-400">Δεν υπάρχουν αθλητές</span>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </CardHeader>
       
       <CardContent className="flex-1 overflow-hidden p-1 relative">
         <div className="h-full w-full">
-          <ProgramCalendar 
-            programs={userPrograms}
-            onRefresh={handleRefresh}
-            isCompactMode={true}
-            onProgramClick={handleProgramClick}
-          />
+          {selectedUserId ? (
+            <ProgramCalendar 
+              programs={userPrograms}
+              onRefresh={handleRefresh}
+              isCompactMode={true}
+              onProgramClick={handleProgramClick}
+            />
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center text-gray-400">
+                <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-xs">Επιλέξτε αθλητή για να δείτε το ημερολόγιο</p>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
