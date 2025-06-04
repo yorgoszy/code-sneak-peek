@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface AboutSectionProps {
@@ -29,12 +28,6 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         }
         .about-nav-item:hover .about-nav-title {
           border-bottom-color: #00ffba;
-        }
-        .about-image {
-          transition: transform 0.3s ease;
-        }
-        .about-image:hover {
-          transform: scale(1.05);
         }
       `}</style>
       
@@ -89,9 +82,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   activeAboutSection === 3 ? "Training Methodology" :
                   "Georgios Zygouris - Head Coach"
                 }
-                className="w-full h-[420px] object-cover filter grayscale about-image"
+                className="w-full h-[420px] object-cover filter grayscale"
               />
-              <div className="absolute flex items-center" style={{ bottom: '40px', left: '10px', right: '0px' }}>
+              <div className="absolute flex items-center" style={{ bottom: '40px', left: '20px', right: '0px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
                   {activeAboutSection.toString().padStart(2, '0')}
                 </span>
