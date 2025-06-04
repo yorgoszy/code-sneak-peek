@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface AboutSectionProps {
@@ -74,8 +75,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               <img
                 src={activeAboutSection === 2 ? "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png" : "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"}
                 alt={activeAboutSection === 2 ? "Our Vision" : "Georgios Zygouris - Head Coach"}
-                className="filter grayscale"
-                style={{ width: '125%', height: '125%', objectFit: 'cover' }}
+                className="w-full h-auto filter grayscale"
               />
               <div className="absolute bottom-0 left-0 right-0 flex items-center" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
