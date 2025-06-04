@@ -18,12 +18,16 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         .about-nav-item {
           cursor: pointer;
           transition: all 0.3s ease;
-          border-bottom: 2px solid transparent;
         }
-        .about-nav-item.active {
+        .about-nav-title {
+          border-bottom: 2px solid transparent;
+          transition: all 0.3s ease;
+          display: inline-block;
+        }
+        .about-nav-item.active .about-nav-title {
           border-bottom-color: #00ffba;
         }
-        .about-nav-item:hover {
+        .about-nav-item:hover .about-nav-title {
           border-bottom-color: #00ffba;
         }
       `}</style>
@@ -47,21 +51,21 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 onClick={() => onSetActiveAboutSection(1)}
               >
                 <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 1 ? '#00ffba' : '#6b7280' }}>01</span>
-                <h3 className={`text-xl font-bold ${activeAboutSection === 1 ? 'text-white' : 'text-gray-400'}`}>{translations.headCoach}</h3>
+                <h3 className={`text-xl about-nav-title ${activeAboutSection === 1 ? 'text-white font-bold' : 'text-gray-400'}`}>{translations.headCoach}</h3>
               </div>
               <div 
                 className={`flex items-center about-nav-item ${activeAboutSection === 2 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(2)}
               >
                 <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 2 ? '#00ffba' : '#6b7280' }}>02</span>
-                <h3 className={`text-xl ${activeAboutSection === 2 ? 'text-white font-bold' : 'text-gray-400'}`}>{translations.ourVision}</h3>
+                <h3 className={`text-xl about-nav-title ${activeAboutSection === 2 ? 'text-white font-bold' : 'text-gray-400'}`}>{translations.ourVision}</h3>
               </div>
               <div 
                 className={`flex items-center about-nav-item ${activeAboutSection === 3 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(3)}
               >
                 <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 3 ? '#00ffba' : '#6b7280' }}>03</span>
-                <h3 className={`text-xl ${activeAboutSection === 3 ? 'text-white font-bold' : 'text-gray-400'}`}>{translations.trainingMethodology}</h3>
+                <h3 className={`text-xl about-nav-title ${activeAboutSection === 3 ? 'text-white font-bold' : 'text-gray-400'}`}>{translations.trainingMethodology}</h3>
               </div>
             </div>
           </div>
@@ -71,7 +75,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               <img
                 src={activeAboutSection === 2 ? "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png" : "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"}
                 alt={activeAboutSection === 2 ? "Our Vision" : "Georgios Zygouris - Head Coach"}
-                className="max-w-full h-auto filter grayscale"
+                className="w-full h-auto filter grayscale"
               />
               <div className="absolute bottom-0 left-0 right-0 flex items-center" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
