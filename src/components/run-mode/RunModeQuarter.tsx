@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Play, Square, CheckCircle } from 'lucide-react';
-import { QuarterProgramView } from './QuarterProgramView';
+import { QuarterCalendarView } from './QuarterCalendarView';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface RunModeQuarterProps {
@@ -55,8 +55,13 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
     }
   };
 
+  const handleDayClick = (date: Date, dayPrograms: EnrichedAssignment[]) => {
+    console.log('Day clicked:', date, 'Programs:', dayPrograms);
+    // Μπορούμε να προσθέσουμε περισσότερη λογική εδώ αργότερα
+  };
+
   return (
-    <Card className={`rounded-none border-2 ${getStatusColor()} bg-opacity-80 backdrop-blur-sm`}>
+    <Card className={`rounded-none border-2 ${getStatusColor()} bg-opacity-80 backdrop-blur-sm h-full`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
@@ -76,7 +81,7 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 flex-1 overflow-hidden">
         {/* Program Selection */}
         <div className="space-y-2">
           <label className="text-xs text-gray-300">Επιλογή Προγράμματος:</label>
@@ -142,14 +147,14 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
           )}
         </div>
 
-        {/* Program Content */}
-        {selectedProgram && (
-          <QuarterProgramView 
-            program={selectedProgram} 
-            status={status}
-            todayString={new Date().toISOString().split('T')[0]}
+        {/* Calendar View */}
+        <div className="flex-1 overflow-hidden">
+          <QuarterCalendarView 
+            programs={programs}
+            allCompletions={[]} // Μπορούμε να προσθέσουμε αργότερα
+            onDayClick={handleDayClick}
           />
-        )}
+        </div>
       </CardContent>
     </Card>
   );
