@@ -39,7 +39,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language 
           <img 
             src={article.image} 
             alt={article.title}
-            className="w-full h-64 object-cover"
+            className="w-full h-64 object-cover object-center"
+            style={{
+              objectPosition: article.id === 2 ? 'center 30%' : 'center'
+            }}
           />
           <button 
             onClick={onClose}

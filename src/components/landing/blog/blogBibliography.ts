@@ -23,6 +23,29 @@ Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Tra
 García-Ramos, A., & Jaric, S. (2018). Optimization of the load-velocity relationship obtained through linear regression: Comparison of two alternative methods. Journal of Sports Sciences, 36(20), 2405-2412.
 </div>`;
     }
+  } else if (articleId === 2) {
+    // Champion born or made bibliography
+    if (language === 'el') {
+      return `
+<div class="text-xs text-gray-600 mt-6">
+<strong>Βιβλιογραφία:</strong><br/>
+Lieber, R. L. (2010). Skeletal Muscle Structure, Function, and Plasticity. Lippincott Williams & Wilkins.<br/>
+Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.<br/>
+Fitts, R. H., & Widrick, J. J. (1996). Muscle mechanics: adaptations with exercise-training. Exercise and Sport Sciences Reviews, 24(1), 427-473.<br/>
+Kenney, W. L., Wilmore, J., & Costill, D. (2020). Physiology of Sport and Exercise. Human Kinetics.<br/>
+Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. Medicine and Science in Sports, 9(2), 82-86.
+</div>`;
+    } else {
+      return `
+<div class="text-xs text-gray-600 mt-6">
+<strong>Bibliography:</strong><br/>
+Lieber, R. L. (2010). Skeletal Muscle Structure, Function, and Plasticity. Lippincott Williams & Wilkins.<br/>
+Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.<br/>
+Fitts, R. H., & Widrick, J. J. (1996). Muscle mechanics: adaptations with exercise-training. Exercise and Sport Sciences Reviews, 24(1), 427-473.<br/>
+Kenney, W. L., Wilmore, J., & Costill, D. (2020). Physiology of Sport and Exercise. Human Kinetics.<br/>
+Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. Medicine and Science in Sports, 9(2), 82-86.
+</div>`;
+    }
   } else if (articleId === 3) {
     // Warm-up bibliography
     if (language === 'el') {
