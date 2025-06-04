@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Play, Square, CheckCircle } from 'lucide-react';
-import { QuarterCalendarView } from './QuarterCalendarView';
+import { ProgramCalendar } from '../active-programs/ProgramCalendar';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface RunModeQuarterProps {
@@ -55,9 +55,9 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
     }
   };
 
-  const handleDayClick = (date: Date, dayPrograms: EnrichedAssignment[]) => {
-    console.log('Day clicked:', date, 'Programs:', dayPrograms);
-    // Μπορούμε να προσθέσουμε περισσότερη λογική εδώ αργότερα
+  const handleRefresh = () => {
+    // Refresh logic can be added here if needed
+    console.log('Refreshing quarter calendar...');
   };
 
   return (
@@ -81,9 +81,9 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4 flex-1 overflow-hidden">
+      <CardContent className="space-y-4 flex-1 overflow-hidden flex flex-col">
         {/* Program Selection */}
-        <div className="space-y-2">
+        <div className="space-y-2 flex-shrink-0">
           <label className="text-xs text-gray-300">Επιλογή Προγράμματος:</label>
           <Select value={selectedProgramId} onValueChange={setSelectedProgramId}>
             <SelectTrigger className="bg-gray-800 border-gray-600 text-white rounded-none">
@@ -100,7 +100,7 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
         </div>
 
         {/* Control Buttons */}
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 flex-shrink-0">
           {status === 'idle' && (
             <Button
               onClick={handleStart}
@@ -147,12 +147,11 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
           )}
         </div>
 
-        {/* Calendar View */}
+        {/* Calendar View - Using the same component from active-programs */}
         <div className="flex-1 overflow-hidden">
-          <QuarterCalendarView 
+          <ProgramCalendar 
             programs={programs}
-            allCompletions={[]} // Μπορούμε να προσθέσουμε αργότερα
-            onDayClick={handleDayClick}
+            onRefresh={handleRefresh}
           />
         </div>
       </CardContent>
