@@ -20,7 +20,7 @@ export const useTranslations = () => {
       heroSubtitle: "Ξεκινάει Εδώ",
       explorePrograms: "Εξερεύνηση Όλων των Προγραμμάτων",
       blogSection: "Άρθρα",
-      blogDescription: "Διαβάστε τα τελευταία άρθρα και συμβουλές από τους ειδικούς μας",
+      blogDescription: "Ενημερωθείτε με τα τελευταία άρθρα και συμβουλές από τους ειδικούς μας",
       aboutSection: "Σχετικά με εμάς",
       aboutDescription: "Μάθετε περισσότερα για την ομάδα μας και την αποστολή μας",
       resultsSection: "Αποτελέσματα",

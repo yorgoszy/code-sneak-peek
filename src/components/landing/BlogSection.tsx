@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 
 interface BlogSectionProps {
@@ -50,7 +49,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         id: 2,
         title: "Πρωταθλητής γεννιέσαι ή γίνεσαι;",
         excerpt: "Η σημασία του μυϊκού προφίλ στην αθλητική επιτυχία και η σχέση μεταξύ ταλέντου και σκληρής δουλειάς.",
-        image: "/lovable-uploads/94ce3145-f7b9-430b-86e6-12bca58833d5.png",
+        image: "/lovable-uploads/b0acf646-1526-47ee-9d51-3d1294ad86f2.png",
         date: "15 Απριλίου 2025",
         content: `Στις δύο άκρες των κατηγοριών των αθλημάτων συναντάμε τα αθλήματα ισχύος, όπως είναι η άρση βαρών και τα 100μ σπριντ, και τα αθλήματα αντοχής, όπως είναι ο μαραθώνιος. Η βασική τους διαφορά εντοπίζεται στη διάρκεια της προσπάθειας. Στην πρώτη περίπτωση, η προσπάθεια διαρκεί 3-10-15-30 δευτερόλεπτα, ενώ στη δεύτερη, μπορεί να διαρκέσει 1-2-3, ακόμα και 4 ώρες. Αυτή είναι η αφετηρία για όλα. Κάθε άθλημα έχει το δικό του προφίλ, δηλαδή συγκεκριμένες βιολογικές και μεταβολικές απαιτήσεις από τον αθλητή. Ένας από τους πιο σημαντικούς παράγοντες είναι το βιολογικό προφίλ του αθλητή, δηλαδή ο τύπος των μυϊκών ινών του, που τον χαρακτηρίζει είτε ως αθλητή ισχύος είτε ως αθλητή αντοχής.
 
@@ -128,7 +127,7 @@ You cannot become faster if you do not change your load-velocity profile, and yo
         id: 2,
         title: "Are Champions Born or Made?",
         excerpt: "The importance of muscle profile in athletic success and the relationship between talent and hard work.",
-        image: "/lovable-uploads/94ce3145-f7b9-430b-86e6-12bca58833d5.png",
+        image: "/lovable-uploads/b0acf646-1526-47ee-9d51-3d1294ad86f2.png",
         date: "April 15, 2025",
         content: `At the two extremes of sports categories, we encounter power sports, such as weightlifting and 100m sprint, and endurance sports, such as the marathon. Their basic difference lies in the duration of the effort. In the first case, the effort lasts 3-10-15-30 seconds, while in the second, it can last 1-2-3, even 4 hours. This is the starting point for everything. Each sport has its own profile, that is, specific biological and metabolic requirements from the athlete. One of the most important factors is the biological profile of the athlete, that is, the type of muscle fibers they have, which characterizes them either as a power athlete or as an endurance athlete.
 
@@ -242,10 +241,10 @@ Behm, D. G., & Chaouachi, A. (2011). A Review of the Acute Effects of Static and
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
-            {translations.blog?.title || 'Blog & Άρθρα'}
+            {translations.blogSection}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {translations.blog?.subtitle || 'Ενημερωθείτε με τα τελευταία άρθρα και συμβουλές από τους ειδικούς μας'}
+            {translations.blogDescription}
           </p>
         </div>
 
