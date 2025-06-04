@@ -12,7 +12,6 @@ interface DayAllProgramsDialogProps {
   programs: EnrichedAssignment[];
   allCompletions: any[];
   onProgramClick: (program: EnrichedAssignment) => void;
-  containerId?: string;
 }
 
 export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
@@ -21,8 +20,7 @@ export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
   selectedDate,
   programs,
   allCompletions,
-  onProgramClick,
-  containerId
+  onProgramClick
 }) => {
   if (!selectedDate) return null;
 

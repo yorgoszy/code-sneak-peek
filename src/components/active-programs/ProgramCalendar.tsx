@@ -1,97 +1,89 @@
 
-import React, { useState } from 'react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { CalendarHeader } from './calendar/CalendarHeader';
 import { CalendarGrid } from './calendar/CalendarGrid';
-import { useActivePrograms } from '@/hooks/useActivePrograms';
-import { useWorkoutCompletionsCache } from '@/hooks/useWorkoutCompletionsCache';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 
 interface ProgramCalendarProps {
-  programs?: EnrichedAssignment[];
+  programs: EnrichedAssignment[];
   onRefresh?: () => void;
-  isCompactMode?: boolean;
-  containerId?: string;
-  onProgramClick?: (program: EnrichedAssignment, date: Date, status: string) => void;
 }
 
-export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
-  programs: externalPrograms,
-  onRefresh,
-  isCompactMode = false,
-  containerId,
-  onProgramClick
-}) => {
+export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRefresh }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  
-  const { 
-    programs: internalPrograms, 
-    loading, 
-    refetch: internalRefresh
-  } = useActivePrograms();
+  const [allCompletions, setAllCompletions] = useState<any[]>([]);
+  const { getWorkoutCompletions } = useWorkoutCompletions();
 
-  const { getAllCompletions } = useWorkoutCompletionsCache();
+  console.log('📅 ProgramCalendar rendering with programs:', programs.length);
 
-  const programs = externalPrograms || internalPrograms;
-  const refresh = onRefresh || internalRefresh;
-  const allCompletions = getAllCompletions();
+  useEffect(() => {
+    const fetchAllCompletions = async () => {
+      if (programs.length === 0) {
+        console.log('⚠️ No programs available, skipping completions fetch');
+        setAllCompletions([]);
+        return;
+      }
 
-  const handlePreviousMonth = () => {
-    setCurrentDate(subMonths(currentDate, 1));
+      console.log('🔄 Fetching completions for programs:', programs.length);
+      const completionsData: any[] = [];
+      
+      for (const program of programs) {
+        try {
+          console.log('🔍 Fetching completions for program:', program.id);
+          const completions = await getWorkoutCompletions(program.id);
+          console.log('✅ Completions received:', completions);
+          completionsData.push(...completions.map(c => ({ ...c, assignment_id: program.id })));
+        } catch (error) {
+          console.error('❌ Error fetching completions for program:', program.id, error);
+        }
+      }
+      
+      console.log('📊 All completions data:', completionsData);
+      setAllCompletions(completionsData);
+    };
+
+    fetchAllCompletions();
+  }, [programs, getWorkoutCompletions]);
+
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  const goToPreviousMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
   };
 
-  const handleNextMonth = () => {
-    setCurrentDate(addMonths(currentDate, 1));
+  const goToNextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
-
-  if (loading) {
-    return (
-      <div className={`flex items-center justify-center ${isCompactMode ? 'h-full' : 'min-h-[400px]'}`}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">Φόρτωση προγραμμάτων...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const start = startOfMonth(currentDate);
-  const end = endOfMonth(currentDate);
-  
-  // Extend to show full weeks
-  const startDate = new Date(start);
-  startDate.setDate(start.getDate() - (start.getDay() === 0 ? 6 : start.getDay() - 1));
-  
-  const endDate = new Date(end);
-  const daysUntilSunday = 7 - end.getDay();
-  if (daysUntilSunday < 7) {
-    endDate.setDate(end.getDate() + daysUntilSunday);
-  }
-
-  const days = eachDayOfInterval({ start: startDate, end: endDate });
 
   return (
-    <div className={`${isCompactMode ? 'h-full' : ''} flex flex-col`}>
-      {!isCompactMode && (
+    <Card className="w-full rounded-none">
+      <CardHeader>
         <CalendarHeader
           currentDate={currentDate}
-          onPreviousMonth={handlePreviousMonth}
-          onNextMonth={handleNextMonth}
+          onPreviousMonth={goToPreviousMonth}
+          onNextMonth={goToNextMonth}
         />
-      )}
-      
-      <div className={isCompactMode ? 'flex-1 min-h-0' : ''}>
+      </CardHeader>
+      <CardContent>
         <CalendarGrid
           days={days}
           currentDate={currentDate}
           programs={programs}
           allCompletions={allCompletions}
-          onRefresh={refresh}
-          isCompactMode={isCompactMode}
-          containerId={containerId}
-          onProgramClick={onProgramClick}
+          onRefresh={onRefresh}
         />
-      </div>
-    </div>
+        
+        {programs.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            Δεν υπάρχουν ενεργά προγράμματα
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

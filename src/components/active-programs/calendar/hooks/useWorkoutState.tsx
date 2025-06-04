@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { format, addDays } from "date-fns";
 import { useExerciseCompletion } from '@/hooks/useExerciseCompletion';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
@@ -14,7 +14,6 @@ export const useWorkoutState = (
   const [workoutInProgress, setWorkoutInProgress] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const { completeWorkout, loading } = useWorkoutCompletions();
   
   const { 
@@ -33,42 +32,21 @@ export const useWorkoutState = (
     getAdjustments
   } = useExerciseCompletion();
 
-  // Function to initialize workout state (for restored minimized programs)
-  const initializeWorkoutState = (inProgress: boolean, start: Date | null, elapsed: number) => {
-    console.log('🔄 Initializing workout state:', { inProgress, start, elapsed });
-    setWorkoutInProgress(inProgress);
-    setStartTime(start);
-    setElapsedTime(elapsed);
-  };
-
-  // Timer effect - fixed to prevent stopping when minimized
+  // Timer effect
   useEffect(() => {
+    let interval: NodeJS.Timeout;
     if (workoutInProgress && startTime) {
-      intervalRef.current = setInterval(() => {
-        const now = Date.now();
-        const currentElapsed = Math.floor((now - startTime.getTime()) / 1000);
-        setElapsedTime(currentElapsed);
+      interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime.getTime()) / 1000));
       }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
     }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
+    return () => clearInterval(interval);
   }, [workoutInProgress, startTime]);
 
   const handleStartWorkout = () => {
     console.log('🏋️‍♂️ Έναρξη προπόνησης για ημερομηνία:', format(selectedDate!, 'dd/MM/yyyy'));
-    const now = new Date();
     setWorkoutInProgress(true);
-    setStartTime(now);
+    setStartTime(new Date());
     setElapsedTime(0);
   };
 
@@ -170,14 +148,13 @@ export const useWorkoutState = (
           
           console.log('✅ Workout completion saved successfully');
           
-          // Reset workout state
           setWorkoutInProgress(false);
           setStartTime(null);
           setElapsedTime(0);
           
           if (onRefresh) {
             console.log('🔄 Triggering data refresh after workout completion');
-            await onRefresh();
+            onRefresh();
           }
           
           if (onClose) {
@@ -195,23 +172,6 @@ export const useWorkoutState = (
     setWorkoutInProgress(false);
     setStartTime(null);
     setElapsedTime(0);
-    
-    // Clear the interval
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  };
-
-  // Get current workout state for minimizing
-  const getCurrentWorkoutState = () => {
-    if (!workoutInProgress) return undefined;
-    
-    return {
-      workoutInProgress,
-      startTime,
-      elapsedTime
-    };
   };
 
   return {
@@ -222,8 +182,6 @@ export const useWorkoutState = (
     handleStartWorkout,
     handleCompleteWorkout,
     handleCancelWorkout,
-    initializeWorkoutState,
-    getCurrentWorkoutState,
     exerciseCompletion: {
       completeSet,
       getRemainingText,

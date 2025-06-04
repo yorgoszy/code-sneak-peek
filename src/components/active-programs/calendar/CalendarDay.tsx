@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 import { CalendarProgramItem } from './CalendarProgramItem';
@@ -11,9 +12,6 @@ interface CalendarDayProps {
   programs: EnrichedAssignment[];
   allCompletions: any[];
   onRefresh?: () => void;
-  isCompactMode?: boolean;
-  containerId?: string;
-  onProgramClick?: (program: EnrichedAssignment, date: Date, status: string) => void;
 }
 
 export const CalendarDay: React.FC<CalendarDayProps> = ({
@@ -21,10 +19,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   currentDate,
   programs,
   allCompletions,
-  onRefresh,
-  isCompactMode = false,
-  containerId,
-  onProgramClick
+  onRefresh
 }) => {
   const [selectedProgram, setSelectedProgram] = useState<{
     program: EnrichedAssignment;
@@ -80,14 +75,6 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
 
   const handleProgramClick = (program: EnrichedAssignment) => {
     const workoutStatus = getWorkoutStatus(program, dayString);
-    
-    // Use external onProgramClick if provided (for Run Mode)
-    if (onProgramClick) {
-      onProgramClick(program, day, workoutStatus);
-      return;
-    }
-    
-    // Otherwise use internal state for dialog
     setSelectedProgram({
       program,
       date: day,
@@ -105,81 +92,6 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   };
 
   const dayPrograms = getProgramsForDay(day);
-
-  // Calculate if any program is completed for the day
-  const getDayColor = () => {
-    if (dayPrograms.length === 0) return '';
-    
-    const allCompleted = dayPrograms.every(program => {
-      const status = getWorkoutStatus(program, dayString);
-      return status === 'completed';
-    });
-    
-    const someCompleted = dayPrograms.some(program => {
-      const status = getWorkoutStatus(program, dayString);
-      return status === 'completed';
-    });
-    
-    if (allCompleted) return 'bg-[#00ffba]'; // Πράσινο αν όλα ολοκληρωμένα
-    if (someCompleted) return 'bg-gradient-to-r from-[#00ffba] to-[#3b82f6]'; // Gradient αν κάποια ολοκληρωμένα
-    return 'bg-[#3b82f6]'; // Μπλε αν κανένα δεν είναι ολοκληρωμένο
-  };
-
-  if (isCompactMode) {
-    return (
-      <>
-        <div
-          className={`
-            w-full h-full min-h-[2rem] p-0.5 border border-gray-200 rounded-none flex flex-col
-            ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
-            ${isDayToday ? 'ring-1 ring-blue-500' : ''}
-          `}
-        >
-          <div 
-            className={`
-              text-xs font-medium cursor-pointer hover:bg-gray-100 text-center flex-shrink-0 p-0.5
-              ${isDayToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
-            `}
-            onClick={handleDayClick}
-          >
-            {format(day, 'd')}
-          </div>
-          
-          <div className="flex-1 overflow-hidden">
-            {dayPrograms.length > 0 && (
-              <div 
-                className={`w-full h-1.5 rounded-none cursor-pointer mt-0.5 ${getDayColor()}`}
-                onClick={handleDayClick}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Only show dialog if not using external onProgramClick */}
-        {!onProgramClick && selectedProgram && (
-          <DayProgramDialog
-            isOpen={!!selectedProgram}
-            onClose={() => setSelectedProgram(null)}
-            program={selectedProgram.program}
-            selectedDate={selectedProgram.date}
-            workoutStatus={selectedProgram.status}
-            onRefresh={onRefresh}
-          />
-        )}
-
-        {!onProgramClick && (
-          <DayAllProgramsDialog
-            isOpen={showAllPrograms}
-            onClose={() => setShowAllPrograms(false)}
-            selectedDate={day}
-            programs={programs}
-            allCompletions={allCompletions}
-            onProgramClick={handleProgramClick}
-          />
-        )}
-      </>
-    );
-  }
 
   return (
     <>
@@ -234,7 +146,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         </div>
       </div>
 
-      {!onProgramClick && selectedProgram && (
+      {selectedProgram && (
         <DayProgramDialog
           isOpen={!!selectedProgram}
           onClose={() => setSelectedProgram(null)}
@@ -245,16 +157,14 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         />
       )}
 
-      {!onProgramClick && (
-        <DayAllProgramsDialog
-          isOpen={showAllPrograms}
-          onClose={() => setShowAllPrograms(false)}
-          selectedDate={day}
-          programs={programs}
-          allCompletions={allCompletions}
-          onProgramClick={handleProgramClick}
-        />
-      )}
+      <DayAllProgramsDialog
+        isOpen={showAllPrograms}
+        onClose={() => setShowAllPrograms(false)}
+        selectedDate={day}
+        programs={programs}
+        allCompletions={allCompletions}
+        onProgramClick={handleProgramClick}
+      />
     </>
   );
 };

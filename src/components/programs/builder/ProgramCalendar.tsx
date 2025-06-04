@@ -18,13 +18,13 @@ interface ProgramCalendarProps {
 }
 
 const weekDays = [
+  { id: 'sunday', label: 'Κυριακή', dayNumber: 0 },
   { id: 'monday', label: 'Δευτέρα', dayNumber: 1 },
   { id: 'tuesday', label: 'Τρίτη', dayNumber: 2 },
   { id: 'wednesday', label: 'Τετάρτη', dayNumber: 3 },
   { id: 'thursday', label: 'Πέμπτη', dayNumber: 4 },
   { id: 'friday', label: 'Παρασκευή', dayNumber: 5 },
-  { id: 'saturday', label: 'Σάββατο', dayNumber: 6 },
-  { id: 'sunday', label: 'Κυριακή', dayNumber: 0 }
+  { id: 'saturday', label: 'Σάββατο', dayNumber: 6 }
 ];
 
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
@@ -96,7 +96,6 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
                     }}
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
-                    weekStartsOn={1}
                   />
                 </PopoverContent>
               </Popover>
@@ -130,7 +129,6 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
                 selected={[]} // Δεν χρησιμοποιούμε την επιλογή του Calendar
                 onDayClick={handleDayClick}
                 className={cn("p-2 pointer-events-auto")}
-                weekStartsOn={1}
                 modifiers={{
                   trainingDay: isTrainingDay
                 }}

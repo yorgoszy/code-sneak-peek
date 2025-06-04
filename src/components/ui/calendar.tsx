@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -12,12 +11,10 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
-  weekStartsOn = 1,
   ...props
 }: CalendarProps) {
   return (
     <DayPicker
-      weekStartsOn={weekStartsOn}
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{

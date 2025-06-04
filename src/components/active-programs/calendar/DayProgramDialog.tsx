@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Minimize2, X } from 'lucide-react';
+
+import React, { useState } from 'react';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
 import { useWorkoutState } from './hooks/useWorkoutState';
-import { useMinimizedPrograms } from '@/hooks/useMinimizedPrograms';
 import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramInfo } from './ProgramInfo';
@@ -20,13 +18,6 @@ interface DayProgramDialogProps {
   selectedDate: Date | null;
   workoutStatus: string;
   onRefresh?: () => void;
-  containerId?: string;
-  isEmbedded?: boolean;
-  initialWorkoutState?: {
-    workoutInProgress: boolean;
-    startTime: Date | null;
-    elapsedTime: number;
-  };
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -35,14 +26,10 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   program,
   selectedDate,
   workoutStatus,
-  onRefresh,
-  containerId,
-  isEmbedded = false,
-  initialWorkoutState
+  onRefresh
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
-  const { addMinimizedProgram, updateMinimizedProgram } = useMinimizedPrograms();
 
   const {
     workoutInProgress,
@@ -50,42 +37,10 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     handleStartWorkout,
     handleCompleteWorkout,
     handleCancelWorkout,
-    exerciseCompletion,
-    initializeWorkoutState,
-    getCurrentWorkoutState
+    exerciseCompletion
   } = useWorkoutState(program, selectedDate, onRefresh, onClose);
 
-  // Initialize workout state from minimized program if provided
-  useEffect(() => {
-    if (initialWorkoutState && initializeWorkoutState) {
-      console.log('🔄 Restoring workout state:', initialWorkoutState);
-      initializeWorkoutState(
-        initialWorkoutState.workoutInProgress,
-        initialWorkoutState.startTime,
-        initialWorkoutState.elapsedTime
-      );
-    }
-  }, [initialWorkoutState, initializeWorkoutState]);
-
   if (!program || !selectedDate) return null;
-
-  const handleMinimize = () => {
-    if (program && selectedDate) {
-      const minimizedId = `${program.id}-${format(selectedDate, 'yyyy-MM-dd')}`;
-      const currentWorkoutState = getCurrentWorkoutState();
-      
-      console.log('📦 Minimizing with workout state:', currentWorkoutState);
-      
-      addMinimizedProgram({
-        id: minimizedId,
-        program,
-        selectedDate,
-        workoutStatus: workoutInProgress ? 'in_progress' : workoutStatus,
-        workoutState: currentWorkoutState
-      });
-      onClose();
-    }
-  };
 
   const handleVideoClick = (exercise: any) => {
     if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
@@ -123,111 +78,75 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     dayProgram = programDays[dateIndex % programDays.length];
   }
 
-  const content = (
-    <div className="space-y-2 h-full overflow-auto">
-      <DayProgramDialogHeader
-        selectedDate={selectedDate}
-        workoutInProgress={workoutInProgress}
-        elapsedTime={elapsedTime}
-        workoutStatus={workoutStatus}
-        onStartWorkout={handleStartWorkout}
-        onCompleteWorkout={handleCompleteWorkout}
-        onCancelWorkout={handleCancelWorkout}
-        isEmbedded={isEmbedded}
-      />
+  return (
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none">
+          <DayProgramDialogHeader
+            selectedDate={selectedDate}
+            workoutInProgress={workoutInProgress}
+            elapsedTime={elapsedTime}
+            workoutStatus={workoutStatus}
+            onStartWorkout={handleStartWorkout}
+            onCompleteWorkout={handleCompleteWorkout}
+            onCancelWorkout={handleCancelWorkout}
+          />
 
-      <div className="space-y-2">
-        <ProgramInfo
-          program={program}
-          dayProgram={dayProgram}
-          workoutInProgress={workoutInProgress}
-          workoutStatus={workoutStatus}
-        />
-
-        {dayProgram ? (
-          <div className="space-y-2">
-            <h4 className="text-xs font-medium text-gray-900 flex items-center space-x-2">
-              <span>{dayProgram.name}</span>
-            </h4>
-
-            <ExerciseInteractionHandler
+          <div className="space-y-4">
+            <ProgramInfo
+              program={program}
+              dayProgram={dayProgram}
               workoutInProgress={workoutInProgress}
-              onVideoClick={handleVideoClick}
-              onSetClick={handleSetClick}
-            >
-              <ProgramBlocks
-                blocks={dayProgram.program_blocks}
-                workoutInProgress={workoutInProgress}
-                getRemainingText={exerciseCompletion.getRemainingText}
-                isExerciseComplete={exerciseCompletion.isExerciseComplete}
-                onExerciseClick={handleExerciseClick}
-                onSetClick={handleSetClick}
-                onVideoClick={handleVideoClick}
-                getNotes={exerciseCompletion.getNotes}
-                updateNotes={exerciseCompletion.updateNotes}
-                clearNotes={exerciseCompletion.clearNotes}
-                updateKg={exerciseCompletion.updateKg}
-                clearKg={exerciseCompletion.clearKg}
-                updateVelocity={exerciseCompletion.updateVelocity}
-                clearVelocity={exerciseCompletion.clearVelocity}
-                updateReps={exerciseCompletion.updateReps}
-                clearReps={exerciseCompletion.clearReps}
-                selectedDate={selectedDate}
-                program={program}
-              />
-            </ExerciseInteractionHandler>
+              workoutStatus={workoutStatus}
+            />
+
+            {dayProgram ? (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
+                  <span>{dayProgram.name}</span>
+                </h4>
+
+                <ExerciseInteractionHandler
+                  workoutInProgress={workoutInProgress}
+                  onVideoClick={handleVideoClick}
+                  onSetClick={handleSetClick}
+                >
+                  <ProgramBlocks
+                    blocks={dayProgram.program_blocks}
+                    workoutInProgress={workoutInProgress}
+                    getRemainingText={exerciseCompletion.getRemainingText}
+                    isExerciseComplete={exerciseCompletion.isExerciseComplete}
+                    onExerciseClick={handleExerciseClick}
+                    onSetClick={handleSetClick}
+                    onVideoClick={handleVideoClick}
+                    getNotes={exerciseCompletion.getNotes}
+                    updateNotes={exerciseCompletion.updateNotes}
+                    clearNotes={exerciseCompletion.clearNotes}
+                    updateKg={exerciseCompletion.updateKg}
+                    clearKg={exerciseCompletion.clearKg}
+                    updateVelocity={exerciseCompletion.updateVelocity}
+                    clearVelocity={exerciseCompletion.clearVelocity}
+                    updateReps={exerciseCompletion.updateReps}
+                    clearReps={exerciseCompletion.clearReps}
+                    selectedDate={selectedDate}
+                    program={program}
+                  />
+                </ExerciseInteractionHandler>
+              </div>
+            ) : (
+              <div className="bg-white border border-gray-200 rounded-none p-6 text-center text-gray-500">
+                Δεν βρέθηκε πρόγραμμα για αυτή την ημέρα
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="bg-white border border-gray-200 rounded-none p-4 text-center text-gray-500 text-xs">
-            Δεν βρέθηκε πρόγραμμα για αυτή την ημέρα
-          </div>
-        )}
-      </div>
+        </DialogContent>
+      </Dialog>
 
       <ExerciseVideoDialog
         isOpen={isVideoDialogOpen}
         onClose={() => setIsVideoDialogOpen(false)}
         exercise={selectedExercise}
       />
-    </div>
-  );
-
-  if (isEmbedded) {
-    return (
-      <div className="h-full p-4 text-white">
-        {content}
-      </div>
-    );
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-none">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Πρόγραμμα για {format(selectedDate, 'dd/MM/yyyy')}</span>
-            <div className="flex items-center space-x-1">
-              <Button
-                onClick={handleMinimize}
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-gray-600 p-1 h-6 w-6"
-              >
-                <Minimize2 className="h-4 w-4" />
-              </Button>
-              <Button
-                onClick={onClose}
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-gray-600 p-1 h-6 w-6"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </DialogTitle>
-        </DialogHeader>
-        {content}
-      </DialogContent>
-    </Dialog>
+    </>
   );
 };
