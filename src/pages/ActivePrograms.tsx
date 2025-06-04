@@ -4,7 +4,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActiveProgramsList } from "@/components/active-programs/ActiveProgramsList";
 import { CompletedProgramsList } from "@/components/active-programs/CompletedProgramsList";
 import { ProgramCalendar } from "@/components/active-programs/ProgramCalendar";
-import { ActiveProgramsActions } from "@/components/active-programs/ActiveProgramsActions";
 import { EmptyProgramsState } from "@/components/active-programs/EmptyProgramsState";
 import { MinimizedProgramsSidebar } from "@/components/active-programs/MinimizedProgramsSidebar";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
@@ -72,7 +71,6 @@ const ActivePrograms = () => {
               Διαχειριστείτε και παρακολουθήστε τα ενεργά προγράμματα προπόνησης
             </p>
           </div>
-          <ActiveProgramsActions onRefresh={refetch} />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
