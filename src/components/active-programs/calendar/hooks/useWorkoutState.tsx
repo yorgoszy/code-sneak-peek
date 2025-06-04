@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { format, addDays } from "date-fns";
 import { useExerciseCompletion } from '@/hooks/useExerciseCompletion';
@@ -32,6 +31,13 @@ export const useWorkoutState = (
     getAdjustments
   } = useExerciseCompletion();
 
+  // Function to initialize workout state (for restored minimized programs)
+  const initializeWorkoutState = (inProgress: boolean, start: Date | null, elapsed: number) => {
+    setWorkoutInProgress(inProgress);
+    setStartTime(start);
+    setElapsedTime(elapsed);
+  };
+
   // Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -49,6 +55,8 @@ export const useWorkoutState = (
     setStartTime(new Date());
     setElapsedTime(0);
   };
+
+  // ... keep existing code (transferDataToNextWeek function)
 
   const transferDataToNextWeek = () => {
     if (!program || !selectedDate) return;
@@ -182,6 +190,7 @@ export const useWorkoutState = (
     handleStartWorkout,
     handleCompleteWorkout,
     handleCancelWorkout,
+    initializeWorkoutState,
     exerciseCompletion: {
       completeSet,
       getRemainingText,

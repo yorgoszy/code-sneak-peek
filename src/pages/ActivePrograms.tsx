@@ -13,12 +13,13 @@ import { useMinimizedPrograms } from "@/hooks/useMinimizedPrograms";
 
 const ActivePrograms = () => {
   const { programs, loading, refetch } = useActivePrograms();
-  const [activeTab, setActiveTab] = useState("calendar"); // Αλλαγή default σε calendar
+  const [activeTab, setActiveTab] = useState("calendar");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [restoredProgram, setRestoredProgram] = useState<{
     program: any;
     selectedDate: Date;
     workoutStatus: string;
+    workoutState?: any;
   } | null>(null);
   
   const { getMinimizedProgram, removeMinimizedProgram } = useMinimizedPrograms();
@@ -32,7 +33,8 @@ const ActivePrograms = () => {
       setRestoredProgram({
         program: minimizedProgram.program,
         selectedDate: minimizedProgram.selectedDate,
-        workoutStatus: minimizedProgram.workoutStatus
+        workoutStatus: minimizedProgram.workoutStatus,
+        workoutState: minimizedProgram.workoutState
       });
       removeMinimizedProgram(programId);
     }
@@ -116,6 +118,7 @@ const ActivePrograms = () => {
           selectedDate={restoredProgram.selectedDate}
           workoutStatus={restoredProgram.workoutStatus}
           onRefresh={refetch}
+          initialWorkoutState={restoredProgram.workoutState}
         />
       )}
     </div>

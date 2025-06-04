@@ -2,11 +2,18 @@
 import { create } from 'zustand';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
+interface WorkoutState {
+  workoutInProgress: boolean;
+  startTime: Date | null;
+  elapsedTime: number;
+}
+
 interface MinimizedProgram {
   id: string;
   program: EnrichedAssignment;
   selectedDate: Date;
   workoutStatus: string;
+  workoutState?: WorkoutState;
 }
 
 interface MinimizedProgramsStore {
