@@ -52,10 +52,10 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
           {/* Right Content - Image with overlay */}
           <div className="relative mt-8 mb-8">
             <img 
-              src="/lovable-uploads/87da9025-650f-4202-b262-5d56a1eb12e6.png"
+              src="/lovable-uploads/8b3f087c-b412-4ec3-87f3-f4c486a00625.png"
               alt="Elite Training Technology"
               className="w-full h-auto rounded-lg"
-              style={{ marginTop: '30px', marginBottom: '30px' }}
+              style={{ marginTop: '0px', marginBottom: '0px' }}
             />
             <div className="absolute bottom-2 -left-4 bg-[#00ffba] text-black p-6 max-w-xs -ml-4">
               <h3 className="font-bold text-lg mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
