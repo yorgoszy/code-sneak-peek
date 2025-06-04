@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek } from "date-fns";
@@ -150,11 +149,8 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
 
   if (loading) {
     return (
-      <Card className="w-full rounded-none">
-        <CardHeader>
-          <CardTitle>Ημερολόγιο Προγραμμάτων</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Card className="w-full h-full rounded-none border-0 bg-transparent">
+        <CardContent className="p-2">
           <div className="text-center py-8 text-gray-500">
             Φόρτωση ημερολογίου...
           </div>
@@ -164,15 +160,15 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
   }
 
   return (
-    <Card className="w-full rounded-none">
-      <CardHeader>
+    <Card className="w-full h-full rounded-none border-0 bg-transparent flex flex-col">
+      <CardHeader className="p-2 pb-1">
         <CalendarHeader
           currentDate={currentDate}
           onPreviousMonth={goToPreviousMonth}
           onNextMonth={goToNextMonth}
         />
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-2 pt-0 flex-1 overflow-hidden">
         <CalendarGrid
           days={days}
           currentDate={currentDate}
@@ -182,7 +178,7 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
         />
         
         {programs.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-4 text-gray-500 text-xs">
             Δεν υπάρχουν προγράμματα για αυτόν τον χρήστη
           </div>
         )}

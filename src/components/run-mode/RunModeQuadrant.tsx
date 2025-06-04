@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserSelector } from './UserSelector';
 import { UserProfileCalendar } from "@/components/user-profile/UserProfileCalendar";
 
@@ -9,6 +10,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  photo_url?: string;
 }
 
 interface QuadrantData {
@@ -43,7 +45,19 @@ export const RunModeQuadrant: React.FC<RunModeQuadrantProps> = ({
   return (
     <div className="bg-gray-900 border border-gray-700 rounded-none p-4 flex flex-col h-[calc(50vh-60px)]">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">{quadrant.title}</h2>
+        {quadrant.selectedUser ? (
+          <div className="flex items-center space-x-3">
+            <Avatar className="w-8 h-8">
+              <AvatarImage src={quadrant.selectedUser.photo_url} alt={quadrant.selectedUser.name} />
+              <AvatarFallback className="text-xs">
+                {quadrant.selectedUser.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-sm font-medium text-white">{quadrant.selectedUser.name}</span>
+          </div>
+        ) : (
+          <h2 className="text-lg font-semibold">{quadrant.title}</h2>
+        )}
         <Button
           onClick={onRemove}
           variant="ghost"
@@ -55,20 +69,22 @@ export const RunModeQuadrant: React.FC<RunModeQuadrantProps> = ({
       </div>
       
       {/* User Selection */}
-      <div className="mb-4">
-        <UserSelector
-          selectedUser={quadrant.selectedUser}
-          users={users}
-          searchTerm={searchTerm}
-          isOpen={isPopoverOpen}
-          onSearchChange={onSearchChange}
-          onOpenChange={onPopoverOpenChange}
-          onUserSelect={onUserSelect}
-          onRemoveUser={onRemoveUser}
-        />
-      </div>
+      {!quadrant.selectedUser && (
+        <div className="mb-4">
+          <UserSelector
+            selectedUser={quadrant.selectedUser}
+            users={users}
+            searchTerm={searchTerm}
+            isOpen={isPopoverOpen}
+            onSearchChange={onSearchChange}
+            onOpenChange={onPopoverOpenChange}
+            onUserSelect={onUserSelect}
+            onRemoveUser={onRemoveUser}
+          />
+        </div>
+      )}
 
-      {/* Calendar or Empty State */}
+      {/* Calendar - Full Height */}
       <div className="flex-1 bg-gray-800 rounded-none overflow-hidden">
         {quadrant.selectedUser ? (
           <div className="h-full w-full">
