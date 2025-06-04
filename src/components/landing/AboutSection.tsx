@@ -69,8 +69,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
           <div className="lg:w-2/5 relative flex flex-col items-center" style={{ paddingTop: '80px' }}>
             <div className="relative mb-8">
               <img
-                src="/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"
-                alt="Georgios Zygouris - Head Coach"
+                src={activeAboutSection === 2 ? "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png" : "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"}
+                alt={activeAboutSection === 2 ? "Our Vision" : "Georgios Zygouris - Head Coach"}
                 className="max-w-full h-auto filter grayscale"
               />
               <div className="absolute bottom-0 left-0 right-0 flex items-center">
@@ -84,7 +84,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               </div>
             </div>
 
-            <div className="bg-black bg-opacity-90 p-8 w-full max-w-2xl ml-8">
+            <div className="bg-black bg-opacity-90 p-8 w-full max-w-2xl">
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-white mb-4">
                   {activeAboutSection === 1 && translations.headCoach}
@@ -93,7 +93,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 </h3>
                 <p className="text-gray-300 text-sm leading-relaxed">
                   {activeAboutSection === 1 && translations.coachDescription}
-                  {activeAboutSection === 2 && "Το όραμά μας είναι να δημιουργήσουμε ένα περιβάλλον όπου κάθε άτομο μπορεί να ανακαλύψει και να αναπτύξει τις φυσικές του ικανότητες μέσω επιστημονικά τεκμηριωμένων μεθόδων προπόνησης."}
+                  {activeAboutSection === 2 && translations.visionDescription}
                   {activeAboutSection === 3 && "Η μεθοδολογία μας βασίζεται στην ολιστική προσέγγιση της αθλητικής ανάπτυξης, συνδυάζοντας σύγχρονες επιστημονικές μεθόδους με εξατομικευμένη προσέγγιση για κάθε αθλητή."}
                 </p>
               </div>
