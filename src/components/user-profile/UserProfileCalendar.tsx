@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, format } from "date-fns";
 import { CalendarHeader } from '../active-programs/calendar/CalendarHeader';
 import { CalendarGrid } from '../active-programs/calendar/CalendarGrid';
-import { DayProgramDialog } from '../active-programs/calendar/DayProgramDialog';
+import { EmbeddedProgramDialog } from './EmbeddedProgramDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +23,10 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
     program: EnrichedAssignment;
     date: Date;
     status: string;
+  } | null>(null);
+  const [showProgramSelection, setShowProgramSelection] = useState<{
+    programs: EnrichedAssignment[];
+    date: Date;
   } | null>(null);
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
@@ -60,7 +63,6 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
     fetchAllCompletions();
   }, [programs, getWorkoutCompletions]);
 
-  // Real-time updates for workout completions
   useEffect(() => {
     if (!user?.id || programs.length === 0) return;
 
@@ -78,7 +80,6 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
         async (payload) => {
           console.log('📊 User profile workout completion changed:', payload);
           
-          // Refetch all completions to get updated data
           const completionsData: any[] = [];
           for (const program of programs) {
             try {
@@ -104,7 +105,6 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
       setLoading(true);
       console.log('🔍 Fetching ALL programs for user (including completed):', user.id);
       
-      // Παίρνουμε όλα τα assignments του χρήστη (συμπεριλαμβανομένων των ολοκληρωμένων)
       const assignments = await fetchProgramAssignments(user.id);
       
       if (!assignments || assignments.length === 0) {
@@ -113,12 +113,10 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
         return;
       }
 
-      // Enrich assignments with program data
       const enrichedAssignments = await Promise.all(
         assignments.map(enrichAssignmentWithProgramData)
       );
 
-      // Filter by date - include ALL valid assignments (both completed and active)
       const validPrograms = enrichedAssignments.filter(isValidAssignment);
       
       console.log('✅ User programs loaded (all including completed):', validPrograms.length);
@@ -150,21 +148,51 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
     return 'scheduled';
   };
 
-  const handleProgramClick = (program: EnrichedAssignment, day: Date) => {
+  const handleDayClick = (day: Date) => {
     const dayString = format(day, 'yyyy-MM-dd');
+    const dayPrograms = programs.filter(program => {
+      if (!program.training_dates) return false;
+      return program.training_dates.some((dateStr: string) => {
+        const programDate = new Date(dateStr);
+        return programDate.toDateString() === day.toDateString();
+      });
+    });
+
+    if (dayPrograms.length === 0) {
+      return; // Δεν υπάρχουν προγράμματα για αυτή την ημέρα
+    } else if (dayPrograms.length === 1) {
+      // Ένα πρόγραμμα - άνοιξε απευθείας
+      const workoutStatus = getWorkoutStatus(dayPrograms[0], dayString);
+      setSelectedProgram({
+        program: dayPrograms[0],
+        date: day,
+        status: workoutStatus
+      });
+    } else {
+      // Πολλαπλά προγράμματα - δείξε επιλογή
+      setShowProgramSelection({
+        programs: dayPrograms,
+        date: day
+      });
+    }
+  };
+
+  const handleProgramSelect = (program: EnrichedAssignment) => {
+    if (!showProgramSelection) return;
+    
+    const dayString = format(showProgramSelection.date, 'yyyy-MM-dd');
     const workoutStatus = getWorkoutStatus(program, dayString);
+    
     setSelectedProgram({
       program,
-      date: day,
+      date: showProgramSelection.date,
       status: workoutStatus
     });
+    setShowProgramSelection(null);
   };
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  
-  // Υπολογίζουμε τις μέρες του μήνα συμπεριλαμβάνοντας τις μέρες του προηγούμενου/επόμενου μήνα
-  // για να γεμίσει το grid, αρχίζοντας από Δευτέρα (weekStartsOn: 1)
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
@@ -239,16 +267,17 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
                   <div
                     key={day.toISOString()}
                     className={`
-                      text-xs p-1 min-h-[24px] flex flex-col
+                      text-xs p-1 min-h-[32px] flex flex-col cursor-pointer hover:bg-gray-700 transition-colors
                       ${day.getMonth() !== currentDate.getMonth() ? 'text-gray-600' : 'text-white'}
                       ${new Date().toDateString() === day.toDateString() ? 'bg-[#00ffba] text-black font-bold' : 'bg-gray-800'}
                     `}
+                    onClick={() => handleDayClick(day)}
                   >
-                    <span className="text-xs leading-none">{day.getDate()}</span>
-                    {/* Program indicators - tiny dots */}
-                    <div className="flex flex-wrap gap-px mt-px">
+                    <span className="text-xs leading-none mb-1">{day.getDate()}</span>
+                    {/* Program indicators */}
+                    <div className="flex flex-wrap gap-px">
                       {dayPrograms
-                        .slice(0, 3)
+                        .slice(0, 4)
                         .map((program, index) => {
                           const dayString = format(day, 'yyyy-MM-dd');
                           const completion = allCompletions.find(c => 
@@ -258,12 +287,14 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
                           return (
                             <div
                               key={`${program.id}-${index}`}
-                              className={`w-1 h-1 cursor-pointer ${completion ? 'bg-green-400' : 'bg-orange-400'}`}
+                              className={`w-2 h-2 ${completion ? 'bg-green-400' : 'bg-orange-400'}`}
                               title={program.programs?.name || 'Program'}
-                              onClick={() => handleProgramClick(program, day)}
                             />
                           );
                         })}
+                      {dayPrograms.length > 4 && (
+                        <div className="w-2 h-2 bg-blue-400" title={`+${dayPrograms.length - 4} ακόμη`} />
+                      )}
                     </div>
                   </div>
                 );
@@ -279,8 +310,49 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
         </CardContent>
       </Card>
 
+      {/* Program Selection Dialog */}
+      {showProgramSelection && (
+        <div className="absolute inset-0 bg-gray-900 z-10 p-4">
+          <div className="mb-4">
+            <h3 className="text-white text-sm font-medium mb-2">
+              Επιλέξτε πρόγραμμα για {format(showProgramSelection.date, 'dd/MM/yyyy')}
+            </h3>
+            <button
+              onClick={() => setShowProgramSelection(null)}
+              className="text-gray-400 hover:text-white text-xs"
+            >
+              ← Πίσω
+            </button>
+          </div>
+          <div className="space-y-2">
+            {showProgramSelection.programs.map((program) => {
+              const dayString = format(showProgramSelection.date, 'yyyy-MM-dd');
+              const completion = allCompletions.find(c => 
+                c.assignment_id === program.id && 
+                c.scheduled_date === dayString
+              );
+              return (
+                <div
+                  key={program.id}
+                  className="bg-gray-800 p-3 cursor-pointer hover:bg-gray-700 transition-colors"
+                  onClick={() => handleProgramSelect(program)}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-white text-sm">{program.programs?.name}</span>
+                    <span className={`text-xs px-2 py-1 ${completion ? 'bg-green-600 text-white' : 'bg-orange-600 text-white'}`}>
+                      {completion ? 'Ολοκληρωμένο' : 'Προγραμματισμένο'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Embedded Program Dialog */}
       {selectedProgram && (
-        <DayProgramDialog
+        <EmbeddedProgramDialog
           isOpen={!!selectedProgram}
           onClose={() => setSelectedProgram(null)}
           program={selectedProgram.program}
