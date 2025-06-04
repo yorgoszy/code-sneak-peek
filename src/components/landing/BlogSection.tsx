@@ -69,7 +69,7 @@ Join the camp to be a champ!`
         id: 3,
         title: "Ένα αποδοτικό ζέσταμα",
         excerpt: "Η σημασία του ζεστάματος στην προπόνηση και η εφαρμογή της αρχής του μεγέθους.",
-        image: "/lovable-uploads/b535e536-1d28-4df9-bc04-904228d8bfd5.png",
+        image: "/lovable-uploads/afb68580-fcda-41fa-9ef0-1a4a318155c6.png",
         date: "15 Μαρτίου 2025",
         content: `Ένα Αποδοτικό Ζέσταμα
 Το ζέσταμα αποτελεί ένα από τα πιο κρίσιμα στάδια της προπόνησης, καθώς προετοιμάζει το σώμα για τη σωματική δραστηριότητα και μειώνει τον κίνδυνο τραυματισμών. Μια βασική αρχή που μπορεί να κάνει το ζέσταμα πιο αποδοτικό είναι η "αρχή του μεγέθους", η οποία αφορά τη σταδιακή ενεργοποίηση των μυϊκών ινών. Μέσω αυτής της αρχής, οι μυϊκές ίνες ενεργοποιούνται με έναν προοδευτικό τρόπο που βελτιώνει την απόδοση και την ασφάλεια του σώματος κατά την άσκηση.
@@ -147,7 +147,7 @@ Join the camp to be a champ!`
         id: 3,
         title: "An Efficient Warm-up",
         excerpt: "The importance of warming up in training and the application of the size principle.",
-        image: "/lovable-uploads/b535e536-1d28-4df9-bc04-904228d8bfd5.png",
+        image: "/lovable-uploads/afb68580-fcda-41fa-9ef0-1a4a318155c6.png",
         date: "March 15, 2025",
         content: `An Efficient Warm-up
 Warming up is one of the most critical stages of training, as it prepares the body for physical activity and reduces the risk of injury. A basic principle that can make warming up more efficient is the "size principle," which concerns the gradual activation of muscle fibers. Through this principle, muscle fibers are activated in a progressive way that improves the performance and safety of the body during exercise.
