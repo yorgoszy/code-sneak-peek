@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface BlogSectionProps {
@@ -36,7 +35,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         excerpt: "Η σημασία του μυϊκού προφίλ στην αθλητική επιτυχία και η σχέση μεταξύ ταλέντου και σκληρής δουλειάς.",
         image: "/lovable-uploads/94ce3145-f7b9-430b-86e6-12bca58833d5.png",
         date: "10 Νοεμβρίου 2024",
-        content: `Στις δύο άκρες των κατηγοριών των αθλημάτων συναντάμε τα αθλήματα ισχύος, όπως είναι η άρση βαρών και τα 100μ σπριντ, και τα αθλήματα αντοχής, όπως είναι ο μαραθώνιος. Η βασική τους διαφορά εντοπίζεται στη διάρκεια της προσπάθειας. Στην πρώτη περίπτωση, η προσπάθεια διαρκεί 3-10-15-30 δευτερόλεπτα, ενώ στη δεύτερη, μπορεί να διαρκέσει 1-2-3, ακόμα και 4 ώρες. Αυτή είναι η αφετηρία για όλα. Κάθε άθλημα έχει το δικό του προφίλ, δηλαδή συγκεκριμένες βιολογικές και μεταβολικές απαιτήσεις από τον αθλητή. Ένας από τους πιο σημαντικούς παράγοντες είναι το βιολογικό προφίλ του αθλητή, δηλαδή ο τύπος των μυϊκών ινών του, που τον χαρακτηρίζει είτε ως αθλητή ισχύος είτε ως αθλητή αντοχής.
+        content: `Στις δύο άκρες των κατηγοριών των αθλημάτων συναντάμε τα αθλήματα ισχύος, όπως είναι η άρση βαρών και τα 100μ σπριντ, και τα αθλήματα αντοχής, όπως είναι ο μαραθώνιος. Η βασική τους διαφορά εντοπίζεται στη διάρκεια της προσπάθειας. Στην πρώτη περίπτωση, η προσπάθεια διαρκεί 3-10-15-30 δευτερόλεπτα, ενώ στη δεύτερη, μπορεί να διαρκέσει 1-2-3, ακόμα και 4 ώρες. Αυτή είναι η αφετηρία για όλα. Κάθε άθλημα έχει το δικό του προφίλ, δηλαδή συγκεκριμένες βιολογικές και μεταβολικές απαιτήσεις από τον αθλητή. Ένας από τους πιο σημαντικούς παράγοντες είναι το βιολογικό προφίλ του αθλητή, δηλαδή ο τύπος των μυϊκών ίνεων του, που τον χαρακτηρίζει είτε ως αθλητή ισχύος είτε ως αθλητή αντοχής.
 
 Εάν ένας αθλητής έχει περισσότερες τύπου Ι μυϊκές ίνες, γνωστές και ως «ερυθρές μυϊκές ίνες» λόγω της υψηλής περιεκτικότητάς τους σε αίμα και της μεγαλύτερης παροχής οξυγόνου, αυτές οι ίνες είναι ανθεκτικές στη διάρκεια και επιτρέπουν στον αθλητή να έχει καλές επιδόσεις σε αθλήματα αντοχής, όπως ο μαραθώνιος. Από την άλλη πλευρά, εάν ο αθλητής διαθέτει περισσότερες τύπου ΙΙ μυϊκές ίνες, τότε είναι πιο κατάλληλος για αθλήματα μικρής διάρκειας, όπως τα σπριντ, το άλμα εις ύψος, το ακόντιο και η άρση βαρών.
 
@@ -48,14 +47,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
 
 Δεν είναι θέμα τύχης ή ταλέντου· είναι αποτέλεσμα σκληρής δουλειάς προς τη σωστή κατεύθυνση.
 
-Join the camp to be a champ!
-
-Βιβλιογραφία:
-Lieber, R. L. (2010). Skeletal Muscle Structure, Function, and Plasticity. Lippincott Williams & Wilkins.
-Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
-Fitts, R. H., & Widrick, J. J. (1996). Muscle mechanics: adaptations with exercise-training. Exercise and Sport Sciences Reviews, 24(1), 427-473.
-Kenney, W. L., Wilmore, J., & Costill, D. (2020). Physiology of Sport and Exercise. Human Kinetics.
-Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. Medicine and Science in Sports, 9(2), 82-86.`
+Join the camp to be a champ!`
       },
       {
         id: 3,
@@ -105,14 +97,7 @@ On the other hand, we are all born with a specific muscle profile that suits a s
 
 It is not a matter of luck or talent; it is the result of hard work in the right direction.
 
-Join the camp to be a champ!
-
-Bibliography:
-Lieber, R. L. (2010). Skeletal Muscle Structure, Function, and Plasticity. Lippincott Williams & Wilkins.
-Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
-Fitts, R. H., & Widrick, J. J. (1996). Muscle mechanics: adaptations with exercise-training. Exercise and Sport Sciences Reviews, 24(1), 427-473.
-Kenney, W. L., Wilmore, J., & Costill, D. (2020). Physiology of Sport and Exercise. Human Kinetics.
-Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. Medicine and Science in Sports, 9(2), 82-86.`
+Join the camp to be a champ!`
       },
       {
         id: 3,
@@ -123,6 +108,45 @@ Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. 
         content: "Content about youth strength training..."
       }
     ]
+  };
+
+  const getBibliography = (articleId: number, language: string) => {
+    if (articleId === 1) {
+      // Lift Heavy bibliography
+      if (language === 'el') {
+        return `Βιβλιογραφία:
+Haff, G. G., & Triplett, N. T. (2015). Essentials of Strength Training and Conditioning. Human Kinetics.
+González-Badillo, J. J., & Sánchez-Medina, L. (2010). Movement velocity as a measure of loading intensity in resistance training. International Journal of Sports Medicine, 31(05), 347-352.
+Izquierdo, M., Häkkinen, K., González-Badillo, J. J., Ibáñez, J., & Gorostiaga, E. M. (2002). Effects of long-term training specificity on maximal strength and power of the upper and lower extremities in athletes from different sports. European Journal of Applied Physiology, 87(3), 264-271.
+Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
+García-Ramos, A., & Jaric, S. (2018). Optimization of the load-velocity relationship obtained through linear regression: Comparison of two alternative methods. Journal of Sports Sciences, 36(20), 2405-2412.`;
+      } else {
+        return `Bibliography:
+Haff, G. G., & Triplett, N. T. (2015). Essentials of Strength Training and Conditioning. Human Kinetics.
+González-Badillo, J. J., & Sánchez-Medina, L. (2010). Movement velocity as a measure of loading intensity in resistance training. International Journal of Sports Medicine, 31(05), 347-352.
+Izquierdo, M., Häkkinen, K., González-Badillo, J. J., Ibáñez, J., & Gorostiaga, E. M. (2002). Effects of long-term training specificity on maximal strength and power of the upper and lower extremities in athletes from different sports. European Journal of Applied Physiology, 87(3), 264-271.
+Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
+García-Ramos, A., & Jaric, S. (2018). Optimization of the load-velocity relationship obtained through linear regression: Comparison of two alternative methods. Journal of Sports Sciences, 36(20), 2405-2412.`;
+      }
+    } else if (articleId === 2) {
+      // Champions article bibliography
+      if (language === 'el') {
+        return `Βιβλιογραφία:
+Lieber, R. L. (2010). Skeletal Muscle Structure, Function, and Plasticity. Lippincott Williams & Wilkins.
+Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
+Fitts, R. H., & Widrick, J. J. (1996). Muscle mechanics: adaptations with exercise-training. Exercise and Sport Sciences Reviews, 24(1), 427-473.
+Kenney, W. L., Wilmore, J., & Costill, D. (2020). Physiology of Sport and Exercise. Human Kinetics.
+Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. Medicine and Science in Sports, 9(2), 82-86.`;
+      } else {
+        return `Bibliography:
+Lieber, R. L. (2010). Skeletal Muscle Structure, Function, and Plasticity. Lippincott Williams & Wilkins.
+Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
+Fitts, R. H., & Widrick, J. J. (1996). Muscle mechanics: adaptations with exercise-training. Exercise and Sport Sciences Reviews, 24(1), 427-473.
+Kenney, W. L., Wilmore, J., & Costill, D. (2020). Physiology of Sport and Exercise. Human Kinetics.
+Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. Medicine and Science in Sports, 9(2), 82-86.`;
+      }
+    }
+    return '';
   };
 
   const currentLanguage = translations.language || 'el';
@@ -217,6 +241,15 @@ Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. 
                     </p>
                   ))}
                 </div>
+                
+                {/* Bibliography */}
+                {getBibliography(selectedArticle.id, currentLanguage) && (
+                  <div className="mt-8 pt-6 border-t border-gray-700">
+                    <div className="text-xs text-gray-400 leading-relaxed whitespace-pre-line">
+                      {getBibliography(selectedArticle.id, currentLanguage)}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
