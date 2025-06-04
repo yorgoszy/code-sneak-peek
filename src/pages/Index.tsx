@@ -71,7 +71,7 @@ const Index = () => {
       ourVision: "Το Όραμά μας",
       trainingMethodology: "Μεθοδολογία Προπόνησης",
       coachName: "Γεώργιος Ζυγούρης",
-      coachDescription: "Με ονομάζουν Γεώργιο Ζυγούρη, και είμαι απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023). Είμαι επαγγελματίας αθλητής Muay Thai και πιστοποιημένος προπονητής από το 2024. Μέσω της διπλής μου προοπτικής ως αγωνιστής και εκπαιδευτικός, έχω δημιουργήσει ένα προπονητικό περιβάλλον όπου παιδιά, εφηβοι, και ενήλικες δεν μαθαίνουν απλώς κίνηση—ανακαλύπτουν τις δυνάμεις τους, χτίζουν χαρακτήρα μέσω του αθλητισμού, και βρίσκουν τη μοναδική τους θέση στον αθλητικό κόσμο.",
+      coachDescription: "Με ονομάζουν Γεώργιο Ζυγούρη, και είμαι απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023). Είμαι επαγγελματίας αθλητής Muay Thai και πιστοποιημένος προπονητής από το 2024. Μέσω της διπλής μου προοπτικής ως αγωνιστή και εκπαιδευτικός, έχω δημιουργήσει ένα προπονητικό περιβάλλον όπου παιδιά, εφηβοι, και ενήλικες δεν μαθαίνουν απλώς κίνηση—ανακαλύπτουν τις δυνάμεις τους, χτίζουν χαρακτήρα μέσω του αθλητισμού, και βρίσκουν τη μοναδική τους θέση στον αθλητικό κόσμο.",
       academicBackground: "Ακαδημαϊκό Υπόβαθρο",
       academicDescription: "Απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023)",
       professionalAthlete: "Επαγγελματίας Αθλητής",
@@ -527,16 +527,15 @@ const Index = () => {
                   alt="Georgios Zygouris - Head Coach"
                   className="max-w-full h-auto filter grayscale"
                 />
-                {/* Green line overlay */}
-                <div 
-                  className="absolute bottom-1/3 left-0 right-0 h-1"
-                  style={{ backgroundColor: '#00ffba' }}
-                ></div>
-                {/* Number overlay */}
-                <div className="absolute bottom-1/4 left-8">
-                  <span className="text-4xl font-bold" style={{ color: '#00ffba' }}>
+                {/* Number and green line positioned lower and on same level */}
+                <div className="absolute bottom-1/4 left-8 flex items-center">
+                  <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
                     {activeAboutSection.toString().padStart(2, '0')}
                   </span>
+                  <div 
+                    className="h-1 w-32"
+                    style={{ backgroundColor: '#00ffba' }}
+                  ></div>
                 </div>
               </div>
 
