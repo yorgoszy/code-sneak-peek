@@ -32,7 +32,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         }
       `}</style>
       
-      <div className="max-w-7xl mx-auto px-8 lg:px-16 xl:px-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row min-h-[80vh]">
           <div className="lg:w-3/5 flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="mb-12">
