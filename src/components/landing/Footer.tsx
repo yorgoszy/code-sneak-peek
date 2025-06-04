@@ -35,8 +35,47 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
           </div>
 
           {/* Logo/Center */}
-          <div className="flex justify-center items-center">
-            <div className="text-[#00ffba] text-4xl font-bold">F</div>
+          <div className="flex flex-col justify-center items-center">
+            <img 
+              src="/lovable-uploads/d03d7cda-5ce7-49e9-815c-1ecc687bd1aa.png" 
+              alt="Performance Logo"
+              className="w-20 h-20 mb-6"
+            />
+            {/* Social Media Icons */}
+            <div className="flex justify-center gap-6">
+              <a 
+                href="https://www.facebook.com/profile.php?id=61561366923734" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors"
+              >
+                <div className="w-5 h-5 bg-white"></div>
+              </a>
+              <a 
+                href="https://www.instagram.com/hyperkids.gr/" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://www.tiktok.com/@hyperkids.gr?is_from_webapp=1&sender_device=pc" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors"
+              >
+                <div className="w-5 h-5 bg-white rounded"></div>
+              </a>
+              <a 
+                href="https://www.youtube.com/@hyperkids6769" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors"
+              >
+                <Youtube className="w-5 h-5" />
+              </a>
+            </div>
           </div>
 
           {/* Ώρες */}
@@ -52,23 +91,7 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
           </div>
         </div>
 
-        {/* Social Media Icons */}
-        <div className="flex justify-center gap-6 mt-12 mb-8">
-          <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors">
-            <div className="w-5 h-5 bg-white rounded"></div>
-          </a>
-          <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors">
-            <Instagram className="w-5 h-5" />
-          </a>
-          <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors">
-            <div className="w-5 h-5 bg-white rounded"></div>
-          </a>
-          <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors">
-            <Youtube className="w-5 h-5" />
-          </a>
-        </div>
-
-        <div className="text-center text-gray-400 border-t border-gray-800 pt-8">
+        <div className="text-center text-gray-400 border-t border-gray-800 pt-8 mt-12">
           <p>© 2024 Performance. Όλα τα δικαιώματα διατηρούνται.</p>
         </div>
       </div>
