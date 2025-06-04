@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek } from "date-fns";
@@ -210,8 +209,8 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
                 <div className="flex flex-wrap gap-px mt-px">
                   {programs
                     .filter(program => {
-                      if (!program.programs?.training_dates) return false;
-                      return program.programs.training_dates.some((dateStr: string) => {
+                      if (!program.training_dates) return false;
+                      return program.training_dates.some((dateStr: string) => {
                         const programDate = new Date(dateStr);
                         return programDate.toDateString() === day.toDateString();
                       });
