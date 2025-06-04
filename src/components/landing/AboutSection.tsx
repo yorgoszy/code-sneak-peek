@@ -28,9 +28,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         }
       `}</style>
       
-      <div className="w-full">
+      <div className="max-w-7xl mx-auto px-8 lg:px-16 xl:px-24">
         <div className="flex flex-col lg:flex-row min-h-[80vh]">
-          <div className="lg:w-3/5 flex flex-col px-8 lg:px-16 xl:px-24" style={{ paddingTop: '80px' }}>
+          <div className="lg:w-3/5 flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="mb-12">
               <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
                 {translations.aboutSection.toUpperCase()}
@@ -66,14 +66,14 @@ const AboutSection: React.FC<AboutSectionProps> = ({
             </div>
           </div>
 
-          <div className="lg:w-2/5 relative flex flex-col items-center" style={{ paddingTop: '80px' }}>
+          <div className="lg:w-2/5 relative flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="relative mb-8">
               <img
                 src={activeAboutSection === 2 ? "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png" : "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"}
                 alt={activeAboutSection === 2 ? "Our Vision" : "Georgios Zygouris - Head Coach"}
                 className="max-w-full h-auto filter grayscale"
               />
-              <div className="absolute bottom-0 left-0 right-0 flex items-center">
+              <div className="absolute bottom-0 left-0 right-0 flex items-center" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
                   {activeAboutSection.toString().padStart(2, '0')}
                 </span>
