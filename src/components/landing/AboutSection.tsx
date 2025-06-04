@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface AboutSectionProps {
@@ -72,11 +73,19 @@ const AboutSection: React.FC<AboutSectionProps> = ({
           <div className="lg:w-3/5 relative flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="relative mb-8">
               <img
-                src={activeAboutSection === 2 ? "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png" : "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"}
-                alt={activeAboutSection === 2 ? "Our Vision" : "Georgios Zygouris - Head Coach"}
+                src={
+                  activeAboutSection === 2 ? "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png" : 
+                  activeAboutSection === 3 ? "/lovable-uploads/9aed48c1-1ec9-4f35-9648-0329d5152c4a.png" :
+                  "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"
+                }
+                alt={
+                  activeAboutSection === 2 ? "Our Vision" : 
+                  activeAboutSection === 3 ? "Training Methodology" :
+                  "Georgios Zygouris - Head Coach"
+                }
                 className="w-full h-[420px] object-cover filter grayscale"
               />
-              <div className="absolute bottom-0 left-0 right-0 flex items-center" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
+              <div className="absolute flex items-center" style={{ bottom: '20px', left: '20px', right: '20px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
                   {activeAboutSection.toString().padStart(2, '0')}
                 </span>
