@@ -99,7 +99,7 @@ const RunMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleMinimize}
-                className="h-6 w-6 p-0 text-white hover:bg-[#00ffba] rounded-none"
+                className="h-6 w-6 p-0 text-white hover:bg-[#00ffba] hover:text-black rounded-none"
               >
                 <Plus className="h-3 w-3" />
               </Button>
@@ -107,7 +107,7 @@ const RunMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleClose}
-                className="h-6 w-6 p-0 text-white hover:bg-[#00ffba] rounded-none"
+                className="h-6 w-6 p-0 text-white hover:bg-[#00ffba] hover:text-black rounded-none"
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -169,7 +169,7 @@ const RunMode = () => {
           {quadrants.map((quadrant) => (
             <div
               key={quadrant.id}
-              className="bg-gray-900 border border-gray-700 rounded-none p-4 flex flex-col hover:bg-[#00ffba] hover:text-black transition-colors duration-200 group"
+              className="bg-gray-900 border border-gray-700 rounded-none p-4 flex flex-col"
             >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">{quadrant.title}</h2>
@@ -177,7 +177,7 @@ const RunMode = () => {
                   onClick={() => setQuadrants(quadrants.filter(q => q.id !== quadrant.id))}
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 text-white hover:bg-gray-700 rounded-none group-hover:text-black group-hover:hover:bg-gray-300"
+                  className="h-6 w-6 p-0 text-white hover:bg-[#00ffba] hover:text-black rounded-none"
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -186,14 +186,14 @@ const RunMode = () => {
               {/* User Selection */}
               <div className="mb-4">
                 {quadrant.selectedUser ? (
-                  <div className="flex items-center justify-between bg-gray-800 group-hover:bg-white p-3 border border-gray-600 group-hover:border-gray-300">
+                  <div className="flex items-center justify-between bg-gray-800 p-3 border border-gray-600">
                     <div className="flex items-center space-x-2">
                       <User className="h-4 w-4" />
-                      <span className="font-medium">{quadrant.selectedUser.name}</span>
+                      <span className="font-medium text-sm">{quadrant.selectedUser.name}</span>
                     </div>
                     <button
                       onClick={() => removeUser(quadrant.id)}
-                      className="text-gray-400 hover:text-white group-hover:text-gray-600 group-hover:hover:text-black"
+                      className="text-gray-400 hover:text-white"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -206,7 +206,7 @@ const RunMode = () => {
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal rounded-none bg-gray-800 border-gray-600 text-white group-hover:bg-white group-hover:text-black group-hover:border-gray-300"
+                        className="w-full justify-start text-left font-normal rounded-none bg-gray-800 border-gray-600 text-white text-sm"
                       >
                         <Search className="mr-2 h-4 w-4" />
                         Επιλογή ασκουμένου...
@@ -239,14 +239,14 @@ const RunMode = () => {
               </div>
 
               {/* Calendar or Empty State */}
-              <div className="flex-1 bg-gray-800 group-hover:bg-white rounded-none overflow-hidden">
+              <div className="flex-1 bg-gray-800 rounded-none overflow-hidden">
                 {quadrant.selectedUser ? (
-                  <div className="h-full p-2">
+                  <div className="h-full scale-75 origin-top-left transform">
                     <UserProfileCalendar user={quadrant.selectedUser} />
                   </div>
                 ) : (
                   <div className="h-full flex items-center justify-center">
-                    <p className="text-gray-400 group-hover:text-gray-600 text-center">
+                    <p className="text-gray-400 text-center text-sm">
                       Επιλέξτε ασκούμενο για να δείτε το ημερολόγιό του
                     </p>
                   </div>
