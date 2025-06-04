@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Phone, Instagram, Youtube } from 'lucide-react';
+import { Mail, Phone, Instagram, Youtube, MapPin, Facebook } from 'lucide-react';
 
 interface FooterProps {
   translations: any;
@@ -17,20 +17,29 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
               Επικοινωνία
             </h3>
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-[#00ffba] flex items-center justify-center">
-                  <div className="w-2 h-2 bg-black rounded-full"></div>
-                </div>
+              <a 
+                href="https://maps.app.goo.gl/itvAmRgdT8qAG2ZL9"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 hover:text-[#00ffba] transition-colors"
+              >
+                <MapPin className="w-5 h-5 text-[#00ffba]" />
                 <span>an.georgiou 46, thessaloniki 54627</span>
-              </div>
-              <div className="flex items-center gap-3">
+              </a>
+              <a 
+                href="tel:+302310529104"
+                className="flex items-center gap-3 hover:text-[#00ffba] transition-colors"
+              >
                 <Phone className="w-5 h-5 text-[#00ffba]" />
                 <span>+30 2310 529104</span>
-              </div>
-              <div className="flex items-center gap-3">
+              </a>
+              <a 
+                href="mailto:info@hyperkids.gr"
+                className="flex items-center gap-3 hover:text-[#00ffba] transition-colors"
+              >
                 <Mail className="w-5 h-5 text-[#00ffba]" />
                 <span>info@hyperkids.gr</span>
-              </div>
+              </a>
             </div>
           </div>
 
@@ -47,33 +56,35 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
                 href="https://www.facebook.com/profile.php?id=61561366923734" 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors"
+                className="text-white hover:text-[#00ffba] transition-colors"
               >
-                <div className="w-5 h-5 bg-white"></div>
+                <Facebook className="w-6 h-6" />
               </a>
               <a 
                 href="https://www.instagram.com/hyperkids.gr/" 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors"
+                className="text-white hover:text-[#00ffba] transition-colors"
               >
-                <Instagram className="w-5 h-5" />
+                <Instagram className="w-6 h-6" />
               </a>
               <a 
                 href="https://www.tiktok.com/@hyperkids.gr?is_from_webapp=1&sender_device=pc" 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors"
+                className="text-white hover:text-[#00ffba] transition-colors"
               >
-                <div className="w-5 h-5 bg-white rounded"></div>
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                </svg>
               </a>
               <a 
                 href="https://www.youtube.com/@hyperkids6769" 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#00ffba] hover:text-black transition-colors"
+                className="text-white hover:text-[#00ffba] transition-colors"
               >
-                <Youtube className="w-5 h-5" />
+                <Youtube className="w-6 h-6" />
               </a>
             </div>
           </div>
@@ -92,7 +103,7 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
         </div>
 
         <div className="text-center text-gray-400 border-t border-gray-800 pt-8 mt-12">
-          <p>© 2024 Performance. Όλα τα δικαιώματα διατηρούνται.</p>
+          <p>© 2024 hyperkids. Όλα τα δικαιώματα διατηρούνται.</p>
         </div>
       </div>
     </footer>
