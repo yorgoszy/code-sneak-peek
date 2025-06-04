@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -64,7 +63,20 @@ const Index = () => {
       oneByOne: "Προπόνηση Ένας προς Έναν",
       oneByOneDesc: "Εξατομικευμένη προπονητική για μέγιστα αποτελέσματα",
       athletePerformance: "Αθλητική Απόδοση",
-      athletePerformanceDesc: "Ελίτ Στρατηγικές Δύναμης & Φυσικής Κατάστασης"
+      athletePerformanceDesc: "Ελίτ Στρατηγικές Δύναμης & Φυσικής Κατάστασης",
+      supportingYour: "Υποστηρίζοντας το",
+      athleticJourney: "Αθλητικό σας Ταξίδι",
+      headCoach: "Αρχηγός Προπονητής",
+      ourVision: "Το Όραμά μας",
+      trainingMethodology: "Μεθοδολογία Προπόνησης",
+      coachName: "Γεώργιος Ζυγούρης",
+      coachDescription: "Με ονομάζουν Γεώργιο Ζυγούρη, και είμαι απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023). Είμαι επαγγελματίας αθλητής Muay Thai και πιστοποιημένος προπονητής από το 2024. Μέσω της διπλής μου προοπτικής ως αγωνιστής και εκπαιδευτικός, έχω δημιουργήσει ένα προπονητικό περιβάλλον όπου παιδιά, εφηβοι, και ενήλικες δεν μαθαίνουν απλώς κίνηση—ανακαλύπτουν τις δυνάμεις τους, χτίζουν χαρακτήρα μέσω του αθλητισμού, και βρίσκουν τη μοναδική τους θέση στον αθλητικό κόσμο.",
+      academicBackground: "Ακαδημαϊκό Υπόβαθρο",
+      academicDescription: "Απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023)",
+      professionalAthlete: "Επαγγελματίας Αθλητής",
+      professionalDescription: "Επαγγελματίας αθλητής Muay Thai με εμπειρία σε αγώνες υψηλού επιπέδου",
+      coreValues: "Βασικές Αξίες",
+      coreValuesDescription: "Ο στόχος μας δεν είναι μόνο η σωματική βελτίωση, αλλά και η καλλιέργεια αυτοπεποίθησης, χαρακτήρα και βασικών αξιών"
     },
     en: {
       home: "Home",
@@ -102,7 +114,20 @@ const Index = () => {
       oneByOne: "One by One Training",
       oneByOneDesc: "Personalized coaching for maximum results",
       athletePerformance: "Athlete Performance",
-      athletePerformanceDesc: "Elite Strength & Conditioning Strategies"
+      athletePerformanceDesc: "Elite Strength & Conditioning Strategies",
+      supportingYour: "Supporting Your",
+      athleticJourney: "Athletic Journey",
+      headCoach: "Head Coach",
+      ourVision: "Our Vision",
+      trainingMethodology: "Training Methodology",
+      coachName: "Georgios Zygouris",
+      coachDescription: "My name is Georgios Zygouris, and I am a graduate of the School of Physical Education and Sport Science at the Aristotle University of Thessaloniki (2023). I am a professional Muay Thai athlete and a certified coach since 2024. Through my dual perspective as both competitor and educator, I've established a training environment where children, teenagers, and adults don't just learn movement—they discover their strengths, build character through sport, and find their unique position in the athletic world.",
+      academicBackground: "Academic Background",
+      academicDescription: "Graduate of the School of Physical Education and Sport Science at the Aristotle University of Thessaloniki (2023)",
+      professionalAthlete: "Professional Athlete",
+      professionalDescription: "Professional Muay Thai athlete with experience in high-level competitions",
+      coreValues: "Core Values",
+      coreValuesDescription: "Our goal is not only physical improvement, but also the cultivation of confidence, character and core values"
     }
   };
 
@@ -439,13 +464,89 @@ const Index = () => {
       </section>
 
       {/* About Us Section */}
-      <section id="about" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.aboutSection}</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {t.aboutDescription}
-            </p>
+      <section id="about" className="py-20 bg-black relative overflow-hidden">
+        <div className="w-full">
+          <div className="flex flex-col lg:flex-row min-h-[80vh]">
+            {/* Left Content */}
+            <div className="lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 xl:px-24">
+              {/* About Us Header */}
+              <div className="mb-12">
+                <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
+                  {t.aboutSection.toUpperCase()}
+                </p>
+                <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
+                  {t.supportingYour}<br />
+                  <span style={{ color: '#00ffba' }}>{t.athleticJourney}</span>
+                </h2>
+              </div>
+
+              {/* Navigation Items */}
+              <div className="space-y-8">
+                <div className="flex items-center">
+                  <span className="text-2xl font-bold mr-6" style={{ color: '#00ffba' }}>01</span>
+                  <h3 className="text-xl font-bold text-white">{t.headCoach}</h3>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-2xl font-bold mr-6 text-gray-500">02</span>
+                  <h3 className="text-xl text-gray-400">{t.ourVision}</h3>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-2xl font-bold mr-6 text-gray-500">03</span>
+                  <h3 className="text-xl text-gray-400">{t.trainingMethodology}</h3>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Content */}
+            <div className="lg:w-1/2 relative">
+              {/* Coach Image */}
+              <div className="relative h-96 lg:h-full">
+                <img
+                  src="/lovable-uploads/e20b75d6-b670-48dd-b20d-60a80be7e826.png"
+                  alt="Georgios Zygouris - Head Coach"
+                  className="w-full h-full object-cover filter grayscale"
+                />
+                {/* Green line overlay */}
+                <div 
+                  className="absolute bottom-1/3 left-0 right-0 h-1"
+                  style={{ backgroundColor: '#00ffba' }}
+                ></div>
+                {/* Number 01 overlay */}
+                <div className="absolute bottom-1/4 left-8">
+                  <span className="text-4xl font-bold" style={{ color: '#00ffba' }}>01</span>
+                </div>
+              </div>
+
+              {/* Coach Info Card */}
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-90 p-8">
+                <h3 className="text-2xl font-bold text-white mb-4">{t.headCoach}</h3>
+                <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                  {t.coachDescription}
+                </p>
+
+                {/* Three columns */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="border border-gray-700 p-4">
+                    <h4 className="text-white font-bold mb-2">{t.academicBackground}</h4>
+                    <p className="text-gray-400 text-sm">
+                      {t.academicDescription}
+                    </p>
+                  </div>
+                  <div className="border border-gray-700 p-4">
+                    <h4 className="text-white font-bold mb-2">{t.professionalAthlete}</h4>
+                    <p className="text-gray-400 text-sm">
+                      {t.professionalDescription}
+                    </p>
+                  </div>
+                  <div className="border border-gray-700 p-4">
+                    <h4 className="text-white font-bold mb-2">{t.coreValues}</h4>
+                    <p className="text-gray-400 text-sm">
+                      {t.coreValuesDescription}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
