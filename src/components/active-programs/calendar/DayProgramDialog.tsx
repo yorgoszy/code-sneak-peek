@@ -1,10 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Minimize2 } from 'lucide-react';
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
 import { useWorkoutState } from './hooks/useWorkoutState';
+import { useMinimizedPrograms } from '@/hooks/useMinimizedPrograms';
 import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramInfo } from './ProgramInfo';
@@ -34,6 +36,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const { addMinimizedProgram } = useMinimizedPrograms();
 
   const {
     workoutInProgress,
@@ -45,6 +48,19 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   } = useWorkoutState(program, selectedDate, onRefresh, onClose);
 
   if (!program || !selectedDate) return null;
+
+  const handleMinimize = () => {
+    if (program && selectedDate) {
+      const minimizedId = `${program.id}-${format(selectedDate, 'yyyy-MM-dd')}`;
+      addMinimizedProgram({
+        id: minimizedId,
+        program,
+        selectedDate,
+        workoutStatus
+      });
+      onClose();
+    }
+  };
 
   const handleVideoClick = (exercise: any) => {
     if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
@@ -163,8 +179,16 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle>
-            Πρόγραμμα για {format(selectedDate, 'dd/MM/yyyy')}
+          <DialogTitle className="flex items-center justify-between">
+            <span>Πρόγραμμα για {format(selectedDate, 'dd/MM/yyyy')}</span>
+            <Button
+              onClick={handleMinimize}
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-gray-600 p-1 h-6 w-6"
+            >
+              <Minimize2 className="h-4 w-4" />
+            </Button>
           </DialogTitle>
         </DialogHeader>
         {content}
