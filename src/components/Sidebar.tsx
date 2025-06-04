@@ -102,7 +102,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
           >
             <Mail className="h-5 w-5 flex-shrink-0" />
             {!isCollapsed && <span>Webmail</span>}
-          </Link>
+          </a>
         </div>
       </div>
     </div>
