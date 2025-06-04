@@ -31,6 +31,18 @@ const RunMode = () => {
     window.history.back();
   };
 
+  // Δυναμική λογική για το grid layout
+  const getGridClasses = (quarterCount: number) => {
+    if (quarterCount === 1) return 'grid-cols-1';
+    if (quarterCount === 2) return 'grid-cols-2';
+    if (quarterCount === 3) return 'grid-cols-3';
+    if (quarterCount === 4) return 'grid-cols-2 grid-rows-2';
+    if (quarterCount <= 6) return 'grid-cols-3 grid-rows-2';
+    if (quarterCount <= 8) return 'grid-cols-4 grid-rows-2';
+    if (quarterCount <= 9) return 'grid-cols-3 grid-rows-3';
+    return 'grid-cols-4 grid-rows-3';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -70,12 +82,7 @@ const RunMode = () => {
 
       {/* Grid Container */}
       <div className="pt-20 p-4 h-screen">
-        <div className={`grid gap-4 h-full ${
-          quarters.length <= 2 ? 'grid-cols-2' :
-          quarters.length <= 4 ? 'grid-cols-2 grid-rows-2' :
-          quarters.length <= 6 ? 'grid-cols-3 grid-rows-2' :
-          'grid-cols-4 grid-rows-2'
-        }`}>
+        <div className={`grid gap-4 h-full ${getGridClasses(quarters.length)}`}>
           {quarters.map((quarterId) => (
             <RunModeQuarter
               key={quarterId}
