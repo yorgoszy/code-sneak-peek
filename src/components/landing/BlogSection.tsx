@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 
 interface BlogSectionProps {
@@ -185,4 +186,138 @@ A well-designed warm-up based on the size principle prepares both body and mind 
   const getBibliography = (articleId: number, language: string) => {
     if (articleId === 1) {
       // Lift Heavy bibliography
-      if (
+      if (language === 'el') {
+        return `
+<div class="text-xs text-gray-600 mt-6">
+<strong>Βιβλιογραφία:</strong><br/>
+Haff, G. G., & Triplett, N. T. (2015). Essentials of Strength Training and Conditioning. Human Kinetics.<br/>
+González-Badillo, J. J., & Sánchez-Medina, L. (2010). Movement velocity as a measure of loading intensity in resistance training. International Journal of Sports Medicine, 31(05), 347-352.<br/>
+Izquierdo, M., Häkkinen, K., González-Badillo, J. J., Ibáñez, J., & Gorostiaga, E. M. (2002). Effects of long-term training specificity on maximal strength and power of the upper and lower extremities in athletes from different sports. European Journal of Applied Physiology, 87(3), 264-271.<br/>
+Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.<br/>
+García-Ramos, A., & Jaric, S. (2018). Optimization of the load-velocity relationship obtained through linear regression: Comparison of two alternative methods. Journal of Sports Sciences, 36(20), 2405-2412.
+</div>`;
+      } else {
+        return `
+<div class="text-xs text-gray-600 mt-6">
+<strong>Bibliography:</strong><br/>
+Haff, G. G., & Triplett, N. T. (2015). Essentials of Strength Training and Conditioning. Human Kinetics.<br/>
+González-Badillo, J. J., & Sánchez-Medina, L. (2010). Movement velocity as a measure of loading intensity in resistance training. International Journal of Sports Medicine, 31(05), 347-352.<br/>
+Izquierdo, M., Häkkinen, K., González-Badillo, J. J., Ibáñez, J., & Gorostiaga, E. M. (2002). Effects of long-term training specificity on maximal strength and power of the upper and lower extremities in athletes from different sports. European Journal of Applied Physiology, 87(3), 264-271.<br/>
+Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.<br/>
+García-Ramos, A., & Jaric, S. (2018). Optimization of the load-velocity relationship obtained through linear regression: Comparison of two alternative methods. Journal of Sports Sciences, 36(20), 2405-2412.
+</div>`;
+      }
+    } else if (articleId === 3) {
+      // Warm-up bibliography
+      if (language === 'el') {
+        return `
+<div class="text-xs text-gray-600 mt-6">
+<strong>Βιβλιογραφία:</strong><br/>
+Henneman, E., Somjen, G., & Carpenter, D. O. (1965). Excitability and inhibitability of motoneurons of different sizes. Journal of Neurophysiology, 28(3), 599-620.<br/>
+Enoka, R. M. (2008). Neuromechanics of Human Movement (4th ed.). Human Kinetics.<br/>
+Powers, S. K., & Howley, E. T. (2017). Exercise Physiology: Theory and Application to Fitness and Performance (10th ed.). McGraw-Hill.<br/>
+McArdle, W. D., Katch, F. I., & Katch, V. L. (2015). Exercise Physiology: Nutrition, Energy, and Human Performance (8th ed.). Lippincott Williams & Wilkins.<br/>
+Behm, D. G., & Chaouachi, A. (2011). A Review of the Acute Effects of Static and Dynamic Stretching on Performance. European Journal of Applied Physiology, 111(11), 2633-2651.
+</div>`;
+      } else {
+        return `
+<div class="text-xs text-gray-600 mt-6">
+<strong>Bibliography:</strong><br/>
+Henneman, E., Somjen, G., & Carpenter, D. O. (1965). Excitability and inhibitability of motoneurons of different sizes. Journal of Neurophysiology, 28(3), 599-620.<br/>
+Enoka, R. M. (2008). Neuromechanics of Human Movement (4th ed.). Human Kinetics.<br/>
+Powers, S. K., & Howley, E. T. (2017). Exercise Physiology: Theory and Application to Fitness and Performance (10th ed.). McGraw-Hill.<br/>
+McArdle, W. D., Katch, F. I., & Katch, V. L. (2015). Exercise Physiology: Nutrition, Energy, and Human Performance (8th ed.). Lippincott Williams & Wilkins.<br/>
+Behm, D. G., & Chaouachi, A. (2011). A Review of the Acute Effects of Static and Dynamic Stretching on Performance. European Journal of Applied Physiology, 111(11), 2633-2651.
+</div>`;
+      }
+    }
+    return '';
+  };
+
+  const currentLanguage = translations.language || 'el';
+  const currentArticles = articles[currentLanguage] || articles.el;
+
+  return (
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
+            {translations.blog?.title || 'Blog & Άρθρα'}
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            {translations.blog?.subtitle || 'Ενημερωθείτε με τα τελευταία άρθρα και συμβουλές από τους ειδικούς μας'}
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {currentArticles.map((article) => (
+            <article key={article.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+              <img 
+                src={article.image} 
+                alt={article.title}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <div className="text-sm text-[#00ffba] mb-2">{article.date}</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'Robert, sans-serif' }}>
+                  {article.title}
+                </h3>
+                <p className="text-gray-600 mb-4 line-clamp-3">
+                  {article.excerpt}
+                </p>
+                <button 
+                  onClick={() => setSelectedArticle(article)}
+                  className="text-[#00ffba] hover:text-[#00cc96] font-semibold transition-colors"
+                >
+                  {translations.blog?.readMore || 'Διαβάστε περισσότερα →'}
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* Modal */}
+        {selectedArticle && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div 
+              ref={modalRef}
+              className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto"
+            >
+              <div className="relative">
+                <img 
+                  src={selectedArticle.image} 
+                  alt={selectedArticle.title}
+                  className="w-full h-64 object-cover"
+                />
+                <button 
+                  onClick={() => setSelectedArticle(null)}
+                  className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-8">
+                <div className="text-sm text-[#00ffba] mb-2">{selectedArticle.date}</div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Robert, sans-serif' }}>
+                  {selectedArticle.title}
+                </h2>
+                <div className="prose prose-lg max-w-none text-gray-700">
+                  {selectedArticle.content.split('\n\n').map((paragraph, index) => (
+                    <p key={index} className="mb-4">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+                <div dangerouslySetInnerHTML={{ __html: getBibliography(selectedArticle.id, currentLanguage) }} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
+
+export default BlogSection;
