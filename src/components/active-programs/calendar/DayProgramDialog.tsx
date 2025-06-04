@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
         id: minimizedId,
         program,
         selectedDate,
-        workoutStatus
+        workoutStatus: workoutInProgress ? 'in_progress' : workoutStatus
       });
       onClose();
     }
@@ -177,7 +178,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto rounded-none">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-none">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Πρόγραμμα για {format(selectedDate, 'dd/MM/yyyy')}</span>

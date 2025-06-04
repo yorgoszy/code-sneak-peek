@@ -31,9 +31,9 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
   dayString
 }) => {
   const getStatusColor = () => {
-    if (workoutStatus === 'completed') return '#48926c'; // Πράσινο
-    if (workoutStatus === 'missed') return '#ef4444';
-    return '#1c5d86'; // Μπλε
+    if (workoutStatus === 'completed') return '#00ffba'; // Πράσινο για ολοκληρωμένα
+    if (workoutStatus === 'missed') return '#ef4444'; // Κόκκινο για χαμένα
+    return '#3b82f6'; // Μπλε για προγραμματισμένα
   };
 
   const userName = program.app_users?.name || 'Άγνωστος χρήστης';
@@ -74,7 +74,7 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
         <div className="absolute inset-0 flex items-center justify-between px-2">
           {showProgress ? (
             <>
-              <span className="text-xs text-white/80">
+              <span className="text-xs text-white/90 font-medium">
                 {userName.split(' ')[0]}
               </span>
               <span className="text-xs font-medium text-white">
@@ -82,7 +82,7 @@ export const CalendarProgramItem: React.FC<CalendarProgramItemProps> = ({
               </span>
             </>
           ) : (
-            <span className="text-xs font-medium text-white truncate">
+            <span className="text-xs font-medium text-white/90 truncate">
               {userName.split(' ')[0]}
             </span>
           )}

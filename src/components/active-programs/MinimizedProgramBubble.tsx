@@ -21,6 +21,18 @@ export const MinimizedProgramBubble: React.FC<MinimizedProgramBubbleProps> = ({
   onRestore,
   onClose
 }) => {
+  const getStatusColor = () => {
+    if (workoutStatus === 'completed') return 'text-[#00ffba]';
+    if (workoutStatus === 'in_progress') return 'text-blue-500';
+    return 'text-gray-500';
+  };
+
+  const getStatusText = () => {
+    if (workoutStatus === 'completed') return 'Ολοκληρωμένη';
+    if (workoutStatus === 'in_progress') return 'Σε εξέλιξη';
+    return 'Προγραμματισμένη';
+  };
+
   return (
     <div className="bg-white border border-gray-200 p-2 mb-2 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
@@ -35,8 +47,8 @@ export const MinimizedProgramBubble: React.FC<MinimizedProgramBubbleProps> = ({
             <p className="text-xs font-medium text-gray-900 truncate">
               {program.app_users?.name}
             </p>
-            <p className="text-xs text-gray-500">
-              {format(selectedDate, 'dd/MM')} - {workoutStatus}
+            <p className={`text-xs ${getStatusColor()}`}>
+              {format(selectedDate, 'dd/MM')} - {getStatusText()}
             </p>
           </div>
         </div>

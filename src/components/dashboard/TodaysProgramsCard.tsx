@@ -27,6 +27,7 @@ export const TodaysProgramsCard = ({ todaysPrograms, allCompletions, onRefresh }
           programs={todaysPrograms}
           allCompletions={allCompletions}
           onRefresh={onRefresh}
+          isCompactMode={false}
         />
       </CardContent>
     </Card>

@@ -13,7 +13,7 @@ import { useMinimizedPrograms } from "@/hooks/useMinimizedPrograms";
 
 const ActivePrograms = () => {
   const { programs, loading, refetch } = useActivePrograms();
-  const [activeTab, setActiveTab] = useState("list");
+  const [activeTab, setActiveTab] = useState("calendar"); // Αλλαγή default σε calendar
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [restoredProgram, setRestoredProgram] = useState<{
     program: any;
@@ -86,17 +86,17 @@ const ActivePrograms = () => {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-3 rounded-none">
-              <TabsTrigger value="list" className="rounded-none">Λίστα</TabsTrigger>
               <TabsTrigger value="calendar" className="rounded-none">Ημερολόγιο</TabsTrigger>
+              <TabsTrigger value="list" className="rounded-none">Ενεργά</TabsTrigger>
               <TabsTrigger value="completed" className="rounded-none">Ολοκληρωμένα</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="list" className="space-y-4">
-              <ActiveProgramsList programs={activePrograms} onRefresh={refetch} />
-            </TabsContent>
-
             <TabsContent value="calendar" className="space-y-4">
               <ProgramCalendar programs={activePrograms} onRefresh={refetch} />
+            </TabsContent>
+
+            <TabsContent value="list" className="space-y-4">
+              <ActiveProgramsList programs={activePrograms} onRefresh={refetch} />
             </TabsContent>
 
             <TabsContent value="completed" className="space-y-4">
