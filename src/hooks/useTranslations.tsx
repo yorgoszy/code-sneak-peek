@@ -5,6 +5,7 @@ export const useTranslations = () => {
 
   const translations = {
     el: {
+      language: 'el',
       home: "Αρχική",
       programs: "Προγράμματα",
       blog: "Blog",
@@ -72,6 +73,7 @@ export const useTranslations = () => {
       resultsFocusedDesc: "Παρακολούθηση Αποτελεσμάτων\n• Καθοδήγηση Απόδοσης\n• Ανάπτυξη Προσαρμοσμένου Προγράμματος"
     },
     en: {
+      language: 'en',
       home: "Home",
       programs: "Programs",
       blog: "Blog",
@@ -122,14 +124,12 @@ export const useTranslations = () => {
       professionalDescription: "Professional Muay Thai athlete with experience in high-level competitions",
       coreValues: "Core Values",
       coreValuesDescription: "Our goal is not only physical improvement, but also the cultivation of confidence, character and core values",
-      // Section 02 - Vision boxes
       moreThanPhysical: "More Than Physical",
       moreThanPhysicalDesc: "We don't just train bodies. We shape character. Every child is a world in motion, and movement is self-expression, confidence and development.",
       buildingCharacter: "Building Character",
       buildingCharacterDesc: "We teach respect, discipline, perseverance and cooperation. Our goal is to create a school of life where children learn to stand upright physically, mentally and morally.",
       trustTheProcess: "Trust the Process",
       trustTheProcessDesc: "For us, tomorrow starts today. Step by step. With trust in the process. With the courage to go further. With the will to push the limits.",
-      // Section 03 - Training Methodology
       trainingMethodologyDescription: "Our training methodology focuses on progressive skill development and reinforcement of proper movement patterns tailored to each individual's needs and goals. Through comprehensive assessment, we understand your current abilities and weaknesses, establish clear training objectives, create a structured timeline for achievement, and design an exclusive personalized training plan specifically for you.",
       movementSkills: "Movement Skills",
       movementSkillsDesc: "Athletic Skills Development\n• Age Appropriate\n• Throwing & Catching, Climbing Skills, Jumping & Landing, Agility Running, Coordination",
