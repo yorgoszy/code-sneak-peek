@@ -26,7 +26,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onReadMore, translat
         </p>
         <button 
           onClick={() => onReadMore(article)}
-          className="text-[#00ffba] hover:text-[#00cc96] font-semibold transition-colors mt-auto"
+          className="text-[#00ffba] hover:text-[#00cc96] font-semibold transition-colors mt-auto text-left"
         >
           {translations.blog?.readMore || 'Διαβάστε περισσότερα →'}
         </button>
