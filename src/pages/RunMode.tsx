@@ -241,7 +241,7 @@ const RunMode = () => {
               {/* Calendar or Empty State */}
               <div className="flex-1 bg-gray-800 rounded-none overflow-hidden">
                 {quadrant.selectedUser ? (
-                  <div className="h-full scale-75 origin-top-left transform">
+                  <div className="h-full w-full">
                     <UserProfileCalendar user={quadrant.selectedUser} />
                   </div>
                 ) : (
