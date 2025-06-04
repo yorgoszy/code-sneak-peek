@@ -90,7 +90,7 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
           </div>
 
           {/* Ώρες */}
-          <div>
+          <div className="md:ml-auto">
             <h3 className="text-xl font-bold mb-6" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
               Ώρες
             </h3>
