@@ -91,7 +91,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 }
                 className="w-full h-[420px] object-cover filter grayscale about-image"
               />
-              <div className="absolute flex items-center" style={{ bottom: '40px', left: '0px', right: '0px' }}>
+              <div className="absolute flex items-center" style={{ bottom: '40px', left: '10px', right: '0px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
                   {activeAboutSection.toString().padStart(2, '0')}
                 </span>
