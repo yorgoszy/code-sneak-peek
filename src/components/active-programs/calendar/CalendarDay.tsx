@@ -13,6 +13,7 @@ interface CalendarDayProps {
   onRefresh?: () => void;
   isCompactMode?: boolean;
   containerId?: string;
+  onProgramClick?: (program: EnrichedAssignment, date: Date, status: string) => void;
 }
 
 export const CalendarDay: React.FC<CalendarDayProps> = ({
@@ -22,7 +23,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   allCompletions,
   onRefresh,
   isCompactMode = false,
-  containerId
+  containerId,
+  onProgramClick
 }) => {
   const [selectedProgram, setSelectedProgram] = useState<{
     program: EnrichedAssignment;
@@ -78,6 +80,14 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
 
   const handleProgramClick = (program: EnrichedAssignment) => {
     const workoutStatus = getWorkoutStatus(program, dayString);
+    
+    // Use external onProgramClick if provided (for Run Mode)
+    if (onProgramClick) {
+      onProgramClick(program, day, workoutStatus);
+      return;
+    }
+    
+    // Otherwise use internal state for dialog
     setSelectedProgram({
       program,
       date: day,
@@ -126,7 +136,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           </div>
         </div>
 
-        {selectedProgram && (
+        {/* Only show dialog if not using external onProgramClick */}
+        {!onProgramClick && selectedProgram && (
           <DayProgramDialog
             isOpen={!!selectedProgram}
             onClose={() => setSelectedProgram(null)}
@@ -137,14 +148,16 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           />
         )}
 
-        <DayAllProgramsDialog
-          isOpen={showAllPrograms}
-          onClose={() => setShowAllPrograms(false)}
-          selectedDate={day}
-          programs={programs}
-          allCompletions={allCompletions}
-          onProgramClick={handleProgramClick}
-        />
+        {!onProgramClick && (
+          <DayAllProgramsDialog
+            isOpen={showAllPrograms}
+            onClose={() => setShowAllPrograms(false)}
+            selectedDate={day}
+            programs={programs}
+            allCompletions={allCompletions}
+            onProgramClick={handleProgramClick}
+          />
+        )}
       </>
     );
   }
@@ -202,7 +215,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         </div>
       </div>
 
-      {selectedProgram && (
+      {!onProgramClick && selectedProgram && (
         <DayProgramDialog
           isOpen={!!selectedProgram}
           onClose={() => setSelectedProgram(null)}
@@ -213,14 +226,16 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         />
       )}
 
-      <DayAllProgramsDialog
-        isOpen={showAllPrograms}
-        onClose={() => setShowAllPrograms(false)}
-        selectedDate={day}
-        programs={programs}
-        allCompletions={allCompletions}
-        onProgramClick={handleProgramClick}
-      />
+      {!onProgramClick && (
+        <DayAllProgramsDialog
+          isOpen={showAllPrograms}
+          onClose={() => setShowAllPrograms(false)}
+          selectedDate={day}
+          programs={programs}
+          allCompletions={allCompletions}
+          onProgramClick={handleProgramClick}
+        />
+      )}
     </>
   );
 };

@@ -4,6 +4,7 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterv
 import { CalendarHeader } from './calendar/CalendarHeader';
 import { CalendarGrid } from './calendar/CalendarGrid';
 import { useActivePrograms } from '@/hooks/useActivePrograms';
+import { useWorkoutCompletionsCache } from '@/hooks/useWorkoutCompletionsCache';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCalendarProps {
@@ -25,14 +26,15 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
   
   const { 
     programs: internalPrograms, 
-    allCompletions, 
     loading, 
-    error,
-    refresh: internalRefresh
+    refetch: internalRefresh
   } = useActivePrograms();
+
+  const { getAllCompletions } = useWorkoutCompletionsCache();
 
   const programs = externalPrograms || internalPrograms;
   const refresh = onRefresh || internalRefresh;
+  const allCompletions = getAllCompletions();
 
   const handlePreviousMonth = () => {
     setCurrentDate(subMonths(currentDate, 1));
@@ -42,32 +44,12 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
     setCurrentDate(addMonths(currentDate, 1));
   };
 
-  const handleTodayClick = () => {
-    setCurrentDate(new Date());
-  };
-
   if (loading) {
     return (
       <div className={`flex items-center justify-center ${isCompactMode ? 'h-full' : 'min-h-[400px]'}`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
           <p className="text-sm text-gray-600">Φόρτωση προγραμμάτων...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={`flex items-center justify-center ${isCompactMode ? 'h-full' : 'min-h-[400px]'}`}>
-        <div className="text-center">
-          <p className="text-sm text-red-600 mb-2">Σφάλμα φόρτωσης προγραμμάτων</p>
-          <button
-            onClick={refresh}
-            className="text-xs text-blue-600 hover:text-blue-800 underline"
-          >
-            Δοκιμάστε ξανά
-          </button>
         </div>
       </div>
     );
@@ -95,7 +77,6 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
           currentDate={currentDate}
           onPreviousMonth={handlePreviousMonth}
           onNextMonth={handleNextMonth}
-          onTodayClick={handleTodayClick}
         />
       )}
       
