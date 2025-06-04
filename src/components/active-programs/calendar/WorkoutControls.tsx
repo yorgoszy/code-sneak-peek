@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Play, CheckCircle, XCircle } from "lucide-react";
+import { Play, CheckCircle, X } from 'lucide-react';
 
 interface WorkoutControlsProps {
   workoutInProgress: boolean;
@@ -9,6 +9,7 @@ interface WorkoutControlsProps {
   onStartWorkout: () => void;
   onCompleteWorkout: () => void;
   onCancelWorkout: () => void;
+  isEmbedded?: boolean;
 }
 
 export const WorkoutControls: React.FC<WorkoutControlsProps> = ({
@@ -16,42 +17,56 @@ export const WorkoutControls: React.FC<WorkoutControlsProps> = ({
   workoutStatus,
   onStartWorkout,
   onCompleteWorkout,
-  onCancelWorkout
+  onCancelWorkout,
+  isEmbedded = false
 }) => {
-  return (
-    <>
-      {!workoutInProgress && workoutStatus !== 'completed' && (
+  const buttonBaseClass = isEmbedded 
+    ? "rounded-none text-white border-white hover:bg-white hover:text-black"
+    : "rounded-none";
+
+  if (workoutInProgress) {
+    return (
+      <div className="flex space-x-2">
         <Button
-          onClick={onStartWorkout}
+          onClick={onCompleteWorkout}
+          className={`bg-[#00ffba] hover:bg-[#00ffba]/90 text-black ${buttonBaseClass}`}
           size="sm"
-          className="rounded-none flex items-center gap-2"
         >
-          <Play className="w-4 h-4" />
-          Έναρξη
+          <CheckCircle className="w-4 h-4 mr-2" />
+          Ολοκλήρωση
         </Button>
-      )}
-      
-      {workoutInProgress && (
-        <>
-          <Button
-            onClick={onCompleteWorkout}
-            size="sm"
-            className="rounded-none flex items-center gap-2 bg-green-600 hover:bg-green-700"
-          >
-            <CheckCircle className="w-4 h-4" />
-            Ολοκλήρωση
-          </Button>
-          <Button
-            onClick={onCancelWorkout}
-            size="sm"
-            variant="outline"
-            className="rounded-none flex items-center gap-2"
-          >
-            <XCircle className="w-4 h-4" />
-            Ακύρωση
-          </Button>
-        </>
-      )}
-    </>
+        <Button
+          onClick={onCancelWorkout}
+          variant="outline"
+          className={buttonBaseClass}
+          size="sm"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Ακύρωση
+        </Button>
+      </div>
+    );
+  }
+
+  if (workoutStatus === 'completed') {
+    return (
+      <div className={`text-xs font-medium flex items-center space-x-2 ${
+        isEmbedded ? 'text-[#00ffba]' : 'text-green-600'
+      }`}>
+        <CheckCircle className="w-4 h-4" />
+        <span>Προπόνηση ολοκληρωμένη</span>
+      </div>
+    );
+  }
+
+  return (
+    <Button
+      onClick={onStartWorkout}
+      className={`bg-[#00ffba] hover:bg-[#00ffba]/90 text-black ${buttonBaseClass}`}
+      size="sm"
+    >
+      <Play className="w-4 h-4 mr-2" />
+      Έναρξη Προπόνησης
+    </Button>
   );
 };
