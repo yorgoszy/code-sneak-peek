@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 interface AboutSectionProps {
@@ -34,7 +32,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
       `}</style>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row min-h-[39vh]">
+        <div className="flex flex-col lg:flex-row min-h-[56vh]">
           <div className="lg:w-2/5 flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="mb-12">
               <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
@@ -84,7 +82,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   activeAboutSection === 3 ? "Training Methodology" :
                   "Georgios Zygouris - Head Coach"
                 }
-                className="w-full h-[290px] object-cover filter grayscale"
+                className="w-full h-[420px] object-cover filter grayscale"
               />
               <div className="absolute flex items-center" style={{ bottom: '40px', left: '0px', right: '0px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
@@ -224,4 +222,3 @@ const AboutSection: React.FC<AboutSectionProps> = ({
 };
 
 export default AboutSection;
-
