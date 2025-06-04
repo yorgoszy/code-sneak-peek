@@ -56,7 +56,7 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
           {/* Right Content - Image with overlay */}
           <div className="relative">
             <img 
-              src="/lovable-uploads/a05f9150-674e-48fd-aa43-03d460424299.png"
+              src="/lovable-uploads/87da9025-650f-4202-b262-5d56a1eb12e6.png"
               alt="Elite Training Technology"
               className="w-full h-auto rounded-lg"
             />
