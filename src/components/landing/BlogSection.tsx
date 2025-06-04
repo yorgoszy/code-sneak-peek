@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 
 interface BlogSectionProps {
@@ -31,7 +30,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         title: "Lift Heavy",
         excerpt: "Η σημασία των υψηλών εντάσεων στην προπόνηση και πώς η τεχνολογία βελτιώνει την απόδοση.",
         image: "/lovable-uploads/d3af2c45-06a0-4a4b-ad64-5f11fbd9de62.png",
-        date: "15 Νοεμβρίου 2024",
+        date: "15 Μαΐου 2025",
         content: `Σήμερα, όπου η τεχνολογία έχει σημειώσει ραγδαία πρόοδο, η προπόνηση μπορεί να πραγματοποιηθεί υπό πιο ευνοϊκές συνθήκες. Η τεχνολογία έχει δημιουργήσει σημαντικά εργαλεία για την παρακολούθηση της προπόνησης, όπως GPS, επιταχυνσιόμετρα, καρδιοσυχνόμετρα και πολλά άλλα, βελτιώνοντας την ποιότητα της προπόνησης μέσω της ανατροφοδότησης που παρέχουν.
 
 Υπάρχει μια εσφαλμένη αντίληψη πως, αν προπονηθείς σε υψηλή ένταση (85% του 1RM και πάνω), επειδή η άρση εκτελείται αργά, αυτό σημαίνει πως θα γίνεις πιο αργός. Αυτό δεν είναι απόλυτα ακριβές.
@@ -51,7 +50,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         title: "Πρωταθλητής γεννιέσαι ή γίνεσαι;",
         excerpt: "Η σημασία του μυϊκού προφίλ στην αθλητική επιτυχία και η σχέση μεταξύ ταλέντου και σκληρής δουλειάς.",
         image: "/lovable-uploads/94ce3145-f7b9-430b-86e6-12bca58833d5.png",
-        date: "10 Νοεμβρίου 2024",
+        date: "15 Απριλίου 2025",
         content: `Στις δύο άκρες των κατηγοριών των αθλημάτων συναντάμε τα αθλήματα ισχύος, όπως είναι η άρση βαρών και τα 100μ σπριντ, και τα αθλήματα αντοχής, όπως είναι ο μαραθώνιος. Η βασική τους διαφορά εντοπίζεται στη διάρκεια της προσπάθειας. Στην πρώτη περίπτωση, η προσπάθεια διαρκεί 3-10-15-30 δευτερόλεπτα, ενώ στη δεύτερη, μπορεί να διαρκέσει 1-2-3, ακόμα και 4 ώρες. Αυτή είναι η αφετηρία για όλα. Κάθε άθλημα έχει το δικό του προφίλ, δηλαδή συγκεκριμένες βιολογικές και μεταβολικές απαιτήσεις από τον αθλητή. Ένας από τους πιο σημαντικούς παράγοντες είναι το βιολογικό προφίλ του αθλητή, δηλαδή ο τύπος των μυϊκών ινών του, που τον χαρακτηρίζει είτε ως αθλητή ισχύος είτε ως αθλητή αντοχής.
 
 Εάν ένας αθλητής έχει περισσότερες τύπου Ι μυϊκές ίνες, γνωστές και ως «ερυθρές μυϊκές ίνες» λόγω της υψηλής περιεκτικότητάς τους σε αίμα και της μεγαλύτερης παροχής οξυγόνου, αυτές οι ίνες είναι ανθεκτικές στη διάρκεια και επιτρέπουν στον αθλητή να έχει καλές επιδόσεις σε αθλήματα αντοχής, όπως ο μαραθώνιος. Από την άλλη πλευρά, εάν ο αθλητής διαθέτει περισσότερες τύπου ΙΙ μυϊκές ίνες, τότε είναι πιο κατάλληλος για αθλήματα μικρής διάρκειας, όπως τα σπριντ, το άλμα εις ύψος, το ακόντιο και η άρση βαρών.
@@ -71,7 +70,7 @@ Join the camp to be a champ!`
         title: "Ένα αποδοτικό ζέσταμα",
         excerpt: "Η σημασία του ζεστάματος στην προπόνηση και η εφαρμογή της αρχής του μεγέθους.",
         image: "/lovable-uploads/b535e536-1d28-4df9-bc04-904228d8bfd5.png",
-        date: "5 Νοεμβρίου 2024",
+        date: "15 Μαρτίου 2025",
         content: `Ένα Αποδοτικό Ζέσταμα
 Το ζέσταμα αποτελεί ένα από τα πιο κρίσιμα στάδια της προπόνησης, καθώς προετοιμάζει το σώμα για τη σωματική δραστηριότητα και μειώνει τον κίνδυνο τραυματισμών. Μια βασική αρχή που μπορεί να κάνει το ζέσταμα πιο αποδοτικό είναι η "αρχή του μεγέθους", η οποία αφορά τη σταδιακή ενεργοποίηση των μυϊκών ινών. Μέσω αυτής της αρχής, οι μυϊκές ίνες ενεργοποιούνται με έναν προοδευτικό τρόπο που βελτιώνει την απόδοση και την ασφάλεια του σώματος κατά την άσκηση.
 
@@ -109,7 +108,7 @@ Join the camp to be a champ!`
         title: "Lift Heavy",
         excerpt: "The importance of high-intensity training and how technology improves performance.",
         image: "/lovable-uploads/d3af2c45-06a0-4a4b-ad64-5f11fbd9de62.png",
-        date: "November 15, 2024",
+        date: "May 15, 2025",
         content: `Today, where technology has made rapid progress, training can be carried out under more favorable conditions. Technology has created significant tools for monitoring training, such as GPS, accelerometers, heart rate monitors and many others, improving the quality of training through the feedback they provide.
 
 There is a misconception that if you train at high intensity (85% of 1RM and above), because the lift is performed slowly, this means you will become slower. This is not entirely accurate.
@@ -129,7 +128,7 @@ You cannot become faster if you do not change your load-velocity profile, and yo
         title: "Are Champions Born or Made?",
         excerpt: "The importance of muscle profile in athletic success and the relationship between talent and hard work.",
         image: "/lovable-uploads/94ce3145-f7b9-430b-86e6-12bca58833d5.png",
-        date: "November 10, 2024",
+        date: "April 15, 2025",
         content: `At the two extremes of sports categories, we encounter power sports, such as weightlifting and 100m sprint, and endurance sports, such as the marathon. Their basic difference lies in the duration of the effort. In the first case, the effort lasts 3-10-15-30 seconds, while in the second, it can last 1-2-3, even 4 hours. This is the starting point for everything. Each sport has its own profile, that is, specific biological and metabolic requirements from the athlete. One of the most important factors is the biological profile of the athlete, that is, the type of muscle fibers they have, which characterizes them either as a power athlete or as an endurance athlete.
 
 If an athlete has more Type I muscle fibers, also known as "red muscle fibers" due to their high blood content and greater oxygen supply, these fibers are endurance resistant and allow the athlete to perform well in endurance sports, such as the marathon. On the other hand, if the athlete has more Type II muscle fibers, then they are more suitable for short-duration sports, such as sprints, high jump, javelin and weightlifting.
@@ -149,7 +148,7 @@ Join the camp to be a champ!`
         title: "An Efficient Warm-up",
         excerpt: "The importance of warming up in training and the application of the size principle.",
         image: "/lovable-uploads/b535e536-1d28-4df9-bc04-904228d8bfd5.png",
-        date: "November 5, 2024",
+        date: "March 15, 2025",
         content: `An Efficient Warm-up
 Warming up is one of the most critical stages of training, as it prepares the body for physical activity and reduces the risk of injury. A basic principle that can make warming up more efficient is the "size principle," which concerns the gradual activation of muscle fibers. Through this principle, muscle fibers are activated in a progressive way that improves the performance and safety of the body during exercise.
 
@@ -186,167 +185,4 @@ A well-designed warm-up based on the size principle prepares both body and mind 
   const getBibliography = (articleId: number, language: string) => {
     if (articleId === 1) {
       // Lift Heavy bibliography
-      if (language === 'el') {
-        return `Βιβλιογραφία:
-Haff, G. G., & Triplett, N. T. (2015). Essentials of Strength Training and Conditioning. Human Kinetics.
-González-Badillo, J. J., & Sánchez-Medina, L. (2010). Movement velocity as a measure of loading intensity in resistance training. International Journal of Sports Medicine, 31(05), 347-352.
-Izquierdo, M., Häkkinen, K., González-Badillo, J. J., Ibáñez, J., & Gorostiaga, E. M. (2002). Effects of long-term training specificity on maximal strength and power of the upper and lower extremities in athletes from different sports. European Journal of Applied Physiology, 87(3), 264-271.
-Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
-García-Ramos, A., & Jaric, S. (2018). Optimization of the load-velocity relationship obtained through linear regression: Comparison of two alternative methods. Journal of Sports Sciences, 36(20), 2405-2412.`;
-      } else {
-        return `Bibliography:
-Haff, G. G., & Triplett, N. T. (2015). Essentials of Strength Training and Conditioning. Human Kinetics.
-González-Badillo, J. J., & Sánchez-Medina, L. (2010). Movement velocity as a measure of loading intensity in resistance training. International Journal of Sports Medicine, 31(05), 347-352.
-Izquierdo, M., Häkkinen, K., González-Badillo, J. J., Ibáñez, J., & Gorostiaga, E. M. (2002). Effects of long-term training specificity on maximal strength and power of the upper and lower extremities in athletes from different sports. European Journal of Applied Physiology, 87(3), 264-271.
-Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
-García-Ramos, A., & Jaric, S. (2018). Optimization of the load-velocity relationship obtained through linear regression: Comparison of two alternative methods. Journal of Sports Sciences, 36(20), 2405-2412.`;
-      }
-    } else if (articleId === 2) {
-      // Champions article bibliography
-      if (language === 'el') {
-        return `Βιβλιογραφία:
-Lieber, R. L. (2010). Skeletal Muscle Structure, Function, and Plasticity. Lippincott Williams & Wilkins.
-Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
-Fitts, R. H., & Widrick, J. J. (1996). Muscle mechanics: adaptations with exercise-training. Exercise and Sport Sciences Reviews, 24(1), 427-473.
-Kenney, W. L., Wilmore, J., & Costill, D. (2020). Physiology of Sport and Exercise. Human Kinetics.
-Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. Medicine and Science in Sports, 9(2), 82-86.`;
-      } else {
-        return `Bibliography:
-Lieber, R. L. (2010). Skeletal Muscle Structure, Function, and Plasticity. Lippincott Williams & Wilkins.
-Zatsiorsky, V. M., & Kraemer, W. J. (2006). Science and Practice of Strength Training. Human Kinetics.
-Fitts, R. H., & Widrick, J. J. (1996). Muscle mechanics: adaptations with exercise-training. Exercise and Sport Sciences Reviews, 24(1), 427-473.
-Kenney, W. L., Wilmore, J., & Costill, D. (2020). Physiology of Sport and Exercise. Human Kinetics.
-Bergh, U., & Thorstensson, A. (1977). Muscle characteristics in elite athletes. Medicine and Science in Sports, 9(2), 82-86.`;
-      }
-    } else if (articleId === 3) {
-      // Warm-up article bibliography
-      if (language === 'el') {
-        return `Βιβλιογραφία:
-Henneman, E., Somjen, G., & Carpenter, D. O. (1965). Excitability and inhibitability of motoneurons of different sizes. Journal of Neurophysiology, 28(3), 599-620.
-Enoka, R. M. (2008). Neuromechanics of Human Movement (4th ed.). Human Kinetics.
-Powers, S. K., & Howley, E. T. (2017). Exercise Physiology: Theory and Application to Fitness and Performance (10th ed.). McGraw-Hill.
-McArdle, W. D., Katch, F. I., & Katch, V. L. (2015). Exercise Physiology: Nutrition, Energy, and Human Performance (8th ed.). Lippincott Williams & Wilkins.
-Behm, D. G., & Chaouachi, A. (2011). A Review of the Acute Effects of Static and Dynamic Stretching on Performance. European Journal of Applied Physiology, 111(11), 2633-2651.`;
-      } else {
-        return `Bibliography:
-Henneman, E., Somjen, G., & Carpenter, D. O. (1965). Excitability and inhibitability of motoneurons of different sizes. Journal of Neurophysiology, 28(3), 599-620.
-Enoka, R. M. (2008). Neuromechanics of Human Movement (4th ed.). Human Kinetics.
-Powers, S. K., & Howley, E. T. (2017). Exercise Physiology: Theory and Application to Fitness and Performance (10th ed.). McGraw-Hill.
-McArdle, W. D., Katch, F. I., & Katch, V. L. (2015). Exercise Physiology: Nutrition, Energy, and Human Performance (8th ed.). Lippincott Williams & Wilkins.
-Behm, D. G., & Chaouachi, A. (2011). A Review of the Acute Effects of Static and Dynamic Stretching on Performance. European Journal of Applied Physiology, 111(11), 2633-2651.`;
-      }
-    }
-    return '';
-  };
-
-  const currentLanguage = translations.language || 'el';
-  const currentArticles = articles[currentLanguage] || articles.el;
-
-  const handleArticleClick = (article: any) => {
-    setSelectedArticle(article);
-  };
-
-  const handleCloseArticle = () => {
-    setSelectedArticle(null);
-  };
-
-  return (
-    <>
-      <section id="blog" className="py-20 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {currentLanguage === 'el' ? 'Άρθρα' : 'Articles'}
-            </h2>
-            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              {currentLanguage === 'el' 
-                ? 'Ανακαλύψτε τα τελευταία άρθρα μας για προπόνηση, αθλητισμό και υγεία'
-                : 'Discover our latest articles on training, sports and health'
-              }
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {currentArticles.map((article) => (
-              <div 
-                key={article.id}
-                className="bg-gray-900 overflow-hidden cursor-pointer hover:bg-gray-800 transition-colors duration-300"
-                onClick={() => handleArticleClick(article)}
-              >
-                <div className="aspect-w-16 aspect-h-9">
-                  <img
-                    src={article.image}
-                    alt={article.title}
-                    className="w-full h-48 object-cover"
-                  />
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center mb-2">
-                    <span className="text-sm text-gray-400">{article.date}</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">{article.title}</h3>
-                  <p className="text-gray-300 text-sm leading-relaxed">{article.excerpt}</p>
-                  <div className="mt-4">
-                    <span className="text-sm font-medium" style={{ color: '#00ffba' }}>
-                      {currentLanguage === 'el' ? 'Διαβάστε περισσότερα →' : 'Read more →'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Article Modal */}
-      {selectedArticle && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
-          <div ref={modalRef} className="bg-gray-900 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="relative">
-              <button
-                onClick={handleCloseArticle}
-                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-                style={{ fontSize: '24px' }}
-              >
-                ✕
-              </button>
-              
-              <div className="aspect-w-16 aspect-h-9">
-                <img
-                  src={selectedArticle.image}
-                  alt={selectedArticle.title}
-                  className="w-full h-64 object-cover"
-                />
-              </div>
-              
-              <div className="p-8">
-                <div className="mb-4">
-                  <span className="text-sm text-gray-400">{selectedArticle.date}</span>
-                </div>
-                <h1 className="text-3xl font-bold text-white mb-6">{selectedArticle.title}</h1>
-                <div className="prose prose-invert max-w-none">
-                  {selectedArticle.content.split('\n\n').map((paragraph: string, index: number) => (
-                    <p key={index} className="text-gray-300 mb-4 leading-relaxed">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-                
-                {/* Bibliography */}
-                {getBibliography(selectedArticle.id, currentLanguage) && (
-                  <div className="mt-8 pt-6 border-t border-gray-700">
-                    <div className="text-xs text-gray-400 leading-relaxed whitespace-pre-line">
-                      {getBibliography(selectedArticle.id, currentLanguage)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-};
-
-export default BlogSection;
+      if (
