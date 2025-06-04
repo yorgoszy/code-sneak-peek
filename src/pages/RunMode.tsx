@@ -1,41 +1,91 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { X, Minimize2, Plus } from "lucide-react";
+import { X, Minimize2, Plus, Search, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AthleteSelector } from "@/components/AthleteSelector";
+import { UserProfileCalendar } from "@/components/user-profile/UserProfileCalendar";
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { supabase } from "@/integrations/supabase/client";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 interface QuadrantData {
   id: string;
   title: string;
-  content: string;
+  selectedUser?: User;
 }
 
 const RunMode = () => {
   const navigate = useNavigate();
   const [isMinimized, setIsMinimized] = useState(false);
   const [quadrants, setQuadrants] = useState<QuadrantData[]>([
-    { id: '1', title: 'Τεταρτημόριο 1', content: 'Περιεχόμενο 1' },
-    { id: '2', title: 'Τεταρτημόριο 2', content: 'Περιεχόμενο 2' },
-    { id: '3', title: 'Τεταρτημόριο 3', content: 'Περιεχόμενο 3' },
-    { id: '4', title: 'Τεταρτημόριο 4', content: 'Περιεχόμενο 4' },
+    { id: '1', title: 'Τεταρτημόριο 1' },
+    { id: '2', title: 'Τεταρτημόριο 2' },
+    { id: '3', title: 'Τεταρτημόριο 3' },
+    { id: '4', title: 'Τεταρτημόριο 4' },
   ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchTerms, setSearchTerms] = useState<{[key: string]: string}>({});
+  const [openPopovers, setOpenPopovers] = useState<{[key: string]: boolean}>({});
+
+  React.useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    const { data } = await supabase
+      .from('app_users')
+      .select('id, name, email')
+      .order('name');
+    setUsers(data || []);
+  };
 
   const handleClose = () => {
     navigate('/dashboard');
   };
 
   const handleMinimize = () => {
-    setIsMinimized(!isMinimized);
+    navigate('/dashboard');
   };
 
   const handleAddQuadrant = () => {
     const newId = (quadrants.length + 1).toString();
     const newQuadrant: QuadrantData = {
       id: newId,
-      title: `Τεταρτημόριο ${newId}`,
-      content: `Περιεχόμενο ${newId}`
+      title: `Τεταρτημόριο ${newId}`
     };
     setQuadrants([...quadrants, newQuadrant]);
+  };
+
+  const handleUserSelect = (quadrantId: string, user: User) => {
+    setQuadrants(prev => prev.map(q => 
+      q.id === quadrantId 
+        ? { ...q, selectedUser: user }
+        : q
+    ));
+    setOpenPopovers(prev => ({ ...prev, [quadrantId]: false }));
+    setSearchTerms(prev => ({ ...prev, [quadrantId]: '' }));
+  };
+
+  const removeUser = (quadrantId: string) => {
+    setQuadrants(prev => prev.map(q => 
+      q.id === quadrantId 
+        ? { ...q, selectedUser: undefined }
+        : q
+    ));
+  };
+
+  const getFilteredUsers = (quadrantId: string) => {
+    const searchTerm = searchTerms[quadrantId] || '';
+    return users.filter(user =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   };
 
   if (isMinimized) {
@@ -49,7 +99,7 @@ const RunMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleMinimize}
-                className="h-6 w-6 p-0 text-white hover:bg-gray-700 rounded-none"
+                className="h-6 w-6 p-0 text-white hover:bg-[#00ffba] rounded-none"
               >
                 <Plus className="h-3 w-3" />
               </Button>
@@ -57,7 +107,7 @@ const RunMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleClose}
-                className="h-6 w-6 p-0 text-white hover:bg-gray-700 rounded-none"
+                className="h-6 w-6 p-0 text-white hover:bg-[#00ffba] rounded-none"
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -89,7 +139,7 @@ const RunMode = () => {
             onClick={handleAddQuadrant}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-gray-700 rounded-none"
+            className="text-white hover:bg-[#00ffba] hover:text-black rounded-none"
           >
             <Plus className="h-4 w-4 mr-2" />
             Προσθήκη Τεταρτημορίου
@@ -98,7 +148,7 @@ const RunMode = () => {
             onClick={handleMinimize}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-gray-700 rounded-none"
+            className="text-white hover:bg-[#00ffba] hover:text-black rounded-none"
           >
             <Minimize2 className="h-4 w-4" />
           </Button>
@@ -106,7 +156,7 @@ const RunMode = () => {
             onClick={handleClose}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-gray-700 rounded-none"
+            className="text-white hover:bg-[#00ffba] hover:text-black rounded-none"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -119,7 +169,7 @@ const RunMode = () => {
           {quadrants.map((quadrant) => (
             <div
               key={quadrant.id}
-              className="bg-gray-900 border border-gray-700 rounded-none p-4 flex flex-col"
+              className="bg-gray-900 border border-gray-700 rounded-none p-4 flex flex-col hover:bg-[#00ffba] hover:text-black transition-colors duration-200 group"
             >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">{quadrant.title}</h2>
@@ -127,13 +177,80 @@ const RunMode = () => {
                   onClick={() => setQuadrants(quadrants.filter(q => q.id !== quadrant.id))}
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 text-white hover:bg-gray-700 rounded-none"
+                  className="h-6 w-6 p-0 text-white hover:bg-gray-700 rounded-none group-hover:text-black group-hover:hover:bg-gray-300"
                 >
                   <X className="h-3 w-3" />
                 </Button>
               </div>
-              <div className="flex-1 bg-gray-800 p-4 rounded-none">
-                <p className="text-gray-300">{quadrant.content}</p>
+              
+              {/* User Selection */}
+              <div className="mb-4">
+                {quadrant.selectedUser ? (
+                  <div className="flex items-center justify-between bg-gray-800 group-hover:bg-white p-3 border border-gray-600 group-hover:border-gray-300">
+                    <div className="flex items-center space-x-2">
+                      <User className="h-4 w-4" />
+                      <span className="font-medium">{quadrant.selectedUser.name}</span>
+                    </div>
+                    <button
+                      onClick={() => removeUser(quadrant.id)}
+                      className="text-gray-400 hover:text-white group-hover:text-gray-600 group-hover:hover:text-black"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <Popover 
+                    open={openPopovers[quadrant.id] || false} 
+                    onOpenChange={(open) => setOpenPopovers(prev => ({ ...prev, [quadrant.id]: open }))}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal rounded-none bg-gray-800 border-gray-600 text-white group-hover:bg-white group-hover:text-black group-hover:border-gray-300"
+                      >
+                        <Search className="mr-2 h-4 w-4" />
+                        Επιλογή ασκουμένου...
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 rounded-none bg-white" align="start">
+                      <Command className="border-0">
+                        <CommandInput 
+                          placeholder="Αναζήτηση ασκουμένου..." 
+                          value={searchTerms[quadrant.id] || ''}
+                          onValueChange={(value) => setSearchTerms(prev => ({ ...prev, [quadrant.id]: value }))}
+                        />
+                        <CommandList className="max-h-48">
+                          <CommandEmpty>Δεν βρέθηκε ασκούμενος</CommandEmpty>
+                          {getFilteredUsers(quadrant.id).map(user => (
+                            <CommandItem
+                              key={user.id}
+                              className="cursor-pointer p-3 hover:bg-gray-100"
+                              onSelect={() => handleUserSelect(quadrant.id, user)}
+                            >
+                              <User className="mr-2 h-4 w-4" />
+                              {user.name}
+                            </CommandItem>
+                          ))}
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+
+              {/* Calendar or Empty State */}
+              <div className="flex-1 bg-gray-800 group-hover:bg-white rounded-none overflow-hidden">
+                {quadrant.selectedUser ? (
+                  <div className="h-full p-2">
+                    <UserProfileCalendar user={quadrant.selectedUser} />
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-gray-400 group-hover:text-gray-600 text-center">
+                      Επιλέξτε ασκούμενο για να δείτε το ημερολόγιό του
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           ))}
