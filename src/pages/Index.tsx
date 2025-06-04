@@ -9,6 +9,7 @@ const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [language, setLanguage] = useState<'el' | 'en'>('el');
+  const [activeAboutSection, setActiveAboutSection] = useState<number>(1);
 
   const handleSignOut = async () => {
     await signOut();
@@ -238,6 +239,17 @@ const Index = () => {
         }
         .carousel-btn:hover svg {
           color: #00ffba !important;
+        }
+        .about-nav-item {
+          cursor: pointer;
+          transition: all 0.3s ease;
+          border-bottom: 2px solid transparent;
+        }
+        .about-nav-item.active {
+          border-bottom-color: #00ffba;
+        }
+        .about-nav-item:hover {
+          border-bottom-color: #00ffba;
         }
       `}</style>
       
@@ -482,17 +494,26 @@ const Index = () => {
 
               {/* Navigation Items */}
               <div className="space-y-8">
-                <div className="flex items-center">
-                  <span className="text-2xl font-bold mr-6" style={{ color: '#00ffba' }}>01</span>
-                  <h3 className="text-xl font-bold text-white">{t.headCoach}</h3>
+                <div 
+                  className={`flex items-center about-nav-item ${activeAboutSection === 1 ? 'active' : ''}`}
+                  onClick={() => setActiveAboutSection(1)}
+                >
+                  <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 1 ? '#00ffba' : '#6b7280' }}>01</span>
+                  <h3 className={`text-xl font-bold ${activeAboutSection === 1 ? 'text-white' : 'text-gray-400'}`}>{t.headCoach}</h3>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-2xl font-bold mr-6 text-gray-500">02</span>
-                  <h3 className="text-xl text-gray-400">{t.ourVision}</h3>
+                <div 
+                  className={`flex items-center about-nav-item ${activeAboutSection === 2 ? 'active' : ''}`}
+                  onClick={() => setActiveAboutSection(2)}
+                >
+                  <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 2 ? '#00ffba' : '#6b7280' }}>02</span>
+                  <h3 className={`text-xl ${activeAboutSection === 2 ? 'text-white font-bold' : 'text-gray-400'}`}>{t.ourVision}</h3>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-2xl font-bold mr-6 text-gray-500">03</span>
-                  <h3 className="text-xl text-gray-400">{t.trainingMethodology}</h3>
+                <div 
+                  className={`flex items-center about-nav-item ${activeAboutSection === 3 ? 'active' : ''}`}
+                  onClick={() => setActiveAboutSection(3)}
+                >
+                  <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 3 ? '#00ffba' : '#6b7280' }}>03</span>
+                  <h3 className={`text-xl ${activeAboutSection === 3 ? 'text-white font-bold' : 'text-gray-400'}`}>{t.trainingMethodology}</h3>
                 </div>
               </div>
             </div>
@@ -502,7 +523,7 @@ const Index = () => {
               {/* Coach Image */}
               <div className="relative h-96 lg:h-full">
                 <img
-                  src="/lovable-uploads/e20b75d6-b670-48dd-b20d-60a80be7e826.png"
+                  src="/lovable-uploads/714ddad4-0373-416a-914f-163acc41a277.png"
                   alt="Georgios Zygouris - Head Coach"
                   className="w-full h-full object-cover filter grayscale"
                 />
@@ -511,40 +532,61 @@ const Index = () => {
                   className="absolute bottom-1/3 left-0 right-0 h-1"
                   style={{ backgroundColor: '#00ffba' }}
                 ></div>
-                {/* Number 01 overlay */}
+                {/* Number overlay */}
                 <div className="absolute bottom-1/4 left-8">
-                  <span className="text-4xl font-bold" style={{ color: '#00ffba' }}>01</span>
+                  <span className="text-4xl font-bold" style={{ color: '#00ffba' }}>
+                    {activeAboutSection.toString().padStart(2, '0')}
+                  </span>
                 </div>
               </div>
 
               {/* Coach Info Card */}
               <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-90 p-8">
-                <h3 className="text-2xl font-bold text-white mb-4">{t.headCoach}</h3>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6">
-                  {t.coachDescription}
-                </p>
-
-                {/* Three columns */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="border border-gray-700 p-4">
-                    <h4 className="text-white font-bold mb-2">{t.academicBackground}</h4>
-                    <p className="text-gray-400 text-sm">
-                      {t.academicDescription}
-                    </p>
-                  </div>
-                  <div className="border border-gray-700 p-4">
-                    <h4 className="text-white font-bold mb-2">{t.professionalAthlete}</h4>
-                    <p className="text-gray-400 text-sm">
-                      {t.professionalDescription}
-                    </p>
-                  </div>
-                  <div className="border border-gray-700 p-4">
-                    <h4 className="text-white font-bold mb-2">{t.coreValues}</h4>
-                    <p className="text-gray-400 text-sm">
-                      {t.coreValuesDescription}
-                    </p>
-                  </div>
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-4">
+                    {activeAboutSection === 1 && t.headCoach}
+                    {activeAboutSection === 2 && t.ourVision}
+                    {activeAboutSection === 3 && t.trainingMethodology}
+                  </h3>
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    {activeAboutSection === 1 && t.coachDescription}
+                    {activeAboutSection === 2 && "Το όραμά μας είναι να δημιουργήσουμε ένα περιβάλλον όπου κάθε άτομο μπορεί να ανακαλύψει και να αναπτύξει τις φυσικές του ικανότητες μέσω επιστημονικά τεκμηριωμένων μεθόδων προπόνησης."}
+                    {activeAboutSection === 3 && "Η μεθοδολογία μας βασίζεται στην ολιστική προσέγγιση της αθλητικής ανάπτυξης, συνδυάζοντας σύγχρονες επιστημονικές μεθόδους με εξατομικευμένη προσέγγιση για κάθε αθλητή."}
+                  </p>
                 </div>
+
+                {/* Three columns - only show when Head Coach is active */}
+                {activeAboutSection === 1 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div 
+                      className="p-4 border-l-2"
+                      style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    >
+                      <h4 className="text-white font-bold mb-2">{t.academicBackground}</h4>
+                      <p className="text-gray-400 text-sm">
+                        {t.academicDescription}
+                      </p>
+                    </div>
+                    <div 
+                      className="p-4 border-l-2"
+                      style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    >
+                      <h4 className="text-white font-bold mb-2">{t.professionalAthlete}</h4>
+                      <p className="text-gray-400 text-sm">
+                        {t.professionalDescription}
+                      </p>
+                    </div>
+                    <div 
+                      className="p-4 border-l-2"
+                      style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    >
+                      <h4 className="text-white font-bold mb-2">{t.coreValues}</h4>
+                      <p className="text-gray-400 text-sm">
+                        {t.coreValuesDescription}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
