@@ -1,21 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { X, Navigation, User, ArrowLeft } from 'lucide-react';
 import { ProgramCalendar } from '../active-programs/ProgramCalendar';
-import { DayProgramDialog } from '../active-programs/calendar/DayProgramDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { useNavigate } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format } from 'date-fns';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { AthleteSelector } from './components/AthleteSelector';
+import { AthleteInfo } from './components/AthleteInfo';
+import { QuarterHeader } from './components/QuarterHeader';
+import { ProgramView } from './components/ProgramView';
+import { EmptyQuarterState } from './components/EmptyQuarterState';
 
 interface RunModeQuarterProps {
   quarterId: number;
@@ -79,135 +72,38 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
 
   if (showProgramView && selectedProgram) {
     return (
-      <Card className="border-2 border-gray-600 bg-gray-900/50 bg-opacity-80 backdrop-blur-sm h-full flex flex-col relative">
-        <CardHeader className="pb-1 flex-shrink-0 p-2">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center space-x-2">
-              <Button
-                onClick={handleBackToCalendar}
-                variant="ghost"
-                size="sm"
-                className="text-[#00ffba] hover:text-white hover:bg-[#00ffba]/20 p-1 h-6 w-6"
-              >
-                <ArrowLeft className="h-3 w-3" />
-              </Button>
-              <h3 className="text-xs font-medium text-white">
-                Τετάρτημόριο {quarterId} - {selectedUser?.name}
-              </h3>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Button
-                onClick={handleNavigate}
-                variant="ghost"
-                size="sm"
-                className="text-[#00ffba] hover:text-white hover:bg-[#00ffba]/20 p-1 h-6 w-6"
-              >
-                <Navigation className="h-3 w-3" />
-              </Button>
-              {canRemove && (
-                <Button
-                  onClick={onRemove}
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-400 hover:text-red-300 hover:bg-red-900/20 p-1 h-6 w-6"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          </div>
-          
-          <div className="text-xs text-gray-300">
-            {format(selectedProgram.date, 'dd/MM/yyyy')}
-          </div>
-        </CardHeader>
-
-        <CardContent className="flex-1 overflow-hidden p-1">
-          <div className="h-full bg-gray-800 border border-gray-600 overflow-auto">
-            <DayProgramDialog
-              isOpen={true}
-              onClose={handleCloseProgramView}
-              program={selectedProgram.program}
-              selectedDate={selectedProgram.date}
-              workoutStatus={selectedProgram.status}
-              onRefresh={handleRefresh}
-              isEmbedded={true}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <ProgramView
+        quarterId={quarterId}
+        selectedProgram={selectedProgram}
+        selectedUser={selectedUser}
+        onBack={handleBackToCalendar}
+        onClose={handleCloseProgramView}
+        onNavigate={handleNavigate}
+        onRemove={onRemove}
+        canRemove={canRemove}
+        onRefresh={handleRefresh}
+      />
     );
   }
 
   return (
     <Card className="border-2 border-gray-600 bg-gray-900/50 bg-opacity-80 backdrop-blur-sm h-full flex flex-col relative">
       <CardHeader className="pb-1 flex-shrink-0 p-2">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-xs font-medium text-white">Τετάρτημόριο {quarterId}</h3>
-          <div className="flex items-center space-x-1">
-            <Button
-              onClick={handleNavigate}
-              variant="ghost"
-              size="sm"
-              className="text-[#00ffba] hover:text-white hover:bg-[#00ffba]/20 p-1 h-6 w-6"
-            >
-              <Navigation className="h-3 w-3" />
-            </Button>
-            {canRemove && (
-              <Button
-                onClick={onRemove}
-                variant="ghost"
-                size="sm"
-                className="text-red-400 hover:text-red-300 hover:bg-red-900/20 p-1 h-6 w-6"
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        </div>
+        <QuarterHeader
+          quarterId={quarterId}
+          onNavigate={handleNavigate}
+          onRemove={onRemove}
+          canRemove={canRemove}
+        />
 
-        {/* Επιλογή Αθλητή */}
         <div className="space-y-2">
-          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-            <SelectTrigger className="h-8 text-xs bg-gray-800 border-gray-600 text-white">
-              <SelectValue placeholder="Επιλέξτε αθλητή" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-600">
-              {uniqueUsers.map((user) => (
-                <SelectItem 
-                  key={user.id} 
-                  value={user.id}
-                  className="text-white hover:bg-gray-700"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Avatar className="w-4 h-4">
-                      <AvatarImage src={user.photo_url} alt={user.name} />
-                      <AvatarFallback className="text-xs">
-                        {user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{user.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <AthleteSelector
+            uniqueUsers={uniqueUsers}
+            selectedUserId={selectedUserId}
+            onUserChange={setSelectedUserId}
+          />
 
-          {/* Πληροφορίες Επιλεγμένου Αθλητή */}
-          {selectedUser && (
-            <div className="flex items-center space-x-2 p-2 bg-gray-800/50 border border-gray-600">
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={selectedUser.photo_url} alt={selectedUser.name} />
-                <AvatarFallback className="text-xs">
-                  {selectedUser.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-white truncate">{selectedUser.name}</p>
-                <p className="text-xs text-gray-400 truncate">{selectedUser.email}</p>
-              </div>
-            </div>
-          )}
+          <AthleteInfo user={selectedUser} />
         </div>
       </CardHeader>
       
@@ -221,12 +117,7 @@ export const RunModeQuarter: React.FC<RunModeQuarterProps> = ({
               onProgramClick={handleProgramClick}
             />
           ) : (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center text-gray-400">
-                <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-xs">Επιλέξτε αθλητή για να δείτε το ημερολόγιο</p>
-              </div>
-            </div>
+            <EmptyQuarterState />
           )}
         </div>
       </CardContent>
