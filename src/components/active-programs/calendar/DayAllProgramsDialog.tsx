@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { CalendarProgramItem } from './CalendarProgramItem';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -52,35 +52,9 @@ export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
 
   const dayPrograms = getDayPrograms();
 
-  // Get container element for portal
-  const getContainer = () => {
-    if (containerId) {
-      const container = document.getElementById(containerId);
-      if (container) {
-        return container;
-      }
-    }
-    return document.body;
-  };
-
-  const DialogWrapper = containerId ? 
-    ({ children }: { children: React.ReactNode }) => (
-      <DialogPortal container={getContainer()}>
-        <div className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <div className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-2xl translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-none">
-          {children}
-        </div>
-      </DialogPortal>
-    ) : 
-    ({ children }: { children: React.ReactNode }) => (
-      <DialogContent className="max-w-2xl rounded-none">
-        {children}
-      </DialogContent>
-    );
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogWrapper>
+      <DialogContent className="max-w-2xl rounded-none">
         <DialogHeader>
           <DialogTitle>
             Προγράμματα για {format(selectedDate, 'dd/MM/yyyy')}
@@ -129,7 +103,7 @@ export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
             </div>
           )}
         </div>
-      </DialogWrapper>
+      </DialogContent>
     </Dialog>
   );
 };

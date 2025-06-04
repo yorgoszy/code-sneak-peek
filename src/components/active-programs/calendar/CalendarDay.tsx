@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 import { CalendarProgramItem } from './CalendarProgramItem';
@@ -135,7 +134,6 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
             selectedDate={selectedProgram.date}
             workoutStatus={selectedProgram.status}
             onRefresh={onRefresh}
-            containerId={containerId}
           />
         )}
 
@@ -146,7 +144,6 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           programs={programs}
           allCompletions={allCompletions}
           onProgramClick={handleProgramClick}
-          containerId={containerId}
         />
       </>
     );
