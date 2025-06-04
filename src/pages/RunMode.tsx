@@ -7,6 +7,7 @@ import { AthleteSelector } from "@/components/AthleteSelector";
 import { UserProfileCalendar } from "@/components/user-profile/UserProfileCalendar";
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 
 interface User {
@@ -119,16 +120,6 @@ const RunMode = () => {
     );
   }
 
-  const getGridCols = () => {
-    if (quadrants.length <= 4) {
-      return 'grid-cols-2';
-    } else if (quadrants.length <= 6) {
-      return 'grid-cols-3';
-    } else {
-      return 'grid-cols-4';
-    }
-  };
-
   return (
     <div className="fixed inset-0 bg-black text-white z-50">
       {/* Header Bar */}
@@ -163,98 +154,102 @@ const RunMode = () => {
         </div>
       </div>
 
-      {/* Quadrants Grid */}
-      <div className={`flex-1 p-4 h-[calc(100vh-80px)] overflow-auto`}>
-        <div className={`grid ${getGridCols()} gap-4 h-full`}>
-          {quadrants.map((quadrant) => (
-            <div
-              key={quadrant.id}
-              className="bg-gray-900 border border-gray-700 rounded-none p-4 flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">{quadrant.title}</h2>
-                <Button
-                  onClick={() => setQuadrants(quadrants.filter(q => q.id !== quadrant.id))}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 text-white hover:bg-[#00ffba] hover:text-black rounded-none"
+      {/* Quadrants Grid with Scroll */}
+      <div className="flex-1 h-[calc(100vh-80px)]">
+        <ScrollArea className="h-full w-full">
+          <div className="p-4">
+            <div className="grid grid-cols-2 gap-4">
+              {quadrants.map((quadrant) => (
+                <div
+                  key={quadrant.id}
+                  className="bg-gray-900 border border-gray-700 rounded-none p-4 flex flex-col h-[calc(50vh-60px)]"
                 >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-              
-              {/* User Selection */}
-              <div className="mb-4">
-                {quadrant.selectedUser ? (
-                  <div className="flex items-center justify-between bg-gray-800 p-3 border border-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span className="font-medium text-sm">{quadrant.selectedUser.name}</span>
-                    </div>
-                    <button
-                      onClick={() => removeUser(quadrant.id)}
-                      className="text-gray-400 hover:text-white"
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold">{quadrant.title}</h2>
+                    <Button
+                      onClick={() => setQuadrants(quadrants.filter(q => q.id !== quadrant.id))}
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-white hover:bg-[#00ffba] hover:text-black rounded-none"
                     >
-                      <X className="h-4 w-4" />
-                    </button>
+                      <X className="h-3 w-3" />
+                    </Button>
                   </div>
-                ) : (
-                  <Popover 
-                    open={openPopovers[quadrant.id] || false} 
-                    onOpenChange={(open) => setOpenPopovers(prev => ({ ...prev, [quadrant.id]: open }))}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal rounded-none bg-gray-800 border-gray-600 text-white text-sm"
+                  
+                  {/* User Selection */}
+                  <div className="mb-4">
+                    {quadrant.selectedUser ? (
+                      <div className="flex items-center justify-between bg-gray-800 p-3 border border-gray-600">
+                        <div className="flex items-center space-x-2">
+                          <User className="h-4 w-4" />
+                          <span className="font-medium text-sm">{quadrant.selectedUser.name}</span>
+                        </div>
+                        <button
+                          onClick={() => removeUser(quadrant.id)}
+                          className="text-gray-400 hover:text-white"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <Popover 
+                        open={openPopovers[quadrant.id] || false} 
+                        onOpenChange={(open) => setOpenPopovers(prev => ({ ...prev, [quadrant.id]: open }))}
                       >
-                        <Search className="mr-2 h-4 w-4" />
-                        Επιλογή ασκουμένου...
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0 rounded-none bg-white" align="start">
-                      <Command className="border-0">
-                        <CommandInput 
-                          placeholder="Αναζήτηση ασκουμένου..." 
-                          value={searchTerms[quadrant.id] || ''}
-                          onValueChange={(value) => setSearchTerms(prev => ({ ...prev, [quadrant.id]: value }))}
-                        />
-                        <CommandList className="max-h-48">
-                          <CommandEmpty>Δεν βρέθηκε ασκούμενος</CommandEmpty>
-                          {getFilteredUsers(quadrant.id).map(user => (
-                            <CommandItem
-                              key={user.id}
-                              className="cursor-pointer p-3 hover:bg-gray-100"
-                              onSelect={() => handleUserSelect(quadrant.id, user)}
-                            >
-                              <User className="mr-2 h-4 w-4" />
-                              {user.name}
-                            </CommandItem>
-                          ))}
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </div>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal rounded-none bg-gray-800 border-gray-600 text-white text-sm"
+                          >
+                            <Search className="mr-2 h-4 w-4" />
+                            Επιλογή ασκουμένου...
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0 rounded-none bg-white" align="start">
+                          <Command className="border-0">
+                            <CommandInput 
+                              placeholder="Αναζήτηση ασκουμένου..." 
+                              value={searchTerms[quadrant.id] || ''}
+                              onValueChange={(value) => setSearchTerms(prev => ({ ...prev, [quadrant.id]: value }))}
+                            />
+                            <CommandList className="max-h-48">
+                              <CommandEmpty>Δεν βρέθηκε ασκούμενος</CommandEmpty>
+                              {getFilteredUsers(quadrant.id).map(user => (
+                                <CommandItem
+                                  key={user.id}
+                                  className="cursor-pointer p-3 hover:bg-gray-100"
+                                  onSelect={() => handleUserSelect(quadrant.id, user)}
+                                >
+                                  <User className="mr-2 h-4 w-4" />
+                                  {user.name}
+                                </CommandItem>
+                              ))}
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </div>
 
-              {/* Calendar or Empty State */}
-              <div className="flex-1 bg-gray-800 rounded-none overflow-hidden">
-                {quadrant.selectedUser ? (
-                  <div className="h-full w-full">
-                    <UserProfileCalendar user={quadrant.selectedUser} />
+                  {/* Calendar or Empty State */}
+                  <div className="flex-1 bg-gray-800 rounded-none overflow-hidden">
+                    {quadrant.selectedUser ? (
+                      <div className="h-full w-full">
+                        <UserProfileCalendar user={quadrant.selectedUser} />
+                      </div>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-gray-400 text-center text-sm">
+                          Επιλέξτε ασκούμενο για να δείτε το ημερολόγιό του
+                        </p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <p className="text-gray-400 text-center text-sm">
-                      Επιλέξτε ασκούμενο για να δείτε το ημερολόγιό του
-                    </p>
-                  </div>
-                )}
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );
