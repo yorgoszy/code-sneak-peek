@@ -10,9 +10,14 @@ import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 interface ProgramCalendarProps {
   programs: EnrichedAssignment[];
   onRefresh?: () => void;
+  isCompactMode?: boolean;
 }
 
-export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRefresh }) => {
+export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ 
+  programs, 
+  onRefresh, 
+  isCompactMode = false 
+}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [allCompletions, setAllCompletions] = useState<any[]>([]);
   const { getWorkoutCompletions } = useWorkoutCompletions();
@@ -50,8 +55,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRe
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  // Ξεκινάμε από την Κυριακή της εβδομάδας που περιέχει την πρώτη μέρα του μήνα
-  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 }); // 0 = Κυριακή
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
@@ -62,6 +66,39 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({ programs, onRe
   const goToNextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
+
+  if (isCompactMode) {
+    return (
+      <div className="w-full h-full flex flex-col bg-white rounded-none">
+        <div className="flex-shrink-0 p-1">
+          <CalendarHeader
+            currentDate={currentDate}
+            onPreviousMonth={goToPreviousMonth}
+            onNextMonth={goToNextMonth}
+            isCompact={true}
+          />
+        </div>
+        <div className="flex-1 overflow-hidden p-1">
+          <CalendarGrid
+            days={days}
+            currentDate={currentDate}
+            programs={programs}
+            allCompletions={allCompletions}
+            onRefresh={onRefresh}
+            isCompactMode={true}
+          />
+        </div>
+        
+        {programs.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-xs text-gray-500">
+              Δεν υπάρχουν ενεργά προγράμματα
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <Card className="w-full rounded-none h-full flex flex-col">

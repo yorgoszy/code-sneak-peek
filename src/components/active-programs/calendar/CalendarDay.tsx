@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 import { CalendarProgramItem } from './CalendarProgramItem';
@@ -12,6 +11,7 @@ interface CalendarDayProps {
   programs: EnrichedAssignment[];
   allCompletions: any[];
   onRefresh?: () => void;
+  isCompactMode?: boolean;
 }
 
 export const CalendarDay: React.FC<CalendarDayProps> = ({
@@ -19,7 +19,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   currentDate,
   programs,
   allCompletions,
-  onRefresh
+  onRefresh,
+  isCompactMode = false
 }) => {
   const [selectedProgram, setSelectedProgram] = useState<{
     program: EnrichedAssignment;
@@ -92,6 +93,59 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   };
 
   const dayPrograms = getProgramsForDay(day);
+
+  if (isCompactMode) {
+    return (
+      <>
+        <div
+          className={`
+            aspect-square p-0.5 border border-gray-200 rounded-none flex flex-col
+            ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
+            ${isDayToday ? 'ring-1 ring-blue-500' : ''}
+          `}
+        >
+          <div 
+            className={`
+              text-xs font-medium cursor-pointer hover:bg-gray-100 text-center flex-shrink-0
+              ${isDayToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
+            `}
+            onClick={handleDayClick}
+          >
+            {format(day, 'd')}
+          </div>
+          
+          <div className="flex-1 overflow-hidden">
+            {dayPrograms.length > 0 && (
+              <div 
+                className="w-full h-2 bg-[#00ffba] rounded-none cursor-pointer"
+                onClick={handleDayClick}
+              />
+            )}
+          </div>
+        </div>
+
+        {selectedProgram && (
+          <DayProgramDialog
+            isOpen={!!selectedProgram}
+            onClose={() => setSelectedProgram(null)}
+            program={selectedProgram.program}
+            selectedDate={selectedProgram.date}
+            workoutStatus={selectedProgram.status}
+            onRefresh={onRefresh}
+          />
+        )}
+
+        <DayAllProgramsDialog
+          isOpen={showAllPrograms}
+          onClose={() => setShowAllPrograms(false)}
+          selectedDate={day}
+          programs={programs}
+          allCompletions={allCompletions}
+          onProgramClick={handleProgramClick}
+        />
+      </>
+    );
+  }
 
   return (
     <>
