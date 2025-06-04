@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek } from "date-fns";
+import { startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, format } from "date-fns";
 import { CalendarHeader } from '../active-programs/calendar/CalendarHeader';
 import { CalendarGrid } from '../active-programs/calendar/CalendarGrid';
+import { DayProgramDialog } from '../active-programs/calendar/DayProgramDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +20,11 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
   const [programs, setPrograms] = useState<EnrichedAssignment[]>([]);
   const [allCompletions, setAllCompletions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProgram, setSelectedProgram] = useState<{
+    program: EnrichedAssignment;
+    date: Date;
+    status: string;
+  } | null>(null);
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   console.log('📅 UserProfileCalendar rendering for user:', user?.id);
@@ -130,6 +137,29 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
     await fetchUserPrograms();
   };
 
+  const getWorkoutStatus = (program: EnrichedAssignment, dayString: string) => {
+    const completion = allCompletions.find(c => 
+      c.assignment_id === program.id && 
+      c.scheduled_date === dayString
+    );
+
+    if (completion) {
+      return completion.status;
+    }
+
+    return 'scheduled';
+  };
+
+  const handleProgramClick = (program: EnrichedAssignment, day: Date) => {
+    const dayString = format(day, 'yyyy-MM-dd');
+    const workoutStatus = getWorkoutStatus(program, dayString);
+    setSelectedProgram({
+      program,
+      date: day,
+      status: workoutStatus
+    });
+  };
+
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   
@@ -160,87 +190,105 @@ export const UserProfileCalendar: React.FC<UserProfileCalendarProps> = ({ user }
   }
 
   return (
-    <Card className="w-full h-full rounded-none border-0 bg-transparent flex flex-col text-xs">
-      <CardHeader className="p-1 pb-0">
-        <div className="flex flex-row items-center justify-between space-y-0 pb-1">
-          <h2 className="text-sm font-bold">
-            {new Intl.DateTimeFormat('el-GR', { month: 'long', year: 'numeric' }).format(currentDate)}
-          </h2>
-          <div className="flex space-x-1">
-            <button
-              onClick={goToPreviousMonth}
-              className="w-5 h-5 rounded-none border border-gray-600 bg-gray-800 text-white hover:bg-[#00ffba] hover:text-black flex items-center justify-center text-xs"
-            >
-              ‹
-            </button>
-            <button
-              onClick={goToNextMonth}
-              className="w-5 h-5 rounded-none border border-gray-600 bg-gray-800 text-white hover:bg-[#00ffba] hover:text-black flex items-center justify-center text-xs"
-            >
-              ›
-            </button>
+    <>
+      <Card className="w-full h-full rounded-none border-0 bg-transparent flex flex-col text-xs">
+        <CardHeader className="p-1 pb-0">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-1">
+            <h2 className="text-sm font-bold text-white">
+              {new Intl.DateTimeFormat('el-GR', { month: 'long', year: 'numeric' }).format(currentDate)}
+            </h2>
+            <div className="flex space-x-1">
+              <button
+                onClick={goToPreviousMonth}
+                className="w-5 h-5 rounded-none border border-gray-600 bg-gray-800 text-white hover:bg-[#00ffba] hover:text-black flex items-center justify-center text-xs"
+              >
+                ‹
+              </button>
+              <button
+                onClick={goToNextMonth}
+                className="w-5 h-5 rounded-none border border-gray-600 bg-gray-800 text-white hover:bg-[#00ffba] hover:text-black flex items-center justify-center text-xs"
+              >
+                ›
+              </button>
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-1 pt-0 flex-1 overflow-hidden">
-        <div className="h-full flex flex-col">
-          {/* Day headers */}
-          <div className="grid grid-cols-7 gap-px mb-1">
-            {['Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ', 'Κ'].map((day) => (
-              <div key={day} className="text-center font-medium text-gray-400 text-xs py-1">
-                {day}
-              </div>
-            ))}
+        </CardHeader>
+        <CardContent className="p-1 pt-0 flex-1 overflow-hidden">
+          <div className="h-full flex flex-col">
+            {/* Day headers */}
+            <div className="grid grid-cols-7 gap-px mb-1">
+              {['Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ', 'Κ'].map((day) => (
+                <div key={day} className="text-center font-medium text-gray-400 text-xs py-1">
+                  {day}
+                </div>
+              ))}
+            </div>
+            
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-px flex-1">
+              {days.map((day) => {
+                const dayPrograms = programs.filter(program => {
+                  if (!program.training_dates) return false;
+                  return program.training_dates.some((dateStr: string) => {
+                    const programDate = new Date(dateStr);
+                    return programDate.toDateString() === day.toDateString();
+                  });
+                });
+
+                return (
+                  <div
+                    key={day.toISOString()}
+                    className={`
+                      text-xs p-1 min-h-[24px] flex flex-col
+                      ${day.getMonth() !== currentDate.getMonth() ? 'text-gray-600' : 'text-white'}
+                      ${new Date().toDateString() === day.toDateString() ? 'bg-[#00ffba] text-black font-bold' : 'bg-gray-800'}
+                    `}
+                  >
+                    <span className="text-xs leading-none">{day.getDate()}</span>
+                    {/* Program indicators - tiny dots */}
+                    <div className="flex flex-wrap gap-px mt-px">
+                      {dayPrograms
+                        .slice(0, 3)
+                        .map((program, index) => {
+                          const dayString = format(day, 'yyyy-MM-dd');
+                          const completion = allCompletions.find(c => 
+                            c.assignment_id === program.id && 
+                            c.scheduled_date === dayString
+                          );
+                          return (
+                            <div
+                              key={`${program.id}-${index}`}
+                              className={`w-1 h-1 cursor-pointer ${completion ? 'bg-green-400' : 'bg-orange-400'}`}
+                              title={program.programs?.name || 'Program'}
+                              onClick={() => handleProgramClick(program, day)}
+                            />
+                          );
+                        })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           
-          {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-px flex-1">
-            {days.map((day) => (
-              <div
-                key={day.toISOString()}
-                className={`
-                  text-xs p-1 min-h-[24px] flex flex-col
-                  ${day.getMonth() !== currentDate.getMonth() ? 'text-gray-600' : 'text-white'}
-                  ${new Date().toDateString() === day.toDateString() ? 'bg-[#00ffba] text-black font-bold' : 'bg-gray-800'}
-                `}
-              >
-                <span className="text-xs leading-none">{day.getDate()}</span>
-                {/* Program indicators - tiny dots */}
-                <div className="flex flex-wrap gap-px mt-px">
-                  {programs
-                    .filter(program => {
-                      if (!program.training_dates) return false;
-                      return program.training_dates.some((dateStr: string) => {
-                        const programDate = new Date(dateStr);
-                        return programDate.toDateString() === day.toDateString();
-                      });
-                    })
-                    .slice(0, 3)
-                    .map((program, index) => {
-                      const completion = allCompletions.find(c => 
-                        c.assignment_id === program.id && 
-                        new Date(c.completed_at).toDateString() === day.toDateString()
-                      );
-                      return (
-                        <div
-                          key={`${program.id}-${index}`}
-                          className={`w-1 h-1 ${completion ? 'bg-green-400' : 'bg-orange-400'}`}
-                          title={program.programs?.name || 'Program'}
-                        />
-                      );
-                    })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {programs.length === 0 && (
-          <div className="text-center py-2 text-gray-500 text-xs">
-            Δεν υπάρχουν προγράμματα
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {programs.length === 0 && (
+            <div className="text-center py-2 text-gray-500 text-xs">
+              Δεν υπάρχουν προγράμματα
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {selectedProgram && (
+        <DayProgramDialog
+          isOpen={!!selectedProgram}
+          onClose={() => setSelectedProgram(null)}
+          program={selectedProgram.program}
+          selectedDate={selectedProgram.date}
+          workoutStatus={selectedProgram.status}
+          onRefresh={handleRefresh}
+        />
+      )}
+    </>
   );
 };
