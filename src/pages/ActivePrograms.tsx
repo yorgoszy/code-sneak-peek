@@ -73,20 +73,20 @@ const ActivePrograms = () => {
           <span>{date.getDate()}</span>
           <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-0.5">
             {Array.from({ length: Math.min(programsCount, 3) }).map((_, i) => (
-              <div key={i} className="w-1 h-1 bg-blue-500 rounded-full"></div>
+              <div key={i} className="w-1 h-1 bg-[#00ffba] rounded-full"></div>
             ))}
           </div>
         </div>
       );
     }
     
-    return date.getDate();
+    return <span>{date.getDate()}</span>;
   };
 
   console.log('📅 Προγράμματα για την επιλεγμένη ημερομηνία:', programsForSelectedDate);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Sidebar */}
       <ActiveProgramsSidebar 
         isCollapsed={isCollapsed} 
