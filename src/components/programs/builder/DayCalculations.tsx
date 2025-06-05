@@ -1,139 +1,169 @@
-
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Calculator, Clock, Zap } from "lucide-react";
-import type { Day } from './hooks/useProgramBuilderState';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Exercise } from '../types';
 
-interface DayCalculationsProps {
-  day: Day;
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
 }
 
-const parseRepsToTotal = (reps: string): number => {
-  if (!reps) return 0;
-  
-  if (!reps.includes('.')) {
-    return parseInt(reps) || 0;
-  }
-  
-  const parts = reps.split('.');
-  let totalReps = 0;
-  
-  parts.forEach(part => {
-    totalReps += parseInt(part) || 0;
-  });
-  
-  return totalReps;
-};
+interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
 
-const parseTempoToSeconds = (tempo: string): number => {
-  if (!tempo || tempo.trim() === '') {
-    return 3;
-  }
-  
-  const parts = tempo.split('.');
-  let totalSeconds = 0;
-  
-  parts.forEach(part => {
-    if (part === 'x' || part === 'X') {
-      totalSeconds += 0.5;
-    } else {
-      totalSeconds += parseFloat(part) || 0;
+interface DayCalculationsProps {
+  blocks: Block[];
+  exercises: Exercise[];
+}
+
+export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exercises }) => {
+  // Helper function to parse tempo string to seconds
+  const parseTempoToSeconds = (tempo: string): number => {
+    // If tempo is empty, treat as "1.1.1" (3 seconds)
+    if (!tempo || tempo.trim() === '') {
+      return 3;
     }
-  });
-  
-  return totalSeconds;
-};
+    
+    const parts = tempo.split('.');
+    let totalSeconds = 0;
+    
+    parts.forEach(part => {
+      if (part === 'x' || part === 'X') {
+        totalSeconds += 0.5;
+      } else {
+        totalSeconds += parseFloat(part) || 0;
+      }
+    });
+    
+    return totalSeconds;
+  };
 
-const parseRestToMinutes = (rest: string): number => {
-  if (!rest) return 0;
-  
-  if (rest.includes(':')) {
-    const [minutes, seconds] = rest.split(':');
-    return (parseInt(minutes) || 0) + (parseInt(seconds) || 0) / 60;
-  } else if (rest.includes("'")) {
-    return parseFloat(rest.replace("'", "")) || 0;
-  } else if (rest.includes('s')) {
-    return (parseFloat(rest.replace('s', '')) || 0) / 60;
-  } else {
-    return parseFloat(rest) || 0;
-  }
-};
+  // Helper function to parse reps string to total reps
+  const parseRepsToTotal = (reps: string): number => {
+    if (!reps) return 0;
+    
+    // If it's a simple number, return it
+    if (!reps.includes('.')) {
+      return parseInt(reps) || 0;
+    }
+    
+    // If it's in format like "1.2.1.3", sum all parts
+    const parts = reps.split('.');
+    let totalReps = 0;
+    
+    parts.forEach(part => {
+      totalReps += parseInt(part) || 0;
+    });
+    
+    return totalReps;
+  };
 
-export const DayCalculations: React.FC<DayCalculationsProps> = ({ day }) => {
-  const calculateDayMetrics = () => {
+  // Helper function to parse rest time to minutes
+  const parseRestToMinutes = (rest: string): number => {
+    if (!rest) return 0;
+    
+    // Handle formats like "2'", "1:30", "90s", "2"
+    if (rest.includes(':')) {
+      const [minutes, seconds] = rest.split(':');
+      return (parseInt(minutes) || 0) + (parseInt(seconds) || 0) / 60;
+    } else if (rest.includes("'")) {
+      return parseFloat(rest.replace("'", "")) || 0;
+    } else if (rest.includes('s')) {
+      return (parseFloat(rest.replace('s', '')) || 0) / 60;
+    } else {
+      return parseFloat(rest) || 0;
+    }
+  };
+
+  // Calculate all metrics
+  const calculateMetrics = () => {
     let totalVolume = 0;
+    let totalWatts = 0;
     let totalTimeMinutes = 0;
-    let totalWatt = 0;
+    let totalIntensityPoints = 0;
+    let exerciseCount = 0;
 
-    day.blocks?.forEach(block => {
-      block.exercises?.forEach(exercise => {
+    blocks.forEach(block => {
+      block.exercises.forEach(exercise => {
         if (!exercise.exercise_id) return;
 
         const sets = exercise.sets || 1;
-        const reps = parseRepsToTotal(exercise.reps || '1');
-        const kg = parseFloat(exercise.kg || '0');
-        const tempo = parseTempoToSeconds(exercise.tempo || '3');
-        const rest = parseRestToMinutes(exercise.rest || '0');
-        const velocityMs = parseFloat(exercise.velocity_ms || '0');
+        const reps = parseRepsToTotal(exercise.reps);
+        const kg = parseFloat(exercise.kg) || 0;
+        const velocity = parseFloat(exercise.velocity_ms) || 0;
+        const tempo = parseTempoToSeconds(exercise.tempo);
+        const rest = parseRestToMinutes(exercise.rest);
 
         // Volume: sets × reps × kg
         const volume = sets * reps * kg;
         totalVolume += volume;
+
+        // Watts: Force × Velocity = (kg × 9.81) × m/s
+        if (kg > 0 && velocity > 0) {
+          const force = kg * 9.81; // Convert to Newtons
+          const watts = force * velocity;
+          totalWatts += watts * sets * reps; // Total watts for all reps
+        }
 
         // Time: [(sets × reps) × tempo] + (sets - 1) × rest
         const workTime = (sets * reps * tempo) / 60; // Convert to minutes
         const restTime = (sets - 1) * rest;
         totalTimeMinutes += workTime + restTime;
 
-        // Watt calculation: Power = Force × Velocity
-        // Force ≈ Weight (kg) × 9.81 (gravity)
-        // Velocity in m/s
-        if (velocityMs > 0 && kg > 0) {
-          const force = kg * 9.81; // Newtons
-          const power = force * velocityMs; // Watts per rep
-          const totalPowerForExercise = power * sets * reps;
-          totalWatt += totalPowerForExercise;
+        // Average Intensity (using percentage 1RM)
+        if (exercise.percentage_1rm > 0) {
+          totalIntensityPoints += exercise.percentage_1rm;
+          exerciseCount++;
         }
       });
     });
 
+    const averageIntensity = exerciseCount > 0 ? totalIntensityPoints / exerciseCount : 0;
+
     return {
       volume: Math.round(totalVolume),
-      timeMinutes: Math.round(totalTimeMinutes),
-      watt: Math.round(totalWatt)
+      averageIntensity: Math.round(averageIntensity * 10) / 10,
+      totalWatts: Math.round(totalWatts),
+      totalTime: Math.round(totalTimeMinutes * 10) / 10
     };
   };
 
-  const metrics = calculateDayMetrics();
-
-  if (metrics.volume === 0 && metrics.timeMinutes === 0 && metrics.watt === 0) {
-    return null;
-  }
+  const metrics = calculateMetrics();
 
   return (
-    <Card className="rounded-none bg-[#00ffba] text-black mb-6">
-      <CardContent className="p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Calculator className="w-4 h-4" />
-              <span className="text-sm font-medium">Όγκος:</span>
-              <span className="text-sm font-bold">{metrics.volume.toLocaleString()} kg</span>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm font-medium">Χρόνος:</span>
-              <span className="text-sm font-bold">{metrics.timeMinutes} λεπτά</span>
-            </div>
-            
-            {metrics.watt > 0 && (
-              <div className="flex items-center gap-1">
-                <Zap className="w-4 h-4" />
-                <span className="text-sm font-medium">Ισχύς:</span>
-                <span className="text-sm font-bold">{metrics.watt.toLocaleString()} W</span>
-              </div>
-            )}
+    <Card className="mt-2" style={{ borderRadius: '0px' }}>
+      <CardHeader className="py-2">
+        <CardTitle className="text-xs text-gray-600">Υπολογισμοί Ημέρας</CardTitle>
+      </CardHeader>
+      <CardContent className="py-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+          <div className="text-center">
+            <div className="font-medium text-blue-600">{metrics.volume} kg</div>
+            <div className="text-gray-500">Όγκος</div>
+          </div>
+          <div className="text-center">
+            <div className="font-medium text-green-600">{metrics.averageIntensity}%</div>
+            <div className="text-gray-500">Μ.Ο. Ένταση</div>
+          </div>
+          <div className="text-center">
+            <div className="font-medium text-purple-600">{metrics.totalWatts} W</div>
+            <div className="text-gray-500">Συνολικά Watts</div>
+          </div>
+          <div className="text-center">
+            <div className="font-medium text-orange-600">{metrics.totalTime} λεπτά</div>
+            <div className="text-gray-500">Χρόνος</div>
           </div>
         </div>
       </CardContent>

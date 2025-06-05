@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { CardContent } from "@/components/ui/card";
+import { CollapsibleContent } from "@/components/ui/collapsible";
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableExercise } from './SortableExercise';
@@ -47,24 +49,26 @@ export const BlockCardContent: React.FC<BlockCardContentProps> = ({
   };
 
   return (
-    <div className="p-0 m-0">
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
-          <div className="w-full h-full">
-            {exercises.map((exercise) => (
-              <SortableExercise
-                key={exercise.id}
-                exercise={exercise}
-                exercises={availableExercises}
-                allBlockExercises={exercises}
-                onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
-                onRemove={() => onRemoveExercise(exercise.id)}
-                onDuplicate={() => onDuplicateExercise(exercise.id)}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
-    </div>
+    <CollapsibleContent>
+      <CardContent className="p-0 m-0">
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
+            <div className="w-full h-full">
+              {exercises.map((exercise) => (
+                <SortableExercise
+                  key={exercise.id}
+                  exercise={exercise}
+                  exercises={availableExercises}
+                  allBlockExercises={exercises}
+                  onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
+                  onRemove={() => onRemoveExercise(exercise.id)}
+                  onDuplicate={() => onDuplicateExercise(exercise.id)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      </CardContent>
+    </CollapsibleContent>
   );
 };
