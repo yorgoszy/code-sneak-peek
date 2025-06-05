@@ -8,6 +8,7 @@ import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid
 import { ProgramsForDateCard } from "@/components/active-programs/calendar/ProgramsForDateCard";
 import { ProgramViewDialog } from "@/components/active-programs/calendar/ProgramViewDialog";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
+import { DatabaseDebugger } from "@/components/debug/DatabaseDebugger";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -19,6 +20,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [realtimeKey, setRealtimeKey] = useState(0);
+  const [showDebugger, setShowDebugger] = useState(false);
   
   // Dialog states
   const [selectedProgram, setSelectedProgram] = useState<EnrichedAssignment | null>(null);
@@ -149,12 +151,22 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     <div className="space-y-6">
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Ημερολόγιο Προπονήσεων - {userProfile.name}
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Ημερολόγιο Προπονήσεων - {userProfile.name}
+            </span>
+            <button 
+              onClick={() => setShowDebugger(!showDebugger)}
+              className="text-xs bg-gray-200 px-2 py-1 rounded"
+            >
+              {showDebugger ? 'Απόκρυψη Debug' : 'Debug Video URLs'}
+            </button>
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {showDebugger && <DatabaseDebugger />}
+          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <CalendarGrid
