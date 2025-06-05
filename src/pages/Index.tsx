@@ -114,6 +114,9 @@ const Index = () => {
         translations={translations}
       />
 
+      {/* Transition Section with Black Gradient */}
+      <section className="h-32 bg-gradient-to-b from-black to-white"></section>
+
       <BlogSection 
         translations={translations}
       />
