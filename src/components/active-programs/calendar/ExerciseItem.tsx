@@ -182,7 +182,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         {/* Actual Values (when workout in progress) */}
         {workoutInProgress && (
           <div>
-            <h7 className="text-xs font-medium text-gray-700 mb-2 block">Actual Values</h7>
+            <div className="text-xs font-medium text-gray-700 mb-2">Actual Values</div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
               <div className="text-xs">
                 <label className="block text-gray-600 mb-1">Actual Reps</label>
