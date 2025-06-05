@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Play } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
@@ -133,9 +132,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
                   <div key={exercise.id} className="bg-white rounded-none">
                     {/* Exercise Header */}
                     <div 
-                      className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
-                        viewOnly ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50'
-                      } ${isComplete ? 'bg-green-50' : ''}`}
+                      className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${isComplete ? 'bg-green-50' : ''}`}
                       onClick={(e) => handleExerciseClick(exercise, e)}
                     >
                       <div className="flex items-center flex-1 min-w-0">
@@ -249,9 +246,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
                     <div key={exercise.id} className="bg-white rounded-none border border-gray-200">
                       {/* Exercise Header */}
                       <div 
-                        className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
-                          viewOnly ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50'
-                        } ${isComplete ? 'bg-green-50' : ''}`}
+                        className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${isComplete ? 'bg-green-50' : ''}`}
                         onClick={(e) => handleExerciseClick(exercise, e)}
                       >
                         <div className="flex items-center flex-1 min-w-0">
