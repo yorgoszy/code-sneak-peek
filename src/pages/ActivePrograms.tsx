@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
-import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarCheck, ArrowLeft } from "lucide-react";
+import { CalendarCheck, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 import { el } from "date-fns/locale";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
@@ -16,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const ActivePrograms = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
@@ -120,60 +119,129 @@ const ActivePrograms = () => {
     return dates;
   }, []);
 
-  // Συνάρτηση για να δείξουμε κουκίδες στις ημερομηνίες που έχουν προγράμματα με σωστό χρώμα
-  const getDayContent = (date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
+  // Custom Calendar Grid
+  const renderCustomCalendar = () => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    
+    const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+    
+    const weekDays = ['Δε', 'Τρ', 'Τε', 'Πε', 'Πα', 'Σα', 'Κυ'];
     
     const handleNameClick = (program: any, event: React.MouseEvent) => {
       event.stopPropagation();
       setSelectedProgram(program.assignment);
-      setSelectedDialogDate(date);
+      setSelectedDialogDate(new Date(program.date));
       setDayDialogOpen(true);
     };
 
+    const handleDateClick = (date: Date) => {
+      setSelectedDate(date);
+    };
+
     return (
-      <div className="w-full h-full flex flex-col p-1">
-        {/* Αριθμός ημερομηνίας - πάντα στην ίδια θέση */}
-        <div className="text-center font-medium text-sm h-5 flex items-center justify-center">
-          {date.getDate()}
+      <div className="w-full">
+        {/* Calendar Header */}
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+            className="rounded-none"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h3 className="text-lg font-semibold">
+            {format(currentMonth, 'MMMM yyyy', { locale: el })}
+          </h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+            className="rounded-none"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
-        
-        {/* Ονόματα χρηστών - σταθερό ύψος */}
-        <div className="flex-1 flex flex-col justify-center min-h-[40px]">
-          {dateProgramsWithStatus.slice(0, 2).map((program, i) => (
-            <div 
-              key={i} 
-              className="text-xs leading-tight text-gray-700 cursor-pointer hover:text-[#00ffba] truncate px-1"
-              onClick={(e) => handleNameClick(program, e)}
-            >
-              {program.userName.split(' ')[0]}
+
+        {/* Days of Week Header */}
+        <div className="grid grid-cols-7 border-b border-gray-200">
+          {weekDays.map((day) => (
+            <div key={day} className="p-2 text-center text-sm font-medium text-gray-600 border-r border-gray-200 last:border-r-0">
+              {day}
             </div>
           ))}
-          {dateProgramsWithStatus.length > 2 && (
-            <div className="text-xs text-gray-500">
-              +{dateProgramsWithStatus.length - 2}
-            </div>
-          )}
         </div>
-        
-        {/* Κουκίδες - πάντα στο κάτω μέρος */}
-        <div className="flex justify-center space-x-1 h-4 items-center">
-          {dateProgramsWithStatus.slice(0, 3).map((program, i) => {
-            let bulletColor = '#3b82f6'; // default μπλε για scheduled
-            
-            if (program.status === 'completed') {
-              bulletColor = '#00ffba'; // πράσινο για completed
-            } else if (program.status === 'missed') {
-              bulletColor = '#ef4444'; // κόκκινο για missed
-            }
-            
+
+        {/* Calendar Grid */}
+        <div className="grid grid-cols-7 border border-gray-200">
+          {days.map((date) => {
+            const dateStr = format(date, 'yyyy-MM-dd');
+            const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
+            const isCurrentMonth = isSameMonth(date, currentMonth);
+            const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
+            const isToday = format(new Date(), 'yyyy-MM-dd') === dateStr;
+
             return (
-              <div 
-                key={i} 
-                className="w-1.5 h-1.5 rounded-full" 
-                style={{ backgroundColor: bulletColor }}
-              ></div>
+              <div
+                key={dateStr}
+                className={`
+                  h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer
+                  ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
+                  ${isSelected ? 'bg-[#00ffba] text-black' : ''}
+                  ${isToday && !isSelected ? 'bg-gray-100' : ''}
+                  hover:bg-gray-50 transition-colors
+                `}
+                onClick={() => handleDateClick(date)}
+              >
+                <div className="h-full flex flex-col p-1">
+                  {/* Date Number - Fixed at top */}
+                  <div className="text-center font-medium text-sm h-5 flex items-center justify-center flex-shrink-0">
+                    {date.getDate()}
+                  </div>
+                  
+                  {/* User Names - Middle section */}
+                  <div className="flex-1 flex flex-col justify-center min-h-[32px] overflow-hidden">
+                    {dateProgramsWithStatus.slice(0, 2).map((program, i) => (
+                      <div 
+                        key={i} 
+                        className="text-xs leading-tight text-gray-700 cursor-pointer hover:text-[#00ffba] truncate px-1"
+                        onClick={(e) => handleNameClick(program, e)}
+                      >
+                        {program.userName.split(' ')[0]}
+                      </div>
+                    ))}
+                    {dateProgramsWithStatus.length > 2 && (
+                      <div className="text-xs text-gray-500 px-1">
+                        +{dateProgramsWithStatus.length - 2}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Status Bullets - Fixed at bottom */}
+                  <div className="flex justify-center space-x-1 h-4 items-center flex-shrink-0">
+                    {dateProgramsWithStatus.slice(0, 3).map((program, i) => {
+                      let bulletColor = '#3b82f6'; // default μπλε για scheduled
+                      
+                      if (program.status === 'completed') {
+                        bulletColor = '#00ffba'; // πράσινο για completed
+                      } else if (program.status === 'missed') {
+                        bulletColor = '#ef4444'; // κόκκινο για missed
+                      }
+                      
+                      return (
+                        <div 
+                          key={i} 
+                          className="w-1.5 h-1.5 rounded-full" 
+                          style={{ backgroundColor: bulletColor }}
+                        ></div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -269,32 +337,7 @@ const ActivePrograms = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    className="rounded-none w-full"
-                    weekStartsOn={1}
-                    locale={el}
-                    classNames={{
-                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1",
-                      month: "space-y-4 w-full flex-1",
-                      table: "w-full border-collapse",
-                      head_row: "",
-                      row: "w-full",
-                      cell: "h-20 w-full text-center text-sm p-0 relative border border-gray-200",
-                      day: "h-20 w-full p-0 font-normal aria-selected:opacity-100 hover:bg-gray-50",
-                      day_selected: "bg-[#00ffba] text-black hover:bg-[#00ffba] hover:text-black focus:bg-[#00ffba] focus:text-black",
-                      day_today: "bg-gray-100 text-black",
-                      day_outside: "text-gray-400 opacity-50",
-                      day_disabled: "text-gray-400 opacity-50",
-                      day_range_middle: "aria-selected:bg-gray-100 aria-selected:text-black",
-                      day_hidden: "invisible",
-                    }}
-                    components={{
-                      DayContent: ({ date }) => getDayContent(date)
-                    }}
-                  />
+                  {renderCustomCalendar()}
                 </CardContent>
               </Card>
 
