@@ -126,7 +126,7 @@ export const useProgramBuilderDialogLogic = ({
     console.log('Training dates being passed:', trainingDates);
     
     try {
-      // Save the program and pass training dates separately
+      // Save the program and pass training dates
       const savedProgram = await onCreateProgram(programToSave, trainingDates);
       
       console.log('✅ Program saved and assigned successfully');

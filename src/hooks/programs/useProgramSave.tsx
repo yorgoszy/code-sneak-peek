@@ -25,8 +25,6 @@ export const useProgramSave = () => {
       }
       
       // Get the current user's app_users id (needed for created_by)
-      let currentUserAppId = null;
-      
       const { data: currentAppUser, error: currentUserError } = await supabase
         .from('app_users')
         .select('id')
@@ -39,7 +37,7 @@ export const useProgramSave = () => {
         return null;
       }
       
-      currentUserAppId = currentAppUser.id;
+      const currentUserAppId = currentAppUser.id;
       console.log('✅ Current user found:', currentAppUser);
 
       if (!currentUserAppId) {
@@ -83,7 +81,7 @@ export const useProgramSave = () => {
         await createProgramStructure(programData.id, programData);
         
         // Handle assignments with training dates
-        if (programData.createAssignment && trainingDates && programData.user_id) {
+        if (programData.createAssignment && programData.user_id && trainingDates && trainingDates.length > 0) {
           console.log('Creating assignment with training dates:', trainingDates);
           
           await createOrUpdateAssignment(
@@ -125,7 +123,7 @@ export const useProgramSave = () => {
         await createProgramStructure(program.id, programData);
         
         // Handle assignments with training dates
-        if (programData.createAssignment && trainingDates && programData.user_id) {
+        if (programData.createAssignment && programData.user_id && trainingDates && trainingDates.length > 0) {
           console.log('Creating assignment with training dates for new program:', trainingDates);
           
           await createOrUpdateAssignment(
