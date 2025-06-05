@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { ProgramCard } from "@/components/active-programs/ProgramCard";
 
 const ActivePrograms = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -122,7 +123,8 @@ const ActivePrograms = () => {
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   className="rounded-none w-full"
-                  weekStartsOn={1} // Ξεκινάει από Δευτέρα
+                  weekStartsOn={0}
+                  timeZone="Europe/Athens"
                   classNames={{
                     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1",
                     month: "space-y-4 w-full flex-1",
@@ -157,48 +159,12 @@ const ActivePrograms = () => {
               </CardHeader>
               <CardContent>
                 {programsForSelectedDate.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {programsForSelectedDate.map((assignment) => (
-                      <Card key={assignment.id} className="rounded-none border-l-4 border-l-[#00ffba]">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-2">
-                              <h3 className="font-semibold text-lg">{assignment.programs?.name}</h3>
-                              
-                              {assignment.programs?.description && (
-                                <p className="text-sm text-gray-600">{assignment.programs.description}</p>
-                              )}
-                              
-                              <div className="flex items-center gap-4 text-sm text-gray-500">
-                                <div className="flex items-center gap-1">
-                                  <User className="h-4 w-4" />
-                                  <span>{assignment.app_users?.name || `Αθλητής ID: ${assignment.user_id}`}</span>
-                                </div>
-                                
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  <span>Εβδομάδες: {assignment.programs?.program_weeks?.length || 0}</span>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <Badge variant="outline" className="rounded-none bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]">
-                              {assignment.status}
-                            </Badge>
-                          </div>
-                          
-                          {assignment.programs?.program_weeks && (
-                            <div className="mt-3 pt-3 border-t">
-                              <p className="text-xs text-gray-500">
-                                Σύνολο ημερών: {assignment.programs.program_weeks.reduce((total: number, week: any) => total + (week.program_days?.length || 0), 0)}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Ημερομηνίες προπόνησης: {assignment.training_dates?.length || 0}
-                              </p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                      <ProgramCard
+                        key={assignment.id}
+                        assignment={assignment}
+                      />
                     ))}
                   </div>
                 ) : (

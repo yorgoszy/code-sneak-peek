@@ -19,33 +19,50 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
   onDatesChange,
   validateWeekSelection
 }) => {
+  const handleSelect = (dates: Date[] | Date | undefined) => {
+    if (dates) {
+      const datesArray = Array.isArray(dates) ? dates : [dates];
+      if (datesArray.length <= totalDays) {
+        onDatesChange(datesArray);
+      }
+    }
+  };
+
   return (
     <div className="border rounded-none p-4">
       <Calendar
         mode="multiple"
         selected={selectedDates}
-        onSelect={(dates) => {
-          if (dates) {
-            const datesArray = Array.isArray(dates) ? dates : [dates];
-            if (datesArray.length <= totalDays) {
-              onDatesChange(datesArray);
-            }
-          }
-        }}
+        onSelect={handleSelect}
         className="rounded-none"
         weekStartsOn={0}
+        timeZone="Europe/Athens"
         disabled={(date) => {
           // Απενεργοποίηση παλαιών ημερομηνιών
-          if (date < new Date()) return true;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          if (date < today) return true;
           
           // Αν δεν έχουμε δομή εβδομάδων, χρησιμοποιούμε την παλιά λογική
           if (weekStructure.length === 0) {
-            const isSelected = selectedDates.some(d => d.toDateString() === date.toDateString());
+            const isSelected = selectedDates.some(d => {
+              const selectedDate = new Date(d);
+              selectedDate.setHours(0, 0, 0, 0);
+              const checkDate = new Date(date);
+              checkDate.setHours(0, 0, 0, 0);
+              return selectedDate.getTime() === checkDate.getTime();
+            });
             return !isSelected && selectedDates.length >= totalDays;
           }
           
           // Νέα λογική βάσει δομής εβδομάδων
-          const isSelected = selectedDates.some(d => d.toDateString() === date.toDateString());
+          const isSelected = selectedDates.some(d => {
+            const selectedDate = new Date(d);
+            selectedDate.setHours(0, 0, 0, 0);
+            const checkDate = new Date(date);
+            checkDate.setHours(0, 0, 0, 0);
+            return selectedDate.getTime() === checkDate.getTime();
+          });
           if (isSelected) return false;
           
           return !validateWeekSelection(date);

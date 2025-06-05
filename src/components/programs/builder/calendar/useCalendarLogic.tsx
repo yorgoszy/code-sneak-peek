@@ -1,6 +1,5 @@
 
 import { useState, useMemo } from 'react';
-import { isSameWeek } from "date-fns";
 
 interface UseCalendarLogicProps {
   selectedDates: Date[];
@@ -13,144 +12,101 @@ export const useCalendarLogic = ({
   selectedDates,
   onDatesChange,
   totalDays,
-  weeks = []
+  weeks
 }: UseCalendarLogicProps) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
 
-  // Υπολογίζουμε τη δομή των εβδομάδων από το πρόγραμμα
+  // Δημιουργία δομής εβδομάδων
   const weekStructure = useMemo(() => {
-    return weeks.map(week => ({
-      weekNumber: week.week_number || 1,
-      daysCount: week.days?.length || 0
+    if (!weeks || weeks.length === 0) return [];
+    
+    return weeks.map((week, weekIndex) => ({
+      weekNumber: week.week_number || weekIndex + 1,
+      daysInWeek: week.days?.length || 0,
+      totalDaysBeforeWeek: weeks.slice(0, weekIndex).reduce((sum, w) => sum + (w.days?.length || 0), 0)
     }));
   }, [weeks]);
 
-  const validateWeekSelection = (newDate: Date): boolean => {
-    if (weekStructure.length === 0) return true;
-    if (selectedDates.length === 0) return true;
-
-    const currentWeek = weekStructure[currentWeekIndex];
-    if (!currentWeek) return false;
-
-    // Βρίσκουμε τις ημερομηνίες της τρέχουσας εβδομάδας που επεξεργαζόμαστε
-    const currentWeekDates = getCurrentWeekDates();
-    
-    // Αν η τρέχουσα εβδομάδα δεν έχει συμπληρωθεί
-    if (currentWeekDates.length < currentWeek.daysCount) {
-      // Ελέγχουμε αν η νέα ημερομηνία είναι στην ίδια εβδομάδα με τις τρέχουσες
-      if (currentWeekDates.length > 0) {
-        const firstDateOfCurrentWeek = currentWeekDates[0];
-        return isSameWeek(newDate, firstDateOfCurrentWeek, { weekStartsOn: 0 });
-      }
-      return true;
-    }
-
-    // Αν η τρέχουσα εβδομάδα έχει συμπληρωθεί, πάμε στην επόμενη
-    return true;
-  };
-
-  const getCurrentWeekDates = (): Date[] => {
-    if (selectedDates.length === 0) return [];
-    
-    let totalProcessedDays = 0;
-    for (let i = 0; i < currentWeekIndex; i++) {
-      totalProcessedDays += weekStructure[i]?.daysCount || 0;
-    }
-    
-    const currentWeekStartIndex = totalProcessedDays;
-    const currentWeek = weekStructure[currentWeekIndex];
-    const currentWeekEndIndex = currentWeekStartIndex + (currentWeek?.daysCount || 0);
-    
-    return selectedDates.slice(currentWeekStartIndex, currentWeekEndIndex);
-  };
-
-  const updateWeekIndex = (dates: Date[]) => {
-    if (weekStructure.length === 0) return;
-    
-    let totalDays = 0;
-    let weekIndex = 0;
-    
-    for (let i = 0; i < weekStructure.length; i++) {
-      const weekDays = weekStructure[i].daysCount;
-      if (dates.length <= totalDays + weekDays) {
-        weekIndex = i;
-        break;
-      }
-      totalDays += weekDays;
-      weekIndex = i + 1;
-    }
-    
-    setCurrentWeekIndex(Math.min(weekIndex, weekStructure.length - 1));
+  // Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone issues
+  const formatDateToLocalString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    const dateExists = selectedDates.some(d => 
-      d.toDateString() === date.toDateString()
-    );
+    // Βεβαιωνόμαστε ότι η ημερομηνία είναι στην τοπική ζώνη ώρας
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     
-    if (dateExists) {
+    const isAlreadySelected = selectedDates.some(selectedDate => {
+      const selectedLocal = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+      return selectedLocal.getTime() === localDate.getTime();
+    });
+
+    if (isAlreadySelected) {
       // Αφαίρεση ημερομηνίας
-      const newDates = selectedDates.filter(d => 
-        d.toDateString() !== date.toDateString()
-      );
+      const newDates = selectedDates.filter(selectedDate => {
+        const selectedLocal = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+        return selectedLocal.getTime() !== localDate.getTime();
+      });
       onDatesChange(newDates);
-      
-      // Επαναυπολογισμός του index εβδομάδας
-      updateWeekIndex(newDates);
-      return;
+    } else if (selectedDates.length < totalDays) {
+      // Προσθήκη ημερομηνίας
+      onDatesChange([...selectedDates, localDate].sort((a, b) => a.getTime() - b.getTime()));
     }
-
-    // Έλεγχος αν έχουμε φτάσει το όριο
-    if (selectedDates.length >= totalDays) {
-      console.log(`⚠️ Μπορείς να επιλέξεις μόνο ${totalDays} ημερομηνίες`);
-      return;
-    }
-
-    // Λογική για επιλογή ημερομηνιών βάσει δομής εβδομάδων
-    if (weekStructure.length > 0) {
-      const canAddToCurrentWeek = validateWeekSelection(date);
-      if (!canAddToCurrentWeek) {
-        console.log('⚠️ Πρέπει να ολοκληρώσεις τις ημέρες της τρέχουσας εβδομάδας πρώτα');
-        return;
-      }
-    }
-    
-    // Προσθήκη ημερομηνίας
-    const newDates = [...selectedDates, date].sort((a, b) => a.getTime() - b.getTime());
-    onDatesChange(newDates);
-    
-    // Ενημέρωση του index εβδομάδας
-    updateWeekIndex(newDates);
   };
 
   const removeDate = (dateToRemove: Date) => {
-    const newDates = selectedDates.filter(d => 
-      d.toDateString() !== dateToRemove.toDateString()
-    );
+    const dateToRemoveLocal = new Date(dateToRemove.getFullYear(), dateToRemove.getMonth(), dateToRemove.getDate());
+    const newDates = selectedDates.filter(date => {
+      const dateLocal = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      return dateLocal.getTime() !== dateToRemoveLocal.getTime();
+    });
     onDatesChange(newDates);
-    updateWeekIndex(newDates);
   };
 
   const clearAllDates = () => {
     onDatesChange([]);
-    setCurrentWeekIndex(0);
   };
 
-  // Ενημέρωση για την τρέχουσα εβδομάδα
+  const validateWeekSelection = (date: Date) => {
+    if (weekStructure.length === 0) return true;
+    
+    // Επιτρέπουμε όλες τις ημερομηνίες για απλότητα
+    // Μπορούμε να προσθέσουμε πιο σύνθετη λογική αργότερα
+    return selectedDates.length < totalDays;
+  };
+
   const getCurrentWeekInfo = () => {
-    if (weekStructure.length === 0) return null;
-    
+    if (weekStructure.length === 0 || selectedDates.length === 0) return null;
+
+    // Βρίσκουμε σε ποια εβδομάδα ανήκει η τελευταία επιλεγμένη ημερομηνία
+    const sortedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime());
+    const currentIndex = sortedDates.length - 1;
+
+    let currentWeekIndex = 0;
+    let daysCount = 0;
+
+    for (let i = 0; i < weekStructure.length; i++) {
+      if (daysCount + weekStructure[i].daysInWeek > currentIndex) {
+        currentWeekIndex = i;
+        break;
+      }
+      daysCount += weekStructure[i].daysInWeek;
+    }
+
     const currentWeek = weekStructure[currentWeekIndex];
-    const currentWeekDates = getCurrentWeekDates();
-    
+    const selectedInWeek = Math.min(sortedDates.length - daysCount, currentWeek.daysInWeek);
+    const remainingInWeek = currentWeek.daysInWeek - selectedInWeek;
+
     return {
-      weekNumber: currentWeek?.weekNumber || currentWeekIndex + 1,
-      remainingDays: (currentWeek?.daysCount || 0) - currentWeekDates.length,
-      totalDaysInWeek: currentWeek?.daysCount || 0,
-      selectedInWeek: currentWeekDates.length
+      weekNumber: currentWeek.weekNumber,
+      remainingDays: remainingInWeek,
+      totalDaysInWeek: currentWeek.daysInWeek,
+      selectedInWeek: selectedInWeek
     };
   };
 
