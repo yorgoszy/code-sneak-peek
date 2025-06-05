@@ -80,17 +80,23 @@ export const useProgramSave = () => {
         console.log('Creating new program structure');
         await createProgramStructure(programData.id, programData);
         
-        // Handle assignments with training dates
-        if (programData.createAssignment && programData.user_id && trainingDates && trainingDates.length > 0) {
-          console.log('Creating assignment with training dates:', trainingDates);
-          
-          await createOrUpdateAssignment(
-            programData.id, 
-            programData.user_id,
-            undefined, 
-            undefined, 
-            trainingDates
-          );
+        // Handle assignments with training dates ONLY if creating assignment
+        if (programData.createAssignment && programData.user_id) {
+          if (trainingDates && trainingDates.length > 0) {
+            console.log('Creating assignment with training dates:', trainingDates);
+            
+            await createOrUpdateAssignment(
+              programData.id, 
+              programData.user_id,
+              undefined, 
+              undefined, 
+              trainingDates
+            );
+          } else {
+            console.log('⚠️ Assignment requested but no training dates provided');
+            toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης για την ανάθεση');
+            return null;
+          }
         }
         
         const successMessage = programData.createAssignment 
@@ -122,17 +128,23 @@ export const useProgramSave = () => {
         console.log('Creating program structure for new program:', program.id);
         await createProgramStructure(program.id, programData);
         
-        // Handle assignments with training dates
-        if (programData.createAssignment && programData.user_id && trainingDates && trainingDates.length > 0) {
-          console.log('Creating assignment with training dates for new program:', trainingDates);
-          
-          await createOrUpdateAssignment(
-            program.id, 
-            programData.user_id,
-            undefined, 
-            undefined, 
-            trainingDates
-          );
+        // Handle assignments with training dates ONLY if creating assignment
+        if (programData.createAssignment && programData.user_id) {
+          if (trainingDates && trainingDates.length > 0) {
+            console.log('Creating assignment with training dates for new program:', trainingDates);
+            
+            await createOrUpdateAssignment(
+              program.id, 
+              programData.user_id,
+              undefined, 
+              undefined, 
+              trainingDates
+            );
+          } else {
+            console.log('⚠️ Assignment requested but no training dates provided');
+            toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης για την ανάθεση');
+            return null;
+          }
         }
         
         const successMessage = programData.createAssignment 
