@@ -8,6 +8,7 @@ import { ProgramCalendar } from './ProgramCalendar';
 import { Button } from "@/components/ui/button";
 import { Save, CalendarCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import type { User, Exercise } from '../types';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 

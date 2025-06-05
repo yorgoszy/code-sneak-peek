@@ -261,6 +261,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
                 }
               }}
               className="rounded-none"
+              weekStartsOn={1} // Ξεκινάει από Δευτέρα
               disabled={(date) => {
                 // Απενεργοποίηση παλαιών ημερομηνιών
                 if (date < new Date()) return true;
