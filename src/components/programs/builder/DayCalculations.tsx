@@ -91,7 +91,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
   // Calculate all metrics
   const calculateMetrics = () => {
     let totalVolume = 0;
-    let totalWatts = 0;
+    let totalKilowatts = 0;
     let totalTimeMinutes = 0;
     let totalIntensityPoints = 0;
     let exerciseCount = 0;
@@ -111,22 +111,15 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
         const volume = sets * reps * kg;
         totalVolume += volume;
 
-        // Watts: Power = Force × Velocity
-        // For strength exercises: Force = weight (kg) × 9.81 (gravity)
-        // For plyometric/ballistic exercises: use velocity directly
-        if (kg > 0 && velocity > 0) {
-          // For loaded exercises: Power = Weight × gravity × velocity
-          const force = kg * 9.81; // Convert to Newtons
-          const power = force * velocity; // Watts per rep
-          const totalPowerPerSet = power * reps;
-          totalWatts += totalPowerPerSet * sets;
-        } else if (velocity > 0 && kg === 0) {
-          // For bodyweight/plyometric exercises: estimate based on bodyweight
-          const estimatedBodyweight = 75; // kg (average)
-          const force = estimatedBodyweight * 9.81;
-          const power = force * velocity;
-          const totalPowerPerSet = power * reps;
-          totalWatts += totalPowerPerSet * sets;
+        // Power calculation in Kilowatts
+        if (velocity > 0) {
+          const mass = kg > 0 ? kg : 75; // Use bodyweight if no load
+          // Power = Force × Velocity, where Force = mass × gravity
+          const force = mass * 9.81; // Newtons
+          const powerWatts = force * velocity; // Watts per rep
+          const powerKilowatts = powerWatts / 1000; // Convert to kilowatts
+          const totalPowerPerSet = powerKilowatts * reps;
+          totalKilowatts += totalPowerPerSet * sets;
         }
 
         // Time: [(sets × reps) × tempo] + (sets - 1) × rest
@@ -147,7 +140,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
     return {
       volume: Math.round(totalVolume),
       averageIntensity: Math.round(averageIntensity * 10) / 10,
-      totalWatts: Math.round(totalWatts),
+      totalKilowatts: Math.round(totalKilowatts * 100) / 100, // Round to 2 decimal places
       totalTime: Math.round(totalTimeMinutes * 10) / 10
     };
   };
@@ -170,8 +163,8 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
             <div className="text-gray-500">Μ.Ο. Ένταση</div>
           </div>
           <div className="text-center">
-            <div className="font-medium text-purple-600">{metrics.totalWatts} W</div>
-            <div className="text-gray-500">Συνολικά Watts</div>
+            <div className="font-medium text-purple-600">{metrics.totalKilowatts} kW</div>
+            <div className="text-gray-500">Συνολικά kW</div>
           </div>
           <div className="text-center">
             <div className="font-medium text-orange-600">{metrics.totalTime} λεπτά</div>

@@ -45,7 +45,7 @@ interface WeekMetricsProps {
 interface WeekStats {
   volume: number;
   intensity: number;
-  watts: number;
+  kilowatts: number;
   time: number;
 }
 
@@ -105,7 +105,7 @@ const parseRestTime = (rest: string): number => {
 const calculateWeekMetrics = (week: Week): WeekStats => {
   let totalVolume = 0;
   let totalIntensity = 0;
-  let totalWatts = 0;
+  let totalKilowatts = 0;
   let totalTimeSeconds = 0;
   let exerciseCount = 0;
 
@@ -125,21 +125,16 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
             exerciseCount++;
           }
 
-          // Watts calculation - corrected formula
+          // Power calculation in Kilowatts
           const velocity = parseFloat(exercise.velocity_ms) || 0;
-          if (kg > 0 && velocity > 0) {
-            // For loaded exercises: Power = Weight × gravity × velocity
-            const force = kg * 9.81; // Convert to Newtons
-            const power = force * velocity; // Watts per rep
-            const totalPowerPerSet = power * reps;
-            totalWatts += totalPowerPerSet * sets;
-          } else if (velocity > 0 && kg === 0) {
-            // For bodyweight/plyometric exercises: estimate based on bodyweight
-            const estimatedBodyweight = 75; // kg (average)
-            const force = estimatedBodyweight * 9.81;
-            const power = force * velocity;
-            const totalPowerPerSet = power * reps;
-            totalWatts += totalPowerPerSet * sets;
+          if (velocity > 0) {
+            const mass = kg > 0 ? kg : 75; // Use bodyweight if no load
+            // Power = Force × Velocity, where Force = mass × gravity
+            const force = mass * 9.81; // Newtons
+            const powerWatts = force * velocity; // Watts per rep
+            const powerKilowatts = powerWatts / 1000; // Convert to kilowatts
+            const totalPowerPerSet = powerKilowatts * reps;
+            totalKilowatts += totalPowerPerSet * sets;
           }
 
           // Time calculation
@@ -161,7 +156,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
   return {
     volume: Math.round(totalVolume),
     intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
-    watts: Math.round(totalWatts),
+    kilowatts: Math.round(totalKilowatts * 100) / 100, // Round to 2 decimal places
     time: Math.round(totalTimeSeconds / 60) // Convert to minutes
   };
 };
@@ -220,10 +215,10 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
         </div>
         
         <div className="text-center">
-          <div className="font-semibold text-orange-700">{currentStats.watts}W</div>
+          <div className="font-semibold text-orange-700">{currentStats.kilowatts}kW</div>
           {previousStats && (
             <PercentageIndicator 
-              percentage={calculatePercentageChange(currentStats.watts, previousStats.watts)} 
+              percentage={calculatePercentageChange(currentStats.kilowatts, previousStats.kilowatts)} 
             />
           )}
         </div>
