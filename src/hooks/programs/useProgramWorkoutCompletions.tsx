@@ -38,8 +38,8 @@ export const useProgramWorkoutCompletions = () => {
               week_number: weekNumber,
               day_number: dayNumber,
               scheduled_date: scheduledDate,
-              completed_date: scheduledDate, // Ίδια με scheduled για τώρα
-              status: 'scheduled',
+              completed_date: scheduledDate,
+              status: 'pending', // Αλλάζω από 'scheduled' σε 'pending'
               notes: null,
               start_time: null,
               end_time: null,

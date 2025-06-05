@@ -145,8 +145,8 @@ export const useAssignmentDialog = ({
 
       // Υπολογισμός start_date και end_date από τις επιλεγμένες ημερομηνίες
       const sortedDates = [...trainingDates].sort();
-      const startDate = sortedDates[0]; // Πρώτη ημερομηνία
-      const endDate = sortedDates[sortedDates.length - 1]; // Τελευταία ημερομηνία
+      const startDate = sortedDates[0];
+      const endDate = sortedDates[sortedDates.length - 1];
 
       console.log('📅 Calculated dates:', { startDate, endDate, trainingDates: sortedDates });
 
