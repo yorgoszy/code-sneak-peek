@@ -14,7 +14,8 @@ import {
   ChevronRight,
   BarChart3,
   Home,
-  Mail
+  Mail,
+  CalendarCheck
 } from "lucide-react";
 
 interface SidebarProps {
@@ -33,6 +34,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     { icon: Activity, label: "Τεστ", path: "/dashboard/tests" },
     { icon: TrendingUp, label: "Αποτελέσματα", path: "/dashboard/results" },
     { icon: Calendar, label: "Προγράμματα", path: "/dashboard/programs" },
+    { icon: CalendarCheck, label: "Ενεργά Προγράμματα", path: "/dashboard/active-programs" },
   ];
 
   return (

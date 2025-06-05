@@ -15,6 +15,7 @@ import Results from "./pages/Results";
 import Programs from "./pages/Programs";
 import ProgramBuilder from "./pages/ProgramBuilder";
 import UserProfile from "./pages/UserProfile";
+import ActivePrograms from "./pages/ActivePrograms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -103,6 +104,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Programs />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/active-programs" 
+              element={
+                <ProtectedRoute>
+                  <ActivePrograms />
                 </ProtectedRoute>
               } 
             />
