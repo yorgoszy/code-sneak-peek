@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar as CalendarIcon, User, AlertTriangle, X } from "lucide-react";
@@ -23,6 +22,7 @@ interface ProgramAssignmentDialogProps {
     training_dates: string[];
     completedDates?: string[];
   };
+  preSelectedDates?: string[];
 }
 
 export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = ({
@@ -31,7 +31,8 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   program,
   users,
   onAssign,
-  editingAssignment
+  editingAssignment,
+  preSelectedDates = []
 }) => {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -45,6 +46,7 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   const selectedUser = users.find(user => user.id === selectedUserId);
   const completedDates = editingAssignment?.completedDates || [];
 
+  console.log('ProgramAssignmentDialog - preSelectedDates:', preSelectedDates);
   console.log('Program in assignment dialog:', program);
   console.log('Selected user ID:', selectedUserId);
   console.log('Found user:', selectedUser);
@@ -63,12 +65,20 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
         if (!isReassignment) {
           setSelectedDates(editingAssignment.training_dates || []);
         }
-      } else if (program.user_id) {
+      } else {
+        // Αν έχουμε προεπιλεγμένες ημερομηνίες, τις φορτώνουμε
+        if (preSelectedDates && preSelectedDates.length > 0) {
+          console.log('Loading pre-selected dates:', preSelectedDates);
+          setSelectedDates(preSelectedDates);
+        }
+        
         // Αν το πρόγραμμα έχει ήδη επιλεγμένο χρήστη, τον θέτουμε ως προεπιλογή
-        setSelectedUserId(program.user_id);
+        if (program.user_id) {
+          setSelectedUserId(program.user_id);
+        }
       }
     }
-  }, [isOpen, program.user_id, editingAssignment, isReassignment]);
+  }, [isOpen, program.user_id, editingAssignment, isReassignment, preSelectedDates]);
 
   // Αφαίρεση επιλεγμένης ημερομηνίας
   const removeSelectedDate = (dateToRemove: string) => {
@@ -171,6 +181,7 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   };
 
   const handleAssign = () => {
+    console.log('Assignment attempt with dates:', selectedDates);
     if (selectedUserId && selectedDates.length === totalRequiredSessions) {
       onAssign(selectedUserId, selectedDates);
       onClose();
@@ -243,9 +254,9 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
           )}
 
           {/* Επιλεγμένες Ημερομηνίες με δυνατότητα αφαίρεσης */}
-          {editingAssignment && selectedDates.length > 0 && (
+          {selectedDates.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Επιλεγμένες Ημερομηνίες</h3>
+              <h3 className="text-lg font-medium">Επιλεγμένες Ημερομηνίες ({selectedDates.length}/{totalRequiredSessions})</h3>
               <div className="flex flex-wrap gap-2">
                 {selectedDates.map(date => {
                   const isCompleted = completedDates.includes(date);
