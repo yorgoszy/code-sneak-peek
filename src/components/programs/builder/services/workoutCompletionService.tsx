@@ -23,9 +23,9 @@ export const workoutCompletionService = {
         week_number: weekNumber,
         day_number: dayNumber,
         scheduled_date: date,
-        completed_date: date, // Keep this as the scheduled date for reference
-        status: 'scheduled', // Changed from 'completed' to 'scheduled'
-        status_color: 'blue' // Changed from default to blue for scheduled
+        completed_date: null, // Null για μη ολοκληρωμένες προπονήσεις
+        status: 'pending', // Χρησιμοποιούμε 'pending' αντί για 'scheduled'
+        status_color: 'blue'
       };
     });
 
@@ -38,6 +38,6 @@ export const workoutCompletionService = {
       throw new Error('Σφάλμα κατά τη δημιουργία των προπονήσεων');
     }
 
-    console.log('✅ Workout completions created as scheduled:', workoutCompletions.length);
+    console.log('✅ Workout completions created as pending:', workoutCompletions.length);
   }
 };

@@ -38,9 +38,9 @@ export const useProgramWorkoutCompletions = () => {
               week_number: weekNumber,
               day_number: dayNumber,
               scheduled_date: scheduledDate,
-              completed_date: scheduledDate, // Keep this as reference
-              status: 'scheduled', // Changed from 'completed' to 'scheduled'
-              status_color: 'blue', // Blue for scheduled workouts
+              completed_date: null, // Null για μη ολοκληρωμένες προπονήσεις
+              status: 'pending', // Χρησιμοποιούμε 'pending' αντί για 'scheduled'
+              status_color: 'blue',
               notes: null,
               start_time: null,
               end_time: null,
@@ -52,7 +52,7 @@ export const useProgramWorkoutCompletions = () => {
         }
       }
 
-      console.log('💾 Inserting workout completions as scheduled:', completions);
+      console.log('💾 Inserting workout completions as pending:', completions);
 
       if (completions.length > 0) {
         const { data, error } = await supabase
@@ -65,7 +65,7 @@ export const useProgramWorkoutCompletions = () => {
           throw error;
         }
 
-        console.log('✅ Workout completions created successfully as scheduled:', data);
+        console.log('✅ Workout completions created successfully as pending:', data);
         return data;
       }
 
