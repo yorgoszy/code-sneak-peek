@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
+import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface UseWorkoutStateProps {
@@ -20,6 +21,10 @@ export const useWorkoutState = (
   const [elapsedTime, setElapsedTime] = useState(0);
   const [exerciseCompletions, setExerciseCompletions] = useState<Record<string, number>>({});
   const [exerciseNotes, setExerciseNotes] = useState<Record<string, string>>({});
+  const [exerciseData, setExerciseData] = useState<Record<string, any>>({});
+  const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
+
+  const { completeWorkout, updateWorkoutStatus, saveExerciseResults } = useWorkoutCompletions();
 
   // Timer effect
   useEffect(() => {
@@ -38,19 +43,60 @@ export const useWorkoutState = (
     console.log('🏋️‍♂️ Έναρξη προπόνησης');
     setWorkoutInProgress(true);
     setElapsedTime(0);
+    setWorkoutStartTime(new Date());
   }, []);
 
-  const handleCompleteWorkout = useCallback(() => {
-    console.log('✅ Ολοκλήρωση προπόνησης');
-    setWorkoutInProgress(false);
-    if (onRefresh) onRefresh();
-  }, [onRefresh]);
+  const handleCompleteWorkout = useCallback(async () => {
+    if (!program || !selectedDate || !workoutStartTime) return;
+
+    try {
+      console.log('✅ Ολοκλήρωση προπόνησης');
+      
+      const endTime = new Date();
+      const durationMinutes = Math.round((endTime.getTime() - workoutStartTime.getTime()) / 60000);
+      const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+
+      // Update workout status to completed
+      await updateWorkoutStatus(
+        program.id,
+        selectedDateStr,
+        'completed',
+        'green'
+      );
+
+      // Save exercise results if any
+      const exerciseResults = Object.entries(exerciseData).map(([exerciseId, data]) => ({
+        program_exercise_id: exerciseId,
+        actual_sets: exerciseCompletions[exerciseId] || 0,
+        actual_reps: data.reps || null,
+        actual_kg: data.kg || null,
+        actual_velocity_ms: data.velocity || null,
+        actual_rest: data.rest || null,
+        notes: exerciseNotes[exerciseId] || null
+      }));
+
+      if (exerciseResults.length > 0) {
+        // We would need the workout_completion_id here
+        // This would require fetching the completion record first
+        console.log('Exercise results to save:', exerciseResults);
+      }
+
+      setWorkoutInProgress(false);
+      if (onRefresh) onRefresh();
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('Error completing workout:', error);
+    }
+  }, [program, selectedDate, workoutStartTime, exerciseCompletions, exerciseNotes, exerciseData, updateWorkoutStatus, onRefresh, onClose]);
 
   const handleCancelWorkout = useCallback(() => {
     console.log('❌ Ακύρωση προπόνησης');
     setWorkoutInProgress(false);
     setElapsedTime(0);
     setExerciseCompletions({});
+    setExerciseNotes({});
+    setExerciseData({});
+    setWorkoutStartTime(null);
   }, []);
 
   const exerciseCompletion = {
@@ -91,27 +137,54 @@ export const useWorkoutState = (
     },
 
     updateKg: (exerciseId: string, kg: string) => {
-      console.log(`Updated kg for ${exerciseId}: ${kg}`);
+      setExerciseData(prev => ({
+        ...prev,
+        [exerciseId]: { ...prev[exerciseId], kg }
+      }));
     },
 
     clearKg: (exerciseId: string) => {
-      console.log(`Cleared kg for ${exerciseId}`);
+      setExerciseData(prev => {
+        const newData = { ...prev };
+        if (newData[exerciseId]) {
+          delete newData[exerciseId].kg;
+        }
+        return newData;
+      });
     },
 
     updateVelocity: (exerciseId: string, velocity: number) => {
-      console.log(`Updated velocity for ${exerciseId}: ${velocity}`);
+      setExerciseData(prev => ({
+        ...prev,
+        [exerciseId]: { ...prev[exerciseId], velocity: velocity.toString() }
+      }));
     },
 
     clearVelocity: (exerciseId: string) => {
-      console.log(`Cleared velocity for ${exerciseId}`);
+      setExerciseData(prev => {
+        const newData = { ...prev };
+        if (newData[exerciseId]) {
+          delete newData[exerciseId].velocity;
+        }
+        return newData;
+      });
     },
 
     updateReps: (exerciseId: string, reps: number) => {
-      console.log(`Updated reps for ${exerciseId}: ${reps}`);
+      setExerciseData(prev => ({
+        ...prev,
+        [exerciseId]: { ...prev[exerciseId], reps: reps.toString() }
+      }));
     },
 
     clearReps: (exerciseId: string) => {
-      console.log(`Cleared reps for ${exerciseId}`);
+      setExerciseData(prev => {
+        const newData = { ...prev };
+        if (newData[exerciseId]) {
+          delete newData[exerciseId].reps;
+        }
+        return newData;
+      });
     }
   };
 

@@ -528,6 +528,48 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_results: {
+        Row: {
+          actual_kg: string | null
+          actual_reps: string | null
+          actual_rest: string | null
+          actual_sets: number | null
+          actual_velocity_ms: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          program_exercise_id: string
+          updated_at: string
+          workout_completion_id: string
+        }
+        Insert: {
+          actual_kg?: string | null
+          actual_reps?: string | null
+          actual_rest?: string | null
+          actual_sets?: number | null
+          actual_velocity_ms?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          program_exercise_id: string
+          updated_at?: string
+          workout_completion_id: string
+        }
+        Update: {
+          actual_kg?: string | null
+          actual_reps?: string | null
+          actual_rest?: string | null
+          actual_sets?: number | null
+          actual_velocity_ms?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          program_exercise_id?: string
+          updated_at?: string
+          workout_completion_id?: string
+        }
+        Relationships: []
+      }
       exercise_to_category: {
         Row: {
           category_id: string
@@ -2087,6 +2129,7 @@ export type Database = {
           scheduled_date: string
           start_time: string | null
           status: string
+          status_color: string | null
           updated_at: string
           user_id: string
           week_number: number
@@ -2104,6 +2147,7 @@ export type Database = {
           scheduled_date: string
           start_time?: string | null
           status?: string
+          status_color?: string | null
           updated_at?: string
           user_id: string
           week_number: number
@@ -2121,6 +2165,7 @@ export type Database = {
           scheduled_date?: string
           start_time?: string | null
           status?: string
+          status_color?: string | null
           updated_at?: string
           user_id?: string
           week_number?: number

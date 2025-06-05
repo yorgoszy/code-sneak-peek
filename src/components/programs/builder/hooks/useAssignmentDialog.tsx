@@ -36,12 +36,12 @@ export const useAssignmentDialog = ({
       return date;
     }
     
-    // Χρησιμοποιούμε UTC για να αποφύγουμε timezone προβλήματα
-    const utcYear = date.getUTCFullYear();
-    const utcMonth = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const utcDay = String(date.getUTCDate()).padStart(2, '0');
+    // Χρησιμοποιούμε την τοπική ημερομηνία
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     
-    return `${utcYear}-${utcMonth}-${utcDay}`;
+    return `${year}-${month}-${day}`;
   };
 
   const handleOpenAssignments = async () => {
@@ -147,9 +147,9 @@ export const useAssignmentDialog = ({
         return;
       }
 
-      // Μετατροπή ημερομηνιών σε σωστό format με UTC
+      // Μετατροπή ημερομηνιών σε σωστό format
       const formattedTrainingDates = trainingDates.map(dateString => {
-        // Διασφαλίζουμε ότι οι ημερομηνίες είναι σε UTC format
+        // Διασφαλίζουμε ότι οι ημερομηνίες είναι σε σωστό format
         if (typeof dateString === 'string' && dateString.includes('T')) {
           // Αν έχει ήδη timestamp, παίρνουμε μόνο την ημερομηνία
           return dateString.split('T')[0];

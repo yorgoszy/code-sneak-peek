@@ -17,6 +17,21 @@ export interface WorkoutCompletion {
   start_time?: string;
   end_time?: string;
   actual_duration_minutes?: number;
+  status_color?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ExerciseResult {
+  id: string;
+  workout_completion_id: string;
+  program_exercise_id: string;
+  actual_sets?: number;
+  actual_reps?: string;
+  actual_kg?: string;
+  actual_velocity_ms?: string;
+  actual_rest?: string;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -74,6 +89,7 @@ export const useWorkoutCompletions = () => {
         scheduled_date: scheduledDate,
         completed_date: new Date().toISOString().split('T')[0],
         status: 'completed',
+        status_color: 'green',
         notes
       };
 
@@ -102,6 +118,93 @@ export const useWorkoutCompletions = () => {
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveExerciseResults = async (
+    workoutCompletionId: string,
+    exerciseResults: Omit<ExerciseResult, 'id' | 'workout_completion_id' | 'created_at' | 'updated_at'>[]
+  ) => {
+    try {
+      const resultsToInsert = exerciseResults.map(result => ({
+        ...result,
+        workout_completion_id: workoutCompletionId
+      }));
+
+      const { data, error } = await supabase
+        .from('exercise_results')
+        .insert(resultsToInsert)
+        .select();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving exercise results:', error);
+      throw error;
+    }
+  };
+
+  const getExerciseResults = async (workoutCompletionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('exercise_results')
+        .select('*')
+        .eq('workout_completion_id', workoutCompletionId);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching exercise results:', error);
+      return [];
+    }
+  };
+
+  const updateWorkoutStatus = async (
+    assignmentId: string,
+    scheduledDate: string,
+    status: 'completed' | 'missed' | 'makeup',
+    statusColor: string
+  ) => {
+    try {
+      const { data, error } = await supabase
+        .from('workout_completions')
+        .update({ 
+          status,
+          status_color: statusColor,
+          completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null
+        })
+        .eq('assignment_id', assignmentId)
+        .eq('scheduled_date', scheduledDate)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating workout status:', error);
+      throw error;
+    }
+  };
+
+  const markMissedWorkouts = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data, error } = await supabase
+        .from('workout_completions')
+        .update({ 
+          status: 'missed',
+          status_color: 'red'
+        })
+        .lt('scheduled_date', today)
+        .eq('status', 'scheduled')
+        .select();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error marking missed workouts:', error);
+      throw error;
     }
   };
 
@@ -140,6 +243,10 @@ export const useWorkoutCompletions = () => {
   return {
     loading,
     completeWorkout,
+    saveExerciseResults,
+    getExerciseResults,
+    updateWorkoutStatus,
+    markMissedWorkouts,
     getAssignmentAttendance,
     getWorkoutCompletions
   };
