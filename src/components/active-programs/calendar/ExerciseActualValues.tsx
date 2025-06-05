@@ -30,6 +30,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   const [actualKg, setActualKg] = useState('');
   const [actualReps, setActualReps] = useState('');
   const [actualVelocity, setActualVelocity] = useState('');
+  const [calculatedPercentage, setCalculatedPercentage] = useState('');
   const notes = getNotes(exercise.id);
 
   // Load data from previous week
@@ -41,6 +42,25 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
       if (data.velocity) setActualVelocity(data.velocity);
     }
   }, [selectedDate, program, exercise.id]);
+
+  // Calculate percentage when actual kg changes
+  useEffect(() => {
+    if (actualKg && exercise.kg) {
+      const plannedKg = parseFloat(exercise.kg);
+      const actualKgNum = parseFloat(actualKg);
+      const plannedPercentage = exercise.percentage_1rm || 0;
+      
+      if (plannedKg > 0 && actualKgNum > 0 && plannedPercentage > 0) {
+        // Calculate new percentage based on the ratio
+        const newPercentage = (actualKgNum / plannedKg) * plannedPercentage;
+        setCalculatedPercentage(Math.round(newPercentage).toString());
+      } else {
+        setCalculatedPercentage('');
+      }
+    } else {
+      setCalculatedPercentage('');
+    }
+  }, [actualKg, exercise.kg, exercise.percentage_1rm]);
 
   const handleKgChange = (value: string) => {
     setActualKg(value);
@@ -93,13 +113,19 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           type="number"
           value={actualReps}
           onChange={(e) => handleRepsChange(e.target.value)}
-          className="h-5 text-xs rounded-none text-center p-0"
+          className="h-5 text-xs rounded-none text-center p-0 text-red-600 font-medium"
           placeholder={exercise.reps || ''}
           disabled={!workoutInProgress}
         />
       </div>
       <div className="text-center">
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
+        {calculatedPercentage ? (
+          <div className="bg-red-50 px-1 py-0.5 rounded-none text-xs text-red-600 font-medium">
+            {calculatedPercentage}%
+          </div>
+        ) : (
+          <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
+        )}
       </div>
       <div className="text-center">
         <Input
@@ -107,7 +133,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           step="0.5"
           value={actualKg}
           onChange={(e) => handleKgChange(e.target.value)}
-          className="h-5 text-xs rounded-none text-center p-0"
+          className="h-5 text-xs rounded-none text-center p-0 text-red-600 font-medium"
           placeholder={exercise.kg || ''}
           disabled={!workoutInProgress}
         />
@@ -118,7 +144,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           step="0.01"
           value={actualVelocity}
           onChange={(e) => handleVelocityChange(e.target.value)}
-          className="h-5 text-xs rounded-none text-center p-0"
+          className="h-5 text-xs rounded-none text-center p-0 text-red-600 font-medium"
           placeholder={exercise.velocity_ms || ''}
           disabled={!workoutInProgress}
         />
@@ -134,7 +160,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
           placeholder={workoutInProgress ? "Notes..." : ""}
-          className="h-5 text-xs rounded-none resize-none p-0.5"
+          className="h-5 text-xs rounded-none resize-none p-0.5 text-red-600 font-medium"
           disabled={!workoutInProgress}
           rows={1}
         />
