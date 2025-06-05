@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -113,9 +112,6 @@ const Index = () => {
         programs={programs}
         translations={translations}
       />
-
-      {/* Transition Section with Black Gradient */}
-      <section className="h-32 bg-gradient-to-b from-black to-white"></section>
 
       <BlogSection 
         translations={translations}
