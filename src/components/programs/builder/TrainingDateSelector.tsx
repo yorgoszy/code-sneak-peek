@@ -19,10 +19,19 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
 }) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
 
+  // Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone issues
+  const formatDateToString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  };
+
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    const dateString = format(date, 'yyyy-MM-dd');
+    const dateString = formatDateToString(date);
     
     if (selectedDates.includes(dateString)) {
       // Remove date if already selected
@@ -42,7 +51,7 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   };
 
   const isDateSelected = (date: Date) => {
-    const dateString = format(date, 'yyyy-MM-dd');
+    const dateString = formatDateToString(date);
     return selectedDates.includes(dateString);
   };
 
@@ -73,7 +82,7 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
                 selected: isDateSelected
               }}
               modifiersClassNames={{
-                selected: "bg-blue-500 text-white hover:bg-blue-600"
+                selected: "bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
               }}
             />
           </div>

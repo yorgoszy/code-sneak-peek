@@ -1,6 +1,5 @@
-
-import { useState, useEffect } from 'react';
-import { format, parseISO, getWeek, getYear, startOfWeek, endOfWeek } from "date-fns";
+import { useState, useEffect, useMemo } from 'react';
+import { format, addDays, parseISO } from 'date-fns';
 import type { User as UserType } from '../../types';
 import type { ProgramStructure } from '../hooks/useProgramBuilderState';
 
@@ -25,136 +24,107 @@ export const useAssignmentDialogState = ({
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isReassignment, setIsReassignment] = useState(false);
 
-  // Υπολογισμός προγράμματος
-  const totalWeeks = program.weeks?.length || 0;
-  const daysPerWeek = program.weeks?.[0]?.days?.length || 0;
-  const totalRequiredSessions = totalWeeks * daysPerWeek;
+  // Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone issues
+  const formatDateToString = (date: Date): string => {
+    // Χρησιμοποιούμε τοπική ημερομηνία χωρίς timezone conversion
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  };
 
-  const selectedUser = users.find(user => user.id === selectedUserId);
-  const completedDates = editingAssignment?.completedDates || [];
-
+  // Reset state when dialog opens/closes
   useEffect(() => {
-    if (!isOpen) {
-      setSelectedDates([]);
-      setSelectedUserId('');
-      setIsReassignment(false);
-    } else {
+    if (isOpen) {
       if (editingAssignment) {
-        setSelectedUserId(editingAssignment.user_id);
-        if (!isReassignment) {
-          setSelectedDates(editingAssignment.training_dates || []);
-        }
-      } else if (program.user_id) {
-        setSelectedUserId(program.user_id);
+        setSelectedDates(editingAssignment.training_dates || []);
+        setSelectedUserId(editingAssignment.user_id || '');
+        setIsReassignment(false);
+      } else {
+        setSelectedDates([]);
+        setSelectedUserId('');
+        setIsReassignment(false);
       }
     }
-  }, [isOpen, program.user_id, editingAssignment, isReassignment]);
+  }, [isOpen, editingAssignment]);
+
+  const selectedUser = useMemo(() => {
+    return users.find(user => user.id === selectedUserId) || null;
+  }, [users, selectedUserId]);
+
+  // Completed dates from editing assignment
+  const completedDates = useMemo(() => {
+    return editingAssignment?.completedDates || [];
+  }, [editingAssignment]);
+
+  // Calculate program requirements
+  const totalRequiredSessions = useMemo(() => {
+    return program.weeks?.reduce((total, week) => total + (week.days?.length || 0), 0) || 0;
+  }, [program.weeks]);
+
+  const totalWeeks = program.weeks?.length || 0;
+  const daysPerWeek = program.weeks?.[0]?.days?.length || 0;
 
   const removeSelectedDate = (dateToRemove: string) => {
-    if (!completedDates.includes(dateToRemove)) {
-      setSelectedDates(selectedDates.filter(date => date !== dateToRemove));
-    }
+    setSelectedDates(prev => prev.filter(date => date !== dateToRemove));
   };
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    const dateString = format(date, 'yyyy-MM-dd');
+    // Χρησιμοποιούμε τη δική μας συνάρτηση formatting χωρίς timezone conversion
+    const dateString = formatDateToString(date);
     
-    if (completedDates.includes(dateString) && !isReassignment) {
-      return;
-    }
-    
-    if (selectedDates.includes(dateString)) {
-      setSelectedDates(selectedDates.filter(d => d !== dateString));
-      return;
-    }
-    
-    if (canAddDateToWeek(date)) {
-      setSelectedDates([...selectedDates, dateString].sort());
-    }
-  };
-
-  const canAddDateToWeek = (date: Date): boolean => {
-    if (selectedDates.length >= totalRequiredSessions) {
-      return false;
-    }
-    
-    // Βρίσκουμε ποια εβδομάδα είναι (0-based index)
-    const weekIndex = getWeekIndexForDate(date);
-    if (weekIndex === -1) return false;
-    
-    // Υπολογίζουμε πόσες προπονήσεις έχει η εβδομάδα αυτή
-    const weekDaysCount = program.weeks?.[weekIndex]?.days?.length || 0;
-    
-    // Μετράμε πόσες ημερομηνίες έχουμε ήδη επιλέξει για αυτή την εβδομάδα
-    const weekStart = startOfWeek(date, { weekStartsOn: 1 });
-    const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
-    
-    const datesInThisWeek = selectedDates.filter(selectedDate => {
-      const selectedDateObj = parseISO(selectedDate);
-      return selectedDateObj >= weekStart && selectedDateObj <= weekEnd;
+    setSelectedDates(prev => {
+      if (prev.includes(dateString)) {
+        // Remove date if already selected
+        return prev.filter(d => d !== dateString);
+      } else {
+        // Add date if not selected and under limit
+        if (prev.length < totalRequiredSessions) {
+          return [...prev, dateString].sort();
+        }
+        return prev;
+      }
     });
-    
-    return datesInThisWeek.length < weekDaysCount;
-  };
-
-  const getWeekIndexForDate = (date: Date): number => {
-    // Εδώ πρέπει να υπολογίσουμε ποια εβδομάδα του προγράμματος είναι
-    // Για απλότητα, θα χρησιμοποιήσουμε τη σειρά των εβδομάδων
-    if (!program.weeks || program.weeks.length === 0) return -1;
-    
-    // Αν έχουμε ήδη επιλεγμένες ημερομηνίες, βρίσκουμε την πρώτη
-    if (selectedDates.length > 0) {
-      const sortedDates = [...selectedDates].sort();
-      const firstDate = parseISO(sortedDates[0]);
-      
-      // Υπολογίζουμε τη διαφορά εβδομάδων
-      const weeksDiff = Math.floor((date.getTime() - firstDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
-      return Math.max(0, Math.min(weeksDiff, program.weeks.length - 1));
-    }
-    
-    // Αν δεν έχουμε επιλεγμένες ημερομηνίες, αρχίζουμε από την πρώτη εβδομάδα
-    return 0;
   };
 
   const clearAllDates = () => {
-    if (!isReassignment) {
-      setSelectedDates(selectedDates.filter(date => completedDates.includes(date)));
+    // Keep only completed dates if in editing mode and not reassigning
+    if (editingAssignment && !isReassignment) {
+      setSelectedDates(completedDates);
     } else {
       setSelectedDates([]);
     }
   };
 
-  const handleReassignmentToggle = (checked: boolean) => {
-    setIsReassignment(checked);
-    if (checked) {
+  const handleReassignmentToggle = (enabled: boolean) => {
+    setIsReassignment(enabled);
+    if (enabled) {
+      // Clear all dates for fresh assignment
       setSelectedDates([]);
     } else if (editingAssignment) {
+      // Restore original dates
       setSelectedDates(editingAssignment.training_dates || []);
     }
   };
 
   const isDateSelected = (date: Date) => {
-    const dateString = format(date, 'yyyy-MM-dd');
+    const dateString = formatDateToString(date);
     return selectedDates.includes(dateString);
   };
 
   const isDateDisabled = (date: Date) => {
-    // ΑΦΑΙΡΟΥΜΕ τον περιορισμό για προηγούμενες ημερομηνίες
-    // Επιτρέπουμε όλες τις ημερομηνίες (παρελθόν, παρόν, μέλλον)
-    
-    const dateString = format(date, 'yyyy-MM-dd');
-    
-    if (selectedDates.includes(dateString)) {
-      return false;
-    }
-
-    if (completedDates.includes(dateString) && !isReassignment) {
-      return true;
+    // Disable past dates for new assignments
+    if (!editingAssignment || isReassignment) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return date < today;
     }
     
-    return !canAddDateToWeek(date);
+    // For editing existing assignments, don't disable any dates
+    return false;
   };
 
   return {
