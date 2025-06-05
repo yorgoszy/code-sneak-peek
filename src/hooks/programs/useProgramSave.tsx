@@ -13,6 +13,31 @@ export const useProgramSave = () => {
     try {
       console.log('💾 Saving program:', programData);
 
+      // Διασφαλίζουμε ότι έχουμε training_dates
+      let trainingDatesArray = [];
+      if (programData.training_dates && Array.isArray(programData.training_dates)) {
+        trainingDatesArray = programData.training_dates.map(date => {
+          if (typeof date === 'string') {
+            return date;
+          } else if (date instanceof Date) {
+            return date.toISOString().split('T')[0];
+          } else {
+            return new Date(date).toISOString().split('T')[0];
+          }
+        });
+      } else if (programData.weeks && programData.weeks.length > 0) {
+        // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
+        const totalDays = programData.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
+        const today = new Date();
+        trainingDatesArray = [];
+        for (let i = 0; i < totalDays; i++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() + i);
+          trainingDatesArray.push(date.toISOString().split('T')[0]);
+        }
+        console.log('📅 Auto-generated training dates:', trainingDatesArray);
+      }
+
       // Βασικά δεδομένα προγράμματος
       const programPayload = {
         name: programData.name,
@@ -40,6 +65,14 @@ export const useProgramSave = () => {
         if (error) throw error;
         savedProgram = data;
 
+        // Ενημέρωση των training_dates στα program_assignments αν υπάρχουν
+        if (trainingDatesArray.length > 0) {
+          await supabase
+            .from('program_assignments')
+            .update({ training_dates: trainingDatesArray })
+            .eq('program_id', programData.id);
+        }
+
         // Διαγραφή υπάρχουσας δομής πριν την αναδημιουργία
         await deleteExistingStructure(programData.id);
       } else {
@@ -65,7 +98,11 @@ export const useProgramSave = () => {
         console.log('✅ Program structure created');
       }
 
-      return savedProgram;
+      // Επιστρέφουμε το πρόγραμμα με τις ημερομηνίες
+      return {
+        ...savedProgram,
+        training_dates: trainingDatesArray
+      };
     } catch (error) {
       console.error('❌ Error saving program:', error);
       toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');

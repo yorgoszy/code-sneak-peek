@@ -34,7 +34,6 @@ export const useAssignmentDialog = ({
     try {
       console.log('🔄 Opening assignments dialog - Current program state:', program);
       console.log('🔄 Current program ID:', currentProgramId);
-      console.log('🔄 Program object:', program);
       
       if (!program) {
         console.error('❌ No program object found');
@@ -54,7 +53,21 @@ export const useAssignmentDialog = ({
 
       // Έλεγχος αν υπάρχουν επαρκείς ημερομηνίες
       const totalDays = program.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
-      if (!program.training_dates || program.training_dates.length < totalDays) {
+      
+      // Αν δεν υπάρχουν training_dates, χρησιμοποιούμε την σημερινή ημερομηνία
+      let trainingDates = program.training_dates || [];
+      if (!trainingDates || trainingDates.length === 0) {
+        const today = new Date();
+        trainingDates = [];
+        for (let i = 0; i < totalDays; i++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() + i);
+          trainingDates.push(date.toISOString().split('T')[0]);
+        }
+        console.log('📅 Generated training dates:', trainingDates);
+      }
+
+      if (trainingDates.length < totalDays) {
         toast.error(`Παρακαλώ επιλέξτε ${totalDays} ημερομηνίες προπόνησης`);
         return;
       }
@@ -67,7 +80,7 @@ export const useAssignmentDialog = ({
         console.log('📝 No program ID found, saving program first...');
         
         // Μετατροπή training_dates σε string array για την αποθήκευση
-        const trainingDatesStrings = program.training_dates.map(date => 
+        const trainingDatesStrings = trainingDates.map(date => 
           typeof date === 'string' ? date : date.toISOString().split('T')[0]
         );
 

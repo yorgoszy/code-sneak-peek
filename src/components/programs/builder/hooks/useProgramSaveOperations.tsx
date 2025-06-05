@@ -32,10 +32,23 @@ export const useProgramSaveOperations = ({
 
       // Μετατροπή training_dates σε string array για την αποθήκευση
       let trainingDatesStrings: string[] = [];
-      if (program.training_dates) {
-        trainingDatesStrings = program.training_dates.map(date => 
-          typeof date === 'string' ? date : date.toISOString().split('T')[0]
-        );
+      if (program.training_dates && program.training_dates.length > 0) {
+        trainingDatesStrings = program.training_dates.map(date => {
+          if (typeof date === 'string') {
+            return date;
+          } else if (date instanceof Date) {
+            return date.toISOString().split('T')[0];
+          } else {
+            return new Date(date).toISOString().split('T')[0];
+          }
+        });
+      }
+
+      // Αν δεν υπάρχουν ημερομηνίες, βάζουμε την σημερινή
+      if (trainingDatesStrings.length === 0) {
+        const today = new Date().toISOString().split('T')[0];
+        trainingDatesStrings = [today];
+        console.log('📅 No training dates found, using today:', today);
       }
 
       const savedProgram = await onCreateProgram({
