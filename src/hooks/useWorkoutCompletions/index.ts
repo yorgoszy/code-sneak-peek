@@ -49,7 +49,7 @@ export const useWorkoutCompletions = () => {
   const handleUpdateWorkoutStatus = async (
     assignmentId: string,
     scheduledDate: string,
-    status: 'completed' | 'missed' | 'makeup' | 'scheduled',
+    status: 'completed' | 'missed' | 'makeup' | 'pending' | 'cancelled',
     statusColor: string
   ) => {
     if (!user?.id) throw new Error('User not authenticated');
