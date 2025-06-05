@@ -10,7 +10,7 @@ interface ArticleCardProps {
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article, onReadMore, translations }) => {
   return (
-    <article className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
+    <article className="bg-[#edebeb] rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
       <img 
         src={article.image} 
         alt={article.title}
