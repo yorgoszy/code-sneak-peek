@@ -36,31 +36,31 @@ const ActivePrograms = () => {
   });
 
   // Φόρτωση workout completions για όλα τα assignments
-  useEffect(() => {
-    const loadCompletions = async () => {
-      if (activePrograms.length === 0) return;
-      
-      try {
-        const allCompletions = [];
-        for (const assignment of activePrograms) {
-          const completions = await getWorkoutCompletions(assignment.id);
-          allCompletions.push(...completions);
-        }
-        setWorkoutCompletions(allCompletions);
-      } catch (error) {
-        console.error('Error loading workout completions:', error);
+  const loadCompletions = async () => {
+    if (activePrograms.length === 0) return;
+    
+    try {
+      const allCompletions = [];
+      for (const assignment of activePrograms) {
+        const completions = await getWorkoutCompletions(assignment.id);
+        allCompletions.push(...completions);
       }
-    };
+      setWorkoutCompletions(allCompletions);
+    } catch (error) {
+      console.error('Error loading workout completions:', error);
+    }
+  };
 
+  useEffect(() => {
     loadCompletions();
   }, [activePrograms, getWorkoutCompletions]);
 
-  // Realtime subscription για workout_completions με άμεση ενημέρωση
+  // Enhanced realtime subscription για άμεση ενημέρωση
   useEffect(() => {
-    console.log('🔄 Setting up realtime subscription for workout completions...');
+    console.log('🔄 Setting up enhanced realtime subscription...');
     
     const channel = supabase
-      .channel('workout-completions-changes')
+      .channel('workout-completions-realtime')
       .on(
         'postgres_changes',
         {
@@ -68,31 +68,23 @@ const ActivePrograms = () => {
           schema: 'public',
           table: 'workout_completions'
         },
-        (payload) => {
-          console.log('✅ Workout completion change detected:', payload);
-          // Άμεση ενημέρωση των προγραμμάτων και completions
-          refetch();
+        async (payload) => {
+          console.log('✅ Real-time workout completion change:', payload);
+          
+          // Άμεση ενημέρωση των προγραμμάτων
+          await refetch();
+          
           // Άμεση επανάφορτωση των completions
-          if (activePrograms.length > 0) {
-            const loadCompletions = async () => {
-              const allCompletions = [];
-              for (const assignment of activePrograms) {
-                const completions = await getWorkoutCompletions(assignment.id);
-                allCompletions.push(...completions);
-              }
-              setWorkoutCompletions(allCompletions);
-            };
-            loadCompletions();
-          }
+          await loadCompletions();
         }
       )
       .subscribe();
 
     return () => {
-      console.log('🔌 Cleaning up workout completions subscription...');
+      console.log('🔌 Cleaning up enhanced realtime subscription...');
       supabase.removeChannel(channel);
     };
-  }, [refetch, activePrograms, getWorkoutCompletions]);
+  }, [refetch, loadCompletions]);
 
   // Υπολογίζουμε τα stats
   const stats = {
@@ -187,7 +179,7 @@ const ActivePrograms = () => {
           ))}
         </div>
 
-        {/* Calendar Grid */}
+        {/* Calendar Grid - Increased height for 5 names */}
         <div className="grid grid-cols-7 border border-gray-200">
           {days.map((date) => {
             const dateStr = format(date, 'yyyy-MM-dd');
@@ -200,7 +192,7 @@ const ActivePrograms = () => {
               <div
                 key={dateStr}
                 className={`
-                  h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
+                  h-32 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
                   ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
                   ${isSelected ? 'bg-[#00ffba] text-black' : ''}
                   ${isToday && !isSelected ? 'bg-gray-100' : ''}
@@ -213,20 +205,20 @@ const ActivePrograms = () => {
                   {date.getDate()}
                 </div>
                 
-                {/* User Names - Centered in the middle */}
-                <div className="h-full flex flex-col items-center justify-center space-y-1 px-1">
-                  {dateProgramsWithStatus.slice(0, 2).map((program, i) => (
+                {/* User Names - Centered in the middle with more space */}
+                <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-6 pb-2">
+                  {dateProgramsWithStatus.slice(0, 5).map((program, i) => (
                     <div 
                       key={i} 
-                      className={`text-xs font-medium cursor-pointer hover:underline truncate ${getNameColor(program.status)}`}
+                      className={`text-xs font-medium cursor-pointer hover:underline truncate w-full text-center ${getNameColor(program.status)}`}
                       onClick={(e) => handleNameClick(program, e)}
                     >
                       {program.userName.split(' ')[0]}
                     </div>
                   ))}
-                  {dateProgramsWithStatus.length > 2 && (
+                  {dateProgramsWithStatus.length > 5 && (
                     <div className="text-xs text-gray-500">
-                      +{dateProgramsWithStatus.length - 2}
+                      +{dateProgramsWithStatus.length - 5}
                     </div>
                   )}
                 </div>
