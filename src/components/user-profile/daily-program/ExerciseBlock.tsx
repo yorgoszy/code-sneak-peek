@@ -36,7 +36,7 @@ interface Block {
 
 interface ExerciseBlockProps {
   blocks: Block[];
-  viewOnly?: boolean; // Νέα prop για να ξέρουμε αν είναι μόνο για προβολή
+  viewOnly?: boolean;
 }
 
 export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly = false }) => {
@@ -63,25 +63,49 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
     completeSet(exercise.id, exercise.sets);
   };
 
+  const handleVideoClick = (exercise: Exercise) => {
+    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+      setSelectedExercise(exercise);
+      setIsVideoDialogOpen(true);
+    }
+  };
+
   const renderVideoThumbnail = (exercise: Exercise) => {
     const videoUrl = exercise.exercises?.video_url;
     if (!videoUrl || !isValidVideoUrl(videoUrl)) {
-      return (
-        <div className="w-12 h-8 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
-          <span className="text-xs text-gray-400">-</span>
-        </div>
-      );
+      return null;
     }
 
     const thumbnailUrl = getVideoThumbnail(videoUrl);
     
     return (
-      <div className="relative w-12 h-8 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail">
+      <div 
+        className="relative w-12 h-8 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail mr-2"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleVideoClick(exercise);
+        }}
+      >
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
             alt={`${exercise.exercises?.name} thumbnail`}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              // Fallback αν δεν φορτώσει το thumbnail
+              const target = e.target as HTMLElement;
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                parent.innerHTML = `
+                  <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                `;
+              }
+            }}
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -125,11 +149,8 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
                       } ${isComplete ? 'bg-green-50' : ''}`}
                       onClick={(e) => handleExerciseClick(exercise, e)}
                     >
-                      <div className="flex-shrink-0">
+                      <div className="flex items-center flex-1 min-w-0">
                         {renderVideoThumbnail(exercise)}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
                         <h6 className={`text-xs font-medium truncate ${
                           isComplete ? 'text-green-800' : 'text-gray-900'
                         }`}>
@@ -244,11 +265,8 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
                         } ${isComplete ? 'bg-green-50' : ''}`}
                         onClick={(e) => handleExerciseClick(exercise, e)}
                       >
-                        <div className="flex-shrink-0">
+                        <div className="flex items-center flex-1 min-w-0">
                           {renderVideoThumbnail(exercise)}
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
                           <h6 className={`text-xs font-medium truncate ${
                             isComplete ? 'text-green-800' : 'text-gray-900'
                           }`}>
