@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
@@ -54,11 +53,22 @@ export const useAssignmentDialog = ({
       // Έλεγχος αν υπάρχουν επαρκείς ημερομηνίες
       const totalDays = program.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
       
-      // Αν δεν υπάρχουν training_dates, χρησιμοποιούμε την σημερινή ημερομηνία
-      let trainingDates = program.training_dates || [];
-      if (!trainingDates || trainingDates.length === 0) {
+      // Διασφαλίζουμε ότι έχουμε training_dates σε string format
+      let trainingDates: string[] = [];
+      if (program.training_dates && program.training_dates.length > 0) {
+        trainingDates = program.training_dates.map(date => {
+          if (typeof date === 'string') {
+            return date;
+          } else if (date instanceof Date) {
+            return date.toISOString().split('T')[0];
+          } else {
+            // Handle any other date format
+            return new Date(date).toISOString().split('T')[0];
+          }
+        });
+      } else {
+        // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
         const today = new Date();
-        trainingDates = [];
         for (let i = 0; i < totalDays; i++) {
           const date = new Date(today);
           date.setDate(today.getDate() + i);
@@ -79,15 +89,10 @@ export const useAssignmentDialog = ({
       if (!programId) {
         console.log('📝 No program ID found, saving program first...');
         
-        // Μετατροπή training_dates σε string array για την αποθήκευση
-        const trainingDatesStrings = trainingDates.map(date => 
-          typeof date === 'string' ? date : date.toISOString().split('T')[0]
-        );
-
         // Αποθήκευση του προγράμματος ως ενεργό
         const savedProgram = await onCreateProgram({
           ...program,
-          training_dates: trainingDatesStrings,
+          training_dates: trainingDates,
           status: 'active'
         });
         
