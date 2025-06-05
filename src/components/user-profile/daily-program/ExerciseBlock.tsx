@@ -1,334 +1,120 @@
 
-import React, { useState } from 'react';
-import { Play } from 'lucide-react';
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React from 'react';
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, Target, Zap, Play } from "lucide-react";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
-import { ExerciseVideoDialog } from './ExerciseVideoDialog';
-import { useExerciseCompletion } from '@/hooks/useExerciseCompletion';
-
-interface Exercise {
-  id: string;
-  exercise_id: string;
-  sets: number;
-  reps: string;
-  kg?: string;
-  percentage_1rm?: number;
-  velocity_ms?: number;
-  tempo?: string;
-  rest?: string;
-  notes?: string;
-  exercise_order: number;
-  exercises?: {
-    id: string;
-    name: string;
-    description?: string;
-    video_url?: string;
-  };
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  program_exercises: Exercise[];
-}
+import type { ProgramBlock } from './types';
 
 interface ExerciseBlockProps {
-  blocks: Block[];
-  viewOnly?: boolean; // Νέα prop για να ξέρουμε αν είναι μόνο για προβολή
+  blocks: ProgramBlock[];
+  viewOnly?: boolean;
+  showVideoThumbnails?: boolean;
 }
 
-export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly = false }) => {
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
-  const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
-  const { completeSet, getRemainingText, isExerciseComplete } = useExerciseCompletion();
-
-  const handleExerciseClick = (exercise: Exercise, event: React.MouseEvent) => {
-    // Αν κλικάρουμε στο video thumbnail, ανοίγει το video
-    if ((event.target as HTMLElement).closest('.video-thumbnail')) {
-      if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-        setSelectedExercise(exercise);
-        setIsVideoDialogOpen(true);
-      }
-      return;
-    }
-
-    // Αν είναι μόνο για προβολή, δεν κάνουμε τίποτα άλλο
-    if (viewOnly) {
-      return;
-    }
-
-    // Αλλιώς, ολοκληρώνουμε ένα σετ
-    completeSet(exercise.id, exercise.sets);
-  };
-
-  const renderVideoThumbnail = (exercise: Exercise) => {
-    const videoUrl = exercise.exercises?.video_url;
-    if (!videoUrl || !isValidVideoUrl(videoUrl)) {
-      return (
-        <div className="w-8 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
-          <span className="text-xs text-gray-400">-</span>
-        </div>
-      );
-    }
-
-    const thumbnailUrl = getVideoThumbnail(videoUrl);
-    
-    return (
-      <div className="relative w-8 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail">
-        {thumbnailUrl ? (
-          <img
-            src={thumbnailUrl}
-            alt={`${exercise.exercises?.name} thumbnail`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <Play className="w-2 h-2 text-gray-400" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Play className="w-2 h-2 text-white" />
-        </div>
-      </div>
-    );
-  };
-
-  if (!blocks || blocks.length === 0) {
-    return null;
-  }
-
-  // Αν έχουμε μόνο ένα block, το εμφανίζουμε χωρίς tabs
-  if (blocks.length === 1) {
-    const block = blocks[0];
-    return (
-      <>
-        <div className="bg-gray-700 rounded-none p-2 mb-1">
-          <h6 className="text-xs font-medium text-white mb-1">
-            {block.name}
-          </h6>
-          
-          <div className="space-y-0">
-            {block.program_exercises
-              .sort((a, b) => a.exercise_order - b.exercise_order)
-              .map((exercise) => {
-                const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
-                const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
-                
-                return (
-                  <div key={exercise.id} className="bg-white rounded-none">
-                    {/* Exercise Header */}
-                    <div 
-                      className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
-                        viewOnly ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50'
-                      } ${isComplete ? 'bg-green-50' : ''}`}
-                      onClick={(e) => handleExerciseClick(exercise, e)}
-                    >
-                      <div className="flex-shrink-0">
-                        {renderVideoThumbnail(exercise)}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h6 className={`text-xs font-medium truncate ${
-                          isComplete ? 'text-green-800' : 'text-gray-900'
-                        }`}>
-                          {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-                        </h6>
-                      </div>
-                    </div>
-                    
-                    {/* Exercise Details Grid */}
-                    <div className="p-1 bg-gray-50">
-                      <div className="flex text-xs" style={{ width: '70%' }}>
-                        <div className="flex-1 text-center">
-                          <div className="font-medium text-gray-600 mb-1">Sets</div>
-                          <div className={`${isComplete ? 'text-green-700 font-semibold' : 'text-gray-900'}`}>
-                            {exercise.sets || '-'}{remainingText}
-                          </div>
-                        </div>
-                        
-                        <Separator orientation="vertical" className="h-10 mx-1" />
-                        
-                        <div className="flex-1 text-center">
-                          <div className="font-medium text-gray-600 mb-1">Reps</div>
-                          <div className="text-gray-900">{exercise.reps || '-'}</div>
-                        </div>
-                        
-                        <Separator orientation="vertical" className="h-10 mx-1" />
-                        
-                        <div className="flex-1 text-center">
-                          <div className="font-medium text-gray-600 mb-1">%1RM</div>
-                          <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
-                        </div>
-                        
-                        <Separator orientation="vertical" className="h-10 mx-1" />
-                        
-                        <div className="flex-1 text-center">
-                          <div className="font-medium text-gray-600 mb-1">Kg</div>
-                          <div className="text-gray-900">{exercise.kg || '-'}</div>
-                        </div>
-                        
-                        <Separator orientation="vertical" className="h-10 mx-1" />
-                        
-                        <div className="flex-1 text-center">
-                          <div className="font-medium text-gray-600 mb-1">m/s</div>
-                          <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
-                        </div>
-                        
-                        <Separator orientation="vertical" className="h-10 mx-1" />
-                        
-                        <div className="flex-1 text-center">
-                          <div className="font-medium text-gray-600 mb-1">Tempo</div>
-                          <div className="text-gray-900">{exercise.tempo || '-'}</div>
-                        </div>
-                        
-                        <Separator orientation="vertical" className="h-10 mx-1" />
-                        
-                        <div className="flex-1 text-center">
-                          <div className="font-medium text-gray-600 mb-1">Rest</div>
-                          <div className="text-gray-900">{exercise.rest || '-'}</div>
-                        </div>
-                      </div>
-                      
-                      {exercise.notes && (
-                        <div className="mt-1 text-xs text-gray-600 italic">
-                          {exercise.notes}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-
-        <ExerciseVideoDialog
-          isOpen={isVideoDialogOpen}
-          onClose={() => setIsVideoDialogOpen(false)}
-          exercise={selectedExercise}
-        />
-      </>
-    );
-  }
-
-  // Αν έχουμε πολλαπλά blocks, τα εμφανίζουμε ως tabs
+export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ 
+  blocks, 
+  viewOnly = false,
+  showVideoThumbnails = false 
+}) => {
   return (
-    <>
-      <Tabs defaultValue={blocks[0]?.id} className="w-full">
-        <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
-          {blocks
-            .sort((a, b) => a.block_order - b.block_order)
-            .map((block) => (
-              <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
-                {block.name}
-              </TabsTrigger>
-            ))}
-        </TabsList>
-        
-        {blocks.map((block) => (
-          <TabsContent key={block.id} value={block.id} className="mt-2">
-            <div className="space-y-0">
-              {block.program_exercises
-                .sort((a, b) => a.exercise_order - b.exercise_order)
-                .map((exercise) => {
-                  const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
-                  const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
-                  
-                  return (
-                    <div key={exercise.id} className="bg-white rounded-none border border-gray-200">
-                      {/* Exercise Header */}
-                      <div 
-                        className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
-                          viewOnly ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50'
-                        } ${isComplete ? 'bg-green-50' : ''}`}
-                        onClick={(e) => handleExerciseClick(exercise, e)}
-                      >
-                        <div className="flex-shrink-0">
-                          {renderVideoThumbnail(exercise)}
+    <div className="space-y-4">
+      {blocks?.map((block) => (
+        <Card key={block.id} className="rounded-none">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-900">{block.name}</h3>
+              {block.rest_between_exercises && (
+                <Badge variant="outline" className="rounded-none text-xs">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {block.rest_between_exercises}s διάλειμμα
+                </Badge>
+              )}
+            </div>
+            
+            <div className="space-y-3">
+              {block.program_exercises?.map((exercise) => (
+                <div key={exercise.id} className="border border-gray-200 rounded-none p-3">
+                  <div className="flex items-start gap-3">
+                    {/* Video Thumbnail */}
+                    {showVideoThumbnails && exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url) && (
+                      <div className="relative flex-shrink-0">
+                        <div className="w-16 h-12 bg-gray-100 border border-gray-200 rounded-none overflow-hidden">
+                          <img
+                            src={getVideoThumbnail(exercise.exercises.video_url) || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=64&h=48&fit=crop&crop=center'}
+                            alt={exercise.exercises?.name || 'Video thumbnail'}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback to placeholder image
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=64&h=48&fit=crop&crop=center';
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                            <Play className="w-4 h-4 text-white" />
+                          </div>
                         </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <h6 className={`text-xs font-medium truncate ${
-                            isComplete ? 'text-green-800' : 'text-gray-900'
-                          }`}>
-                            {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-                          </h6>
+                      </div>
+                    )}
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-gray-900 truncate">
+                          {exercise.exercises?.name || 'Άσκηση'}
+                        </h4>
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          {exercise.order && (
+                            <span>#{exercise.order}</span>
+                          )}
                         </div>
                       </div>
                       
-                      {/* Exercise Details Grid */}
-                      <div className="p-1 bg-gray-50">
-                        <div className="flex text-xs" style={{ width: '70%' }}>
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Sets</div>
-                            <div className={`${isComplete ? 'text-green-700 font-semibold' : 'text-gray-900'}`}>
-                              {exercise.sets || '-'}{remainingText}
-                            </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                        {exercise.sets && (
+                          <div className="flex items-center gap-1">
+                            <Target className="w-3 h-3" />
+                            <span>{exercise.sets} sets</span>
                           </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Reps</div>
-                            <div className="text-gray-900">{exercise.reps || '-'}</div>
+                        )}
+                        {exercise.reps && (
+                          <div className="flex items-center gap-1">
+                            <span>{exercise.reps} reps</span>
                           </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">%1RM</div>
-                            <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
+                        )}
+                        {exercise.kg && (
+                          <div className="flex items-center gap-1">
+                            <span>{exercise.kg} kg</span>
                           </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Kg</div>
-                            <div className="text-gray-900">{exercise.kg || '-'}</div>
+                        )}
+                        {exercise.rest_seconds && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{exercise.rest_seconds}s</span>
                           </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">m/s</div>
-                            <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
+                        )}
+                        {exercise.tempo && (
+                          <div className="flex items-center gap-1">
+                            <Zap className="w-3 h-3" />
+                            <span>{exercise.tempo}</span>
                           </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Tempo</div>
-                            <div className="text-gray-900">{exercise.tempo || '-'}</div>
-                          </div>
-                          
-                          <Separator orientation="vertical" className="h-10 mx-1" />
-                          
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-gray-600 mb-1">Rest</div>
-                            <div className="text-gray-900">{exercise.rest || '-'}</div>
-                          </div>
-                        </div>
-                        
-                        {exercise.notes && (
-                          <div className="mt-1 text-xs text-gray-600 italic">
-                            {exercise.notes}
+                        )}
+                        {exercise.velocity && (
+                          <div className="flex items-center gap-1">
+                            <span>{exercise.velocity} m/s</span>
                           </div>
                         )}
                       </div>
+                      
+                      {exercise.notes && (
+                        <p className="text-xs text-gray-600 mt-2">{exercise.notes}</p>
+                      )}
                     </div>
-                  );
-                })}
+                  </div>
+                </div>
+              ))}
             </div>
-          </TabsContent>
-        ))}
-      </Tabs>
-
-      <ExerciseVideoDialog
-        isOpen={isVideoDialogOpen}
-        onClose={() => setIsVideoDialogOpen(false)}
-        exercise={selectedExercise}
-      />
-    </>
+          </div>
+        </Card>
+      ))}
+    </div>
   );
 };
