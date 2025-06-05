@@ -16,21 +16,23 @@ const ActivePrograms = () => {
     if (pendingAssignment) {
       try {
         const assignmentData = JSON.parse(pendingAssignment);
-        console.log('Received assignment data:', assignmentData);
+        console.log('📨 Λήψη δεδομένων ανάθεσης:', assignmentData);
         
         // Προσθέτουμε το νέο πρόγραμμα στη λίστα
-        setAssignedPrograms(prev => [...prev, {
-          id: Date.now(), // Προσωρινό ID
-          program: assignmentData.program,
-          trainingDates: assignmentData.trainingDates,
-          userId: assignmentData.selectedUserId,
-          assignedAt: new Date()
-        }]);
+        setAssignedPrograms(prev => {
+          // Ελέγχουμε αν το πρόγραμμα υπάρχει ήδη
+          const exists = prev.some(p => p.id === assignmentData.id);
+          if (!exists) {
+            console.log('✅ Προσθήκη νέου προγράμματος στη λίστα');
+            return [...prev, assignmentData];
+          }
+          return prev;
+        });
         
         // Καθαρίζουμε το localStorage
         localStorage.removeItem('pendingAssignment');
       } catch (error) {
-        console.error('Error parsing assignment data:', error);
+        console.error('❌ Σφάλμα κατά την ανάγνωση των δεδομένων ανάθεσης:', error);
       }
     }
   }, []);
@@ -40,14 +42,10 @@ const ActivePrograms = () => {
     if (!selectedDate || !assignment.trainingDates) return false;
     
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-    return assignment.trainingDates.some((dateStr: string) => {
-      // Αν είναι Date object, μετατρέπουμε σε string
-      if (typeof dateStr === 'object') {
-        return format(new Date(dateStr), 'yyyy-MM-dd') === selectedDateStr;
-      }
-      return dateStr === selectedDateStr;
-    });
+    return assignment.trainingDates.includes(selectedDateStr);
   });
+
+  console.log('📅 Προγράμματα για την επιλεγμένη ημερομηνία:', programsForSelectedDate);
 
   return (
     <div className="flex-1 p-6 bg-gray-50">
@@ -137,6 +135,9 @@ const ActivePrograms = () => {
                             <p className="text-xs text-gray-500">
                               Σύνολο ημερών: {assignment.program.weeks.reduce((total: number, week: any) => total + (week.days?.length || 0), 0)}
                             </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Ημερομηνίες προπόνησης: {assignment.trainingDates?.length || 0}
+                            </p>
                           </div>
                         )}
                       </CardContent>
@@ -153,6 +154,26 @@ const ActivePrograms = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Debug Info */}
+        {assignedPrograms.length > 0 && (
+          <Card className="rounded-none">
+            <CardHeader>
+              <CardTitle className="text-sm">Πληροφορίες Debug</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-gray-500">
+                Συνολικά ανατεθειμένα προγράμματα: {assignedPrograms.length}
+              </p>
+              <details className="mt-2">
+                <summary className="text-xs cursor-pointer">Εμφάνιση λεπτομερειών</summary>
+                <pre className="text-xs mt-2 bg-gray-100 p-2 rounded overflow-auto">
+                  {JSON.stringify(assignedPrograms, null, 2)}
+                </pre>
+              </details>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

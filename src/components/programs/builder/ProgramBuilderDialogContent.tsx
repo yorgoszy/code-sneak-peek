@@ -81,45 +81,56 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   const selectedDatesCount = program.training_dates?.length || 0;
   const hasRequiredDates = selectedDatesCount >= totalDays;
 
-  const handleAssignment = async () => {
-    console.log('🔄 Starting assignment process...');
+  const handleAssignment = () => {
+    console.log('🔄 Ξεκινάει η διαδικασία ανάθεσης...');
     
     // Έλεγχος απαραίτητων πεδίων
     if (!program.name?.trim()) {
-      console.error('❌ Program name is required');
+      console.error('❌ Το όνομα του προγράμματος είναι υποχρεωτικό');
       return;
     }
     
     if (!program.user_id) {
-      console.error('❌ User selection is required');
+      console.error('❌ Η επιλογή αθλητή είναι υποχρεωτική');
       return;
     }
     
     if (totalDays === 0) {
-      console.error('❌ No training days found');
+      console.error('❌ Δεν βρέθηκαν ημέρες προπόνησης');
       return;
     }
     
     if (!hasRequiredDates) {
-      console.error('❌ Not enough training dates selected');
+      console.error('❌ Δεν έχουν επιλεγεί αρκετές ημερομηνίες προπόνησης');
       return;
     }
     
-    // Στέλνουμε τα δεδομένα στο localStorage για να τα διαβάσει το ActivePrograms
+    // Μετατροπή των ημερομηνιών σε strings για αποθήκευση
+    const trainingDatesStrings = (program.training_dates || []).map(date => {
+      if (date instanceof Date) {
+        return date.toISOString().split('T')[0]; // μόνο η ημερομηνία YYYY-MM-DD
+      }
+      return date;
+    });
+    
+    // Δημιουργία του assignment
     const assignmentData = {
+      id: Date.now(), // Προσωρινό ID
       program: {
         ...program,
-        status: 'active' // Σημαντικό: βάζουμε το status ως active
+        status: 'active'
       },
-      trainingDates: program.training_dates,
-      selectedUserId: program.user_id,
+      trainingDates: trainingDatesStrings,
+      userId: program.user_id,
       assignedAt: new Date().toISOString()
     };
     
-    console.log('📤 Sending assignment data:', assignmentData);
+    console.log('📤 Αποστολή δεδομένων ανάθεσης:', assignmentData);
+    
+    // Αποθήκευση στο localStorage
     localStorage.setItem('pendingAssignment', JSON.stringify(assignmentData));
     
-    // Πλοηγούμαστε στο ActivePrograms
+    // Πλοήγηση στα Ενεργά Προγράμματα
     navigate('/dashboard/active-programs');
   };
 
