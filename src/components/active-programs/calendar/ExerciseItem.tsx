@@ -82,6 +82,10 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           updateReps={updateReps}
           updateKg={updateKg}
           updateVelocity={updateVelocity}
+          getNotes={getNotes}
+          updateNotes={updateNotes}
+          selectedDate={selectedDate}
+          program={program}
         />
 
         <ExerciseNotes

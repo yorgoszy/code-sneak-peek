@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,7 +107,7 @@ const ActivePrograms = () => {
           date: dateStr,
           status: completion?.status || 'scheduled',
           assignmentId: assignment.id,
-          userName: assignment.app_users?.full_name || 'Unknown'
+          userName: assignment.app_users?.name || 'Unknown'
         });
       });
     }
@@ -215,9 +214,9 @@ const ActivePrograms = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Calendar Section - Expanded */}
-            <Card className="lg:col-span-1 rounded-none">
+          <div className="grid grid-cols-1 gap-6">
+            {/* Calendar Section - Full Width */}
+            <Card className="rounded-none">
               <CardHeader>
                 <CardTitle className="text-lg">Ημερολόγιο Προπονήσεων</CardTitle>
                 <div className="text-xs text-gray-500 space-y-1">
@@ -249,8 +248,8 @@ const ActivePrograms = () => {
                     table: "w-full h-full border-collapse space-y-1",
                     head_row: "",
                     row: "w-full mt-2",
-                    cell: "h-16 w-full text-center text-sm p-0 relative",
-                    day: "h-16 w-full p-0 font-normal aria-selected:opacity-100",
+                    cell: "h-20 w-full text-center text-sm p-0 relative",
+                    day: "h-20 w-full p-0 font-normal aria-selected:opacity-100",
                     day_selected: "bg-[#00ffba] text-black hover:bg-[#00ffba] hover:text-black focus:bg-[#00ffba] focus:text-black",
                     day_today: "bg-gray-100 text-black",
                     day_outside: "text-gray-400 opacity-50",
@@ -265,15 +264,15 @@ const ActivePrograms = () => {
               </CardContent>
             </Card>
 
-            {/* Programs List */}
-            <Card className="lg:col-span-1 rounded-none">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  Ενεργά Προγράμματα
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {programsForSelectedDate.length > 0 ? (
+            {/* Programs List - Show programs for selected date */}
+            {programsForSelectedDate.length > 0 && (
+              <Card className="rounded-none">
+                <CardHeader>
+                  <CardTitle className="text-lg">
+                    Προγράμματα για {selectedDate ? format(selectedDate, 'dd/MM/yyyy', { locale: el }) : ''}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-2">
                     {programsForSelectedDate.map((assignment) => (
                       <ProgramCard
@@ -285,15 +284,9 @@ const ActivePrograms = () => {
                       />
                     ))}
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <CalendarCheck className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Δεν υπάρχουν προγράμματα για αυτή την ημερομηνία</p>
-                    <p className="text-sm mt-2">Επιλέξτε άλλη ημερομηνία ή δημιουργήστε νέα ανάθεση από το ProgramBuilder</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
