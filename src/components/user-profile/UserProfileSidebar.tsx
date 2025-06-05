@@ -41,7 +41,7 @@ export const UserProfileSidebar = ({
       icon: Activity, 
       label: "Προγράμματα", 
       key: "programs",
-      badge: null // Πάντα null αφού δεν υπάρχουν προγράμματα
+      badge: stats.programsCount > 0 ? stats.programsCount : null
     },
     { 
       icon: Calendar, 
@@ -131,7 +131,7 @@ export const UserProfileSidebar = ({
             </h3>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-gray-50 p-2 rounded">
-                <div className="font-semibold text-gray-800">0</div>
+                <div className="font-semibold text-gray-800">{stats.programsCount}</div>
                 <div className="text-gray-600">Προγράμματα</div>
               </div>
               <div className="bg-gray-50 p-2 rounded">
