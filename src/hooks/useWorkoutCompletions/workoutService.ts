@@ -57,7 +57,7 @@ export const completeWorkout = async (
 export const updateWorkoutStatus = async (
   assignmentId: string,
   scheduledDate: string,
-  status: 'completed' | 'missed' | 'makeup' | 'scheduled',
+  status: 'completed' | 'missed' | 'makeup' | 'pending' | 'cancelled',
   statusColor: string,
   authUserId: string
 ) => {
@@ -99,7 +99,7 @@ export const updateWorkoutStatus = async (
         week_number: weekNumber,
         day_number: dayNumber,
         scheduled_date: scheduledDate,
-        completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : scheduledDate,
+        completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null,
         status: status,
         status_color: statusColor
       })
@@ -147,7 +147,7 @@ export const markMissedWorkouts = async () => {
       status_color: 'red'
     })
     .lt('scheduled_date', today)
-    .eq('status', 'scheduled')
+    .eq('status', 'pending')
     .select();
 
   if (error) throw error;

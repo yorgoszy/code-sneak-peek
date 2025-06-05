@@ -2119,7 +2119,7 @@ export type Database = {
         Row: {
           actual_duration_minutes: number | null
           assignment_id: string
-          completed_date: string
+          completed_date: string | null
           created_at: string
           day_number: number
           end_time: string | null
@@ -2137,7 +2137,7 @@ export type Database = {
         Insert: {
           actual_duration_minutes?: number | null
           assignment_id: string
-          completed_date: string
+          completed_date?: string | null
           created_at?: string
           day_number: number
           end_time?: string | null
@@ -2155,7 +2155,7 @@ export type Database = {
         Update: {
           actual_duration_minutes?: number | null
           assignment_id?: string
-          completed_date?: string
+          completed_date?: string | null
           created_at?: string
           day_number?: number
           end_time?: string | null
