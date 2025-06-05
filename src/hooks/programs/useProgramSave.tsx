@@ -12,10 +12,11 @@ export const useProgramSave = () => {
   const { createOrUpdateAssignment } = useProgramAssignments();
   const { user } = useAuth();
 
-  const saveProgram = async (programData: any) => {
+  const saveProgram = async (programData: any, trainingDates?: string[]) => {
     setLoading(true);
     try {
       console.log('Saving program data:', programData);
+      console.log('Training dates received:', trainingDates);
       
       // Ensure we have a user authenticated
       if (!user?.id) {
@@ -82,15 +83,15 @@ export const useProgramSave = () => {
         await createProgramStructure(programData.id, programData);
         
         // Handle assignments with training dates
-        if (programData.createAssignment && programData.training_dates && programData.user_id) {
-          console.log('Creating assignment with training dates:', programData.training_dates);
+        if (programData.createAssignment && trainingDates && programData.user_id) {
+          console.log('Creating assignment with training dates:', trainingDates);
           
           await createOrUpdateAssignment(
             programData.id, 
-            programData.user_id, // Use the selected user_id directly
+            programData.user_id,
             undefined, 
             undefined, 
-            programData.training_dates
+            trainingDates
           );
         }
         
@@ -124,15 +125,15 @@ export const useProgramSave = () => {
         await createProgramStructure(program.id, programData);
         
         // Handle assignments with training dates
-        if (programData.createAssignment && programData.training_dates && programData.user_id) {
-          console.log('Creating assignment with training dates for new program:', programData.training_dates);
+        if (programData.createAssignment && trainingDates && programData.user_id) {
+          console.log('Creating assignment with training dates for new program:', trainingDates);
           
           await createOrUpdateAssignment(
             program.id, 
-            programData.user_id, // Use the selected user_id directly
+            programData.user_id,
             undefined, 
             undefined, 
-            programData.training_dates
+            trainingDates
           );
         }
         

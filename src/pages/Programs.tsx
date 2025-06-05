@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
@@ -93,14 +92,15 @@ const Programs = () => {
     }
   };
 
-  const handleCreateProgram = async (programData: any) => {
+  const handleCreateProgram = async (programData: any, trainingDates?: string[]) => {
     try {
       console.log('Creating/updating program:', programData);
+      console.log('Training dates received in Programs:', trainingDates);
       
       // Ensure user exists in database before saving
       await ensureUserInDatabase();
       
-      await saveProgram(programData);
+      await saveProgram(programData, trainingDates);
       await loadPrograms(); // Ξαναφόρτωση για να ενημερωθούν τα δεδομένα
       setBuilderOpen(false);
       setEditingProgram(null);

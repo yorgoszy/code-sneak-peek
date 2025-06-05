@@ -9,7 +9,7 @@ import { ProgramStructure } from './useProgramBuilderState';
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
   exercises: Exercise[];
-  onCreateProgram: (program: any) => Promise<any>;
+  onCreateProgram: (program: any, trainingDates?: string[]) => Promise<any>;
   onOpenChange: () => void;
   editingProgram?: Program | null;
   editingAssignment?: {
@@ -118,53 +118,27 @@ export const useProgramBuilderDialogLogic = ({
       ...program,
       id: editingProgram?.id || undefined,
       status: 'active',
-      createAssignment: true,
-      training_dates: trainingDates
+      user_id: userId,
+      createAssignment: true
     };
     
     console.log('Program data being saved:', programToSave);
+    console.log('Training dates being passed:', trainingDates);
     
     try {
-      // First save the program
-      const savedProgram = await onCreateProgram(programToSave);
-      const programId = savedProgram?.id || editingProgram?.id;
+      // Save the program and pass training dates separately
+      const savedProgram = await onCreateProgram(programToSave, trainingDates);
       
-      if (programId && userId && trainingDates?.length > 0) {
-        console.log('Creating/updating assignment with specific dates:', {
-          programId,
-          userId,
-          trainingDates,
-          editingAssignment: !!editingAssignment
-        });
-        
-        // Create or update assignment with specific training dates
-        await createOrUpdateAssignment(
-          programId, 
-          userId, 
-          undefined, // no start_date
-          undefined, // no end_date
-          trainingDates // specific training dates
-        );
-        
-        console.log('✅ Assignment created/updated successfully with dates:', trainingDates);
-        const successMessage = editingAssignment 
-          ? 'Η ανάθεση ενημερώθηκε επιτυχώς' 
-          : 'Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς';
-        toast.success(successMessage);
-        
-        handleClose();
-        setTimeout(() => {
-          window.location.href = '/dashboard/active-programs';
-        }, 1500);
-      } else {
-        console.error('❌ Missing required data for assignment:', {
-          programId,
-          userId,
-          trainingDatesLength: trainingDates?.length
-        });
-        toast.error('Απαιτούνται συγκεκριμένες ημερομηνίες προπόνησης');
-        return;
-      }
+      console.log('✅ Program saved and assigned successfully');
+      const successMessage = editingAssignment 
+        ? 'Η ανάθεση ενημερώθηκε επιτυχώς' 
+        : 'Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς';
+      toast.success(successMessage);
+      
+      handleClose();
+      setTimeout(() => {
+        window.location.href = '/dashboard/active-programs';
+      }, 1500);
     } catch (error) {
       console.error('❌ Error creating/updating assignments:', error);
       toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
