@@ -45,7 +45,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   onReorderExercises
 }) => {
   return (
-    <Card className="rounded-none border-2">
+    <Card className="rounded-none border-2 min-w-[400px] flex-shrink-0">
       <CardContent className="p-4">
         <DayCardHeader
           day={day}
@@ -57,6 +57,7 @@ export const DayCard: React.FC<DayCardProps> = ({
         <DayCardContent
           blocks={day.blocks || []}
           exercises={exercises}
+          onAddBlock={() => onAddBlock(day.id)}
           onAddExercise={onAddExercise}
           onRemoveBlock={onRemoveBlock}
           onDuplicateBlock={onDuplicateBlock}
