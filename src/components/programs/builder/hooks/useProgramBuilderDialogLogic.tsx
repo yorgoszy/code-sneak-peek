@@ -116,20 +116,34 @@ export const useProgramBuilderDialogLogic = ({
 
       let programId = program.id || currentProgramId;
 
-      // Αποθήκευση πρώτα το πρόγραμμα αν δεν έχει ID (ως draft)
+      // Αποθήκευση πρώτα το πρόγραμμα ως ACTIVE (όχι draft) γιατί θα γίνει ανάθεση
       if (!programId) {
-        console.log('💾 Saving program before assignment...');
+        console.log('💾 Saving program for assignment...');
         try {
           const savedProgram = await onCreateProgram({
             ...program,
-            status: 'draft'  // Αποθηκεύουμε ως draft πρώτα
+            status: 'active'  // Αποθηκεύουμε ως active γιατί θα γίνει ανάθεση
           });
           programId = savedProgram.id;
           setCurrentProgramId(programId);
-          console.log('✅ Program saved before assignment:', savedProgram);
+          console.log('✅ Program saved as active for assignment:', savedProgram);
         } catch (error) {
-          console.error('❌ Error saving program before assignment:', error);
+          console.error('❌ Error saving program for assignment:', error);
           toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
+          return;
+        }
+      } else {
+        // Αν υπάρχει ήδη, ενημερώνουμε το status σε active
+        try {
+          await onCreateProgram({
+            ...program,
+            id: programId,
+            status: 'active'
+          });
+          console.log('✅ Program updated to active status');
+        } catch (error) {
+          console.error('❌ Error updating program status:', error);
+          toast.error('Σφάλμα κατά την ενημέρωση του προγράμματος');
           return;
         }
       }
@@ -156,21 +170,7 @@ export const useProgramBuilderDialogLogic = ({
         return;
       }
 
-      // Ενημέρωση του προγράμματος σε active status μόνο κατά την ανάθεση
-      try {
-        await onCreateProgram({
-          ...program,
-          id: programId,
-          status: 'active'
-        });
-        console.log('✅ Program updated to active status');
-      } catch (error) {
-        console.error('❌ Error updating program status:', error);
-        toast.error('Σφάλμα κατά την ενημέρωση του προγράμματος');
-        return;
-      }
-
-      // Δημιουργία assignment
+      // Δημιουργία assignment (το πρόγραμμα είναι ήδη active)
       const assignment = await createOrUpdateAssignment(
         programId,
         userId,
