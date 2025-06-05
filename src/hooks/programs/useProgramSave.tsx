@@ -32,38 +32,17 @@ export const useProgramSave = () => {
         .eq('auth_user_id', user.id)
         .single();
 
-      if (currentUserError && currentUserError.code === 'PGRST116') {
-        // Current user doesn't exist in app_users, create them
-        console.log('Creating current user in app_users table');
-        const { data: newCurrentUser, error: createCurrentUserError } = await supabase
-          .from('app_users')
-          .insert([{
-            auth_user_id: user.id,
-            email: user.email || 'unknown@example.com',
-            name: user.email?.split('@')[0] || 'Unknown User',
-            role: 'admin'
-          }])
-          .select()
-          .single();
-
-        if (createCurrentUserError) {
-          console.error('Error creating current user:', createCurrentUserError);
-          toast.error('Σφάλμα δημιουργίας χρήστη: ' + createCurrentUserError.message);
-          return null;
-        }
-        currentUserAppId = newCurrentUser.id;
-        console.log('✅ Current user created successfully:', newCurrentUser);
-      } else if (currentUserError) {
-        console.error('Error checking current user:', currentUserError);
-        toast.error('Σφάλμα ελέγχου χρήστη: ' + currentUserError.message);
+      if (currentUserError) {
+        console.error('Error finding current user:', currentUserError);
+        toast.error('Δεν βρέθηκε ο τρέχων χρήστης στη βάση δεδομένων');
         return null;
-      } else if (currentAppUser) {
-        currentUserAppId = currentAppUser.id;
-        console.log('✅ Current user found:', currentAppUser);
       }
+      
+      currentUserAppId = currentAppUser.id;
+      console.log('✅ Current user found:', currentAppUser);
 
       if (!currentUserAppId) {
-        toast.error('Δεν ήταν δυνατή η εύρεση ή δημιουργία χρήστη');
+        toast.error('Δεν ήταν δυνατή η εύρεση του χρήστη');
         return null;
       }
       
