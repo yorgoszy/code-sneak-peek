@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,14 +9,18 @@ import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgra
 import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { supabase } from "@/integrations/supabase/client";
 
 const ActivePrograms = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const navigate = useNavigate();
 
   // Χρησιμοποιούμε το hook για τα ενεργά προγράμματα από τη βάση
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
+  const { getWorkoutCompletions } = useWorkoutCompletions();
 
   // Φιλτράρουμε τα προγράμματα για την επιλεγμένη ημερομηνία
   const programsForSelectedDate = activePrograms.filter(assignment => {
@@ -27,6 +30,65 @@ const ActivePrograms = () => {
     return assignment.training_dates.includes(selectedDateStr);
   });
 
+  // Φόρτωση workout completions για όλα τα assignments
+  useEffect(() => {
+    const loadCompletions = async () => {
+      if (activePrograms.length === 0) return;
+      
+      try {
+        const allCompletions = [];
+        for (const assignment of activePrograms) {
+          const completions = await getWorkoutCompletions(assignment.id);
+          allCompletions.push(...completions);
+        }
+        setWorkoutCompletions(allCompletions);
+      } catch (error) {
+        console.error('Error loading workout completions:', error);
+      }
+    };
+
+    loadCompletions();
+  }, [activePrograms, getWorkoutCompletions]);
+
+  // Realtime subscription για workout_completions
+  useEffect(() => {
+    console.log('🔄 Setting up realtime subscription for workout completions...');
+    
+    const channel = supabase
+      .channel('workout-completions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_completions'
+        },
+        (payload) => {
+          console.log('✅ Workout completion change detected:', payload);
+          // Άμεση ενημέρωση των προγραμμάτων και completions
+          refetch();
+          // Επανάφορτωση των completions
+          if (activePrograms.length > 0) {
+            const loadCompletions = async () => {
+              const allCompletions = [];
+              for (const assignment of activePrograms) {
+                const completions = await getWorkoutCompletions(assignment.id);
+                allCompletions.push(...completions);
+              }
+              setWorkoutCompletions(allCompletions);
+            };
+            loadCompletions();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔌 Cleaning up workout completions subscription...');
+      supabase.removeChannel(channel);
+    };
+  }, [refetch, activePrograms, getWorkoutCompletions]);
+
   // Υπολογίζουμε τα stats
   const stats = {
     totalPrograms: activePrograms.length,
@@ -34,27 +96,52 @@ const ActivePrograms = () => {
     completedToday: 0 // TODO: Υπολογισμός ολοκληρωμένων προπονήσεων
   };
 
-  // Δημιουργούμε μια λίστα με όλες τις ημερομηνίες που έχουν προγράμματα
-  const programDates = activePrograms.reduce((dates: string[], assignment) => {
+  // Δημιουργούμε μια λίστα με όλες τις ημερομηνίες που έχουν προγράμματα και τα statuses τους
+  const programDatesWithStatus = activePrograms.reduce((dates: any[], assignment) => {
     if (assignment.training_dates) {
-      return [...dates, ...assignment.training_dates];
+      const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
+      
+      assignment.training_dates.forEach(dateStr => {
+        const completion = assignmentCompletions.find(c => c.scheduled_date === dateStr);
+        dates.push({
+          date: dateStr,
+          status: completion?.status || 'scheduled',
+          assignmentId: assignment.id
+        });
+      });
     }
     return dates;
   }, []);
 
-  // Συνάρτηση για να δείξουμε κουκίδες στις ημερομηνίες που έχουν προγράμματα
+  // Συνάρτηση για να δείξουμε κουκίδες στις ημερομηνίες που έχουν προγράμματα με σωστό χρώμα
   const getDayContent = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    const programsCount = programDates.filter(d => d === dateStr).length;
+    const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
     
-    if (programsCount > 0) {
+    if (dateProgramsWithStatus.length > 0) {
       return (
         <div className="relative">
           <span>{date.getDate()}</span>
           <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-0.5">
-            {Array.from({ length: Math.min(programsCount, 3) }).map((_, i) => (
-              <div key={i} className="w-1 h-1 bg-[#00ffba] rounded-full"></div>
-            ))}
+            {dateProgramsWithStatus.slice(0, 3).map((program, i) => {
+              let bulletColor = '#00ffba'; // default πράσινο για completed
+              
+              if (program.status === 'scheduled') {
+                bulletColor = '#3b82f6'; // μπλε για scheduled
+              } else if (program.status === 'missed') {
+                bulletColor = '#ef4444'; // κόκκινο για missed
+              } else if (program.status === 'completed') {
+                bulletColor = '#00ffba'; // πράσινο για completed
+              }
+              
+              return (
+                <div 
+                  key={i} 
+                  className="w-1 h-1 rounded-full" 
+                  style={{ backgroundColor: bulletColor }}
+                ></div>
+              );
+            })}
           </div>
         </div>
       );
@@ -75,6 +162,8 @@ const ActivePrograms = () => {
   };
 
   console.log('📅 Προγράμματα για την επιλεγμένη ημερομηνία:', programsForSelectedDate);
+  console.log('🎯 Workout completions:', workoutCompletions);
+  console.log('📊 Program dates with status:', programDatesWithStatus);
 
   if (isLoading) {
     return (
@@ -130,6 +219,20 @@ const ActivePrograms = () => {
             <Card className="lg:col-span-1 rounded-none">
               <CardHeader>
                 <CardTitle className="text-lg">Ημερολόγιο Προπονήσεων</CardTitle>
+                <div className="text-xs text-gray-500 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Προγραμματισμένες</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-[#00ffba] rounded-full"></div>
+                    <span>Ολοκληρωμένες</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Χαμένες</span>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <Calendar
@@ -204,10 +307,13 @@ const ActivePrograms = () => {
                 <p className="text-xs text-gray-500">
                   Συνολικά ανατεθειμένα προγράμματα: {activePrograms.length}
                 </p>
+                <p className="text-xs text-gray-500">
+                  Workout completions: {workoutCompletions.length}
+                </p>
                 <details className="mt-2">
                   <summary className="text-xs cursor-pointer">Εμφάνιση λεπτομερειών</summary>
                   <pre className="text-xs mt-2 bg-gray-100 p-2 rounded overflow-auto">
-                    {JSON.stringify(activePrograms, null, 2)}
+                    {JSON.stringify({ activePrograms, workoutCompletions }, null, 2)}
                   </pre>
                 </details>
               </CardContent>

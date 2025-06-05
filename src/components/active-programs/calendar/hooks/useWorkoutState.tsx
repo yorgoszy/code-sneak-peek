@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
+import { toast } from 'sonner';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface UseWorkoutStateProps {
@@ -24,7 +25,7 @@ export const useWorkoutState = (
   const [exerciseData, setExerciseData] = useState<Record<string, any>>({});
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
 
-  const { completeWorkout, updateWorkoutStatus, saveExerciseResults } = useWorkoutCompletions();
+  const { updateWorkoutStatus } = useWorkoutCompletions();
 
   // Timer effect
   useEffect(() => {
@@ -44,6 +45,7 @@ export const useWorkoutState = (
     setWorkoutInProgress(true);
     setElapsedTime(0);
     setWorkoutStartTime(new Date());
+    toast.success('Προπόνηση ξεκίνησε!');
   }, []);
 
   const handleCompleteWorkout = useCallback(async () => {
@@ -56,21 +58,33 @@ export const useWorkoutState = (
       const durationMinutes = Math.round((endTime.getTime() - workoutStartTime.getTime()) / 60000);
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
 
-      // Βρίσκουμε το σωστό assignment_id και ενημερώνουμε το status
+      // Ενημερώνουμε το status της προπόνησης
       await updateWorkoutStatus(
-        program.id, // Χρησιμοποιούμε το assignment_id όχι το program_id
+        program.id, // assignment_id
         selectedDateStr,
         'completed',
         'green'
       );
 
-      console.log('💾 Προπόνηση ενημερώθηκε επιτυχώς');
-
+      console.log('💾 Προπόνηση ολοκληρώθηκε επιτυχώς');
+      
       setWorkoutInProgress(false);
-      if (onRefresh) onRefresh();
-      if (onClose) onClose();
+      toast.success('Προπόνηση ολοκληρώθηκε!');
+      
+      // Άμεσο refresh για να δούμε τις αλλαγές
+      if (onRefresh) {
+        console.log('🔄 Triggering immediate refresh...');
+        onRefresh();
+      }
+      
+      // Κλείνουμε το dialog μετά από μικρή καθυστέρηση για να φανεί το success message
+      setTimeout(() => {
+        if (onClose) onClose();
+      }, 1000);
+      
     } catch (error) {
       console.error('Error completing workout:', error);
+      toast.error('Σφάλμα κατά την ολοκλήρωση της προπόνησης');
     }
   }, [program, selectedDate, workoutStartTime, updateWorkoutStatus, onRefresh, onClose]);
 
@@ -82,6 +96,7 @@ export const useWorkoutState = (
     setExerciseNotes({});
     setExerciseData({});
     setWorkoutStartTime(null);
+    toast.info('Προπόνηση ακυρώθηκε');
   }, []);
 
   const exerciseCompletion = {
