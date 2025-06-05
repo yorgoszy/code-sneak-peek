@@ -12,6 +12,11 @@ interface UseAssignmentDialogProps {
   currentProgramId: string | null;
   onCreateProgram: (program: any) => Promise<any>;
   onDialogClose: () => void;
+  editingAssignment?: {
+    id: string;
+    user_id: string;
+    training_dates: string[];
+  } | null;
 }
 
 export const useAssignmentDialog = ({
@@ -19,7 +24,8 @@ export const useAssignmentDialog = ({
   program,
   currentProgramId,
   onCreateProgram,
-  onDialogClose
+  onDialogClose,
+  editingAssignment
 }: UseAssignmentDialogProps) => {
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const { createWorkoutCompletions } = useProgramWorkoutCompletions();
@@ -72,37 +78,76 @@ export const useAssignmentDialog = ({
 
       const programId = program.id || currentProgramId;
 
-      // Δημιουργία assignment
-      const { data: assignment, error: assignmentError } = await supabase
-        .from('program_assignments')
-        .insert({
-          program_id: programId,
-          user_id: userId,
-          training_dates: trainingDates,
-          status: 'active',
-          assignment_type: 'individual',
-          progress: 0
-        })
-        .select()
-        .single();
+      // Αν είναι επεξεργασία υπάρχουσας ανάθεσης
+      if (editingAssignment) {
+        console.log('📝 Updating existing assignment:', editingAssignment.id);
+        
+        const { data: updatedAssignment, error: updateError } = await supabase
+          .from('program_assignments')
+          .update({
+            training_dates: trainingDates,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingAssignment.id)
+          .select()
+          .single();
 
-      if (assignmentError) {
-        console.error('❌ Error creating assignment:', assignmentError);
-        throw assignmentError;
+        if (updateError) {
+          console.error('❌ Error updating assignment:', updateError);
+          throw updateError;
+        }
+
+        console.log('✅ Assignment updated:', updatedAssignment);
+
+        // Διαγραφή υπαρχόντων workout completions και δημιουργία νέων
+        await supabase
+          .from('workout_completions')
+          .delete()
+          .eq('assignment_id', editingAssignment.id);
+
+        await createWorkoutCompletions(
+          editingAssignment.id,
+          userId,
+          programId!,
+          trainingDates,
+          program
+        );
+
+        toast.success('Η ανάθεση ενημερώθηκε επιτυχώς!');
+      } else {
+        // Δημιουργία νέας ανάθεσης
+        const { data: assignment, error: assignmentError } = await supabase
+          .from('program_assignments')
+          .insert({
+            program_id: programId,
+            user_id: userId,
+            training_dates: trainingDates,
+            status: 'active',
+            assignment_type: 'individual',
+            progress: 0
+          })
+          .select()
+          .single();
+
+        if (assignmentError) {
+          console.error('❌ Error creating assignment:', assignmentError);
+          throw assignmentError;
+        }
+
+        console.log('✅ Assignment created:', assignment);
+
+        // Δημιουργία workout completions
+        await createWorkoutCompletions(
+          assignment.id,
+          userId,
+          programId!,
+          trainingDates,
+          program
+        );
+
+        toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς!');
       }
 
-      console.log('✅ Assignment created:', assignment);
-
-      // Δημιουργία workout completions
-      await createWorkoutCompletions(
-        assignment.id,
-        userId,
-        programId!,
-        trainingDates,
-        program
-      );
-
-      toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς!');
       setAssignmentDialogOpen(false);
       onDialogClose();
 

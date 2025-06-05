@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { User, Exercise, Program } from './types';
@@ -41,7 +42,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     handleOpenAssignments,
     handleAssign,
     availableUsers,
-    editingAssignment: assignmentEditData
+    editingAssignment: editingAssignmentData
   } = useProgramBuilderDialogLogic({
     users,
     exercises,
@@ -112,7 +113,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         program={program}
         users={availableUsers}
         onAssign={handleAssign}
-        editingAssignment={assignmentEditData}
+        editingAssignment={editingAssignmentData}
       />
     </>
   );

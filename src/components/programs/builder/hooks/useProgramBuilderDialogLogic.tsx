@@ -46,7 +46,8 @@ export const useProgramBuilderDialogLogic = ({
     program,
     currentProgramId,
     onCreateProgram,
-    onDialogClose: handleClose
+    onDialogClose: handleClose,
+    editingAssignment
   });
 
   return {
