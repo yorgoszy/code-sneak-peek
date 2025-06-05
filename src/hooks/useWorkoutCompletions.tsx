@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,7 +11,7 @@ export interface WorkoutCompletion {
   day_number: number;
   scheduled_date: string;
   completed_date: string;
-  status: 'completed' | 'missed' | 'makeup';
+  status: 'completed' | 'missed' | 'makeup' | 'scheduled';
   notes?: string;
   start_time?: string;
   end_time?: string;
@@ -162,26 +161,84 @@ export const useWorkoutCompletions = () => {
   const updateWorkoutStatus = async (
     assignmentId: string,
     scheduledDate: string,
-    status: 'completed' | 'missed' | 'makeup',
+    status: 'completed' | 'missed' | 'makeup' | 'scheduled',
     statusColor: string
   ) => {
     try {
-      const { data, error } = await supabase
+      console.log('🔄 Ενημέρωση workout status:', {
+        assignmentId,
+        scheduledDate,
+        status,
+        statusColor
+      });
+
+      // Πρώτα ελέγχουμε αν υπάρχει η εγγραφή
+      const { data: existingRecord, error: checkError } = await supabase
         .from('workout_completions')
-        .update({ 
-          status,
-          status_color: statusColor,
-          completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null
-        })
+        .select('id')
         .eq('assignment_id', assignmentId)
         .eq('scheduled_date', scheduledDate)
-        .select()
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      return data;
+      if (checkError) {
+        console.error('❌ Error checking existing record:', checkError);
+        throw checkError;
+      }
+
+      if (!existingRecord) {
+        console.log('⚠️ Δεν βρέθηκε εγγραφή - δημιουργία νέας');
+        
+        // Δημιουργούμε νέα εγγραφή
+        const userId = await getUserId();
+        if (!userId) throw new Error('User not found');
+
+        const { data, error } = await supabase
+          .from('workout_completions')
+          .insert({
+            assignment_id: assignmentId,
+            user_id: userId,
+            program_id: assignmentId, // Για τώρα χρησιμοποιούμε το assignment_id
+            week_number: 1,
+            day_number: 1,
+            scheduled_date: scheduledDate,
+            completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : scheduledDate,
+            status: status,
+            status_color: statusColor
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('❌ Error creating workout completion:', error);
+          throw error;
+        }
+
+        console.log('✅ Νέα εγγραφή δημιουργήθηκε:', data);
+        return data;
+      } else {
+        // Ενημερώνουμε την υπάρχουσα εγγραφή
+        const { data, error } = await supabase
+          .from('workout_completions')
+          .update({ 
+            status,
+            status_color: statusColor,
+            completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null
+          })
+          .eq('assignment_id', assignmentId)
+          .eq('scheduled_date', scheduledDate)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('❌ Error updating workout status:', error);
+          throw error;
+        }
+
+        console.log('✅ Εγγραφή ενημερώθηκε:', data);
+        return data;
+      }
     } catch (error) {
-      console.error('Error updating workout status:', error);
+      console.error('❌ Error in updateWorkoutStatus:', error);
       throw error;
     }
   };
