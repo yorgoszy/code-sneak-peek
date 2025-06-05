@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { DashboardContainer } from "@/components/dashboard/DashboardContainer";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarCheck } from "lucide-react";
@@ -9,7 +8,7 @@ const ActivePrograms = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   return (
-    <DashboardContainer>
+    <div className="flex-1 p-6 bg-gray-50">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -65,7 +64,7 @@ const ActivePrograms = () => {
           </Card>
         </div>
       </div>
-    </DashboardContainer>
+    </div>
   );
 };
 
