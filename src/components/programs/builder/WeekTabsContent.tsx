@@ -1,7 +1,9 @@
 
 import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
-import { WeekCard } from './WeekCard';
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { DayCard } from './DayCard';
 import { Exercise } from '../types';
 
 interface ProgramExercise {
@@ -83,33 +85,73 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   return (
     <>
       {weeks.map((week) => (
-        <TabsContent key={week.id} value={week.id} className="mt-4">
-          <WeekCard
-            week={week}
-            exercises={exercises}
-            onAddDay={() => onAddDay(week.id)}
-            onRemoveWeek={() => onRemoveWeek(week.id)}
-            onAddBlock={(dayId) => onAddBlock(week.id, dayId)}
-            onRemoveDay={(dayId) => onRemoveDay(week.id, dayId)}
-            onDuplicateDay={(dayId) => onDuplicateDay(week.id, dayId)}
-            onUpdateDayName={(dayId, name) => onUpdateDayName(week.id, dayId, name)}
-            onAddExercise={(dayId, blockId, exerciseId) => onAddExercise(week.id, dayId, blockId, exerciseId)}
-            onRemoveBlock={(dayId, blockId) => onRemoveBlock(week.id, dayId, blockId)}
-            onDuplicateBlock={(dayId, blockId) => onDuplicateBlock(week.id, dayId, blockId)}
-            onUpdateBlockName={(dayId, blockId, name) => onUpdateBlockName(week.id, dayId, blockId, name)}
-            onUpdateExercise={(dayId, blockId, exerciseId, field, value) => 
-              onUpdateExercise(week.id, dayId, blockId, exerciseId, field, value)
-            }
-            onRemoveExercise={(dayId, blockId, exerciseId) => 
-              onRemoveExercise(week.id, dayId, blockId, exerciseId)
-            }
-            onDuplicateExercise={(dayId, blockId, exerciseId) => 
-              onDuplicateExercise(week.id, dayId, blockId, exerciseId)
-            }
-            onReorderDays={(oldIndex, newIndex) => onReorderDays(week.id, oldIndex, newIndex)}
-            onReorderBlocks={(dayId, oldIndex, newIndex) => onReorderBlocks(week.id, dayId, oldIndex, newIndex)}
-            onReorderExercises={(dayId, blockId, oldIndex, newIndex) => onReorderExercises(week.id, dayId, blockId, oldIndex, newIndex)}
-          />
+        <TabsContent key={week.id} value={week.id} className="mt-6">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">{week.name}</h3>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => onAddDay(week.id)}
+                  size="sm"
+                  className="rounded-none"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  +Day
+                </Button>
+              </div>
+            </div>
+
+            {week.days && week.days.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {week.days.map((day) => (
+                  <DayCard
+                    key={day.id}
+                    day={day}
+                    exercises={exercises}
+                    onAddBlock={() => onAddBlock(week.id, day.id)}
+                    onRemoveDay={() => onRemoveDay(week.id, day.id)}
+                    onDuplicateDay={() => onDuplicateDay(week.id, day.id)}
+                    onUpdateDayName={(name) => onUpdateDayName(week.id, day.id, name)}
+                    onAddExercise={(blockId, exerciseId) => 
+                      onAddExercise(week.id, day.id, blockId, exerciseId)
+                    }
+                    onRemoveBlock={(blockId) => onRemoveBlock(week.id, day.id, blockId)}
+                    onDuplicateBlock={(blockId) => onDuplicateBlock(week.id, day.id, blockId)}
+                    onUpdateBlockName={(blockId, name) => 
+                      onUpdateBlockName(week.id, day.id, blockId, name)
+                    }
+                    onUpdateExercise={(blockId, exerciseId, field, value) =>
+                      onUpdateExercise(week.id, day.id, blockId, exerciseId, field, value)
+                    }
+                    onRemoveExercise={(blockId, exerciseId) =>
+                      onRemoveExercise(week.id, day.id, blockId, exerciseId)
+                    }
+                    onDuplicateExercise={(blockId, exerciseId) =>
+                      onDuplicateExercise(week.id, day.id, blockId, exerciseId)
+                    }
+                    onReorderBlocks={(oldIndex, newIndex) =>
+                      onReorderBlocks(week.id, day.id, oldIndex, newIndex)
+                    }
+                    onReorderExercises={(blockId, oldIndex, newIndex) =>
+                      onReorderExercises(week.id, day.id, blockId, oldIndex, newIndex)
+                    }
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>Δεν υπάρχουν ημέρες σε αυτή την εβδομάδα</p>
+                <Button
+                  onClick={() => onAddDay(week.id)}
+                  size="sm"
+                  className="rounded-none mt-4"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Προσθήκη Ημέρας
+                </Button>
+              </div>
+            )}
+          </div>
         </TabsContent>
       ))}
     </>
