@@ -15,7 +15,7 @@ export const useActivePrograms = () => {
           .from('program_assignments')
           .select(`
             *,
-            programs:program_id(
+            programs!program_id(
               *,
               program_weeks(
                 *,
@@ -31,7 +31,7 @@ export const useActivePrograms = () => {
                 )
               )
             ),
-            app_users:user_id(
+            app_users!user_id(
               id,
               name,
               email,
