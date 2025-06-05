@@ -1,17 +1,17 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useProgramAssignments } from '@/hooks/programs/useProgramAssignments';
-import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
-import { toast } from "sonner";
-import { User, Exercise, Program } from '../../types';
-import { ProgramStructure } from './useProgramBuilderState';
+import { useProgramWorkoutCompletions } from '@/hooks/programs/useProgramWorkoutCompletions';
+import { toast } from 'sonner';
+import type { User, Exercise } from '../../types';
+import type { ProgramStructure } from './useProgramBuilderState';
 
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
   exercises: Exercise[];
   onCreateProgram: (program: any) => Promise<any>;
   onOpenChange: () => void;
-  editingProgram?: Program | null;
+  editingProgram?: any | null;
   editingAssignment?: {
     id: string;
     user_id: string;
@@ -31,159 +31,143 @@ export const useProgramBuilderDialogLogic = ({
   isOpen,
   program
 }: UseProgramBuilderDialogLogicProps) => {
-  const { createOrUpdateAssignment } = useProgramAssignments();
-  const { getWorkoutCompletions } = useWorkoutCompletions();
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
-  const [completedDates, setCompletedDates] = useState<string[]>([]);
+  const { createOrUpdateAssignment } = useProgramAssignments();
+  const { createWorkoutCompletions } = useProgramWorkoutCompletions();
 
-  // Fetch completed workouts when editing assignment
-  useEffect(() => {
-    const fetchCompletedDates = async () => {
-      if (editingAssignment) {
-        try {
-          const completions = await getWorkoutCompletions(editingAssignment.id);
-          const completed = completions
-            .filter(c => c.status === 'completed')
-            .map(c => c.scheduled_date);
-          setCompletedDates(completed);
-        } catch (error) {
-          console.error('Error fetching workout completions:', error);
-        }
-      }
-    };
-
-    if (isOpen && editingAssignment) {
-      fetchCompletedDates();
+  const availableUsers = useMemo(() => {
+    if (editingAssignment) {
+      // Όταν επεξεργαζόμαστε assignment, επιστρέφουμε όλους τους χρήστες
+      return users;
     }
-  }, [isOpen, editingAssignment, getWorkoutCompletions]);
+    
+    if (program.user_id) {
+      // Αν έχει επιλεγεί χρήστης στο πρόγραμμα, επιστρέφουμε μόνο αυτόν
+      return users.filter(user => user.id === program.user_id);
+    }
+    
+    // Αλλιώς επιστρέφουμε όλους τους χρήστες
+    return users;
+  }, [users, program.user_id, editingAssignment]);
+
+  const assignmentEditData = useMemo(() => {
+    if (editingAssignment) {
+      return {
+        user_id: editingAssignment.user_id,
+        training_dates: editingAssignment.training_dates || []
+      };
+    }
+    return null;
+  }, [editingAssignment]);
 
   const handleClose = () => {
+    console.log('Closing program builder dialog');
+    setAssignmentDialogOpen(false);
     onOpenChange();
   };
 
   const handleSave = async () => {
-    if (!program.name.trim()) {
-      toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
-      return;
-    }
-    
-    console.log('Saving program as draft:', program);
-    const programToSave = {
-      ...program,
-      id: editingProgram?.id || undefined,
-      status: 'draft'
-    };
-    
     try {
-      const savedProgram = await onCreateProgram(programToSave);
-      handleClose();
-      return savedProgram;
+      console.log('🔄 Saving program as draft...', program);
+      
+      if (!program.name?.trim()) {
+        toast.error('Παρακαλώ εισάγετε όνομα προγράμματος');
+        return;
+      }
+
+      // Αποθήκευση ως προσχέδιο
+      const savedProgram = await onCreateProgram({
+        ...program,
+        status: 'draft'
+      });
+      
+      console.log('✅ Program saved as draft:', savedProgram);
+      toast.success('Το πρόγραμμα αποθηκεύτηκε ως προσχέδιο');
+      onOpenChange();
     } catch (error) {
-      console.error('Error saving program:', error);
+      console.error('❌ Error saving program:', error);
+      toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
     }
   };
 
-  const handleOpenAssignments = () => {
-    if (!program.name.trim()) {
-      toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
-      return;
-    }
+  const handleOpenAssignments = async () => {
+    try {
+      console.log('🔄 Opening assignments dialog...', program);
+      
+      if (!program.name?.trim()) {
+        toast.error('Παρακαλώ εισάγετε όνομα προγράμματος');
+        return;
+      }
 
-    if (!program.weeks || program.weeks.length === 0) {
-      toast.error('Δημιουργήστε πρώτα εβδομάδες και ημέρες προπόνησης');
-      return;
-    }
+      if (!program.weeks || program.weeks.length === 0) {
+        toast.error('Παρακαλώ προσθέστε τουλάχιστον μία εβδομάδα');
+        return;
+      }
 
-    const hasValidDays = program.weeks.some(week => week.days && week.days.length > 0);
-    if (!hasValidDays) {
-      toast.error('Προσθέστε ημέρες προπόνησης στις εβδομάδες');
-      return;
-    }
+      // Αποθήκευση πρώτα το πρόγραμμα αν δεν έχει ID
+      if (!program.id) {
+        console.log('💾 Saving program before assignment...');
+        const savedProgram = await onCreateProgram({
+          ...program,
+          status: 'template'
+        });
+        console.log('✅ Program saved before assignment:', savedProgram);
+      }
 
-    setAssignmentDialogOpen(true);
+      setAssignmentDialogOpen(true);
+    } catch (error) {
+      console.error('❌ Error opening assignments:', error);
+      toast.error('Σφάλμα κατά το άνοιγμα των αναθέσεων');
+    }
   };
 
   const handleAssign = async (userId: string, trainingDates: string[]) => {
-    console.log('=== PROGRAM ASSIGNMENT WITH DATES ===');
-    console.log('User ID:', userId);
-    console.log('Training Dates:', trainingDates);
-    console.log('Editing Assignment:', editingAssignment);
-    
-    if (!trainingDates || trainingDates.length === 0) {
-      toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης');
-      return;
-    }
-    
-    const programToSave = {
-      ...program,
-      id: editingProgram?.id || undefined,
-      status: 'active',
-      createAssignment: true,
-      training_dates: trainingDates
-    };
-    
-    console.log('Program data being saved:', programToSave);
-    
     try {
-      // First save the program
-      const savedProgram = await onCreateProgram(programToSave);
-      const programId = savedProgram?.id || editingProgram?.id;
-      
-      if (programId && userId && trainingDates?.length > 0) {
-        console.log('Creating/updating assignment with specific dates:', {
-          programId,
-          userId,
-          trainingDates,
-          editingAssignment: !!editingAssignment
-        });
-        
-        // Create or update assignment with specific training dates
-        await createOrUpdateAssignment(
-          programId, 
-          userId, 
-          undefined, // no start_date
-          undefined, // no end_date
-          trainingDates // specific training dates
-        );
-        
-        console.log('✅ Assignment created/updated successfully with dates:', trainingDates);
-        const successMessage = editingAssignment 
-          ? 'Η ανάθεση ενημερώθηκε επιτυχώς' 
-          : 'Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς';
-        toast.success(successMessage);
-        
-        handleClose();
-        setTimeout(() => {
-          window.location.href = '/dashboard/active-programs';
-        }, 1500);
-      } else {
-        console.error('❌ Missing required data for assignment:', {
-          programId,
-          userId,
-          trainingDatesLength: trainingDates?.length
-        });
-        toast.error('Απαιτούνται συγκεκριμένες ημερομηνίες προπόνησης');
+      console.log('🔄 Creating assignment...', {
+        programId: program.id,
+        userId,
+        trainingDates: trainingDates.length
+      });
+
+      if (!program.id) {
+        toast.error('Πρέπει πρώτα να αποθηκευτεί το πρόγραμμα');
         return;
       }
+
+      // Δημιουργία assignment
+      const assignment = await createOrUpdateAssignment(
+        program.id,
+        userId,
+        trainingDates[0], // start_date
+        trainingDates[trainingDates.length - 1], // end_date
+        trainingDates
+      );
+
+      console.log('✅ Assignment created:', assignment);
+
+      // Δημιουργία workout completions
+      await createWorkoutCompletions(
+        assignment.id,
+        userId,
+        program.id,
+        trainingDates,
+        program
+      );
+
+      console.log('✅ Assignment process completed successfully');
+      toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς');
+      
+      setAssignmentDialogOpen(false);
+      onOpenChange();
     } catch (error) {
-      console.error('❌ Error creating/updating assignments:', error);
+      console.error('❌ Error creating assignment:', error);
       toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
     }
   };
 
-  const availableUsers = users;
-
-  // Prepare assignment data for editing
-  const assignmentEditData = editingAssignment ? {
-    user_id: editingAssignment.user_id,
-    training_dates: editingAssignment.training_dates,
-    completedDates: completedDates
-  } : undefined;
-
   return {
     assignmentDialogOpen,
     setAssignmentDialogOpen,
-    completedDates,
     handleClose,
     handleSave,
     handleOpenAssignments,
