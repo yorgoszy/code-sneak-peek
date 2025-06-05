@@ -50,8 +50,8 @@ export const DayCard: React.FC<DayCardProps> = ({
         <DayCardHeader
           day={day}
           onUpdateDayName={onUpdateDayName}
-          onRemoveDay={onRemoveDay}
-          onDuplicateDay={onDuplicateDay}
+          onRemoveDay={() => onRemoveDay(day.id)}
+          onDuplicateDay={() => onDuplicateDay(day.id)}
         />
         
         <DayCardContent
