@@ -17,7 +17,14 @@ interface VideoThumbnailProps {
 export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVideoClick }) => {
   const videoUrl = exercise.exercises?.video_url;
   
+  console.log('🎥 VideoThumbnail render:', {
+    exerciseName: exercise.exercises?.name,
+    videoUrl: videoUrl,
+    isValid: videoUrl ? isValidVideoUrl(videoUrl) : false
+  });
+  
   if (!videoUrl || !isValidVideoUrl(videoUrl)) {
+    console.log('❌ No valid video URL, showing placeholder');
     return (
       <div className="w-10 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0 mr-2">
         <span className="text-xs text-gray-400">-</span>
@@ -26,18 +33,21 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
   }
 
   const thumbnailUrl = getVideoThumbnail(videoUrl);
+  console.log('🖼️ Thumbnail URL generated:', thumbnailUrl);
   
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('🎥 VideoThumbnail clicked for:', exercise.exercises?.name);
+    console.log('🎬 VideoThumbnail CLICK detected for:', exercise.exercises?.name);
+    console.log('🎬 Calling onVideoClick with exercise:', exercise);
     onVideoClick(exercise);
   };
   
   return (
     <div 
-      className="relative w-10 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 mr-2 video-thumbnail"
+      className="relative w-10 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 mr-2 video-thumbnail border-2 border-red-500"
       onClick={handleClick}
+      style={{ zIndex: 10 }}
     >
       {thumbnailUrl ? (
         <img

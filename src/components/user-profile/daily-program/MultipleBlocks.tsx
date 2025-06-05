@@ -47,7 +47,11 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
   onExerciseClick,
   onVideoClick
 }) => {
-  console.log('📑 MultipleBlocks render:', blocks.length, 'blocks, viewOnly:', viewOnly);
+  console.log('📑 MultipleBlocks render:', {
+    blockCount: blocks.length,
+    viewOnly: viewOnly,
+    blockNames: blocks.map(b => b.name)
+  });
   
   return (
     <Tabs defaultValue={blocks[0]?.id} className="w-full">
@@ -70,6 +74,12 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
                 const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
                 const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
                 
+                console.log('🏋️ MultipleBlocks rendering exercise:', {
+                  exerciseName: exercise.exercises?.name,
+                  hasVideo: !!exercise.exercises?.video_url,
+                  videoUrl: exercise.exercises?.video_url
+                });
+                
                 return (
                   <div key={exercise.id} className="border border-gray-200">
                     <ExerciseItem
@@ -78,6 +88,7 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
                       remainingText={remainingText}
                       onExerciseClick={onExerciseClick}
                       onVideoClick={onVideoClick}
+                      viewOnly={viewOnly}
                     />
                   </div>
                 );

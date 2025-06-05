@@ -46,7 +46,11 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
   onExerciseClick,
   onVideoClick
 }) => {
-  console.log('🔲 SingleBlock render:', block.name, 'viewOnly:', viewOnly);
+  console.log('🔲 SingleBlock render:', {
+    blockName: block.name,
+    viewOnly: viewOnly,
+    exerciseCount: block.program_exercises?.length || 0
+  });
   
   return (
     <div className="bg-gray-700 rounded-none p-2 mb-1">
@@ -61,6 +65,12 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
             const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
             const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
             
+            console.log('🏋️ SingleBlock rendering exercise:', {
+              exerciseName: exercise.exercises?.name,
+              hasVideo: !!exercise.exercises?.video_url,
+              videoUrl: exercise.exercises?.video_url
+            });
+            
             return (
               <ExerciseItem
                 key={exercise.id}
@@ -69,6 +79,7 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
                 remainingText={remainingText}
                 onExerciseClick={onExerciseClick}
                 onVideoClick={onVideoClick}
+                viewOnly={viewOnly}
               />
             );
           })}

@@ -43,24 +43,39 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const { completeSet, getRemainingText, isExerciseComplete } = useExerciseCompletion();
 
+  console.log('🎯 ExerciseBlock render:', {
+    blockCount: blocks?.length || 0,
+    viewOnly: viewOnly,
+    blockNames: blocks?.map(b => b.name) || []
+  });
+
   const handleExerciseClick = (exercise: Exercise, event: React.MouseEvent) => {
-    console.log('🎯 ExerciseBlock handleExerciseClick:', exercise.exercises?.name, 'viewOnly:', viewOnly);
+    console.log('🎯 ExerciseBlock handleExerciseClick:', {
+      exerciseName: exercise.exercises?.name,
+      viewOnly: viewOnly,
+      target: (event.target as HTMLElement).className
+    });
     
     // Αν είναι μόνο για προβολή, δεν κάνουμε τίποτα άλλο
     if (viewOnly) {
+      console.log('👁️ View only mode, skipping exercise completion');
       return;
     }
 
     // Αν δεν είναι view-only, ολοκληρώνουμε ένα σετ
+    console.log('✅ Completing set for exercise:', exercise.id);
     completeSet(exercise.id, exercise.sets);
   };
 
   const handleVideoClick = (exercise: Exercise) => {
-    console.log('🎬 ExerciseBlock handleVideoClick:', exercise.exercises?.name);
-    console.log('🎬 Video URL:', exercise.exercises?.video_url);
-    console.log('🎬 Is valid URL:', exercise.exercises?.video_url ? isValidVideoUrl(exercise.exercises.video_url) : false);
+    console.log('🎬 ExerciseBlock handleVideoClick:', {
+      exerciseName: exercise.exercises?.name,
+      videoUrl: exercise.exercises?.video_url,
+      isValidUrl: exercise.exercises?.video_url ? isValidVideoUrl(exercise.exercises.video_url) : false
+    });
     
     if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+      console.log('✅ Opening video dialog for:', exercise.exercises.name);
       setSelectedExercise(exercise);
       setIsVideoDialogOpen(true);
     } else {
@@ -69,11 +84,13 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
   };
 
   if (!blocks || blocks.length === 0) {
+    console.log('❌ No blocks provided to ExerciseBlock');
     return null;
   }
 
   // Αν έχουμε μόνο ένα block, το εμφανίζουμε χωρίς tabs
   if (blocks.length === 1) {
+    console.log('📄 Rendering single block');
     return (
       <>
         <SingleBlock
@@ -95,6 +112,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
   }
 
   // Αν έχουμε πολλαπλά blocks, τα εμφανίζουμε ως tabs
+  console.log('📑 Rendering multiple blocks with tabs');
   return (
     <>
       <MultipleBlocks

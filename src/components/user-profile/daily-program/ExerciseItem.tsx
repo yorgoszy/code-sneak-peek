@@ -29,6 +29,7 @@ interface ExerciseItemProps {
   remainingText: string;
   onExerciseClick: (exercise: Exercise, event: React.MouseEvent) => void;
   onVideoClick: (exercise: Exercise) => void;
+  viewOnly?: boolean;
 }
 
 export const ExerciseItem: React.FC<ExerciseItemProps> = ({
@@ -36,8 +37,15 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   isComplete,
   remainingText,
   onExerciseClick,
-  onVideoClick
+  onVideoClick,
+  viewOnly = false
 }) => {
+  console.log('🏋️ ExerciseItem render:', {
+    exerciseName: exercise.exercises?.name,
+    viewOnly: viewOnly,
+    hasVideo: !!exercise.exercises?.video_url
+  });
+
   return (
     <div className="bg-white rounded-none">
       <ExerciseHeader
@@ -46,6 +54,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         remainingText={remainingText}
         onExerciseClick={onExerciseClick}
         onVideoClick={onVideoClick}
+        viewOnly={viewOnly}
       />
       <ExerciseDetailsGrid
         exercise={exercise}

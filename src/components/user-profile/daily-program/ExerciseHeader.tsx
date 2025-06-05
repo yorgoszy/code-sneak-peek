@@ -15,6 +15,7 @@ interface ExerciseHeaderProps {
   remainingText: string;
   onExerciseClick: (exercise: any, event: React.MouseEvent) => void;
   onVideoClick: (exercise: any) => void;
+  viewOnly?: boolean;
 }
 
 export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
@@ -22,18 +23,28 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
   isComplete,
   remainingText,
   onExerciseClick,
-  onVideoClick
+  onVideoClick,
+  viewOnly = false
 }) => {
+  console.log('📋 ExerciseHeader render:', {
+    exerciseName: exercise.exercises?.name,
+    viewOnly: viewOnly,
+    hasVideoUrl: !!exercise.exercises?.video_url
+  });
+
   const handleVideoClick = (exerciseData: any) => {
-    console.log('🎬 ExerciseHeader video click:', exerciseData.exercises?.name);
+    console.log('🎬 ExerciseHeader video click received:', exerciseData.exercises?.name);
     onVideoClick(exerciseData);
   };
 
   const handleClick = (e: React.MouseEvent) => {
+    console.log('🖱️ ExerciseHeader click detected');
     // Αν κλικάραμε στο video thumbnail, μην καλέσουμε το onExerciseClick
     if ((e.target as HTMLElement).closest('.video-thumbnail')) {
+      console.log('🎥 Click was on video thumbnail, skipping exercise click');
       return;
     }
+    console.log('🎯 Calling exercise click handler');
     onExerciseClick(exercise, e);
   };
 
