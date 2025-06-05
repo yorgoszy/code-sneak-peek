@@ -1,13 +1,14 @@
 
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs } from "@/components/ui/tabs";
-import { Plus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Copy, Trash2, GripVertical } from "lucide-react";
+import { WeekCard } from './WeekCard';
+import { WeekMetrics } from './WeekMetrics';
 import { Exercise } from '../types';
-import { WeekTabsHeader } from './WeekTabsHeader';
-import { WeekTabsContent } from './WeekTabsContent';
-import { useWeekEditingState } from './hooks/useWeekEditingState';
+import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ProgramExercise {
   id: string;
@@ -70,6 +71,119 @@ interface TrainingWeeksProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
 }
 
+const SortableWeekTab: React.FC<{
+  week: Week;
+  previousWeek?: Week;
+  isActive: boolean;
+  editingWeekId: string | null;
+  editingWeekName: string;
+  onWeekNameDoubleClick: (week: Week) => void;
+  onWeekNameSave: () => void;
+  onWeekNameKeyPress: (e: React.KeyboardEvent) => void;
+  setEditingWeekName: (name: string) => void;
+  onDuplicateWeek: (weekId: string) => void;
+  onRemoveWeek: (weekId: string) => void;
+}> = ({
+  week,
+  previousWeek,
+  isActive,
+  editingWeekId,
+  editingWeekName,
+  onWeekNameDoubleClick,
+  onWeekNameSave,
+  onWeekNameKeyPress,
+  setEditingWeekName,
+  onDuplicateWeek,
+  onRemoveWeek
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: week.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className="flex flex-col items-center group flex-shrink-0 relative"
+    >
+      <div
+        className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="w-3 h-3 text-gray-400" />
+      </div>
+      
+      <div className="ml-4 flex flex-col items-center">
+        <div className="flex items-center">
+          <TabsTrigger 
+            value={week.id} 
+            className="rounded-none whitespace-nowrap px-4"
+            onDoubleClick={() => onWeekNameDoubleClick(week)}
+          >
+            {editingWeekId === week.id ? (
+              <input
+                type="text"
+                value={editingWeekName}
+                onChange={(e) => setEditingWeekName(e.target.value)}
+                onBlur={onWeekNameSave}
+                onKeyDown={onWeekNameKeyPress}
+                className="bg-transparent border-none outline-none text-center min-w-0"
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <div className="flex flex-col items-center">
+                <span>{week.name}</span>
+              </div>
+            )}
+          </TabsTrigger>
+          <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicateWeek(week.id);
+              }}
+              className="h-6 w-6 p-0 rounded-none"
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveWeek(week.id);
+              }}
+              className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-800"
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+        
+        {/* Week Metrics below the tab name */}
+        <div className="mt-2 w-full">
+          <WeekMetrics week={week} previousWeek={previousWeek} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   weeks,
   exercises,
@@ -95,22 +209,37 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onReorderBlocks,
   onReorderExercises
 }) => {
-  const {
-    activeWeek,
-    setActiveWeek,
-    editingWeekId,
-    editingWeekName,
-    setEditingWeekName,
-    handleWeekNameDoubleClick,
-    handleWeekNameSave,
-    handleWeekNameKeyPress
-  } = useWeekEditingState(weeks, onUpdateWeekName);
+  const [activeWeek, setActiveWeek] = useState(weeks[0]?.id || '');
+  const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
+  const [editingWeekName, setEditingWeekName] = useState('');
 
-  useEffect(() => {
+  const handleWeekNameDoubleClick = (week: Week) => {
+    setEditingWeekId(week.id);
+    setEditingWeekName(week.name);
+  };
+
+  const handleWeekNameSave = () => {
+    if (editingWeekId && editingWeekName.trim()) {
+      onUpdateWeekName(editingWeekId, editingWeekName.trim());
+    }
+    setEditingWeekId(null);
+    setEditingWeekName('');
+  };
+
+  const handleWeekNameKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleWeekNameSave();
+    } else if (e.key === 'Escape') {
+      setEditingWeekId(null);
+      setEditingWeekName('');
+    }
+  };
+
+  React.useEffect(() => {
     if (weeks.length > 0 && !activeWeek) {
       setActiveWeek(weeks[0].id);
     }
-  }, [weeks, activeWeek, setActiveWeek]);
+  }, [weeks, activeWeek]);
 
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
@@ -136,39 +265,59 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
       <CardContent>
         {weeks.length > 0 ? (
           <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
-            <WeekTabsHeader
-              weeks={weeks}
-              editingWeekId={editingWeekId}
-              editingWeekName={editingWeekName}
-              activeWeek={activeWeek}
-              onWeekNameDoubleClick={handleWeekNameDoubleClick}
-              onWeekNameSave={handleWeekNameSave}
-              onWeekNameKeyPress={handleWeekNameKeyPress}
-              setEditingWeekName={setEditingWeekName}
-              onDuplicateWeek={onDuplicateWeek}
-              onRemoveWeek={onRemoveWeek}
-            />
+            <div className="w-full overflow-x-auto">
+              <TabsList className="inline-flex h-auto items-start justify-start rounded-none bg-muted p-1 text-muted-foreground min-w-full">
+                <SortableContext items={weeks.map(w => w.id)} strategy={horizontalListSortingStrategy}>
+                  {weeks.map((week, index) => (
+                    <SortableWeekTab
+                      key={week.id}
+                      week={week}
+                      previousWeek={index > 0 ? weeks[index - 1] : undefined}
+                      isActive={activeWeek === week.id}
+                      editingWeekId={editingWeekId}
+                      editingWeekName={editingWeekName}
+                      onWeekNameDoubleClick={handleWeekNameDoubleClick}
+                      onWeekNameSave={handleWeekNameSave}
+                      onWeekNameKeyPress={handleWeekNameKeyPress}
+                      setEditingWeekName={setEditingWeekName}
+                      onDuplicateWeek={onDuplicateWeek}
+                      onRemoveWeek={onRemoveWeek}
+                    />
+                  ))}
+                </SortableContext>
+              </TabsList>
+            </div>
             
-            <WeekTabsContent
-              weeks={weeks}
-              exercises={exercises}
-              onAddDay={onAddDay}
-              onRemoveWeek={onRemoveWeek}
-              onAddBlock={onAddBlock}
-              onRemoveDay={onRemoveDay}
-              onDuplicateDay={onDuplicateDay}
-              onUpdateDayName={onUpdateDayName}
-              onAddExercise={onAddExercise}
-              onRemoveBlock={onRemoveBlock}
-              onDuplicateBlock={onDuplicateBlock}
-              onUpdateBlockName={onUpdateBlockName}
-              onUpdateExercise={onUpdateExercise}
-              onRemoveExercise={onRemoveExercise}
-              onDuplicateExercise={onDuplicateExercise}
-              onReorderDays={onReorderDays}
-              onReorderBlocks={onReorderBlocks}
-              onReorderExercises={onReorderExercises}
-            />
+            {weeks.map((week) => (
+              <TabsContent key={week.id} value={week.id} className="mt-4">
+                <WeekCard
+                  week={week}
+                  exercises={exercises}
+                  onAddDay={() => onAddDay(week.id)}
+                  onRemoveWeek={() => onRemoveWeek(week.id)}
+                  onAddBlock={(dayId) => onAddBlock(week.id, dayId)}
+                  onRemoveDay={(dayId) => onRemoveDay(week.id, dayId)}
+                  onDuplicateDay={(dayId) => onDuplicateDay(week.id, dayId)}
+                  onUpdateDayName={(dayId, name) => onUpdateDayName(week.id, dayId, name)}
+                  onAddExercise={(dayId, blockId, exerciseId) => onAddExercise(week.id, dayId, blockId, exerciseId)}
+                  onRemoveBlock={(dayId, blockId) => onRemoveBlock(week.id, dayId, blockId)}
+                  onDuplicateBlock={(dayId, blockId) => onDuplicateBlock(week.id, dayId, blockId)}
+                  onUpdateBlockName={(dayId, blockId, name) => onUpdateBlockName(week.id, dayId, blockId, name)}
+                  onUpdateExercise={(dayId, blockId, exerciseId, field, value) => 
+                    onUpdateExercise(week.id, dayId, blockId, exerciseId, field, value)
+                  }
+                  onRemoveExercise={(dayId, blockId, exerciseId) => 
+                    onRemoveExercise(week.id, dayId, blockId, exerciseId)
+                  }
+                  onDuplicateExercise={(dayId, blockId, exerciseId) => 
+                    onDuplicateExercise(week.id, dayId, blockId, exerciseId)
+                  }
+                  onReorderDays={(oldIndex, newIndex) => onReorderDays(week.id, oldIndex, newIndex)}
+                  onReorderBlocks={(dayId, oldIndex, newIndex) => onReorderBlocks(week.id, dayId, oldIndex, newIndex)}
+                  onReorderExercises={(dayId, blockId, oldIndex, newIndex) => onReorderExercises(week.id, dayId, blockId, oldIndex, newIndex)}
+                />
+              </TabsContent>
+            ))}
           </Tabs>
         ) : (
           <div className="text-center py-8 text-gray-500">

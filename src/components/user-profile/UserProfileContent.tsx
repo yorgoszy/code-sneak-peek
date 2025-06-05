@@ -38,6 +38,8 @@ export const UserProfileContent = ({
         );
       case "programs":
         return <UserProfilePrograms user={userProfile} programs={programs} />;
+      case "daily-program":
+        return <UserProfileDailyProgram user={userProfile} />;
       case "calendar":
         return <UserProfileCalendar user={userProfile} />;
       case "tests":

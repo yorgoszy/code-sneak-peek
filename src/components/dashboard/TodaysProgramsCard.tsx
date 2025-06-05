@@ -1,10 +1,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity } from "lucide-react";
+import { CalendarDay } from "@/components/active-programs/calendar/CalendarDay";
 import { format } from "date-fns";
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface TodaysProgramsCardProps {
-  todaysPrograms: any[];
+  todaysPrograms: EnrichedAssignment[];
   allCompletions: any[];
   onRefresh: () => void;
 }
@@ -19,11 +21,13 @@ export const TodaysProgramsCard = ({ todaysPrograms, allCompletions, onRefresh }
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-center py-8 text-gray-500">
-          <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>Δεν έχετε ενεργά προγράμματα</p>
-          <p className="text-sm">Επικοινωνήστε με τον προπονητή σας για ανάθεση προγράμματος</p>
-        </div>
+        <CalendarDay
+          day={new Date()}
+          currentDate={new Date()}
+          programs={todaysPrograms}
+          allCompletions={allCompletions}
+          onRefresh={onRefresh}
+        />
       </CardContent>
     </Card>
   );

@@ -1,178 +1,146 @@
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import type { EnrichedAssignment } from './useActivePrograms/types';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { testSupabaseConnection, fetchUserData, fetchProgramAssignments, enrichAssignmentWithProgramData } from "./useActivePrograms/dataService";
+import { isValidAssignment } from "./useActivePrograms/dateFilters";
+import type { EnrichedAssignment } from "./useActivePrograms/types";
+import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
+import { supabase } from "@/integrations/supabase/client";
 
-export const useActivePrograms = () => {
-  return useQuery({
-    queryKey: ['active-programs'],
-    queryFn: async (): Promise<EnrichedAssignment[]> => {
-      console.log('🔄 Fetching active programs from database...');
-      
-      try {
-        // Fetch program assignments first
-        const { data: assignments, error: assignmentsError } = await supabase
-          .from('program_assignments')
-          .select('*')
-          .eq('status', 'active');
+export const useActivePrograms = (includeCompleted: boolean = false) => {
+  const [programs, setPrograms] = useState<EnrichedAssignment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { fetchMultipleCompletions, calculateWorkoutStats, clearCache, getWorkoutCompletions } = useWorkoutCompletionsCache();
 
-        if (assignmentsError) {
-          console.error('❌ Error fetching program assignments:', assignmentsError);
-          throw assignmentsError;
-        }
-
-        console.log('✅ Raw assignments data:', assignments);
-
-        if (!assignments || assignments.length === 0) {
-          return [];
-        }
-
-        // Fetch related programs separately
-        const programIds = assignments.map(a => a.program_id).filter(Boolean);
-        const { data: programs, error: programsError } = await supabase
-          .from('programs')
-          .select(`
-            id,
-            name,
-            description,
-            training_days,
-            program_weeks(
-              id,
-              name,
-              week_number,
-              program_days(
-                id,
-                name,
-                day_number,
-                estimated_duration_minutes,
-                program_blocks(
-                  id,
-                  name,
-                  block_order,
-                  program_exercises(
-                    id,
-                    exercise_id,
-                    sets,
-                    reps,
-                    kg,
-                    percentage_1rm,
-                    velocity_ms,
-                    tempo,
-                    rest,
-                    notes,
-                    exercise_order,
-                    exercises(
-                      id,
-                      name,
-                      description
-                    )
-                  )
-                )
-              )
-            )
-          `)
-          .in('id', programIds);
-
-        if (programsError) {
-          console.error('❌ Error fetching programs:', programsError);
-          throw programsError;
-        }
-
-        // Fetch related users separately
-        const userIds = assignments.map(a => a.user_id).filter(Boolean);
-        const { data: users, error: usersError } = await supabase
-          .from('app_users')
-          .select('id, name, email, photo_url')
-          .in('id', userIds);
-
-        if (usersError) {
-          console.error('❌ Error fetching users:', usersError);
-          throw usersError;
-        }
-
-        // Combine the data manually
-        const enrichedAssignments: EnrichedAssignment[] = assignments.map(assignment => {
-          const program = programs?.find(p => p.id === assignment.program_id);
-          const user = users?.find(u => u.id === assignment.user_id);
-
-          return {
-            id: assignment.id,
-            program_id: assignment.program_id,
-            user_id: assignment.user_id,
-            assigned_by: assignment.assigned_by,
-            start_date: assignment.start_date,
-            end_date: assignment.end_date,
-            status: assignment.status,
-            notes: assignment.notes,
-            created_at: assignment.created_at,
-            updated_at: assignment.updated_at,
-            assignment_type: assignment.assignment_type,
-            group_id: assignment.group_id,
-            progress: assignment.progress,
-            training_dates: assignment.training_dates,
-            programs: program ? {
-              id: program.id,
-              name: program.name,
-              description: program.description,
-              training_days: typeof program.training_days === 'number' 
-                ? [] 
-                : program.training_days || [],
-              program_weeks: program.program_weeks || []
-            } : undefined,
-            app_users: user ? {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              photo_url: user.photo_url
-            } : null
-          };
-        });
-
-        console.log('✅ Enriched assignments:', enrichedAssignments);
-        return enrichedAssignments;
-      } catch (error) {
-        console.error('❌ Unexpected error fetching active programs:', error);
-        throw error;
-      }
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes (was cacheTime)
-  });
-};
-
-// Hook για αποθήκευση νέας ανάθεσης
-export const useSaveAssignment = () => {
-  return {
-    saveAssignment: async (assignmentData: any) => {
-      try {
-        console.log('💾 Saving assignment to database:', assignmentData);
-
-        // Αποθήκευση στη βάση δεδομένων
-        const { data, error } = await supabase
-          .from('program_assignments')
-          .insert([{
-            program_id: assignmentData.program.id,
-            user_id: assignmentData.userId,
-            training_dates: assignmentData.trainingDates,
-            status: 'active',
-            assignment_type: 'individual',
-            start_date: assignmentData.trainingDates[0] || new Date().toISOString().split('T')[0],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }])
-          .select();
-
-        if (error) {
-          console.error('❌ Error saving assignment:', error);
-          throw error;
-        }
-
-        console.log('✅ Assignment saved successfully:', data);
-        return data;
-      } catch (error) {
-        console.error('❌ Unexpected error saving assignment:', error);
-        throw error;
-      }
+  useEffect(() => {
+    console.log('=== USER DEBUG INFO ===');
+    console.log('1. Current user from useAuth:', user);
+    console.log('2. Auth user ID:', user?.id);
+    console.log('3. User email:', user?.email);
+    console.log('4. Include completed programs:', includeCompleted);
+    
+    if (user?.id) {
+      fetchActivePrograms();
+    } else {
+      console.log('⚠️ No user found, setting loading to false');
+      setLoading(false);
     }
+  }, [user, includeCompleted]);
+
+  // Απλοποιημένο real-time updates - μόνο για workout completions
+  useEffect(() => {
+    if (!user?.id || programs.length === 0) return;
+
+    console.log('🔄 Setting up real-time updates for workout completions');
+    
+    const channel = supabase
+      .channel('workout-completions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_completions'
+        },
+        async (payload) => {
+          console.log('📊 Workout completion changed:', payload);
+          
+          // Καθαρίζουμε το cache και ξαναφορτώνουμε
+          clearCache();
+          await fetchActivePrograms();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔌 Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, programs.length]);
+
+  const fetchActivePrograms = async () => {
+    try {
+      setLoading(true);
+      
+      if (!user?.id) {
+        console.error('❌ No user ID available');
+        setPrograms([]);
+        return;
+      }
+
+      console.log('🔍 Fetching programs for user:', user.id, 'includeCompleted:', includeCompleted);
+      
+      // Test Supabase connection first
+      const connectionValid = await testSupabaseConnection();
+      if (!connectionValid) {
+        setPrograms([]);
+        setLoading(false);
+        return;
+      }
+
+      // Check if user exists in app_users table
+      const userData = await fetchUserData(user.id);
+      console.log('User data from app_users table:', userData);
+      
+      if (!userData || !userData.id) {
+        console.log('⚠️ No valid userData found or missing userData.id');
+        setPrograms([]);
+        return;
+      }
+
+      // Fetch program assignments
+      const assignments = await fetchProgramAssignments(userData.id);
+      console.log('Raw assignments from program_assignments table:', assignments);
+      
+      if (!assignments || assignments.length === 0) {
+        console.log('No assignments found for user_id:', userData.id);
+        setPrograms([]);
+        return;
+      }
+
+      // Enrich assignments with program data
+      const enrichedAssignments = await Promise.all(
+        assignments.map(enrichAssignmentWithProgramData)
+      );
+
+      console.log('✅ Enriched assignments:', enrichedAssignments);
+
+      // Filter by date - only include assignments that have program data
+      const validPrograms = enrichedAssignments.filter(isValidAssignment);
+      
+      // Bulk fetch όλων των workout completions με ένα query
+      const assignmentIds = validPrograms.map(p => p.id);
+      await fetchMultipleCompletions(assignmentIds);
+      
+      // Calculate progress for each program using cached data
+      const programsWithProgress = await Promise.all(
+        validPrograms.map(async (program) => {
+          const completions = await getWorkoutCompletions(program.id);
+          const stats = calculateWorkoutStats(completions, program.training_dates || []);
+          return { ...program, progress: stats.progress };
+        })
+      );
+      
+      // Φιλτράρισμα ανάλογα με το includeCompleted flag
+      const finalPrograms = includeCompleted 
+        ? programsWithProgress 
+        : programsWithProgress.filter(program => program.progress < 100);
+      
+      console.log('✅ Final programs:', includeCompleted ? 'all programs' : 'active only', finalPrograms.length);
+      setPrograms(finalPrograms);
+
+    } catch (error) {
+      console.error('❌ Unexpected error fetching programs:', error);
+      setPrograms([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    programs,
+    loading,
+    refetch: fetchActivePrograms
   };
 };

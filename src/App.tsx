@@ -13,9 +13,9 @@ import Exercises from "./pages/Exercises";
 import Tests from "./pages/Tests";
 import Results from "./pages/Results";
 import Programs from "./pages/Programs";
+import ActivePrograms from "./pages/ActivePrograms";
 import ProgramBuilder from "./pages/ProgramBuilder";
 import UserProfile from "./pages/UserProfile";
-import ActivePrograms from "./pages/ActivePrograms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

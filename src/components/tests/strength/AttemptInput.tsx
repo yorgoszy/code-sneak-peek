@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2 } from "lucide-react";
@@ -28,17 +27,9 @@ export const AttemptInput = ({ attempt, onUpdate, onRemove, onMark1RM }: Attempt
       <Input
         type="number"
         step="0.01"
-        min="0"
         placeholder="m/s"
-        value={attempt.velocity_ms !== undefined ? attempt.velocity_ms : ''}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (value === '') {
-            onUpdate('velocity_ms', 0);
-          } else {
-            onUpdate('velocity_ms', parseFloat(value) || 0);
-          }
-        }}
+        value={attempt.velocity_ms || ''}
+        onChange={(e) => onUpdate('velocity_ms', parseFloat(e.target.value) || 0)}
         className="rounded-none text-sm h-8 w-16 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
       />
 

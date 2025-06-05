@@ -4,9 +4,8 @@ import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProgramBasicInfo } from './ProgramBasicInfo';
 import { TrainingWeeks } from './TrainingWeeks';
-import { CalendarSection } from './CalendarSection';
-import { ActionButtons } from './ActionButtons';
-import { useAssignmentHandler } from './AssignmentHandler';
+import { Button } from "@/components/ui/button";
+import { Save, Users } from "lucide-react";
 import type { User, Exercise } from '../types';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 
@@ -39,8 +38,6 @@ interface ProgramBuilderDialogContentProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onSave: () => void;
   onAssignments: () => void;
-  onTrainingDatesChange?: (dates: Date[]) => void;
-  getTotalTrainingDays?: () => number;
 }
 
 export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentProps> = ({
@@ -71,13 +68,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onReorderBlocks,
   onReorderExercises,
   onSave,
-  onAssignments,
-  onTrainingDatesChange,
-  getTotalTrainingDays
+  onAssignments
 }) => {
-  const totalDays = getTotalTrainingDays ? getTotalTrainingDays() : 0;
-  const { handleAssignment } = useAssignmentHandler({ program, getTotalTrainingDays });
-
   return (
     <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0">
       <DialogHeader className="flex-shrink-0 p-6 border-b">
@@ -123,23 +115,27 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
           />
-
-          {onTrainingDatesChange && (
-            <CalendarSection
-              program={program}
-              totalDays={totalDays}
-              onTrainingDatesChange={onTrainingDatesChange}
-            />
-          )}
         </div>
       </ScrollArea>
 
-      <ActionButtons
-        program={program}
-        totalDays={totalDays}
-        onSave={onSave}
-        onAssignment={handleAssignment}
-      />
+      <div className="flex justify-end gap-2 p-6 border-t flex-shrink-0">
+        <Button
+          onClick={onSave}
+          variant="outline"
+          className="rounded-none"
+        >
+          <Save className="w-4 h-4 mr-2" />
+          Αποθήκευση ως Προσχέδιο
+        </Button>
+        
+        <Button
+          onClick={onAssignments}
+          className="rounded-none"
+        >
+          <Users className="w-4 h-4 mr-2" />
+          Ανάθεση σε Ασκούμενο
+        </Button>
+      </div>
     </DialogContent>
   );
 };

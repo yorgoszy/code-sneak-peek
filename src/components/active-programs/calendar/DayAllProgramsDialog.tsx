@@ -2,6 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { CalendarProgramItem } from './CalendarProgramItem';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayAllProgramsDialogProps {
@@ -65,11 +66,7 @@ export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
               const userName = program.app_users?.name || 'Άγνωστος χρήστης';
               
               return (
-                <div 
-                  key={program.id} 
-                  className="p-3 border border-gray-200 rounded-none hover:bg-gray-50 cursor-pointer"
-                  onClick={() => onProgramClick(program)}
-                >
+                <div key={program.id} className="p-3 border border-gray-200 rounded-none hover:bg-gray-50">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium text-gray-900">{userName}</h4>
                     <span className={`px-2 py-1 text-xs rounded-none ${
@@ -88,6 +85,13 @@ export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
                       <p className="text-xs text-gray-500">{program.programs.description}</p>
                     )}
                   </div>
+
+                  <CalendarProgramItem
+                    program={program}
+                    workoutStatus={workoutStatus}
+                    allCompletions={allCompletions}
+                    onClick={() => onProgramClick(program)}
+                  />
                 </div>
               );
             })

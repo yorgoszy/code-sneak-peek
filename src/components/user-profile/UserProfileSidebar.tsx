@@ -9,7 +9,8 @@ import {
   FileText,
   CreditCard,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Play
 } from "lucide-react";
 
 interface UserProfileSidebarProps {
@@ -42,6 +43,12 @@ export const UserProfileSidebar = ({
       label: "Προγράμματα", 
       key: "programs",
       badge: stats.programsCount > 0 ? stats.programsCount : null
+    },
+    { 
+      icon: Play, 
+      label: "Πρόγραμμα Ημέρας", 
+      key: "daily-program",
+      badge: null
     },
     { 
       icon: Calendar, 

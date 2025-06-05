@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +13,7 @@ export const useTestResults = () => {
     try {
       setLoading(true);
       
-      // Fetch strength tests with attempt count
+      // Fetch strength tests
       const { data: strengthTests } = await supabase
         .from('strength_test_sessions')
         .select(`
@@ -20,7 +21,8 @@ export const useTestResults = () => {
           test_date,
           notes,
           user_id,
-          strength_test_attempts(id)
+          app_users!user_id(name),
+          strength_test_attempts(exercise_id)
         `)
         .order('test_date', { ascending: false });
 
@@ -31,7 +33,8 @@ export const useTestResults = () => {
           id,
           test_date,
           notes,
-          user_id
+          user_id,
+          app_users!user_id(name)
         `)
         .order('test_date', { ascending: false });
 
@@ -42,7 +45,8 @@ export const useTestResults = () => {
           id,
           test_date,
           notes,
-          user_id
+          user_id,
+          app_users!user_id(name)
         `)
         .order('test_date', { ascending: false });
 
@@ -53,7 +57,8 @@ export const useTestResults = () => {
           id,
           test_date,
           notes,
-          user_id
+          user_id,
+          app_users!user_id(name)
         `)
         .order('test_date', { ascending: false });
 
@@ -64,36 +69,10 @@ export const useTestResults = () => {
           id,
           test_date,
           notes,
-          user_id
+          user_id,
+          app_users!user_id(name)
         `)
         .order('test_date', { ascending: false });
-
-      // Get all unique user IDs
-      const allUserIds = new Set<string>();
-      
-      strengthTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
-      anthropometricTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
-      functionalTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
-      enduranceTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
-      jumpTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
-
-      // Fetch user names
-      const { data: users } = await supabase
-        .from('app_users')
-        .select('id, name')
-        .in('id', Array.from(allUserIds));
-
-      const userMap = new Map(users?.map(user => [user.id, user.name]) || []);
-
-      console.log('Raw test data:', {
-        strengthTests,
-        anthropometricTests,
-        functionalTests,
-        enduranceTests,
-        jumpTests,
-        users,
-        userMap
-      });
 
       // Combine all tests
       const allTests: TestResult[] = [
@@ -101,7 +80,7 @@ export const useTestResults = () => {
           id: test.id,
           test_date: test.test_date,
           test_type: 'Δύναμη',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος',
           user_id: test.user_id,
           notes: test.notes,
           exercise_count: test.strength_test_attempts?.length || 0,
@@ -111,7 +90,7 @@ export const useTestResults = () => {
           id: test.id,
           test_date: test.test_date,
           test_type: 'Σωματομετρικά',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος',
           user_id: test.user_id,
           notes: test.notes,
           table_name: 'anthropometric_test_sessions'
@@ -120,7 +99,7 @@ export const useTestResults = () => {
           id: test.id,
           test_date: test.test_date,
           test_type: 'Λειτουργικότητα',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος',
           user_id: test.user_id,
           notes: test.notes,
           table_name: 'functional_test_sessions'
@@ -129,7 +108,7 @@ export const useTestResults = () => {
           id: test.id,
           test_date: test.test_date,
           test_type: 'Αντοχή',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος',
           user_id: test.user_id,
           notes: test.notes,
           table_name: 'endurance_test_sessions'
@@ -138,17 +117,16 @@ export const useTestResults = () => {
           id: test.id,
           test_date: test.test_date,
           test_type: 'Άλματα',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
+          user_name: (test.app_users as any)?.name || 'Άγνωστος',
           user_id: test.user_id,
           notes: test.notes,
           table_name: 'jump_test_sessions'
         })) || [])
       ];
 
-      // Sort by date (newest first)
+      // Sort by date
       allTests.sort((a, b) => new Date(b.test_date).getTime() - new Date(a.test_date).getTime());
       
-      console.log('Combined tests:', allTests);
       setTestResults(allTests);
     } catch (error) {
       console.error('Error fetching tests:', error);

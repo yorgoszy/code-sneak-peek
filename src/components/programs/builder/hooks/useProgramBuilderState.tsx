@@ -46,17 +46,9 @@ export interface Week {
   days: Day[];
 }
 
-// Updated ProgramStructure to match main types but with Date[] for internal use
-export interface ProgramStructure {
-  id?: string;
-  name: string;
-  description?: string;
-  user_id?: string;
-  start_date?: Date;
-  training_days?: string[];
-  training_dates: Date[]; // Keep as Date[] for internal calendar operations
+// Use the main ProgramStructure type to ensure compatibility
+export interface ProgramStructure extends Omit<MainProgramStructure, 'weeks'> {
   weeks: Week[];
-  status?: string;
 }
 
 export const useProgramBuilderState = (exercises: Exercise[]) => {
@@ -73,40 +65,17 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const updateProgram = (updates: Partial<ProgramStructure> | ProgramStructure) => {
-    console.log('🔄 Updating program with:', updates);
-    
     if ('name' in updates || 'description' in updates || 'user_id' in updates || 'start_date' in updates || 'training_days' in updates || 'training_dates' in updates || 'weeks' in updates) {
       if ('weeks' in updates && Array.isArray(updates.weeks)) {
-        // Πλήρης αντικατάσταση του προγράμματος - διατηρούμε τα βασικά στοιχεία
-        const newProgram = {
-          ...updates,
-          name: updates.name || program.name,
-          description: updates.description || program.description,
-          user_id: updates.user_id || program.user_id,
-          training_dates: updates.training_dates || program.training_dates
-        } as ProgramStructure;
-        
-        console.log('🔄 Full program replacement with preserved data:', newProgram);
-        setProgram(newProgram);
+        setProgram(updates as ProgramStructure);
       } else {
-        // Μερική ενημέρωση - συγχώνευση με υπάρχοντα δεδομένα
-        const updatedProgram = { ...program, ...updates };
-        console.log('🔄 Partial program update:', updatedProgram);
-        setProgram(updatedProgram);
+        setProgram(prev => ({ ...prev, ...updates }));
       }
     }
   };
 
   const resetProgram = () => {
-    setProgram({ 
-      name: '', 
-      description: '', 
-      user_id: '', 
-      start_date: undefined, 
-      training_days: [], 
-      training_dates: [], 
-      weeks: [] 
-    });
+    setProgram({ name: '', description: '', user_id: '', start_date: undefined, training_days: [], training_dates: [], weeks: [] });
   };
 
   const loadProgramFromData = (programData: Program) => {
@@ -155,17 +124,11 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     setProgram(loadedProgram);
   };
 
-  // Calculate total training days needed
-  const getTotalTrainingDays = () => {
-    return program.weeks.reduce((total, week) => total + week.days.length, 0);
-  };
-
   return {
     program,
     updateProgram,
     resetProgram,
     generateId,
-    loadProgramFromData,
-    getTotalTrainingDays
+    loadProgramFromData
   };
 };
