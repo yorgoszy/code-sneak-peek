@@ -1,146 +1,77 @@
 
-import React, { useState } from 'react';
-import { Card } from "@/components/ui/card";
-import { Collapsible } from "@/components/ui/collapsible";
-import { GripVertical } from "lucide-react";
+import React from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
-import { Exercise } from '../types';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  blocks: Block[];
-}
+import type { DayStructure, ExerciseStructure } from './hooks/useProgramBuilderState';
+import type { Exercise } from '../types';
 
 interface DayCardProps {
-  day: Day;
+  day: DayStructure;
+  weekId: string;
   exercises: Exercise[];
+  onUpdateDayName: (dayId: string, name: string) => void;
+  onRemoveDay: (dayId: string) => void;
+  onDuplicateDay: (dayId: string) => void;
   onAddBlock: () => void;
-  onRemoveDay: () => void;
-  onDuplicateDay: () => void;
-  onUpdateDayName: (name: string) => void;
-  onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
   onUpdateBlockName: (blockId: string, name: string) => void;
-  onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
-  onRemoveExercise: (blockId: string, exerciseId: string) => void;
-  onDuplicateExercise: (blockId: string, exerciseId: string) => void;
+  onAddExercise: (blockId: string, exerciseId: string) => void;
+  onRemoveExercise: (exerciseId: string) => void;
+  onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
+  onDuplicateExercise: (exerciseId: string) => void;
   onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
 }
 
 export const DayCard: React.FC<DayCardProps> = ({
   day,
+  weekId,
   exercises,
-  onAddBlock,
+  onUpdateDayName,
   onRemoveDay,
   onDuplicateDay,
-  onUpdateDayName,
-  onAddExercise,
+  onAddBlock,
   onRemoveBlock,
   onDuplicateBlock,
   onUpdateBlockName,
-  onUpdateExercise,
+  onAddExercise,
   onRemoveExercise,
+  onUpdateExercise,
   onDuplicateExercise,
   onReorderBlocks,
   onReorderExercises
 }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingName, setEditingName] = useState(day.name);
-
-  const handleNameDoubleClick = () => {
-    setIsEditing(true);
-    setEditingName(day.name);
-  };
-
-  const handleNameSave = () => {
-    if (editingName.trim()) {
-      onUpdateDayName(editingName.trim());
-    }
-    setIsEditing(false);
-  };
-
-  const handleNameKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleNameSave();
-    } else if (e.key === 'Escape') {
-      setIsEditing(false);
-      setEditingName(day.name);
-    }
-  };
-
-  const blocksCount = day.blocks.length;
-
   return (
-    <Card className="rounded-none relative" style={{ minHeight: '30px' }}>
-      <div className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10">
-        <GripVertical className="w-3 h-3 text-gray-400" />
-      </div>
-      
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+    <Card className="rounded-none border-2">
+      <CardContent className="p-4">
         <DayCardHeader
-          dayName={day.name}
-          isOpen={isOpen}
-          isEditing={isEditing}
-          editingName={editingName}
-          blocksCount={blocksCount}
-          onNameDoubleClick={handleNameDoubleClick}
-          onEditingNameChange={setEditingName}
-          onNameSave={handleNameSave}
-          onNameKeyPress={handleNameKeyPress}
-          onAddBlock={onAddBlock}
-          onDuplicateDay={onDuplicateDay}
+          day={day}
+          onUpdateDayName={onUpdateDayName}
           onRemoveDay={onRemoveDay}
+          onDuplicateDay={onDuplicateDay}
         />
         
-        {isOpen && (
-          <DayCardContent
-            blocks={day.blocks}
-            exercises={exercises}
-            onAddExercise={onAddExercise}
-            onRemoveBlock={onRemoveBlock}
-            onDuplicateBlock={onDuplicateBlock}
-            onUpdateBlockName={onUpdateBlockName}
-            onUpdateExercise={onUpdateExercise}
-            onRemoveExercise={onRemoveExercise}
-            onDuplicateExercise={onDuplicateExercise}
-            onReorderBlocks={onReorderBlocks}
-            onReorderExercises={onReorderExercises}
-          />
-        )}
-        
-        <DayCalculations 
-          blocks={day.blocks} 
-          exercises={exercises} 
+        <DayCardContent
+          day={day}
+          weekId={weekId}
+          exercises={exercises}
+          onAddBlock={onAddBlock}
+          onRemoveBlock={onRemoveBlock}
+          onDuplicateBlock={onDuplicateBlock}
+          onUpdateBlockName={onUpdateBlockName}
+          onAddExercise={onAddExercise}
+          onRemoveExercise={onRemoveExercise}
+          onUpdateExercise={onUpdateExercise}
+          onDuplicateExercise={onDuplicateExercise}
+          onReorderBlocks={onReorderBlocks}
+          onReorderExercises={onReorderExercises}
         />
-      </Collapsible>
+
+        <DayCalculations day={day} />
+      </CardContent>
     </Card>
   );
 };

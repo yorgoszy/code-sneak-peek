@@ -37,10 +37,16 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isReassignment, setIsReassignment] = useState(false);
 
-  // Υπολογισμός απαιτούμενων προπονήσεων
-  const totalWeeks = program.weeks?.length || 0;
-  const daysPerWeek = program.weeks?.[0]?.days?.length || 0;
-  const totalRequiredSessions = totalWeeks * daysPerWeek;
+  // Υπολογισμός απαιτούμενων προπονήσεων ανά εβδομάδα
+  const getWeekTrainingCount = (weekIndex: number): number => {
+    const week = program.weeks?.[weekIndex];
+    return week?.days?.length || 0;
+  };
+
+  // Συνολικές απαιτούμενες προπονήσεις
+  const totalRequiredSessions = program.weeks?.reduce((total, week) => {
+    return total + (week.days?.length || 0);
+  }, 0) || 0;
 
   const selectedUser = users.find(user => user.id === selectedUserId);
   const completedDates = editingAssignment?.completedDates || [];
@@ -57,53 +63,43 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
       setSelectedUserId('');
       setIsReassignment(false);
     } else {
-      // Αν επεξεργαζόμαστε ήδη υπάρχουσα ανάθεση
       if (editingAssignment) {
         setSelectedUserId(editingAssignment.user_id);
         if (!isReassignment) {
           setSelectedDates(editingAssignment.training_dates || []);
         }
       } else if (program.user_id) {
-        // Αν το πρόγραμμα έχει ήδη επιλεγμένο χρήστη, τον θέτουμε ως προεπιλογή
         setSelectedUserId(program.user_id);
       }
     }
   }, [isOpen, program.user_id, editingAssignment, isReassignment]);
 
-  // Αφαίρεση επιλεγμένης ημερομηνίας
   const removeSelectedDate = (dateToRemove: string) => {
-    // Μόνο αν δεν είναι ολοκληρωμένη ημερομηνία
     if (!completedDates.includes(dateToRemove)) {
       setSelectedDates(selectedDates.filter(date => date !== dateToRemove));
     }
   };
 
-  // Βελτιωμένη λογική επιλογής ημερομηνιών
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
     const dateString = format(date, 'yyyy-MM-dd');
     
-    // Αν είναι ολοκληρωμένη ημερομηνία και δεν είναι επανα-ανάθεση, δεν επιτρέπουμε αλλαγή
     if (completedDates.includes(dateString) && !isReassignment) {
       return;
     }
     
-    // ΑΠΛΗ ΛΟΓΙΚΗ: Αν η ημερομηνία είναι ήδη επιλεγμένη, την αφαιρούμε
     if (selectedDates.includes(dateString)) {
       setSelectedDates(selectedDates.filter(d => d !== dateString));
       return;
     }
     
-    // Αλλιώς, ελέγχουμε αν μπορούμε να την προσθέσουμε
     if (canAddDate(date)) {
       setSelectedDates([...selectedDates, dateString].sort());
     }
   };
 
-  // Λογική για έλεγχο αν μπορούμε να προσθέσουμε μια ημερομηνία
   const canAddDate = (date: Date): boolean => {
-    // Αν έχουμε φτάσει το όριο των συνολικών προπονήσεων
     if (selectedDates.length >= totalRequiredSessions) {
       return false;
     }
@@ -118,12 +114,15 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
       return selectedWeek === weekNumber && selectedYear === year;
     });
     
-    // Δεν επιτρέπουμε περισσότερες από daysPerWeek προπονήσεις την εβδομάδα
-    return datesInThisWeek.length < daysPerWeek;
+    // Βρίσκουμε σε ποια εβδομάδα του προγράμματος είμαστε
+    const programStartWeek = program.weeks?.[0] ? 1 : 1; // Assuming first week
+    const programWeekIndex = Math.max(0, weekNumber - programStartWeek);
+    const maxDaysForThisWeek = getWeekTrainingCount(programWeekIndex);
+    
+    return datesInThisWeek.length < maxDaysForThisWeek;
   };
 
   const clearAllDates = () => {
-    // Κρατάμε μόνο τις ολοκληρωμένες ημερομηνίες αν δεν είναι επανα-ανάθεση
     if (!isReassignment) {
       setSelectedDates(selectedDates.filter(date => completedDates.includes(date)));
     } else {
@@ -134,10 +133,8 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   const handleReassignmentToggle = (checked: boolean) => {
     setIsReassignment(checked);
     if (checked) {
-      // Καθαρίζουμε τις ημερομηνίες για νέα ανάθεση
       setSelectedDates([]);
     } else if (editingAssignment) {
-      // Επαναφέρουμε τις αρχικές ημερομηνίες
       setSelectedDates(editingAssignment.training_dates || []);
     }
   };
@@ -147,26 +144,21 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     return selectedDates.includes(dateString);
   };
 
-  // Ελέγχουμε αν μια ημερομηνία είναι απενεργοποιημένη
   const isDateDisabled = (date: Date) => {
-    // Παρελθόν ημερομηνίες είναι πάντα απενεργοποιημένες
     if (date < new Date(new Date().setHours(0, 0, 0, 0))) {
       return true;
     }
     
     const dateString = format(date, 'yyyy-MM-dd');
     
-    // Αν η ημερομηνία είναι ήδη επιλεγμένη, ΠΟΤΕ δεν είναι disabled (για αποεπιλογή)
     if (selectedDates.includes(dateString)) {
       return false;
     }
 
-    // Αν είναι ολοκληρωμένη ημερομηνία και δεν είναι επανα-ανάθεση, είναι disabled
     if (completedDates.includes(dateString) && !isReassignment) {
       return true;
     }
     
-    // Για μη επιλεγμένες ημερομηνίες, ελέγχουμε αν μπορούμε να τις προσθέσουμε
     return !canAddDate(date);
   };
 
@@ -285,15 +277,15 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
           <ProgramInfoCard
             program={program}
             selectedUser={selectedUser}
-            totalWeeks={totalWeeks}
-            daysPerWeek={daysPerWeek}
+            totalWeeks={program.weeks?.length || 0}
+            daysPerWeek={0} // Θα υπολογίζεται δυναμικά
             totalRequiredSessions={totalRequiredSessions}
           />
 
           <DateSelectionCard
             selectedDates={selectedDates}
-            daysPerWeek={daysPerWeek}
-            totalWeeks={totalWeeks}
+            daysPerWeek={0} // Θα υπολογίζεται δυναμικά
+            totalWeeks={program.weeks?.length || 0}
             totalRequiredSessions={totalRequiredSessions}
             onDateSelect={handleDateSelect}
             onClearAllDates={clearAllDates}
