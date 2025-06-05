@@ -46,7 +46,6 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
   };
 
   const isWorkoutCompleted = (weekNumber: number, dayNumber: number) => {
-    // Χρησιμοποιούμε την ίδια λογική με το useActivePrograms
     if (!assignment?.training_dates) return false;
     
     const program = assignment.programs;
@@ -59,7 +58,6 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
     
     const dateStr = assignment.training_dates[totalDayIndex];
     
-    // Ελέγχουμε αν υπάρχει τουλάχιστον μία ολοκληρωμένη προπόνηση για αυτή την ημερομηνία
     return completions.some(c => 
       c.scheduled_date === dateStr && 
       c.status === 'completed'
@@ -82,7 +80,6 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
       return;
     }
     
-    // Βρίσκουμε τα indexes για την έναρξη
     const weeks = assignment?.programs?.program_weeks || [];
     const weekIndex = weeks.findIndex(w => w.id === week.id);
     const dayIndex = week.program_days?.findIndex((d: any) => d.id === day.id) || 0;
@@ -126,9 +123,6 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
       </Dialog>
     );
   }
-
-  const selectedWeek = weeks[selectedWeekIndex];
-  const days = selectedWeek?.program_days || [];
 
   return (
     <>
