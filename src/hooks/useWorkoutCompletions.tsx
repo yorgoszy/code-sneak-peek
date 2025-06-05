@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -188,10 +189,10 @@ export const useWorkoutCompletions = () => {
       if (!existingRecord) {
         console.log('⚠️ Δεν βρέθηκε εγγραφή - δημιουργία νέας');
         
-        // Παίρνουμε το σωστό program_id από το assignment
+        // Παίρνουμε το assignment και τα training_dates για να υπολογίσουμε το σωστό week/day number
         const { data: assignmentData, error: assignmentError } = await supabase
           .from('program_assignments')
-          .select('program_id')
+          .select('program_id, training_dates')
           .eq('id', assignmentId)
           .single();
 
@@ -204,6 +205,40 @@ export const useWorkoutCompletions = () => {
           throw new Error('No program_id found for assignment');
         }
 
+        // Υπολογίζουμε το week_number και day_number βάσει της θέσης της ημερομηνίας στο training_dates array
+        const trainingDates = assignmentData.training_dates || [];
+        const dateIndex = trainingDates.findIndex((date: string) => date === scheduledDate);
+        
+        console.log('📅 Training dates:', trainingDates);
+        console.log('📍 Date index for', scheduledDate, ':', dateIndex);
+
+        let weekNumber = 1;
+        let dayNumber = 1;
+
+        if (dateIndex >= 0) {
+          // Παίρνουμε τη δομή του προγράμματος για να υπολογίσουμε σωστά
+          const { data: programData, error: programError } = await supabase
+            .from('programs')
+            .select(`
+              program_weeks (
+                week_number,
+                program_days (
+                  day_number
+                )
+              )
+            `)
+            .eq('id', assignmentData.program_id)
+            .single();
+
+          if (!programError && programData?.program_weeks?.[0]?.program_days) {
+            const daysPerWeek = programData.program_weeks[0].program_days.length;
+            weekNumber = Math.floor(dateIndex / daysPerWeek) + 1;
+            dayNumber = (dateIndex % daysPerWeek) + 1;
+          }
+        }
+
+        console.log('📊 Calculated week/day:', { weekNumber, dayNumber });
+
         // Δημιουργούμε νέα εγγραφή
         const userId = await getUserId();
         if (!userId) throw new Error('User not found');
@@ -213,9 +248,9 @@ export const useWorkoutCompletions = () => {
           .insert({
             assignment_id: assignmentId,
             user_id: userId,
-            program_id: assignmentData.program_id, // Χρησιμοποιούμε το σωστό program_id
-            week_number: 1,
-            day_number: 1,
+            program_id: assignmentData.program_id,
+            week_number: weekNumber,
+            day_number: dayNumber,
             scheduled_date: scheduledDate,
             completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : scheduledDate,
             status: status,
