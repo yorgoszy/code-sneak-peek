@@ -122,7 +122,7 @@ export const useProgramBuilderDialogLogic = ({
         try {
           const savedProgram = await onCreateProgram({
             ...program,
-            status: 'template'
+            status: 'active'
           });
           programId = savedProgram.id;
           setCurrentProgramId(programId);
