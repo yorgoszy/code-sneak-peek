@@ -45,6 +45,28 @@ export const useWorkoutCompletionsCache = () => {
     }
   }, [completionsCache]);
 
+  const getAllWorkoutCompletions = useCallback(async (): Promise<WorkoutCompletion[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .order('scheduled_date', { ascending: false });
+
+      if (error) throw error;
+
+      // Type cast the data to ensure status is properly typed
+      const completions = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'completed' | 'missed' | 'makeup' | 'scheduled'
+      })) as WorkoutCompletion[];
+      
+      return completions;
+    } catch (error) {
+      console.error('Error fetching all workout completions:', error);
+      return [];
+    }
+  }, []);
+
   const calculateWorkoutStats = useCallback((
     completions: WorkoutCompletion[], 
     trainingDates: string[]
@@ -145,6 +167,7 @@ export const useWorkoutCompletionsCache = () => {
 
   return {
     getWorkoutCompletions,
+    getAllWorkoutCompletions,
     calculateWorkoutStats,
     fetchMultipleCompletions,
     clearCache,

@@ -18,7 +18,7 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
         <div className="bg-white rounded-none border p-6">
           <h2 className="text-lg font-semibold mb-4">Πρόγραμμα Ημέρας</h2>
           {userProfile ? (
-            <UserProfileDailyProgram user={userProfile} />
+            <UserProfileDailyProgram userProfile={userProfile} />
           ) : (
             <p className="text-gray-500">Φόρτωση προγράμματος...</p>
           )}
