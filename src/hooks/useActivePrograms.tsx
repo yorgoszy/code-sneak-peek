@@ -67,7 +67,10 @@ export const useActivePrograms = () => {
             id: assignment.programs.id,
             name: assignment.programs.name,
             description: assignment.programs.description,
-            training_days: assignment.programs.training_days,
+            // Convert training_days number to string array if needed, or use empty array
+            training_days: typeof assignment.programs.training_days === 'number' 
+              ? [] // Default to empty array since we're using training_dates instead
+              : assignment.programs.training_days || [],
             program_weeks: assignment.programs.program_weeks || []
           } : undefined,
           app_users: assignment.app_users ? {
