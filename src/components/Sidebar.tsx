@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart3,
-  Play,
   Home,
   Mail
 } from "lucide-react";
@@ -34,7 +33,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     { icon: Activity, label: "Τεστ", path: "/dashboard/tests" },
     { icon: TrendingUp, label: "Αποτελέσματα", path: "/dashboard/results" },
     { icon: Calendar, label: "Προγράμματα", path: "/dashboard/programs" },
-    { icon: Play, label: "Ενεργά Προγράμματα", path: "/dashboard/active-programs" },
   ];
 
   return (
