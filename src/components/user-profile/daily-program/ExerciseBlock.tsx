@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Play } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
@@ -71,19 +72,22 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
 
   const renderVideoThumbnail = (exercise: Exercise) => {
     const videoUrl = exercise.exercises?.video_url;
-    const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
-    const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
+    if (!videoUrl || !isValidVideoUrl(videoUrl)) {
+      return (
+        <div className="w-10 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0 video-thumbnail mr-2">
+          <span className="text-xs text-gray-400">-</span>
+        </div>
+      );
+    }
+
+    const thumbnailUrl = getVideoThumbnail(videoUrl);
     
     return (
       <div 
-        className={`relative w-12 h-8 rounded-none overflow-hidden group flex-shrink-0 video-thumbnail mr-2 ${
-          hasValidVideo ? 'cursor-pointer' : 'cursor-default'
-        }`}
+        className="relative w-10 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail mr-2"
         onClick={(e) => {
           e.stopPropagation();
-          if (hasValidVideo) {
-            handleVideoClick(exercise);
-          }
+          handleVideoClick(exercise);
         }}
       >
         {thumbnailUrl ? (
@@ -91,32 +95,15 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
             src={thumbnailUrl}
             alt={`${exercise.exercises?.name} thumbnail`}
             className="w-full h-full object-cover"
-            onError={(e) => {
-              // Fallback αν δεν φορτώσει το thumbnail
-              const target = e.target as HTMLElement;
-              target.style.display = 'none';
-              const parent = target.parentElement;
-              if (parent) {
-                parent.innerHTML = `
-                  <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
-                `;
-              }
-            }}
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <Play className="w-3 h-3 text-gray-400" />
+            <Play className="w-2 h-2 text-gray-400" />
           </div>
         )}
-        {hasValidVideo && (
-          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Play className="w-3 h-3 text-white" />
-          </div>
-        )}
+        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <Play className="w-2 h-2 text-white" />
+        </div>
       </div>
     );
   };
