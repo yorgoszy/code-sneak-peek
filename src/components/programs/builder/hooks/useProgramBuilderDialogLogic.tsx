@@ -39,13 +39,11 @@ export const useProgramBuilderDialogLogic = ({
     assignmentDialogOpen,
     setAssignmentDialogOpen,
     availableUsers,
-    assignmentEditData,
     handleOpenAssignments,
     handleAssign
   } = useAssignmentDialog({
     users,
     program,
-    editingAssignment,
     currentProgramId,
     onCreateProgram,
     onDialogClose: handleClose
@@ -59,6 +57,6 @@ export const useProgramBuilderDialogLogic = ({
     handleOpenAssignments,
     handleAssign,
     availableUsers,
-    assignmentEditData
+    editingAssignment
   };
 };

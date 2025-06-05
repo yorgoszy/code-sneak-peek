@@ -7,17 +7,19 @@ import type { ProgramStructure } from './useProgramBuilderState';
 import type { User } from '../../types';
 
 interface UseAssignmentDialogProps {
-  onCreateProgram: (program: any) => Promise<any>;
-  onOpenChange: () => void;
-  program: ProgramStructure;
   users: User[];
+  program: ProgramStructure;
+  currentProgramId: string | null;
+  onCreateProgram: (program: any) => Promise<any>;
+  onDialogClose: () => void;
 }
 
 export const useAssignmentDialog = ({
-  onCreateProgram,
-  onOpenChange,
+  users,
   program,
-  users
+  currentProgramId,
+  onCreateProgram,
+  onDialogClose
 }: UseAssignmentDialogProps) => {
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const { createWorkoutCompletions } = useProgramWorkoutCompletions();
@@ -63,16 +65,18 @@ export const useAssignmentDialog = ({
     try {
       console.log('🔄 Assigning program to user:', { userId, trainingDates });
 
-      if (!program.id) {
+      if (!program.id && !currentProgramId) {
         toast.error('Πρέπει πρώτα να αποθηκευτεί το πρόγραμμα');
         return;
       }
+
+      const programId = program.id || currentProgramId;
 
       // Δημιουργία assignment
       const { data: assignment, error: assignmentError } = await supabase
         .from('program_assignments')
         .insert({
-          program_id: program.id,
+          program_id: programId,
           user_id: userId,
           training_dates: trainingDates,
           status: 'active',
@@ -93,14 +97,14 @@ export const useAssignmentDialog = ({
       await createWorkoutCompletions(
         assignment.id,
         userId,
-        program.id,
+        programId!,
         trainingDates,
         program
       );
 
       toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς!');
       setAssignmentDialogOpen(false);
-      onOpenChange();
+      onDialogClose();
 
     } catch (error) {
       console.error('❌ Error assigning program:', error);
