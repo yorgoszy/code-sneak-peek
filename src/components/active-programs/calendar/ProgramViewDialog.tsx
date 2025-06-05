@@ -3,11 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Clock, Dumbbell, CheckCircle, Play } from "lucide-react";
+import { Clock, Dumbbell, CheckCircle } from "lucide-react";
 import { ExerciseBlock } from "@/components/user-profile/daily-program/ExerciseBlock";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
-import { DaySelector } from './DaySelector';
 import { DayProgramDialog } from './DayProgramDialog';
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -27,7 +25,6 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
 }) => {
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [completions, setCompletions] = useState<any[]>([]);
-  const [daySelectorOpen, setDaySelectorOpen] = useState(false);
   const [dayProgramOpen, setDayProgramOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<any>(null);
   const [selectedWeek, setSelectedWeek] = useState<any>(null);
@@ -95,18 +92,6 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
     setDayProgramOpen(true);
   };
 
-  const handleStartProgram = () => {
-    setDaySelectorOpen(true);
-  };
-
-  const handleDaySelected = (weekIndex: number, dayIndex: number) => {
-    setDaySelectorOpen(false);
-    if (onStartWorkout) {
-      onStartWorkout(weekIndex, dayIndex);
-      onClose();
-    }
-  };
-
   const getDateForDay = (week: any, day: any) => {
     if (!assignment?.training_dates) return new Date();
     
@@ -151,13 +136,9 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
             <DialogTitle className="flex items-center justify-between">
               <span>{program.name}</span>
               <div className="flex items-center gap-2">
-                <Button
-                  onClick={handleStartProgram}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  Έναρξη Προπόνησης
-                </Button>
+                <div className="text-sm text-gray-600 italic">
+                  Κάνε διπλό κλικ στην ημέρα που θέλεις να προπονηθείς
+                </div>
                 <Badge variant="outline" className="rounded-none">
                   {assignment.status}
                 </Badge>
@@ -246,13 +227,6 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
           </div>
         </DialogContent>
       </Dialog>
-
-      <DaySelector
-        assignment={assignment}
-        isOpen={daySelectorOpen}
-        onClose={() => setDaySelectorOpen(false)}
-        onSelectDay={handleDaySelected}
-      />
 
       {/* DayProgramDialog για έναρξη προπόνησης */}
       <DayProgramDialog
