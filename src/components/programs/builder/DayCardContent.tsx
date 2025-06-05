@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { CardContent } from "@/components/ui/card";
-import { CollapsibleContent } from "@/components/ui/collapsible";
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableBlock } from './SortableBlock';
@@ -66,32 +64,30 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
   };
 
   return (
-    <CollapsibleContent>
-      <CardContent className="pt-2 pl-4">
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-0">
-              {blocks.map((block) => (
-                <SortableBlock
-                  key={block.id}
-                  block={block}
-                  exercises={exercises}
-                  onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
-                  onRemoveBlock={() => onRemoveBlock(block.id)}
-                  onDuplicateBlock={() => onDuplicateBlock(block.id)}
-                  onUpdateBlockName={(name) => onUpdateBlockName(block.id, name)}
-                  onUpdateExercise={(exerciseId, field, value) => 
-                    onUpdateExercise(block.id, exerciseId, field, value)
-                  }
-                  onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
-                  onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
-                  onReorderExercises={(oldIndex, newIndex) => onReorderExercises(block.id, oldIndex, newIndex)}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-      </CardContent>
-    </CollapsibleContent>
+    <div className="pt-2 pl-4">
+      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-0">
+            {blocks.map((block) => (
+              <SortableBlock
+                key={block.id}
+                block={block}
+                exercises={exercises}
+                onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
+                onRemoveBlock={() => onRemoveBlock(block.id)}
+                onDuplicateBlock={() => onDuplicateBlock(block.id)}
+                onUpdateBlockName={(name) => onUpdateBlockName(block.id, name)}
+                onUpdateExercise={(exerciseId, field, value) => 
+                  onUpdateExercise(block.id, exerciseId, field, value)
+                }
+                onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
+                onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
+                onReorderExercises={(oldIndex, newIndex) => onReorderExercises(block.id, oldIndex, newIndex)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+    </div>
   );
 };
