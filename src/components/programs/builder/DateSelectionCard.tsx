@@ -3,8 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Trash2, CheckCircle2 } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { CalendarIcon, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import { format, parseISO, startOfWeek, endOfWeek } from "date-fns";
 
 interface DateSelectionCardProps {
   selectedDates: string[];
@@ -35,6 +35,39 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
     const dateString = format(date, 'yyyy-MM-dd');
     return completedDates.includes(dateString);
   };
+
+  const getWeekProgress = () => {
+    if (selectedDates.length === 0) return [];
+    
+    const progress: Array<{weekIndex: number, selected: number, required: number}> = [];
+    
+    // Ομαδοποίηση των επιλεγμένων ημερομηνιών ανά εβδομάδα
+    const datesByWeek = new Map<string, string[]>();
+    
+    selectedDates.forEach(dateString => {
+      const date = parseISO(dateString);
+      const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+      const weekKey = format(weekStart, 'yyyy-MM-dd');
+      
+      if (!datesByWeek.has(weekKey)) {
+        datesByWeek.set(weekKey, []);
+      }
+      datesByWeek.get(weekKey)!.push(dateString);
+    });
+
+    // Δημιουργία στατιστικών για κάθε εβδομάδα
+    Array.from(datesByWeek.entries()).forEach(([weekKey, dates], index) => {
+      progress.push({
+        weekIndex: index + 1,
+        selected: dates.length,
+        required: daysPerWeek
+      });
+    });
+
+    return progress;
+  };
+
+  const weekProgress = getWeekProgress();
 
   const getDayContent = (date: Date) => {
     const isCompleted = isDateCompleted(date);
@@ -83,12 +116,36 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
         <div className="space-y-4">
           <div className="text-sm text-gray-600">
             <p>Επιλέξτε {totalRequiredSessions} ημερομηνίες για {totalWeeks} εβδομάδες × {daysPerWeek} ημέρες/εβδομάδα</p>
+            <p className="text-xs text-blue-600 mt-1">
+              💡 Κάθε εβδομάδα πρέπει να έχει ακριβώς {daysPerWeek} προπονήσεις
+            </p>
             {editMode && completedDates.length > 0 && (
               <p className="text-green-600 mt-1">
                 ✓ Πράσινες ημερομηνίες: Ολοκληρωμένες προπονήσεις
               </p>
             )}
           </div>
+
+          {weekProgress.length > 0 && (
+            <div className="bg-blue-50 p-3 rounded-none border border-blue-200">
+              <h4 className="text-sm font-medium text-blue-800 mb-2">Πρόοδος ανά εβδομάδα:</h4>
+              <div className="space-y-1">
+                {weekProgress.map((week) => (
+                  <div key={week.weekIndex} className="flex items-center gap-2 text-xs">
+                    <span className="text-blue-700">Εβδομάδα {week.weekIndex}:</span>
+                    <span className={`${week.selected === week.required ? 'text-green-600' : 'text-orange-600'}`}>
+                      {week.selected}/{week.required} προπονήσεις
+                    </span>
+                    {week.selected === week.required ? (
+                      <CheckCircle2 className="w-3 h-3 text-green-600" />
+                    ) : (
+                      <AlertCircle className="w-3 h-3 text-orange-600" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           <div className="flex justify-center">
             <Calendar

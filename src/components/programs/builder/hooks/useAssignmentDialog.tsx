@@ -67,15 +67,13 @@ export const useAssignmentDialog = ({
             return new Date(date).toISOString().split('T')[0];
           }
         });
-      } else {
-        // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
-        const today = new Date();
-        for (let i = 0; i < totalDays; i++) {
-          const date = new Date(today);
-          date.setDate(today.getDate() + i);
-          trainingDates.push(date.toISOString().split('T')[0]);
-        }
-        console.log('📅 Generated training dates:', trainingDates);
+      }
+
+      // ΑΦΑΙΡΟΥΜΕ την αυτόματη δημιουργία ημερομηνιών - ο χρήστης πρέπει να τις επιλέξει
+      if (trainingDates.length === 0) {
+        console.log('⚠️ No training dates selected');
+        toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης στο ημερολόγιο');
+        return;
       }
 
       if (trainingDates.length < totalDays) {
@@ -90,12 +88,17 @@ export const useAssignmentDialog = ({
         console.log('📝 No program ID found, saving program first...');
         
         try {
-          // Αποθήκευση του προγράμματος ως ενεργό
-          const savedProgram = await onCreateProgram({
+          // Διασφαλίζουμε ότι το πρόγραμμα έχει όλα τα απαραίτητα δεδομένα
+          const programToSave = {
             ...program,
             training_dates: trainingDates,
             status: 'active'
-          });
+          };
+
+          console.log('💾 Saving program with data:', programToSave);
+          
+          // Αποθήκευση του προγράμματος ως ενεργό
+          const savedProgram = await onCreateProgram(programToSave);
           
           console.log('📝 Saved program response:', savedProgram);
           
@@ -110,7 +113,7 @@ export const useAssignmentDialog = ({
           
         } catch (saveError) {
           console.error('❌ Error saving program:', saveError);
-          toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
+          toast.error(`Σφάλμα κατά την αποθήκευση του προγράμματος: ${saveError.message}`);
           return;
         }
       }

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { format, parseISO, getWeek, getYear } from "date-fns";
+import { format, parseISO, getWeek, getYear, startOfWeek, endOfWeek } from "date-fns";
 import type { User as UserType } from '../../types';
 import type { ProgramStructure } from '../hooks/useProgramBuilderState';
 
@@ -25,7 +25,7 @@ export const useAssignmentDialogState = ({
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isReassignment, setIsReassignment] = useState(false);
 
-  // Υπολογισμός απαιτούμενων προπονήσεων
+  // Υπολογισμός προγράμματος
   const totalWeeks = program.weeks?.length || 0;
   const daysPerWeek = program.weeks?.[0]?.days?.length || 0;
   const totalRequiredSessions = totalWeeks * daysPerWeek;
@@ -70,27 +70,52 @@ export const useAssignmentDialogState = ({
       return;
     }
     
-    if (canAddDate(date)) {
+    if (canAddDateToWeek(date)) {
       setSelectedDates([...selectedDates, dateString].sort());
     }
   };
 
-  const canAddDate = (date: Date): boolean => {
+  const canAddDateToWeek = (date: Date): boolean => {
     if (selectedDates.length >= totalRequiredSessions) {
       return false;
     }
     
-    const weekNumber = getWeek(date, { weekStartsOn: 1, firstWeekContainsDate: 4 });
-    const year = getYear(date);
+    // Βρίσκουμε ποια εβδομάδα είναι (0-based index)
+    const weekIndex = getWeekIndexForDate(date);
+    if (weekIndex === -1) return false;
+    
+    // Υπολογίζουμε πόσες προπονήσεις έχει η εβδομάδα αυτή
+    const weekDaysCount = program.weeks?.[weekIndex]?.days?.length || 0;
+    
+    // Μετράμε πόσες ημερομηνίες έχουμε ήδη επιλέξει για αυτή την εβδομάδα
+    const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
     
     const datesInThisWeek = selectedDates.filter(selectedDate => {
       const selectedDateObj = parseISO(selectedDate);
-      const selectedWeek = getWeek(selectedDateObj, { weekStartsOn: 1, firstWeekContainsDate: 4 });
-      const selectedYear = getYear(selectedDateObj);
-      return selectedWeek === weekNumber && selectedYear === year;
+      return selectedDateObj >= weekStart && selectedDateObj <= weekEnd;
     });
     
-    return datesInThisWeek.length < daysPerWeek;
+    return datesInThisWeek.length < weekDaysCount;
+  };
+
+  const getWeekIndexForDate = (date: Date): number => {
+    // Εδώ πρέπει να υπολογίσουμε ποια εβδομάδα του προγράμματος είναι
+    // Για απλότητα, θα χρησιμοποιήσουμε τη σειρά των εβδομάδων
+    if (!program.weeks || program.weeks.length === 0) return -1;
+    
+    // Αν έχουμε ήδη επιλεγμένες ημερομηνίες, βρίσκουμε την πρώτη
+    if (selectedDates.length > 0) {
+      const sortedDates = [...selectedDates].sort();
+      const firstDate = parseISO(sortedDates[0]);
+      
+      // Υπολογίζουμε τη διαφορά εβδομάδων
+      const weeksDiff = Math.floor((date.getTime() - firstDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+      return Math.max(0, Math.min(weeksDiff, program.weeks.length - 1));
+    }
+    
+    // Αν δεν έχουμε επιλεγμένες ημερομηνίες, αρχίζουμε από την πρώτη εβδομάδα
+    return 0;
   };
 
   const clearAllDates = () => {
@@ -116,9 +141,8 @@ export const useAssignmentDialogState = ({
   };
 
   const isDateDisabled = (date: Date) => {
-    if (date < new Date(new Date().setHours(0, 0, 0, 0))) {
-      return true;
-    }
+    // ΑΦΑΙΡΟΥΜΕ τον περιορισμό για προηγούμενες ημερομηνίες
+    // Επιτρέπουμε όλες τις ημερομηνίες (παρελθόν, παρόν, μέλλον)
     
     const dateString = format(date, 'yyyy-MM-dd');
     
@@ -130,7 +154,7 @@ export const useAssignmentDialogState = ({
       return true;
     }
     
-    return !canAddDate(date);
+    return !canAddDateToWeek(date);
   };
 
   return {
