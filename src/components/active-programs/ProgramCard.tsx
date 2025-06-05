@@ -12,13 +12,15 @@ interface ProgramCardProps {
   selectedDate?: Date;
   onRefresh?: () => void;
   onDelete?: (assignmentId: string) => void;
+  userMode?: boolean; // Νέο prop για user mode
 }
 
 export const ProgramCard: React.FC<ProgramCardProps> = ({ 
   assignment, 
   selectedDate,
   onRefresh,
-  onDelete 
+  onDelete,
+  userMode = false // Default false για admin mode
 }) => {
   const { calculateWorkoutStats, getWorkoutCompletions } = useWorkoutCompletionsCache();
 
@@ -58,6 +60,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
             selectedDate={selectedDate}
             onRefresh={onRefresh} 
             onDelete={onDelete}
+            userMode={userMode} // Περνάω το userMode prop
           />
         </div>
       </CardContent>

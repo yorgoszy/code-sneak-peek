@@ -13,13 +13,15 @@ interface ProgramCardActionsProps {
   selectedDate?: Date;
   onRefresh?: () => void;
   onDelete?: (assignmentId: string) => void;
+  userMode?: boolean; // Νέο prop για user mode
 }
 
 export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ 
   assignment, 
   selectedDate,
   onRefresh,
-  onDelete 
+  onDelete,
+  userMode = false // Default false για admin mode
 }) => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
@@ -84,35 +86,40 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
             <Eye className="h-3 w-3" />
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => console.log('Edit clicked')}
-            className="h-6 w-6 p-0 rounded-none"
-            title="Επεξεργασία"
-          >
-            <Edit className="h-3 w-3" />
-          </Button>
+          {/* Εμφάνιση των υπόλοιπων εικονιδίων μόνο αν δεν είμαστε σε user mode */}
+          {!userMode && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => console.log('Edit clicked')}
+                className="h-6 w-6 p-0 rounded-none"
+                title="Επεξεργασία"
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => console.log('Complete clicked')}
-            className="h-6 w-6 p-0 rounded-none"
-            title="Ολοκλήρωση"
-          >
-            <CheckCircle className="h-3 w-3" />
-          </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => console.log('Complete clicked')}
+                className="h-6 w-6 p-0 rounded-none"
+                title="Ολοκλήρωση"
+              >
+                <CheckCircle className="h-3 w-3" />
+              </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDeleteClick}
-            className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-700"
-            title="Διαγραφή"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeleteClick}
+                className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-700"
+                title="Διαγραφή"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
 

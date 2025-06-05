@@ -136,6 +136,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                       assignment={assignment}
                       onRefresh={refetch}
                       onDelete={handleDelete}
+                      userMode={true} // User mode για να δείχνει μόνο προβολή και έναρξη
                     />
                   </div>
                 ))}
@@ -168,6 +169,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                       assignment={assignment}
                       onRefresh={refetch}
                       onDelete={handleDelete}
+                      userMode={true} // User mode για να δείχνει μόνο προβολή και έναρξη
                     />
                   </div>
                 ))}
