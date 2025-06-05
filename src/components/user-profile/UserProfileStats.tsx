@@ -26,10 +26,8 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           )}
           <div className="text-center">
             <Dumbbell className="h-8 w-8 mx-auto text-green-500 mb-2" />
-            <p className="text-2xl font-bold">{stats.programsCount}</p>
-            <p className="text-sm text-gray-600">
-              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ανατεθέντα Προγράμματα'}
-            </p>
+            <p className="text-2xl font-bold">0</p>
+            <p className="text-sm text-gray-600">Προγράμματα</p>
           </div>
           <div className="text-center">
             <Calendar className="h-8 w-8 mx-auto text-purple-500 mb-2" />
