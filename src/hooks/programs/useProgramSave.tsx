@@ -79,52 +79,9 @@ export const useProgramSave = () => {
     try {
       console.log('🗑️ Deleting existing program structure for:', programId);
 
-      // Διαγραφή με τη σωστή σειρά (από το πιο εσωτερικό προς το εξωτερικό)
+      // Διαγραφή με τη σωστή σειρά και σωστό τρόπο
       
-      // 1. Διαγραφή exercises
-      const { data: blocks } = await supabase
-        .from('program_blocks')
-        .select('id')
-        .in('day_id', 
-          supabase
-            .from('program_days')
-            .select('id')
-            .in('week_id',
-              supabase
-                .from('program_weeks')
-                .select('id')
-                .eq('program_id', programId)
-            )
-        );
-
-      if (blocks && blocks.length > 0) {
-        const blockIds = blocks.map(b => b.id);
-        await supabase
-          .from('program_exercises')
-          .delete()
-          .in('block_id', blockIds);
-      }
-
-      // 2. Διαγραφή blocks
-      const { data: days } = await supabase
-        .from('program_days')
-        .select('id')
-        .in('week_id',
-          supabase
-            .from('program_weeks')
-            .select('id')
-            .eq('program_id', programId)
-        );
-
-      if (days && days.length > 0) {
-        const dayIds = days.map(d => d.id);
-        await supabase
-          .from('program_blocks')
-          .delete()
-          .in('day_id', dayIds);
-      }
-
-      // 3. Διαγραφή days
+      // 1. Βρίσκουμε όλα τα weeks του προγράμματος
       const { data: weeks } = await supabase
         .from('program_weeks')
         .select('id')
@@ -132,13 +89,47 @@ export const useProgramSave = () => {
 
       if (weeks && weeks.length > 0) {
         const weekIds = weeks.map(w => w.id);
+
+        // 2. Βρίσκουμε όλες τις days των weeks
+        const { data: days } = await supabase
+          .from('program_days')
+          .select('id')
+          .in('week_id', weekIds);
+
+        if (days && days.length > 0) {
+          const dayIds = days.map(d => d.id);
+
+          // 3. Βρίσκουμε όλα τα blocks των days
+          const { data: blocks } = await supabase
+            .from('program_blocks')
+            .select('id')
+            .in('day_id', dayIds);
+
+          if (blocks && blocks.length > 0) {
+            const blockIds = blocks.map(b => b.id);
+
+            // 4. Διαγράφουμε exercises πρώτα
+            await supabase
+              .from('program_exercises')
+              .delete()
+              .in('block_id', blockIds);
+          }
+
+          // 5. Διαγράφουμε blocks
+          await supabase
+            .from('program_blocks')
+            .delete()
+            .in('day_id', dayIds);
+        }
+
+        // 6. Διαγράφουμε days
         await supabase
           .from('program_days')
           .delete()
           .in('week_id', weekIds);
       }
 
-      // 4. Διαγραφή weeks
+      // 7. Διαγράφουμε weeks
       await supabase
         .from('program_weeks')
         .delete()
