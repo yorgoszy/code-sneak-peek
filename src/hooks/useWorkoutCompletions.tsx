@@ -188,6 +188,22 @@ export const useWorkoutCompletions = () => {
       if (!existingRecord) {
         console.log('⚠️ Δεν βρέθηκε εγγραφή - δημιουργία νέας');
         
+        // Παίρνουμε το σωστό program_id από το assignment
+        const { data: assignmentData, error: assignmentError } = await supabase
+          .from('program_assignments')
+          .select('program_id')
+          .eq('id', assignmentId)
+          .single();
+
+        if (assignmentError) {
+          console.error('❌ Error fetching assignment:', assignmentError);
+          throw assignmentError;
+        }
+
+        if (!assignmentData?.program_id) {
+          throw new Error('No program_id found for assignment');
+        }
+
         // Δημιουργούμε νέα εγγραφή
         const userId = await getUserId();
         if (!userId) throw new Error('User not found');
@@ -197,7 +213,7 @@ export const useWorkoutCompletions = () => {
           .insert({
             assignment_id: assignmentId,
             user_id: userId,
-            program_id: assignmentId, // Για τώρα χρησιμοποιούμε το assignment_id
+            program_id: assignmentData.program_id, // Χρησιμοποιούμε το σωστό program_id
             week_number: 1,
             day_number: 1,
             scheduled_date: scheduledDate,
