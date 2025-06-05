@@ -12,11 +12,20 @@ export const useProgramBuilderActions = (
   generateId: () => string,
   exercises: any[]
 ) => {
-  const weekActions = useWeekActions(program, updateProgram, generateId);
-  const dayActions = useDayActions(program, updateProgram, generateId);
-  const blockActions = useBlockActions(program, updateProgram, generateId);
-  const exerciseActions = useExerciseActions(program, updateProgram, generateId, exercises);
-  const reorderActions = useReorderActions(program, updateProgram);
+  // Wrap the updateProgram to preserve user_id
+  const updateProgramWithUserId = (updates: Partial<ProgramStructure>) => {
+    const updatesWithUserId = {
+      ...updates,
+      user_id: program.user_id // Διατήρηση του επιλεγμένου χρήστη
+    };
+    updateProgram(updatesWithUserId);
+  };
+
+  const weekActions = useWeekActions(program, updateProgramWithUserId, generateId);
+  const dayActions = useDayActions(program, updateProgramWithUserId, generateId);
+  const blockActions = useBlockActions(program, updateProgramWithUserId, generateId);
+  const exerciseActions = useExerciseActions(program, updateProgramWithUserId, generateId, exercises);
+  const reorderActions = useReorderActions(program, updateProgramWithUserId);
 
   return {
     ...weekActions,

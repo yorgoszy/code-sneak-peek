@@ -4,6 +4,7 @@ import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProgramBasicInfo } from './ProgramBasicInfo';
 import { TrainingWeeks } from './TrainingWeeks';
+import { ProgramCalendar } from './ProgramCalendar';
 import { Button } from "@/components/ui/button";
 import { Save, Users } from "lucide-react";
 import type { User, Exercise } from '../types';
@@ -38,6 +39,8 @@ interface ProgramBuilderDialogContentProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onSave: () => void;
   onAssignments: () => void;
+  onTrainingDatesChange?: (dates: Date[]) => void;
+  getTotalTrainingDays?: () => number;
 }
 
 export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentProps> = ({
@@ -68,8 +71,12 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onReorderBlocks,
   onReorderExercises,
   onSave,
-  onAssignments
+  onAssignments,
+  onTrainingDatesChange,
+  getTotalTrainingDays
 }) => {
+  const totalDays = getTotalTrainingDays ? getTotalTrainingDays() : 0;
+
   return (
     <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0">
       <DialogHeader className="flex-shrink-0 p-6 border-b">
@@ -115,6 +122,15 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
           />
+
+          {/* Calendar Component - Show only if there are weeks and days */}
+          {totalDays > 0 && onTrainingDatesChange && (
+            <ProgramCalendar
+              selectedDates={program.training_dates || []}
+              onDatesChange={onTrainingDatesChange}
+              totalDays={totalDays}
+            />
+          )}
         </div>
       </ScrollArea>
 
@@ -131,6 +147,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
         <Button
           onClick={onAssignments}
           className="rounded-none"
+          disabled={!program.user_id || totalDays === 0 || (program.training_dates?.length || 0) < totalDays}
         >
           <Users className="w-4 h-4 mr-2" />
           Ανάθεση σε Ασκούμενο

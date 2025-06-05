@@ -31,7 +31,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   editingAssignment,
   isOpen
 }) => {
-  const { program, updateProgram, resetProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises);
+  const { program, updateProgram, resetProgram, generateId, loadProgramFromData, getTotalTrainingDays } = useProgramBuilderState(exercises);
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises);
   
   const {
@@ -66,6 +66,10 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     }
   }, [editingProgram, isOpen]);
 
+  const handleTrainingDatesChange = (dates: Date[]) => {
+    updateProgram({ training_dates: dates });
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -98,6 +102,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           onReorderExercises={actions.reorderExercises}
           onSave={handleSave}
           onAssignments={handleOpenAssignments}
+          onTrainingDatesChange={handleTrainingDatesChange}
+          getTotalTrainingDays={getTotalTrainingDays}
         />
       </Dialog>
 

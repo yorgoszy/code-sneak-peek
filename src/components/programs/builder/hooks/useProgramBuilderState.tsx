@@ -49,6 +49,7 @@ export interface Week {
 // Use the main ProgramStructure type to ensure compatibility
 export interface ProgramStructure extends Omit<MainProgramStructure, 'weeks'> {
   weeks: Week[];
+  training_dates: Date[]; // Προσθήκη training_dates ως Date array
 }
 
 export const useProgramBuilderState = (exercises: Exercise[]) => {
@@ -75,7 +76,15 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   };
 
   const resetProgram = () => {
-    setProgram({ name: '', description: '', user_id: '', start_date: undefined, training_days: [], training_dates: [], weeks: [] });
+    setProgram({ 
+      name: '', 
+      description: '', 
+      user_id: '', 
+      start_date: undefined, 
+      training_days: [], 
+      training_dates: [], 
+      weeks: [] 
+    });
   };
 
   const loadProgramFromData = (programData: Program) => {
@@ -124,11 +133,17 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     setProgram(loadedProgram);
   };
 
+  // Calculate total training days needed
+  const getTotalTrainingDays = () => {
+    return program.weeks.reduce((total, week) => total + week.days.length, 0);
+  };
+
   return {
     program,
     updateProgram,
     resetProgram,
     generateId,
-    loadProgramFromData
+    loadProgramFromData,
+    getTotalTrainingDays
   };
 };

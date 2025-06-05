@@ -70,7 +70,23 @@ export const useAssignmentDialog = ({
         return;
       }
 
+      if (!program.user_id) {
+        toast.error('Παρακαλώ επιλέξτε ασκούμενο');
+        return;
+      }
+
+      const totalDays = program.weeks.reduce((total, week) => total + week.days.length, 0);
+      if (!program.training_dates || program.training_dates.length < totalDays) {
+        toast.error('Παρακαλώ επιλέξτε όλες τις απαιτούμενες ημερομηνίες προπόνησης');
+        return;
+      }
+
       let programId = program.id || currentProgramId;
+
+      // Convert training_dates to string array for database storage
+      const trainingDatesStrings = program.training_dates.map(date => 
+        date.toISOString().split('T')[0]
+      );
 
       // Αποθήκευση πρώτα το πρόγραμμα ως ACTIVE (όχι draft) γιατί θα γίνει ανάθεση
       if (!programId) {
@@ -78,6 +94,7 @@ export const useAssignmentDialog = ({
         try {
           const savedProgram = await onCreateProgram({
             ...program,
+            training_dates: trainingDatesStrings,
             status: 'active'  // Αποθηκεύουμε ως active γιατί θα γίνει ανάθεση
           });
           programId = savedProgram.id;
@@ -93,6 +110,7 @@ export const useAssignmentDialog = ({
           await onCreateProgram({
             ...program,
             id: programId,
+            training_dates: trainingDatesStrings,
             status: 'active'
           });
           console.log('✅ Program updated to active status');
@@ -125,13 +143,18 @@ export const useAssignmentDialog = ({
         return;
       }
 
+      // Use the training dates from the program's calendar selection
+      const finalTrainingDates = program.training_dates?.map(date => 
+        date.toISOString().split('T')[0]
+      ) || trainingDates;
+
       // Δημιουργία assignment (το πρόγραμμα είναι ήδη active)
       const assignment = await createOrUpdateAssignment(
         programId,
         userId,
-        trainingDates[0], // start_date
-        trainingDates[trainingDates.length - 1], // end_date
-        trainingDates
+        finalTrainingDates[0], // start_date
+        finalTrainingDates[finalTrainingDates.length - 1], // end_date
+        finalTrainingDates
       );
 
       console.log('✅ Assignment created:', assignment);
@@ -141,7 +164,7 @@ export const useAssignmentDialog = ({
         assignment.id,
         userId,
         programId,
-        trainingDates,
+        finalTrainingDates,
         program
       );
 

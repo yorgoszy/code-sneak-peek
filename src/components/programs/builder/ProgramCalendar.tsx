@@ -2,169 +2,132 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { CalendarIcon } from "lucide-react";
-import { format, addWeeks, getDay } from "date-fns";
-import { cn } from "@/lib/utils";
+import { CalendarDays, X } from "lucide-react";
+import { format } from "date-fns";
 
 interface ProgramCalendarProps {
-  startDate: Date | undefined;
-  trainingDays: string[];
-  totalWeeks: number;
-  onStartDateChange: (date: Date | undefined) => void;
-  onTrainingDaysChange: (days: string[]) => void;
+  selectedDates: Date[];
+  onDatesChange: (dates: Date[]) => void;
+  totalDays: number;
 }
 
-const weekDays = [
-  { id: 'sunday', label: 'Κυριακή', dayNumber: 0 },
-  { id: 'monday', label: 'Δευτέρα', dayNumber: 1 },
-  { id: 'tuesday', label: 'Τρίτη', dayNumber: 2 },
-  { id: 'wednesday', label: 'Τετάρτη', dayNumber: 3 },
-  { id: 'thursday', label: 'Πέμπτη', dayNumber: 4 },
-  { id: 'friday', label: 'Παρασκευή', dayNumber: 5 },
-  { id: 'saturday', label: 'Σάββατο', dayNumber: 6 }
-];
-
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
-  startDate,
-  trainingDays,
-  totalWeeks,
-  onStartDateChange,
-  onTrainingDaysChange
+  selectedDates,
+  onDatesChange,
+  totalDays
 }) => {
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const calculateEndDate = () => {
-    if (!startDate || totalWeeks === 0) return null;
-    return addWeeks(startDate, totalWeeks);
-  };
-
-  const handleDayClick = (date: Date) => {
-    const dayOfWeek = getDay(date);
-    const dayId = weekDays.find(day => day.dayNumber === dayOfWeek)?.id;
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
     
-    if (dayId) {
-      const newDays = trainingDays.includes(dayId)
-        ? trainingDays.filter(d => d !== dayId)
-        : [...trainingDays, dayId];
-      onTrainingDaysChange(newDays);
+    const dateExists = selectedDates.some(d => 
+      d.toDateString() === date.toDateString()
+    );
+    
+    if (dateExists) {
+      // Αφαίρεση ημερομηνίας
+      onDatesChange(selectedDates.filter(d => 
+        d.toDateString() !== date.toDateString()
+      ));
+    } else {
+      // Προσθήκη ημερομηνίας
+      onDatesChange([...selectedDates, date].sort((a, b) => a.getTime() - b.getTime()));
     }
   };
 
-  const isTrainingDay = (date: Date) => {
-    const dayOfWeek = getDay(date);
-    const dayId = weekDays.find(day => day.dayNumber === dayOfWeek)?.id;
-    return dayId ? trainingDays.includes(dayId) : false;
+  const removeDate = (dateToRemove: Date) => {
+    onDatesChange(selectedDates.filter(d => 
+      d.toDateString() !== dateToRemove.toDateString()
+    ));
   };
 
-  const endDate = calculateEndDate();
+  const clearAllDates = () => {
+    onDatesChange([]);
+  };
 
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle className="text-lg">Χρονοδιάγραμμα Προγράμματος</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Ημερομηνίες */}
-          <div className="space-y-4">
-            {/* Ημερομηνία Έναρξης */}
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Ημερομηνία Έναρξης</Label>
-              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-40 justify-start text-left font-normal rounded-none h-8",
-                      !startDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-3 w-3" />
-                    {startDate ? format(startDate, "dd/MM/yyyy") : "Επιλέξτε ημερομηνία"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-none" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={(date) => {
-                      onStartDateChange(date);
-                      setIsCalendarOpen(false);
-                    }}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Ημερομηνία Λήξης */}
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Ημερομηνία Λήξης</Label>
-              <div className="w-40 h-8 px-3 py-2 bg-gray-100 border border-gray-300 rounded-none text-sm flex items-center">
-                {endDate ? format(endDate, "dd/MM/yyyy") : "Αυτόματος υπολογισμός"}
-              </div>
-              {trainingDays.length > 0 && (
-                <p className="text-xs text-gray-500 mt-1">
-                  {trainingDays.length} μέρες/εβδομάδα • {totalWeeks} εβδομάδες
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Ημερολόγιο Επιλογής Μερών */}
-          <div>
-            <Label className="text-sm font-medium mb-2 block">
-              Επιλογή Μερών Προπόνησης
-              <span className="block text-xs text-gray-500 mt-1">
-                Κάντε κλικ στις μέρες για να τις επιλέξετε
-              </span>
-            </Label>
-            <div className="border border-gray-300 rounded-none p-2">
-              <Calendar
-                mode="multiple"
-                selected={[]} // Δεν χρησιμοποιούμε την επιλογή του Calendar
-                onDayClick={handleDayClick}
-                className={cn("p-2 pointer-events-auto")}
-                modifiers={{
-                  trainingDay: isTrainingDay
-                }}
-                modifiersClassNames={{
-                  trainingDay: "bg-blue-500 text-white hover:bg-blue-600"
-                }}
-                components={{
-                  Caption: ({ displayMonth }) => (
-                    <div className="flex justify-center items-center py-2">
-                      <h4 className="text-sm font-medium">
-                        {format(displayMonth, "MMMM yyyy")}
-                      </h4>
-                    </div>
-                  )
-                }}
-              />
-            </div>
-            
-            {/* Επιλεγμένες Μέρες */}
-            {trainingDays.length > 0 && (
-              <div className="mt-2">
-                <p className="text-xs text-gray-600 mb-1">Επιλεγμένες μέρες:</p>
-                <div className="flex flex-wrap gap-1">
-                  {trainingDays.map(dayId => {
-                    const day = weekDays.find(d => d.id === dayId);
-                    return day ? (
-                      <span key={dayId} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                        {day.label}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-            )}
+        <div className="flex justify-between items-center">
+          <CardTitle className="flex items-center gap-2">
+            <CalendarDays className="w-5 h-5" />
+            Ημερολόγιο Προπόνησης
+          </CardTitle>
+          <div className="text-sm text-gray-600">
+            Επιλεγμένες: {selectedDates.length} / Απαιτούμενες: {totalDays}
           </div>
         </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Selected Dates Display */}
+        {selectedDates.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Επιλεγμένες Ημερομηνίες:</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAllDates}
+                className="text-red-600 hover:text-red-800 rounded-none"
+              >
+                Καθαρισμός όλων
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedDates.map((date, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="flex items-center gap-1 px-2 py-1"
+                >
+                  {format(date, 'dd/MM/yyyy')}
+                  <button
+                    onClick={() => removeDate(date)}
+                    className="text-gray-500 hover:text-red-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Calendar Toggle */}
+        <Button
+          variant="outline"
+          onClick={() => setCalendarOpen(!calendarOpen)}
+          className="w-full rounded-none"
+        >
+          {calendarOpen ? 'Απόκρυψη Ημερολογίου' : 'Εμφάνιση Ημερολογίου'}
+        </Button>
+
+        {/* Calendar */}
+        {calendarOpen && (
+          <div className="border rounded-none p-4">
+            <Calendar
+              mode="multiple"
+              selected={selectedDates}
+              onSelect={(dates) => {
+                if (dates) {
+                  onDatesChange(Array.isArray(dates) ? dates : [dates]);
+                }
+              }}
+              className="rounded-none"
+              disabled={(date) => date < new Date()}
+            />
+          </div>
+        )}
+
+        {/* Warning if not enough dates */}
+        {selectedDates.length < totalDays && (
+          <div className="text-orange-600 text-sm p-2 bg-orange-50 border border-orange-200 rounded-none">
+            Προειδοποίηση: Χρειάζεστε {totalDays - selectedDates.length} ακόμη ημερομηνίες για να καλύψετε όλες τις ημέρες προπόνησης.
+          </div>
+        )}
       </CardContent>
     </Card>
   );

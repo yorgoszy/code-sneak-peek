@@ -32,9 +32,15 @@ export const useProgramSaveOperations = ({
         return;
       }
 
+      // Convert training_dates to string array for database storage
+      const trainingDatesStrings = program.training_dates?.map(date => 
+        date.toISOString().split('T')[0]
+      ) || [];
+
       // Αποθήκευση ως προσχέδιο
       const savedProgram = await onCreateProgram({
         ...program,
+        training_dates: trainingDatesStrings,
         status: 'draft'
       });
       
