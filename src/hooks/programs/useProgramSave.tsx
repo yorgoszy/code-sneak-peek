@@ -23,46 +23,46 @@ export const useProgramSave = () => {
         return null;
       }
       
-      // First, ensure the current user exists in app_users table
-      let appUserId = null;
+      // Get the current user's app_users id (needed for created_by)
+      let currentUserAppId = null;
       
-      const { data: existingUser, error: userCheckError } = await supabase
+      const { data: currentAppUser, error: currentUserError } = await supabase
         .from('app_users')
         .select('id')
         .eq('auth_user_id', user.id)
         .single();
 
-      if (userCheckError && userCheckError.code === 'PGRST116') {
-        // User doesn't exist in app_users, create them
-        console.log('Creating user in app_users table');
-        const { data: newUser, error: createUserError } = await supabase
+      if (currentUserError && currentUserError.code === 'PGRST116') {
+        // Current user doesn't exist in app_users, create them
+        console.log('Creating current user in app_users table');
+        const { data: newCurrentUser, error: createCurrentUserError } = await supabase
           .from('app_users')
           .insert([{
             auth_user_id: user.id,
             email: user.email || 'unknown@example.com',
             name: user.email?.split('@')[0] || 'Unknown User',
-            role: 'trainer'
+            role: 'admin'
           }])
           .select()
           .single();
 
-        if (createUserError) {
-          console.error('Error creating user:', createUserError);
-          toast.error('Σφάλμα δημιουργίας χρήστη: ' + createUserError.message);
+        if (createCurrentUserError) {
+          console.error('Error creating current user:', createCurrentUserError);
+          toast.error('Σφάλμα δημιουργίας χρήστη: ' + createCurrentUserError.message);
           return null;
         }
-        appUserId = newUser.id;
-        console.log('✅ User created successfully:', newUser);
-      } else if (userCheckError) {
-        console.error('Error checking user:', userCheckError);
-        toast.error('Σφάλμα ελέγχου χρήστη: ' + userCheckError.message);
+        currentUserAppId = newCurrentUser.id;
+        console.log('✅ Current user created successfully:', newCurrentUser);
+      } else if (currentUserError) {
+        console.error('Error checking current user:', currentUserError);
+        toast.error('Σφάλμα ελέγχου χρήστη: ' + currentUserError.message);
         return null;
-      } else if (existingUser) {
-        appUserId = existingUser.id;
-        console.log('✅ User found:', existingUser);
+      } else if (currentAppUser) {
+        currentUserAppId = currentAppUser.id;
+        console.log('✅ Current user found:', currentAppUser);
       }
 
-      if (!appUserId) {
+      if (!currentUserAppId) {
         toast.error('Δεν ήταν δυνατή η εύρεση ή δημιουργία χρήστη');
         return null;
       }
@@ -103,14 +103,12 @@ export const useProgramSave = () => {
         await createProgramStructure(programData.id, programData);
         
         // Handle assignments with training dates
-        if (programData.createAssignment && programData.training_dates) {
+        if (programData.createAssignment && programData.training_dates && programData.user_id) {
           console.log('Creating assignment with training dates:', programData.training_dates);
-          
-          const targetUserId = programData.user_id || appUserId;
           
           await createOrUpdateAssignment(
             programData.id, 
-            targetUserId, 
+            programData.user_id, // Use the selected user_id directly
             undefined, 
             undefined, 
             programData.training_dates
@@ -131,7 +129,7 @@ export const useProgramSave = () => {
             name: programData.name,
             description: programData.description,
             user_id: programData.user_id || null,
-            created_by: appUserId,
+            created_by: currentUserAppId,
             status: programData.status || 'draft'
           }])
           .select()
@@ -147,14 +145,12 @@ export const useProgramSave = () => {
         await createProgramStructure(program.id, programData);
         
         // Handle assignments with training dates
-        if (programData.createAssignment && programData.training_dates) {
+        if (programData.createAssignment && programData.training_dates && programData.user_id) {
           console.log('Creating assignment with training dates for new program:', programData.training_dates);
-          
-          const targetUserId = programData.user_id || appUserId;
           
           await createOrUpdateAssignment(
             program.id, 
-            targetUserId, 
+            programData.user_id, // Use the selected user_id directly
             undefined, 
             undefined, 
             programData.training_dates
