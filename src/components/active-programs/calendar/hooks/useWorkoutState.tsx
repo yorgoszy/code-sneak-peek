@@ -56,30 +56,15 @@ export const useWorkoutState = (
       const durationMinutes = Math.round((endTime.getTime() - workoutStartTime.getTime()) / 60000);
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
 
-      // Update workout status to completed
+      // Βρίσκουμε το σωστό assignment_id και ενημερώνουμε το status
       await updateWorkoutStatus(
-        program.id,
+        program.id, // Χρησιμοποιούμε το assignment_id όχι το program_id
         selectedDateStr,
         'completed',
         'green'
       );
 
-      // Save exercise results if any
-      const exerciseResults = Object.entries(exerciseData).map(([exerciseId, data]) => ({
-        program_exercise_id: exerciseId,
-        actual_sets: exerciseCompletions[exerciseId] || 0,
-        actual_reps: data.reps || null,
-        actual_kg: data.kg || null,
-        actual_velocity_ms: data.velocity || null,
-        actual_rest: data.rest || null,
-        notes: exerciseNotes[exerciseId] || null
-      }));
-
-      if (exerciseResults.length > 0) {
-        // We would need the workout_completion_id here
-        // This would require fetching the completion record first
-        console.log('Exercise results to save:', exerciseResults);
-      }
+      console.log('💾 Προπόνηση ενημερώθηκε επιτυχώς');
 
       setWorkoutInProgress(false);
       if (onRefresh) onRefresh();
@@ -87,7 +72,7 @@ export const useWorkoutState = (
     } catch (error) {
       console.error('Error completing workout:', error);
     }
-  }, [program, selectedDate, workoutStartTime, exerciseCompletions, exerciseNotes, exerciseData, updateWorkoutStatus, onRefresh, onClose]);
+  }, [program, selectedDate, workoutStartTime, updateWorkoutStatus, onRefresh, onClose]);
 
   const handleCancelWorkout = useCallback(() => {
     console.log('❌ Ακύρωση προπόνησης');
