@@ -34,7 +34,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             const completions = await getWorkoutCompletions(assignment.id);
             const stats = calculateWorkoutStats(completions, assignment.training_dates || []);
             return {
-              ...assignment,
+              assignment,
               stats
             };
           })
@@ -48,11 +48,11 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     };
 
     loadProgramsWithStats();
-  }, [userPrograms.length, userProfile.id]); // Simplified dependencies
+  }, [userPrograms.length, userProfile.id]); 
 
   // Διαχωρισμός προγραμμάτων σε ενεργά και ολοκληρωμένα
-  const activeIncompletePrograms = programsWithStats.filter(program => program.stats?.progress < 100);
-  const completedPrograms = programsWithStats.filter(program => program.stats?.progress >= 100);
+  const activeIncompletePrograms = programsWithStats.filter(item => item.stats?.progress < 100);
+  const completedPrograms = programsWithStats.filter(item => item.stats?.progress >= 100);
 
   const handleDelete = async (assignmentId: string) => {
     // Regular users typically cannot delete programs
@@ -139,10 +139,11 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
 
             {activeIncompletePrograms.length > 0 ? (
               <div className="space-y-4">
-                {activeIncompletePrograms.map((assignment) => (
-                  <div key={assignment.id} className="flex justify-center">
+                {activeIncompletePrograms.map((item) => (
+                  <div key={item.assignment.id} className="flex justify-center">
                     <ProgramCard
-                      assignment={assignment}
+                      assignment={item.assignment}
+                      workoutStats={item.stats}
                       onRefresh={refetch}
                       onDelete={handleDelete}
                       userMode={true}
@@ -172,10 +173,11 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
 
             {completedPrograms.length > 0 ? (
               <div className="space-y-4">
-                {completedPrograms.map((assignment) => (
-                  <div key={assignment.id} className="flex justify-center">
+                {completedPrograms.map((item) => (
+                  <div key={item.assignment.id} className="flex justify-center">
                     <ProgramCard
-                      assignment={assignment}
+                      assignment={item.assignment}
+                      workoutStats={item.stats}
                       onRefresh={refetch}
                       onDelete={handleDelete}
                       userMode={true}

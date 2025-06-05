@@ -12,6 +12,11 @@ interface ProgramCardProps {
   onRefresh?: () => void;
   onDelete?: (assignmentId: string) => void;
   userMode?: boolean;
+  workoutStats?: {
+    completed: number;
+    total: number;
+    missed: number;
+  };
 }
 
 export const ProgramCard: React.FC<ProgramCardProps> = ({ 
@@ -19,10 +24,11 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
   selectedDate,
   onRefresh,
   onDelete,
-  userMode = false
+  userMode = false,
+  workoutStats
 }) => {
-  // Use pre-calculated stats if available, otherwise provide defaults
-  const workoutStats = assignment.stats || {
+  // Use passed workoutStats or provide defaults
+  const stats = workoutStats || {
     completed: 0,
     total: assignment.training_dates?.length || 0,
     missed: 0
@@ -33,7 +39,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
       <CardContent className="p-1.5 h-full">
         <div className="flex items-center justify-between h-full">
           <ProgramCardUserInfo assignment={assignment} />
-          <ProgramCardProgress assignment={assignment} workoutStats={workoutStats} />
+          <ProgramCardProgress assignment={assignment} workoutStats={stats} />
           <ProgramCardActions 
             assignment={assignment} 
             selectedDate={selectedDate}
