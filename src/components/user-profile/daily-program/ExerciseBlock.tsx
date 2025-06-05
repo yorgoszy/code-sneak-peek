@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Play } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
@@ -72,18 +71,19 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
 
   const renderVideoThumbnail = (exercise: Exercise) => {
     const videoUrl = exercise.exercises?.video_url;
-    if (!videoUrl || !isValidVideoUrl(videoUrl)) {
-      return null;
-    }
-
-    const thumbnailUrl = getVideoThumbnail(videoUrl);
+    const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
+    const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
     
     return (
       <div 
-        className="relative w-12 h-8 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail mr-2"
+        className={`relative w-12 h-8 rounded-none overflow-hidden group flex-shrink-0 video-thumbnail mr-2 ${
+          hasValidVideo ? 'cursor-pointer' : 'cursor-default'
+        }`}
         onClick={(e) => {
           e.stopPropagation();
-          handleVideoClick(exercise);
+          if (hasValidVideo) {
+            handleVideoClick(exercise);
+          }
         }}
       >
         {thumbnailUrl ? (
@@ -112,9 +112,11 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
             <Play className="w-3 h-3 text-gray-400" />
           </div>
         )}
-        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Play className="w-3 h-3 text-white" />
-        </div>
+        {hasValidVideo && (
+          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Play className="w-3 h-3 text-white" />
+          </div>
+        )}
       </div>
     );
   };
