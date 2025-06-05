@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
@@ -82,29 +83,36 @@ export const useAssignmentDialog = ({
         return;
       }
 
-      // Έλεγχος αν το πρόγραμμα έχει ID ή αν χρειάζεται να αποθηκευτεί
+      // ΠΡΩΤΑ αποθηκεύουμε το πρόγραμμα αν δεν έχει ID
       let programId = currentProgramId || program.id;
 
-      // Αν δεν υπάρχει programId, αποθηκεύουμε το πρόγραμμα πρώτα
       if (!programId) {
         console.log('📝 No program ID found, saving program first...');
         
-        // Αποθήκευση του προγράμματος ως ενεργό
-        const savedProgram = await onCreateProgram({
-          ...program,
-          training_dates: trainingDates,
-          status: 'active'
-        });
-        
-        programId = savedProgram?.id;
-        
-        if (!programId) {
-          console.error('❌ Failed to save program or get program ID');
+        try {
+          // Αποθήκευση του προγράμματος ως ενεργό
+          const savedProgram = await onCreateProgram({
+            ...program,
+            training_dates: trainingDates,
+            status: 'active'
+          });
+          
+          console.log('📝 Saved program response:', savedProgram);
+          
+          if (!savedProgram || !savedProgram.id) {
+            console.error('❌ No program ID returned from save operation');
+            toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος - δεν επιστράφηκε ID');
+            return;
+          }
+          
+          programId = savedProgram.id;
+          console.log('✅ Program saved successfully with ID:', programId);
+          
+        } catch (saveError) {
+          console.error('❌ Error saving program:', saveError);
           toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
           return;
         }
-        
-        console.log('✅ Program saved for assignment:', savedProgram);
       }
 
       console.log('✅ Opening assignment dialog with program ID:', programId);
