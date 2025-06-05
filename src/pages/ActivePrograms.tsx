@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarCheck, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { el } from "date-fns/locale";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
@@ -106,7 +107,8 @@ const ActivePrograms = () => {
         dates.push({
           date: dateStr,
           status: completion?.status || 'scheduled',
-          assignmentId: assignment.id
+          assignmentId: assignment.id,
+          userName: assignment.app_users?.full_name || 'Unknown'
         });
       });
     }
@@ -120,8 +122,15 @@ const ActivePrograms = () => {
     
     if (dateProgramsWithStatus.length > 0) {
       return (
-        <div className="relative">
-          <span>{date.getDate()}</span>
+        <div className="relative w-full">
+          <div className="text-center">{date.getDate()}</div>
+          <div className="text-xs text-center truncate px-0.5" style={{ fontSize: '10px' }}>
+            {dateProgramsWithStatus.map((program, i) => (
+              <div key={i} className="truncate">
+                {program.userName}
+              </div>
+            ))}
+          </div>
           <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-0.5">
             {dateProgramsWithStatus.slice(0, 3).map((program, i) => {
               let bulletColor = '#3b82f6'; // default μπλε για scheduled
@@ -145,7 +154,7 @@ const ActivePrograms = () => {
       );
     }
     
-    return <span>{date.getDate()}</span>;
+    return <div className="text-center">{date.getDate()}</div>;
   };
 
   const handleDeleteProgram = async (assignmentId: string) => {
@@ -206,8 +215,8 @@ const ActivePrograms = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Calendar Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Calendar Section - Expanded */}
             <Card className="lg:col-span-1 rounded-none">
               <CardHeader>
                 <CardTitle className="text-lg">Ημερολόγιο Προπονήσεων</CardTitle>
@@ -232,37 +241,35 @@ const ActivePrograms = () => {
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   className="rounded-none w-full"
-                  weekStartsOn={0}
+                  weekStartsOn={1}
+                  locale={el}
                   classNames={{
                     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1",
                     month: "space-y-4 w-full flex-1",
                     table: "w-full h-full border-collapse space-y-1",
                     head_row: "",
                     row: "w-full mt-2",
+                    cell: "h-16 w-full text-center text-sm p-0 relative",
+                    day: "h-16 w-full p-0 font-normal aria-selected:opacity-100",
+                    day_selected: "bg-[#00ffba] text-black hover:bg-[#00ffba] hover:text-black focus:bg-[#00ffba] focus:text-black",
+                    day_today: "bg-gray-100 text-black",
+                    day_outside: "text-gray-400 opacity-50",
+                    day_disabled: "text-gray-400 opacity-50",
+                    day_range_middle: "aria-selected:bg-gray-100 aria-selected:text-black",
+                    day_hidden: "invisible",
                   }}
                   components={{
                     DayContent: ({ date }) => getDayContent(date)
                   }}
                 />
-                
-                {selectedDate && (
-                  <div className="mt-4 p-3 bg-gray-50 rounded-none">
-                    <p className="text-sm text-gray-600">
-                      Επιλεγμένη ημερομηνία: {selectedDate.toLocaleDateString('el-GR')}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Προγράμματα: {programsForSelectedDate.length}
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
-            {/* Programs for Selected Date */}
-            <Card className="lg:col-span-2 rounded-none">
+            {/* Programs List */}
+            <Card className="lg:col-span-1 rounded-none">
               <CardHeader>
                 <CardTitle className="text-lg">
-                  Προγράμματα για {selectedDate?.toLocaleDateString('el-GR')}
+                  Ενεργά Προγράμματα
                 </CardTitle>
               </CardHeader>
               <CardContent>

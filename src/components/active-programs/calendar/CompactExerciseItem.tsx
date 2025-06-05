@@ -4,7 +4,6 @@ import { getWorkoutData, saveWorkoutData, clearWorkoutData } from '@/hooks/useWo
 import { ExerciseHeader } from './ExerciseHeader';
 import { ExerciseDetails } from './ExerciseDetails';
 import { ExerciseActualValues } from './ExerciseActualValues';
-import { ExerciseNotesSection } from './ExerciseNotesSection';
 
 interface CompactExerciseItemProps {
   exercise: any;
@@ -43,21 +42,6 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
   selectedDate,
   program
 }) => {
-  const [actualKg, setActualKg] = useState('');
-  const [actualReps, setActualReps] = useState('');
-  const [actualVelocity, setActualVelocity] = useState('');
-  const notes = getNotes(exercise.id);
-
-  // Load data from previous week
-  useEffect(() => {
-    if (selectedDate && program) {
-      const data = getWorkoutData(selectedDate, program.id, exercise.id);
-      if (data.kg) setActualKg(data.kg);
-      if (data.reps) setActualReps(data.reps);
-      if (data.velocity) setActualVelocity(data.velocity);
-    }
-  }, [selectedDate, program, exercise.id]);
-
   const handleSetClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     onSetClick(exercise.id, exercise.sets, event);
@@ -66,25 +50,6 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
   const handleVideoClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     onVideoClick(exercise);
-  };
-
-  const handleNotesChange = (value: string) => {
-    updateNotes(exercise.id, value);
-    
-    if (selectedDate && program) {
-      saveWorkoutData(selectedDate, program.id, exercise.id, { notes: value });
-    }
-  };
-
-  const handleClearData = () => {
-    setActualKg('');
-    setActualReps('');
-    setActualVelocity('');
-    clearNotes(exercise.id);
-    
-    if (selectedDate && program) {
-      clearWorkoutData(selectedDate, program.id, exercise.id);
-    }
   };
 
   return (
@@ -102,7 +67,7 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
         onSetClick={handleSetClick}
       />
 
-      <div className="p-2 space-y-2">
+      <div className="p-1 space-y-1">
         {/* Planned Values */}
         <ExerciseDetails exercise={exercise} />
 
@@ -113,19 +78,19 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
           updateReps={updateReps}
           updateKg={updateKg}
           updateVelocity={updateVelocity}
+          getNotes={getNotes}
+          updateNotes={updateNotes}
           selectedDate={selectedDate}
           program={program}
         />
 
-        {/* Notes Section */}
-        <ExerciseNotesSection
-          notes={notes}
-          workoutInProgress={workoutInProgress}
-          onNotesChange={handleNotesChange}
-          onClearData={handleClearData}
-          hasData={!!(notes || actualKg || actualReps || actualVelocity)}
-          exercise={exercise}
-        />
+        {/* Program Notes */}
+        {exercise.notes && (
+          <div className="p-1 bg-blue-50 border border-blue-200 rounded-none">
+            <p className="text-xs text-blue-800 font-medium">Program Notes:</p>
+            <p className="text-xs text-blue-700">{exercise.notes}</p>
+          </div>
+        )}
       </div>
     </div>
   );

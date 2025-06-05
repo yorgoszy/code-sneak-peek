@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
@@ -76,10 +77,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     dayProgram = programDays[dateIndex % programDays.length];
   }
 
+  const blocks = dayProgram?.program_blocks || [];
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-none">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
@@ -90,7 +93,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onCancelWorkout={handleCancelWorkout}
           />
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {/* Program Info - Compact */}
             <div className="bg-gray-50 border border-gray-200 rounded-none p-2">
               <div className="flex items-center justify-between text-sm">
@@ -104,37 +107,50 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
               </div>
             </div>
 
-            {dayProgram ? (
-              <div className="space-y-2">
-                {dayProgram.program_blocks?.map((block) => (
-                  <div key={block.id} className="space-y-1">
-                    <h4 className="text-sm font-medium text-gray-700 px-1">
+            {blocks.length > 0 ? (
+              <Tabs defaultValue="0" className="w-full">
+                <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
+                  {blocks.map((block, index) => (
+                    <TabsTrigger 
+                      key={block.id} 
+                      value={index.toString()} 
+                      className="rounded-none text-xs"
+                    >
                       {block.name}
-                    </h4>
-                    {block.program_exercises?.map((exercise) => (
-                      <CompactExerciseItem
-                        key={exercise.id}
-                        exercise={exercise}
-                        workoutInProgress={workoutInProgress}
-                        isComplete={exerciseCompletion.isExerciseComplete(exercise.id, exercise.sets)}
-                        remainingText={exerciseCompletion.getRemainingText(exercise.id, exercise.sets)}
-                        onExerciseClick={handleExerciseClick}
-                        onSetClick={handleSetClick}
-                        onVideoClick={handleVideoClick}
-                        getNotes={exerciseCompletion.getNotes}
-                        updateNotes={exerciseCompletion.updateNotes}
-                        clearNotes={exerciseCompletion.clearNotes}
-                        updateKg={exerciseCompletion.updateKg}
-                        clearKg={exerciseCompletion.clearKg}
-                        updateVelocity={exerciseCompletion.updateVelocity}
-                        clearVelocity={exerciseCompletion.clearVelocity}
-                        updateReps={exerciseCompletion.updateReps}
-                        clearReps={exerciseCompletion.clearReps}
-                      />
-                    ))}
-                  </div>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {blocks.map((block, blockIndex) => (
+                  <TabsContent key={block.id} value={blockIndex.toString()} className="mt-2">
+                    <div className="space-y-1">
+                      {block.program_exercises?.map((exercise) => (
+                        <CompactExerciseItem
+                          key={exercise.id}
+                          exercise={exercise}
+                          workoutInProgress={workoutInProgress}
+                          isComplete={exerciseCompletion.isExerciseComplete(exercise.id, exercise.sets)}
+                          remainingText={exerciseCompletion.getRemainingText(exercise.id, exercise.sets)}
+                          onExerciseClick={handleExerciseClick}
+                          onSetClick={handleSetClick}
+                          onVideoClick={handleVideoClick}
+                          getNotes={exerciseCompletion.getNotes}
+                          updateNotes={exerciseCompletion.updateNotes}
+                          clearNotes={exerciseCompletion.clearNotes}
+                          updateKg={exerciseCompletion.updateKg}
+                          clearKg={exerciseCompletion.clearKg}
+                          updateVelocity={exerciseCompletion.updateVelocity}
+                          clearVelocity={exerciseCompletion.clearVelocity}
+                          updateReps={exerciseCompletion.updateReps}
+                          clearReps={exerciseCompletion.clearReps}
+                          selectedDate={selectedDate}
+                          program={program}
+                        />
+                      ))}
+                    </div>
+                  </TabsContent>
                 ))}
-              </div>
+              </Tabs>
             ) : (
               <div className="bg-white border border-gray-200 rounded-none p-6 text-center text-gray-500">
                 Δεν βρέθηκε πρόγραμμα για αυτή την ημέρα

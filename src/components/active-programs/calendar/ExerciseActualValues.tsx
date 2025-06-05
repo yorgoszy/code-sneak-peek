@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { getWorkoutData, saveWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 
 interface ExerciseActualValuesProps {
@@ -9,6 +10,8 @@ interface ExerciseActualValuesProps {
   updateReps: (exerciseId: string, reps: number) => void;
   updateKg: (exerciseId: string, kg: string) => void;
   updateVelocity: (exerciseId: string, velocity: number) => void;
+  getNotes: (exerciseId: string) => string;
+  updateNotes: (exerciseId: string, notes: string) => void;
   selectedDate?: Date;
   program?: any;
 }
@@ -19,12 +22,15 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   updateReps,
   updateKg,
   updateVelocity,
+  getNotes,
+  updateNotes,
   selectedDate,
   program
 }) => {
   const [actualKg, setActualKg] = useState('');
   const [actualReps, setActualReps] = useState('');
   const [actualVelocity, setActualVelocity] = useState('');
+  const notes = getNotes(exercise.id);
 
   // Load data from previous week
   useEffect(() => {
@@ -69,58 +75,69 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
     }
   };
 
+  const handleNotesChange = (value: string) => {
+    updateNotes(exercise.id, value);
+    
+    if (selectedDate && program) {
+      saveWorkoutData(selectedDate, program.id, exercise.id, { notes: value });
+    }
+  };
+
   return (
-    <div className="grid grid-cols-7 gap-1 text-xs">
+    <div className="grid grid-cols-8 gap-0.5 text-xs">
       <div className="text-center">
-        <div className="text-gray-600 mb-1">-</div>
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
       </div>
       <div className="text-center">
-        <div className="text-gray-600 mb-1">Actual</div>
         <Input
           type="number"
           value={actualReps}
           onChange={(e) => handleRepsChange(e.target.value)}
-          className="h-6 text-xs rounded-none text-center p-0"
+          className="h-5 text-xs rounded-none text-center p-0"
           placeholder={exercise.reps || ''}
           disabled={!workoutInProgress}
         />
       </div>
       <div className="text-center">
-        <div className="text-gray-600 mb-1">-</div>
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
       </div>
       <div className="text-center">
-        <div className="text-gray-600 mb-1">Actual</div>
         <Input
           type="number"
           step="0.5"
           value={actualKg}
           onChange={(e) => handleKgChange(e.target.value)}
-          className="h-6 text-xs rounded-none text-center p-0"
+          className="h-5 text-xs rounded-none text-center p-0"
           placeholder={exercise.kg || ''}
           disabled={!workoutInProgress}
         />
       </div>
       <div className="text-center">
-        <div className="text-gray-600 mb-1">Actual</div>
         <Input
           type="number"
           step="0.01"
           value={actualVelocity}
           onChange={(e) => handleVelocityChange(e.target.value)}
-          className="h-6 text-xs rounded-none text-center p-0"
+          className="h-5 text-xs rounded-none text-center p-0"
           placeholder={exercise.velocity_ms || ''}
           disabled={!workoutInProgress}
         />
       </div>
       <div className="text-center">
-        <div className="text-gray-600 mb-1">-</div>
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
       </div>
       <div className="text-center">
-        <div className="text-gray-600 mb-1">-</div>
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
+      </div>
+      <div className="text-center">
+        <Textarea
+          value={notes}
+          onChange={(e) => handleNotesChange(e.target.value)}
+          placeholder={workoutInProgress ? "Notes..." : ""}
+          className="h-5 text-xs rounded-none resize-none p-0.5"
+          disabled={!workoutInProgress}
+          rows={1}
+        />
       </div>
     </div>
   );
