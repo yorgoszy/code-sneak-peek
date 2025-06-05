@@ -13,6 +13,7 @@ const ProgramCards = () => {
   const navigate = useNavigate();
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
   const { calculateWorkoutStats, getWorkoutCompletions } = useWorkoutCompletionsCache();
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const [programsWithStats, setProgramsWithStats] = React.useState<any[]>([]);
 
@@ -70,7 +71,7 @@ const ProgramCards = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex w-full">
-        <Sidebar />
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
         <div className="flex-1 flex items-center justify-center">
           <div>Φόρτωση προγραμμάτων...</div>
         </div>
@@ -81,7 +82,7 @@ const ProgramCards = () => {
   if (error) {
     return (
       <div className="min-h-screen flex w-full">
-        <Sidebar />
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-red-600">Σφάλμα κατά τη φόρτωση: {error.message}</div>
         </div>
@@ -91,7 +92,7 @@ const ProgramCards = () => {
 
   return (
     <div className="min-h-screen flex w-full">
-      <Sidebar />
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       <div className="flex-1 p-6">
         <div className="space-y-6">
           <div className="flex items-center justify-between">
