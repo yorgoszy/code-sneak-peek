@@ -2,10 +2,10 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Calculator, Clock, Zap } from "lucide-react";
-import type { DayStructure } from './hooks/useProgramBuilderState';
+import type { Day } from './hooks/useProgramBuilderState';
 
 interface DayCalculationsProps {
-  day: DayStructure;
+  day: Day;
 }
 
 const parseRepsToTotal = (reps: string): number => {

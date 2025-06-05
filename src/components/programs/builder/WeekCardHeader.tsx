@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Edit2, Trash2, Copy, Calendar } from "lucide-react";
-import type { WeekStructure } from './hooks/useProgramBuilderState';
+import type { Week } from './hooks/useProgramBuilderState';
 
 interface WeekCardHeaderProps {
-  week: WeekStructure;
+  week: Week;
   onUpdateWeekName: (weekId: string, name: string) => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;

@@ -3,11 +3,11 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { DayCard } from './DayCard';
-import type { WeekStructure } from './hooks/useProgramBuilderState';
+import type { Week } from './hooks/useProgramBuilderState';
 import type { Exercise } from '../types';
 
 interface WeekCardContentProps {
-  week: WeekStructure;
+  week: Week;
   exercises: Exercise[];
   onAddDay: () => void;
   onRemoveDay: (dayId: string) => void;
@@ -58,7 +58,7 @@ export const WeekCardContent: React.FC<WeekCardContentProps> = ({
             onUpdateDayName={(dayId, name) => onUpdateDayName(dayId, name)}
             onRemoveDay={(dayId) => onRemoveDay(dayId)}
             onDuplicateDay={(dayId) => onDuplicateDay(dayId)}
-            onAddBlock={() => onAddBlock(day.id)}
+            onAddBlock={(dayId) => onAddBlock(dayId)}
             onRemoveBlock={(blockId) => onRemoveBlock(day.id, blockId)}
             onDuplicateBlock={(blockId) => onDuplicateBlock(day.id, blockId)}
             onUpdateBlockName={(blockId, name) => onUpdateBlockName(day.id, blockId, name)}

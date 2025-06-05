@@ -293,21 +293,21 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                 <WeekCard
                   week={week}
                   exercises={exercises}
+                  onUpdateWeekName={onUpdateWeekName}
+                  onRemoveWeek={onRemoveWeek}
+                  onDuplicateWeek={onDuplicateWeek}
                   onAddDay={() => onAddDay(week.id)}
-                  onRemoveWeek={() => onRemoveWeek(week.id)}
-                  onAddBlock={(dayId) => onAddBlock(week.id, dayId)}
                   onRemoveDay={(dayId) => onRemoveDay(week.id, dayId)}
                   onDuplicateDay={(dayId) => onDuplicateDay(week.id, dayId)}
                   onUpdateDayName={(dayId, name) => onUpdateDayName(week.id, dayId, name)}
-                  onAddExercise={(dayId, blockId, exerciseId) => onAddExercise(week.id, dayId, blockId, exerciseId)}
+                  onAddBlock={(dayId) => onAddBlock(week.id, dayId)}
                   onRemoveBlock={(dayId, blockId) => onRemoveBlock(week.id, dayId, blockId)}
                   onDuplicateBlock={(dayId, blockId) => onDuplicateBlock(week.id, dayId, blockId)}
                   onUpdateBlockName={(dayId, blockId, name) => onUpdateBlockName(week.id, dayId, blockId, name)}
+                  onAddExercise={(dayId, blockId, exerciseId) => onAddExercise(week.id, dayId, blockId, exerciseId)}
+                  onRemoveExercise={(dayId, blockId, exerciseId) => onRemoveExercise(week.id, dayId, blockId, exerciseId)}
                   onUpdateExercise={(dayId, blockId, exerciseId, field, value) => 
                     onUpdateExercise(week.id, dayId, blockId, exerciseId, field, value)
-                  }
-                  onRemoveExercise={(dayId, blockId, exerciseId) => 
-                    onRemoveExercise(week.id, dayId, blockId, exerciseId)
                   }
                   onDuplicateExercise={(dayId, blockId, exerciseId) => 
                     onDuplicateExercise(week.id, dayId, blockId, exerciseId)

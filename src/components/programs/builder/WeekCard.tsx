@@ -4,11 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { WeekCardHeader } from './WeekCardHeader';
 import { WeekCardContent } from './WeekCardContent';
 import { WeekCalculations } from './WeekCalculations';
-import type { WeekStructure } from './hooks/useProgramBuilderState';
+import type { Week } from './hooks/useProgramBuilderState';
 import type { Exercise } from '../types';
 
 interface WeekCardProps {
-  week: WeekStructure;
+  week: Week;
   exercises: Exercise[];
   onUpdateWeekName: (weekId: string, name: string) => void;
   onRemoveWeek: (weekId: string) => void;

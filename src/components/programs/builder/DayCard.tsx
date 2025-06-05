@@ -4,17 +4,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
-import type { DayStructure, ExerciseStructure } from './hooks/useProgramBuilderState';
+import type { Day, ProgramExercise } from './hooks/useProgramBuilderState';
 import type { Exercise } from '../types';
 
 interface DayCardProps {
-  day: DayStructure;
+  day: Day;
   weekId: string;
   exercises: Exercise[];
   onUpdateDayName: (dayId: string, name: string) => void;
   onRemoveDay: (dayId: string) => void;
   onDuplicateDay: (dayId: string) => void;
-  onAddBlock: () => void;
+  onAddBlock: (dayId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
   onUpdateBlockName: (blockId: string, name: string) => void;
@@ -55,14 +55,12 @@ export const DayCard: React.FC<DayCardProps> = ({
         />
         
         <DayCardContent
-          day={day}
-          weekId={weekId}
+          blocks={day.blocks || []}
           exercises={exercises}
-          onAddBlock={onAddBlock}
+          onAddExercise={onAddExercise}
           onRemoveBlock={onRemoveBlock}
           onDuplicateBlock={onDuplicateBlock}
           onUpdateBlockName={onUpdateBlockName}
-          onAddExercise={onAddExercise}
           onRemoveExercise={onRemoveExercise}
           onUpdateExercise={onUpdateExercise}
           onDuplicateExercise={onDuplicateExercise}

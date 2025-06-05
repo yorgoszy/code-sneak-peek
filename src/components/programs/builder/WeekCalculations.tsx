@@ -2,10 +2,10 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Calculator, Clock, Zap, TrendingUp } from "lucide-react";
-import type { WeekStructure } from './hooks/useProgramBuilderState';
+import type { Week } from './hooks/useProgramBuilderState';
 
 interface WeekCalculationsProps {
-  week: WeekStructure;
+  week: Week;
 }
 
 const parseRepsToTotal = (reps: string): number => {
