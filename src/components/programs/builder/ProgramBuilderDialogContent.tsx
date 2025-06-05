@@ -115,7 +115,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
     
     // Δημιουργία του assignment
     const assignmentData = {
-      id: Date.now(), // Προσωρινό ID
+      id: Date.now(),
       program: {
         ...program,
         status: 'active'
@@ -198,6 +198,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
                 selectedDates={program.training_dates || []}
                 onDatesChange={onTrainingDatesChange}
                 totalDays={totalDays}
+                weeks={program.weeks}
               />
             </div>
           )}

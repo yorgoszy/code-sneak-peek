@@ -5,20 +5,32 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, X } from "lucide-react";
-import { format } from "date-fns";
+import { format, addDays, isSameWeek, startOfWeek } from "date-fns";
 
 interface ProgramCalendarProps {
   selectedDates: Date[];
   onDatesChange: (dates: Date[]) => void;
   totalDays: number;
+  weeks?: any[]; // Δομή των εβδομάδων του προγράμματος
 }
 
 export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
   selectedDates,
   onDatesChange,
-  totalDays
+  totalDays,
+  weeks = []
 }) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+  const [currentWeekDayCount, setCurrentWeekDayCount] = useState(0);
+
+  // Υπολογίζουμε τη δομή των εβδομάδων από το πρόγραμμα
+  const weekStructure = weeks.map(week => ({
+    weekNumber: week.week_number || 1,
+    daysCount: week.days?.length || 0
+  }));
+
+  console.log('📅 Δομή εβδομάδων:', weekStructure);
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
@@ -29,30 +41,136 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
     
     if (dateExists) {
       // Αφαίρεση ημερομηνίας
-      onDatesChange(selectedDates.filter(d => 
+      const newDates = selectedDates.filter(d => 
         d.toDateString() !== date.toDateString()
-      ));
-    } else {
-      // Έλεγχος αν έχουμε φτάσει το όριο
-      if (selectedDates.length >= totalDays) {
-        console.log(`⚠️ Μπορείς να επιλέξεις μόνο ${totalDays} ημερομηνίες`);
+      );
+      onDatesChange(newDates);
+      
+      // Επαναυπολογισμός του index εβδομάδας
+      recalculateWeekIndex(newDates);
+      return;
+    }
+
+    // Έλεγχος αν έχουμε φτάσει το όριο
+    if (selectedDates.length >= totalDays) {
+      console.log(`⚠️ Μπορείς να επιλέξεις μόνο ${totalDays} ημερομηνίες`);
+      return;
+    }
+
+    // Λογική για επιλογή ημερομηνιών βάσει δομής εβδομάδων
+    if (weekStructure.length > 0) {
+      const canAddToCurrentWeek = validateWeekSelection(date);
+      if (!canAddToCurrentWeek) {
+        console.log('⚠️ Πρέπει να ολοκληρώσεις τις ημέρες της τρέχουσας εβδομάδας πρώτα');
         return;
       }
-      
-      // Προσθήκη ημερομηνίας
-      onDatesChange([...selectedDates, date].sort((a, b) => a.getTime() - b.getTime()));
     }
+    
+    // Προσθήκη ημερομηνίας
+    const newDates = [...selectedDates, date].sort((a, b) => a.getTime() - b.getTime());
+    onDatesChange(newDates);
+    
+    // Ενημέρωση του index εβδομάδας
+    updateWeekIndex(newDates);
+  };
+
+  const validateWeekSelection = (newDate: Date): boolean => {
+    if (weekStructure.length === 0) return true;
+    if (selectedDates.length === 0) return true;
+
+    const currentWeek = weekStructure[currentWeekIndex];
+    if (!currentWeek) return false;
+
+    // Αν δεν έχουμε επιλέξει καμία ημερομηνία ακόμη, επιτρέπουμε οποιαδήποτε
+    if (selectedDates.length === 0) {
+      return true;
+    }
+
+    // Βρίσκουμε τις ημερομηνίες της τρέχουσας εβδομάδας που επεξεργαζόμαστε
+    const currentWeekDates = getCurrentWeekDates();
+    
+    // Αν η τρέχουσα εβδομάδα δεν έχει συμπληρωθεί
+    if (currentWeekDates.length < currentWeek.daysCount) {
+      // Ελέγχουμε αν η νέα ημερομηνία είναι στην ίδια εβδομάδα με τις τρέχουσες
+      if (currentWeekDates.length > 0) {
+        const firstDateOfCurrentWeek = currentWeekDates[0];
+        return isSameWeek(newDate, firstDateOfCurrentWeek, { weekStartsOn: 1 });
+      }
+      return true;
+    }
+
+    // Αν η τρέχουσα εβδομάδα έχει συμπληρωθεί, πάμε στην επόμενη
+    return true;
+  };
+
+  const getCurrentWeekDates = (): Date[] => {
+    if (selectedDates.length === 0) return [];
+    
+    let totalProcessedDays = 0;
+    for (let i = 0; i < currentWeekIndex; i++) {
+      totalProcessedDays += weekStructure[i]?.daysCount || 0;
+    }
+    
+    const currentWeekStartIndex = totalProcessedDays;
+    const currentWeek = weekStructure[currentWeekIndex];
+    const currentWeekEndIndex = currentWeekStartIndex + (currentWeek?.daysCount || 0);
+    
+    return selectedDates.slice(currentWeekStartIndex, currentWeekEndIndex);
+  };
+
+  const updateWeekIndex = (dates: Date[]) => {
+    if (weekStructure.length === 0) return;
+    
+    let totalDays = 0;
+    let weekIndex = 0;
+    
+    for (let i = 0; i < weekStructure.length; i++) {
+      const weekDays = weekStructure[i].daysCount;
+      if (dates.length <= totalDays + weekDays) {
+        weekIndex = i;
+        break;
+      }
+      totalDays += weekDays;
+      weekIndex = i + 1;
+    }
+    
+    setCurrentWeekIndex(Math.min(weekIndex, weekStructure.length - 1));
+  };
+
+  const recalculateWeekIndex = (dates: Date[]) => {
+    updateWeekIndex(dates);
   };
 
   const removeDate = (dateToRemove: Date) => {
-    onDatesChange(selectedDates.filter(d => 
+    const newDates = selectedDates.filter(d => 
       d.toDateString() !== dateToRemove.toDateString()
-    ));
+    );
+    onDatesChange(newDates);
+    recalculateWeekIndex(newDates);
   };
 
   const clearAllDates = () => {
     onDatesChange([]);
+    setCurrentWeekIndex(0);
+    setCurrentWeekDayCount(0);
   };
+
+  // Ενημέρωση για την τρέχουσα εβδομάδα
+  const getCurrentWeekInfo = () => {
+    if (weekStructure.length === 0) return null;
+    
+    const currentWeek = weekStructure[currentWeekIndex];
+    const currentWeekDates = getCurrentWeekDates();
+    
+    return {
+      weekNumber: currentWeek?.weekNumber || currentWeekIndex + 1,
+      remainingDays: (currentWeek?.daysCount || 0) - currentWeekDates.length,
+      totalDaysInWeek: currentWeek?.daysCount || 0,
+      selectedInWeek: currentWeekDates.length
+    };
+  };
+
+  const weekInfo = getCurrentWeekInfo();
 
   return (
     <Card className="rounded-none">
@@ -68,6 +186,23 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Week Info */}
+        {weekInfo && weekStructure.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-none p-3">
+            <h4 className="font-medium text-blue-800 mb-1">
+              Εβδομάδα {weekInfo.weekNumber}
+            </h4>
+            <p className="text-sm text-blue-700">
+              Επιλεγμένες: {weekInfo.selectedInWeek} / {weekInfo.totalDaysInWeek} ημέρες
+            </p>
+            {weekInfo.remainingDays > 0 && (
+              <p className="text-xs text-blue-600 mt-1">
+                Απομένουν {weekInfo.remainingDays} ημέρες για αυτή την εβδομάδα
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Selected Dates Display */}
         {selectedDates.length > 0 && (
           <div className="space-y-2">
@@ -119,13 +254,9 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
               selected={selectedDates}
               onSelect={(dates) => {
                 if (dates) {
-                  // Περιορισμός στον αριθμό των απαιτούμενων ημερών
                   const datesArray = Array.isArray(dates) ? dates : [dates];
                   if (datesArray.length <= totalDays) {
                     onDatesChange(datesArray);
-                  } else {
-                    // Κρατάμε μόνο τις πρώτες totalDays ημερομηνίες
-                    onDatesChange(datesArray.slice(0, totalDays));
                   }
                 }
               }}
@@ -134,9 +265,17 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
                 // Απενεργοποίηση παλαιών ημερομηνιών
                 if (date < new Date()) return true;
                 
-                // Απενεργοποίηση νέων ημερομηνιών αν έχουμε φτάσει το όριο
+                // Αν δεν έχουμε δομή εβδομάδων, χρησιμοποιούμε την παλιά λογική
+                if (weekStructure.length === 0) {
+                  const isSelected = selectedDates.some(d => d.toDateString() === date.toDateString());
+                  return !isSelected && selectedDates.length >= totalDays;
+                }
+                
+                // Νέα λογική βάσει δομής εβδομάδων
                 const isSelected = selectedDates.some(d => d.toDateString() === date.toDateString());
-                return !isSelected && selectedDates.length >= totalDays;
+                if (isSelected) return false;
+                
+                return !validateWeekSelection(date);
               }}
             />
           </div>
@@ -154,6 +293,16 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
           <div className="text-green-600 text-sm p-2 bg-green-50 border border-green-200 rounded-none">
             ✓ Έχετε επιλέξει όλες τις απαραίτητες ημερομηνίες προπόνησης!
           </div>
+        )}
+
+        {/* Week Structure Debug Info */}
+        {weekStructure.length > 0 && (
+          <details className="text-xs text-gray-500">
+            <summary>Δομή Εβδομάδων</summary>
+            <pre className="mt-2 bg-gray-100 p-2 rounded">
+              {JSON.stringify(weekStructure, null, 2)}
+            </pre>
+          </details>
         )}
       </CardContent>
     </Card>
