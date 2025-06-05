@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
+import { getWorkoutData, saveWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 
 interface ExerciseActualValuesProps {
   exercise: any;
@@ -8,6 +9,8 @@ interface ExerciseActualValuesProps {
   updateReps: (exerciseId: string, reps: number) => void;
   updateKg: (exerciseId: string, kg: string) => void;
   updateVelocity: (exerciseId: string, velocity: number) => void;
+  selectedDate?: Date;
+  program?: any;
 }
 
 export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
@@ -15,24 +18,43 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   workoutInProgress,
   updateReps,
   updateKg,
-  updateVelocity
+  updateVelocity,
+  selectedDate,
+  program
 }) => {
-  const [actualReps, setActualReps] = useState(exercise.reps || '');
-  const [actualKg, setActualKg] = useState(exercise.kg || '');
-  const [actualVelocity, setActualVelocity] = useState(exercise.velocity_ms || '');
-  const [actualRest, setActualRest] = useState(exercise.rest || '');
+  const [actualKg, setActualKg] = useState('');
+  const [actualReps, setActualReps] = useState('');
+  const [actualVelocity, setActualVelocity] = useState('');
+
+  // Load data from previous week
+  useEffect(() => {
+    if (selectedDate && program) {
+      const data = getWorkoutData(selectedDate, program.id, exercise.id);
+      if (data.kg) setActualKg(data.kg);
+      if (data.reps) setActualReps(data.reps);
+      if (data.velocity) setActualVelocity(data.velocity);
+    }
+  }, [selectedDate, program, exercise.id]);
+
+  const handleKgChange = (value: string) => {
+    setActualKg(value);
+    if (workoutInProgress) {
+      updateKg(exercise.id, value);
+    }
+    
+    if (selectedDate && program) {
+      saveWorkoutData(selectedDate, program.id, exercise.id, { kg: value });
+    }
+  };
 
   const handleRepsChange = (value: string) => {
     setActualReps(value);
     if (workoutInProgress) {
       updateReps(exercise.id, parseInt(value) || 0);
     }
-  };
-
-  const handleKgChange = (value: string) => {
-    setActualKg(value);
-    if (workoutInProgress) {
-      updateKg(exercise.id, value);
+    
+    if (selectedDate && program) {
+      saveWorkoutData(selectedDate, program.id, exercise.id, { reps: value });
     }
   };
 
@@ -41,59 +63,64 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
     if (workoutInProgress) {
       updateVelocity(exercise.id, parseFloat(value) || 0);
     }
+    
+    if (selectedDate && program) {
+      saveWorkoutData(selectedDate, program.id, exercise.id, { velocity: value });
+    }
   };
 
-  if (!workoutInProgress) return null;
-
   return (
-    <div>
-      <div className="text-xs font-medium text-gray-700 mb-2">Actual Values</div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-        <div className="text-xs">
-          <label className="block text-gray-600 mb-1">Actual Reps</label>
-          <Input
-            type="number"
-            value={actualReps}
-            onChange={(e) => handleRepsChange(e.target.value)}
-            className="h-7 text-xs rounded-none"
-            placeholder={exercise.reps || ''}
-          />
-        </div>
-        
-        <div className="text-xs">
-          <label className="block text-gray-600 mb-1">Actual Kg</label>
-          <Input
-            type="number"
-            step="0.5"
-            value={actualKg}
-            onChange={(e) => handleKgChange(e.target.value)}
-            className="h-7 text-xs rounded-none"
-            placeholder={exercise.kg || ''}
-          />
-        </div>
-        
-        <div className="text-xs">
-          <label className="block text-gray-600 mb-1">Actual m/s</label>
-          <Input
-            type="number"
-            step="0.01"
-            value={actualVelocity}
-            onChange={(e) => handleVelocityChange(e.target.value)}
-            className="h-7 text-xs rounded-none"
-            placeholder={exercise.velocity_ms || ''}
-          />
-        </div>
-        
-        <div className="text-xs">
-          <label className="block text-gray-600 mb-1">Actual Rest (s)</label>
-          <Input
-            type="number"
-            value={actualRest}
-            onChange={(e) => setActualRest(e.target.value)}
-            className="h-7 text-xs rounded-none"
-            placeholder={exercise.rest || ''}
-          />
-        </div>
+    <div className="grid grid-cols-7 gap-1 text-xs">
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">-</div>
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Actual</div>
+        <Input
+          type="number"
+          value={actualReps}
+          onChange={(e) => handleRepsChange(e.target.value)}
+          className="h-6 text-xs rounded-none text-center p-0"
+          placeholder={exercise.reps || ''}
+          disabled={!workoutInProgress}
+        />
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">-</div>
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Actual</div>
+        <Input
+          type="number"
+          step="0.5"
+          value={actualKg}
+          onChange={(e) => handleKgChange(e.target.value)}
+          className="h-6 text-xs rounded-none text-center p-0"
+          placeholder={exercise.kg || ''}
+          disabled={!workoutInProgress}
+        />
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Actual</div>
+        <Input
+          type="number"
+          step="0.01"
+          value={actualVelocity}
+          onChange={(e) => handleVelocityChange(e.target.value)}
+          className="h-6 text-xs rounded-none text-center p-0"
+          placeholder={exercise.velocity_ms || ''}
+          disabled={!workoutInProgress}
+        />
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">-</div>
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">-</div>
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
       </div>
     </div>
   );

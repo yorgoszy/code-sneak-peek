@@ -7,46 +7,34 @@ interface ExerciseDetailsProps {
 
 export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({ exercise }) => {
   return (
-    <div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-        {/* Planned Values */}
-        <div className="text-xs">
-          <label className="block text-gray-600 mb-1">Planned Sets</label>
-          <div className="bg-gray-100 px-2 py-1 rounded-none">{exercise.sets || '-'}</div>
-        </div>
-        
-        <div className="text-xs">
-          <label className="block text-gray-600 mb-1">Planned Reps</label>
-          <div className="bg-gray-100 px-2 py-1 rounded-none">{exercise.reps || '-'}</div>
-        </div>
-        
-        <div className="text-xs">
-          <label className="block text-gray-600 mb-1">%1RM</label>
-          <div className="bg-gray-100 px-2 py-1 rounded-none">{exercise.percentage_1rm || '-'}%</div>
-        </div>
-        
-        <div className="text-xs">
-          <label className="block text-gray-600 mb-1">Planned Kg</label>
-          <div className="bg-gray-100 px-2 py-1 rounded-none">{exercise.kg || '-'}</div>
-        </div>
+    <div className="grid grid-cols-7 gap-1 text-xs">
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Sets</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none">{exercise.sets || '-'}</div>
       </div>
-
-      {/* Additional Info */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3 text-xs">
-        <div>
-          <label className="block text-gray-600 mb-1">Tempo</label>
-          <div className="bg-gray-100 px-2 py-1 rounded-none">{exercise.tempo || '-'}</div>
-        </div>
-        
-        <div>
-          <label className="block text-gray-600 mb-1">Rest (s)</label>
-          <div className="bg-gray-100 px-2 py-1 rounded-none">{exercise.rest || '-'}</div>
-        </div>
-        
-        <div>
-          <label className="block text-gray-600 mb-1">Target m/s</label>
-          <div className="bg-gray-100 px-2 py-1 rounded-none">{exercise.velocity_ms || '-'}</div>
-        </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Reps</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none">{exercise.reps || '-'}</div>
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">%1RM</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none">{exercise.percentage_1rm || '-'}%</div>
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Kg</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none">{exercise.kg || '-'}</div>
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">m/s</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none">{exercise.velocity_ms || '-'}</div>
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Tempo</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none">{exercise.tempo || '-'}</div>
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Rest</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none">{exercise.rest || '-'}</div>
       </div>
     </div>
   );

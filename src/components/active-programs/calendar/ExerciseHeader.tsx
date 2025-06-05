@@ -22,7 +22,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
   onSetClick
 }) => {
   return (
-    <div className="p-3 border-b border-gray-200">
+    <div className="p-2 border-b border-gray-200">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="text-sm font-medium text-gray-900">
@@ -34,7 +34,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
               variant="ghost"
               size="sm"
               onClick={onVideoClick}
-              className="h-6 w-6 p-0 rounded-none video-thumbnail"
+              className="h-5 w-5 p-0 rounded-none"
             >
               <Video className="w-3 h-3" />
             </Button>
@@ -47,7 +47,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
               variant="outline"
               size="sm"
               onClick={onSetClick}
-              className="rounded-none text-xs h-6"
+              className="rounded-none text-xs h-5 px-2"
             >
               Complete Set
             </Button>
@@ -55,7 +55,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
           
           <Badge 
             variant="outline" 
-            className={`rounded-none text-xs ${
+            className={`rounded-none text-xs px-1 ${
               isComplete ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
             }`}
           >
