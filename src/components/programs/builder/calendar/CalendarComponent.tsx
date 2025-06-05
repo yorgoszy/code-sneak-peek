@@ -36,7 +36,6 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
         onSelect={handleSelect}
         className="rounded-none"
         weekStartsOn={0}
-        timeZone="Europe/Athens"
         disabled={(date) => {
           // Απενεργοποίηση παλαιών ημερομηνιών
           const today = new Date();
