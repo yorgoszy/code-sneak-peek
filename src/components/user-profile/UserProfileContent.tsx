@@ -1,10 +1,9 @@
 
 import { UserProfileOverview } from "./UserProfileOverview";
-import { UserProfilePrograms } from "./UserProfilePrograms";
-import { UserProfileCalendar } from "./UserProfileCalendar";
+import { UserProfileProgramCards } from "./UserProfileProgramCards";
+import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
 import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
-import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -37,9 +36,9 @@ export const UserProfileContent = ({
           />
         );
       case "programs":
-        return <UserProfilePrograms user={userProfile} programs={programs} />;
+        return <UserProfileProgramCards userProfile={userProfile} />;
       case "calendar":
-        return <UserProfileCalendar user={userProfile} />;
+        return <UserProfileDailyProgram userProfile={userProfile} />;
       case "tests":
         return <UserProfileTests tests={tests} />;
       case "payments":
