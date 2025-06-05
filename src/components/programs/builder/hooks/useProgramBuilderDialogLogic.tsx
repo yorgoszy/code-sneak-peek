@@ -32,6 +32,7 @@ export const useProgramBuilderDialogLogic = ({
   program
 }: UseProgramBuilderDialogLogicProps) => {
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+  const [currentProgramId, setCurrentProgramId] = useState<string | null>(null);
   const { createOrUpdateAssignment } = useProgramAssignments();
   const { createWorkoutCompletions } = useProgramWorkoutCompletions();
 
@@ -60,9 +61,17 @@ export const useProgramBuilderDialogLogic = ({
     return null;
   }, [editingAssignment]);
 
+  // Ενημέρωση του currentProgramId όταν αλλάζει το program.id
+  useEffect(() => {
+    if (program.id) {
+      setCurrentProgramId(program.id);
+    }
+  }, [program.id]);
+
   const handleClose = () => {
     console.log('Closing program builder dialog');
     setAssignmentDialogOpen(false);
+    setCurrentProgramId(null);
     onOpenChange();
   };
 
@@ -82,6 +91,7 @@ export const useProgramBuilderDialogLogic = ({
       });
       
       console.log('✅ Program saved as draft:', savedProgram);
+      setCurrentProgramId(savedProgram.id);
       toast.success('Το πρόγραμμα αποθηκεύτηκε ως προσχέδιο');
       onOpenChange();
     } catch (error) {
@@ -104,14 +114,24 @@ export const useProgramBuilderDialogLogic = ({
         return;
       }
 
+      let programId = program.id || currentProgramId;
+
       // Αποθήκευση πρώτα το πρόγραμμα αν δεν έχει ID
-      if (!program.id) {
+      if (!programId) {
         console.log('💾 Saving program before assignment...');
-        const savedProgram = await onCreateProgram({
-          ...program,
-          status: 'template'
-        });
-        console.log('✅ Program saved before assignment:', savedProgram);
+        try {
+          const savedProgram = await onCreateProgram({
+            ...program,
+            status: 'template'
+          });
+          programId = savedProgram.id;
+          setCurrentProgramId(programId);
+          console.log('✅ Program saved before assignment:', savedProgram);
+        } catch (error) {
+          console.error('❌ Error saving program before assignment:', error);
+          toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
+          return;
+        }
       }
 
       setAssignmentDialogOpen(true);
@@ -123,20 +143,22 @@ export const useProgramBuilderDialogLogic = ({
 
   const handleAssign = async (userId: string, trainingDates: string[]) => {
     try {
+      const programId = program.id || currentProgramId;
+      
       console.log('🔄 Creating assignment...', {
-        programId: program.id,
+        programId,
         userId,
         trainingDates: trainingDates.length
       });
 
-      if (!program.id) {
+      if (!programId) {
         toast.error('Πρέπει πρώτα να αποθηκευτεί το πρόγραμμα');
         return;
       }
 
       // Δημιουργία assignment
       const assignment = await createOrUpdateAssignment(
-        program.id,
+        programId,
         userId,
         trainingDates[0], // start_date
         trainingDates[trainingDates.length - 1], // end_date
@@ -149,7 +171,7 @@ export const useProgramBuilderDialogLogic = ({
       await createWorkoutCompletions(
         assignment.id,
         userId,
-        program.id,
+        programId,
         trainingDates,
         program
       );
