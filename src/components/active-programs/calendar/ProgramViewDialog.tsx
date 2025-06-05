@@ -3,12 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Dumbbell, CheckCircle, Info } from "lucide-react";
+import { Clock, Dumbbell, CheckCircle } from "lucide-react";
 import { ExerciseBlock } from "@/components/user-profile/daily-program/ExerciseBlock";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { DayProgramDialog } from './DayProgramDialog';
 import { format } from "date-fns";
-import { getVideoThumbnail } from '@/utils/videoUtils';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramViewDialogProps {
@@ -135,16 +134,11 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
         <DialogContent className="max-w-7xl max-h-[80vh] overflow-y-auto rounded-none">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span>{program.name}</span>
-                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-none px-3 py-1">
-                  <Info className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm text-blue-700">
-                    Κάνε διπλό κλικ στην ημέρα που θέλεις να προπονηθείς
-                  </span>
-                </div>
-              </div>
+              <span>{program.name}</span>
               <div className="flex items-center gap-2">
+                <div className="text-sm text-gray-600 italic">
+                  Κάνε διπλό κλικ στην ημέρα που θέλεις να προπονηθείς
+                </div>
                 <Badge variant="outline" className="rounded-none">
                   {assignment.status}
                 </Badge>
@@ -219,11 +213,7 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
                               </div>
 
                               <div className="space-y-2">
-                                <ExerciseBlock 
-                                  blocks={day.program_blocks} 
-                                  viewOnly={true}
-                                  showVideoThumbnails={true}
-                                />
+                                <ExerciseBlock blocks={day.program_blocks} viewOnly={true} />
                               </div>
                             </div>
                           </TabsContent>
