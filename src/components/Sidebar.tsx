@@ -1,7 +1,5 @@
 
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useLocation } from "react-router-dom";
 import { 
   Users, 
   UserPlus, 
@@ -10,14 +8,14 @@ import {
   TrendingUp, 
   FileText,
   Calendar,
-  ChevronLeft,
-  ChevronRight,
   BarChart3,
   Home,
   Mail,
   CalendarCheck,
   CreditCard
 } from "lucide-react";
+import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
+import { Link } from "react-router-dom";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -39,72 +37,64 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     { icon: CreditCard, label: "Program Cards", path: "/dashboard/program-cards" },
   ];
 
-  return (
-    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-64'
-    }`}>
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <h2 className="text-lg font-semibold text-gray-800">HyperKids</h2>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="rounded-none"
-          >
-            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="p-4">
-        <div className="space-y-2">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center space-x-3 px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 ${
-                  isActive ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700'
-                }`}
-              >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!isCollapsed && <span>{item.label}</span>}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Bottom Actions */}
-      <div className="mt-auto p-4 border-t border-gray-200">
-        <div className="space-y-2">
-          {/* Return Home Button */}
-          <Link
-            to="/"
-            className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-          >
-            <Home className="h-5 w-5 flex-shrink-0" />
-            {!isCollapsed && <span>Επιστροφή στην Αρχική</span>}
-          </Link>
-
-          {/* Webmail Link */}
-          <a
-            href="https://webmail.hyperkids.gr/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-          >
-            <Mail className="h-5 w-5 flex-shrink-0" />
-            {!isCollapsed && <span>Webmail</span>}
-          </a>
-        </div>
-      </div>
+  const headerContent = (
+    <div>
+      <h2 className="text-sm font-semibold text-gray-800">HyperKids</h2>
+      <p className="text-xs text-gray-500">Διαχείριση προπονήσεων</p>
     </div>
+  );
+
+  const navigationContent = (
+    <div className="space-y-2">
+      {menuItems.map((item) => {
+        const isActive = location.pathname === item.path;
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`flex items-center space-x-3 px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
+              isActive ? 'bg-[#00ffba]/10 text-[#00ffba] border-r-2 border-[#00ffba]' : 'text-gray-700'
+            }`}
+          >
+            <item.icon className="h-5 w-5 flex-shrink-0" />
+            {!isCollapsed && <span>{item.label}</span>}
+          </Link>
+        );
+      })}
+    </div>
+  );
+
+  const bottomContent = (
+    <div className="space-y-2">
+      {/* Return Home Button */}
+      <Link
+        to="/"
+        className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none"
+      >
+        <Home className="h-5 w-5 flex-shrink-0" />
+        {!isCollapsed && <span>Επιστροφή στην Αρχική</span>}
+      </Link>
+
+      {/* Webmail Link */}
+      <a
+        href="https://webmail.hyperkids.gr/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none"
+      >
+        <Mail className="h-5 w-5 flex-shrink-0" />
+        {!isCollapsed && <span>Webmail</span>}
+      </a>
+    </div>
+  );
+
+  return (
+    <BaseSidebar
+      isCollapsed={isCollapsed}
+      setIsCollapsed={setIsCollapsed}
+      headerContent={headerContent}
+      navigationContent={navigationContent}
+      bottomContent={bottomContent}
+    />
   );
 };

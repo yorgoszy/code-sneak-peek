@@ -1,16 +1,13 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { 
   User, 
   BarChart3, 
   Activity, 
   Calendar,
   FileText,
-  CreditCard,
-  ChevronLeft,
-  ChevronRight
+  CreditCard
 } from "lucide-react";
+import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 
 interface UserProfileSidebarProps {
   isCollapsed: boolean;
@@ -63,85 +60,67 @@ export const UserProfileSidebar = ({
     },
   ];
 
-  return (
-    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-64'
-    }`}>
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold text-gray-800">
-                  {userProfile.name}
-                </h2>
-                <p className="text-xs text-gray-500 capitalize">{userProfile.role}</p>
-              </div>
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="rounded-none"
+  const headerContent = (
+    <div>
+      <h2 className="text-sm font-semibold text-gray-800">
+        {userProfile.name}
+      </h2>
+      <p className="text-xs text-gray-500 capitalize">{userProfile.role}</p>
+    </div>
+  );
+
+  const navigationContent = (
+    <div className="space-y-2">
+      {menuItems.map((item) => {
+        const isActive = activeTab === item.key;
+        return (
+          <button
+            key={item.key}
+            onClick={() => setActiveTab(item.key)}
+            className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
+              isActive ? 'bg-[#00ffba]/10 text-[#00ffba] border-r-2 border-[#00ffba]' : 'text-gray-700'
+            }`}
           >
-            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
+            <div className="flex items-center space-x-3">
+              <item.icon className="h-5 w-5 flex-shrink-0" />
+              {!isCollapsed && <span>{item.label}</span>}
+            </div>
+            {!isCollapsed && item.badge && (
+              <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">
+                {item.badge}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const bottomContent = !isCollapsed ? (
+    <div className="space-y-2">
+      <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+        Γρήγορη Επισκόπηση
+      </h3>
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="bg-gray-50 p-2 rounded-none">
+          <div className="font-semibold text-gray-800">{stats.programsCount}</div>
+          <div className="text-gray-600">Προγράμματα</div>
+        </div>
+        <div className="bg-gray-50 p-2 rounded-none">
+          <div className="font-semibold text-gray-800">{stats.testsCount}</div>
+          <div className="text-gray-600">Τεστ</div>
         </div>
       </div>
-
-      {/* Navigation */}
-      <nav className="p-4">
-        <div className="space-y-2">
-          {menuItems.map((item) => {
-            const isActive = activeTab === item.key;
-            return (
-              <button
-                key={item.key}
-                onClick={() => setActiveTab(item.key)}
-                className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 ${
-                  isActive ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-700'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  {!isCollapsed && <span>{item.label}</span>}
-                </div>
-                {!isCollapsed && item.badge && (
-                  <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* User Stats Summary (when not collapsed) */}
-      {!isCollapsed && (
-        <div className="p-4 border-t border-gray-200 mt-auto">
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Γρήγορη Επισκόπηση
-            </h3>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-gray-50 p-2 rounded">
-                <div className="font-semibold text-gray-800">{stats.programsCount}</div>
-                <div className="text-gray-600">Προγράμματα</div>
-              </div>
-              <div className="bg-gray-50 p-2 rounded">
-                <div className="font-semibold text-gray-800">{stats.testsCount}</div>
-                <div className="text-gray-600">Τεστ</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
+  ) : undefined;
+
+  return (
+    <BaseSidebar
+      isCollapsed={isCollapsed}
+      setIsCollapsed={setIsCollapsed}
+      headerContent={headerContent}
+      navigationContent={navigationContent}
+      bottomContent={bottomContent}
+    />
   );
 };

@@ -1,8 +1,8 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { saveWorkoutData, getWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
+import { useRunningWorkouts } from '@/hooks/useRunningWorkouts';
 import { toast } from 'sonner';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -27,6 +27,7 @@ export const useWorkoutState = (
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
 
   const { updateWorkoutStatus } = useWorkoutCompletions();
+  const { startWorkout: addToRunningWorkouts, completeWorkout: removeFromRunningWorkouts } = useRunningWorkouts();
 
   // Φόρτωση δεδομένων από localStorage όταν ανοίγει το dialog
   useEffect(() => {
@@ -72,12 +73,18 @@ export const useWorkoutState = (
   }, [workoutInProgress]);
 
   const handleStartWorkout = useCallback(() => {
+    if (!program || !selectedDate) return;
+    
     console.log('🏋️‍♂️ Έναρξη προπόνησης');
     setWorkoutInProgress(true);
     setElapsedTime(0);
     setWorkoutStartTime(new Date());
+    
+    // Προσθήκη στο running workouts
+    addToRunningWorkouts(program, selectedDate);
+    
     toast.success('Προπόνηση ξεκίνησε!');
-  }, []);
+  }, [program, selectedDate, addToRunningWorkouts]);
 
   const handleCompleteWorkout = useCallback(async () => {
     if (!program || !selectedDate || !workoutStartTime) return;
@@ -100,6 +107,11 @@ export const useWorkoutState = (
       console.log('💾 Προπόνηση ολοκληρώθηκε επιτυχώς');
       
       setWorkoutInProgress(false);
+      
+      // Αφαίρεση από το running workouts
+      const workoutId = `${program.id}-${selectedDateStr}`;
+      removeFromRunningWorkouts(workoutId);
+      
       toast.success('Προπόνηση ολοκληρώθηκε!');
       
       // Άμεσο refresh για να δούμε τις αλλαγές
@@ -119,9 +131,11 @@ export const useWorkoutState = (
       console.error('Error completing workout:', error);
       toast.error('Σφάλμα κατά την ολοκλήρωση της προπόνησης');
     }
-  }, [program, selectedDate, workoutStartTime, updateWorkoutStatus, onRefresh, onClose]);
+  }, [program, selectedDate, workoutStartTime, updateWorkoutStatus, onRefresh, onClose, removeFromRunningWorkouts]);
 
   const handleCancelWorkout = useCallback(() => {
+    if (!program || !selectedDate) return;
+    
     console.log('❌ Ακύρωση προπόνησης');
     setWorkoutInProgress(false);
     setElapsedTime(0);
@@ -129,8 +143,14 @@ export const useWorkoutState = (
     setExerciseNotes({});
     setExerciseData({});
     setWorkoutStartTime(null);
+    
+    // Αφαίρεση από το running workouts
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    const workoutId = `${program.id}-${selectedDateStr}`;
+    removeFromRunningWorkouts(workoutId);
+    
     toast.info('Προπόνηση ακυρώθηκε');
-  }, []);
+  }, [program, selectedDate, removeFromRunningWorkouts]);
 
   const exerciseCompletion = {
     completeSet: (exerciseId: string, totalSets: number) => {
