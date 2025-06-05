@@ -91,13 +91,13 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     
     // ΑΠΛΗ ΛΟΓΙΚΗ: Αν η ημερομηνία είναι ήδη επιλεγμένη, την αφαιρούμε
     if (selectedDates.includes(dateString)) {
-      setSelectedDates(selectedDates.filter(d => d !== dateString));
+      setSelectedDates(prev => prev.filter(d => d !== dateString));
       return;
     }
     
     // Αλλιώς, ελέγχουμε αν μπορούμε να την προσθέσουμε
     if (canAddDate(date)) {
-      setSelectedDates([...selectedDates, dateString].sort());
+      setSelectedDates(prev => [...prev, dateString].sort());
     }
   };
 
@@ -171,13 +171,33 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   };
 
   const handleAssign = () => {
-    if (selectedUserId && selectedDates.length === totalRequiredSessions) {
-      onAssign(selectedUserId, selectedDates);
-      onClose();
+    console.log('Attempting to assign with:', {
+      selectedUserId,
+      selectedDatesLength: selectedDates.length,
+      totalRequiredSessions,
+      selectedDates
+    });
+
+    if (!selectedUserId) {
+      console.log('No user selected');
+      return;
     }
+
+    if (selectedDates.length === 0) {
+      console.log('No dates selected');
+      return;
+    }
+
+    if (selectedDates.length !== totalRequiredSessions) {
+      console.log('Incorrect number of dates selected');
+      return;
+    }
+
+    console.log('Calling onAssign with:', selectedUserId, selectedDates);
+    onAssign(selectedUserId, selectedDates);
   };
 
-  const canAssign = selectedUserId && selectedDates.length === totalRequiredSessions;
+  const canAssign = selectedUserId && selectedDates.length > 0 && selectedDates.length === totalRequiredSessions;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
