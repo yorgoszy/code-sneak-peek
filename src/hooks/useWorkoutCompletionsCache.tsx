@@ -32,7 +32,7 @@ export const useWorkoutCompletionsCache = () => {
       // Type cast the data to ensure status is properly typed
       const completions = (data || []).map(item => ({
         ...item,
-        status: item.status as 'completed' | 'missed' | 'makeup'
+        status: item.status as 'completed' | 'missed' | 'makeup' | 'scheduled'
       })) as WorkoutCompletion[];
       
       // Αποθηκεύουμε στο cache
@@ -51,7 +51,7 @@ export const useWorkoutCompletionsCache = () => {
   ): WorkoutStats => {
     const totalWorkouts = trainingDates?.length || 0;
     
-    // Βρίσκουμε μοναδικές ημερομηνίες που έχουν ολοκληρωθεί
+    // Βρίσκουμε μοναδικές ημερομηνίες που έχουν ολοκληρωθεί (μόνο με status 'completed')
     const uniqueCompletedDates = new Set();
     completions.forEach(c => {
       if (c.status === 'completed' && trainingDates?.includes(c.scheduled_date)) {
@@ -66,6 +66,14 @@ export const useWorkoutCompletionsCache = () => {
     const progress = totalWorkouts > 0 
       ? Math.min(100, Math.round((completedWorkouts / totalWorkouts) * 100))
       : 0;
+
+    console.log('📊 Calculated stats:', {
+      completedWorkouts,
+      totalWorkouts,
+      missedWorkouts,
+      progress,
+      completions: completions.map(c => ({ date: c.scheduled_date, status: c.status }))
+    });
 
     return {
       completed: completedWorkouts,

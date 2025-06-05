@@ -23,8 +23,9 @@ export const workoutCompletionService = {
         week_number: weekNumber,
         day_number: dayNumber,
         scheduled_date: date,
-        completed_date: date,
-        status: 'completed'
+        completed_date: date, // Keep this as the scheduled date for reference
+        status: 'scheduled', // Changed from 'completed' to 'scheduled'
+        status_color: 'blue' // Changed from default to blue for scheduled
       };
     });
 
@@ -36,5 +37,7 @@ export const workoutCompletionService = {
       console.error('❌ Σφάλμα δημιουργίας workout completions:', completionsError);
       throw new Error('Σφάλμα κατά τη δημιουργία των προπονήσεων');
     }
+
+    console.log('✅ Workout completions created as scheduled:', workoutCompletions.length);
   }
 };
