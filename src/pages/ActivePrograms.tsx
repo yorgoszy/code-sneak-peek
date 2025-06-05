@@ -21,6 +21,7 @@ const ActivePrograms = () => {
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
+  const [realtimeKey, setRealtimeKey] = useState(0);
   const navigate = useNavigate();
 
   // Χρησιμοποιούμε το hook για τα ενεργά προγράμματα από τη βάση
@@ -46,6 +47,7 @@ const ActivePrograms = () => {
         allCompletions.push(...completions);
       }
       setWorkoutCompletions(allCompletions);
+      console.log('✅ Loaded completions:', allCompletions.length);
     } catch (error) {
       console.error('Error loading workout completions:', error);
     }
@@ -53,14 +55,14 @@ const ActivePrograms = () => {
 
   useEffect(() => {
     loadCompletions();
-  }, [activePrograms, getWorkoutCompletions]);
+  }, [activePrograms, getWorkoutCompletions, realtimeKey]);
 
-  // Enhanced realtime subscription για άμεση ενημέρωση
+  // ΕΝΙΣΧΥΜΕΝΟ Real-time subscription με ΑΜΕΣΗ ενημέρωση
   useEffect(() => {
-    console.log('🔄 Setting up enhanced realtime subscription...');
+    console.log('🔄 Setting up ENHANCED realtime subscription...');
     
     const channel = supabase
-      .channel('workout-completions-realtime')
+      .channel('workout-completions-enhanced-realtime')
       .on(
         'postgres_changes',
         {
@@ -69,13 +71,17 @@ const ActivePrograms = () => {
           table: 'workout_completions'
         },
         async (payload) => {
-          console.log('✅ Real-time workout completion change:', payload);
+          console.log('🚀 IMMEDIATE Real-time change detected:', payload);
           
-          // Άμεση ενημέρωση των προγραμμάτων
-          await refetch();
+          // ΑΜΕΣΗ αναγκαστική ενημέρωση
+          setRealtimeKey(prev => prev + 1);
           
-          // Άμεση επανάφορτωση των completions
-          await loadCompletions();
+          // Άμεση επανάφορτωση χωρίς καθυστέρηση
+          setTimeout(async () => {
+            console.log('🔄 Force refreshing data...');
+            await refetch();
+            await loadCompletions();
+          }, 100);
         }
       )
       .subscribe();
@@ -84,7 +90,7 @@ const ActivePrograms = () => {
       console.log('🔌 Cleaning up enhanced realtime subscription...');
       supabase.removeChannel(channel);
     };
-  }, [refetch, loadCompletions]);
+  }, [refetch]);
 
   // Υπολογίζουμε τα stats
   const stats = {
@@ -137,9 +143,9 @@ const ActivePrograms = () => {
     const getNameColor = (status: string) => {
       switch (status) {
         case 'completed':
-          return 'text-[#00ffba]'; // πράσινο
+          return 'text-[#00ffba] font-semibold'; // πράσινο με έμφαση
         case 'missed':
-          return 'text-red-500'; // κόκκινο
+          return 'text-red-500 font-semibold'; // κόκκινο με έμφαση
         default:
           return 'text-blue-500'; // μπλε για scheduled
       }
@@ -179,7 +185,7 @@ const ActivePrograms = () => {
           ))}
         </div>
 
-        {/* Calendar Grid - Increased height for 5 names */}
+        {/* Calendar Grid - Μικρότερο ύψος για καλύτερη εμφάνιση */}
         <div className="grid grid-cols-7 border border-gray-200">
           {days.map((date) => {
             const dateStr = format(date, 'yyyy-MM-dd');
@@ -190,9 +196,9 @@ const ActivePrograms = () => {
 
             return (
               <div
-                key={dateStr}
+                key={`${dateStr}-${realtimeKey}`}
                 className={`
-                  h-32 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
+                  h-24 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
                   ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
                   ${isSelected ? 'bg-[#00ffba] text-black' : ''}
                   ${isToday && !isSelected ? 'bg-gray-100' : ''}
@@ -206,11 +212,11 @@ const ActivePrograms = () => {
                 </div>
                 
                 {/* User Names - Centered in the middle with more space */}
-                <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-6 pb-2">
+                <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-5 pb-1">
                   {dateProgramsWithStatus.slice(0, 5).map((program, i) => (
                     <div 
-                      key={i} 
-                      className={`text-xs font-medium cursor-pointer hover:underline truncate w-full text-center ${getNameColor(program.status)}`}
+                      key={`${program.assignmentId}-${i}-${realtimeKey}`}
+                      className={`text-xs cursor-pointer hover:underline truncate w-full text-center ${getNameColor(program.status)}`}
                       onClick={(e) => handleNameClick(program, e)}
                     >
                       {program.userName.split(' ')[0]}
@@ -357,7 +363,10 @@ const ActivePrograms = () => {
         program={selectedProgram}
         selectedDate={selectedDialogDate}
         workoutStatus={selectedProgram && selectedDialogDate ? getWorkoutStatus(selectedProgram, selectedDialogDate) : 'scheduled'}
-        onRefresh={refetch}
+        onRefresh={() => {
+          refetch();
+          setRealtimeKey(prev => prev + 1);
+        }}
       />
     </>
   );
