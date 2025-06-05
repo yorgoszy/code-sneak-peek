@@ -23,12 +23,22 @@ export const saveWorkoutData = (
   
   localStorage.setItem(storageKey, JSON.stringify(newData));
   
-  // Αποθηκεύουμε επίσης για την επόμενη εβδομάδα
+  // Αποθηκεύουμε επίσης για την επόμενη εβδομάδα (ΜΗ το complete)
   const nextWeekDate = addDays(selectedDate, 7);
   const nextWeekKey = `workout-data-${format(nextWeekDate, 'yyyy-MM-dd')}-${programId}-${exerciseId}`;
-  localStorage.setItem(nextWeekKey, JSON.stringify(newData));
   
-  console.log('💾 Αποθήκευση workout data για:', dateStr, 'και επόμενη εβδομάδα:', data);
+  // Κρατάμε μόνο τα δεδομένα, όχι την κατάσταση ολοκλήρωσης
+  const nextWeekData = {
+    exerciseId,
+    kg: newData.kg,
+    reps: newData.reps,
+    velocity: newData.velocity,
+    notes: newData.notes
+  };
+  
+  localStorage.setItem(nextWeekKey, JSON.stringify(nextWeekData));
+  
+  console.log('💾 Αποθήκευση workout data για:', dateStr, 'και επόμενη εβδομάδα:', nextWeekData);
 };
 
 export const getWorkoutData = (

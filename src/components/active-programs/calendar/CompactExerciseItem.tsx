@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Video, Trash2 } from 'lucide-react';
+import { getWorkoutData, saveWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 
 interface CompactExerciseItemProps {
   exercise: any;
@@ -23,6 +24,8 @@ interface CompactExerciseItemProps {
   clearVelocity: (exerciseId: string) => void;
   updateReps: (exerciseId: string, reps: number) => void;
   clearReps: (exerciseId: string) => void;
+  selectedDate?: Date;
+  program?: any;
 }
 
 export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
@@ -37,11 +40,24 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
   updateReps,
   getNotes,
   updateNotes,
-  clearNotes
+  clearNotes,
+  selectedDate,
+  program
 }) => {
-  const [actualKg, setActualKg] = useState(exercise.kg || '');
-  const [actualReps, setActualReps] = useState(exercise.reps || '');
+  const [actualKg, setActualKg] = useState('');
+  const [actualReps, setActualReps] = useState('');
+  const [actualVelocity, setActualVelocity] = useState('');
   const notes = getNotes(exercise.id);
+
+  // Φόρτωση δεδομένων από την προηγούμενη εβδομάδα
+  useEffect(() => {
+    if (selectedDate && program) {
+      const data = getWorkoutData(selectedDate, program.id, exercise.id);
+      if (data.kg) setActualKg(data.kg);
+      if (data.reps) setActualReps(data.reps);
+      if (data.velocity) setActualVelocity(data.velocity);
+    }
+  }, [selectedDate, program, exercise.id]);
 
   const handleSetClick = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -58,6 +74,11 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
     if (workoutInProgress) {
       updateKg(exercise.id, value);
     }
+    
+    // Αποθήκευση για την επόμενη εβδομάδα
+    if (selectedDate && program) {
+      saveWorkoutData(selectedDate, program.id, exercise.id, { kg: value });
+    }
   };
 
   const handleRepsChange = (value: string) => {
@@ -65,10 +86,43 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
     if (workoutInProgress) {
       updateReps(exercise.id, parseInt(value) || 0);
     }
+    
+    // Αποθήκευση για την επόμενη εβδομάδα
+    if (selectedDate && program) {
+      saveWorkoutData(selectedDate, program.id, exercise.id, { reps: value });
+    }
+  };
+
+  const handleVelocityChange = (value: string) => {
+    setActualVelocity(value);
+    if (workoutInProgress) {
+      updateVelocity(exercise.id, parseFloat(value) || 0);
+    }
+    
+    // Αποθήκευση για την επόμενη εβδομάδα
+    if (selectedDate && program) {
+      saveWorkoutData(selectedDate, program.id, exercise.id, { velocity: value });
+    }
   };
 
   const handleNotesChange = (value: string) => {
     updateNotes(exercise.id, value);
+    
+    // Αποθήκευση για την επόμενη εβδομάδα
+    if (selectedDate && program) {
+      saveWorkoutData(selectedDate, program.id, exercise.id, { notes: value });
+    }
+  };
+
+  const handleClearData = () => {
+    setActualKg('');
+    setActualReps('');
+    setActualVelocity('');
+    clearNotes(exercise.id);
+    
+    if (selectedDate && program) {
+      clearWorkoutData(selectedDate, program.id, exercise.id);
+    }
   };
 
   return (
@@ -154,41 +208,69 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
           </div>
         </div>
 
-        {/* Actual Values - Only when workout is in progress */}
-        {workoutInProgress && (
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <label className="block text-gray-600 mb-1">Actual Kg</label>
-              <Input
-                type="number"
-                step="0.5"
-                value={actualKg}
-                onChange={(e) => handleKgChange(e.target.value)}
-                className="h-6 text-xs rounded-none"
-                placeholder={exercise.kg || ''}
-              />
-            </div>
-            <div>
-              <label className="block text-gray-600 mb-1">Actual Reps</label>
-              <Input
-                type="number"
-                value={actualReps}
-                onChange={(e) => handleRepsChange(e.target.value)}
-                className="h-6 text-xs rounded-none"
-                placeholder={exercise.reps || ''}
-              />
-            </div>
+        {/* Actual Values - Ίδιες διαστάσεις από κάτω */}
+        <div className="grid grid-cols-7 gap-1 text-xs">
+          <div className="text-center">
+            <div className="text-gray-600 mb-1">-</div>
+            <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
           </div>
-        )}
+          <div className="text-center">
+            <div className="text-gray-600 mb-1">Actual</div>
+            <Input
+              type="number"
+              value={actualReps}
+              onChange={(e) => handleRepsChange(e.target.value)}
+              className="h-6 text-xs rounded-none text-center p-0"
+              placeholder={exercise.reps || ''}
+              disabled={!workoutInProgress}
+            />
+          </div>
+          <div className="text-center">
+            <div className="text-gray-600 mb-1">-</div>
+            <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+          </div>
+          <div className="text-center">
+            <div className="text-gray-600 mb-1">Actual</div>
+            <Input
+              type="number"
+              step="0.5"
+              value={actualKg}
+              onChange={(e) => handleKgChange(e.target.value)}
+              className="h-6 text-xs rounded-none text-center p-0"
+              placeholder={exercise.kg || ''}
+              disabled={!workoutInProgress}
+            />
+          </div>
+          <div className="text-center">
+            <div className="text-gray-600 mb-1">Actual</div>
+            <Input
+              type="number"
+              step="0.01"
+              value={actualVelocity}
+              onChange={(e) => handleVelocityChange(e.target.value)}
+              className="h-6 text-xs rounded-none text-center p-0"
+              placeholder={exercise.velocity_ms || ''}
+              disabled={!workoutInProgress}
+            />
+          </div>
+          <div className="text-center">
+            <div className="text-gray-600 mb-1">-</div>
+            <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+          </div>
+          <div className="text-center">
+            <div className="text-gray-600 mb-1">-</div>
+            <div className="bg-gray-200 px-1 py-0.5 rounded-none">-</div>
+          </div>
+        </div>
 
         {/* Notes */}
         <div className="flex items-start gap-2">
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs text-gray-600">Notes</label>
-              {notes && (
+              {(notes || actualKg || actualReps || actualVelocity) && (
                 <button
-                  onClick={() => clearNotes(exercise.id)}
+                  onClick={handleClearData}
                   className="text-red-500 hover:text-red-700 p-0.5"
                   disabled={!workoutInProgress}
                 >
