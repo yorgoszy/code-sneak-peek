@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import type { ProgramStructure } from './useProgramBuilderState';
 
@@ -14,40 +14,31 @@ export const useProgramSaveOperations = ({
   onCreateProgram,
   onOpenChange
 }: UseProgramSaveOperationsProps) => {
-  const [currentProgramId, setCurrentProgramId] = useState<string | null>(null);
-
-  // Ενημέρωση του currentProgramId όταν αλλάζει το program.id
-  useEffect(() => {
-    if (program.id) {
-      setCurrentProgramId(program.id);
-    }
-  }, [program.id]);
+  const [currentProgramId, setCurrentProgramId] = useState<string | null>(program.id || null);
 
   const handleSave = async () => {
     try {
-      console.log('🔄 Saving program as draft...', program);
+      console.log('💾 Saving program as draft...', program);
       
       if (!program.name?.trim()) {
         toast.error('Παρακαλώ εισάγετε όνομα προγράμματος');
         return;
       }
 
-      // Convert training_dates to string array for database storage
-      const trainingDatesStrings = program.training_dates?.map(date => 
+      // Μετατροπή training_dates σε string array για την αποθήκευση
+      const trainingDatesStrings = program.training_dates.map(date => 
         date.toISOString().split('T')[0]
-      ) || [];
+      );
 
-      // Αποθήκευση ως προσχέδιο
       const savedProgram = await onCreateProgram({
         ...program,
         training_dates: trainingDatesStrings,
         status: 'draft'
       });
-      
+
       console.log('✅ Program saved as draft:', savedProgram);
       setCurrentProgramId(savedProgram.id);
-      toast.success('Το πρόγραμμα αποθηκεύτηκε ως προσχέδιο');
-      onOpenChange();
+      toast.success('Το πρόγραμμα αποθηκεύτηκε ως προσχέδιο!');
     } catch (error) {
       console.error('❌ Error saving program:', error);
       toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
@@ -55,13 +46,12 @@ export const useProgramSaveOperations = ({
   };
 
   const handleClose = () => {
-    console.log('Closing program builder dialog');
-    setCurrentProgramId(null);
+    console.log('🔒 Closing program builder dialog');
     onOpenChange();
   };
 
   return {
-    currentProgramId,
+    currentProgramId: currentProgramId || program.id,
     setCurrentProgramId,
     handleSave,
     handleClose

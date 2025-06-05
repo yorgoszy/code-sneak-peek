@@ -50,6 +50,14 @@ export const useProgramBuilderDialogLogic = ({
     editingAssignment
   });
 
+  console.log('🔄 ProgramBuilderDialogLogic - Program state:', {
+    programId: program.id,
+    programName: program.name,
+    programWeeks: program.weeks?.length,
+    trainingDates: program.training_dates?.length,
+    currentProgramId
+  });
+
   return {
     assignmentDialogOpen,
     setAssignmentDialogOpen,

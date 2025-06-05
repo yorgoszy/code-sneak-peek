@@ -32,51 +32,66 @@ export const useAssignmentDialog = ({
 
   const handleOpenAssignments = async () => {
     try {
-      console.log('🔄 Opening assignments dialog - saving program first...');
+      console.log('🔄 Opening assignments dialog - Current program state:', program);
       
       if (!program.name?.trim()) {
         toast.error('Παρακαλώ εισάγετε όνομα προγράμματος');
         return;
       }
 
+      if (!program.weeks || program.weeks.length === 0) {
+        toast.error('Παρακαλώ προσθέστε τουλάχιστον μία εβδομάδα στο πρόγραμμα');
+        return;
+      }
+
       // Έλεγχος αν υπάρχουν επαρκείς ημερομηνίες
-      const totalDays = program.weeks.reduce((total, week) => total + week.days.length, 0);
+      const totalDays = program.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
       if (program.training_dates.length < totalDays) {
         toast.error(`Παρακαλώ επιλέξτε ${totalDays} ημερομηνίες προπόνησης`);
         return;
       }
 
-      // Μετατροπή training_dates σε string array για την αποθήκευση
-      const trainingDatesStrings = program.training_dates.map(date => 
-        date.toISOString().split('T')[0]
-      );
+      let programId = currentProgramId || program.id;
 
-      // Αποθήκευση του προγράμματος ως ενεργό
-      const savedProgram = await onCreateProgram({
-        ...program,
-        training_dates: trainingDatesStrings,
-        status: 'active'
-      });
-      
-      console.log('✅ Program saved as active:', savedProgram);
+      // Αν δεν υπάρχει programId, αποθηκεύουμε το πρόγραμμα πρώτα
+      if (!programId) {
+        console.log('📝 No program ID found, saving program first...');
+        
+        // Μετατροπή training_dates σε string array για την αποθήκευση
+        const trainingDatesStrings = program.training_dates.map(date => 
+          date.toISOString().split('T')[0]
+        );
+
+        // Αποθήκευση του προγράμματος ως ενεργό
+        const savedProgram = await onCreateProgram({
+          ...program,
+          training_dates: trainingDatesStrings,
+          status: 'active'
+        });
+        
+        programId = savedProgram.id;
+        console.log('✅ Program saved for assignment:', savedProgram);
+      }
+
+      console.log('✅ Opening assignment dialog with program ID:', programId);
       setAssignmentDialogOpen(true);
       
     } catch (error) {
-      console.error('❌ Error saving program for assignment:', error);
-      toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
+      console.error('❌ Error preparing assignment:', error);
+      toast.error('Σφάλμα κατά την προετοιμασία της ανάθεσης');
     }
   };
 
   const handleAssign = async (userId: string, trainingDates: string[]) => {
     try {
-      console.log('🔄 Assigning program to user:', { userId, trainingDates });
+      console.log('🔄 Assigning program to user:', { userId, trainingDates, programId: currentProgramId || program.id });
 
-      if (!program.id && !currentProgramId) {
+      const programId = currentProgramId || program.id;
+
+      if (!programId) {
         toast.error('Πρέπει πρώτα να αποθηκευτεί το πρόγραμμα');
         return;
       }
-
-      const programId = program.id || currentProgramId;
 
       // Αν είναι επεξεργασία υπάρχουσας ανάθεσης
       if (editingAssignment) {
@@ -108,7 +123,7 @@ export const useAssignmentDialog = ({
         await createWorkoutCompletions(
           editingAssignment.id,
           userId,
-          programId!,
+          programId,
           trainingDates,
           program
         );
@@ -116,6 +131,8 @@ export const useAssignmentDialog = ({
         toast.success('Η ανάθεση ενημερώθηκε επιτυχώς!');
       } else {
         // Δημιουργία νέας ανάθεσης
+        console.log('🆕 Creating new assignment...');
+        
         const { data: assignment, error: assignmentError } = await supabase
           .from('program_assignments')
           .insert({
@@ -140,7 +157,7 @@ export const useAssignmentDialog = ({
         await createWorkoutCompletions(
           assignment.id,
           userId,
-          programId!,
+          programId,
           trainingDates,
           program
         );
