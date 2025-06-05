@@ -151,7 +151,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
               week_id: savedWeek.id,
               name: day.name,
               day_number: day.day_number,
-              estimated_duration_minutes: day.estimated_duration_minutes
+              estimated_duration_minutes: 60 // Default value since it doesn't exist in the Day type
             })
             .select()
             .single();
@@ -187,10 +187,10 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
                   reps: exercise.reps,
                   kg: exercise.kg,
                   percentage_1rm: exercise.percentage_1rm,
-                  velocity_ms: exercise.velocity_ms,
+                  velocity_ms: exercise.velocity_ms ? Number(exercise.velocity_ms) : null,
                   tempo: exercise.tempo,
                   rest: exercise.rest,
-                  notes: exercise.notes,
+                  notes: '', // Default empty string since notes doesn't exist in ProgramExercise type
                   exercise_order: exercise.exercise_order
                 });
 
