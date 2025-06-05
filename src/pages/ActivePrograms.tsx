@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarCheck, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
@@ -141,6 +142,17 @@ const ActivePrograms = () => {
       setSelectedDate(date);
     };
 
+    const getNameColor = (status: string) => {
+      switch (status) {
+        case 'completed':
+          return 'text-[#00ffba]'; // πράσινο
+        case 'missed':
+          return 'text-red-500'; // κόκκινο
+        default:
+          return 'text-blue-500'; // μπλε για scheduled
+      }
+    };
+
     return (
       <div className="w-full">
         {/* Calendar Header */}
@@ -188,7 +200,7 @@ const ActivePrograms = () => {
               <div
                 key={dateStr}
                 className={`
-                  h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer
+                  h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
                   ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
                   ${isSelected ? 'bg-[#00ffba] text-black' : ''}
                   ${isToday && !isSelected ? 'bg-gray-100' : ''}
@@ -196,50 +208,27 @@ const ActivePrograms = () => {
                 `}
                 onClick={() => handleDateClick(date)}
               >
-                <div className="h-full flex flex-col p-1">
-                  {/* Date Number - Fixed at top */}
-                  <div className="text-center font-medium text-sm h-5 flex items-center justify-center flex-shrink-0">
-                    {date.getDate()}
-                  </div>
-                  
-                  {/* User Names - Middle section */}
-                  <div className="flex-1 flex flex-col justify-center min-h-[32px] overflow-hidden">
-                    {dateProgramsWithStatus.slice(0, 2).map((program, i) => (
-                      <div 
-                        key={i} 
-                        className="text-xs leading-tight text-gray-700 cursor-pointer hover:text-[#00ffba] truncate px-1"
-                        onClick={(e) => handleNameClick(program, e)}
-                      >
-                        {program.userName.split(' ')[0]}
-                      </div>
-                    ))}
-                    {dateProgramsWithStatus.length > 2 && (
-                      <div className="text-xs text-gray-500 px-1">
-                        +{dateProgramsWithStatus.length - 2}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Status Bullets - Fixed at bottom */}
-                  <div className="flex justify-center space-x-1 h-4 items-center flex-shrink-0">
-                    {dateProgramsWithStatus.slice(0, 3).map((program, i) => {
-                      let bulletColor = '#3b82f6'; // default μπλε για scheduled
-                      
-                      if (program.status === 'completed') {
-                        bulletColor = '#00ffba'; // πράσινο για completed
-                      } else if (program.status === 'missed') {
-                        bulletColor = '#ef4444'; // κόκκινο για missed
-                      }
-                      
-                      return (
-                        <div 
-                          key={i} 
-                          className="w-1.5 h-1.5 rounded-full" 
-                          style={{ backgroundColor: bulletColor }}
-                        ></div>
-                      );
-                    })}
-                  </div>
+                {/* Date Number - Absolute positioned at top */}
+                <div className="absolute top-1 left-1 text-sm font-medium">
+                  {date.getDate()}
+                </div>
+                
+                {/* User Names - Centered in the middle */}
+                <div className="h-full flex flex-col items-center justify-center space-y-1 px-1">
+                  {dateProgramsWithStatus.slice(0, 2).map((program, i) => (
+                    <div 
+                      key={i} 
+                      className={`text-xs font-medium cursor-pointer hover:underline truncate ${getNameColor(program.status)}`}
+                      onClick={(e) => handleNameClick(program, e)}
+                    >
+                      {program.userName.split(' ')[0]}
+                    </div>
+                  ))}
+                  {dateProgramsWithStatus.length > 2 && (
+                    <div className="text-xs text-gray-500">
+                      +{dateProgramsWithStatus.length - 2}
+                    </div>
+                  )}
                 </div>
               </div>
             );
