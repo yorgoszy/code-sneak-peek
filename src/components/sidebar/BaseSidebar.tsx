@@ -29,22 +29,22 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[#00ffba] rounded-none flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none flex items-center justify-center overflow-hidden">
                 <img 
                   src="/lovable-uploads/a9d8f326-52a1-4283-965a-c73fed3f73ec.png" 
                   alt="Logo" 
-                  className="w-6 h-6"
+                  className="w-full h-full object-contain"
                 />
               </div>
               {headerContent}
             </div>
           )}
           {isCollapsed && (
-            <div className="w-10 h-10 bg-[#00ffba] rounded-none flex items-center justify-center mx-auto">
+            <div className="w-10 h-10 rounded-none flex items-center justify-center mx-auto overflow-hidden">
               <img 
                 src="/lovable-uploads/a9d8f326-52a1-4283-965a-c73fed3f73ec.png" 
                 alt="Logo" 
-                className="w-6 h-6"
+                className="w-full h-full object-contain"
               />
             </div>
           )}
