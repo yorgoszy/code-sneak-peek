@@ -1719,7 +1719,6 @@ export type Database = {
           id: string
           notes: string | null
           test_date: string
-          unified_session_id: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -1729,7 +1728,6 @@ export type Database = {
           id?: string
           notes?: string | null
           test_date?: string
-          unified_session_id?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -1739,7 +1737,6 @@ export type Database = {
           id?: string
           notes?: string | null
           test_date?: string
-          unified_session_id?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -1749,13 +1746,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "strength_test_sessions_unified_session_id_fkey"
-            columns: ["unified_session_id"]
-            isOneToOne: false
-            referencedRelation: "unified_test_sessions"
             referencedColumns: ["id"]
           },
           {
@@ -2058,284 +2048,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      unified_anthropometric_data: {
-        Row: {
-          arm_circumference: number | null
-          body_fat_percentage: number | null
-          chest_circumference: number | null
-          created_at: string | null
-          height: number | null
-          hip_circumference: number | null
-          id: string
-          muscle_mass_percentage: number | null
-          session_id: string | null
-          thigh_circumference: number | null
-          updated_at: string | null
-          waist_circumference: number | null
-          weight: number | null
-        }
-        Insert: {
-          arm_circumference?: number | null
-          body_fat_percentage?: number | null
-          chest_circumference?: number | null
-          created_at?: string | null
-          height?: number | null
-          hip_circumference?: number | null
-          id?: string
-          muscle_mass_percentage?: number | null
-          session_id?: string | null
-          thigh_circumference?: number | null
-          updated_at?: string | null
-          waist_circumference?: number | null
-          weight?: number | null
-        }
-        Update: {
-          arm_circumference?: number | null
-          body_fat_percentage?: number | null
-          chest_circumference?: number | null
-          created_at?: string | null
-          height?: number | null
-          hip_circumference?: number | null
-          id?: string
-          muscle_mass_percentage?: number | null
-          session_id?: string | null
-          thigh_circumference?: number | null
-          updated_at?: string | null
-          waist_circumference?: number | null
-          weight?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "unified_anthropometric_data_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "unified_test_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      unified_endurance_data: {
-        Row: {
-          created_at: string | null
-          crunches: number | null
-          farmer_kg: number | null
-          farmer_meters: number | null
-          farmer_seconds: number | null
-          id: string
-          mas_kmh: number | null
-          mas_meters: number | null
-          mas_minutes: number | null
-          mas_ms: number | null
-          max_hr: number | null
-          pull_ups: number | null
-          push_ups: number | null
-          resting_hr_1min: number | null
-          session_id: string | null
-          sprint_meters: number | null
-          sprint_resistance: string | null
-          sprint_seconds: number | null
-          sprint_watt: number | null
-          updated_at: string | null
-          vo2_max: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          crunches?: number | null
-          farmer_kg?: number | null
-          farmer_meters?: number | null
-          farmer_seconds?: number | null
-          id?: string
-          mas_kmh?: number | null
-          mas_meters?: number | null
-          mas_minutes?: number | null
-          mas_ms?: number | null
-          max_hr?: number | null
-          pull_ups?: number | null
-          push_ups?: number | null
-          resting_hr_1min?: number | null
-          session_id?: string | null
-          sprint_meters?: number | null
-          sprint_resistance?: string | null
-          sprint_seconds?: number | null
-          sprint_watt?: number | null
-          updated_at?: string | null
-          vo2_max?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          crunches?: number | null
-          farmer_kg?: number | null
-          farmer_meters?: number | null
-          farmer_seconds?: number | null
-          id?: string
-          mas_kmh?: number | null
-          mas_meters?: number | null
-          mas_minutes?: number | null
-          mas_ms?: number | null
-          max_hr?: number | null
-          pull_ups?: number | null
-          push_ups?: number | null
-          resting_hr_1min?: number | null
-          session_id?: string | null
-          sprint_meters?: number | null
-          sprint_resistance?: string | null
-          sprint_seconds?: number | null
-          sprint_watt?: number | null
-          updated_at?: string | null
-          vo2_max?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "unified_endurance_data_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "unified_test_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      unified_functional_data: {
-        Row: {
-          created_at: string | null
-          flamingo_balance: number | null
-          fms_detailed_scores: Json | null
-          fms_score: number | null
-          id: string
-          muscles_need_strengthening: string[] | null
-          muscles_need_stretching: string[] | null
-          posture_assessment: string | null
-          posture_issues: string[] | null
-          session_id: string | null
-          shoulder_mobility_left: number | null
-          shoulder_mobility_right: number | null
-          single_leg_squat_issues: string[] | null
-          sit_and_reach: number | null
-          squat_issues: string[] | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          flamingo_balance?: number | null
-          fms_detailed_scores?: Json | null
-          fms_score?: number | null
-          id?: string
-          muscles_need_strengthening?: string[] | null
-          muscles_need_stretching?: string[] | null
-          posture_assessment?: string | null
-          posture_issues?: string[] | null
-          session_id?: string | null
-          shoulder_mobility_left?: number | null
-          shoulder_mobility_right?: number | null
-          single_leg_squat_issues?: string[] | null
-          sit_and_reach?: number | null
-          squat_issues?: string[] | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          flamingo_balance?: number | null
-          fms_detailed_scores?: Json | null
-          fms_score?: number | null
-          id?: string
-          muscles_need_strengthening?: string[] | null
-          muscles_need_stretching?: string[] | null
-          posture_assessment?: string | null
-          posture_issues?: string[] | null
-          session_id?: string | null
-          shoulder_mobility_left?: number | null
-          shoulder_mobility_right?: number | null
-          single_leg_squat_issues?: string[] | null
-          sit_and_reach?: number | null
-          squat_issues?: string[] | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "unified_functional_data_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "unified_test_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      unified_jump_data: {
-        Row: {
-          broad_jump: number | null
-          counter_movement_jump: number | null
-          created_at: string | null
-          depth_jump: number | null
-          id: string
-          non_counter_movement_jump: number | null
-          session_id: string | null
-          triple_jump_left: number | null
-          triple_jump_right: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          broad_jump?: number | null
-          counter_movement_jump?: number | null
-          created_at?: string | null
-          depth_jump?: number | null
-          id?: string
-          non_counter_movement_jump?: number | null
-          session_id?: string | null
-          triple_jump_left?: number | null
-          triple_jump_right?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          broad_jump?: number | null
-          counter_movement_jump?: number | null
-          created_at?: string | null
-          depth_jump?: number | null
-          id?: string
-          non_counter_movement_jump?: number | null
-          session_id?: string | null
-          triple_jump_left?: number | null
-          triple_jump_right?: number | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "unified_jump_data_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "unified_test_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      unified_test_sessions: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          id: string
-          notes: string | null
-          test_date: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          notes?: string | null
-          test_date?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          notes?: string | null
-          test_date?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
       }
       user_roles: {
         Row: {

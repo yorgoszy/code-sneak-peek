@@ -62,7 +62,7 @@ export const useProgramBuilderDialogLogic = ({
   };
 
   const handleSave = async () => {
-    if (!program.name.trim()) {
+    if (!program.name || !program.name.trim()) {
       toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
@@ -84,7 +84,7 @@ export const useProgramBuilderDialogLogic = ({
   };
 
   const handleOpenAssignments = () => {
-    if (!program.name.trim()) {
+    if (!program.name || !program.name.trim()) {
       toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
