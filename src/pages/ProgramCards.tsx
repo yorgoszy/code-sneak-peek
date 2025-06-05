@@ -7,7 +7,7 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
-import { DashboardContainer } from "@/components/dashboard/DashboardContainer";
+import { Sidebar } from "@/components/Sidebar";
 
 const ProgramCards = () => {
   const navigate = useNavigate();
@@ -69,26 +69,29 @@ const ProgramCards = () => {
 
   if (isLoading) {
     return (
-      <DashboardContainer>
-        <div className="flex w-full items-center justify-center">
+      <div className="min-h-screen flex w-full">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
           <div>Φόρτωση προγραμμάτων...</div>
         </div>
-      </DashboardContainer>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <DashboardContainer>
-        <div className="flex w-full items-center justify-center">
+      <div className="min-h-screen flex w-full">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
           <div className="text-red-600">Σφάλμα κατά τη φόρτωση: {error.message}</div>
         </div>
-      </DashboardContainer>
+      </div>
     );
   }
 
   return (
-    <DashboardContainer>
+    <div className="min-h-screen flex w-full">
+      <Sidebar />
       <div className="flex-1 p-6">
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -178,7 +181,7 @@ const ProgramCards = () => {
           </div>
         </div>
       </div>
-    </DashboardContainer>
+    </div>
   );
 };
 
