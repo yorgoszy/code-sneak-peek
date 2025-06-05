@@ -1,161 +1,91 @@
 
-import { useState, useMemo } from 'react';
-import { useProgramAssignments } from '@/hooks/programs/useProgramAssignments';
-import { useProgramWorkoutCompletions } from '@/hooks/programs/useProgramWorkoutCompletions';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import type { User } from '../../types';
+import { supabase } from "@/integrations/supabase/client";
+import { useProgramWorkoutCompletions } from "@/hooks/programs/useProgramWorkoutCompletions";
 import type { ProgramStructure } from './useProgramBuilderState';
+import type { User } from '../../types';
 
 interface UseAssignmentDialogProps {
-  users: User[];
-  program: ProgramStructure;
-  editingAssignment?: {
-    id: string;
-    user_id: string;
-    training_dates: string[];
-  } | null;
-  currentProgramId: string | null;
   onCreateProgram: (program: any) => Promise<any>;
-  onDialogClose: () => void;
+  onOpenChange: () => void;
+  program: ProgramStructure;
+  users: User[];
 }
 
 export const useAssignmentDialog = ({
-  users,
-  program,
-  editingAssignment,
-  currentProgramId,
   onCreateProgram,
-  onDialogClose
+  onOpenChange,
+  program,
+  users
 }: UseAssignmentDialogProps) => {
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
-  const { createOrUpdateAssignment } = useProgramAssignments();
   const { createWorkoutCompletions } = useProgramWorkoutCompletions();
-
-  const availableUsers = useMemo(() => {
-    if (editingAssignment) {
-      // Όταν επεξεργαζόμαστε assignment, επιστρέφουμε όλους τους χρήστες
-      return users;
-    }
-    
-    if (program.user_id) {
-      // Αν έχει επιλεγεί χρήστης στο πρόγραμμα, επιστρέφουμε μόνο αυτόν
-      return users.filter(user => user.id === program.user_id);
-    }
-    
-    // Αλλιώς επιστρέφουμε όλους τους χρήστες
-    return users;
-  }, [users, program.user_id, editingAssignment]);
-
-  const assignmentEditData = useMemo(() => {
-    if (editingAssignment) {
-      return {
-        user_id: editingAssignment.user_id,
-        training_dates: editingAssignment.training_dates || []
-      };
-    }
-    return null;
-  }, [editingAssignment]);
 
   const handleOpenAssignments = async () => {
     try {
-      console.log('🔄 Opening assignments dialog...', program);
+      console.log('🔄 Opening assignments dialog - saving program first...');
       
       if (!program.name?.trim()) {
         toast.error('Παρακαλώ εισάγετε όνομα προγράμματος');
         return;
       }
 
-      if (!program.weeks || program.weeks.length === 0) {
-        toast.error('Παρακαλώ προσθέστε τουλάχιστον μία εβδομάδα');
-        return;
-      }
-
-      if (!program.user_id) {
-        toast.error('Παρακαλώ επιλέξτε ασκούμενο');
-        return;
-      }
-
+      // Έλεγχος αν υπάρχουν επαρκείς ημερομηνίες
       const totalDays = program.weeks.reduce((total, week) => total + week.days.length, 0);
-      if (!program.training_dates || program.training_dates.length < totalDays) {
-        toast.error('Παρακαλώ επιλέξτε όλες τις απαιτούμενες ημερομηνίες προπόνησης');
+      if (program.training_dates.length < totalDays) {
+        toast.error(`Παρακαλώ επιλέξτε ${totalDays} ημερομηνίες προπόνησης`);
         return;
       }
 
-      let programId = program.id || currentProgramId;
-
-      // Convert training_dates to string array for database storage
+      // Μετατροπή training_dates σε string array για την αποθήκευση
       const trainingDatesStrings = program.training_dates.map(date => 
         date.toISOString().split('T')[0]
       );
 
-      // Αποθήκευση πρώτα το πρόγραμμα ως ACTIVE (όχι draft) γιατί θα γίνει ανάθεση
-      if (!programId) {
-        console.log('💾 Saving program for assignment...');
-        try {
-          const savedProgram = await onCreateProgram({
-            ...program,
-            training_dates: trainingDatesStrings,
-            status: 'active'  // Αποθηκεύουμε ως active γιατί θα γίνει ανάθεση
-          });
-          programId = savedProgram.id;
-          console.log('✅ Program saved as active for assignment:', savedProgram);
-        } catch (error) {
-          console.error('❌ Error saving program for assignment:', error);
-          toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
-          return;
-        }
-      } else {
-        // Αν υπάρχει ήδη, ενημερώνουμε το status σε active
-        try {
-          await onCreateProgram({
-            ...program,
-            id: programId,
-            training_dates: trainingDatesStrings,
-            status: 'active'
-          });
-          console.log('✅ Program updated to active status');
-        } catch (error) {
-          console.error('❌ Error updating program status:', error);
-          toast.error('Σφάλμα κατά την ενημέρωση του προγράμματος');
-          return;
-        }
-      }
-
+      // Αποθήκευση του προγράμματος ως ενεργό
+      const savedProgram = await onCreateProgram({
+        ...program,
+        training_dates: trainingDatesStrings,
+        status: 'active'
+      });
+      
+      console.log('✅ Program saved as active:', savedProgram);
       setAssignmentDialogOpen(true);
+      
     } catch (error) {
-      console.error('❌ Error opening assignments:', error);
-      toast.error('Σφάλμα κατά το άνοιγμα των αναθέσεων');
+      console.error('❌ Error saving program for assignment:', error);
+      toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
     }
   };
 
   const handleAssign = async (userId: string, trainingDates: string[]) => {
     try {
-      const programId = program.id || currentProgramId;
-      
-      console.log('🔄 Creating assignment...', {
-        programId,
-        userId,
-        trainingDates: trainingDates.length
-      });
+      console.log('🔄 Assigning program to user:', { userId, trainingDates });
 
-      if (!programId) {
+      if (!program.id) {
         toast.error('Πρέπει πρώτα να αποθηκευτεί το πρόγραμμα');
         return;
       }
 
-      // Use the training dates from the program's calendar selection
-      const finalTrainingDates = program.training_dates?.map(date => 
-        date.toISOString().split('T')[0]
-      ) || trainingDates;
+      // Δημιουργία assignment
+      const { data: assignment, error: assignmentError } = await supabase
+        .from('program_assignments')
+        .insert({
+          program_id: program.id,
+          user_id: userId,
+          training_dates: trainingDates,
+          status: 'active',
+          assignment_type: 'individual',
+          progress: 0
+        })
+        .select()
+        .single();
 
-      // Δημιουργία assignment (το πρόγραμμα είναι ήδη active)
-      const assignment = await createOrUpdateAssignment(
-        programId,
-        userId,
-        finalTrainingDates[0], // start_date
-        finalTrainingDates[finalTrainingDates.length - 1], // end_date
-        finalTrainingDates
-      );
+      if (assignmentError) {
+        console.error('❌ Error creating assignment:', assignmentError);
+        throw assignmentError;
+      }
 
       console.log('✅ Assignment created:', assignment);
 
@@ -163,28 +93,29 @@ export const useAssignmentDialog = ({
       await createWorkoutCompletions(
         assignment.id,
         userId,
-        programId,
-        finalTrainingDates,
+        program.id,
+        trainingDates,
         program
       );
 
-      console.log('✅ Assignment process completed successfully');
-      toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς');
-      
+      toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς!');
       setAssignmentDialogOpen(false);
-      onDialogClose();
+      onOpenChange();
+
     } catch (error) {
-      console.error('❌ Error creating assignment:', error);
+      console.error('❌ Error assigning program:', error);
       toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
     }
   };
 
+  // Φιλτράρισμα χρηστών - αφαιρούμε τον ήδη επιλεγμένο
+  const availableUsers = users.filter(user => user.id !== program.user_id);
+
   return {
     assignmentDialogOpen,
     setAssignmentDialogOpen,
-    availableUsers,
-    assignmentEditData,
     handleOpenAssignments,
-    handleAssign
+    handleAssign,
+    availableUsers
   };
 };

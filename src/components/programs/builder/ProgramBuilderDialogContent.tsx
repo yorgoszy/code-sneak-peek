@@ -76,6 +76,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   getTotalTrainingDays
 }) => {
   const totalDays = getTotalTrainingDays ? getTotalTrainingDays() : 0;
+  const selectedDatesCount = program.training_dates?.length || 0;
+  const hasRequiredDates = selectedDatesCount >= totalDays;
 
   return (
     <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0">
@@ -123,13 +125,26 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onReorderExercises={onReorderExercises}
           />
 
-          {/* Calendar Component - Show only if there are weeks and days */}
+          {/* Ημερολόγιο - εμφανίζεται μόνο αν υπάρχουν εβδομάδες και ημέρες */}
           {totalDays > 0 && onTrainingDatesChange && (
-            <ProgramCalendar
-              selectedDates={program.training_dates || []}
-              onDatesChange={onTrainingDatesChange}
-              totalDays={totalDays}
-            />
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-none p-4">
+                <h3 className="font-medium text-blue-800 mb-2">Επιλογή Ημερομηνιών Προπόνησης</h3>
+                <p className="text-sm text-blue-700 mb-2">
+                  Επιλέξτε {totalDays} ημερομηνίες για τις προπονήσεις σας
+                </p>
+                <p className="text-xs text-blue-600">
+                  Επιλεγμένες: {selectedDatesCount} / {totalDays}
+                  {hasRequiredDates && <span className="text-green-600 ml-2">✓ Έτοιμο για ανάθεση</span>}
+                </p>
+              </div>
+              
+              <ProgramCalendar
+                selectedDates={program.training_dates || []}
+                onDatesChange={onTrainingDatesChange}
+                totalDays={totalDays}
+              />
+            </div>
           )}
         </div>
       </ScrollArea>
@@ -147,7 +162,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
         <Button
           onClick={onAssignments}
           className="rounded-none"
-          disabled={!program.user_id || totalDays === 0 || (program.training_dates?.length || 0) < totalDays}
+          disabled={!program.name || !program.user_id || totalDays === 0 || !hasRequiredDates}
         >
           <Users className="w-4 h-4 mr-2" />
           Ανάθεση σε Ασκούμενο
