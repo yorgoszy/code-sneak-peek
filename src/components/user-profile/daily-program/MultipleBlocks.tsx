@@ -53,7 +53,7 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
     <Tabs defaultValue={blocks[0]?.id} className="w-full">
       <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
         {blocks
-          .sort((a, b) => a.block_order - b.block_order)
+          ?.sort((a, b) => a.block_order - b.block_order)
           .map((block) => (
             <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
               {block.name}
@@ -61,11 +61,11 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
           ))}
       </TabsList>
       
-      {blocks.map((block) => (
+      {blocks?.map((block) => (
         <TabsContent key={block.id} value={block.id} className="mt-2">
           <div className="space-y-0">
             {block.program_exercises
-              .sort((a, b) => a.exercise_order - b.exercise_order)
+              ?.sort((a, b) => a.exercise_order - b.exercise_order)
               .map((exercise) => {
                 const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
                 const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);

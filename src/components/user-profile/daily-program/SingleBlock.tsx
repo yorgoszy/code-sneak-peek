@@ -56,7 +56,7 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
       
       <div className="space-y-0">
         {block.program_exercises
-          .sort((a, b) => a.exercise_order - b.exercise_order)
+          ?.sort((a, b) => a.exercise_order - b.exercise_order)
           .map((exercise) => {
             const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
             const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);

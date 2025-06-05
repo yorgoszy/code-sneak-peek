@@ -29,15 +29,18 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
     onVideoClick(exerciseData);
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    // Αν κλικάραμε στο video thumbnail, μην καλέσουμε το onExerciseClick
+    if ((e.target as HTMLElement).closest('.video-thumbnail')) {
+      return;
+    }
+    onExerciseClick(exercise, e);
+  };
+
   return (
     <div 
       className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${isComplete ? 'bg-green-50' : ''}`}
-      onClick={(e) => {
-        // Μόνο αν δεν κλικάραμε στο video thumbnail
-        if (!e.target.closest('.video-thumbnail')) {
-          onExerciseClick(exercise, e);
-        }
-      }}
+      onClick={handleClick}
     >
       <div className="flex items-center flex-1 min-w-0">
         <VideoThumbnail 
@@ -50,6 +53,11 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
           {exercise.exercises?.name || 'Άγνωστη άσκηση'}
         </h6>
       </div>
+      {remainingText && (
+        <span className={`text-xs ${isComplete ? 'text-green-600' : 'text-gray-500'}`}>
+          {remainingText}
+        </span>
+      )}
     </div>
   );
 };

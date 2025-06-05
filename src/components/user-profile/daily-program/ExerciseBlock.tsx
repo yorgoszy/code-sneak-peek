@@ -46,7 +46,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
   const handleExerciseClick = (exercise: Exercise, event: React.MouseEvent) => {
     console.log('🎯 ExerciseBlock handleExerciseClick:', exercise.exercises?.name, 'viewOnly:', viewOnly);
     
-    // Αν είναι μόνο για προβολή, δεν κάνουμε τίποτα άλλο (το video click θα το χειριστεί το VideoThumbnail)
+    // Αν είναι μόνο για προβολή, δεν κάνουμε τίποτα άλλο
     if (viewOnly) {
       return;
     }
