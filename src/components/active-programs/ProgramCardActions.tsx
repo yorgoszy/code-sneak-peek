@@ -46,7 +46,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   };
 
   const handleDeleteClick = () => {
-    if (onDelete && window.confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;')) {
+    if (onDelete) {
       onDelete(assignment.id);
     }
   };

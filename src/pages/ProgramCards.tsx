@@ -5,17 +5,38 @@ import { ArrowLeft, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProgramCards = () => {
   const navigate = useNavigate();
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
 
   const handleDeleteProgram = async (assignmentId: string) => {
+    if (!window.confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;')) {
+      return;
+    }
+
     try {
-      console.log('Διαγραφή προγράμματος:', assignmentId);
+      console.log('🗑️ Διαγραφή assignment:', assignmentId);
+      
+      // Διαγραφή του assignment από τη βάση δεδομένων
+      const { error: deleteError } = await supabase
+        .from('program_assignments')
+        .delete()
+        .eq('id', assignmentId);
+
+      if (deleteError) {
+        console.error('❌ Σφάλμα κατά τη διαγραφή:', deleteError);
+        alert('Σφάλμα κατά τη διαγραφή του προγράμματος');
+        return;
+      }
+
+      console.log('✅ Assignment διαγράφηκε επιτυχώς');
+      // Ανανέωση των δεδομένων
       refetch();
     } catch (error) {
-      console.error('Σφάλμα κατά τη διαγραφή:', error);
+      console.error('❌ Σφάλμα κατά τη διαγραφή:', error);
+      alert('Σφάλμα κατά τη διαγραφή του προγράμματος');
     }
   };
 
