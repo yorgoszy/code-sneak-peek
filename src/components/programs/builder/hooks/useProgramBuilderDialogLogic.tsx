@@ -116,13 +116,13 @@ export const useProgramBuilderDialogLogic = ({
 
       let programId = program.id || currentProgramId;
 
-      // Αποθήκευση πρώτα το πρόγραμμα αν δεν έχει ID
+      // Αποθήκευση πρώτα το πρόγραμμα αν δεν έχει ID (ως draft)
       if (!programId) {
         console.log('💾 Saving program before assignment...');
         try {
           const savedProgram = await onCreateProgram({
             ...program,
-            status: 'active'
+            status: 'draft'  // Αποθηκεύουμε ως draft πρώτα
           });
           programId = savedProgram.id;
           setCurrentProgramId(programId);
@@ -153,6 +153,20 @@ export const useProgramBuilderDialogLogic = ({
 
       if (!programId) {
         toast.error('Πρέπει πρώτα να αποθηκευτεί το πρόγραμμα');
+        return;
+      }
+
+      // Ενημέρωση του προγράμματος σε active status μόνο κατά την ανάθεση
+      try {
+        await onCreateProgram({
+          ...program,
+          id: programId,
+          status: 'active'
+        });
+        console.log('✅ Program updated to active status');
+      } catch (error) {
+        console.error('❌ Error updating program status:', error);
+        toast.error('Σφάλμα κατά την ενημέρωση του προγράμματος');
         return;
       }
 
