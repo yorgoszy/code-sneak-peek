@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useProgramAssignments } from '@/hooks/programs/useProgramAssignments';
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
@@ -34,7 +35,6 @@ export const useProgramBuilderDialogLogic = ({
   const { getWorkoutCompletions } = useWorkoutCompletions();
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const [completedDates, setCompletedDates] = useState<string[]>([]);
-  const [preSelectedDates, setPreSelectedDates] = useState<string[]>([]);
 
   // Fetch completed workouts when editing assignment
   useEffect(() => {
@@ -58,12 +58,11 @@ export const useProgramBuilderDialogLogic = ({
   }, [isOpen, editingAssignment, getWorkoutCompletions]);
 
   const handleClose = () => {
-    setPreSelectedDates([]); // Clear pre-selected dates when closing
     onOpenChange();
   };
 
   const handleSave = async () => {
-    if (!program.name || !program.name.trim()) {
+    if (!program.name.trim()) {
       toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
@@ -84,8 +83,8 @@ export const useProgramBuilderDialogLogic = ({
     }
   };
 
-  const handleOpenAssignments = (selectedDates?: string[]) => {
-    if (!program.name || !program.name.trim()) {
+  const handleOpenAssignments = () => {
+    if (!program.name.trim()) {
       toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
       return;
     }
@@ -99,12 +98,6 @@ export const useProgramBuilderDialogLogic = ({
     if (!hasValidDays) {
       toast.error('Προσθέστε ημέρες προπόνησης στις εβδομάδες');
       return;
-    }
-
-    // Set pre-selected dates if provided
-    if (selectedDates && selectedDates.length > 0) {
-      console.log('Setting pre-selected dates:', selectedDates);
-      setPreSelectedDates(selectedDates);
     }
 
     setAssignmentDialogOpen(true);
@@ -191,7 +184,6 @@ export const useProgramBuilderDialogLogic = ({
     assignmentDialogOpen,
     setAssignmentDialogOpen,
     completedDates,
-    preSelectedDates,
     handleClose,
     handleSave,
     handleOpenAssignments,
