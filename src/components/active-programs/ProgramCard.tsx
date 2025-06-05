@@ -9,10 +9,17 @@ import { ProgramCardActions } from './ProgramCardActions';
 
 interface ProgramCardProps {
   assignment: EnrichedAssignment;
+  selectedDate?: Date;
   onRefresh?: () => void;
+  onDelete?: (assignmentId: string) => void;
 }
 
-export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh }) => {
+export const ProgramCard: React.FC<ProgramCardProps> = ({ 
+  assignment, 
+  selectedDate,
+  onRefresh,
+  onDelete 
+}) => {
   const { calculateWorkoutStats, getWorkoutCompletions } = useWorkoutCompletionsCache();
 
   // Υπολογίζουμε τα stats από το cache (θα είναι διαθέσιμα από το useActivePrograms)
@@ -46,7 +53,12 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ assignment, onRefresh 
         <div className="flex items-center justify-between h-full">
           <ProgramCardUserInfo assignment={assignment} />
           <ProgramCardProgress assignment={assignment} workoutStats={stats} />
-          <ProgramCardActions assignment={assignment} onRefresh={onRefresh} />
+          <ProgramCardActions 
+            assignment={assignment} 
+            selectedDate={selectedDate}
+            onRefresh={onRefresh} 
+            onDelete={onDelete}
+          />
         </div>
       </CardContent>
     </Card>

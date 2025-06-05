@@ -17,7 +17,7 @@ const ActivePrograms = () => {
   const navigate = useNavigate();
 
   // Χρησιμοποιούμε το hook για τα ενεργά προγράμματα από τη βάση
-  const { data: activePrograms = [], isLoading, error } = useActivePrograms();
+  const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
 
   // Φιλτράρουμε τα προγράμματα για την επιλεγμένη ημερομηνία
   const programsForSelectedDate = activePrograms.filter(assignment => {
@@ -61,6 +61,17 @@ const ActivePrograms = () => {
     }
     
     return <span>{date.getDate()}</span>;
+  };
+
+  const handleDeleteProgram = async (assignmentId: string) => {
+    try {
+      // TODO: Implement actual deletion logic here
+      console.log('Διαγραφή προγράμματος:', assignmentId);
+      // Refresh the data after deletion
+      refetch();
+    } catch (error) {
+      console.error('Σφάλμα κατά τη διαγραφή:', error);
+    }
   };
 
   console.log('📅 Προγράμματα για την επιλεγμένη ημερομηνία:', programsForSelectedDate);
@@ -163,6 +174,9 @@ const ActivePrograms = () => {
                       <ProgramCard
                         key={assignment.id}
                         assignment={assignment}
+                        selectedDate={selectedDate}
+                        onRefresh={refetch}
+                        onDelete={handleDeleteProgram}
                       />
                     ))}
                   </div>

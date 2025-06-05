@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Play, Eye, Edit, CheckCircle } from "lucide-react";
+import { Play, Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
 import { DaySelector } from "./calendar/DaySelector";
@@ -11,28 +10,45 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardActionsProps {
   assignment: EnrichedAssignment;
+  selectedDate?: Date;
   onRefresh?: () => void;
+  onDelete?: (assignmentId: string) => void;
 }
 
-export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignment, onRefresh }) => {
+export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ 
+  assignment, 
+  selectedDate,
+  onRefresh,
+  onDelete 
+}) => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
-    // Logic to start workout
-    console.log('Starting workout:', weekIndex, dayIndex);
+  const handlePlayClick = () => {
+    if (selectedDate) {
+      // Άνοιγμα του DayProgramDialog για την επιλεγμένη ημερομηνία
+      setDayDialogOpen(true);
+    } else {
+      // Αν δεν υπάρχει επιλεγμένη ημερομηνία, άνοιγμα του day selector
+      setDaySelectorOpen(true);
+    }
   };
 
-  const handleQuickStart = () => {
-    setDaySelectorOpen(true);
+  const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
+    setDaySelectorOpen(false);
+    console.log('Starting workout:', weekIndex, dayIndex);
   };
 
   const handleDaySelected = (weekIndex: number, dayIndex: number) => {
     setDaySelectorOpen(false);
-    // Start workout logic here
-    console.log('Quick start workout:', weekIndex, dayIndex);
+    console.log('Day selected:', weekIndex, dayIndex);
+  };
+
+  const handleDeleteClick = () => {
+    if (onDelete && window.confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;')) {
+      onDelete(assignment.id);
+    }
   };
 
   return (
@@ -51,7 +67,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleQuickStart}
+            onClick={handlePlayClick}
             className="h-6 w-6 p-0 rounded-none"
             title="Έναρξη Προπόνησης"
           >
@@ -68,23 +84,35 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
             <Eye className="h-3 w-3" />
           </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 rounded-none">
-                <MoreVertical className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-none">
-              <DropdownMenuItem>
-                <Edit className="h-3 w-3 mr-2" />
-                Επεξεργασία
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CheckCircle className="h-3 w-3 mr-2" />
-                Ολοκλήρωση
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => console.log('Edit clicked')}
+            className="h-6 w-6 p-0 rounded-none"
+            title="Επεξεργασία"
+          >
+            <Edit className="h-3 w-3" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => console.log('Complete clicked')}
+            className="h-6 w-6 p-0 rounded-none"
+            title="Ολοκλήρωση"
+          >
+            <CheckCircle className="h-3 w-3" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDeleteClick}
+            className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-700"
+            title="Διαγραφή"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
         </div>
       </div>
 
@@ -100,7 +128,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ assignme
         isOpen={dayDialogOpen}
         onClose={() => setDayDialogOpen(false)}
         program={assignment}
-        selectedDate={selectedDate}
+        selectedDate={selectedDate || new Date()}
         workoutStatus="scheduled"
         onRefresh={onRefresh}
       />
