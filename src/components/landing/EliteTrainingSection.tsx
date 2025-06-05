@@ -57,7 +57,7 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
               className="w-full h-auto rounded-lg"
               style={{ marginTop: '0px', marginBottom: '0px' }}
             />
-            <div className="absolute bottom-6 -left-6 bg-[#00ffba] text-black p-6 max-w-xs -ml-4">
+            <div className="absolute bottom-6 left-6 bg-[#00ffba] text-black p-6 max-w-xs">
               <h3 className="font-bold text-lg mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
                 Advanced Technology
               </h3>

@@ -5,6 +5,9 @@ import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
 import { Program } from "@/components/programs/types";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useProgramsData } from "@/hooks/useProgramsData";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Programs = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -21,14 +24,63 @@ const Programs = () => {
 
   const { users, exercises } = useProgramsData();
   const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+  const { user } = useAuth();
 
   useEffect(() => {
     loadPrograms();
   }, []);
 
+  const ensureUserInDatabase = async () => {
+    if (!user?.id) return null;
+    
+    try {
+      // Check if user exists in app_users
+      const { data: existingUser, error: userCheckError } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (userCheckError && userCheckError.code === 'PGRST116') {
+        // User doesn't exist, create them
+        console.log('Creating user in app_users table');
+        const { data: newUser, error: createUserError } = await supabase
+          .from('app_users')
+          .insert([{
+            auth_user_id: user.id,
+            email: user.email || 'unknown@example.com',
+            name: user.email?.split('@')[0] || 'Unknown User',
+            role: 'trainer'
+          }])
+          .select()
+          .single();
+
+        if (createUserError) {
+          console.error('Error creating user:', createUserError);
+          toast.error('Σφάλμα δημιουργίας χρήστη');
+          return null;
+        }
+        
+        console.log('✅ User created successfully:', newUser);
+        return newUser.id;
+      } else if (existingUser) {
+        return existingUser.id;
+      }
+    } catch (error) {
+      console.error('Error ensuring user exists:', error);
+      return null;
+    }
+    
+    return null;
+  };
+
   const loadPrograms = async () => {
     try {
       console.log('🔄 Loading draft/template programs...');
+      
+      // Ensure user exists in database first
+      await ensureUserInDatabase();
+      
       const data = await fetchProgramsWithAssignments();
       // Filter to show only programs without assignments (draft/template programs)
       const draftPrograms = data.filter(program => 
@@ -44,6 +96,10 @@ const Programs = () => {
   const handleCreateProgram = async (programData: any) => {
     try {
       console.log('Creating/updating program:', programData);
+      
+      // Ensure user exists in database before saving
+      await ensureUserInDatabase();
+      
       await saveProgram(programData);
       await loadPrograms(); // Ξαναφόρτωση για να ενημερωθούν τα δεδομένα
       setBuilderOpen(false);
