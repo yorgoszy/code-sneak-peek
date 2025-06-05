@@ -45,8 +45,41 @@ export const useActivePrograms = () => {
           throw assignmentsError;
         }
 
-        console.log('✅ Fetched active programs:', assignments);
-        return (assignments || []) as EnrichedAssignment[];
+        console.log('✅ Raw assignments data:', assignments);
+        
+        // Μετατρέπουμε τα δεδομένα στη σωστή μορφή
+        const enrichedAssignments: EnrichedAssignment[] = (assignments || []).map(assignment => ({
+          id: assignment.id,
+          program_id: assignment.program_id,
+          user_id: assignment.user_id,
+          assigned_by: assignment.assigned_by,
+          start_date: assignment.start_date,
+          end_date: assignment.end_date,
+          status: assignment.status,
+          notes: assignment.notes,
+          created_at: assignment.created_at,
+          updated_at: assignment.updated_at,
+          assignment_type: assignment.assignment_type,
+          group_id: assignment.group_id,
+          progress: assignment.progress,
+          training_dates: assignment.training_dates,
+          programs: assignment.programs ? {
+            id: assignment.programs.id,
+            name: assignment.programs.name,
+            description: assignment.programs.description,
+            training_days: assignment.programs.training_days,
+            program_weeks: assignment.programs.program_weeks || []
+          } : undefined,
+          app_users: assignment.app_users ? {
+            id: assignment.app_users.id,
+            name: assignment.app_users.name,
+            email: assignment.app_users.email,
+            photo_url: assignment.app_users.photo_url
+          } : null
+        }));
+
+        console.log('✅ Enriched assignments:', enrichedAssignments);
+        return enrichedAssignments;
       } catch (error) {
         console.error('❌ Unexpected error fetching active programs:', error);
         throw error;
