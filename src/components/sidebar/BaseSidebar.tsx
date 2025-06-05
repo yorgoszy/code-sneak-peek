@@ -31,7 +31,7 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-[#00ffba] rounded-none flex items-center justify-center">
                 <img 
-                  src="/lovable-uploads/411c56db-a47b-4665-b608-2e6230baf4b4.png" 
+                  src="/lovable-uploads/a9d8f326-52a1-4283-965a-c73fed3f73ec.png" 
                   alt="Logo" 
                   className="w-6 h-6"
                 />
@@ -42,7 +42,7 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
           {isCollapsed && (
             <div className="w-10 h-10 bg-[#00ffba] rounded-none flex items-center justify-center mx-auto">
               <img 
-                src="/lovable-uploads/411c56db-a47b-4665-b608-2e6230baf4b4.png" 
+                src="/lovable-uploads/a9d8f326-52a1-4283-965a-c73fed3f73ec.png" 
                 alt="Logo" 
                 className="w-6 h-6"
               />
