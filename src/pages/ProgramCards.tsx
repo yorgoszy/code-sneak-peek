@@ -45,6 +45,27 @@ const ProgramCards = () => {
     try {
       console.log('🗑️ Διαγραφή assignment:', assignmentId);
       
+      // Διαγραφή workout completions πρώτα
+      const { error: completionsError } = await supabase
+        .from('workout_completions')
+        .delete()
+        .eq('assignment_id', assignmentId);
+
+      if (completionsError) {
+        console.error('❌ Σφάλμα κατά τη διαγραφή workout completions:', completionsError);
+      }
+
+      // Διαγραφή exercise results
+      const { error: exerciseResultsError } = await supabase
+        .from('exercise_results')
+        .delete()
+        .eq('workout_completion_id', assignmentId);
+
+      if (exerciseResultsError) {
+        console.error('❌ Σφάλμα κατά τη διαγραφή exercise results:', exerciseResultsError);
+      }
+
+      // Διαγραφή assignment
       const { error: deleteError } = await supabase
         .from('program_assignments')
         .delete()
