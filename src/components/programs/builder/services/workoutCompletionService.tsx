@@ -24,7 +24,7 @@ export const workoutCompletionService = {
         day_number: dayNumber,
         scheduled_date: date,
         completed_date: date,
-        status: 'pending'
+        status: 'completed'
       };
     });
 

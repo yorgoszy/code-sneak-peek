@@ -39,7 +39,7 @@ export const useProgramWorkoutCompletions = () => {
               day_number: dayNumber,
               scheduled_date: scheduledDate,
               completed_date: scheduledDate,
-              status: 'pending', // Αλλάζω από 'scheduled' σε 'pending'
+              status: 'completed',
               notes: null,
               start_time: null,
               end_time: null,
