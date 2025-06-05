@@ -6,9 +6,7 @@ import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
 import { useWorkoutState } from './hooks/useWorkoutState';
 import { DayProgramDialogHeader } from './DayProgramDialogHeader';
-import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
-import { ProgramInfo } from './ProgramInfo';
-import { ProgramBlocks } from './ProgramBlocks';
+import { CompactExerciseItem } from './CompactExerciseItem';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -81,7 +79,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
@@ -92,46 +90,50 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onCancelWorkout={handleCancelWorkout}
           />
 
-          <div className="space-y-4">
-            <ProgramInfo
-              program={program}
-              dayProgram={dayProgram}
-              workoutInProgress={workoutInProgress}
-              workoutStatus={workoutStatus}
-            />
+          <div className="space-y-3">
+            {/* Program Info - Compact */}
+            <div className="bg-gray-50 border border-gray-200 rounded-none p-2">
+              <div className="flex items-center justify-between text-sm">
+                <div>
+                  <span className="font-medium">{program.programs?.name}</span>
+                  {dayProgram && <span className="text-gray-600 ml-2">• {dayProgram.name}</span>}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {workoutInProgress ? 'Προπόνηση σε εξέλιξη' : workoutStatus}
+                </div>
+              </div>
+            </div>
 
             {dayProgram ? (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
-                  <span>{dayProgram.name}</span>
-                </h4>
-
-                <ExerciseInteractionHandler
-                  workoutInProgress={workoutInProgress}
-                  onVideoClick={handleVideoClick}
-                  onSetClick={handleSetClick}
-                >
-                  <ProgramBlocks
-                    blocks={dayProgram.program_blocks}
-                    workoutInProgress={workoutInProgress}
-                    getRemainingText={exerciseCompletion.getRemainingText}
-                    isExerciseComplete={exerciseCompletion.isExerciseComplete}
-                    onExerciseClick={handleExerciseClick}
-                    onSetClick={handleSetClick}
-                    onVideoClick={handleVideoClick}
-                    getNotes={exerciseCompletion.getNotes}
-                    updateNotes={exerciseCompletion.updateNotes}
-                    clearNotes={exerciseCompletion.clearNotes}
-                    updateKg={exerciseCompletion.updateKg}
-                    clearKg={exerciseCompletion.clearKg}
-                    updateVelocity={exerciseCompletion.updateVelocity}
-                    clearVelocity={exerciseCompletion.clearVelocity}
-                    updateReps={exerciseCompletion.updateReps}
-                    clearReps={exerciseCompletion.clearReps}
-                    selectedDate={selectedDate}
-                    program={program}
-                  />
-                </ExerciseInteractionHandler>
+                {dayProgram.program_blocks?.map((block) => (
+                  <div key={block.id} className="space-y-1">
+                    <h4 className="text-sm font-medium text-gray-700 px-1">
+                      {block.name}
+                    </h4>
+                    {block.program_exercises?.map((exercise) => (
+                      <CompactExerciseItem
+                        key={exercise.id}
+                        exercise={exercise}
+                        workoutInProgress={workoutInProgress}
+                        isComplete={exerciseCompletion.isExerciseComplete(exercise.id, exercise.sets)}
+                        remainingText={exerciseCompletion.getRemainingText(exercise.id, exercise.sets)}
+                        onExerciseClick={handleExerciseClick}
+                        onSetClick={handleSetClick}
+                        onVideoClick={handleVideoClick}
+                        getNotes={exerciseCompletion.getNotes}
+                        updateNotes={exerciseCompletion.updateNotes}
+                        clearNotes={exerciseCompletion.clearNotes}
+                        updateKg={exerciseCompletion.updateKg}
+                        clearKg={exerciseCompletion.clearKg}
+                        updateVelocity={exerciseCompletion.updateVelocity}
+                        clearVelocity={exerciseCompletion.clearVelocity}
+                        updateReps={exerciseCompletion.updateReps}
+                        clearReps={exerciseCompletion.clearReps}
+                      />
+                    ))}
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="bg-white border border-gray-200 rounded-none p-6 text-center text-gray-500">

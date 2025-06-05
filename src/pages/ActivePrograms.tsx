@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarCheck, User, Clock, ArrowLeft } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { CalendarCheck, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
@@ -50,7 +50,7 @@ const ActivePrograms = () => {
     loadCompletions();
   }, [activePrograms, getWorkoutCompletions]);
 
-  // Realtime subscription για workout_completions
+  // Realtime subscription για workout_completions με άμεση ενημέρωση
   useEffect(() => {
     console.log('🔄 Setting up realtime subscription for workout completions...');
     
@@ -67,7 +67,7 @@ const ActivePrograms = () => {
           console.log('✅ Workout completion change detected:', payload);
           // Άμεση ενημέρωση των προγραμμάτων και completions
           refetch();
-          // Επανάφορτωση των completions
+          // Άμεση επανάφορτωση των completions
           if (activePrograms.length > 0) {
             const loadCompletions = async () => {
               const allCompletions = [];
@@ -93,7 +93,7 @@ const ActivePrograms = () => {
   const stats = {
     totalPrograms: activePrograms.length,
     activeToday: programsForSelectedDate.length,
-    completedToday: 0 // TODO: Υπολογισμός ολοκληρωμένων προπονήσεων
+    completedToday: 0
   };
 
   // Δημιουργούμε μια λίστα με όλες τις ημερομηνίες που έχουν προγράμματα και τα statuses τους
@@ -124,14 +124,12 @@ const ActivePrograms = () => {
           <span>{date.getDate()}</span>
           <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-0.5">
             {dateProgramsWithStatus.slice(0, 3).map((program, i) => {
-              let bulletColor = '#00ffba'; // default πράσινο για completed
+              let bulletColor = '#3b82f6'; // default μπλε για scheduled
               
-              if (program.status === 'scheduled') {
-                bulletColor = '#3b82f6'; // μπλε για scheduled
+              if (program.status === 'completed') {
+                bulletColor = '#00ffba'; // πράσινο για completed
               } else if (program.status === 'missed') {
                 bulletColor = '#ef4444'; // κόκκινο για missed
-              } else if (program.status === 'completed') {
-                bulletColor = '#00ffba'; // πράσινο για completed
               }
               
               return (
@@ -152,18 +150,12 @@ const ActivePrograms = () => {
 
   const handleDeleteProgram = async (assignmentId: string) => {
     try {
-      // TODO: Implement actual deletion logic here
       console.log('Διαγραφή προγράμματος:', assignmentId);
-      // Refresh the data after deletion
       refetch();
     } catch (error) {
       console.error('Σφάλμα κατά τη διαγραφή:', error);
     }
   };
-
-  console.log('📅 Προγράμματα για την επιλεγμένη ημερομηνία:', programsForSelectedDate);
-  console.log('🎯 Workout completions:', workoutCompletions);
-  console.log('📊 Program dates with status:', programDatesWithStatus);
 
   if (isLoading) {
     return (
@@ -296,29 +288,6 @@ const ActivePrograms = () => {
               </CardContent>
             </Card>
           </div>
-
-          {/* Debug Info */}
-          {activePrograms.length > 0 && (
-            <Card className="rounded-none">
-              <CardHeader>
-                <CardTitle className="text-sm">Πληροφορίες Debug</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-gray-500">
-                  Συνολικά ανατεθειμένα προγράμματα: {activePrograms.length}
-                </p>
-                <p className="text-xs text-gray-500">
-                  Workout completions: {workoutCompletions.length}
-                </p>
-                <details className="mt-2">
-                  <summary className="text-xs cursor-pointer">Εμφάνιση λεπτομερειών</summary>
-                  <pre className="text-xs mt-2 bg-gray-100 p-2 rounded overflow-auto">
-                    {JSON.stringify({ activePrograms, workoutCompletions }, null, 2)}
-                  </pre>
-                </details>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>

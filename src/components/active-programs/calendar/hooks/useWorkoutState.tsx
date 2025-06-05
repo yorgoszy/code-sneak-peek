@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
+import { saveWorkoutData, getWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 import { toast } from 'sonner';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -26,6 +27,36 @@ export const useWorkoutState = (
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
 
   const { updateWorkoutStatus } = useWorkoutCompletions();
+
+  // Φόρτωση δεδομένων από localStorage όταν ανοίγει το dialog
+  useEffect(() => {
+    if (program && selectedDate) {
+      // Φορτώνουμε τα δεδομένα για όλες τις ασκήσεις
+      const loadExerciseData = () => {
+        const newExerciseData: Record<string, any> = {};
+        const newExerciseNotes: Record<string, string> = {};
+        
+        program.programs?.program_weeks?.[0]?.program_days?.forEach(day => {
+          day.program_blocks?.forEach(block => {
+            block.program_exercises?.forEach(exercise => {
+              const data = getWorkoutData(selectedDate, program.programs!.id, exercise.id);
+              if (data.kg || data.reps || data.velocity) {
+                newExerciseData[exercise.id] = data;
+              }
+              if (data.notes) {
+                newExerciseNotes[exercise.id] = data.notes;
+              }
+            });
+          });
+        });
+        
+        setExerciseData(newExerciseData);
+        setExerciseNotes(newExerciseNotes);
+      };
+      
+      loadExerciseData();
+    }
+  }, [program, selectedDate]);
 
   // Timer effect
   useEffect(() => {
@@ -60,7 +91,7 @@ export const useWorkoutState = (
 
       // Ενημερώνουμε το status της προπόνησης
       await updateWorkoutStatus(
-        program.id, // assignment_id
+        program.id,
         selectedDateStr,
         'completed',
         'green'
@@ -74,7 +105,9 @@ export const useWorkoutState = (
       // Άμεσο refresh για να δούμε τις αλλαγές
       if (onRefresh) {
         console.log('🔄 Triggering immediate refresh...');
-        onRefresh();
+        setTimeout(() => {
+          onRefresh();
+        }, 100);
       }
       
       // Κλείνουμε το dialog μετά από μικρή καθυστέρηση για να φανεί το success message
@@ -126,6 +159,9 @@ export const useWorkoutState = (
 
     updateNotes: (exerciseId: string, notes: string) => {
       setExerciseNotes(prev => ({ ...prev, [exerciseId]: notes }));
+      if (program && selectedDate) {
+        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { notes });
+      }
     },
 
     clearNotes: (exerciseId: string) => {
@@ -134,6 +170,9 @@ export const useWorkoutState = (
         delete newNotes[exerciseId];
         return newNotes;
       });
+      if (program && selectedDate) {
+        clearWorkoutData(selectedDate, program.programs!.id, exerciseId);
+      }
     },
 
     updateKg: (exerciseId: string, kg: string) => {
@@ -141,6 +180,9 @@ export const useWorkoutState = (
         ...prev,
         [exerciseId]: { ...prev[exerciseId], kg }
       }));
+      if (program && selectedDate) {
+        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { kg });
+      }
     },
 
     clearKg: (exerciseId: string) => {
@@ -154,10 +196,14 @@ export const useWorkoutState = (
     },
 
     updateVelocity: (exerciseId: string, velocity: number) => {
+      const velocityStr = velocity.toString();
       setExerciseData(prev => ({
         ...prev,
-        [exerciseId]: { ...prev[exerciseId], velocity: velocity.toString() }
+        [exerciseId]: { ...prev[exerciseId], velocity: velocityStr }
       }));
+      if (program && selectedDate) {
+        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { velocity: velocityStr });
+      }
     },
 
     clearVelocity: (exerciseId: string) => {
@@ -171,10 +217,14 @@ export const useWorkoutState = (
     },
 
     updateReps: (exerciseId: string, reps: number) => {
+      const repsStr = reps.toString();
       setExerciseData(prev => ({
         ...prev,
-        [exerciseId]: { ...prev[exerciseId], reps: reps.toString() }
+        [exerciseId]: { ...prev[exerciseId], reps: repsStr }
       }));
+      if (program && selectedDate) {
+        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { reps: repsStr });
+      }
     },
 
     clearReps: (exerciseId: string) => {
