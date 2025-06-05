@@ -33,6 +33,12 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
         d.toDateString() !== date.toDateString()
       ));
     } else {
+      // Έλεγχος αν έχουμε φτάσει το όριο
+      if (selectedDates.length >= totalDays) {
+        console.log(`⚠️ Μπορείς να επιλέξεις μόνο ${totalDays} ημερομηνίες`);
+        return;
+      }
+      
       // Προσθήκη ημερομηνίας
       onDatesChange([...selectedDates, date].sort((a, b) => a.getTime() - b.getTime()));
     }
@@ -113,11 +119,25 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
               selected={selectedDates}
               onSelect={(dates) => {
                 if (dates) {
-                  onDatesChange(Array.isArray(dates) ? dates : [dates]);
+                  // Περιορισμός στον αριθμό των απαιτούμενων ημερών
+                  const datesArray = Array.isArray(dates) ? dates : [dates];
+                  if (datesArray.length <= totalDays) {
+                    onDatesChange(datesArray);
+                  } else {
+                    // Κρατάμε μόνο τις πρώτες totalDays ημερομηνίες
+                    onDatesChange(datesArray.slice(0, totalDays));
+                  }
                 }
               }}
               className="rounded-none"
-              disabled={(date) => date < new Date()}
+              disabled={(date) => {
+                // Απενεργοποίηση παλαιών ημερομηνιών
+                if (date < new Date()) return true;
+                
+                // Απενεργοποίηση νέων ημερομηνιών αν έχουμε φτάσει το όριο
+                const isSelected = selectedDates.some(d => d.toDateString() === date.toDateString());
+                return !isSelected && selectedDates.length >= totalDays;
+              }}
             />
           </div>
         )}
@@ -126,6 +146,13 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
         {selectedDates.length < totalDays && (
           <div className="text-orange-600 text-sm p-2 bg-orange-50 border border-orange-200 rounded-none">
             Προειδοποίηση: Χρειάζεστε {totalDays - selectedDates.length} ακόμη ημερομηνίες για να καλύψετε όλες τις ημέρες προπόνησης.
+          </div>
+        )}
+
+        {/* Success message when limit reached */}
+        {selectedDates.length === totalDays && (
+          <div className="text-green-600 text-sm p-2 bg-green-50 border border-green-200 rounded-none">
+            ✓ Έχετε επιλέξει όλες τις απαραίτητες ημερομηνίες προπόνησης!
           </div>
         )}
       </CardContent>

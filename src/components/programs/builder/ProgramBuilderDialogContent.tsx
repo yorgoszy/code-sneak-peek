@@ -82,16 +82,41 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   const hasRequiredDates = selectedDatesCount >= totalDays;
 
   const handleAssignment = async () => {
-    // Πρώτα αποθηκεύουμε το πρόγραμμα
-    await onSave();
+    console.log('🔄 Starting assignment process...');
+    
+    // Έλεγχος απαραίτητων πεδίων
+    if (!program.name?.trim()) {
+      console.error('❌ Program name is required');
+      return;
+    }
+    
+    if (!program.user_id) {
+      console.error('❌ User selection is required');
+      return;
+    }
+    
+    if (totalDays === 0) {
+      console.error('❌ No training days found');
+      return;
+    }
+    
+    if (!hasRequiredDates) {
+      console.error('❌ Not enough training dates selected');
+      return;
+    }
     
     // Στέλνουμε τα δεδομένα στο localStorage για να τα διαβάσει το ActivePrograms
     const assignmentData = {
-      program,
+      program: {
+        ...program,
+        status: 'active' // Σημαντικό: βάζουμε το status ως active
+      },
       trainingDates: program.training_dates,
-      selectedUserId: program.user_id
+      selectedUserId: program.user_id,
+      assignedAt: new Date().toISOString()
     };
     
+    console.log('📤 Sending assignment data:', assignmentData);
     localStorage.setItem('pendingAssignment', JSON.stringify(assignmentData));
     
     // Πλοηγούμαστε στο ActivePrograms
@@ -150,7 +175,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
               <div className="bg-blue-50 border border-blue-200 rounded-none p-4">
                 <h3 className="font-medium text-blue-800 mb-2">Επιλογή Ημερομηνιών Προπόνησης</h3>
                 <p className="text-sm text-blue-700 mb-2">
-                  Επιλέξτε {totalDays} ημερομηνίες για τις προπονήσεις σας
+                  Επιλέξτε ακριβώς {totalDays} ημερομηνίες για τις προπονήσεις σας
                 </p>
                 <p className="text-xs text-blue-600">
                   Επιλεγμένες: {selectedDatesCount} / {totalDays}
