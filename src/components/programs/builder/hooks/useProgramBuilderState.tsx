@@ -46,10 +46,17 @@ export interface Week {
   days: Day[];
 }
 
-// Use the main ProgramStructure type to ensure compatibility
-export interface ProgramStructure extends Omit<MainProgramStructure, 'weeks'> {
+// Updated ProgramStructure to match main types but with Date[] for internal use
+export interface ProgramStructure {
+  id?: string;
+  name: string;
+  description?: string;
+  user_id?: string;
+  start_date?: Date;
+  training_days?: string[];
+  training_dates: Date[]; // Keep as Date[] for internal calendar operations
   weeks: Week[];
-  training_dates: Date[]; // Προσθήκη training_dates ως Date array
+  status?: string;
 }
 
 export const useProgramBuilderState = (exercises: Exercise[]) => {
