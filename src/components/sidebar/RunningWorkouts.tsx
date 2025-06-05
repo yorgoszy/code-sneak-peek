@@ -35,7 +35,7 @@ export const RunningWorkouts: React.FC<RunningWorkoutsProps> = ({
             <div className="flex items-center space-x-2">
               <Avatar className="h-8 w-8">
                 <AvatarImage 
-                  src={workout.assignment.app_users?.avatar_url || undefined} 
+                  src={workout.assignment.app_users?.photo_url || undefined} 
                   alt={workout.assignment.app_users?.name || 'User'} 
                 />
                 <AvatarFallback className="bg-[#00ffba] text-black text-xs">
