@@ -121,16 +121,28 @@ const ActivePrograms = () => {
     
     if (dateProgramsWithStatus.length > 0) {
       return (
-        <div className="relative w-full">
-          <div className="text-center">{date.getDate()}</div>
-          <div className="text-xs text-center truncate px-0.5" style={{ fontSize: '10px' }}>
-            {dateProgramsWithStatus.map((program, i) => (
-              <div key={i} className="truncate">
+        <div className="relative w-full h-full flex flex-col justify-between p-1">
+          {/* Αριθμός ημερομηνίας στο πάνω μέρος */}
+          <div className="text-center font-medium text-sm">
+            {date.getDate()}
+          </div>
+          
+          {/* Ονόματα χρηστών στο μέσο */}
+          <div className="flex-1 flex flex-col justify-center text-xs text-center overflow-hidden">
+            {dateProgramsWithStatus.slice(0, 2).map((program, i) => (
+              <div key={i} className="truncate text-xs leading-tight text-gray-700">
                 {program.userName}
               </div>
             ))}
+            {dateProgramsWithStatus.length > 2 && (
+              <div className="text-xs text-gray-500">
+                +{dateProgramsWithStatus.length - 2}
+              </div>
+            )}
           </div>
-          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-0.5">
+          
+          {/* Κουκίδες στο κάτω μέρος */}
+          <div className="flex justify-center space-x-1">
             {dateProgramsWithStatus.slice(0, 3).map((program, i) => {
               let bulletColor = '#3b82f6'; // default μπλε για scheduled
               
@@ -143,7 +155,7 @@ const ActivePrograms = () => {
               return (
                 <div 
                   key={i} 
-                  className="w-1 h-1 rounded-full" 
+                  className="w-1.5 h-1.5 rounded-full" 
                   style={{ backgroundColor: bulletColor }}
                 ></div>
               );
@@ -153,7 +165,11 @@ const ActivePrograms = () => {
       );
     }
     
-    return <div className="text-center">{date.getDate()}</div>;
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center font-medium text-sm">{date.getDate()}</div>
+      </div>
+    );
   };
 
   const handleDeleteProgram = async (assignmentId: string) => {
@@ -248,8 +264,8 @@ const ActivePrograms = () => {
                     table: "w-full h-full border-collapse space-y-1",
                     head_row: "",
                     row: "w-full mt-2",
-                    cell: "h-20 w-full text-center text-sm p-0 relative",
-                    day: "h-20 w-full p-0 font-normal aria-selected:opacity-100",
+                    cell: "h-24 w-full text-center text-sm p-0 relative border border-gray-200",
+                    day: "h-24 w-full p-0 font-normal aria-selected:opacity-100 hover:bg-gray-50",
                     day_selected: "bg-[#00ffba] text-black hover:bg-[#00ffba] hover:text-black focus:bg-[#00ffba] focus:text-black",
                     day_today: "bg-gray-100 text-black",
                     day_outside: "text-gray-400 opacity-50",
