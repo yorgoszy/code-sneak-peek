@@ -14,21 +14,29 @@ export const useProgramSaveOperations = ({
   onCreateProgram,
   onOpenChange
 }: UseProgramSaveOperationsProps) => {
-  const [currentProgramId, setCurrentProgramId] = useState<string | null>(program.id || null);
+  const [currentProgramId, setCurrentProgramId] = useState<string | null>(program?.id || null);
 
   const handleSave = async () => {
     try {
       console.log('💾 Saving program as draft...', program);
       
+      if (!program) {
+        toast.error('Δεν βρέθηκε πρόγραμμα');
+        return;
+      }
+
       if (!program.name?.trim()) {
         toast.error('Παρακαλώ εισάγετε όνομα προγράμματος');
         return;
       }
 
       // Μετατροπή training_dates σε string array για την αποθήκευση
-      const trainingDatesStrings = program.training_dates.map(date => 
-        date.toISOString().split('T')[0]
-      );
+      let trainingDatesStrings: string[] = [];
+      if (program.training_dates) {
+        trainingDatesStrings = program.training_dates.map(date => 
+          typeof date === 'string' ? date : date.toISOString().split('T')[0]
+        );
+      }
 
       const savedProgram = await onCreateProgram({
         ...program,
@@ -37,7 +45,9 @@ export const useProgramSaveOperations = ({
       });
 
       console.log('✅ Program saved as draft:', savedProgram);
-      setCurrentProgramId(savedProgram.id);
+      if (savedProgram?.id) {
+        setCurrentProgramId(savedProgram.id);
+      }
       toast.success('Το πρόγραμμα αποθηκεύτηκε ως προσχέδιο!');
     } catch (error) {
       console.error('❌ Error saving program:', error);
@@ -51,7 +61,7 @@ export const useProgramSaveOperations = ({
   };
 
   return {
-    currentProgramId: currentProgramId || program.id,
+    currentProgramId: currentProgramId || program?.id || null,
     setCurrentProgramId,
     handleSave,
     handleClose

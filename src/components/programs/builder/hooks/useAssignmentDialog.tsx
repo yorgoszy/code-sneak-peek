@@ -33,7 +33,15 @@ export const useAssignmentDialog = ({
   const handleOpenAssignments = async () => {
     try {
       console.log('🔄 Opening assignments dialog - Current program state:', program);
+      console.log('🔄 Current program ID:', currentProgramId);
+      console.log('🔄 Program object:', program);
       
+      if (!program) {
+        console.error('❌ No program object found');
+        toast.error('Δεν βρέθηκε πρόγραμμα');
+        return;
+      }
+
       if (!program.name?.trim()) {
         toast.error('Παρακαλώ εισάγετε όνομα προγράμματος');
         return;
@@ -46,11 +54,12 @@ export const useAssignmentDialog = ({
 
       // Έλεγχος αν υπάρχουν επαρκείς ημερομηνίες
       const totalDays = program.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
-      if (program.training_dates.length < totalDays) {
+      if (!program.training_dates || program.training_dates.length < totalDays) {
         toast.error(`Παρακαλώ επιλέξτε ${totalDays} ημερομηνίες προπόνησης`);
         return;
       }
 
+      // Έλεγχος αν το πρόγραμμα έχει ID ή αν χρειάζεται να αποθηκευτεί
       let programId = currentProgramId || program.id;
 
       // Αν δεν υπάρχει programId, αποθηκεύουμε το πρόγραμμα πρώτα
@@ -59,7 +68,7 @@ export const useAssignmentDialog = ({
         
         // Μετατροπή training_dates σε string array για την αποθήκευση
         const trainingDatesStrings = program.training_dates.map(date => 
-          date.toISOString().split('T')[0]
+          typeof date === 'string' ? date : date.toISOString().split('T')[0]
         );
 
         // Αποθήκευση του προγράμματος ως ενεργό
@@ -69,7 +78,14 @@ export const useAssignmentDialog = ({
           status: 'active'
         });
         
-        programId = savedProgram.id;
+        programId = savedProgram?.id;
+        
+        if (!programId) {
+          console.error('❌ Failed to save program or get program ID');
+          toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
+          return;
+        }
+        
         console.log('✅ Program saved for assignment:', savedProgram);
       }
 
@@ -90,6 +106,11 @@ export const useAssignmentDialog = ({
 
       if (!programId) {
         toast.error('Πρέπει πρώτα να αποθηκευτεί το πρόγραμμα');
+        return;
+      }
+
+      if (!program) {
+        toast.error('Δεν βρέθηκε πρόγραμμα');
         return;
       }
 
@@ -175,7 +196,7 @@ export const useAssignmentDialog = ({
   };
 
   // Φιλτράρισμα χρηστών - αφαιρούμε τον ήδη επιλεγμένο
-  const availableUsers = users.filter(user => user.id !== program.user_id);
+  const availableUsers = users.filter(user => user.id !== program?.user_id);
 
   return {
     assignmentDialogOpen,
