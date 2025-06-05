@@ -1,21 +1,20 @@
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity } from "lucide-react";
-import { format } from "date-fns";
 
-interface TodaysProgramsCardProps {
-  todaysPrograms: any[];
-  allCompletions: any[];
-  onRefresh: () => void;
+interface UserProfileProgramsProps {
+  user: any;
+  programs: any[];
 }
 
-export const TodaysProgramsCard = ({ todaysPrograms, allCompletions, onRefresh }: TodaysProgramsCardProps) => {
+export const UserProfilePrograms: React.FC<UserProfileProgramsProps> = ({ user, programs }) => {
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <Activity className="h-5 w-5 mr-2" />
-          Σημερινά Προγράμματα ({format(new Date(), 'dd/MM/yyyy')})
+        <CardTitle className="flex items-center gap-2">
+          <Activity className="w-5 h-5" />
+          Προγράμματα
         </CardTitle>
       </CardHeader>
       <CardContent>

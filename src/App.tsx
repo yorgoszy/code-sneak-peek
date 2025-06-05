@@ -13,7 +13,6 @@ import Exercises from "./pages/Exercises";
 import Tests from "./pages/Tests";
 import Results from "./pages/Results";
 import Programs from "./pages/Programs";
-import ActivePrograms from "./pages/ActivePrograms";
 import ProgramBuilder from "./pages/ProgramBuilder";
 import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
@@ -104,14 +103,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Programs />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/active-programs" 
-              element={
-                <ProtectedRoute>
-                  <ActivePrograms />
                 </ProtectedRoute>
               } 
             />
