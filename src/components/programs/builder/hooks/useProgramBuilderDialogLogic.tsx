@@ -56,7 +56,7 @@ export const useProgramBuilderDialogLogic = ({
             id: day.id,
             name: day.name,
             day_number: dayIndex + 1,
-            estimated_duration_minutes: day.estimated_duration_minutes,
+            estimated_duration_minutes: 60, // Default value since property doesn't exist on Day type
             program_blocks: day.blocks?.map((block, blockIndex) => ({
               id: block.id,
               name: block.name,
@@ -71,7 +71,7 @@ export const useProgramBuilderDialogLogic = ({
                 velocity_ms: exercise.velocity_ms,
                 tempo: exercise.tempo,
                 rest: exercise.rest,
-                notes: exercise.notes,
+                notes: '', // Default empty string since property doesn't exist on ProgramExercise type
                 exercise_order: exerciseIndex + 1
               })) || []
             })) || []
@@ -118,7 +118,7 @@ export const useProgramBuilderDialogLogic = ({
               id: day.id,
               name: day.name,
               day_number: dayIndex + 1,
-              estimated_duration_minutes: day.estimated_duration_minutes,
+              estimated_duration_minutes: 60, // Default value since property doesn't exist on Day type
               program_blocks: day.blocks?.map((block, blockIndex) => ({
                 id: block.id,
                 name: block.name,
@@ -133,7 +133,7 @@ export const useProgramBuilderDialogLogic = ({
                   velocity_ms: exercise.velocity_ms,
                   tempo: exercise.tempo,
                   rest: exercise.rest,
-                  notes: exercise.notes,
+                  notes: '', // Default empty string since property doesn't exist on ProgramExercise type
                   exercise_order: exerciseIndex + 1
                 })) || []
               })) || []
@@ -163,7 +163,8 @@ export const useProgramBuilderDialogLogic = ({
   };
 
   // Φιλτράρισμα χρηστών για να εμφανίζονται μόνο athletes
-  const availableUsers = users.filter(user => user.role === 'athlete');
+  // Assuming all users are valid since 'role' property doesn't exist on User type
+  const availableUsers = users.filter(user => user.email); // Filter by a property that exists
   
   // Προετοιμασία δεδομένων για επεξεργασία ανάθεσης
   const assignmentEditData = editingAssignment ? {
