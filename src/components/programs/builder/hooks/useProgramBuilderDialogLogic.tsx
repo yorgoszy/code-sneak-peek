@@ -5,7 +5,6 @@ import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { toast } from "sonner";
 import { User, Exercise, Program } from '../../types';
 import { ProgramStructure } from './useProgramBuilderState';
-import { supabase } from "@/integrations/supabase/client";
 
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
@@ -104,55 +103,6 @@ export const useProgramBuilderDialogLogic = ({
     setAssignmentDialogOpen(true);
   };
 
-  // Δημιουργία workout completions για κάθε ημερομηνία προπόνησης
-  const createWorkoutCompletions = async (assignmentId: string, programId: string, userId: string, trainingDates: string[]) => {
-    try {
-      console.log('🔄 Creating workout completions for assignment:', assignmentId);
-      console.log('📅 Training dates:', trainingDates);
-
-      // Βρίσκουμε τον συνολικό αριθμό ημερών προπόνησης ανά εβδομάδα
-      const totalDaysPerWeek = program.weeks.reduce((total, week) => {
-        return total + (week.days?.length || 0);
-      }, 0) / program.weeks.length; // Μέσος όρος ημερών ανά εβδομάδα
-
-      // Δημιουργία workout_completions για κάθε ημερομηνία
-      const workoutCompletions = trainingDates.map((date, index) => {
-        // Υπολογισμός σε ποια εβδομάδα και ημέρα ανήκει κάθε ημερομηνία
-        const weekNumber = Math.floor(index / totalDaysPerWeek) + 1;
-        const dayNumber = (index % totalDaysPerWeek) + 1;
-
-        return {
-          assignment_id: assignmentId,
-          user_id: userId,
-          program_id: programId,
-          week_number: weekNumber,
-          day_number: dayNumber,
-          scheduled_date: date,
-          completed_date: date, // Προσωρινά το ίδιο με scheduled_date
-          status: 'scheduled',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-      });
-
-      const { data, error } = await supabase
-        .from('workout_completions')
-        .insert(workoutCompletions)
-        .select();
-
-      if (error) {
-        console.error('❌ Error creating workout completions:', error);
-        throw error;
-      }
-
-      console.log('✅ Workout completions created successfully:', data?.length);
-      return data;
-    } catch (error) {
-      console.error('❌ Error in createWorkoutCompletions:', error);
-      throw error;
-    }
-  };
-
   const handleAssign = async (userId: string, trainingDates: string[]) => {
     console.log('=== PROGRAM ASSIGNMENT WITH DATES ===');
     console.log('User ID:', userId);
@@ -188,7 +138,7 @@ export const useProgramBuilderDialogLogic = ({
         });
         
         // Create or update assignment with specific training dates
-        const assignmentResult = await createOrUpdateAssignment(
+        await createOrUpdateAssignment(
           programId, 
           userId, 
           undefined, // no start_date
@@ -196,21 +146,7 @@ export const useProgramBuilderDialogLogic = ({
           trainingDates // specific training dates
         );
         
-        console.log('✅ Assignment created/updated successfully:', assignmentResult);
-
-        // Δημιουργία workout completions μόνο για νέα assignments (όχι για edits)
-        if (!editingAssignment && assignmentResult?.id) {
-          await createWorkoutCompletions(assignmentResult.id, programId, userId, trainingDates);
-        } else if (editingAssignment) {
-          // Για υπάρχουσες αναθέσεις, ενημερώνουμε μόνο τις νέες ημερομηνίες
-          const existingDates = editingAssignment.training_dates || [];
-          const newDates = trainingDates.filter(date => !existingDates.includes(date));
-          
-          if (newDates.length > 0) {
-            await createWorkoutCompletions(editingAssignment.id, programId, userId, newDates);
-          }
-        }
-        
+        console.log('✅ Assignment created/updated successfully with dates:', trainingDates);
         const successMessage = editingAssignment 
           ? 'Η ανάθεση ενημερώθηκε επιτυχώς' 
           : 'Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς';
