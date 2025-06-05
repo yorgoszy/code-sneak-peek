@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Exercise } from '../types';
@@ -110,11 +111,22 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
         const volume = sets * reps * kg;
         totalVolume += volume;
 
-        // Watts: Force × Velocity = (kg × 9.81) × m/s
+        // Watts: Power = Force × Velocity
+        // For strength exercises: Force = weight (kg) × 9.81 (gravity)
+        // For plyometric/ballistic exercises: use velocity directly
         if (kg > 0 && velocity > 0) {
+          // For loaded exercises: Power = Weight × gravity × velocity
           const force = kg * 9.81; // Convert to Newtons
-          const watts = force * velocity;
-          totalWatts += watts * sets * reps; // Total watts for all reps
+          const power = force * velocity; // Watts per rep
+          const totalPowerPerSet = power * reps;
+          totalWatts += totalPowerPerSet * sets;
+        } else if (velocity > 0 && kg === 0) {
+          // For bodyweight/plyometric exercises: estimate based on bodyweight
+          const estimatedBodyweight = 75; // kg (average)
+          const force = estimatedBodyweight * 9.81;
+          const power = force * velocity;
+          const totalPowerPerSet = power * reps;
+          totalWatts += totalPowerPerSet * sets;
         }
 
         // Time: [(sets × reps) × tempo] + (sets - 1) × rest

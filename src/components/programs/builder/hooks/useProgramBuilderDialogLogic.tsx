@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useProgramAssignments } from '@/hooks/programs/useProgramAssignments';
+import { supabase } from '@/integrations/supabase/client';
 import type { User, Exercise, Program } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
 
@@ -30,7 +31,19 @@ export const useProgramBuilderDialogLogic = ({
   program
 }: UseProgramBuilderDialogLogicProps) => {
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { createOrUpdateAssignment } = useProgramAssignments();
+
+  // Get current user ID
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
 
   const handleClose = () => {
     console.log('🔄 Closing builder dialog');
@@ -46,7 +59,7 @@ export const useProgramBuilderDialogLogic = ({
         id: program.id,
         name: program.name,
         description: program.description,
-        user_id: program.user_id,
+        user_id: currentUserId, // Use current authenticated user
         status: 'draft',
         program_weeks: program.weeks?.map((week, weekIndex) => ({
           id: week.id,
@@ -98,7 +111,8 @@ export const useProgramBuilderDialogLogic = ({
       console.log('🎯 Starting assignment process:', {
         userId,
         trainingDates: trainingDates.length,
-        programId: program.id
+        programId: program.id,
+        currentUserId
       });
 
       // Πρώτα αποθηκεύουμε το πρόγραμμα αν δεν έχει ID
@@ -108,7 +122,7 @@ export const useProgramBuilderDialogLogic = ({
         const savedProgram = await onCreateProgram({
           name: program.name,
           description: program.description,
-          user_id: program.user_id,
+          user_id: currentUserId, // Use current authenticated user
           status: 'active',
           program_weeks: program.weeks?.map((week, weekIndex) => ({
             id: week.id,
@@ -140,8 +154,12 @@ export const useProgramBuilderDialogLogic = ({
             })) || []
           })) || []
         });
-        programId = savedProgram.id;
+        programId = savedProgram?.id;
         console.log('✅ Program saved with ID:', programId);
+      }
+
+      if (!programId) {
+        throw new Error('Failed to get program ID after saving');
       }
 
       // Τώρα δημιουργούμε την ανάθεση

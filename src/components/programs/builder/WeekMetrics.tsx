@@ -125,9 +125,22 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
             exerciseCount++;
           }
 
-          // Watts calculation
-          const watts = parseFloat(exercise.velocity_ms) || 0;
-          totalWatts += watts * sets;
+          // Watts calculation - corrected formula
+          const velocity = parseFloat(exercise.velocity_ms) || 0;
+          if (kg > 0 && velocity > 0) {
+            // For loaded exercises: Power = Weight × gravity × velocity
+            const force = kg * 9.81; // Convert to Newtons
+            const power = force * velocity; // Watts per rep
+            const totalPowerPerSet = power * reps;
+            totalWatts += totalPowerPerSet * sets;
+          } else if (velocity > 0 && kg === 0) {
+            // For bodyweight/plyometric exercises: estimate based on bodyweight
+            const estimatedBodyweight = 75; // kg (average)
+            const force = estimatedBodyweight * 9.81;
+            const power = force * velocity;
+            const totalPowerPerSet = power * reps;
+            totalWatts += totalPowerPerSet * sets;
+          }
 
           // Time calculation
           const tempo = parseTempoToSeconds(exercise.tempo);
@@ -189,7 +202,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
     <div className="text-xs space-y-1 mt-1 px-2 py-1 bg-gray-50 rounded">
       <div className="grid grid-cols-4 gap-2">
         <div className="text-center">
-          <div className="font-semibold text-blue-700">{currentStats.volume.toLocaleString()}tn</div>
+          <div className="font-semibold text-blue-700">{currentStats.volume.toLocaleString()}kg</div>
           {previousStats && (
             <PercentageIndicator 
               percentage={calculatePercentageChange(currentStats.volume, previousStats.volume)} 
@@ -207,7 +220,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
         </div>
         
         <div className="text-center">
-          <div className="font-semibold text-orange-700">{currentStats.watts}w</div>
+          <div className="font-semibold text-orange-700">{currentStats.watts}W</div>
           {previousStats && (
             <PercentageIndicator 
               percentage={calculatePercentageChange(currentStats.watts, previousStats.watts)} 
