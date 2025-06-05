@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Dumbbell, CheckCircle, Info } from "lucide-react";
+import { Clock, Dumbbell, CheckCircle, Info, Play } from "lucide-react";
 import { ExerciseBlock } from "@/components/user-profile/daily-program/ExerciseBlock";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { DayProgramDialog } from './DayProgramDialog';
+import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
 import { format } from "date-fns";
+import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramViewDialogProps {
@@ -28,6 +30,8 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
   const [dayProgramOpen, setDayProgramOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<any>(null);
   const [selectedWeek, setSelectedWeek] = useState<any>(null);
+  const [selectedExercise, setSelectedExercise] = useState<any>(null);
+  const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   useEffect(() => {
@@ -90,6 +94,50 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
     setSelectedWeek(week);
     setSelectedDay(day);
     setDayProgramOpen(true);
+  };
+
+  const handleVideoClick = (exercise: any, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+      setSelectedExercise(exercise);
+      setIsVideoDialogOpen(true);
+    }
+  };
+
+  const renderVideoThumbnail = (exercise: any) => {
+    const videoUrl = exercise.exercises?.video_url;
+    if (!videoUrl || !isValidVideoUrl(videoUrl)) {
+      return (
+        <div className="w-8 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
+          <span className="text-xs text-gray-400">-</span>
+        </div>
+      );
+    }
+
+    const thumbnailUrl = getVideoThumbnail(videoUrl);
+    
+    return (
+      <div 
+        className="relative w-8 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail"
+        onClick={(e) => handleVideoClick(exercise, e)}
+      >
+        {thumbnailUrl ? (
+          <img
+            src={thumbnailUrl}
+            alt={`${exercise.exercises?.name} thumbnail`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <Play className="w-2 h-2 text-gray-400" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <Play className="w-2 h-2 text-white" />
+        </div>
+      </div>
+    );
   };
 
   const getDateForDay = (week: any, day: any) => {
@@ -215,8 +263,28 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
                                 )}
                               </div>
 
+                              {/* Exercise Blocks with Video Thumbnails */}
                               <div className="space-y-2">
-                                <ExerciseBlock blocks={day.program_blocks} viewOnly={true} />
+                                {day.program_blocks?.map((block) => (
+                                  <div key={block.id} className="bg-gray-100 rounded-none p-2">
+                                    <h6 className="text-xs font-medium text-gray-700 mb-2">{block.name}</h6>
+                                    <div className="space-y-1">
+                                      {block.program_exercises?.map((exercise) => (
+                                        <div key={exercise.id} className="flex items-center gap-2 bg-white p-1 rounded-none">
+                                          {renderVideoThumbnail(exercise)}
+                                          <div className="flex-1 min-w-0">
+                                            <span className="text-xs font-medium text-gray-900 truncate block">
+                                              {exercise.exercises?.name || 'Άγνωστη άσκηση'}
+                                            </span>
+                                            <div className="text-xs text-gray-600">
+                                              {exercise.sets}x{exercise.reps} {exercise.kg && `• ${exercise.kg}kg`}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             </div>
                           </TabsContent>
@@ -241,6 +309,13 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
         onRefresh={() => {
           fetchCompletions();
         }}
+      />
+
+      {/* Video Dialog */}
+      <ExerciseVideoDialog
+        isOpen={isVideoDialogOpen}
+        onClose={() => setIsVideoDialogOpen(false)}
+        exercise={selectedExercise}
       />
     </>
   );

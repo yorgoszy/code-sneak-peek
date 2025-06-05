@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
+import { Play } from 'lucide-react';
 import { getWorkoutData, saveWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
+import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseHeader } from './ExerciseHeader';
 import { ExerciseDetails } from './ExerciseDetails';
 import { ExerciseActualValues } from './ExerciseActualValues';
@@ -52,20 +54,81 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
     onVideoClick(exercise);
   };
 
+  const renderVideoThumbnail = () => {
+    const videoUrl = exercise.exercises?.video_url;
+    if (!videoUrl || !isValidVideoUrl(videoUrl)) {
+      return (
+        <div className="w-12 h-8 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
+          <span className="text-xs text-gray-400">-</span>
+        </div>
+      );
+    }
+
+    const thumbnailUrl = getVideoThumbnail(videoUrl);
+    
+    return (
+      <div 
+        className="relative w-12 h-8 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail"
+        onClick={handleVideoClick}
+      >
+        {thumbnailUrl ? (
+          <img
+            src={thumbnailUrl}
+            alt={`${exercise.exercises?.name} thumbnail`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <Play className="w-3 h-3 text-gray-400" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <Play className="w-3 h-3 text-white" />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div 
       className={`border border-gray-200 rounded-none transition-colors ${
         workoutInProgress ? 'hover:bg-gray-50' : 'bg-gray-100'
       } ${isComplete ? 'bg-green-50 border-green-200' : ''}`}
     >
-      <ExerciseHeader
-        exercise={exercise}
-        isComplete={isComplete}
-        remainingText={remainingText}
-        workoutInProgress={workoutInProgress}
-        onVideoClick={handleVideoClick}
-        onSetClick={handleSetClick}
-      />
+      {/* Modified Exercise Header with Video Thumbnail */}
+      <div className="p-2 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {renderVideoThumbnail()}
+            <div className="text-sm font-medium text-gray-900">
+              {exercise.exercises?.name || 'Unknown Exercise'}
+            </div>
+            {isComplete && <CheckCircle className="w-4 h-4 text-green-600" />}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {workoutInProgress && !isComplete && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSetClick}
+                className="rounded-none text-xs h-5 px-2"
+              >
+                Complete Set
+              </Button>
+            )}
+            
+            <Badge 
+              variant="outline" 
+              className={`rounded-none text-xs px-1 ${
+                isComplete ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              {isComplete ? 'Complete!' : remainingText}
+            </Badge>
+          </div>
+        </div>
+      </div>
 
       <div className="p-1 space-y-1">
         {/* Planned Values */}
