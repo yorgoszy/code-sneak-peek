@@ -107,7 +107,7 @@ export const useWorkoutCompletionsCache = () => {
       const groupedCompletions = (data || []).reduce((acc, completion) => {
         const typedCompletion = {
           ...completion,
-          status: completion.status as 'completed' | 'missed' | 'makeup'
+          status: completion.status as 'completed' | 'missed' | 'makeup' | 'scheduled'
         } as WorkoutCompletion;
         
         if (!acc[completion.assignment_id]) {
