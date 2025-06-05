@@ -1,12 +1,12 @@
 
 import React, { useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
-import { User, Exercise, Program } from './types';
-import { ProgramBuilderDialogContent } from './builder/ProgramBuilderDialogContent';
-import { ProgramAssignmentDialog } from './builder/ProgramAssignmentDialog';
-import { useProgramBuilderState } from './builder/hooks/useProgramBuilderState';
-import { useProgramBuilderActions } from './builder/hooks/useProgramBuilderActions';
-import { useProgramBuilderDialogLogic } from './builder/hooks/useProgramBuilderDialogLogic';
+import { User, Exercise, Program } from '../types';
+import { ProgramBuilderDialogContent } from './ProgramBuilderDialogContent';
+import { ProgramAssignmentDialog } from './ProgramAssignmentDialog';
+import { useProgramBuilderState } from './hooks/useProgramBuilderState';
+import { useProgramBuilderActions } from './hooks/useProgramBuilderActions';
+import { useProgramBuilderDialogLogic } from './hooks/useProgramBuilderDialogLogic';
 
 interface ProgramBuilderDialogProps {
   users: User[];
