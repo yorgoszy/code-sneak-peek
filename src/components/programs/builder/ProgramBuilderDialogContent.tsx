@@ -6,7 +6,8 @@ import { ProgramBasicInfo } from './ProgramBasicInfo';
 import { TrainingWeeks } from './TrainingWeeks';
 import { ProgramCalendar } from './ProgramCalendar';
 import { Button } from "@/components/ui/button";
-import { Save, Users } from "lucide-react";
+import { Save, CalendarCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { User, Exercise } from '../types';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 
@@ -75,9 +76,27 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onTrainingDatesChange,
   getTotalTrainingDays
 }) => {
+  const navigate = useNavigate();
   const totalDays = getTotalTrainingDays ? getTotalTrainingDays() : 0;
   const selectedDatesCount = program.training_dates?.length || 0;
   const hasRequiredDates = selectedDatesCount >= totalDays;
+
+  const handleAssignment = async () => {
+    // Πρώτα αποθηκεύουμε το πρόγραμμα
+    await onSave();
+    
+    // Στέλνουμε τα δεδομένα στο localStorage για να τα διαβάσει το ActivePrograms
+    const assignmentData = {
+      program,
+      trainingDates: program.training_dates,
+      selectedUserId: program.user_id
+    };
+    
+    localStorage.setItem('pendingAssignment', JSON.stringify(assignmentData));
+    
+    // Πλοηγούμαστε στο ActivePrograms
+    navigate('/dashboard/active-programs');
+  };
 
   return (
     <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0">
@@ -160,12 +179,12 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
         </Button>
         
         <Button
-          onClick={onAssignments}
-          className="rounded-none"
+          onClick={handleAssignment}
+          className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
           disabled={!program.name || !program.user_id || totalDays === 0 || !hasRequiredDates}
         >
-          <Users className="w-4 h-4 mr-2" />
-          Ανάθεση σε Ασκούμενο
+          <CalendarCheck className="w-4 h-4 mr-2" />
+          Ανάθεση
         </Button>
       </div>
     </DialogContent>
