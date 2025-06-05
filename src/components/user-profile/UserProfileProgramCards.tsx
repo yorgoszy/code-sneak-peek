@@ -18,39 +18,48 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
   const userPrograms = allActivePrograms.filter(program => program.user_id === userProfile.id);
 
   const [programsWithStats, setProgramsWithStats] = useState<any[]>([]);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   useEffect(() => {
+    if (userPrograms.length === 0) {
+      setProgramsWithStats([]);
+      return;
+    }
+
     const loadProgramsWithStats = async () => {
-      const programsWithStatsData = await Promise.all(
-        userPrograms.map(async (assignment) => {
-          const completions = await getWorkoutCompletions(assignment.id);
-          const stats = calculateWorkoutStats(completions, assignment.training_dates || []);
-          return {
-            ...assignment,
-            stats
-          };
-        })
-      );
-      setProgramsWithStats(programsWithStatsData);
+      setStatsLoading(true);
+      try {
+        const programsWithStatsData = await Promise.all(
+          userPrograms.map(async (assignment) => {
+            const completions = await getWorkoutCompletions(assignment.id);
+            const stats = calculateWorkoutStats(completions, assignment.training_dates || []);
+            return {
+              ...assignment,
+              stats
+            };
+          })
+        );
+        setProgramsWithStats(programsWithStatsData);
+      } catch (error) {
+        console.error('Error loading program stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
     };
 
-    if (userPrograms.length > 0) {
-      loadProgramsWithStats();
-    } else {
-      setProgramsWithStats([]);
-    }
-  }, [userPrograms, getWorkoutCompletions, calculateWorkoutStats]);
+    loadProgramsWithStats();
+  }, [userPrograms.length, userProfile.id]); // Simplified dependencies
 
   // Διαχωρισμός προγραμμάτων σε ενεργά και ολοκληρωμένα
-  const activeIncompletePrograms = programsWithStats.filter(program => program.stats.progress < 100);
-  const completedPrograms = programsWithStats.filter(program => program.stats.progress >= 100);
+  const activeIncompletePrograms = programsWithStats.filter(program => program.stats?.progress < 100);
+  const completedPrograms = programsWithStats.filter(program => program.stats?.progress >= 100);
 
   const handleDelete = async (assignmentId: string) => {
     // Regular users typically cannot delete programs
     console.log('Delete not allowed for user profiles');
   };
 
-  if (isLoading) {
+  if (isLoading || statsLoading) {
     return (
       <Card className="rounded-none">
         <CardHeader>
@@ -136,7 +145,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                       assignment={assignment}
                       onRefresh={refetch}
                       onDelete={handleDelete}
-                      userMode={true} // User mode για να δείχνει μόνο προβολή και έναρξη
+                      userMode={true}
                     />
                   </div>
                 ))}
@@ -169,7 +178,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                       assignment={assignment}
                       onRefresh={refetch}
                       onDelete={handleDelete}
-                      userMode={true} // User mode για να δείχνει μόνο προβολή και έναρξη
+                      userMode={true}
                     />
                   </div>
                 ))}
