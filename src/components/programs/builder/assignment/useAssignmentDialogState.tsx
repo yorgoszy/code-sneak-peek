@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { format, addDays, parseISO } from 'date-fns';
 import type { User as UserType } from '../../types';
@@ -26,12 +27,12 @@ export const useAssignmentDialogState = ({
 
   // Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone issues
   const formatDateToString = (date: Date): string => {
-    // Χρησιμοποιούμε τοπική ημερομηνία χωρίς timezone conversion
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    // Χρησιμοποιούμε UTC για να αποφύγουμε timezone προβλήματα
+    const utcYear = date.getUTCFullYear();
+    const utcMonth = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const utcDay = String(date.getUTCDate()).padStart(2, '0');
     
-    return `${year}-${month}-${day}`;
+    return `${utcYear}-${utcMonth}-${utcDay}`;
   };
 
   // Reset state when dialog opens/closes
@@ -73,8 +74,15 @@ export const useAssignmentDialogState = ({
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    // Χρησιμοποιούμε τη δική μας συνάρτηση formatting χωρίς timezone conversion
-    const dateString = formatDateToString(date);
+    // Δημιουργούμε ένα νέο Date object στη UTC timezone
+    const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dateString = formatDateToString(utcDate);
+    
+    console.log('📅 Date selection:', {
+      originalDate: date,
+      utcDate: utcDate,
+      dateString: dateString
+    });
     
     setSelectedDates(prev => {
       if (prev.includes(dateString)) {
@@ -111,7 +119,8 @@ export const useAssignmentDialogState = ({
   };
 
   const isDateSelected = (date: Date) => {
-    const dateString = formatDateToString(date);
+    const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dateString = formatDateToString(utcDate);
     return selectedDates.includes(dateString);
   };
 
@@ -119,8 +128,9 @@ export const useAssignmentDialogState = ({
     // Disable past dates for new assignments
     if (!editingAssignment || isReassignment) {
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return date < today;
+      const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+      const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      return dateUTC < todayUTC;
     }
     
     // For editing existing assignments, don't disable any dates

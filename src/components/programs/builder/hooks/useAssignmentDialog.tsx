@@ -30,19 +30,18 @@ export const useAssignmentDialog = ({
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const { createWorkoutCompletions } = useProgramWorkoutCompletions();
 
-  // Helper function για σωστή μετατροπή ημερομηνιών
+  // Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone conversion
   const formatDateToString = (date: Date | string): string => {
     if (typeof date === 'string') {
       return date;
     }
     
-    // Χρησιμοποιούμε toLocaleDateString με 'en-CA' για YYYY-MM-DD format
-    // χωρίς timezone conversion
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    // Χρησιμοποιούμε UTC για να αποφύγουμε timezone προβλήματα
+    const utcYear = date.getUTCFullYear();
+    const utcMonth = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const utcDay = String(date.getUTCDate()).padStart(2, '0');
     
-    return `${year}-${month}-${day}`;
+    return `${utcYear}-${utcMonth}-${utcDay}`;
   };
 
   const handleOpenAssignments = async () => {
@@ -148,8 +147,15 @@ export const useAssignmentDialog = ({
         return;
       }
 
-      // Μετατροπή ημερομηνιών σε σωστό format
-      const formattedTrainingDates = trainingDates.map(formatDateToString);
+      // Μετατροπή ημερομηνιών σε σωστό format με UTC
+      const formattedTrainingDates = trainingDates.map(dateString => {
+        // Διασφαλίζουμε ότι οι ημερομηνίες είναι σε UTC format
+        if (typeof dateString === 'string' && dateString.includes('T')) {
+          // Αν έχει ήδη timestamp, παίρνουμε μόνο την ημερομηνία
+          return dateString.split('T')[0];
+        }
+        return dateString;
+      });
 
       // Υπολογισμός start_date και end_date από τις επιλεγμένες ημερομηνίες
       const sortedDates = [...formattedTrainingDates].sort();
