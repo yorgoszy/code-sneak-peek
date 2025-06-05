@@ -105,19 +105,35 @@ export const useProgramBuilderDialogLogic = ({
   };
 
   // Δημιουργία workout completions για κάθε ημερομηνία προπόνησης
-  const createWorkoutCompletions = async (assignmentId: string, trainingDates: string[]) => {
+  const createWorkoutCompletions = async (assignmentId: string, programId: string, userId: string, trainingDates: string[]) => {
     try {
       console.log('🔄 Creating workout completions for assignment:', assignmentId);
       console.log('📅 Training dates:', trainingDates);
 
+      // Βρίσκουμε τον συνολικό αριθμό ημερών προπόνησης ανά εβδομάδα
+      const totalDaysPerWeek = program.weeks.reduce((total, week) => {
+        return total + (week.days?.length || 0);
+      }, 0) / program.weeks.length; // Μέσος όρος ημερών ανά εβδομάδα
+
       // Δημιουργία workout_completions για κάθε ημερομηνία
-      const workoutCompletions = trainingDates.map(date => ({
-        assignment_id: assignmentId,
-        scheduled_date: date,
-        status: 'scheduled',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }));
+      const workoutCompletions = trainingDates.map((date, index) => {
+        // Υπολογισμός σε ποια εβδομάδα και ημέρα ανήκει κάθε ημερομηνία
+        const weekNumber = Math.floor(index / totalDaysPerWeek) + 1;
+        const dayNumber = (index % totalDaysPerWeek) + 1;
+
+        return {
+          assignment_id: assignmentId,
+          user_id: userId,
+          program_id: programId,
+          week_number: weekNumber,
+          day_number: dayNumber,
+          scheduled_date: date,
+          completed_date: date, // Προσωρινά το ίδιο με scheduled_date
+          status: 'scheduled',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      });
 
       const { data, error } = await supabase
         .from('workout_completions')
@@ -184,14 +200,14 @@ export const useProgramBuilderDialogLogic = ({
 
         // Δημιουργία workout completions μόνο για νέα assignments (όχι για edits)
         if (!editingAssignment && assignmentResult?.id) {
-          await createWorkoutCompletions(assignmentResult.id, trainingDates);
+          await createWorkoutCompletions(assignmentResult.id, programId, userId, trainingDates);
         } else if (editingAssignment) {
           // Για υπάρχουσες αναθέσεις, ενημερώνουμε μόνο τις νέες ημερομηνίες
           const existingDates = editingAssignment.training_dates || [];
           const newDates = trainingDates.filter(date => !existingDates.includes(date));
           
           if (newDates.length > 0) {
-            await createWorkoutCompletions(editingAssignment.id, newDates);
+            await createWorkoutCompletions(editingAssignment.id, programId, userId, newDates);
           }
         }
         
