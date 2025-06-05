@@ -170,10 +170,27 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
     return !canAddDate(date);
   };
 
-  const handleAssign = () => {
+  const handleAssign = async () => {
     if (selectedUserId && selectedDates.length === totalRequiredSessions) {
-      onAssign(selectedUserId, selectedDates);
-      onClose();
+      console.log('🚀 Assigning program:', {
+        userId: selectedUserId,
+        trainingDates: selectedDates,
+        totalSessions: totalRequiredSessions
+      });
+      
+      try {
+        await onAssign(selectedUserId, selectedDates);
+        console.log('✅ Assignment successful');
+        onClose();
+      } catch (error) {
+        console.error('❌ Assignment failed:', error);
+      }
+    } else {
+      console.log('⚠️ Cannot assign - missing data:', {
+        hasUserId: !!selectedUserId,
+        datesCount: selectedDates.length,
+        requiredSessions: totalRequiredSessions
+      });
     }
   };
 
@@ -233,7 +250,7 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
                       checked={isReassignment}
                       onCheckedChange={handleReassignmentToggle}
                     />
-                    <label htmlFor="reassignment" className="text-sm font-medium text-yellow-800">
+                    <label htmlFor="reassignment" className="text-sm font-medium text-yellow-800 cursor-pointer">
                       Επανα-ανάθεση (διαγραφή όλου του προγραμματισμού)
                     </label>
                   </div>

@@ -74,7 +74,10 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   };
 
   const handleProgramClick = (program: EnrichedAssignment) => {
+    console.log('🎯 Program clicked:', program.id, 'for date:', dayString);
     const workoutStatus = getWorkoutStatus(program, dayString);
+    console.log('📊 Workout status:', workoutStatus);
+    
     setSelectedProgram({
       program,
       date: day,
@@ -83,15 +86,35 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   };
 
   const handleDayClick = () => {
+    console.log('📅 Day clicked:', dayString);
     const dayPrograms = getProgramsForDay(day);
+    console.log('📋 Available programs:', dayPrograms.length);
+    
     if (dayPrograms.length > 1) {
+      console.log('🎯 Multiple programs - showing all programs dialog');
       setShowAllPrograms(true);
     } else if (dayPrograms.length === 1) {
+      console.log('🎯 Single program - opening directly');
       handleProgramClick(dayPrograms[0]);
+    } else {
+      console.log('⚠️ No programs for this day');
     }
   };
 
   const dayPrograms = getProgramsForDay(day);
+
+  const handleDialogClose = () => {
+    console.log('🔄 Closing program dialog');
+    setSelectedProgram(null);
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
+
+  const handleAllProgramsClose = () => {
+    console.log('🔄 Closing all programs dialog');
+    setShowAllPrograms(false);
+  };
 
   return (
     <>
@@ -149,7 +172,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       {selectedProgram && (
         <DayProgramDialog
           isOpen={!!selectedProgram}
-          onClose={() => setSelectedProgram(null)}
+          onClose={handleDialogClose}
           program={selectedProgram.program}
           selectedDate={selectedProgram.date}
           workoutStatus={selectedProgram.status}
@@ -159,7 +182,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
 
       <DayAllProgramsDialog
         isOpen={showAllPrograms}
-        onClose={() => setShowAllPrograms(false)}
+        onClose={handleAllProgramsClose}
         selectedDate={day}
         programs={programs}
         allCompletions={allCompletions}
