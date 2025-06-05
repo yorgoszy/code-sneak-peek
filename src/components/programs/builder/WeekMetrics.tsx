@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
@@ -125,9 +124,13 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
             exerciseCount++;
           }
 
-          // Watts calculation
-          const watts = parseFloat(exercise.velocity_ms) || 0;
-          totalWatts += watts * sets;
+          // Watts calculation - διορθωμένος υπολογισμός
+          const velocity = parseFloat(exercise.velocity_ms) || 0;
+          if (kg > 0 && velocity > 0) {
+            const force = kg * 9.81; // Convert to Newtons
+            const watts = force * velocity;
+            totalWatts += watts * sets * reps; // Συμβαδίζει με DayCalculations
+          }
 
           // Time calculation
           const tempo = parseTempoToSeconds(exercise.tempo);
@@ -148,7 +151,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
   return {
     volume: Math.round(totalVolume),
     intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
-    watts: Math.round(totalWatts),
+    watts: Math.round(totalWatts), // Τώρα συμβαδίζει με DayCalculations
     time: Math.round(totalTimeSeconds / 60) // Convert to minutes
   };
 };
