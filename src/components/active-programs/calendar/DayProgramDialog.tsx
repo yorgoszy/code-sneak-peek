@@ -31,13 +31,6 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
 
-  console.log('🔍 DayProgramDialog render:', {
-    isOpen,
-    program: program?.id,
-    selectedDate: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null,
-    workoutStatus
-  });
-
   const {
     workoutInProgress,
     elapsedTime,
@@ -47,10 +40,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     exerciseCompletion
   } = useWorkoutState(program, selectedDate, onRefresh, onClose);
 
-  if (!program || !selectedDate) {
-    console.log('⚠️ Missing program or selectedDate');
-    return null;
-  }
+  if (!program || !selectedDate) return null;
 
   const handleVideoClick = (exercise: any) => {
     if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
@@ -60,13 +50,10 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   };
 
   const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {
-    console.log('🎯 Set clicked:', exerciseId, totalSets);
     exerciseCompletion.completeSet(exerciseId, totalSets);
   };
 
   const handleExerciseClick = (exercise: any, event: React.MouseEvent) => {
-    console.log('🎯 Exercise clicked:', exercise.id);
-    
     if (!workoutInProgress) {
       console.log('⚠️ Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
       return;
@@ -85,27 +72,15 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const trainingDates = program.training_dates || [];
   const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
   
-  console.log('📅 Date mapping:', {
-    selectedDateStr,
-    trainingDates,
-    dateIndex
-  });
-  
   let dayProgram = null;
   if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
     const programDays = program.programs.program_weeks[0].program_days;
     dayProgram = programDays[dateIndex % programDays.length];
-    console.log('📋 Found day program:', dayProgram?.name);
   }
-
-  const handleDialogClose = () => {
-    console.log('🔄 Closing DayProgramDialog');
-    onClose();
-  };
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={handleDialogClose}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none">
           <DayProgramDialogHeader
             selectedDate={selectedDate}

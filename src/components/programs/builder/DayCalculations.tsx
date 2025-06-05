@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Exercise } from '../types';
@@ -91,7 +90,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
   // Calculate all metrics
   const calculateMetrics = () => {
     let totalVolume = 0;
-    let totalKilowatts = 0;
+    let totalWatts = 0;
     let totalTimeMinutes = 0;
     let totalIntensityPoints = 0;
     let exerciseCount = 0;
@@ -111,15 +110,11 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
         const volume = sets * reps * kg;
         totalVolume += volume;
 
-        // Power calculation in Kilowatts
-        if (velocity > 0) {
-          const mass = kg > 0 ? kg : 75; // Use bodyweight if no load
-          // Power = Force × Velocity, where Force = mass × gravity
-          const force = mass * 9.81; // Newtons
-          const powerWatts = force * velocity; // Watts per rep
-          const powerKilowatts = powerWatts / 1000; // Convert to kilowatts
-          const totalPowerPerSet = powerKilowatts * reps;
-          totalKilowatts += totalPowerPerSet * sets;
+        // Watts: Force × Velocity = (kg × 9.81) × m/s
+        if (kg > 0 && velocity > 0) {
+          const force = kg * 9.81; // Convert to Newtons
+          const watts = force * velocity;
+          totalWatts += watts * sets * reps; // Total watts for all reps
         }
 
         // Time: [(sets × reps) × tempo] + (sets - 1) × rest
@@ -140,7 +135,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
     return {
       volume: Math.round(totalVolume),
       averageIntensity: Math.round(averageIntensity * 10) / 10,
-      totalKilowatts: Math.round(totalKilowatts * 100) / 100, // Round to 2 decimal places
+      totalWatts: Math.round(totalWatts),
       totalTime: Math.round(totalTimeMinutes * 10) / 10
     };
   };
@@ -163,8 +158,8 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
             <div className="text-gray-500">Μ.Ο. Ένταση</div>
           </div>
           <div className="text-center">
-            <div className="font-medium text-purple-600">{metrics.totalKilowatts} kW</div>
-            <div className="text-gray-500">Συνολικά kW</div>
+            <div className="font-medium text-purple-600">{metrics.totalWatts} W</div>
+            <div className="text-gray-500">Συνολικά Watts</div>
           </div>
           <div className="text-center">
             <div className="font-medium text-orange-600">{metrics.totalTime} λεπτά</div>

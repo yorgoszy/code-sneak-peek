@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { useProgramAssignments } from '@/hooks/programs/useProgramAssignments';
-import { supabase } from '@/integrations/supabase/client';
-import type { User, Exercise, Program } from '../../types';
-import type { ProgramStructure } from './useProgramBuilderState';
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { toast } from "sonner";
+import { User, Exercise, Program } from '../../types';
+import { ProgramStructure } from './useProgramBuilderState';
 
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
@@ -30,170 +31,159 @@ export const useProgramBuilderDialogLogic = ({
   isOpen,
   program
 }: UseProgramBuilderDialogLogicProps) => {
-  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { createOrUpdateAssignment } = useProgramAssignments();
+  const { getWorkoutCompletions } = useWorkoutCompletions();
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+  const [completedDates, setCompletedDates] = useState<string[]>([]);
 
-  // Get current user ID
+  // Fetch completed workouts when editing assignment
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
+    const fetchCompletedDates = async () => {
+      if (editingAssignment) {
+        try {
+          const completions = await getWorkoutCompletions(editingAssignment.id);
+          const completed = completions
+            .filter(c => c.status === 'completed')
+            .map(c => c.scheduled_date);
+          setCompletedDates(completed);
+        } catch (error) {
+          console.error('Error fetching workout completions:', error);
+        }
       }
     };
-    getCurrentUser();
-  }, []);
+
+    if (isOpen && editingAssignment) {
+      fetchCompletedDates();
+    }
+  }, [isOpen, editingAssignment, getWorkoutCompletions]);
 
   const handleClose = () => {
-    console.log('🔄 Closing builder dialog');
-    setAssignmentDialogOpen(false);
     onOpenChange();
   };
 
   const handleSave = async () => {
+    if (!program.name.trim()) {
+      toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
+      return;
+    }
+    
+    console.log('Saving program as draft:', program);
+    const programToSave = {
+      ...program,
+      id: editingProgram?.id || undefined,
+      status: 'draft'
+    };
+    
     try {
-      console.log('💾 Saving program as draft:', program);
-      
-      const programData = {
-        id: program.id,
-        name: program.name,
-        description: program.description,
-        user_id: currentUserId, // Use current authenticated user
-        status: 'draft',
-        program_weeks: program.weeks?.map((week, weekIndex) => ({
-          id: week.id,
-          name: week.name,
-          week_number: weekIndex + 1,
-          program_days: week.days?.map((day, dayIndex) => ({
-            id: day.id,
-            name: day.name,
-            day_number: dayIndex + 1,
-            estimated_duration_minutes: 60, // Default value since property doesn't exist on Day type
-            program_blocks: day.blocks?.map((block, blockIndex) => ({
-              id: block.id,
-              name: block.name,
-              block_order: blockIndex + 1,
-              program_exercises: block.exercises?.map((exercise, exerciseIndex) => ({
-                id: exercise.id,
-                exercise_id: exercise.exercise_id,
-                sets: exercise.sets,
-                reps: exercise.reps,
-                kg: exercise.kg,
-                percentage_1rm: exercise.percentage_1rm,
-                velocity_ms: exercise.velocity_ms,
-                tempo: exercise.tempo,
-                rest: exercise.rest,
-                notes: '', // Default empty string since property doesn't exist on ProgramExercise type
-                exercise_order: exerciseIndex + 1
-              })) || []
-            })) || []
-          })) || []
-        })) || []
-      };
-
-      console.log('📝 Program data to save:', programData);
-      await onCreateProgram(programData);
-      console.log('✅ Program saved successfully');
+      const savedProgram = await onCreateProgram(programToSave);
       handleClose();
+      return savedProgram;
     } catch (error) {
-      console.error('❌ Error saving program:', error);
+      console.error('Error saving program:', error);
     }
   };
 
   const handleOpenAssignments = () => {
-    console.log('📅 Opening assignments dialog');
+    if (!program.name.trim()) {
+      toast.error('Το όνομα προγράμματος είναι υποχρεωτικό');
+      return;
+    }
+
+    if (!program.weeks || program.weeks.length === 0) {
+      toast.error('Δημιουργήστε πρώτα εβδομάδες και ημέρες προπόνησης');
+      return;
+    }
+
+    const hasValidDays = program.weeks.some(week => week.days && week.days.length > 0);
+    if (!hasValidDays) {
+      toast.error('Προσθέστε ημέρες προπόνησης στις εβδομάδες');
+      return;
+    }
+
     setAssignmentDialogOpen(true);
   };
 
   const handleAssign = async (userId: string, trainingDates: string[]) => {
+    console.log('=== PROGRAM ASSIGNMENT WITH DATES ===');
+    console.log('User ID:', userId);
+    console.log('Training Dates:', trainingDates);
+    console.log('Editing Assignment:', editingAssignment);
+    
+    if (!trainingDates || trainingDates.length === 0) {
+      toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης');
+      return;
+    }
+    
+    const programToSave = {
+      ...program,
+      id: editingProgram?.id || undefined,
+      status: 'active',
+      createAssignment: true,
+      training_dates: trainingDates
+    };
+    
+    console.log('Program data being saved:', programToSave);
+    
     try {
-      console.log('🎯 Starting assignment process:', {
-        userId,
-        trainingDates: trainingDates.length,
-        programId: program.id,
-        currentUserId
-      });
-
-      // Πρώτα αποθηκεύουμε το πρόγραμμα αν δεν έχει ID
-      let programId = program.id;
-      if (!programId) {
-        console.log('💾 Saving program first...');
-        const savedProgram = await onCreateProgram({
-          name: program.name,
-          description: program.description,
-          user_id: currentUserId, // Use current authenticated user
-          status: 'active',
-          program_weeks: program.weeks?.map((week, weekIndex) => ({
-            id: week.id,
-            name: week.name,
-            week_number: weekIndex + 1,
-            program_days: week.days?.map((day, dayIndex) => ({
-              id: day.id,
-              name: day.name,
-              day_number: dayIndex + 1,
-              estimated_duration_minutes: 60, // Default value since property doesn't exist on Day type
-              program_blocks: day.blocks?.map((block, blockIndex) => ({
-                id: block.id,
-                name: block.name,
-                block_order: blockIndex + 1,
-                program_exercises: block.exercises?.map((exercise, exerciseIndex) => ({
-                  id: exercise.id,
-                  exercise_id: exercise.exercise_id,
-                  sets: exercise.sets,
-                  reps: exercise.reps,
-                  kg: exercise.kg,
-                  percentage_1rm: exercise.percentage_1rm,
-                  velocity_ms: exercise.velocity_ms,
-                  tempo: exercise.tempo,
-                  rest: exercise.rest,
-                  notes: '', // Default empty string since property doesn't exist on ProgramExercise type
-                  exercise_order: exerciseIndex + 1
-                })) || []
-              })) || []
-            })) || []
-          })) || []
+      // First save the program
+      const savedProgram = await onCreateProgram(programToSave);
+      const programId = savedProgram?.id || editingProgram?.id;
+      
+      if (programId && userId && trainingDates?.length > 0) {
+        console.log('Creating/updating assignment with specific dates:', {
+          programId,
+          userId,
+          trainingDates,
+          editingAssignment: !!editingAssignment
         });
-        programId = savedProgram?.id;
-        console.log('✅ Program saved with ID:', programId);
+        
+        // Create or update assignment with specific training dates
+        await createOrUpdateAssignment(
+          programId, 
+          userId, 
+          undefined, // no start_date
+          undefined, // no end_date
+          trainingDates // specific training dates
+        );
+        
+        console.log('✅ Assignment created/updated successfully with dates:', trainingDates);
+        const successMessage = editingAssignment 
+          ? 'Η ανάθεση ενημερώθηκε επιτυχώς' 
+          : 'Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς';
+        toast.success(successMessage);
+        
+        handleClose();
+        setTimeout(() => {
+          window.location.href = '/dashboard/active-programs';
+        }, 1500);
+      } else {
+        console.error('❌ Missing required data for assignment:', {
+          programId,
+          userId,
+          trainingDatesLength: trainingDates?.length
+        });
+        toast.error('Απαιτούνται συγκεκριμένες ημερομηνίες προπόνησης');
+        return;
       }
-
-      if (!programId) {
-        throw new Error('Failed to get program ID after saving');
-      }
-
-      // Τώρα δημιουργούμε την ανάθεση
-      console.log('📋 Creating assignment...');
-      await createOrUpdateAssignment(
-        programId,
-        userId,
-        trainingDates[0], // start_date
-        trainingDates[trainingDates.length - 1], // end_date
-        trainingDates
-      );
-
-      console.log('✅ Assignment created successfully');
-      setAssignmentDialogOpen(false);
-      handleClose();
     } catch (error) {
-      console.error('❌ Error creating assignment:', error);
+      console.error('❌ Error creating/updating assignments:', error);
+      toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
     }
   };
 
-  // Φιλτράρισμα χρηστών για να εμφανίζονται μόνο athletes
-  // Assuming all users are valid since 'role' property doesn't exist on User type
-  const availableUsers = users.filter(user => user.email); // Filter by a property that exists
-  
-  // Προετοιμασία δεδομένων για επεξεργασία ανάθεσης
+  const availableUsers = users;
+
+  // Prepare assignment data for editing
   const assignmentEditData = editingAssignment ? {
     user_id: editingAssignment.user_id,
     training_dates: editingAssignment.training_dates,
-    completedDates: [] // Θα μπορούσε να φορτωθεί από completions
+    completedDates: completedDates
   } : undefined;
 
   return {
     assignmentDialogOpen,
     setAssignmentDialogOpen,
+    completedDates,
     handleClose,
     handleSave,
     handleOpenAssignments,

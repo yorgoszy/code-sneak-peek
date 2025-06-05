@@ -45,7 +45,7 @@ interface WeekMetricsProps {
 interface WeekStats {
   volume: number;
   intensity: number;
-  kilowatts: number;
+  watts: number;
   time: number;
 }
 
@@ -105,7 +105,7 @@ const parseRestTime = (rest: string): number => {
 const calculateWeekMetrics = (week: Week): WeekStats => {
   let totalVolume = 0;
   let totalIntensity = 0;
-  let totalKilowatts = 0;
+  let totalWatts = 0;
   let totalTimeSeconds = 0;
   let exerciseCount = 0;
 
@@ -125,17 +125,9 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
             exerciseCount++;
           }
 
-          // Power calculation in Kilowatts
-          const velocity = parseFloat(exercise.velocity_ms) || 0;
-          if (velocity > 0) {
-            const mass = kg > 0 ? kg : 75; // Use bodyweight if no load
-            // Power = Force × Velocity, where Force = mass × gravity
-            const force = mass * 9.81; // Newtons
-            const powerWatts = force * velocity; // Watts per rep
-            const powerKilowatts = powerWatts / 1000; // Convert to kilowatts
-            const totalPowerPerSet = powerKilowatts * reps;
-            totalKilowatts += totalPowerPerSet * sets;
-          }
+          // Watts calculation
+          const watts = parseFloat(exercise.velocity_ms) || 0;
+          totalWatts += watts * sets;
 
           // Time calculation
           const tempo = parseTempoToSeconds(exercise.tempo);
@@ -156,7 +148,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
   return {
     volume: Math.round(totalVolume),
     intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
-    kilowatts: Math.round(totalKilowatts * 100) / 100, // Round to 2 decimal places
+    watts: Math.round(totalWatts),
     time: Math.round(totalTimeSeconds / 60) // Convert to minutes
   };
 };
@@ -197,7 +189,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
     <div className="text-xs space-y-1 mt-1 px-2 py-1 bg-gray-50 rounded">
       <div className="grid grid-cols-4 gap-2">
         <div className="text-center">
-          <div className="font-semibold text-blue-700">{currentStats.volume.toLocaleString()}kg</div>
+          <div className="font-semibold text-blue-700">{currentStats.volume.toLocaleString()}tn</div>
           {previousStats && (
             <PercentageIndicator 
               percentage={calculatePercentageChange(currentStats.volume, previousStats.volume)} 
@@ -215,10 +207,10 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
         </div>
         
         <div className="text-center">
-          <div className="font-semibold text-orange-700">{currentStats.kilowatts}kW</div>
+          <div className="font-semibold text-orange-700">{currentStats.watts}w</div>
           {previousStats && (
             <PercentageIndicator 
-              percentage={calculatePercentageChange(currentStats.kilowatts, previousStats.kilowatts)} 
+              percentage={calculatePercentageChange(currentStats.watts, previousStats.watts)} 
             />
           )}
         </div>

@@ -59,17 +59,13 @@ export const useProgramSave = () => {
             name: programData.name,
             description: programData.description,
             user_id: programData.user_id || null,
-            status: programData.status || 'draft',
-            created_by: appUserId // Ensure created_by is set for RLS
+            status: programData.status || 'draft'
           })
           .eq('id', programData.id)
           .select()
           .single();
 
-        if (programError) {
-          console.error('Program update error:', programError);
-          throw programError;
-        }
+        if (programError) throw programError;
 
         // Delete old structure completely
         console.log('Deleting old program structure for program:', programData.id);
@@ -131,10 +127,7 @@ export const useProgramSave = () => {
           .select()
           .single();
 
-        if (programError) {
-          console.error('Program creation error:', programError);
-          throw programError;
-        }
+        if (programError) throw programError;
 
         console.log('Creating program structure for new program:', program.id);
         await createProgramStructure(program.id, programData);
