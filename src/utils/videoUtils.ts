@@ -1,6 +1,6 @@
 
 export const getVideoThumbnail = (videoUrl: string): string => {
-  if (!videoUrl) return '';
+  if (!videoUrl || videoUrl === 'undefined') return '';
 
   // YouTube thumbnail extraction
   if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
@@ -30,8 +30,16 @@ export const getVideoThumbnail = (videoUrl: string): string => {
   return '';
 };
 
-export const isValidVideoUrl = (url: string): boolean => {
+export const isValidVideoUrl = (url: string | any): boolean => {
   if (!url) return false;
+  
+  // Αν είναι object, προσπάθησε να πάρεις το value
+  if (typeof url === 'object' && url.value) {
+    url = url.value;
+  }
+  
+  // Αν είναι string αλλά έχει την τιμή "undefined"
+  if (url === 'undefined' || typeof url !== 'string') return false;
   
   const videoPatterns = [
     /youtube\.com\/watch\?v=/,

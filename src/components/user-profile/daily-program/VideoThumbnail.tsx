@@ -8,18 +8,30 @@ interface VideoThumbnailProps {
     id: string;
     exercises?: {
       name: string;
-      video_url?: string;
+      video_url?: string | any;
     };
   };
   onVideoClick: (exercise: any) => void;
 }
 
 export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVideoClick }) => {
-  const videoUrl = exercise.exercises?.video_url;
+  // Διόρθωση για το video_url που μπορεί να έρθει ως object
+  let videoUrl = exercise.exercises?.video_url;
+  
+  // Αν το video_url είναι object με value property
+  if (videoUrl && typeof videoUrl === 'object' && videoUrl.value) {
+    videoUrl = videoUrl.value;
+  }
+  
+  // Αν είναι string αλλά έχει την τιμή "undefined"
+  if (videoUrl === 'undefined' || videoUrl === undefined || videoUrl === null) {
+    videoUrl = null;
+  }
   
   console.log('🎥 VideoThumbnail render:', {
     exerciseName: exercise.exercises?.name,
-    videoUrl: videoUrl,
+    rawVideoUrl: exercise.exercises?.video_url,
+    processedVideoUrl: videoUrl,
     isValid: videoUrl ? isValidVideoUrl(videoUrl) : false
   });
   
@@ -45,9 +57,9 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
   
   return (
     <div 
-      className="relative w-10 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 mr-2 video-thumbnail border-2 border-red-500"
+      className="relative w-10 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 mr-2 video-thumbnail"
       onClick={handleClick}
-      style={{ zIndex: 10 }}
+      style={{ zIndex: 20 }}
     >
       {thumbnailUrl ? (
         <img
