@@ -16,6 +16,7 @@ import Programs from "./pages/Programs";
 import ProgramBuilder from "./pages/ProgramBuilder";
 import UserProfile from "./pages/UserProfile";
 import ActivePrograms from "./pages/ActivePrograms";
+import ProgramCards from "./pages/ProgramCards";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -112,6 +113,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ActivePrograms />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/program-cards" 
+              element={
+                <ProtectedRoute>
+                  <ProgramCards />
                 </ProtectedRoute>
               } 
             />

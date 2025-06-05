@@ -7,8 +7,7 @@ import {
   BarChart3, 
   Calendar,
   ChevronLeft,
-  ChevronRight,
-  CreditCard
+  ChevronRight
 } from "lucide-react";
 import { ProgramCard } from "./ProgramCard";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -48,12 +47,6 @@ export const ActiveProgramsSidebar = ({
       label: "Ημερολόγιο", 
       key: "calendar",
       badge: null
-    },
-    { 
-      icon: CreditCard, 
-      label: "Program Cards", 
-      key: "program-cards",
-      badge: stats.totalPrograms > 0 ? stats.totalPrograms : null
     },
   ];
 
@@ -119,52 +112,23 @@ export const ActiveProgramsSidebar = ({
       {/* Content Based on Selected Menu Item */}
       {!isCollapsed && (
         <div className="flex-1 p-4 border-t border-gray-200">
-          {selectedMenuItem === "program-cards" ? (
-            <>
-              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
-                Όλα τα Ενεργά Program Cards
-              </h3>
-              <ScrollArea className="h-96">
-                <div className="space-y-2">
-                  {activePrograms.length > 0 ? (
-                    activePrograms.map((assignment) => (
-                      <div key={assignment.id} className="transform scale-90 origin-left">
-                        <ProgramCard
-                          assignment={assignment}
-                          onRefresh={onRefresh}
-                          onDelete={onDelete}
-                        />
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-4 text-gray-500 text-sm">
-                      Δεν υπάρχουν ενεργά προγράμματα
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </>
-          ) : (
-            <>
-              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
-                Σημερινή Επισκόπηση
-              </h3>
-              <div className="space-y-2">
-                <div className="bg-gray-50 p-2 rounded-none">
-                  <div className="font-semibold text-[#00ffba]">{stats.activeToday}</div>
-                  <div className="text-gray-600 text-xs">Ενεργές σήμερα</div>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-none">
-                  <div className="font-semibold text-green-600">{stats.completedToday}</div>
-                  <div className="text-gray-600 text-xs">Ολοκληρωμένες</div>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-none">
-                  <div className="font-semibold text-blue-600">{stats.totalPrograms}</div>
-                  <div className="text-gray-600 text-xs">Σύνολο Προγραμμάτων</div>
-                </div>
-              </div>
-            </>
-          )}
+          <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
+            Σημερινή Επισκόπηση
+          </h3>
+          <div className="space-y-2">
+            <div className="bg-gray-50 p-2 rounded-none">
+              <div className="font-semibold text-[#00ffba]">{stats.activeToday}</div>
+              <div className="text-gray-600 text-xs">Ενεργές σήμερα</div>
+            </div>
+            <div className="bg-gray-50 p-2 rounded-none">
+              <div className="font-semibold text-green-600">{stats.completedToday}</div>
+              <div className="text-gray-600 text-xs">Ολοκληρωμένες</div>
+            </div>
+            <div className="bg-gray-50 p-2 rounded-none">
+              <div className="font-semibold text-blue-600">{stats.totalPrograms}</div>
+              <div className="text-gray-600 text-xs">Σύνολο Προγραμμάτων</div>
+            </div>
+          </div>
         </div>
       )}
     </div>

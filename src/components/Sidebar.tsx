@@ -15,7 +15,8 @@ import {
   BarChart3,
   Home,
   Mail,
-  CalendarCheck
+  CalendarCheck,
+  CreditCard
 } from "lucide-react";
 
 interface SidebarProps {
@@ -34,7 +35,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     { icon: Activity, label: "Τεστ", path: "/dashboard/tests" },
     { icon: TrendingUp, label: "Αποτελέσματα", path: "/dashboard/results" },
     { icon: Calendar, label: "Προγράμματα", path: "/dashboard/programs" },
-    { icon: CalendarCheck, label: "Ενεργά Προγράμματα", path: "/dashboard/active-programs" },
+    { icon: CalendarCheck, label: "Ημερολόγιο", path: "/dashboard/active-programs" },
+    { icon: CreditCard, label: "Program Cards", path: "/dashboard/program-cards" },
   ];
 
   return (
