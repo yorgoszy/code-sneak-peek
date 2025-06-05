@@ -140,6 +140,13 @@ export const useAssignmentDialog = ({
         return;
       }
 
+      // Υπολογισμός start_date και end_date από τις επιλεγμένες ημερομηνίες
+      const sortedDates = [...trainingDates].sort();
+      const startDate = sortedDates[0]; // Πρώτη ημερομηνία
+      const endDate = sortedDates[sortedDates.length - 1]; // Τελευταία ημερομηνία
+
+      console.log('📅 Calculated dates:', { startDate, endDate, trainingDates: sortedDates });
+
       // Αν είναι επεξεργασία υπάρχουσας ανάθεσης
       if (editingAssignment) {
         console.log('📝 Updating existing assignment:', editingAssignment.id);
@@ -148,6 +155,8 @@ export const useAssignmentDialog = ({
           .from('program_assignments')
           .update({
             training_dates: trainingDates,
+            start_date: startDate,
+            end_date: endDate,
             updated_at: new Date().toISOString()
           })
           .eq('id', editingAssignment.id)
@@ -186,6 +195,8 @@ export const useAssignmentDialog = ({
             program_id: programId,
             user_id: userId,
             training_dates: trainingDates,
+            start_date: startDate,
+            end_date: endDate,
             status: 'active',
             assignment_type: 'individual',
             progress: 0
