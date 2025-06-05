@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
@@ -44,12 +43,15 @@ const Programs = () => {
   const handleCreateProgram = async (programData: any) => {
     try {
       console.log('Creating/updating program:', programData);
-      await saveProgram(programData);
+      const savedProgram = await saveProgram(programData);
+      console.log('✅ Program saved, result:', savedProgram);
       await loadPrograms(); // Ξαναφόρτωση για να ενημερωθούν τα δεδομένα
       setBuilderOpen(false);
       setEditingProgram(null);
+      return savedProgram; // ΕΠΙΣΤΡΕΦΟΥΜΕ το αποθηκευμένο πρόγραμμα
     } catch (error) {
       console.error('Error creating program:', error);
+      throw error; // Ξαναπετάμε το error για να το πιάσει το useAssignmentDialog
     }
   };
 
