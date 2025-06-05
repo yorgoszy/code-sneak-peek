@@ -8,7 +8,7 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Users
+  CreditCard
 } from "lucide-react";
 import { ProgramCard } from "./ProgramCard";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -34,6 +34,7 @@ export const ActiveProgramsSidebar = ({
   onRefresh,
   onDelete
 }: ActiveProgramsSidebarProps) => {
+  const [selectedMenuItem, setSelectedMenuItem] = useState("calendar");
   
   const menuItems = [
     { 
@@ -43,22 +44,16 @@ export const ActiveProgramsSidebar = ({
       badge: null
     },
     { 
-      icon: CalendarCheck, 
-      label: "Ενεργά Προγράμματα", 
-      key: "programs",
-      badge: stats.totalPrograms > 0 ? stats.totalPrograms : null
-    },
-    { 
       icon: Calendar, 
       label: "Ημερολόγιο", 
       key: "calendar",
       badge: null
     },
     { 
-      icon: Users, 
-      label: "Αθλητές", 
-      key: "athletes",
-      badge: null
+      icon: CreditCard, 
+      label: "Program Cards", 
+      key: "program-cards",
+      badge: stats.totalPrograms > 0 ? stats.totalPrograms : null
     },
   ];
 
@@ -97,10 +92,11 @@ export const ActiveProgramsSidebar = ({
       <nav className="p-4">
         <div className="space-y-2">
           {menuItems.map((item) => {
-            const isActive = item.key === "programs";
+            const isActive = selectedMenuItem === item.key;
             return (
               <button
                 key={item.key}
+                onClick={() => setSelectedMenuItem(item.key)}
                 className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
                   isActive ? 'bg-[#00ffba]/10 text-[#00ffba] border-r-2 border-[#00ffba]' : 'text-gray-700'
                 }`}
@@ -120,52 +116,55 @@ export const ActiveProgramsSidebar = ({
         </div>
       </nav>
 
-      {/* Program Cards List */}
+      {/* Content Based on Selected Menu Item */}
       {!isCollapsed && (
         <div className="flex-1 p-4 border-t border-gray-200">
-          <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
-            Όλα τα Ενεργά Προγράμματα
-          </h3>
-          <ScrollArea className="h-96">
-            <div className="space-y-2">
-              {activePrograms.length > 0 ? (
-                activePrograms.map((assignment) => (
-                  <div key={assignment.id} className="transform scale-90 origin-left">
-                    <ProgramCard
-                      assignment={assignment}
-                      onRefresh={onRefresh}
-                      onDelete={onDelete}
-                    />
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-gray-500 text-sm">
-                  Δεν υπάρχουν ενεργά προγράμματα
+          {selectedMenuItem === "program-cards" ? (
+            <>
+              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                Όλα τα Ενεργά Program Cards
+              </h3>
+              <ScrollArea className="h-96">
+                <div className="space-y-2">
+                  {activePrograms.length > 0 ? (
+                    activePrograms.map((assignment) => (
+                      <div key={assignment.id} className="transform scale-90 origin-left">
+                        <ProgramCard
+                          assignment={assignment}
+                          onRefresh={onRefresh}
+                          onDelete={onDelete}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                      Δεν υπάρχουν ενεργά προγράμματα
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </ScrollArea>
-        </div>
-      )}
-
-      {/* Stats Summary (when not collapsed) */}
-      {!isCollapsed && (
-        <div className="p-4 border-t border-gray-200 mt-auto">
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Σημερινή Επισκόπηση
-            </h3>
-            <div className="grid grid-cols-1 gap-2 text-xs">
-              <div className="bg-gray-50 p-2 rounded-none">
-                <div className="font-semibold text-[#00ffba]">{stats.activeToday}</div>
-                <div className="text-gray-600">Ενεργές σήμερα</div>
+              </ScrollArea>
+            </>
+          ) : (
+            <>
+              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                Σημερινή Επισκόπηση
+              </h3>
+              <div className="space-y-2">
+                <div className="bg-gray-50 p-2 rounded-none">
+                  <div className="font-semibold text-[#00ffba]">{stats.activeToday}</div>
+                  <div className="text-gray-600 text-xs">Ενεργές σήμερα</div>
+                </div>
+                <div className="bg-gray-50 p-2 rounded-none">
+                  <div className="font-semibold text-green-600">{stats.completedToday}</div>
+                  <div className="text-gray-600 text-xs">Ολοκληρωμένες</div>
+                </div>
+                <div className="bg-gray-50 p-2 rounded-none">
+                  <div className="font-semibold text-blue-600">{stats.totalPrograms}</div>
+                  <div className="text-gray-600 text-xs">Σύνολο Προγραμμάτων</div>
+                </div>
               </div>
-              <div className="bg-gray-50 p-2 rounded-none">
-                <div className="font-semibold text-green-600">{stats.completedToday}</div>
-                <div className="text-gray-600">Ολοκληρωμένες</div>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       )}
     </div>
