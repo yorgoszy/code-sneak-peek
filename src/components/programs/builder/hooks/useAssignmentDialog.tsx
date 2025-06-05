@@ -30,6 +30,21 @@ export const useAssignmentDialog = ({
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const { createWorkoutCompletions } = useProgramWorkoutCompletions();
 
+  // Helper function για σωστή μετατροπή ημερομηνιών
+  const formatDateToString = (date: Date | string): string => {
+    if (typeof date === 'string') {
+      return date;
+    }
+    
+    // Χρησιμοποιούμε toLocaleDateString με 'en-CA' για YYYY-MM-DD format
+    // χωρίς timezone conversion
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  };
+
   const handleOpenAssignments = async () => {
     try {
       console.log('🔄 Opening assignments dialog - Current program state:', program);
@@ -57,19 +72,9 @@ export const useAssignmentDialog = ({
       // Διασφαλίζουμε ότι έχουμε training_dates σε string format
       let trainingDates: string[] = [];
       if (program.training_dates && program.training_dates.length > 0) {
-        trainingDates = program.training_dates.map(date => {
-          if (typeof date === 'string') {
-            return date;
-          } else if (date instanceof Date) {
-            return date.toISOString().split('T')[0];
-          } else {
-            // Handle any other date format
-            return new Date(date).toISOString().split('T')[0];
-          }
-        });
+        trainingDates = program.training_dates.map(formatDateToString);
       }
 
-      // ΑΦΑΙΡΟΥΜΕ την αυτόματη δημιουργία ημερομηνιών - ο χρήστης πρέπει να τις επιλέξει
       if (trainingDates.length === 0) {
         console.log('⚠️ No training dates selected');
         toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης στο ημερολόγιο');
@@ -143,8 +148,11 @@ export const useAssignmentDialog = ({
         return;
       }
 
+      // Μετατροπή ημερομηνιών σε σωστό format
+      const formattedTrainingDates = trainingDates.map(formatDateToString);
+
       // Υπολογισμός start_date και end_date από τις επιλεγμένες ημερομηνίες
-      const sortedDates = [...trainingDates].sort();
+      const sortedDates = [...formattedTrainingDates].sort();
       const startDate = sortedDates[0];
       const endDate = sortedDates[sortedDates.length - 1];
 
@@ -157,7 +165,7 @@ export const useAssignmentDialog = ({
         const { data: updatedAssignment, error: updateError } = await supabase
           .from('program_assignments')
           .update({
-            training_dates: trainingDates,
+            training_dates: formattedTrainingDates,
             start_date: startDate,
             end_date: endDate,
             updated_at: new Date().toISOString()
@@ -183,7 +191,7 @@ export const useAssignmentDialog = ({
           editingAssignment.id,
           userId,
           programId,
-          trainingDates,
+          formattedTrainingDates,
           program
         );
 
@@ -197,7 +205,7 @@ export const useAssignmentDialog = ({
           .insert({
             program_id: programId,
             user_id: userId,
-            training_dates: trainingDates,
+            training_dates: formattedTrainingDates,
             start_date: startDate,
             end_date: endDate,
             status: 'active',
@@ -219,7 +227,7 @@ export const useAssignmentDialog = ({
           assignment.id,
           userId,
           programId,
-          trainingDates,
+          formattedTrainingDates,
           program
         );
 
