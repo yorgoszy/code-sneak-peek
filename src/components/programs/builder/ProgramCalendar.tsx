@@ -94,7 +94,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
       // Ελέγχουμε αν η νέα ημερομηνία είναι στην ίδια εβδομάδα με τις τρέχουσες
       if (currentWeekDates.length > 0) {
         const firstDateOfCurrentWeek = currentWeekDates[0];
-        return isSameWeek(newDate, firstDateOfCurrentWeek, { weekStartsOn: 1 });
+        return isSameWeek(newDate, firstDateOfCurrentWeek, { weekStartsOn: 0 });
       }
       return true;
     }
@@ -261,7 +261,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
                 }
               }}
               className="rounded-none"
-              weekStartsOn={1} // Ξεκινάει από Δευτέρα
+              weekStartsOn={0} // Επαναφορά στην αρχική τιμή - Κυριακή πρώτη
               disabled={(date) => {
                 // Απενεργοποίηση παλαιών ημερομηνιών
                 if (date < new Date()) return true;
