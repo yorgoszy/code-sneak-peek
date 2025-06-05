@@ -99,6 +99,9 @@ const ActivePrograms = () => {
         isCollapsed={isCollapsed} 
         setIsCollapsed={setIsCollapsed}
         stats={stats}
+        activePrograms={activePrograms}
+        onRefresh={refetch}
+        onDelete={handleDeleteProgram}
       />
       
       {/* Main Content */}
@@ -117,7 +120,7 @@ const ActivePrograms = () => {
               </Button>
               <h1 className="text-3xl font-bold flex items-center gap-2">
                 <CalendarCheck className="h-8 w-8 text-[#00ffba]" />
-                Ενεργά Προγράμματα
+                Ημερολόγιο
               </h1>
             </div>
           </div>

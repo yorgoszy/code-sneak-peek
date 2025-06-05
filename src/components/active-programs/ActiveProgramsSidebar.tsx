@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   CalendarCheck, 
   BarChart3, 
@@ -9,6 +10,8 @@ import {
   ChevronRight,
   Users
 } from "lucide-react";
+import { ProgramCard } from "./ProgramCard";
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ActiveProgramsSidebarProps {
   isCollapsed: boolean;
@@ -18,12 +21,18 @@ interface ActiveProgramsSidebarProps {
     activeToday: number;
     completedToday: number;
   };
+  activePrograms: EnrichedAssignment[];
+  onRefresh?: () => void;
+  onDelete?: (assignmentId: string) => void;
 }
 
 export const ActiveProgramsSidebar = ({ 
   isCollapsed, 
   setIsCollapsed,
-  stats
+  stats,
+  activePrograms,
+  onRefresh,
+  onDelete
 }: ActiveProgramsSidebarProps) => {
   
   const menuItems = [
@@ -55,7 +64,7 @@ export const ActiveProgramsSidebar = ({
 
   return (
     <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-64'
+      isCollapsed ? 'w-16' : 'w-80'
     }`}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
@@ -110,6 +119,34 @@ export const ActiveProgramsSidebar = ({
           })}
         </div>
       </nav>
+
+      {/* Program Cards List */}
+      {!isCollapsed && (
+        <div className="flex-1 p-4 border-t border-gray-200">
+          <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
+            Όλα τα Ενεργά Προγράμματα
+          </h3>
+          <ScrollArea className="h-96">
+            <div className="space-y-2">
+              {activePrograms.length > 0 ? (
+                activePrograms.map((assignment) => (
+                  <div key={assignment.id} className="transform scale-90 origin-left">
+                    <ProgramCard
+                      assignment={assignment}
+                      onRefresh={onRefresh}
+                      onDelete={onDelete}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  Δεν υπάρχουν ενεργά προγράμματα
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
 
       {/* Stats Summary (when not collapsed) */}
       {!isCollapsed && (
