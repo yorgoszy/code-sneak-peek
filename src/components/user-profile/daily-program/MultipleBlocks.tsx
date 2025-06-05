@@ -47,6 +47,8 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
   onExerciseClick,
   onVideoClick
 }) => {
+  console.log('📑 MultipleBlocks render:', blocks.length, 'blocks, viewOnly:', viewOnly);
+  
   return (
     <Tabs defaultValue={blocks[0]?.id} className="w-full">
       <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>

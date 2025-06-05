@@ -44,28 +44,27 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
   const { completeSet, getRemainingText, isExerciseComplete } = useExerciseCompletion();
 
   const handleExerciseClick = (exercise: Exercise, event: React.MouseEvent) => {
-    // Αν κλικάρουμε στο video thumbnail, ανοίγει το video
-    if ((event.target as HTMLElement).closest('.video-thumbnail')) {
-      if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-        setSelectedExercise(exercise);
-        setIsVideoDialogOpen(true);
-      }
-      return;
-    }
-
-    // Αν είναι μόνο για προβολή, δεν κάνουμε τίποτα άλλο
+    console.log('🎯 ExerciseBlock handleExerciseClick:', exercise.exercises?.name, 'viewOnly:', viewOnly);
+    
+    // Αν είναι μόνο για προβολή, δεν κάνουμε τίποτα άλλο (το video click θα το χειριστεί το VideoThumbnail)
     if (viewOnly) {
       return;
     }
 
-    // Αλλιώς, ολοκληρώνουμε ένα σετ
+    // Αν δεν είναι view-only, ολοκληρώνουμε ένα σετ
     completeSet(exercise.id, exercise.sets);
   };
 
   const handleVideoClick = (exercise: Exercise) => {
+    console.log('🎬 ExerciseBlock handleVideoClick:', exercise.exercises?.name);
+    console.log('🎬 Video URL:', exercise.exercises?.video_url);
+    console.log('🎬 Is valid URL:', exercise.exercises?.video_url ? isValidVideoUrl(exercise.exercises.video_url) : false);
+    
     if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
       setSelectedExercise(exercise);
       setIsVideoDialogOpen(true);
+    } else {
+      console.log('❌ Invalid or missing video URL');
     }
   };
 

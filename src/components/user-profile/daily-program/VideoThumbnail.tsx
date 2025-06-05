@@ -19,7 +19,7 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
   
   if (!videoUrl || !isValidVideoUrl(videoUrl)) {
     return (
-      <div className="w-10 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0 video-thumbnail mr-2">
+      <div className="w-10 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0 mr-2">
         <span className="text-xs text-gray-400">-</span>
       </div>
     );
@@ -29,9 +29,11 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
   
   return (
     <div 
-      className="relative w-10 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail mr-2"
+      className="relative w-10 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 mr-2 video-thumbnail"
       onClick={(e) => {
+        e.preventDefault();
         e.stopPropagation();
+        console.log('🎥 VideoThumbnail clicked for:', exercise.exercises?.name);
         onVideoClick(exercise);
       }}
     >
@@ -40,6 +42,13 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
           src={thumbnailUrl}
           alt={`${exercise.exercises?.name} thumbnail`}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            console.log('❌ Thumbnail failed to load:', thumbnailUrl);
+            e.currentTarget.style.display = 'none';
+          }}
+          onLoad={() => {
+            console.log('✅ Thumbnail loaded successfully:', thumbnailUrl);
+          }}
         />
       ) : (
         <div className="w-full h-full bg-gray-200 flex items-center justify-center">

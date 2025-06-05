@@ -46,6 +46,8 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
   onExerciseClick,
   onVideoClick
 }) => {
+  console.log('🔲 SingleBlock render:', block.name, 'viewOnly:', viewOnly);
+  
   return (
     <div className="bg-gray-700 rounded-none p-2 mb-1">
       <h6 className="text-xs font-medium text-white mb-1">
