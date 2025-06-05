@@ -13,7 +13,7 @@ interface ProgramCardActionsProps {
   selectedDate?: Date;
   onRefresh?: () => void;
   onDelete?: (assignmentId: string) => void;
-  userMode?: boolean; // Νέο prop για user mode
+  userMode?: boolean;
 }
 
 export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ 
@@ -21,7 +21,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   selectedDate,
   onRefresh,
   onDelete,
-  userMode = false // Default false για admin mode
+  userMode = false
 }) => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
@@ -29,17 +29,17 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 
   const handlePlayClick = () => {
     if (selectedDate) {
-      // Άνοιγμα του DayProgramDialog για την επιλεγμένη ημερομηνία
       setDayDialogOpen(true);
     } else {
-      // Αν δεν υπάρχει επιλεγμένη ημερομηνία, άνοιγμα του day selector
       setDaySelectorOpen(true);
     }
   };
 
   const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
+    setViewDialogOpen(false);
     setDaySelectorOpen(false);
     console.log('Starting workout:', weekIndex, dayIndex);
+    // Εδώ θα μπορούσε να ανοίξει το DayProgramDialog για την επιλεγμένη ημέρα
   };
 
   const handleDaySelected = (weekIndex: number, dayIndex: number) => {
@@ -66,15 +66,18 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handlePlayClick}
-            className="h-6 w-6 p-0 rounded-none"
-            title="Έναρξη Προπόνησης"
-          >
-            <Play className="h-3 w-3" />
-          </Button>
+          {/* Εμφάνιση Play button μόνο αν δεν είμαστε σε user mode */}
+          {!userMode && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePlayClick}
+              className="h-6 w-6 p-0 rounded-none"
+              title="Έναρξη Προπόνησης"
+            >
+              <Play className="h-3 w-3" />
+            </Button>
+          )}
 
           <Button
             variant="ghost"

@@ -8,6 +8,7 @@ import { Clock, Dumbbell, CheckCircle, Play } from "lucide-react";
 import { ExerciseBlock } from "@/components/user-profile/daily-program/ExerciseBlock";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { DaySelector } from './DaySelector';
+import { DayProgramDialog } from './DayProgramDialog';
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -27,6 +28,9 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [completions, setCompletions] = useState<any[]>([]);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
+  const [dayProgramOpen, setDayProgramOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<any>(null);
+  const [selectedWeek, setSelectedWeek] = useState<any>(null);
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   useEffect(() => {
@@ -74,22 +78,21 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
     return completedDays === totalDaysInWeek;
   };
 
-  const handleDayDoubleClick = (week: any, day: any) => {
+  const handleDayDoubleClick = (week: any, day: any, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
     if (isWorkoutCompleted(week.week_number, day.day_number)) {
       console.log('❌ Η προπόνηση έχει ήδη ολοκληρωθεί - δεν επιτρέπεται επανάληψη');
       return;
     }
     
-    const weeks = assignment?.programs?.program_weeks || [];
-    const weekIndex = weeks.findIndex(w => w.id === week.id);
-    const dayIndex = week.program_days?.findIndex((d: any) => d.id === day.id) || 0;
+    console.log('✅ Έναρξη προπόνησης:', week.name, day.name);
     
-    console.log('✅ Έναρξη προπόνησης:', week.name, day.name, 'Week Index:', weekIndex, 'Day Index:', dayIndex);
-    
-    if (onStartWorkout && weekIndex >= 0) {
-      onStartWorkout(weekIndex, dayIndex);
-      onClose();
-    }
+    // Αντί να κλείσουμε το dialog, ανοίγουμε το DayProgramDialog
+    setSelectedWeek(week);
+    setSelectedDay(day);
+    setDayProgramOpen(true);
   };
 
   const handleStartProgram = () => {
@@ -102,6 +105,22 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
       onStartWorkout(weekIndex, dayIndex);
       onClose();
     }
+  };
+
+  const getDateForDay = (week: any, day: any) => {
+    if (!assignment?.training_dates) return new Date();
+    
+    const program = assignment.programs;
+    if (!program?.program_weeks?.[0]?.program_days) return new Date();
+    
+    const daysPerWeek = program.program_weeks[0].program_days.length;
+    const totalDayIndex = ((week.week_number - 1) * daysPerWeek) + (day.day_number - 1);
+    
+    if (totalDayIndex < assignment.training_dates.length) {
+      return new Date(assignment.training_dates[totalDayIndex]);
+    }
+    
+    return new Date();
   };
 
   if (!assignment || !assignment.programs) return null;
@@ -123,9 +142,6 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
       </Dialog>
     );
   }
-
-  const selectedWeek = weeks[selectedWeekIndex];
-  const days = selectedWeek?.program_days || [];
 
   return (
     <>
@@ -179,7 +195,7 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
                                 key={day.id} 
                                 value={dayIndex.toString()} 
                                 className="rounded-none text-xs flex items-center gap-1"
-                                onDoubleClick={() => handleDayDoubleClick(week, day)}
+                                onDoubleClick={(e) => handleDayDoubleClick(week, day, e)}
                               >
                                 {isDayCompleted && <CheckCircle className="w-3 h-3 text-[#00ffba]" />}
                                 {day.name || `Ημέρα ${day.day_number}`}
@@ -236,6 +252,18 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
         isOpen={daySelectorOpen}
         onClose={() => setDaySelectorOpen(false)}
         onSelectDay={handleDaySelected}
+      />
+
+      {/* DayProgramDialog για έναρξη προπόνησης */}
+      <DayProgramDialog
+        isOpen={dayProgramOpen}
+        onClose={() => setDayProgramOpen(false)}
+        program={assignment}
+        selectedDate={selectedDay && selectedWeek ? getDateForDay(selectedWeek, selectedDay) : null}
+        workoutStatus="scheduled"
+        onRefresh={() => {
+          fetchCompletions();
+        }}
       />
     </>
   );
