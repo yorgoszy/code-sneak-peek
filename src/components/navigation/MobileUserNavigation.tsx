@@ -60,16 +60,13 @@ export const MobileUserNavigation: React.FC<MobileUserNavigationProps> = ({
             <button
               key={item.key}
               onClick={() => setActiveTab(item.key)}
-              className={`flex flex-col items-center justify-center flex-1 py-2 px-1 text-xs font-medium transition-colors relative ${
+              className={`flex flex-col items-center justify-center flex-1 py-3 px-2 text-xs font-medium transition-colors relative ${
                 isActive 
                   ? 'text-[#00ffba] bg-[#00ffba]/10' 
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <item.icon className={`h-5 w-5 mb-1 ${isActive ? 'text-[#00ffba]' : 'text-gray-600'}`} />
-              <span className="truncate w-full text-center leading-tight">
-                {item.label}
-              </span>
+              <item.icon className={`h-6 w-6 ${isActive ? 'text-[#00ffba]' : 'text-gray-600'}`} />
               {badgeCount && badgeCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {badgeCount}

@@ -37,27 +37,22 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     { icon: CreditCard, label: "Program Cards", path: "/dashboard/program-cards" },
   ];
 
-  const headerContent = (
-    <div>
-      <h2 className="text-sm font-semibold text-gray-800">HyperKids</h2>
-      <p className="text-xs text-gray-500">Διαχείριση προπονήσεων</p>
-    </div>
-  );
+  const headerContent = null;
 
   const navigationContent = (
-    <div className="space-y-2">
+    <div className="space-y-1">
       {menuItems.map((item) => {
         const isActive = location.pathname === item.path;
         return (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center space-x-3 px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
+            className={`flex items-center justify-center p-3 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
               isActive ? 'bg-[#00ffba]/10 text-[#00ffba] border-r-2 border-[#00ffba]' : 'text-gray-700'
             }`}
+            title={item.label}
           >
             <item.icon className="h-5 w-5 flex-shrink-0" />
-            {!isCollapsed && <span>{item.label}</span>}
           </Link>
         );
       })}
@@ -65,25 +60,23 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   );
 
   const bottomContent = (
-    <div className="space-y-2">
-      {/* Return Home Button */}
+    <div className="space-y-1">
       <Link
         to="/"
-        className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none"
+        className="flex items-center justify-center p-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none"
+        title="Επιστροφή στην Αρχική"
       >
         <Home className="h-5 w-5 flex-shrink-0" />
-        {!isCollapsed && <span>Επιστροφή στην Αρχική</span>}
       </Link>
 
-      {/* Webmail Link */}
       <a
         href="https://webmail.hyperkids.gr/"
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none"
+        className="flex items-center justify-center p-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none"
+        title="Webmail"
       >
         <Mail className="h-5 w-5 flex-shrink-0" />
-        {!isCollapsed && <span>Webmail</span>}
       </a>
     </div>
   );

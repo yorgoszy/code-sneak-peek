@@ -37,16 +37,13 @@ export const MobileNavigation: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 text-xs font-medium transition-colors ${
+              className={`flex flex-col items-center justify-center min-w-0 flex-1 py-3 px-2 text-xs font-medium transition-colors ${
                 isActive 
                   ? 'text-[#00ffba] bg-[#00ffba]/10' 
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <item.icon className={`h-5 w-5 mb-1 ${isActive ? 'text-[#00ffba]' : 'text-gray-600'}`} />
-              <span className="truncate w-full text-center leading-tight">
-                {item.label}
-              </span>
+              <item.icon className={`h-6 w-6 ${isActive ? 'text-[#00ffba]' : 'text-gray-600'}`} />
             </Link>
           );
         })}

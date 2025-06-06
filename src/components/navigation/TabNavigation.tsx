@@ -84,14 +84,14 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                className={`flex items-center justify-center px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   isActive 
                     ? 'text-[#00ffba] border-[#00ffba] bg-[#00ffba]/5' 
                     : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
                 }`}
+                title={item.label}
               >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <item.icon className="h-5 w-5" />
               </Link>
             );
           })}
