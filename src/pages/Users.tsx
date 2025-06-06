@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -28,6 +27,7 @@ import { NewUserDialog } from "@/components/NewUserDialog";
 import { EditUserDialog } from "@/components/EditUserDialog";
 import { DeleteUserDialog } from "@/components/DeleteUserDialog";
 import { UserProfileDialog } from "@/components/UserProfileDialog";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface AppUser {
   id: string;
@@ -43,6 +43,7 @@ interface AppUser {
 
 const Users = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { isAdmin, loading: rolesLoading } = useRoleCheck();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -96,8 +97,29 @@ const Users = () => {
   }, [user]);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (isAuthenticated && isAdmin()) {
+      fetchUsers();
+    }
+  }, [isAuthenticated, isAdmin]);
+
+  if (loading || rolesLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Φόρτωση...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Only admins can access the Users page
+  if (!isAdmin()) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleEditUser = (user: AppUser) => {
     setSelectedUser(user);
@@ -135,22 +157,6 @@ const Users = () => {
     
     return matchesSearch && matchesRole && matchesStatus;
   });
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Φόρτωση...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  const isAdmin = userProfile?.role === 'admin' || user?.email === 'yorgoszy@gmail.com' || user?.email === 'info@hyperkids.gr';
 
   const handleSignOut = async () => {
     await signOut();
@@ -209,7 +215,7 @@ const Users = () => {
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
                 {userProfile?.name || user?.email}
-                {isAdmin && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
               </span>
               <Button 
                 variant="outline" 

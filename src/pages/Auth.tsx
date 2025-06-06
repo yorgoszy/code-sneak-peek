@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -36,39 +35,24 @@ const Auth = () => {
     const name = formData.get("name") as string;
 
     try {
-      // Δημιουργία χρήστη στο Supabase Auth
+      // Create user with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
       });
 
       if (error) throw error;
 
       if (data.user) {
-        // Δημιουργία εγγραφής στον πίνακα app_users
-        const { error: profileError } = await supabase
-          .from('app_users')
-          .insert([
-            {
-              auth_user_id: data.user.id,
-              email: email,
-              name: name,
-              role: email === 'yorgoszy@gmail.com' || email === 'info@hyperkids.gr' ? 'admin' : 'user',
-              category: 'general',
-              user_status: 'active'
-            }
-          ]);
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-        }
-
+        // Note: User creation in app_users table now requires admin privileges
+        // Regular users will be created by admins through the admin panel
         toast({
-          title: "Επιτυχία!",
-          description: "Ο λογαριασμός σας δημιουργήθηκε επιτυχώς.",
+          title: "Εγγραφή ολοκληρώθηκε!",
+          description: "Ελέγξτε το email σας για επιβεβαίωση. Ένας διαχειριστής θα ενεργοποιήσει τον λογαριασμό σας.",
         });
-
-        navigate("/dashboard");
       }
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -97,6 +81,23 @@ const Auth = () => {
       });
 
       if (error) throw error;
+
+      // Check if user has an app_users profile
+      const { data: userProfile } = await supabase
+        .from('app_users')
+        .select('*')
+        .eq('auth_user_id', data.user.id)
+        .single();
+
+      if (!userProfile) {
+        toast({
+          title: "Λογαριασμός μη ενεργοποιημένος",
+          description: "Ο λογαριασμός σας δεν έχει ενεργοποιηθεί ακόμη. Επικοινωνήστε με έναν διαχειριστή.",
+          variant: "destructive",
+        });
+        await supabase.auth.signOut();
+        return;
+      }
 
       toast({
         title: "Επιτυχία!",
@@ -263,6 +264,9 @@ const Auth = () => {
                     >
                       {isLoading ? "Εγγραφή..." : "Εγγραφή"}
                     </Button>
+                    <div className="text-xs text-gray-600 text-center">
+                      Μετά την εγγραφή, ένας διαχειριστής θα ενεργοποιήσει τον λογαριασμό σας.
+                    </div>
                   </form>
                 </TabsContent>
               </Tabs>
