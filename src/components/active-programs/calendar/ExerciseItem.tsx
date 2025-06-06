@@ -55,15 +55,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   };
 
   const handleVideoClick = (exerciseData: any) => {
-    console.log('🎬 ExerciseItem handleVideoClick called for:', exerciseData.exercises?.name);
-    console.log('🎬 Video URL:', exerciseData.exercises?.video_url);
-    
     // Έλεγχος αν υπάρχει έγκυρο video URL
     if (exerciseData.exercises?.video_url && isValidVideoUrl(exerciseData.exercises.video_url)) {
-      console.log('✅ Valid video URL found, calling onVideoClick');
       onVideoClick(exerciseData);
-    } else {
-      console.log('❌ No valid video URL found');
     }
   };
 
