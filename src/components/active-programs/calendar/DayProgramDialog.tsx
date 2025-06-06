@@ -82,7 +82,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-3xl max-h-[60vh] overflow-y-auto rounded-none">
+        <DialogContent className="max-w-2xl max-h-[50vh] overflow-y-auto rounded-none">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
@@ -93,9 +93,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onCancelWorkout={handleCancelWorkout}
           />
 
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {/* Program Info - Πολύ συμπαγές */}
-            <div className="bg-gray-50 border border-gray-200 rounded-none p-1.5">
+            <div className="bg-gray-50 border border-gray-200 rounded-none p-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium truncate">{program.programs?.name}</span>
                 {dayProgram && <span className="text-gray-600 truncate">• {dayProgram.name}</span>}
@@ -104,12 +104,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
             {blocks.length > 0 ? (
               <Tabs defaultValue="0" className="w-full">
-                <TabsList className="grid w-full rounded-none h-8" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
+                <TabsList className="grid w-full rounded-none h-6" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
                   {blocks.map((block, index) => (
                     <TabsTrigger 
                       key={block.id} 
                       value={index.toString()} 
-                      className="rounded-none text-xs py-1 px-2 h-7"
+                      className="rounded-none text-xs py-0.5 px-1 h-5"
                     >
                       {block.name}
                     </TabsTrigger>
@@ -117,7 +117,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                 </TabsList>
 
                 {blocks.map((block, blockIndex) => (
-                  <TabsContent key={block.id} value={blockIndex.toString()} className="mt-1">
+                  <TabsContent key={block.id} value={blockIndex.toString()} className="mt-0.5">
                     <div className="space-y-0.5">
                       {block.program_exercises?.map((exercise) => (
                         <CompactExerciseItem
@@ -147,7 +147,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                 ))}
               </Tabs>
             ) : (
-              <div className="bg-white border border-gray-200 rounded-none p-4 text-center text-gray-500 text-sm">
+              <div className="bg-white border border-gray-200 rounded-none p-3 text-center text-gray-500 text-xs">
                 Δεν βρέθηκε πρόγραμμα για αυτή την ημέρα
               </div>
             )}
