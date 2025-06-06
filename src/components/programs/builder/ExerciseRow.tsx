@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Trash2, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Copy, Trash2, GripVertical } from "lucide-react";
 import { Exercise } from '../types';
-import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 
 interface ProgramExercise {
   id: string;
@@ -37,201 +37,116 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   onRemove,
   onDuplicate
 }) => {
-  const [showExerciseDialog, setShowExerciseDialog] = useState(false);
-
-  const handleExerciseSelect = (exerciseId: string) => {
-    onUpdate('exercise_id', exerciseId);
-    setShowExerciseDialog(false);
-  };
-
-  const selectedExercise = exercises.find(ex => ex.id === exercise.exercise_id);
-  
-  // Calculate exercise number for this specific exercise
-  const getExerciseNumber = () => {
-    const sameExercises = allBlockExercises
-      .filter(ex => ex.exercise_id === exercise.exercise_id && ex.exercise_id)
-      .sort((a, b) => a.exercise_order - b.exercise_order);
-    
-    const currentIndex = sameExercises.findIndex(ex => ex.id === exercise.id);
-    return sameExercises.length > 1 ? currentIndex + 1 : null;
-  };
-
-  const exerciseNumber = getExerciseNumber();
-
   return (
-    <>
-      <div className="bg-white border-0 border-b w-full" style={{ fontSize: '12px' }}>
-        {/* Exercise Name Row with Actions */}
-        <div className="p-2 border-b bg-gray-50 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 text-sm h-6 justify-start px-2"
-            style={{ borderRadius: '0px', fontSize: '12px' }}
-            onClick={() => setShowExerciseDialog(true)}
-          >
-            {selectedExercise ? (
-              <span className="flex items-center gap-1">
-                {exerciseNumber && (
-                  <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm mr-1">
-                    {exerciseNumber}
-                  </span>
-                )}
-                {selectedExercise.name}
-              </span>
-            ) : 'Επιλογή...'}
-          </Button>
+    <div className="bg-white border border-gray-200 rounded-none p-1 md:p-2 space-y-2">
+      {/* Mobile Header with grip and actions */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2 flex-1 min-w-0">
+          <GripVertical className="h-3 w-3 md:h-4 md:w-4 text-gray-400 cursor-move flex-shrink-0" />
           
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDuplicate}
-              className="p-1 h-6 w-6"
-              style={{ borderRadius: '0px' }}
-            >
-              <Copy className="w-3 h-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRemove}
-              className="p-1 h-6 w-6"
-              style={{ borderRadius: '0px' }}
-            >
-              <Trash2 className="w-3 h-3" />
-            </Button>
+          {/* Exercise Name - Full width on mobile */}
+          <div className="flex-1 min-w-0">
+            <Select value={exercise.exercise_id} onValueChange={(value) => onUpdate('exercise_id', value)}>
+              <SelectTrigger className="rounded-none h-7 md:h-8 text-xs md:text-sm">
+                <SelectValue placeholder="Επιλέξτε άσκηση" />
+              </SelectTrigger>
+              <SelectContent>
+                {exercises.map((ex) => (
+                  <SelectItem key={ex.id} value={ex.id}>
+                    {ex.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-        
-        {/* Exercise Details Row - Using flex with fixed widths to align with headers */}
-        <div className="flex p-2 gap-2 w-full" style={{ minHeight: '28px' }}>
-          <div className="flex flex-col items-center" style={{ width: '60px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Sets</label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={exercise.sets || ''}
-              onChange={(e) => onUpdate('sets', parseInt(e.target.value) || '')}
-              className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '12px', 
-                height: '22px', 
-                padding: '0 4px'
-              }}
-              placeholder=""
-            />
-          </div>
-          
-          <div className="flex flex-col items-center" style={{ width: '60px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
-            <Input
-              value={exercise.reps}
-              onChange={(e) => onUpdate('reps', e.target.value)}
-              className="text-center w-full"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '12px', 
-                height: '22px', 
-                padding: '0 4px'
-              }}
-              placeholder=""
-            />
-          </div>
-          
-          <div className="flex flex-col items-center" style={{ width: '60px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>%1RM</label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={exercise.percentage_1rm || ''}
-              onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || '')}
-              className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '12px', 
-                height: '22px', 
-                padding: '0 4px'
-              }}
-              placeholder=""
-            />
-          </div>
-          
-          <div className="flex flex-col items-center" style={{ width: '60px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
-            <Input
-              value={exercise.kg}
-              onChange={(e) => onUpdate('kg', e.target.value)}
-              className="text-center w-full"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '12px', 
-                height: '22px', 
-                padding: '0 4px'
-              }}
-              placeholder=""
-            />
-          </div>
-          
-          <div className="flex flex-col items-center" style={{ width: '60px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
-            <Input
-              value={exercise.velocity_ms}
-              onChange={(e) => onUpdate('velocity_ms', e.target.value)}
-              className="text-center w-full"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '12px', 
-                height: '22px', 
-                padding: '0 4px'
-              }}
-              placeholder=""
-            />
-          </div>
-          
-          <div className="flex flex-col items-center" style={{ width: '60px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Tempo</label>
-            <Input
-              value={exercise.tempo}
-              onChange={(e) => onUpdate('tempo', e.target.value)}
-              className="text-center w-full"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '12px', 
-                height: '22px', 
-                padding: '0 4px'
-              }}
-              placeholder="1.1.1"
-            />
-          </div>
-          
-          <div className="flex flex-col items-center" style={{ width: '50px' }}>
-            <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
-            <Input
-              value={exercise.rest}
-              onChange={(e) => onUpdate('rest', e.target.value)}
-              className="text-center w-full"
-              style={{ 
-                borderRadius: '0px', 
-                fontSize: '12px', 
-                height: '22px', 
-                padding: '0 4px'
-              }}
-              placeholder=""
-            />
-          </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center space-x-0.5 flex-shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onDuplicate}
+            className="rounded-none h-6 w-6 p-0"
+          >
+            <Copy className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={onRemove}
+            className="rounded-none h-6 w-6 p-0"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
         </div>
       </div>
 
-      <ExerciseSelectionDialog
-        open={showExerciseDialog}
-        onOpenChange={setShowExerciseDialog}
-        exercises={exercises}
-        onSelectExercise={handleExerciseSelect}
-      />
-    </>
+      {/* Exercise Parameters - Responsive Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 md:gap-2">
+        <div>
+          <label className="text-xs text-gray-600 block mb-0.5">Sets</label>
+          <Input
+            type="number"
+            value={exercise.sets}
+            onChange={(e) => onUpdate('sets', parseInt(e.target.value) || 0)}
+            className="rounded-none h-6 md:h-7 text-xs"
+            min="1"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-600 block mb-0.5">Reps</label>
+          <Input
+            value={exercise.reps}
+            onChange={(e) => onUpdate('reps', e.target.value)}
+            placeholder="8-12"
+            className="rounded-none h-6 md:h-7 text-xs"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-600 block mb-0.5">%1RM</label>
+          <Input
+            type="number"
+            value={exercise.percentage_1rm}
+            onChange={(e) => onUpdate('percentage_1rm', parseInt(e.target.value) || 0)}
+            className="rounded-none h-6 md:h-7 text-xs"
+            min="0"
+            max="100"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-600 block mb-0.5">Kg</label>
+          <Input
+            value={exercise.kg}
+            onChange={(e) => onUpdate('kg', e.target.value)}
+            placeholder="80-90"
+            className="rounded-none h-6 md:h-7 text-xs"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-600 block mb-0.5">Tempo</label>
+          <Input
+            value={exercise.tempo}
+            onChange={(e) => onUpdate('tempo', e.target.value)}
+            placeholder="3010"
+            className="rounded-none h-6 md:h-7 text-xs"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-600 block mb-0.5">Rest (s)</label>
+          <Input
+            value={exercise.rest}
+            onChange={(e) => onUpdate('rest', e.target.value)}
+            placeholder="90-120"
+            className="rounded-none h-6 md:h-7 text-xs"
+          />
+        </div>
+      </div>
+    </div>
   );
 };

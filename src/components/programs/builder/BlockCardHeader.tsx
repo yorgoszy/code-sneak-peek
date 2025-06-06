@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ChevronUp, ChevronDown, Plus, Copy, Trash2 } from "lucide-react";
 
 interface BlockCardHeaderProps {
   blockName: string;
@@ -12,7 +13,7 @@ interface BlockCardHeaderProps {
   editingName: string;
   exercisesCount: number;
   onNameDoubleClick: () => void;
-  onEditingNameChange: (value: string) => void;
+  onEditingNameChange: (name: string) => void;
   onNameSave: () => void;
   onNameKeyPress: (e: React.KeyboardEvent) => void;
   onAddExercise: () => void;
@@ -35,70 +36,67 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onRemoveBlock
 }) => {
   return (
-    <CardHeader className="pb-2">
-      <div className="flex justify-between items-center">
-        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded">
-          {isOpen ? <ChevronDown className="w-3 h-3 text-white" /> : <ChevronRight className="w-3 h-3 text-white" />}
-          <h6 
-            className="text-xs font-medium cursor-pointer flex items-center gap-2 text-white"
-            onDoubleClick={onNameDoubleClick}
-          >
+    <CardHeader className="p-1 md:p-2 pb-0.5 md:pb-1 flex-shrink-0" style={{ backgroundColor: '#31365d' }}>
+      <div className="flex items-center justify-between">
+        <CollapsibleTrigger asChild>
+          <div className="flex items-center space-x-1 cursor-pointer flex-1 min-w-0">
+            {isOpen ? (
+              <ChevronUp className="h-3 w-3 text-white flex-shrink-0" />
+            ) : (
+              <ChevronDown className="h-3 w-3 text-white flex-shrink-0" />
+            )}
+            
             {isEditing ? (
-              <input
-                type="text"
+              <Input
                 value={editingName}
                 onChange={(e) => onEditingNameChange(e.target.value)}
                 onBlur={onNameSave}
-                onKeyDown={onNameKeyPress}
-                className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs text-white"
+                onKeyPress={onNameKeyPress}
+                className="h-5 md:h-6 text-xs px-1 rounded-none bg-white flex-1 min-w-0"
                 autoFocus
-                onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <>
-                {blockName}
-                {!isOpen && exercisesCount > 0 && (
-                  <span className="text-xs bg-gray-500 px-2 py-1 rounded-full text-white">
-                    {exercisesCount}
-                  </span>
-                )}
-              </>
+              <div className="flex-1 min-w-0">
+                <h5
+                  className="text-xs font-semibold text-white cursor-pointer truncate"
+                  onDoubleClick={onNameDoubleClick}
+                  title={blockName}
+                >
+                  {blockName}
+                </h5>
+                <p className="text-xs text-gray-300 mt-0.5">
+                  {exercisesCount} άσκηση{exercisesCount !== 1 ? 'εις' : 'η'}
+                </p>
+              </div>
             )}
-          </h6>
+          </div>
         </CollapsibleTrigger>
-        <div className="flex gap-1">
+
+        <div className="flex items-center space-x-0.5 flex-shrink-0">
           <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddExercise();
-            }}
             size="sm"
-            variant="ghost"
-            className="rounded-none hover:bg-gray-600"
+            onClick={onAddExercise}
+            className="rounded-none h-5 md:h-6 w-5 md:w-6 p-0 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
           >
-            <Plus className="w-2 h-2 text-white" />
+            <Plus className="h-2.5 w-2.5 md:h-3 md:w-3" />
           </Button>
+          
           <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDuplicateBlock();
-            }}
             size="sm"
-            variant="ghost"
-            className="rounded-none hover:bg-gray-600"
+            variant="outline"
+            onClick={onDuplicateBlock}
+            className="rounded-none h-5 md:h-6 w-5 md:w-6 p-0 border-white text-white hover:bg-white hover:text-black"
           >
-            <Copy className="w-2 h-2 text-white" />
+            <Copy className="h-2.5 w-2.5 md:h-3 md:w-3" />
           </Button>
+          
           <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemoveBlock();
-            }}
             size="sm"
-            variant="ghost"
-            className="rounded-none hover:bg-gray-600"
+            variant="destructive"
+            onClick={onRemoveBlock}
+            className="rounded-none h-5 md:h-6 w-5 md:w-6 p-0"
           >
-            <Trash2 className="w-2 h-2 text-white" />
+            <Trash2 className="h-2.5 w-2.5 md:h-3 md:w-3" />
           </Button>
         </div>
       </div>

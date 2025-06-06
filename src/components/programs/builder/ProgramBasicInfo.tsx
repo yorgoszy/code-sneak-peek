@@ -2,14 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
-import { useState } from 'react';
-import type { User } from '../types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { User } from '../types';
 
 interface ProgramBasicInfoProps {
   name: string;
@@ -18,7 +14,7 @@ interface ProgramBasicInfoProps {
   users: User[];
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
-  onAthleteChange: (user_id: string) => void;
+  onAthleteChange: (userId: string) => void;
 }
 
 export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
@@ -30,95 +26,60 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   onDescriptionChange,
   onAthleteChange
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const selectedUser = users.find(user => user.id === selectedUserId);
-
-  const handleUserSelect = (userId: string) => {
-    onAthleteChange(userId);
-    setIsSearchOpen(false);
-    setSearchTerm('');
-  };
+  const athleteUsers = users.filter(user => user.role === 'athlete');
 
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle>Βασικές Πληροφορίες Προγράμματος</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg md:text-xl">Βασικές Πληροφορίες</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="program-name">Όνομα Προγράμματος</Label>
-          <Input
-            id="program-name"
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
-            placeholder="Εισάγετε το όνομα του προγράμματος"
-            className="rounded-none"
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="program-name" className="text-sm font-medium">
+              Όνομα Προγράμματος *
+            </Label>
+            <Input
+              id="program-name"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="π.χ. Πρόγραμμα Δύναμης 8 Εβδομάδων"
+              className="rounded-none"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="athlete-select" className="text-sm font-medium">
+              Αθλητής (προαιρετικό)
+            </Label>
+            <Select value={selectedUserId || ""} onValueChange={onAthleteChange}>
+              <SelectTrigger id="athlete-select" className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε αθλητή..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Κανένας (Template)</SelectItem>
+                {athleteUsers.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="program-description">Περιγραφή</Label>
+        <div className="space-y-2">
+          <Label htmlFor="program-description" className="text-sm font-medium">
+            Περιγραφή (προαιρετικό)
+          </Label>
           <Textarea
             id="program-description"
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
-            placeholder="Προαιρετική περιγραφή του προγράμματος"
-            className="rounded-none min-h-[100px]"
+            placeholder="Προσθέστε μια περιγραφή για το πρόγραμμα..."
+            className="rounded-none min-h-[80px] resize-none"
+            rows={3}
           />
-        </div>
-
-        <div>
-          <Label>Επιλογή Ασκούμενου</Label>
-          {selectedUser ? (
-            <div className="flex items-center justify-between bg-blue-50 text-blue-700 p-3 border border-blue-200 rounded-none">
-              <span className="font-medium">{selectedUser.name}</span>
-              <button
-                onClick={() => onAthleteChange('')}
-                className="text-blue-600 hover:text-blue-800"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ) : (
-            <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal rounded-none"
-                >
-                  <Search className="mr-2 h-4 w-4" />
-                  Αναζήτηση ασκούμενου...
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0 rounded-none" align="start">
-                <Command className="border-0">
-                  <CommandInput 
-                    placeholder="Αναζήτηση ασκούμενου..." 
-                    value={searchTerm}
-                    onValueChange={setSearchTerm}
-                  />
-                  <CommandList className="max-h-48">
-                    <CommandEmpty>Δεν βρέθηκε ασκούμενος</CommandEmpty>
-                    {filteredUsers.map(user => (
-                      <CommandItem
-                        key={user.id}
-                        className="cursor-pointer p-3 hover:bg-gray-100"
-                        onSelect={() => handleUserSelect(user.id)}
-                      >
-                        {user.name}
-                      </CommandItem>
-                    ))}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          )}
         </div>
       </CardContent>
     </Card>
