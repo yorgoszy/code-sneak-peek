@@ -66,9 +66,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     }
   };
 
-  const handleSetClick = (event: React.MouseEvent) => {
+  const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {
     event.stopPropagation();
-    onSetClick(exercise.id, exercise.sets, event);
+    onSetClick(exerciseId, totalSets, event);
   };
 
   return (
@@ -84,14 +84,14 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         remainingText={remainingText}
         workoutInProgress={workoutInProgress}
         onVideoClick={handleVideoClick}
-        onSetClick={handleSetClick}
+        onSetClick={(event) => handleSetClick(exercise.id, exercise.sets, event)}
       />
 
       <div className="p-3">
         <ExerciseDetails 
           exercise={exercise} 
-          onVideoClick={handleVideoClick}
-          onSetClick={handleSetClick}
+          onVideoClick={onVideoClick}
+          onSetClick={(event) => handleSetClick(exercise.id, exercise.sets, event)}
         />
 
         <ExerciseActualValues

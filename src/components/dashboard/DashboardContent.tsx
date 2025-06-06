@@ -12,7 +12,11 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="space-y-6">
-        <TodaysProgramsCard />
+        <TodaysProgramsCard 
+          todaysPrograms={[]}
+          allCompletions={[]}
+          onRefresh={() => {}}
+        />
         {isAdmin && <QuickActions />}
       </div>
       
