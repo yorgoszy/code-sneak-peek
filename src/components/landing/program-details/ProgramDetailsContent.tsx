@@ -49,7 +49,7 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
             title: "Μηνιαίο",
             price: "€70",
             period: "/μήνα",
-            sessions: "8 συνεδρίες το μήνα (2 ανά εβδομάδα)",
+            sessions: "4 συνεδρίες το μήνα",
             features: [
               "Εξατομικευμένη προπόνηση",
               "Παρακολούθηση προόδου",
@@ -60,7 +60,7 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
             title: "Τριμηνιαίο",
             price: "€180",
             period: "/τρίμηνο",
-            sessions: "24 συνεδρίες (3 μήνες)",
+            sessions: "12 συνεδρίες (3 μήνες)",
             savings: "Εξοικονομήστε €30",
             popular: true,
             features: [
@@ -74,7 +74,7 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
             title: "Ετήσιο",
             price: "€600",
             period: "/έτος",
-            sessions: "96 συνεδρίες (12 μήνες)",
+            sessions: "48 συνεδρίες (12 μήνες)",
             savings: "Εξοικονομήστε €240",
             features: [
               "Εξατομικευμένη προπόνηση",
@@ -111,7 +111,7 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
         pricing: [
           {
             title: "Μηνιαίο",
-            price: "€70",
+            price: "€90",
             period: "/μήνα",
             sessions: "8 συνεδρίες το μήνα (2 ανά εβδομάδα)",
             features: [
@@ -122,7 +122,7 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
           },
           {
             title: "Τριμηνιαίο",
-            price: "€180",
+            price: "€240",
             period: "/τρίμηνο",
             sessions: "24 συνεδρίες (3 μήνες)",
             savings: "Εξοικονομήστε €30",
@@ -136,10 +136,10 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
           },
           {
             title: "Ετήσιο",
-            price: "€600",
+            price: "€950",
             period: "/έτος",
             sessions: "96 συνεδρίες (12 μήνες)",
-            savings: "Εξοικονομήστε €240",
+            savings: "Εξοικονομήστε €130",
             features: [
               "Εξατομικευμένη προπόνηση",
               "Παρακολούθηση προόδου",
@@ -203,6 +203,68 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
             period: "/έτος",
             sessions: "144 συνεδρίες (12 μήνες)",
             savings: "Εξοικονομήστε €230",
+            features: [
+              "Εξατομικευμένη προπόνηση",
+              "Παρακολούθηση προόδου",
+              "Ευέλικτος προγραμματισμός",
+              "Προτεραιότητα κράτησης",
+              "Δωρεάν αξιολόγηση"
+            ]
+          }
+        ]
+      };
+    }
+
+    if (program.id === "04") {
+      return {
+        ages: "16+ ετών",
+        duration: "60-90 λεπτά",
+        frequency: "2-5 φορές την εβδομάδα",
+        schedule: "Καθημερινά με ραντεβού (7:00 - 20:00)",
+        additionalInfo: "Μέγεθος ομάδας: Μέγιστο 6 άτομα, Προσαρμοσμένος σχεδιασμός προγράμματος, Εστίαση: Γενική φυσική κατάσταση, διαχείριση βάρους και συνολική υγεία",
+        benefits: [
+          "Βελτιωμένη καρδιαγγειακή υγεία",
+          "Ενισχυμένη μυϊκή δύναμη και αντοχή",
+          "Καλύτερη σύσταση σώματος",
+          "Αυξημένη ενέργεια και ζωτικότητα"
+        ],
+        weeklySchedule: [
+          { ageGroup: "Πληροφορίες Προγράμματος", day: "Διαθεσιμότητα: Καθημερινά με ραντεβού", time: "Ώρες: 7:00 - 20:00" }
+        ],
+        scheduleNote: "Ευέλικτος προγραμματισμός διαθέσιμος για να προσαρμοστεί στις ανάγκες σας. Επικοινωνήστε μαζί μας για εγγραφή και οποιεσδήποτε ερωτήσεις προγραμματισμού.",
+        description: "Το πρόγραμμα Φυσική Κατάσταση είναι σχεδιασμένο να παρέχει μια ολοκληρωμένη εμπειρία προπόνησης προσαρμοσμένη στις συγκεκριμένες ανάγκες και στόχους σας. Παρακάτω είναι οι βασικές λεπτομέρειες αυτού του προγράμματος.",
+        pricing: [
+          {
+            title: "Μηνιαίο",
+            price: "€110",
+            period: "/μήνα",
+            sessions: "Ευέλικτες συνεδρίες ανά μήνα",
+            features: [
+              "Εξατομικευμένη προπόνηση",
+              "Παρακολούθηση προόδου",
+              "Ευέλικτος προγραμματισμός"
+            ]
+          },
+          {
+            title: "Τριμηνιαίο",
+            price: "€300",
+            period: "/τρίμηνο",
+            sessions: "Πρόσβαση 3 μηνών",
+            savings: "Εξοικονομήστε €30",
+            popular: true,
+            features: [
+              "Εξατομικευμένη προπόνηση",
+              "Παρακολούθηση προόδου",
+              "Ευέλικτος προγραμματισμός",
+              "Προτεραιότητα κράτησης"
+            ]
+          },
+          {
+            title: "Ετήσιο",
+            price: "€1050",
+            period: "/έτος",
+            sessions: "Πρόσβαση 12 μηνών",
+            savings: "Εξοικονομήστε €270",
             features: [
               "Εξατομικευμένη προπόνηση",
               "Παρακολούθηση προόδου",
@@ -301,7 +363,8 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
                   <p className="text-[#00ffba] text-lg font-semibold">
                     {program.id === "01" ? "Εισαγωγικές Τεχνικές Κίνησης" : 
                      program.id === "02" ? "Χτίζοντας αθλητικές βάσεις για όλα τα σπορ" :
-                     program.id === "03" ? "Εισαγωγή στην προπόνηση δύναμης για εφήβους" : 
+                     program.id === "03" ? "Εισαγωγή στην προπόνηση δύναμης για εφήβους" :
+                     program.id === "04" ? "Ολοκληρωμένη προσέγγιση για υγεία και ευεξία" : 
                      "Εισαγωγικές Τεχνικές Κίνησης"}
                   </p>
                 </div>
@@ -326,6 +389,13 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
                 <p className="text-white">{programData.schedule}</p>
               </div>
             </div>
+
+            {programData.additionalInfo && (
+              <div className="bg-gray-800 p-6 rounded-none border border-gray-700 mb-8">
+                <h4 className="text-[#00ffba] font-bold mb-2">Επιπλέον Πληροφορίες</h4>
+                <p className="text-white">{programData.additionalInfo}</p>
+              </div>
+            )}
             
             <div className="bg-gray-800 p-6 rounded-none border border-[#00ffba]">
               <h4 className="text-[#00ffba] font-bold mb-4">Περιγραφή Προγράμματος</h4>
