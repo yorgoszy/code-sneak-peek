@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -5,9 +6,9 @@ import { useTranslations } from "@/hooks/useTranslations";
 import Navigation from "@/components/landing/Navigation";
 import HeroSection from "@/components/landing/HeroSection";
 import ProgramsSection from "@/components/landing/ProgramsSection";
-import BlogSection from "@/components/landing/BlogSection";
 import AboutSection from "@/components/landing/AboutSection";
 import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
+import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
 import ContactSection from "@/components/landing/ContactSection";
 import Footer from "@/components/landing/Footer";
@@ -127,10 +128,6 @@ const Index = () => {
         translations={translations}
       />
 
-      <BlogSection 
-        translations={translations}
-      />
-
       <AboutSection 
         translations={translations}
         activeAboutSection={activeAboutSection}
@@ -138,6 +135,10 @@ const Index = () => {
       />
 
       <EliteTrainingSection 
+        translations={translations}
+      />
+
+      <BlogSection 
         translations={translations}
       />
 
