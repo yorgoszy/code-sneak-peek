@@ -155,7 +155,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
       <div className="text-center">
         <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
       </div>
-      <div className="text-center">
+      <div className="col-span-1 text-center">
         <Textarea
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
