@@ -12,30 +12,38 @@ import { Sidebar } from "@/components/Sidebar";
 const ProgramCards = () => {
   const navigate = useNavigate();
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
-  const { calculateWorkoutStats, getWorkoutCompletions } = useWorkoutCompletionsCache();
+  const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [workoutCompletions, setWorkoutCompletions] = React.useState<any[]>([]);
 
-  const [programsWithStats, setProgramsWithStats] = React.useState<any[]>([]);
-
+  // Fetch all workout completions - same as calendar
   React.useEffect(() => {
-    const loadProgramsWithStats = async () => {
-      const programsWithStatsData = await Promise.all(
-        activePrograms.map(async (assignment) => {
-          const completions = await getWorkoutCompletions(assignment.id);
-          const stats = calculateWorkoutStats(completions, assignment.training_dates || []);
-          return {
-            ...assignment,
-            stats
-          };
-        })
-      );
-      setProgramsWithStats(programsWithStatsData);
+    const loadCompletions = async () => {
+      if (activePrograms.length > 0) {
+        const allCompletions = await getAllWorkoutCompletions();
+        setWorkoutCompletions(allCompletions);
+      }
     };
+    loadCompletions();
+  }, [activePrograms, getAllWorkoutCompletions]);
 
-    if (activePrograms.length > 0) {
-      loadProgramsWithStats();
-    }
-  }, [activePrograms, getWorkoutCompletions, calculateWorkoutStats]);
+  // Calculate stats the same way as calendar does
+  const calculateProgramStats = (assignment: any) => {
+    const trainingDates = assignment.training_dates || [];
+    const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
+    
+    const completed = assignmentCompletions.filter(c => c.status === 'completed').length;
+    const total = trainingDates.length;
+    const missed = assignmentCompletions.filter(c => c.status === 'missed').length;
+    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    return {
+      completed,
+      total,
+      missed,
+      progress
+    };
+  };
 
   const handleDeleteProgram = async (assignmentId: string) => {
     if (!window.confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;')) {
@@ -85,9 +93,15 @@ const ProgramCards = () => {
     }
   };
 
+  // Calculate stats for each program
+  const programsWithStats = activePrograms.map(assignment => ({
+    assignment,
+    stats: calculateProgramStats(assignment)
+  }));
+
   // Διαχωρισμός προγραμμάτων σε ενεργά και ολοκληρωμένα
-  const activeIncompletePrograms = programsWithStats.filter(program => program.stats.progress < 100);
-  const completedPrograms = programsWithStats.filter(program => program.stats.progress >= 100);
+  const activeIncompletePrograms = programsWithStats.filter(item => item.stats.progress < 100);
+  const completedPrograms = programsWithStats.filter(item => item.stats.progress >= 100);
 
   if (isLoading) {
     return (
@@ -149,10 +163,11 @@ const ProgramCards = () => {
 
               {activeIncompletePrograms.length > 0 ? (
                 <div className="space-y-4">
-                  {activeIncompletePrograms.map((assignment) => (
-                    <div key={assignment.id} className="flex justify-center">
+                  {activeIncompletePrograms.map((item) => (
+                    <div key={item.assignment.id} className="flex justify-center">
                       <ProgramCard
-                        assignment={assignment}
+                        assignment={item.assignment}
+                        workoutStats={item.stats}
                         onRefresh={refetch}
                         onDelete={handleDeleteProgram}
                       />
@@ -182,10 +197,11 @@ const ProgramCards = () => {
 
               {completedPrograms.length > 0 ? (
                 <div className="space-y-4">
-                  {completedPrograms.map((assignment) => (
-                    <div key={assignment.id} className="flex justify-center">
+                  {completedPrograms.map((item) => (
+                    <div key={item.assignment.id} className="flex justify-center">
                       <ProgramCard
-                        assignment={assignment}
+                        assignment={item.assignment}
+                        workoutStats={item.stats}
                         onRefresh={refetch}
                         onDelete={handleDeleteProgram}
                       />

@@ -12,43 +12,49 @@ interface UserProfileProgramCardsProps {
 
 export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = ({ userProfile }) => {
   const { data: allActivePrograms = [], isLoading, error, refetch } = useActivePrograms();
-  const { calculateWorkoutStats, getWorkoutCompletions } = useWorkoutCompletionsCache();
+  const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
+  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
 
   // Filter programs for the specific user
   const userPrograms = allActivePrograms.filter(program => program.user_id === userProfile.id);
 
-  const [programsWithStats, setProgramsWithStats] = useState<any[]>([]);
-  const [statsLoading, setStatsLoading] = useState(false);
-
+  // Fetch all workout completions - same as calendar and ProgramCards
   useEffect(() => {
-    if (userPrograms.length === 0) {
-      setProgramsWithStats([]);
-      return;
-    }
-
-    const loadProgramsWithStats = async () => {
-      setStatsLoading(true);
-      try {
-        const programsWithStatsData = await Promise.all(
-          userPrograms.map(async (assignment) => {
-            const completions = await getWorkoutCompletions(assignment.id);
-            const stats = calculateWorkoutStats(completions, assignment.training_dates || []);
-            return {
-              assignment,
-              stats
-            };
-          })
-        );
-        setProgramsWithStats(programsWithStatsData);
-      } catch (error) {
-        console.error('Error loading program stats:', error);
-      } finally {
-        setStatsLoading(false);
+    const loadCompletions = async () => {
+      if (userPrograms.length > 0) {
+        const allCompletions = await getAllWorkoutCompletions();
+        // Filter completions for this user's assignments
+        const userAssignmentIds = userPrograms.map(p => p.id);
+        const userCompletions = allCompletions.filter(c => userAssignmentIds.includes(c.assignment_id));
+        setWorkoutCompletions(userCompletions);
       }
     };
+    loadCompletions();
+  }, [userPrograms.length, userProfile.id, getAllWorkoutCompletions]);
 
-    loadProgramsWithStats();
-  }, [userPrograms.length, userProfile.id]); 
+  // Calculate stats the same way as calendar and ProgramCards
+  const calculateProgramStats = (assignment: any) => {
+    const trainingDates = assignment.training_dates || [];
+    const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
+    
+    const completed = assignmentCompletions.filter(c => c.status === 'completed').length;
+    const total = trainingDates.length;
+    const missed = assignmentCompletions.filter(c => c.status === 'missed').length;
+    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    return {
+      completed,
+      total,
+      missed,
+      progress
+    };
+  };
+
+  // Calculate stats for each program
+  const programsWithStats = userPrograms.map(assignment => ({
+    assignment,
+    stats: calculateProgramStats(assignment)
+  }));
 
   // Διαχωρισμός προγραμμάτων σε ενεργά και ολοκληρωμένα
   const activeIncompletePrograms = programsWithStats.filter(item => item.stats?.progress < 100);
@@ -59,7 +65,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     console.log('Delete not allowed for user profiles');
   };
 
-  if (isLoading || statsLoading) {
+  if (isLoading) {
     return (
       <Card className="rounded-none">
         <CardHeader>
