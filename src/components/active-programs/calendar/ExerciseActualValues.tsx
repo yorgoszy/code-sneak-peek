@@ -14,6 +14,8 @@ interface ExerciseActualValuesProps {
   updateNotes: (exerciseId: string, notes: string) => void;
   selectedDate?: Date;
   program?: any;
+  onSetClick?: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
+  getRemainingText?: (exerciseId: string, totalSets: number) => string;
 }
 
 export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
@@ -25,20 +27,16 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   getNotes,
   updateNotes,
   selectedDate,
-  program
+  program,
+  onSetClick,
+  getRemainingText
 }) => {
   const [actualKg, setActualKg] = useState('');
   const [actualReps, setActualReps] = useState('');
   const [actualVelocity, setActualVelocity] = useState('');
   const [calculatedPercentage, setCalculatedPercentage] = useState('');
   const notes = getNotes(exercise.id);
-  const [textareaHeight, setTextareaHeight] = useState('auto');
   
-  // Function to update textarea height
-  const updateTextareaHeight = (height: string) => {
-    setTextareaHeight(height);
-  };
-
   // Load data from previous week
   useEffect(() => {
     if (selectedDate && program) {
@@ -57,7 +55,6 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
       const plannedPercentage = exercise.percentage_1rm || 0;
       
       if (plannedKg > 0 && actualKgNum > 0 && plannedPercentage > 0) {
-        // Calculate new percentage based on the ratio
         const newPercentage = (actualKgNum / plannedKg) * plannedPercentage;
         setCalculatedPercentage(Math.round(newPercentage).toString());
       } else {
@@ -109,10 +106,31 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
     }
   };
 
+  const handleSetClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (onSetClick) {
+      onSetClick(exercise.id, exercise.sets, event);
+    }
+  };
+
+  const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
+
   return (
-    <div className="grid grid-cols-8 gap-0.5 text-xs">
+    <div className="grid grid-cols-9 gap-0.5 text-xs">
       <div className="text-center flex items-stretch h-full">
         <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs flex-1 flex items-center justify-center">-</div>
+      </div>
+      <div className="text-center">
+        {workoutInProgress && onSetClick ? (
+          <button
+            onClick={handleSetClick}
+            className="w-full h-5 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-xs font-medium cursor-pointer transition-colors"
+          >
+            {remainingText}
+          </button>
+        ) : (
+          <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs flex items-center justify-center h-5">-</div>
+        )}
       </div>
       <div className="text-center">
         <Input
@@ -126,11 +144,11 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
       </div>
       <div className="text-center">
         {calculatedPercentage ? (
-          <div className="bg-red-50 px-1 py-0.5 rounded-none text-xs text-red-600 font-medium">
+          <div className="bg-red-50 px-1 py-0.5 rounded-none text-xs text-red-600 font-medium h-5 flex items-center justify-center">
             {calculatedPercentage}%
           </div>
         ) : (
-          <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
+          <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs h-5 flex items-center justify-center">-</div>
         )}
       </div>
       <div className="text-center">
@@ -166,10 +184,9 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
           placeholder={workoutInProgress ? "Notes..." : ""}
-          className="h-full min-h-0 text-xs rounded-none resize-none p-0.5 text-red-600 font-medium text-center"
+          className="h-full min-h-0 text-xs rounded-none resize-none p-0.5 text-red-600 font-medium text-center flex-1"
           disabled={!workoutInProgress}
           rows={1}
-          style={{ height: textareaHeight }}
         />
       </div>
     </div>

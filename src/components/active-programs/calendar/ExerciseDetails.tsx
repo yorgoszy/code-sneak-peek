@@ -1,13 +1,25 @@
 
 import React from 'react';
+import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThumbnail';
 
 interface ExerciseDetailsProps {
   exercise: any;
+  onVideoClick?: (exercise: any) => void;
 }
 
-export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({ exercise }) => {
+export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({ exercise, onVideoClick }) => {
   return (
-    <div className="grid grid-cols-8 gap-0.5 text-xs">
+    <div className="grid grid-cols-9 gap-0.5 text-xs">
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Video</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs flex justify-center">
+          {onVideoClick ? (
+            <VideoThumbnail exercise={exercise} onVideoClick={onVideoClick} />
+          ) : (
+            <span>-</span>
+          )}
+        </div>
+      </div>
       <div className="text-center">
         <div className="text-gray-600 mb-1">Sets</div>
         <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs">{exercise.sets || '-'}</div>

@@ -24,6 +24,7 @@ interface ExerciseItemProps {
   clearReps: (exerciseId: string) => void;
   selectedDate?: Date;
   program?: any;
+  getRemainingText: (exerciseId: string, totalSets: number) => string;
 }
 
 export const ExerciseItem: React.FC<ExerciseItemProps> = ({
@@ -41,15 +42,11 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   updateNotes,
   clearNotes,
   selectedDate,
-  program
+  program,
+  getRemainingText
 }) => {
   const handleClick = (event: React.MouseEvent) => {
     onExerciseClick(exercise, event);
-  };
-
-  const handleSetClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onSetClick(exercise.id, exercise.sets, event);
   };
 
   const handleVideoClick = (event: React.MouseEvent) => {
@@ -70,11 +67,11 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         remainingText={remainingText}
         workoutInProgress={workoutInProgress}
         onVideoClick={handleVideoClick}
-        onSetClick={handleSetClick}
+        onSetClick={() => {}} // Empty function since we moved the button
       />
 
       <div className="p-3">
-        <ExerciseDetails exercise={exercise} />
+        <ExerciseDetails exercise={exercise} onVideoClick={onVideoClick} />
 
         <ExerciseActualValues
           exercise={exercise}
@@ -86,6 +83,8 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           updateNotes={updateNotes}
           selectedDate={selectedDate}
           program={program}
+          onSetClick={onSetClick}
+          getRemainingText={getRemainingText}
         />
 
         <ExerciseNotes
