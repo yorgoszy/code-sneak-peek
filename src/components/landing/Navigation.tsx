@@ -23,6 +23,16 @@ const Navigation: React.FC<NavigationProps> = ({
   onSignOut,
   translations
 }) => {
+  const handleNavigationClick = (href: string, event: React.MouseEvent) => {
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <nav className="fixed top-0 w-full bg-black z-50">
       <style>{`
@@ -68,6 +78,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 key={item.name}
                 href={item.href}
                 className="nav-link text-white transition-colors duration-200 text-sm font-medium"
+                onClick={(e) => handleNavigationClick(item.href, e)}
               >
                 {item.name}
               </a>
