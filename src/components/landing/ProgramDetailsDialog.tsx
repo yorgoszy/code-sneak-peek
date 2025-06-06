@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ProgramDetailsSidebar } from './program-details/ProgramDetailsSidebar';
 import { ProgramDetailsContent } from './program-details/ProgramDetailsContent';
@@ -23,14 +23,24 @@ export const ProgramDetailsDialog: React.FC<ProgramDetailsDialogProps> = ({
   onClose,
   program
 }) => {
+  const [activeSection, setActiveSection] = useState(1);
+
   if (!program) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto bg-black text-white border-gray-700 rounded-none p-0">
         <div className="flex">
-          <ProgramDetailsSidebar onClose={onClose} />
-          <ProgramDetailsContent program={program} onClose={onClose} />
+          <ProgramDetailsSidebar 
+            onClose={onClose} 
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+          />
+          <ProgramDetailsContent 
+            program={program} 
+            onClose={onClose} 
+            activeSection={activeSection}
+          />
         </div>
       </DialogContent>
     </Dialog>

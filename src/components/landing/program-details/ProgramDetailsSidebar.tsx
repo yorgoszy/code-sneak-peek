@@ -3,9 +3,22 @@ import React from 'react';
 
 interface ProgramDetailsSidebarProps {
   onClose: () => void;
+  activeSection: number;
+  onSectionChange: (section: number) => void;
 }
 
-export const ProgramDetailsSidebar: React.FC<ProgramDetailsSidebarProps> = ({ onClose }) => {
+export const ProgramDetailsSidebar: React.FC<ProgramDetailsSidebarProps> = ({ 
+  onClose, 
+  activeSection, 
+  onSectionChange 
+}) => {
+  const sections = [
+    { id: 1, title: "Program Details" },
+    { id: 2, title: "Program Benefits" },
+    { id: 3, title: "Weekly Schedule" },
+    { id: 4, title: "Pricing Plans" }
+  ];
+
   return (
     <div className="w-80 bg-black p-8 border-r border-gray-700">
       <div className="mb-8">
@@ -19,22 +32,24 @@ export const ProgramDetailsSidebar: React.FC<ProgramDetailsSidebarProps> = ({ on
       </div>
 
       <nav className="space-y-6">
-        <div className="flex items-center gap-4">
-          <span className="text-[#00ffba] text-xl font-bold">01</span>
-          <span className="text-white font-medium border-b border-[#00ffba] pb-1">Program Details</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-500 text-xl font-bold">02</span>
-          <span className="text-gray-500 font-medium">Program Benefits</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-500 text-xl font-bold">03</span>
-          <span className="text-gray-500 font-medium">Weekly Schedule</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-500 text-xl font-bold">04</span>
-          <span className="text-gray-500 font-medium">Pricing Plans</span>
-        </div>
+        {sections.map((section) => (
+          <div 
+            key={section.id}
+            className="flex items-center gap-4 cursor-pointer transition-all duration-300 hover:opacity-80"
+            onClick={() => onSectionChange(section.id)}
+          >
+            <span className={`text-xl font-bold ${activeSection === section.id ? 'text-[#00ffba]' : 'text-gray-500'}`}>
+              {section.id.toString().padStart(2, '0')}
+            </span>
+            <span className={`font-medium transition-all duration-300 ${
+              activeSection === section.id 
+                ? 'text-white border-b border-[#00ffba] pb-1' 
+                : 'text-gray-500'
+            }`}>
+              {section.title}
+            </span>
+          </div>
+        ))}
       </nav>
     </div>
   );

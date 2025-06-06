@@ -84,14 +84,14 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             <div className="flex justify-end mb-8 space-x-4">
               <button
                 onClick={prevPage}
-                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300 rounded-md"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300 rounded-none"
                 disabled={totalPages <= 1}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={nextPage}
-                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300 rounded-md"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300 rounded-none"
                 disabled={totalPages <= 1}
               >
                 <ChevronRight className="w-4 h-4" />
@@ -107,7 +107,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className="group cursor-pointer"
                     onClick={() => handleProgramClick(program)}
                   >
-                    <div className="bg-white border-2 border-black overflow-hidden h-full rounded-lg opacity-70 hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white border-2 border-black overflow-hidden h-full rounded-lg opacity-100 hover:opacity-90 transition-opacity duration-300">
                       <div className="relative h-48 overflow-hidden rounded-t-lg">
                         <img
                           src={program.image}
@@ -124,7 +124,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         </div>
                       </div>
                       
-                      <div className="p-6">
+                      <div className="p-6 opacity-100">
                         <h3 className="text-xl font-bold mb-3 opacity-100" style={{ color: '#00ffba' }}>
                           {program.title}
                         </h3>
