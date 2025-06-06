@@ -46,6 +46,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
             onRefresh={onRefresh} 
             onDelete={onDelete}
             userMode={userMode}
+            workoutStats={stats}
           />
         </div>
       </CardContent>

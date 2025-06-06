@@ -14,6 +14,11 @@ interface ProgramCardActionsProps {
   onRefresh?: () => void;
   onDelete?: (assignmentId: string) => void;
   userMode?: boolean;
+  workoutStats?: {
+    completed: number;
+    total: number;
+    missed: number;
+  };
 }
 
 export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ 
@@ -21,11 +26,16 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   selectedDate,
   onRefresh,
   onDelete,
-  userMode = false
+  userMode = false,
+  workoutStats
 }) => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
+
+  // Calculate if program is completed
+  const isCompleted = workoutStats && workoutStats.total > 0 ? 
+    (workoutStats.completed / workoutStats.total) >= 1 : false;
 
   const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
     setViewDialogOpen(false);
@@ -51,9 +61,13 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         {/* Status Badge */}
         <Badge 
           variant="outline" 
-          className="rounded-none bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba] text-xs px-1 py-0"
+          className={`rounded-none text-xs px-1 py-0 ${
+            isCompleted 
+              ? 'bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]' 
+              : 'bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]'
+          }`}
         >
-          Active
+          {isCompleted ? 'Completed' : 'Active'}
         </Badge>
 
         {/* Action Buttons */}
@@ -85,8 +99,13 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => console.log('Complete clicked')}
-                className="h-6 w-6 p-0 rounded-none"
-                title="Ολοκλήρωση"
+                className={`h-6 w-6 p-0 rounded-none ${
+                  isCompleted 
+                    ? 'text-[#00ffba] cursor-not-allowed' 
+                    : 'text-gray-400 cursor-not-allowed'
+                }`}
+                title={isCompleted ? "Ολοκληρωμένο" : "Ολοκλήρωση"}
+                disabled={true}
               >
                 <CheckCircle className="h-3 w-3" />
               </Button>
