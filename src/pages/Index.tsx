@@ -34,7 +34,7 @@ const Index = () => {
     { name: translations.home, href: "#home" },
     { name: translations.programs, href: "#programs" },
     { name: translations.about, href: "#about" },
-    { name: "Νέα", href: "#blog" },
+    { name: translations.blog, href: "#blog" },
     { name: translations.results, href: "#results" },
     { name: translations.contact, href: "#contact" }
   ];
