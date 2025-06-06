@@ -22,7 +22,7 @@ export const ExerciseNotesSection: React.FC<ExerciseNotesSectionProps> = ({
 }) => {
   return (
     <div className="space-y-1">
-      {/* Textarea moved up - removed the divider line */}
+      {/* Textarea takes the place of divider + one more cell */}
       <div className="flex items-start gap-2">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
