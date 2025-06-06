@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from 'lucide-react';
 
@@ -20,6 +20,36 @@ export const ExerciseNotesSection: React.FC<ExerciseNotesSectionProps> = ({
   hasData,
   exercise
 }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [textareaHeight, setTextareaHeight] = useState('auto');
+  
+  useEffect(() => {
+    const adjustHeight = () => {
+      const textarea = textareaRef.current;
+      if (textarea) {
+        // Reset height to auto to properly calculate the new height
+        textarea.style.height = 'auto';
+        // Set the new height based on scrollHeight
+        const newHeight = Math.max(20, textarea.scrollHeight); // minimum 20px
+        textarea.style.height = `${newHeight}px`;
+        setTextareaHeight(`${newHeight}px`);
+      }
+    };
+    
+    adjustHeight();
+    
+    // Re-adjust when notes change
+    if (textareaRef.current) {
+      textareaRef.current.addEventListener('input', adjustHeight);
+    }
+    
+    return () => {
+      if (textareaRef.current) {
+        textareaRef.current.removeEventListener('input', adjustHeight);
+      }
+    };
+  }, [notes]);
+
   return (
     <div className="space-y-1">
       <div className="flex items-start gap-2">
@@ -37,12 +67,14 @@ export const ExerciseNotesSection: React.FC<ExerciseNotesSectionProps> = ({
             )}
           </div>
           <Textarea
+            ref={textareaRef}
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
             placeholder={workoutInProgress ? "Προσθήκη σημειώσεων..." : "Πάτησε έναρξη για σημειώσεις"}
             className="min-h-[20px] text-xs rounded-none resize-none h-4"
             disabled={!workoutInProgress}
             rows={1}
+            style={{ height: textareaHeight }}
           />
         </div>
       </div>

@@ -32,6 +32,12 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   const [actualVelocity, setActualVelocity] = useState('');
   const [calculatedPercentage, setCalculatedPercentage] = useState('');
   const notes = getNotes(exercise.id);
+  const [textareaHeight, setTextareaHeight] = useState('auto');
+  
+  // Function to update textarea height
+  const updateTextareaHeight = (height: string) => {
+    setTextareaHeight(height);
+  };
 
   // Load data from previous week
   useEffect(() => {
@@ -163,6 +169,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           className="h-5 text-xs rounded-none resize-none p-0.5 text-red-600 font-medium text-center"
           disabled={!workoutInProgress}
           rows={1}
+          style={{ height: textareaHeight }}
         />
       </div>
     </div>
