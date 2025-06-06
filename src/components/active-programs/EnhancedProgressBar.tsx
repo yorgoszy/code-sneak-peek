@@ -22,9 +22,9 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
 
   return (
     <div className={`relative h-1 w-full overflow-hidden rounded-none bg-gray-200 ${className}`}>
-      {/* Completed part - Green */}
+      {/* Completed part - Black */}
       <div 
-        className="absolute left-0 top-0 h-full bg-[#00ffba] transition-all duration-300"
+        className="absolute left-0 top-0 h-full bg-black transition-all duration-300"
         style={{ width: `${completedPercentage}%` }}
       />
       
@@ -37,9 +37,9 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
         }}
       />
       
-      {/* Remaining part - Blue */}
+      {/* Remaining part - Light Gray */}
       <div 
-        className="absolute top-0 h-full bg-blue-500 transition-all duration-300"
+        className="absolute top-0 h-full bg-gray-400 transition-all duration-300"
         style={{ 
           left: `${completedPercentage + missedPercentage}%`, 
           width: `${remainingPercentage}%` 
