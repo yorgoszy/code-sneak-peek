@@ -66,11 +66,11 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
   };
 
   return (
-    <CollapsibleContent className="flex-1 min-h-0 overflow-hidden">
-      <CardContent className="pt-1 md:pt-2 pl-2 md:pl-4 pr-1 md:pr-4 pb-1 md:pb-2 h-full overflow-y-auto">
+    <CollapsibleContent>
+      <CardContent className="pt-2 pl-4">
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-0 md:space-y-1">
+            <div className="space-y-0">
               {blocks.map((block) => (
                 <SortableBlock
                   key={block.id}

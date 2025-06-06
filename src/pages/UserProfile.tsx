@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,7 +7,6 @@ import { LogOut, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileSidebar } from "@/components/user-profile/UserProfileSidebar";
-import { MobileUserNavigation } from "@/components/navigation/MobileUserNavigation";
 import { UserProfileContent } from "@/components/user-profile/UserProfileContent";
 import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfileData";
 
@@ -78,59 +78,56 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-      {/* Sidebar - hidden on mobile */}
-      <div className="hidden md:block">
-        <UserProfileSidebar 
-          isCollapsed={isCollapsed} 
-          setIsCollapsed={setIsCollapsed}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          userProfile={userProfile}
-          stats={stats}
-        />
-      </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <UserProfileSidebar 
+        isCollapsed={isCollapsed} 
+        setIsCollapsed={setIsCollapsed}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        userProfile={userProfile}
+        stats={stats}
+      />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
+      <div className="flex-1 flex flex-col">
         {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-2 md:px-4 lg:px-6 py-2 md:py-4">
+        <nav className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="flex items-center space-x-4">
               <Link to="/dashboard/users">
-                <Button variant="outline" size="sm" className="rounded-none text-xs md:text-sm p-1 md:p-2">
-                  <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                  <span className="hidden sm:inline">Επιστροφή</span>
+                <Button variant="outline" size="sm" className="rounded-none">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Επιστροφή
                 </Button>
               </Link>
               <div>
-                <h1 className="text-lg md:text-2xl font-bold text-gray-900">
-                  <span className="hidden sm:inline">Προφίλ:</span> {userProfile.name}
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Προφίλ: {userProfile.name}
                 </h1>
-                <p className="text-xs md:text-sm text-gray-600 hidden md:block">
+                <p className="text-sm text-gray-600">
                   {userProfile.email} - {userProfile.role}
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 md:space-x-4">
-              <span className="text-xs md:text-sm text-gray-600 hidden lg:block">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">
                 {currentUser?.email}
               </span>
               <Button 
                 variant="outline" 
-                size="sm"
-                className="rounded-none text-xs md:text-sm p-1 md:p-2"
+                className="rounded-none"
                 onClick={handleSignOut}
               >
-                <LogOut className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Αποσύνδεση</span>
+                <LogOut className="h-4 w-4 mr-2" />
+                Αποσύνδεση
               </Button>
             </div>
           </div>
         </nav>
 
         {/* Profile Content */}
-        <div className="flex-1 p-2 md:p-4 lg:p-6 overflow-hidden">
+        <div className="flex-1 p-6">
           <UserProfileContent
             activeTab={activeTab}
             userProfile={userProfile}
@@ -141,13 +138,6 @@ const UserProfile = () => {
           />
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      <MobileUserNavigation 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        stats={stats}
-      />
     </div>
   );
 };

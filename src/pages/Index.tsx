@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +16,7 @@ const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { language, translations, toggleLanguage } = useTranslations();
+  const [activeAboutSection, setActiveAboutSection] = useState<number>(1);
 
   const handleSignOut = async () => {
     await signOut();
@@ -133,6 +133,8 @@ const Index = () => {
 
       <AboutSection 
         translations={translations}
+        activeAboutSection={activeAboutSection}
+        onSetActiveAboutSection={setActiveAboutSection}
       />
 
       <EliteTrainingSection 

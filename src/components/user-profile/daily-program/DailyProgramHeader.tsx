@@ -13,8 +13,8 @@ export const DailyProgramHeader: React.FC = () => {
         <h2 className="text-xl font-semibold text-gray-900">
           Πρόγραμμα για σήμερα
         </h2>
-        <p className="text-xs text-gray-600">
-          {format(today, 'dd/MM/yy')}
+        <p className="text-sm text-gray-600">
+          {format(today, 'dd/MM/yyyy')}
         </p>
       </div>
     </div>

@@ -130,12 +130,12 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6 md:space-y-8">
-          {/* Ενεργά Προγράμματα - Από πάνω */}
+        <div className="grid grid-cols-2 gap-8">
+          {/* Αριστερή στήλη - Ενεργά Προγράμματα */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Clock className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-blue-600" />
                 Ενεργά Προγράμματα
               </h3>
               <div className="text-sm text-gray-500">
@@ -144,7 +144,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             </div>
 
             {activeIncompletePrograms.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-4">
                 {activeIncompletePrograms.map((item) => (
                   <div key={item.assignment.id} className="flex justify-center">
                     <ProgramCard
@@ -158,18 +158,18 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6 md:py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
-                <Clock className="h-8 w-8 md:h-12 md:w-12 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
+                <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p className="text-sm">Δεν υπάρχουν ενεργά προγράμματα</p>
               </div>
             )}
           </div>
 
-          {/* Ολοκληρωμένα Προγράμματα - Από κάτω */}
+          {/* Δεξιά στήλη - Ολοκληρωμένα Προγράμματα */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-[#00ffba]" />
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-[#00ffba]" />
                 Ολοκληρωμένα Προγράμματα
               </h3>
               <div className="text-sm text-gray-500">
@@ -178,7 +178,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             </div>
 
             {completedPrograms.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-4">
                 {completedPrograms.map((item) => (
                   <div key={item.assignment.id} className="flex justify-center">
                     <ProgramCard
@@ -192,8 +192,8 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6 md:py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
-                <CheckCircle className="h-8 w-8 md:h-12 md:w-12 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
+                <CheckCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p className="text-sm">Δεν υπάρχουν ολοκληρωμένα προγράμματα</p>
               </div>
             )}

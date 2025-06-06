@@ -1,10 +1,9 @@
 
 import React from 'react';
-import { CardHeader } from "@/components/ui/card";
-import { CollapsibleTrigger } from "@/components/ui/collapsible";
+import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ChevronUp, ChevronDown, Plus, Copy, Trash2 } from "lucide-react";
+import { CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
 
 interface DayCardHeaderProps {
   dayName: string;
@@ -13,7 +12,7 @@ interface DayCardHeaderProps {
   editingName: string;
   blocksCount: number;
   onNameDoubleClick: () => void;
-  onEditingNameChange: (name: string) => void;
+  onEditingNameChange: (value: string) => void;
   onNameSave: () => void;
   onNameKeyPress: (e: React.KeyboardEvent) => void;
   onAddBlock: () => void;
@@ -36,67 +35,70 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onRemoveDay
 }) => {
   return (
-    <CardHeader className="p-2 md:p-4 pb-1 md:pb-2 ml-2 md:ml-4 flex-shrink-0">
-      <div className="flex items-center justify-between">
-        <CollapsibleTrigger asChild>
-          <div className="flex items-center space-x-1 md:space-x-2 cursor-pointer flex-1 min-w-0">
-            {isOpen ? (
-              <ChevronUp className="h-3 w-3 md:h-4 md:w-4 text-gray-500 flex-shrink-0" />
-            ) : (
-              <ChevronDown className="h-3 w-3 md:h-4 md:w-4 text-gray-500 flex-shrink-0" />
-            )}
-            
+    <CardHeader className="pb-2">
+      <div className="flex justify-between items-center">
+        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded">
+          {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          <CardTitle 
+            className="text-sm cursor-pointer flex items-center gap-2"
+            onDoubleClick={onNameDoubleClick}
+          >
             {isEditing ? (
-              <Input
+              <input
+                type="text"
                 value={editingName}
                 onChange={(e) => onEditingNameChange(e.target.value)}
                 onBlur={onNameSave}
-                onKeyPress={onNameKeyPress}
-                className="h-6 md:h-8 text-xs md:text-sm px-1 md:px-2 rounded-none bg-white flex-1 min-w-0"
+                onKeyDown={onNameKeyPress}
+                className="bg-transparent border border-gray-300 rounded px-1 outline-none"
                 autoFocus
+                onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <div className="flex-1 min-w-0">
-                <h4
-                  className="text-xs md:text-sm font-semibold text-gray-900 cursor-pointer truncate"
-                  onDoubleClick={onNameDoubleClick}
-                  title={dayName}
-                >
-                  {dayName}
-                </h4>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {blocksCount} block{blocksCount !== 1 ? 's' : ''}
-                </p>
-              </div>
+              <>
+                {dayName}
+                {!isOpen && blocksCount > 0 && (
+                  <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+                    {blocksCount}
+                  </span>
+                )}
+              </>
             )}
-          </div>
+          </CardTitle>
         </CollapsibleTrigger>
-
-        <div className="flex items-center space-x-0.5 md:space-x-1 flex-shrink-0">
+        <div className="flex gap-1">
           <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddBlock();
+            }}
             size="sm"
-            onClick={onAddBlock}
-            className="rounded-none h-6 md:h-8 w-6 md:w-8 p-0"
+            variant="ghost"
+            className="rounded-none"
           >
-            <Plus className="h-3 w-3 md:h-4 md:w-4" />
+            <Plus className="w-3 h-3" />
           </Button>
-          
           <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDuplicateDay();
+            }}
             size="sm"
-            variant="outline"
-            onClick={onDuplicateDay}
-            className="rounded-none h-6 md:h-8 w-6 md:w-8 p-0"
+            variant="ghost"
+            className="rounded-none"
           >
-            <Copy className="h-3 w-3 md:h-4 md:w-4" />
+            <Copy className="w-3 h-3" />
           </Button>
-          
           <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveDay();
+            }}
             size="sm"
-            variant="destructive"
-            onClick={onRemoveDay}
-            className="rounded-none h-6 md:h-8 w-6 md:w-8 p-0"
+            variant="ghost"
+            className="rounded-none"
           >
-            <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
+            <Trash2 className="w-3 h-3" />
           </Button>
         </div>
       </div>

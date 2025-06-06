@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
 import { Program } from "@/components/programs/types";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useProgramsData } from "@/hooks/useProgramsData";
-import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
-import { TabNavigation } from "@/components/navigation/TabNavigation";
 
 const Programs = () => {
-  const { user, loading: authLoading, isAuthenticated, signOut } = useAuth();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   
@@ -109,34 +106,19 @@ const Programs = () => {
     setBuilderOpen(true);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
-  if (authLoading || loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Φόρτωση...</p>
-        </div>
+      <div className="min-h-screen flex w-full">
+        <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
+        <div className="flex-1 p-6">Φόρτωση...</div>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <TabNavigation 
-        onSignOut={handleSignOut}
-        userProfile={userProfile}
-        user={user}
-        isAdmin={true}
-      />
-
-      <div className="p-6">
+    <div className="min-h-screen flex w-full">
+      <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
+      <div className="flex-1 p-6">
         <ProgramsLayout
           programs={programs}
           selectedProgram={selectedProgram}

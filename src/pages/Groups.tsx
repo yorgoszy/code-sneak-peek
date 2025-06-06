@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Users, Search, Eye } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Users, Search, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -27,7 +28,6 @@ import { useToast } from "@/hooks/use-toast";
 import { EditGroupDialog } from "@/components/EditGroupDialog";
 import { DeleteGroupDialog } from "@/components/DeleteGroupDialog";
 import { ViewGroupDialog } from "@/components/ViewGroupDialog";
-import { TabNavigation } from "@/components/navigation/TabNavigation";
 
 interface AppUser {
   id: string;
@@ -240,7 +240,7 @@ const Groups = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">Φόρτωση...</p>
         </div>
@@ -271,186 +271,293 @@ const Groups = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <TabNavigation 
-        onSignOut={handleSignOut}
-        userProfile={userProfile}
-        user={user}
-        isAdmin={isAdmin}
-      />
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-      <div className="p-6 space-y-6">
-        {/* Existing Groups */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-lg font-semibold">
-                Υπάρχουσες Ομάδες ({groups.length})
-              </CardTitle>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Navigation */}
+        <nav className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Groups</h1>
+              <p className="text-sm text-gray-600">
+                Διαχείριση ομάδων χρηστών
+              </p>
             </div>
-          </CardHeader>
-          <CardContent>
-            {loadingGroups ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">Φόρτωση ομάδων...</p>
-              </div>
-            ) : groups.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">Δεν βρέθηκαν ομάδες</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Όνομα</TableHead>
-                    <TableHead>Περιγραφή</TableHead>
-                    <TableHead>Δημιουργία</TableHead>
-                    <TableHead>Ενέργειες</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {groups.map((group) => (
-                    <TableRow key={group.id}>
-                      <TableCell className="font-medium">
-                        {group.name}
-                      </TableCell>
-                      <TableCell>{group.description || '-'}</TableCell>
-                      <TableCell>{formatDate(group.created_at)}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="rounded-none"
-                            onClick={() => handleViewGroup(group)}
-                          >
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="rounded-none"
-                            onClick={() => handleEditGroup(group)}
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="rounded-none text-red-600 hover:text-red-700"
-                            onClick={() => handleDeleteGroup(group)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Create New Group */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-lg font-semibold">
-                Δημιουργία Νέας Ομάδας
-              </CardTitle>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">
+                {userProfile?.name || user?.email}
+                {isAdmin && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+              </span>
               <Button 
+                variant="outline" 
                 className="rounded-none"
-                onClick={() => setNewGroupDialogOpen(true)}
+                onClick={handleSignOut}
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Νέα Ομάδα
+                <LogOut className="h-4 w-4 mr-2" />
+                Αποσύνδεση
               </Button>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Search Users */}
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Αναζήτηση χρηστών..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          </div>
+        </nav>
 
-              {/* Users List */}
-              {loadingUsers ? (
+        {/* Groups Content */}
+        <div className="flex-1 p-6 space-y-6">
+          {/* Existing Groups */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-lg font-semibold">
+                  Υπάρχουσες Ομάδες ({groups.length})
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingGroups ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600">Φόρτωση χρηστών...</p>
+                  <p className="text-gray-600">Φόρτωση ομάδων...</p>
+                </div>
+              ) : groups.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">Δεν βρέθηκαν ομάδες</p>
                 </div>
               ) : (
-                <div className="max-h-96 overflow-y-auto border rounded">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">
-                          <Checkbox
-                            checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedUsers(filteredUsers.map(u => u.id));
-                              } else {
-                                setSelectedUsers([]);
-                              }
-                            }}
-                          />
-                        </TableHead>
-                        <TableHead>Όνομα</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Ρόλος</TableHead>
-                        <TableHead>Κατάσταση</TableHead>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Όνομα</TableHead>
+                      <TableHead>Περιγραφή</TableHead>
+                      <TableHead>Δημιουργία</TableHead>
+                      <TableHead>Ενέργειες</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groups.map((group) => (
+                      <TableRow key={group.id}>
+                        <TableCell className="font-medium">
+                          {group.name}
+                        </TableCell>
+                        <TableCell>{group.description || '-'}</TableCell>
+                        <TableCell>{formatDate(group.created_at)}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-none"
+                              onClick={() => handleViewGroup(group)}
+                            >
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-none"
+                              onClick={() => handleEditGroup(group)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-none text-red-600 hover:text-red-700"
+                              onClick={() => handleDeleteGroup(group)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredUsers.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <Checkbox
-                              checked={selectedUsers.includes(user.id)}
-                              onCheckedChange={(checked) => handleUserSelect(user.id, checked as boolean)}
-                            />
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {user.name}
-                          </TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>{user.role}</TableCell>
-                          <TableCell>
-                            <span className={`px-2 py-1 text-xs rounded ${
-                              user.user_status === 'active' ? 'bg-green-100 text-green-800' :
-                              user.user_status === 'inactive' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {user.user_status}
-                            </span>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
+            </CardContent>
+          </Card>
 
-              {selectedUsers.length > 0 && (
-                <div className="bg-blue-50 p-4 rounded">
-                  <p className="text-sm text-blue-800">
-                    <Users className="inline h-4 w-4 mr-1" />
-                    Επιλεγμένοι χρήστες: {selectedUsers.length}
-                  </p>
+          {/* Create New Group */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-lg font-semibold">
+                  Δημιουργία Νέας Ομάδας
+                </CardTitle>
+                <Button 
+                  className="rounded-none"
+                  onClick={() => setNewGroupDialogOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Νέα Ομάδα
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Search Users */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Αναζήτηση χρηστών..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+
+                {/* Users List */}
+                {loadingUsers ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">Φόρτωση χρηστών...</p>
+                  </div>
+                ) : (
+                  <div className="max-h-96 overflow-y-auto border rounded">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">
+                            <Checkbox
+                              checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedUsers(filteredUsers.map(u => u.id));
+                                } else {
+                                  setSelectedUsers([]);
+                                }
+                              }}
+                            />
+                          </TableHead>
+                          <TableHead>Όνομα</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Ρόλος</TableHead>
+                          <TableHead>Κατάσταση</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.map((user) => (
+                          <TableRow key={user.id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedUsers.includes(user.id)}
+                                onCheckedChange={(checked) => handleUserSelect(user.id, checked as boolean)}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {user.name}
+                            </TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>{user.role}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 text-xs rounded ${
+                                user.user_status === 'active' ? 'bg-green-100 text-green-800' :
+                                user.user_status === 'inactive' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {user.user_status}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                {selectedUsers.length > 0 && (
+                  <div className="bg-blue-50 p-4 rounded">
+                    <p className="text-sm text-blue-800">
+                      <Users className="inline h-4 w-4 mr-1" />
+                      Επιλεγμένοι χρήστες: {selectedUsers.length}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* New Group Dialog */}
+      <Dialog open={newGroupDialogOpen} onOpenChange={setNewGroupDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Νέα Ομάδα</DialogTitle>
+            <DialogDescription>
+              Δημιουργήστε μια νέα ομάδα χρηστών
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="groupName">Όνομα Ομάδας</Label>
+              <Input
+                id="groupName"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="Εισάγετε το όνομα της ομάδας"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="groupDescription">Περιγραφή (προαιρετικό)</Label>
+              <Input
+                id="groupDescription"
+                value={groupDescription}
+                onChange={(e) => setGroupDescription(e.target.value)}
+                placeholder="Εισάγετε περιγραφή της ομάδας"
+              />
+            </div>
+
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-600">
+                Επιλεγμένοι χρήστες: {selectedUsers.length}
+              </p>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setNewGroupDialogOpen(false)}
+                className="rounded-none"
+              >
+                Ακύρωση
+              </Button>
+              <Button 
+                onClick={handleCreateGroup}
+                disabled={creating}
+                className="rounded-none"
+              >
+                {creating ? "Δημιουργία..." : "Δημιουργία"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Group Dialog */}
+      <ViewGroupDialog
+        isOpen={viewGroupDialogOpen}
+        onClose={() => setViewGroupDialogOpen(false)}
+        group={selectedGroup}
+      />
+
+      {/* Edit Group Dialog */}
+      <EditGroupDialog
+        isOpen={editGroupDialogOpen}
+        onClose={() => setEditGroupDialogOpen(false)}
+        onGroupUpdated={fetchGroups}
+        group={selectedGroup}
+      />
+
+      {/* Delete Group Dialog */}
+      <DeleteGroupDialog
+        isOpen={deleteGroupDialogOpen}
+        onClose={() => setDeleteGroupDialogOpen(false)}
+        onGroupDeleted={fetchGroups}
+        group={selectedGroup}
+      />
     </div>
   );
 };

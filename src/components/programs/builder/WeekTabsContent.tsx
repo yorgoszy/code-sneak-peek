@@ -3,13 +3,46 @@ import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { SortableDay } from './SortableDay';
+import { DayCard } from './DayCard';
 import { Exercise } from '../types';
 
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
+
+interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
+
+interface Day {
+  id: string;
+  name: string;
+  day_number: number;
+  blocks: Block[];
+}
+
+interface Week {
+  id: string;
+  name: string;
+  week_number: number;
+  days: Day[];
+}
+
 interface WeekTabsContentProps {
-  weeks: any[];
+  weeks: Week[];
   exercises: Exercise[];
   onAddDay: (weekId: string) => void;
   onRemoveWeek: (weekId: string) => void;
@@ -33,6 +66,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   weeks,
   exercises,
   onAddDay,
+  onRemoveWeek,
   onAddBlock,
   onRemoveDay,
   onDuplicateDay,
@@ -48,105 +82,73 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   onReorderBlocks,
   onReorderExercises
 }) => {
-  const handleDragEnd = (weekId: string) => (event: any) => {
-    const { active, over } = event;
-    if (active.id !== over.id) {
-      const week = weeks.find(w => w.id === weekId);
-      if (week) {
-        const oldIndex = week.days.findIndex((day: any) => day.id === active.id);
-        const newIndex = week.days.findIndex((day: any) => day.id === over.id);
-        onReorderDays(weekId, oldIndex, newIndex);
-      }
-    }
-  };
-
   return (
     <>
       {weeks.map((week) => (
-        <TabsContent key={week.id} value={week.id} className="mt-4">
+        <TabsContent key={week.id} value={week.id} className="mt-6">
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                {week.name} - Ημέρες Προπόνησης
-              </h3>
-              <Button
-                onClick={() => onAddDay(week.id)}
-                className="rounded-none w-full sm:w-auto"
-                size="sm"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Προσθήκη Ημέρας
-              </Button>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">{week.name}</h3>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => onAddDay(week.id)}
+                  size="sm"
+                  className="rounded-none"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  +Day
+                </Button>
+              </div>
             </div>
 
             {week.days && week.days.length > 0 ? (
-              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd(week.id)}>
-                <SortableContext items={week.days.map((d: any) => d.id)} strategy={horizontalListSortingStrategy}>
-                  {/* Mobile: Stack days vertically */}
-                  <div className="block lg:hidden space-y-4">
-                    {week.days.map((day: any) => (
-                      <div key={day.id} className="w-full">
-                        <SortableDay
-                          day={day}
-                          exercises={exercises}
-                          onAddBlock={() => onAddBlock(week.id, day.id)}
-                          onRemoveDay={() => onRemoveDay(week.id, day.id)}
-                          onDuplicateDay={() => onDuplicateDay(week.id, day.id)}
-                          onUpdateDayName={(name) => onUpdateDayName(week.id, day.id, name)}
-                          onAddExercise={(blockId, exerciseId) => onAddExercise(week.id, day.id, blockId, exerciseId)}
-                          onRemoveBlock={(blockId) => onRemoveBlock(week.id, day.id, blockId)}
-                          onDuplicateBlock={(blockId) => onDuplicateBlock(week.id, day.id, blockId)}
-                          onUpdateBlockName={(blockId, name) => onUpdateBlockName(week.id, day.id, blockId, name)}
-                          onUpdateExercise={(blockId, exerciseId, field, value) => 
-                            onUpdateExercise(week.id, day.id, blockId, exerciseId, field, value)
-                          }
-                          onRemoveExercise={(blockId, exerciseId) => onRemoveExercise(week.id, day.id, blockId, exerciseId)}
-                          onDuplicateExercise={(blockId, exerciseId) => onDuplicateExercise(week.id, day.id, blockId, exerciseId)}
-                          onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(week.id, day.id, oldIndex, newIndex)}
-                          onReorderExercises={(blockId, oldIndex, newIndex) => 
-                            onReorderExercises(week.id, day.id, blockId, oldIndex, newIndex)
-                          }
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Desktop: Horizontal layout with scroll */}
-                  <div className="hidden lg:block">
-                    <div className="flex gap-4 overflow-x-auto pb-4" style={{minHeight: '600px'}}>
-                      {week.days.map((day: any) => (
-                        <div key={day.id} className="flex-shrink-0" style={{width: '320px'}}>
-                          <SortableDay
-                            day={day}
-                            exercises={exercises}
-                            onAddBlock={() => onAddBlock(week.id, day.id)}
-                            onRemoveDay={() => onRemoveDay(week.id, day.id)}
-                            onDuplicateDay={() => onDuplicateDay(week.id, day.id)}
-                            onUpdateDayName={(name) => onUpdateDayName(week.id, day.id, name)}
-                            onAddExercise={(blockId, exerciseId) => onAddExercise(week.id, day.id, blockId, exerciseId)}
-                            onRemoveBlock={(blockId) => onRemoveBlock(week.id, day.id, blockId)}
-                            onDuplicateBlock={(blockId) => onDuplicateBlock(week.id, day.id, blockId)}
-                            onUpdateBlockName={(blockId, name) => onUpdateBlockName(week.id, day.id, blockId, name)}
-                            onUpdateExercise={(blockId, exerciseId, field, value) => 
-                              onUpdateExercise(week.id, day.id, blockId, exerciseId, field, value)
-                            }
-                            onRemoveExercise={(blockId, exerciseId) => onRemoveExercise(week.id, day.id, blockId, exerciseId)}
-                            onDuplicateExercise={(blockId, exerciseId) => onDuplicateExercise(week.id, day.id, blockId, exerciseId)}
-                            onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(week.id, day.id, oldIndex, newIndex)}
-                            onReorderExercises={(blockId, oldIndex, newIndex) => 
-                              onReorderExercises(week.id, day.id, blockId, oldIndex, newIndex)
-                            }
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </SortableContext>
-              </DndContext>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {week.days.map((day) => (
+                  <DayCard
+                    key={day.id}
+                    day={day}
+                    exercises={exercises}
+                    onAddBlock={() => onAddBlock(week.id, day.id)}
+                    onRemoveDay={() => onRemoveDay(week.id, day.id)}
+                    onDuplicateDay={() => onDuplicateDay(week.id, day.id)}
+                    onUpdateDayName={(name) => onUpdateDayName(week.id, day.id, name)}
+                    onAddExercise={(blockId, exerciseId) => 
+                      onAddExercise(week.id, day.id, blockId, exerciseId)
+                    }
+                    onRemoveBlock={(blockId) => onRemoveBlock(week.id, day.id, blockId)}
+                    onDuplicateBlock={(blockId) => onDuplicateBlock(week.id, day.id, blockId)}
+                    onUpdateBlockName={(blockId, name) => 
+                      onUpdateBlockName(week.id, day.id, blockId, name)
+                    }
+                    onUpdateExercise={(blockId, exerciseId, field, value) =>
+                      onUpdateExercise(week.id, day.id, blockId, exerciseId, field, value)
+                    }
+                    onRemoveExercise={(blockId, exerciseId) =>
+                      onRemoveExercise(week.id, day.id, blockId, exerciseId)
+                    }
+                    onDuplicateExercise={(blockId, exerciseId) =>
+                      onDuplicateExercise(week.id, day.id, blockId, exerciseId)
+                    }
+                    onReorderBlocks={(oldIndex, newIndex) =>
+                      onReorderBlocks(week.id, day.id, oldIndex, newIndex)
+                    }
+                    onReorderExercises={(blockId, oldIndex, newIndex) =>
+                      onReorderExercises(week.id, day.id, blockId, oldIndex, newIndex)
+                    }
+                  />
+                ))}
+              </div>
             ) : (
-              <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
-                <p className="text-sm sm:text-base">Δεν υπάρχουν ημέρες σε αυτή την εβδομάδα</p>
-                <p className="text-xs sm:text-sm mt-1">Κάντε κλικ στο κουμπί "Προσθήκη Ημέρας" για να ξεκινήσετε</p>
+              <div className="text-center py-8 text-gray-500">
+                <p>Δεν υπάρχουν ημέρες σε αυτή την εβδομάδα</p>
+                <Button
+                  onClick={() => onAddDay(week.id)}
+                  size="sm"
+                  className="rounded-none mt-4"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Προσθήκη Ημέρας
+                </Button>
               </div>
             )}
           </div>
