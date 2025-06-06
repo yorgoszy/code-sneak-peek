@@ -38,9 +38,77 @@ export const ProgramDetailsDialog: React.FC<ProgramDetailsDialogProps> = ({
 }) => {
   if (!program) return null;
 
-  const programDetails = program.details || {
+  // Ειδικά στοιχεία για το Movement Learning πρόγραμμα
+  const getMovementLearningDetails = () => ({
+    ages: "4-8 χρόνια / 4-8 years",
+    duration: "45 λεπτά / 45 minutes",
+    frequency: "1 φορά την εβδομάδα / 1 time per week",
+    schedule: "Τετάρτη / Wednesday",
+    benefits: [
+      "Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού / Development of fundamental movement skills and coordination",
+      "Εκμάθηση ρυθμού και χρονισμού στα κινητικά μοτίβα / Learning rhythm and timing in movement patterns", 
+      "Οικοδόμηση συνεργασίας και ομαδικών ικανοτήτων / Building cooperation and teamwork abilities",
+      "Καθιέρωση καλών συμπεριφορικών προτύπων και πειθαρχίας / Establishing good behavior patterns and discipline"
+    ],
+    weeklySchedule: [
+      {
+        ageGroup: "Ηλικίες 4-6 / Ages 4-6",
+        day: "Τετάρτη / Wednesday",
+        time: "17:15 - 18:00"
+      },
+      {
+        ageGroup: "Ηλικίες 6-8 / Ages 6-8", 
+        day: "Τετάρτη / Wednesday",
+        time: "18:15 - 19:00"
+      }
+    ],
+    scheduleNote: "Οι συνεδρίες προγραμματίζονται μία φορά την εβδομάδα για να αποφευχθεί η κούραση και να διατηρηθούν τα παιδιά ενθουσιασμένα και παρακινημένα. Επικοινωνήστε μαζί μας για εγγραφή και οποιεσδήποτε ερωτήσεις προγραμματισμού. / Sessions are scheduled once per week to avoid fatigue and keep children engaged and motivated. Contact us for enrollment and any scheduling questions.",
+    pricing: [
+      {
+        title: "Μηνιαίο / Monthly",
+        price: "€50",
+        period: "/μήνα / /month",
+        sessions: "4 συνεδρίες ανά μήνα (1 ανά εβδομάδα) / 4 sessions per month (1 per week)",
+        features: [
+          "Εξατομικευμένη καθοδήγηση / Personalized coaching",
+          "Παρακολούθηση προόδου / Progress tracking", 
+          "Ευέλικτος προγραμματισμός / Flexible scheduling"
+        ]
+      },
+      {
+        title: "Τριμηνιαίο / Quarterly",
+        price: "€120",
+        period: "/τρίμηνο / /quarter",
+        sessions: "12 συνεδρίες (3 μήνες) / 12 sessions (3 months)",
+        savings: "Εξοικονόμηση €30 / Save €30",
+        popular: true,
+        features: [
+          "Εξατομικευμένη καθοδήγηση / Personalized coaching",
+          "Παρακολούθηση προόδου / Progress tracking",
+          "Ευέλικτος προγραμματισμός / Flexible scheduling",
+          "Προτεραιότητα κράτησης / Priority booking"
+        ]
+      },
+      {
+        title: "Ετήσιο / Annual", 
+        price: "€360",
+        period: "/έτος / /year",
+        sessions: "48 συνεδρίες (12 μήνες) / 48 sessions (12 months)",
+        savings: "Εξοικονόμηση €240 / Save €240",
+        features: [
+          "Εξατομικευμένη καθοδήγηση / Personalized coaching",
+          "Παρακολούθηση προόδου / Progress tracking",
+          "Ευέλικτος προγραμματισμός / Flexible scheduling", 
+          "Προτεραιότητα κράτησης / Priority booking",
+          "Δωρεάν αξιολόγηση / Free assessment"
+        ]
+      }
+    ]
+  });
+
+  const programDetails = program.id === "01" ? getMovementLearningDetails() : {
     ages: "4-8 χρόνια",
-    duration: "45 λεπτά",
+    duration: "45 λεπτά", 
     frequency: "1 φορά την εβδομάδα",
     schedule: "Τετάρτη",
     benefits: [
@@ -49,173 +117,206 @@ export const ProgramDetailsDialog: React.FC<ProgramDetailsDialogProps> = ({
       "Οικοδόμηση αυτοπεποίθησης μέσω παιχνιδιού",
       "Εκμάθηση ομαδικότητας και κοινωνικών δεξιοτήτων"
     ],
-    weeklySchedule: [
-      "Δραστηριότητες ζεστάματος (10 λεπτά)",
-      "Παιχνίδια ανάπτυξης δεξιοτήτων (20 λεπτά)",
-      "Διασκεδαστικές φυσικές προκλήσεις (10 λεπτά)",
-      "Ηρεμία και διάταση (5 λεπτά)"
-    ],
+    weeklySchedule: [],
+    scheduleNote: "",
     pricing: [
       {
         title: "Μηνιαίο Πακέτο",
         price: "€60/μήνα",
         features: ["4 συνεδρίες ανά μήνα", "Επαγγελματική καθοδήγηση", "Παρακολούθηση προόδου"]
-      },
-      {
-        title: "Τριμηνιαίο Πακέτο",
-        price: "€150/τρίμηνο",
-        features: ["12 συνεδρίες", "15% έκπτωση", "Εξοπλισμός περιλαμβάνεται"]
       }
     ]
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-white border-gray-200 rounded-none p-0">
-        {/* Header με εικόνα και τίτλο */}
-        <div className="relative h-64 overflow-hidden">
-          <img
-            src={program.image}
-            alt={program.title}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/40"></div>
-          <div className="absolute top-4 right-4">
-            <Button
-              onClick={onClose}
-              variant="outline"
-              size="sm"
-              className="bg-white/90 hover:bg-white border-none rounded-none"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto bg-black text-white border-gray-700 rounded-none p-0">
+        {/* Sidebar Navigation */}
+        <div className="flex">
+          <div className="w-80 bg-black p-8 border-r border-gray-700">
+            <div className="mb-8">
+              <div className="text-[#00ffba] text-sm font-medium mb-4">PROGRAM INFORMATION</div>
+              <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
+                Begin Your
+              </h1>
+              <h1 className="text-4xl font-bold mb-8" style={{ color: '#00ffba', fontFamily: 'Robert, sans-serif' }}>
+                Training Journey
+              </h1>
+            </div>
+
+            <nav className="space-y-6">
+              <div className="flex items-center gap-4">
+                <span className="text-[#00ffba] text-xl font-bold">01</span>
+                <span className="text-white font-medium border-b border-[#00ffba] pb-1">Program Details</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-gray-500 text-xl font-bold">02</span>
+                <span className="text-gray-500 font-medium">Program Benefits</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-gray-500 text-xl font-bold">03</span>
+                <span className="text-gray-500 font-medium">Weekly Schedule</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-gray-500 text-xl font-bold">04</span>
+                <span className="text-gray-500 font-medium">Pricing Plans</span>
+              </div>
+            </nav>
           </div>
-          <div className="absolute bottom-6 left-6">
-            <div className="flex items-center gap-3 mb-2">
-              <span 
-                className="text-3xl font-bold bg-black/70 px-3 py-1 rounded-none text-white"
-                style={{ color: '#00ffba' }}
+
+          {/* Main Content */}
+          <div className="flex-1 p-8">
+            <div className="flex justify-between items-start mb-8">
+              <div>
+                <h2 className="text-3xl font-bold text-white mb-4">Program Details</h2>
+                <p className="text-gray-300 max-w-2xl">
+                  Our Movement Learning program is designed to provide a comprehensive training experience tailored to your specific needs and goals. Below are the key details of this program.
+                </p>
+              </div>
+              <Button
+                onClick={onClose}
+                variant="outline"
+                size="sm"
+                className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800 rounded-none"
               >
-                {program.id}
-              </span>
+                <X className="w-4 h-4" />
+              </Button>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Robert, sans-serif' }}>
-              {program.title}
-            </h1>
-            <p className="text-white/90 text-lg max-w-2xl">
-              {program.description}
-            </p>
-          </div>
-        </div>
 
-        <div className="p-8">
-          {/* Στοιχεία Προγράμματος */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-gray-50 p-6 rounded-none border border-gray-200">
-              <div className="flex items-center gap-3 mb-3">
-                <Users className="w-5 h-5 text-[#00ffba]" />
-                <span className="text-sm font-medium text-gray-600">Ηλικίες</span>
+            {/* Program Details Grid */}
+            <div className="grid grid-cols-2 gap-6 mb-12">
+              <div className="bg-gray-800 p-6 rounded-none border border-gray-700">
+                <div className="text-gray-400 text-sm mb-2">Ages:</div>
+                <div className="text-white text-lg font-medium">{programDetails.ages}</div>
               </div>
-              <div className="text-xl font-bold text-gray-900">{programDetails.ages}</div>
-            </div>
-
-            <div className="bg-gray-50 p-6 rounded-none border border-gray-200">
-              <div className="flex items-center gap-3 mb-3">
-                <Clock className="w-5 h-5 text-[#00ffba]" />
-                <span className="text-sm font-medium text-gray-600">Διάρκεια</span>
+              <div className="bg-gray-800 p-6 rounded-none border border-gray-700">
+                <div className="text-gray-400 text-sm mb-2">Duration:</div>
+                <div className="text-white text-lg font-medium">{programDetails.duration}</div>
               </div>
-              <div className="text-xl font-bold text-gray-900">{programDetails.duration}</div>
-            </div>
-
-            <div className="bg-gray-50 p-6 rounded-none border border-gray-200">
-              <div className="flex items-center gap-3 mb-3">
-                <Target className="w-5 h-5 text-[#00ffba]" />
-                <span className="text-sm font-medium text-gray-600">Συχνότητα</span>
+              <div className="bg-gray-800 p-6 rounded-none border border-gray-700">
+                <div className="text-gray-400 text-sm mb-2">Frequency:</div>
+                <div className="text-white text-lg font-medium">{programDetails.frequency}</div>
               </div>
-              <div className="text-xl font-bold text-gray-900">{programDetails.frequency}</div>
-            </div>
-
-            <div className="bg-gray-50 p-6 rounded-none border border-gray-200">
-              <div className="flex items-center gap-3 mb-3">
-                <Calendar className="w-5 h-5 text-[#00ffba]" />
-                <span className="text-sm font-medium text-gray-600">Πρόγραμμα</span>
+              <div className="bg-gray-800 p-6 rounded-none border border-gray-700">
+                <div className="text-gray-400 text-sm mb-2">Schedule:</div>
+                <div className="text-white text-lg font-medium">{programDetails.schedule}</div>
               </div>
-              <div className="text-xl font-bold text-gray-900">{programDetails.schedule}</div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Οφέλη Προγράμματος */}
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Robert, sans-serif' }}>
-                Οφέλη Προγράμματος
-              </h3>
-              <div className="space-y-4">
+            {/* Program Benefits */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-bold text-white mb-6">Program Benefits</h3>
+              <p className="text-gray-300 mb-6">
+                Participating in our Movement Learning program offers numerous benefits that extend beyond physical fitness. Here are the key advantages you'll experience:
+              </p>
+              <div className="grid grid-cols-2 gap-6">
                 {programDetails.benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-[#00ffba] rounded-none flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check className="w-4 h-4 text-black" />
-                    </div>
-                    <span className="text-gray-700 leading-relaxed">{benefit}</span>
+                  <div key={index} className="bg-gray-800 p-6 rounded-none border border-gray-700">
+                    <div className="text-white leading-relaxed">{benefit}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Εβδομαδιαίο Πρόγραμμα */}
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Robert, sans-serif' }}>
-                Εβδομαδιαίο Πρόγραμμα
-              </h3>
-              <div className="space-y-4">
-                {programDetails.weeklySchedule.map((item, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <div className="w-8 h-8 border-2 border-[#00ffba] rounded-none flex items-center justify-center text-sm font-bold text-[#00ffba] flex-shrink-0">
-                      {index + 1}
-                    </div>
-                    <span className="text-gray-700 leading-relaxed pt-1">{item}</span>
+            {/* Weekly Schedule */}
+            {program.id === "01" && (
+              <div className="mb-12">
+                <h3 className="text-2xl font-bold text-white mb-6">Weekly Schedule</h3>
+                <p className="text-gray-300 mb-6">
+                  Our Movement Learning program offers flexible scheduling to accommodate your busy lifestyle.
+                </p>
+                
+                <div className="bg-gray-800 p-6 rounded-none border border-[#00ffba] mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="w-5 h-5 text-[#00ffba]" />
+                    <span className="text-[#00ffba] font-medium">Weekly Schedule</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Pricing */}
-          <div className="mt-12">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center" style={{ fontFamily: 'Robert, sans-serif' }}>
-              Πακέτα & Τιμές
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {programDetails.pricing.map((plan, index) => (
-                <div key={index} className="border border-gray-200 rounded-none p-6 hover:border-[#00ffba] transition-colors">
-                  <div className="text-center mb-6">
-                    <h4 className="text-xl font-bold text-gray-900 mb-2">{plan.title}</h4>
-                    <div className="text-3xl font-bold text-[#00ffba]">{plan.price}</div>
-                  </div>
-                  <div className="space-y-3">
-                    {plan.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center gap-3">
-                        <Check className="w-5 h-5 text-[#00ffba] flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
+                  
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    {programDetails.weeklySchedule.map((schedule, index) => (
+                      <div key={index} className="bg-gray-700 p-4 rounded-none">
+                        <div className="text-white font-medium mb-2">{schedule.ageGroup}</div>
+                        <div className="text-gray-300 text-sm mb-1">{schedule.day}</div>
+                        <div className="text-[#00ffba] font-bold">{schedule.time}</div>
                       </div>
                     ))}
                   </div>
+                  
+                  <div className="text-gray-300 text-sm">
+                    <strong>Note:</strong> {programDetails.scheduleNote}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            )}
 
-          {/* Call to Action */}
-          <div className="mt-12 text-center">
-            <Button 
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold py-4 px-8 text-lg rounded-none"
-              style={{ fontFamily: 'Robert, sans-serif' }}
-            >
-              Επικοινωνία για Εγγραφή
-            </Button>
-            <p className="text-gray-600 mt-4">
-              Επικοινωνήστε μαζί μας για περισσότερες πληροφορίες και εγγραφή στο πρόγραμμα
-            </p>
+            {/* Pricing Plans */}
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-6">Pricing Plans</h3>
+              <p className="text-gray-300 mb-6">
+                Choose the plan that best fits your training goals and schedule. All plans include personalized coaching and access to our facilities.
+              </p>
+              
+              <div className="grid grid-cols-3 gap-6">
+                {programDetails.pricing.map((plan, index) => (
+                  <div key={index} className={`bg-gray-800 p-6 rounded-none border ${plan.popular ? 'border-[#00ffba]' : 'border-gray-700'} relative`}>
+                    {plan.popular && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span className="bg-[#00ffba] text-black px-4 py-1 text-sm font-bold rounded-none">
+                          POPULAR
+                        </span>
+                      </div>
+                    )}
+                    
+                    <div className="text-center mb-6">
+                      <h4 className="text-xl font-bold text-white mb-2">{plan.title}</h4>
+                      <div className="text-3xl font-bold text-[#00ffba] mb-1">{plan.price}</div>
+                      <div className="text-gray-400 text-sm">{plan.period}</div>
+                      {plan.sessions && (
+                        <div className="text-gray-300 text-sm mt-2">{plan.sessions}</div>
+                      )}
+                      {plan.savings && (
+                        <div className="text-[#00ffba] text-sm font-medium mt-2">{plan.savings}</div>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-3 mb-6">
+                      {plan.features.map((feature, featureIndex) => (
+                        <div key={featureIndex} className="flex items-center gap-3">
+                          <Check className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
+                          <span className="text-gray-300 text-sm">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <Button 
+                      className={`w-full rounded-none font-bold ${
+                        plan.popular 
+                          ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' 
+                          : 'bg-transparent border border-gray-600 text-white hover:bg-gray-700'
+                      }`}
+                    >
+                      Choose Plan
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Call to Action */}
+            <div className="mt-12 text-center">
+              <Button 
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold py-4 px-8 text-lg rounded-none"
+                style={{ fontFamily: 'Robert, sans-serif' }}
+              >
+                Επικοινωνία για Εγγραφή / Contact for Enrollment
+              </Button>
+              <p className="text-gray-400 mt-4">
+                Επικοινωνήστε μαζί μας για περισσότερες πληροφορίες και εγγραφή στο πρόγραμμα
+              </p>
+              <p className="text-gray-400">
+                Contact us for more information and program enrollment
+              </p>
+            </div>
           </div>
         </div>
       </DialogContent>
