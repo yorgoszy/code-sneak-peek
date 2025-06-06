@@ -77,17 +77,17 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             <div className="flex justify-end mb-8 space-x-4">
               <button
                 onClick={prevPage}
-                className="flex items-center justify-center w-12 h-12 rounded-none bg-transparent border-2 border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 rounded-none bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={nextPage}
-                className="flex items-center justify-center w-12 h-12 rounded-none bg-transparent border-2 border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 rounded-none bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
