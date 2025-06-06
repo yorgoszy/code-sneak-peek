@@ -38,7 +38,7 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
   if (!videoUrl || !isValidVideoUrl(videoUrl)) {
     console.log('❌ No valid video URL, showing placeholder');
     return (
-      <div className="w-10 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0 mr-2">
+      <div className="w-8 h-5 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
         <span className="text-xs text-gray-400">-</span>
       </div>
     );
@@ -57,7 +57,7 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
   
   return (
     <div 
-      className="relative w-10 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 mr-2 video-thumbnail"
+      className="relative w-8 h-5 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail"
       onClick={handleClick}
       style={{ zIndex: 20 }}
     >

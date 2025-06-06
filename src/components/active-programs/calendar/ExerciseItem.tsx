@@ -4,6 +4,7 @@ import { ExerciseNotes } from './ExerciseNotes';
 import { ExerciseHeader } from './ExerciseHeader';
 import { ExerciseDetails } from './ExerciseDetails';
 import { ExerciseActualValues } from './ExerciseActualValues';
+import { isValidVideoUrl } from '@/utils/videoUtils';
 
 interface ExerciseItemProps {
   exercise: any;
@@ -46,18 +47,34 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   getRemainingText
 }) => {
   const handleClick = (event: React.MouseEvent) => {
+    // Αν το κλικ είναι στο video thumbnail, μην καλέσουμε το onExerciseClick
+    if ((event.target as HTMLElement).closest('.video-thumbnail')) {
+      return;
+    }
     onExerciseClick(exercise, event);
   };
 
   const handleVideoClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    onVideoClick(exercise);
+    console.log('🎬 Video click detected for:', exercise.exercises?.name);
+    
+    // Έλεγχος αν υπάρχει έγκυρο video URL
+    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+      onVideoClick(exercise);
+    } else {
+      console.log('❌ No valid video URL found');
+    }
+  };
+
+  const handleSetClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onSetClick(exercise.id, exercise.sets, event);
   };
 
   return (
     <div 
       className={`border border-gray-200 rounded-none transition-colors ${
-        workoutInProgress ? 'hover:bg-gray-50' : 'bg-gray-100'
+        workoutInProgress ? 'hover:bg-gray-50 cursor-pointer' : 'bg-gray-100'
       } ${isComplete ? 'bg-green-50 border-green-200' : ''}`}
       onClick={handleClick}
     >
@@ -67,11 +84,15 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         remainingText={remainingText}
         workoutInProgress={workoutInProgress}
         onVideoClick={handleVideoClick}
-        onSetClick={() => {}} // Empty function since we moved the button
+        onSetClick={handleSetClick}
       />
 
       <div className="p-3">
-        <ExerciseDetails exercise={exercise} onVideoClick={onVideoClick} />
+        <ExerciseDetails 
+          exercise={exercise} 
+          onVideoClick={handleVideoClick}
+          onSetClick={handleSetClick}
+        />
 
         <ExerciseActualValues
           exercise={exercise}
@@ -83,7 +104,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           updateNotes={updateNotes}
           selectedDate={selectedDate}
           program={program}
-          onSetClick={onSetClick}
+          onSetClick={handleSetClick}
           getRemainingText={getRemainingText}
         />
 
