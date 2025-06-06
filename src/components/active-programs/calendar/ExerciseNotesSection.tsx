@@ -33,6 +33,14 @@ export const ExerciseNotesSection: React.FC<ExerciseNotesSectionProps> = ({
         const newHeight = Math.max(20, textarea.scrollHeight); // minimum 20px
         textarea.style.height = `${newHeight}px`;
         setTextareaHeight(`${newHeight}px`);
+        
+        // Find all divider cells and set their height to match
+        const gridCells = textarea.closest('.grid')?.querySelectorAll('.flex.items-stretch');
+        if (gridCells) {
+          gridCells.forEach(cell => {
+            (cell as HTMLElement).style.height = `${newHeight}px`;
+          });
+        }
       }
     };
     
@@ -71,7 +79,7 @@ export const ExerciseNotesSection: React.FC<ExerciseNotesSectionProps> = ({
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
             placeholder={workoutInProgress ? "Προσθήκη σημειώσεων..." : "Πάτησε έναρξη για σημειώσεις"}
-            className="min-h-[20px] text-xs rounded-none resize-none h-4"
+            className="min-h-[20px] text-xs rounded-none resize-none flex-1"
             disabled={!workoutInProgress}
             rows={1}
             style={{ height: textareaHeight }}

@@ -111,8 +111,8 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
 
   return (
     <div className="grid grid-cols-8 gap-0.5 text-xs">
-      <div className="text-center">
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
+      <div className="text-center flex items-stretch h-full">
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs flex-1 flex items-center justify-center">-</div>
       </div>
       <div className="text-center">
         <Input
@@ -155,18 +155,18 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           disabled={!workoutInProgress}
         />
       </div>
-      <div className="text-center">
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
+      <div className="text-center flex items-stretch h-full">
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs flex-1 flex items-center justify-center">-</div>
       </div>
-      <div className="text-center">
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs">-</div>
+      <div className="text-center flex items-stretch h-full">
+        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs flex-1 flex items-center justify-center">-</div>
       </div>
-      <div className="col-span-1 text-center">
+      <div className="col-span-1 text-center flex items-stretch h-full">
         <Textarea
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
           placeholder={workoutInProgress ? "Notes..." : ""}
-          className="h-5 text-xs rounded-none resize-none p-0.5 text-red-600 font-medium text-center"
+          className="h-full min-h-0 text-xs rounded-none resize-none p-0.5 text-red-600 font-medium text-center"
           disabled={!workoutInProgress}
           rows={1}
           style={{ height: textareaHeight }}
