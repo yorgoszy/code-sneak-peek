@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,8 +33,8 @@ const Index = () => {
   const navigationItems = [
     { name: translations.home, href: "#home" },
     { name: translations.programs, href: "#programs" },
-    { name: translations.blog, href: "#blog" },
     { name: translations.about, href: "#about" },
+    { name: "Νέα", href: "#blog" },
     { name: translations.results, href: "#results" },
     { name: translations.contact, href: "#contact" }
   ];
