@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Clock, Users, Calendar, Target } from "lucide-react";
+import { Clock, Users, Calendar, Target, Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Program {
   id: string;
@@ -38,157 +39,183 @@ export const ProgramDetailsDialog: React.FC<ProgramDetailsDialogProps> = ({
   if (!program) return null;
 
   const programDetails = program.details || {
-    ages: "4-8 years",
-    duration: "45 minutes",
-    frequency: "1 time per week",
-    schedule: "Wednesday",
+    ages: "4-8 χρόνια",
+    duration: "45 λεπτά",
+    frequency: "1 φορά την εβδομάδα",
+    schedule: "Τετάρτη",
     benefits: [
-      "Develop fundamental movement skills",
-      "Improve coordination and balance",
-      "Build confidence through play",
-      "Learn teamwork and social skills"
+      "Ανάπτυξη βασικών κινητικών δεξιοτήτων",
+      "Βελτίωση συντονισμού και ισορροπίας",
+      "Οικοδόμηση αυτοπεποίθησης μέσω παιχνιδιού",
+      "Εκμάθηση ομαδικότητας και κοινωνικών δεξιοτήτων"
     ],
     weeklySchedule: [
-      "Warm-up activities (10 min)",
-      "Skill development games (20 min)",
-      "Fun physical challenges (10 min)",
-      "Cool down and stretching (5 min)"
+      "Δραστηριότητες ζεστάματος (10 λεπτά)",
+      "Παιχνίδια ανάπτυξης δεξιοτήτων (20 λεπτά)",
+      "Διασκεδαστικές φυσικές προκλήσεις (10 λεπτά)",
+      "Ηρεμία και διάταση (5 λεπτά)"
     ],
     pricing: [
       {
-        title: "Monthly Plan",
-        price: "€60/month",
-        features: ["4 sessions per month", "Professional coaching", "Progress tracking"]
+        title: "Μηνιαίο Πακέτο",
+        price: "€60/μήνα",
+        features: ["4 συνεδρίες ανά μήνα", "Επαγγελματική καθοδήγηση", "Παρακολούθηση προόδου"]
       },
       {
-        title: "Term Plan",
-        price: "€150/term",
-        features: ["12 sessions", "15% discount", "Equipment included"]
+        title: "Τριμηνιαίο Πακέτο",
+        price: "€150/τρίμηνο",
+        features: ["12 συνεδρίες", "15% έκπτωση", "Εξοπλισμός περιλαμβάνεται"]
       }
     ]
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-black text-white border-gray-800 rounded-none">
-        <DialogHeader className="border-b border-gray-800 pb-6">
-          <DialogTitle className="text-4xl font-bold text-center">
-            Movement Learning
-          </DialogTitle>
-          <p className="text-center text-gray-300 text-lg">
-            Foundation for Athletic Excellence
-          </p>
-        </DialogHeader>
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-white border-gray-200 rounded-none p-0">
+        {/* Header με εικόνα και τίτλο */}
+        <div className="relative h-64 overflow-hidden">
+          <img
+            src={program.image}
+            alt={program.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute top-4 right-4">
+            <Button
+              onClick={onClose}
+              variant="outline"
+              size="sm"
+              className="bg-white/90 hover:bg-white border-none rounded-none"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="absolute bottom-6 left-6">
+            <div className="flex items-center gap-3 mb-2">
+              <span 
+                className="text-3xl font-bold bg-black/70 px-3 py-1 rounded-none text-white"
+                style={{ color: '#00ffba' }}
+              >
+                {program.id}
+              </span>
+            </div>
+            <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Robert, sans-serif' }}>
+              {program.title}
+            </h1>
+            <p className="text-white/90 text-lg max-w-2xl">
+              {program.description}
+            </p>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 py-6">
-          {/* Left Side - Navigation and Program Info */}
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="text-[#00ffba] text-sm font-semibold tracking-wider">
-                PROGRAM INFORMATION
+        <div className="p-8">
+          {/* Στοιχεία Προγράμματος */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-gray-50 p-6 rounded-none border border-gray-200">
+              <div className="flex items-center gap-3 mb-3">
+                <Users className="w-5 h-5 text-[#00ffba]" />
+                <span className="text-sm font-medium text-gray-600">Ηλικίες</span>
               </div>
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-2">
-                  Begin Your
-                </h2>
-                <h2 className="text-3xl font-bold text-[#00ffba]">
-                  Training Journey
-                </h2>
+              <div className="text-xl font-bold text-gray-900">{programDetails.ages}</div>
+            </div>
+
+            <div className="bg-gray-50 p-6 rounded-none border border-gray-200">
+              <div className="flex items-center gap-3 mb-3">
+                <Clock className="w-5 h-5 text-[#00ffba]" />
+                <span className="text-sm font-medium text-gray-600">Διάρκεια</span>
+              </div>
+              <div className="text-xl font-bold text-gray-900">{programDetails.duration}</div>
+            </div>
+
+            <div className="bg-gray-50 p-6 rounded-none border border-gray-200">
+              <div className="flex items-center gap-3 mb-3">
+                <Target className="w-5 h-5 text-[#00ffba]" />
+                <span className="text-sm font-medium text-gray-600">Συχνότητα</span>
+              </div>
+              <div className="text-xl font-bold text-gray-900">{programDetails.frequency}</div>
+            </div>
+
+            <div className="bg-gray-50 p-6 rounded-none border border-gray-200">
+              <div className="flex items-center gap-3 mb-3">
+                <Calendar className="w-5 h-5 text-[#00ffba]" />
+                <span className="text-sm font-medium text-gray-600">Πρόγραμμα</span>
+              </div>
+              <div className="text-xl font-bold text-gray-900">{programDetails.schedule}</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Οφέλη Προγράμματος */}
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Robert, sans-serif' }}>
+                Οφέλη Προγράμματος
+              </h3>
+              <div className="space-y-4">
+                {programDetails.benefits.map((benefit, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-[#00ffba] rounded-none flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-4 h-4 text-black" />
+                    </div>
+                    <span className="text-gray-700 leading-relaxed">{benefit}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-[#00ffba] font-semibold">
-                <span className="text-2xl">01</span>
-                <span className="border-b-2 border-[#00ffba] pb-1">Program Details</span>
-              </div>
-              <div className="text-gray-400 space-y-2">
-                <div>02 Program Benefits</div>
-                <div>03 Weekly Schedule</div>
-                <div>04 Pricing Plans</div>
+            {/* Εβδομαδιαίο Πρόγραμμα */}
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Robert, sans-serif' }}>
+                Εβδομαδιαίο Πρόγραμμα
+              </h3>
+              <div className="space-y-4">
+                {programDetails.weeklySchedule.map((item, index) => (
+                  <div key={index} className="flex items-start gap-4">
+                    <div className="w-8 h-8 border-2 border-[#00ffba] rounded-none flex items-center justify-center text-sm font-bold text-[#00ffba] flex-shrink-0">
+                      {index + 1}
+                    </div>
+                    <span className="text-gray-700 leading-relaxed pt-1">{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Right Side - Program Details */}
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-4">Program Details</h3>
-              <p className="text-gray-300 mb-6">
-                Our Movement Learning program is designed to provide a comprehensive training experience
-                tailored to your specific needs and goals. Below are the key details of this program.
-              </p>
-            </div>
-
-            {/* Details Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-800/50 border border-gray-700 p-4 rounded-none">
-                <div className="flex items-center gap-2 mb-2">
-                  <Users className="w-4 h-4 text-[#00ffba]" />
-                  <span className="text-gray-400 text-sm">Ages:</span>
-                </div>
-                <div className="text-white font-semibold">{programDetails.ages}</div>
-              </div>
-
-              <div className="bg-gray-800/50 border border-gray-700 p-4 rounded-none">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-[#00ffba]" />
-                  <span className="text-gray-400 text-sm">Duration:</span>
-                </div>
-                <div className="text-white font-semibold">{programDetails.duration}</div>
-              </div>
-
-              <div className="bg-gray-800/50 border border-gray-700 p-4 rounded-none">
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4 text-[#00ffba]" />
-                  <span className="text-gray-400 text-sm">Frequency:</span>
-                </div>
-                <div className="text-white font-semibold">{programDetails.frequency}</div>
-              </div>
-
-              <div className="bg-gray-800/50 border border-gray-700 p-4 rounded-none">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="w-4 h-4 text-[#00ffba]" />
-                  <span className="text-gray-400 text-sm">Schedule:</span>
-                </div>
-                <div className="text-white font-semibold">{programDetails.schedule}</div>
-              </div>
-            </div>
-
-            {/* Program Benefits */}
-            <div className="mt-8">
-              <h4 className="text-xl font-bold text-white mb-4">Program Benefits</h4>
-              <div className="space-y-2">
-                {programDetails.benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-[#00ffba] rounded-full flex-shrink-0"></div>
-                    <span className="text-gray-300">{benefit}</span>
+          {/* Pricing */}
+          <div className="mt-12">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center" style={{ fontFamily: 'Robert, sans-serif' }}>
+              Πακέτα & Τιμές
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {programDetails.pricing.map((plan, index) => (
+                <div key={index} className="border border-gray-200 rounded-none p-6 hover:border-[#00ffba] transition-colors">
+                  <div className="text-center mb-6">
+                    <h4 className="text-xl font-bold text-gray-900 mb-2">{plan.title}</h4>
+                    <div className="text-3xl font-bold text-[#00ffba]">{plan.price}</div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Weekly Schedule */}
-            <div className="mt-8">
-              <h4 className="text-xl font-bold text-white mb-4">Weekly Schedule</h4>
-              <div className="space-y-2">
-                {programDetails.weeklySchedule.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-6 h-6 border border-[#00ffba] rounded-none flex items-center justify-center text-xs text-[#00ffba]">
-                      {index + 1}
-                    </div>
-                    <span className="text-gray-300">{item}</span>
+                  <div className="space-y-3">
+                    {plan.features.map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex items-center gap-3">
+                        <Check className="w-5 h-5 text-[#00ffba] flex-shrink-0" />
+                        <span className="text-gray-700">{feature}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
+          </div>
 
-            {/* Contact Button */}
-            <div className="mt-8">
-              <button className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-semibold py-3 px-6 rounded-none transition-colors">
-                Επικοινωνία για Εγγραφή
-              </button>
-            </div>
+          {/* Call to Action */}
+          <div className="mt-12 text-center">
+            <Button 
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold py-4 px-8 text-lg rounded-none"
+              style={{ fontFamily: 'Robert, sans-serif' }}
+            >
+              Επικοινωνία για Εγγραφή
+            </Button>
+            <p className="text-gray-600 mt-4">
+              Επικοινωνήστε μαζί μας για περισσότερες πληροφορίες και εγγραφή στο πρόγραμμα
+            </p>
           </div>
         </div>
       </DialogContent>
