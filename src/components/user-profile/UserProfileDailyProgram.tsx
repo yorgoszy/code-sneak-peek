@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User } from "lucide-react";
-import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
-import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
-import { ProgramsForDateCard } from "@/components/active-programs/calendar/ProgramsForDateCard";
+
+import React, { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
-import { DatabaseDebugger } from "@/components/debug/DatabaseDebugger";
+import { UserProfileCalendarHeader } from "./daily-program/UserProfileCalendarHeader";
+import { UserProfileCalendarEmpty } from "./daily-program/UserProfileCalendarEmpty";
+import { UserProfileCalendarContent } from "./daily-program/UserProfileCalendarContent";
+import { LoadingState, ErrorState } from "./daily-program/UserProfileCalendarStates";
+import { useUserCalendarData } from "./daily-program/hooks/useUserCalendarData";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -15,51 +15,27 @@ interface UserProfileDailyProgramProps {
 }
 
 export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = ({ userProfile }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [realtimeKey, setRealtimeKey] = useState(0);
   const [showDebugger, setShowDebugger] = useState(false);
   
   // Dialog states - μόνο το DayProgramDialog
   const [selectedProgram, setSelectedProgram] = useState<EnrichedAssignment | null>(null);
   const [dayProgramOpen, setDayProgramOpen] = useState(false);
 
-  // Fetch all active programs and filter for this user
-  const { data: allActivePrograms = [], isLoading, error, refetch } = useActivePrograms();
-  const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
-
-  // Filter programs for the specific user
-  const userPrograms = allActivePrograms.filter(program => program.user_id === userProfile.id);
-
-  // Get workout completions for user programs
-  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
-
-  useEffect(() => {
-    const loadCompletions = async () => {
-      if (userPrograms.length > 0) {
-        const allCompletions = await getAllWorkoutCompletions();
-        // Filter completions for this user's assignments
-        const userAssignmentIds = userPrograms.map(p => p.id);
-        const userCompletions = allCompletions.filter(c => userAssignmentIds.includes(c.assignment_id));
-        setWorkoutCompletions(userCompletions);
-      }
-    };
-    loadCompletions();
-  }, [userPrograms, getAllWorkoutCompletions]);
-
-  const programsForSelectedDate = selectedDate 
-    ? userPrograms.filter(assignment => {
-        const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-        return assignment.training_dates?.includes(selectedDateStr);
-      })
-    : [];
-
-  const getWorkoutStatusForDate = (assignmentId: string, dateStr: string) => {
-    const completion = workoutCompletions.find(c => 
-      c.assignment_id === assignmentId && c.scheduled_date === dateStr
-    );
-    return completion?.status || 'scheduled';
-  };
+  const {
+    currentMonth,
+    setCurrentMonth,
+    selectedDate,
+    setSelectedDate,
+    realtimeKey,
+    userPrograms,
+    workoutCompletions,
+    programsForSelectedDate,
+    getWorkoutStatusForDate,
+    handleRefresh,
+    handleDelete,
+    isLoading,
+    error
+  } = useUserCalendarData({ userId: userProfile.id });
 
   // Νέα συνάρτηση για χειρισμό κλικ σε όνομα χρήστη - ανοίγει το DayProgramDialog
   const handleNameClick = (program: any, event: React.MouseEvent) => {
@@ -74,115 +50,41 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     }
   };
 
-  const handleRefresh = () => {
-    refetch();
-    setRealtimeKey(prev => prev + 1);
-  };
-
-  const handleDelete = async (assignmentId: string) => {
-    // This would typically not be allowed for regular users
-    console.log('Delete not allowed for user profiles');
-  };
-
   if (isLoading) {
-    return (
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Ημερολόγιο Προπονήσεων
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            Φόρτωση ημερολογίου...
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <LoadingState userName={userProfile.name} />;
   }
 
   if (error) {
-    return (
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Ημερολόγιο Προπονήσεων
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-red-500">
-            Σφάλμα κατά τη φόρτωση του ημερολογίου
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <ErrorState userName={userProfile.name} />;
   }
 
   if (userPrograms.length === 0) {
-    return (
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Ημερολόγιο Προπονήσεων
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Δεν υπάρχουν προγράμματα για αυτόν τον χρήστη</p>
-            <p className="text-sm">Αναθέστε ένα πρόγραμμα για να εμφανιστεί στο ημερολόγιο</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <UserProfileCalendarEmpty />;
   }
 
   return (
     <div className="space-y-2 md:space-y-4 lg:space-y-6 h-full">
       <Card className="rounded-none flex-1 min-h-0">
-        <CardHeader className="pb-2 md:pb-4">
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2 text-sm md:text-base">
-              <Calendar className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="hidden sm:inline">Ημερολόγιο Προπονήσεων -</span> {userProfile.name}
-            </span>
-            <button 
-              onClick={() => setShowDebugger(!showDebugger)}
-              className="text-xs bg-gray-200 px-1 md:px-2 py-1 rounded hidden md:block"
-            >
-              {showDebugger ? 'Απόκρυψη Debug' : 'Debug Video URLs'}
-            </button>
-          </CardTitle>
-        </CardHeader>
+        <UserProfileCalendarHeader
+          userName={userProfile.name}
+          showDebugger={showDebugger}
+          onToggleDebugger={() => setShowDebugger(!showDebugger)}
+        />
         <CardContent className="p-2 md:p-4 lg:p-6 h-full">
-          {showDebugger && <DatabaseDebugger />}
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4 lg:gap-6 h-full">
-            <div className="lg:col-span-2 min-h-0">
-              <CalendarGrid
-                currentMonth={currentMonth}
-                setCurrentMonth={setCurrentMonth}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                activePrograms={userPrograms}
-                workoutCompletions={workoutCompletions}
-                realtimeKey={realtimeKey}
-                onNameClick={handleNameClick}
-              />
-            </div>
-            
-            <div className="lg:col-span-1 space-y-2 md:space-y-4 hidden lg:block">
-              <ProgramsForDateCard
-                selectedDate={selectedDate}
-                programsForSelectedDate={programsForSelectedDate}
-                onRefresh={handleRefresh}
-                onDelete={handleDelete}
-              />
-            </div>
-          </div>
+          <UserProfileCalendarContent
+            showDebugger={showDebugger}
+            currentMonth={currentMonth}
+            setCurrentMonth={setCurrentMonth}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            userPrograms={userPrograms}
+            workoutCompletions={workoutCompletions}
+            realtimeKey={realtimeKey}
+            onNameClick={handleNameClick}
+            programsForSelectedDate={programsForSelectedDate}
+            onRefresh={handleRefresh}
+            onDelete={handleDelete}
+          />
         </CardContent>
       </Card>
 
