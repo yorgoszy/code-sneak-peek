@@ -42,24 +42,13 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
-          {workoutInProgress && !isComplete && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSetClick}
-              className="rounded-none text-xs h-5 px-2"
-            >
-              Complete Set
-            </Button>
-          )}
-          
           <Badge 
             variant="outline" 
             className={`rounded-none text-xs px-1 ${
               isComplete ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
             }`}
           >
-            {isComplete ? 'Complete!' : remainingText}
+            {isComplete ? 'Complete!' : 'Click sets to complete'}
           </Badge>
         </div>
       </div>

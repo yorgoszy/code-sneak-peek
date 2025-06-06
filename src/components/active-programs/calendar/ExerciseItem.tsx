@@ -24,6 +24,8 @@ interface ExerciseItemProps {
   clearReps: (exerciseId: string) => void;
   selectedDate?: Date;
   program?: any;
+  getRemainingText?: (exerciseId: string, totalSets: number) => string;
+  isExerciseComplete?: (exerciseId: string, totalSets: number) => boolean;
 }
 
 export const ExerciseItem: React.FC<ExerciseItemProps> = ({
@@ -41,7 +43,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   updateNotes,
   clearNotes,
   selectedDate,
-  program
+  program,
+  getRemainingText,
+  isExerciseComplete
 }) => {
   const handleClick = (event: React.MouseEvent) => {
     onExerciseClick(exercise, event);
@@ -55,6 +59,10 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   const handleVideoClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     onVideoClick(exercise);
+  };
+
+  const handleSetDecrement = (exerciseId: string, totalSets: number) => {
+    onSetClick(exerciseId, totalSets, {} as React.MouseEvent);
   };
 
   return (
@@ -86,6 +94,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           updateNotes={updateNotes}
           selectedDate={selectedDate}
           program={program}
+          onSetClick={handleSetDecrement}
+          getRemainingText={getRemainingText}
+          isExerciseComplete={isExerciseComplete}
         />
 
         <ExerciseNotes

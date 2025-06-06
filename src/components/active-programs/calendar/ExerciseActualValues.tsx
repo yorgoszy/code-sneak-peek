@@ -14,6 +14,9 @@ interface ExerciseActualValuesProps {
   updateNotes: (exerciseId: string, notes: string) => void;
   selectedDate?: Date;
   program?: any;
+  onSetClick?: (exerciseId: string, totalSets: number) => void;
+  getRemainingText?: (exerciseId: string, totalSets: number) => string;
+  isExerciseComplete?: (exerciseId: string, totalSets: number) => boolean;
 }
 
 export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
@@ -25,7 +28,10 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   getNotes,
   updateNotes,
   selectedDate,
-  program
+  program,
+  onSetClick,
+  getRemainingText,
+  isExerciseComplete
 }) => {
   const [actualKg, setActualKg] = useState('');
   const [actualReps, setActualReps] = useState('');
@@ -33,6 +39,10 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   const [calculatedPercentage, setCalculatedPercentage] = useState('');
   const notes = getNotes(exercise.id);
   const [textareaHeight, setTextareaHeight] = useState('auto');
+  
+  // Get the remaining sets text if function is provided
+  const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
+  const isComplete = isExerciseComplete ? isExerciseComplete(exercise.id, exercise.sets) : false;
   
   // Function to update textarea height
   const updateTextareaHeight = (height: string) => {
@@ -109,10 +119,23 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
     }
   };
 
+  const handleSetClick = () => {
+    if (onSetClick && workoutInProgress) {
+      onSetClick(exercise.id, exercise.sets);
+    }
+  };
+
   return (
     <div className="grid grid-cols-8 gap-0.5 text-xs">
-      <div className="text-center flex items-stretch h-full">
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs flex-1 flex items-center justify-center">-</div>
+      <div 
+        onClick={handleSetClick}
+        className={`text-center flex items-stretch h-full cursor-pointer ${
+          workoutInProgress ? 'bg-[#00ffba]/20 hover:bg-[#00ffba]/30' : 'bg-gray-200'
+        } ${isComplete ? 'bg-[#00ffba]/50' : ''} rounded-none`}
+      >
+        <div className="px-1 py-0.5 text-xs flex-1 flex items-center justify-center">
+          {isComplete ? '✓' : remainingText.replace(' sets remaining', '')}
+        </div>
       </div>
       <div className="text-center">
         <Input
