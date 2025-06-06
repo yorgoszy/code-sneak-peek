@@ -77,14 +77,14 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             <div className="flex justify-end mb-8 space-x-4">
               <button
                 onClick={prevPage}
-                className="flex items-center justify-center w-10 h-10 rounded-none bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={nextPage}
-                className="flex items-center justify-center w-10 h-10 rounded-none bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
                 <ChevronRight className="w-4 h-4" />
@@ -119,7 +119,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                       </div>
                       
                       <div className="p-6">
-                        <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#00ffba] transition-colors duration-300">
+                        <h3 className="text-xl font-bold text-gray-900 mb-3 transition-colors duration-300">
                           {program.title}
                         </h3>
                         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -141,7 +141,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                 <button
                   key={index}
                   onClick={() => setCurrentPage(index)}
-                  className={`w-3 h-3 rounded-none transition-colors ${
+                  className={`w-3 h-3 transition-colors ${
                     currentPage === index ? 'bg-[#00ffba]' : 'bg-gray-600'
                   }`}
                 />
