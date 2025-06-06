@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Globe, LogOut } from "lucide-react";
+import { Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface NavigationProps {
@@ -58,7 +58,7 @@ const Navigation: React.FC<NavigationProps> = ({
             <img 
               src="/lovable-uploads/e6f77be6-7f24-4357-88b6-55d1fec4139d.png" 
               alt="HyperKids Logo" 
-              className="h-10 w-auto"
+              className="h-8 w-auto md:h-10"
             />
           </div>
           
@@ -74,38 +74,39 @@ const Navigation: React.FC<NavigationProps> = ({
             ))}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             {!loading && (
               isAuthenticated ? (
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 md:space-x-4">
                   <Button 
-                    variant="outline" 
-                    className="language-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                    variant="ghost" 
+                    className="language-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 p-2"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
                   </Button>
                   <Link to="/dashboard">
                     <Button 
-                      variant="outline" 
-                      className="dashboard-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                      variant="ghost" 
+                      className="dashboard-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 p-2"
                     >
-                      Dashboard
+                      <LayoutDashboard className="h-4 w-4" />
+                      <span className="hidden md:inline ml-2">Dashboard</span>
                     </Button>
                   </Link>
                   <Button 
-                    variant="outline" 
-                    className="logout-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                    variant="ghost" 
+                    className="logout-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 p-2"
                     onClick={onSignOut}
                   >
                     <LogOut className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 md:space-x-4">
                   <Button 
-                    variant="outline" 
-                    className="language-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                    variant="ghost" 
+                    className="language-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 p-2"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />

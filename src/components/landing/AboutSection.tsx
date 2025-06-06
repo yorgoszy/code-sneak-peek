@@ -1,4 +1,7 @@
-import React from 'react';
+
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface AboutSectionProps {
   translations: any;
@@ -11,6 +14,39 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   activeAboutSection, 
   onSetActiveAboutSection 
 }) => {
+  const aboutSections = [
+    {
+      id: 1,
+      title: translations.headCoach,
+      image: "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png",
+      alt: "Georgios Zygouris - Head Coach"
+    },
+    {
+      id: 2,
+      title: translations.ourVision,
+      image: "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png",
+      alt: "Our Vision"
+    },
+    {
+      id: 3,
+      title: translations.trainingMethodology,
+      image: "/lovable-uploads/9aed48c1-1ec9-4f35-9648-0329d5152c4a.png",
+      alt: "Training Methodology"
+    }
+  ];
+
+  const nextSection = () => {
+    const nextIndex = activeAboutSection === 3 ? 1 : activeAboutSection + 1;
+    onSetActiveAboutSection(nextIndex);
+  };
+
+  const prevSection = () => {
+    const prevIndex = activeAboutSection === 1 ? 3 : activeAboutSection - 1;
+    onSetActiveAboutSection(prevIndex);
+  };
+
+  const currentSection = aboutSections.find(section => section.id === activeAboutSection);
+
   return (
     <section id="about" className="py-20 bg-black relative overflow-hidden">
       <style>{`
@@ -44,44 +80,60 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               </h2>
             </div>
 
-            <div className="space-y-8">
-              <div 
-                className={`flex items-center about-nav-item ${activeAboutSection === 1 ? 'active' : ''}`}
-                onClick={() => onSetActiveAboutSection(1)}
+            {/* Desktop Navigation */}
+            <div className="hidden md:block space-y-8">
+              {aboutSections.map((section) => (
+                <div 
+                  key={section.id}
+                  className={`flex items-center about-nav-item ${activeAboutSection === section.id ? 'active' : ''}`}
+                  onClick={() => onSetActiveAboutSection(section.id)}
+                >
+                  <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === section.id ? '#00ffba' : '#6b7280' }}>
+                    {section.id.toString().padStart(2, '0')}
+                  </span>
+                  <h3 className={`text-xl about-nav-title ${activeAboutSection === section.id ? 'text-white font-bold' : 'text-gray-400'}`}>
+                    {section.title}
+                  </h3>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Navigation */}
+            <div className="md:hidden flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-[#00ffba] hover:text-white"
+                onClick={prevSection}
               >
-                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 1 ? '#00ffba' : '#6b7280' }}>01</span>
-                <h3 className={`text-xl about-nav-title ${activeAboutSection === 1 ? 'text-white font-bold' : 'text-gray-400'}`}>{translations.headCoach}</h3>
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+              
+              <div className="text-center">
+                <span className="text-2xl font-bold mr-4" style={{ color: '#00ffba' }}>
+                  {activeAboutSection.toString().padStart(2, '0')}
+                </span>
+                <h3 className="text-lg text-white font-bold">
+                  {currentSection?.title}
+                </h3>
               </div>
-              <div 
-                className={`flex items-center about-nav-item ${activeAboutSection === 2 ? 'active' : ''}`}
-                onClick={() => onSetActiveAboutSection(2)}
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-[#00ffba] hover:text-white"
+                onClick={nextSection}
               >
-                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 2 ? '#00ffba' : '#6b7280' }}>02</span>
-                <h3 className={`text-xl about-nav-title ${activeAboutSection === 2 ? 'text-white font-bold' : 'text-gray-400'}`}>{translations.ourVision}</h3>
-              </div>
-              <div 
-                className={`flex items-center about-nav-item ${activeAboutSection === 3 ? 'active' : ''}`}
-                onClick={() => onSetActiveAboutSection(3)}
-              >
-                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 3 ? '#00ffba' : '#6b7280' }}>03</span>
-                <h3 className={`text-xl about-nav-title ${activeAboutSection === 3 ? 'text-white font-bold' : 'text-gray-400'}`}>{translations.trainingMethodology}</h3>
-              </div>
+                <ChevronRight className="h-6 w-6" />
+              </Button>
             </div>
           </div>
 
           <div className="lg:w-3/5 relative flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="relative mb-8">
               <img
-                src={
-                  activeAboutSection === 2 ? "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png" : 
-                  activeAboutSection === 3 ? "/lovable-uploads/9aed48c1-1ec9-4f35-9648-0329d5152c4a.png" :
-                  "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png"
-                }
-                alt={
-                  activeAboutSection === 2 ? "Our Vision" : 
-                  activeAboutSection === 3 ? "Training Methodology" :
-                  "Georgios Zygouris - Head Coach"
-                }
+                src={currentSection?.image}
+                alt={currentSection?.alt}
                 className="w-full h-[420px] object-cover filter grayscale"
               />
               <div className="absolute flex items-center" style={{ bottom: '40px', left: '20px', right: '0px' }}>
