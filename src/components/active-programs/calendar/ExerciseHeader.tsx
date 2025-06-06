@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
+import { Video } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Video } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 interface ExerciseHeaderProps {
   exercise: any;
@@ -10,7 +11,6 @@ interface ExerciseHeaderProps {
   remainingText: string;
   workoutInProgress: boolean;
   onVideoClick: (event: React.MouseEvent) => void;
-  onSetClick: (event: React.MouseEvent) => void;
 }
 
 export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
@@ -18,8 +18,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
   isComplete,
   remainingText,
   workoutInProgress,
-  onVideoClick,
-  onSetClick
+  onVideoClick
 }) => {
   return (
     <div className="p-2 border-b border-gray-200">
@@ -28,7 +27,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
           <div className="text-sm font-medium text-gray-900">
             {exercise.exercises?.name || 'Unknown Exercise'}
           </div>
-          {isComplete && <CheckCircle className="w-4 h-4 text-green-600" />}
+          {isComplete && <CheckCircle className="w-4 h-4 text-[#00ffba]" />}
           {exercise.exercises?.video_url && (
             <Button
               variant="ghost"
@@ -48,7 +47,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
               isComplete ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
             }`}
           >
-            {isComplete ? 'Complete!' : 'Click sets to complete'}
+            {isComplete ? 'Complete!' : 'Click to complete'}
           </Badge>
         </div>
       </div>
