@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { ProgramDetailsDialog } from './ProgramDetailsDialog';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 interface Program {
@@ -43,9 +42,12 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
   // Διαιρούμε τα προγράμματα σε ομάδες των 3
   const programsPerPage = 3;
   const totalPages = Math.ceil(programs.length / programsPerPage);
-  const programPages = Array.from({ length: totalPages }, (_, index) =>
-    programs.slice(index * programsPerPage, (index + 1) * programsPerPage)
-  );
+  
+  const getCurrentPagePrograms = () => {
+    const startIndex = currentPage * programsPerPage;
+    const endIndex = startIndex + programsPerPage;
+    return programs.slice(startIndex, endIndex);
+  };
 
   const nextPage = () => {
     setCurrentPage((prev) => (prev + 1) % totalPages);
@@ -54,6 +56,8 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
   const prevPage = () => {
     setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
   };
+
+  const currentPrograms = getCurrentPagePrograms();
 
   return (
     <>
@@ -87,56 +91,44 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
               </button>
             </div>
 
-            {/* Carousel Container */}
-            <div className="relative overflow-hidden h-[400px]">
-              <div 
-                className="flex flex-col transition-transform duration-500 ease-in-out h-full"
-                style={{ 
-                  transform: `translateY(-${currentPage * 100}%)`,
-                  height: `${totalPages * 100}%`
-                }}
-              >
-                {programPages.map((pagePrograms, pageIndex) => (
-                  <div key={pageIndex} className="flex-shrink-0 h-[400px] flex items-center">
-                    <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {pagePrograms.map((program) => (
-                        <div 
-                          key={program.id}
-                          className="group cursor-pointer transition-transform duration-300 hover:scale-105"
-                          onClick={() => handleProgramClick(program)}
-                        >
-                          <div className="bg-white border border-gray-200 rounded-none shadow-lg overflow-hidden h-full">
-                            <div className="relative h-48 overflow-hidden">
-                              <img
-                                src={program.image}
-                                alt={program.title}
-                                className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-                              <div className="absolute top-4 left-4">
-                                <span 
-                                  className="text-2xl font-bold text-white bg-black/50 px-2 py-1 rounded-none"
-                                  style={{ color: '#00ffba' }}
-                                >
-                                  {program.id}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div className="p-6">
-                              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#00ffba] transition-colors duration-300">
-                                {program.title}
-                              </h3>
-                              <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                                {program.description}
-                              </p>
-                              <div className="text-[#00ffba] text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                Κλικ για περισσότερες λεπτομέρειες →
-                              </div>
-                            </div>
-                          </div>
+            {/* Programs Grid */}
+            <div className="min-h-[500px] flex items-center justify-center">
+              <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-500 ease-in-out">
+                {currentPrograms.map((program) => (
+                  <div 
+                    key={program.id}
+                    className="group cursor-pointer transition-transform duration-300 hover:scale-105"
+                    onClick={() => handleProgramClick(program)}
+                  >
+                    <div className="bg-white border border-gray-200 rounded-none shadow-lg overflow-hidden h-full">
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={program.image}
+                          alt={program.title}
+                          className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                        <div className="absolute top-4 left-4">
+                          <span 
+                            className="text-2xl font-bold text-white bg-black/50 px-2 py-1 rounded-none"
+                            style={{ color: '#00ffba' }}
+                          >
+                            {program.id}
+                          </span>
                         </div>
-                      ))}
+                      </div>
+                      
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#00ffba] transition-colors duration-300">
+                          {program.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                          {program.description}
+                        </p>
+                        <div className="text-[#00ffba] text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          Κλικ για περισσότερες λεπτομέρειες →
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
