@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,6 +6,7 @@ import { LogOut, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileSidebar } from "@/components/user-profile/UserProfileSidebar";
+import { MobileUserNavigation } from "@/components/navigation/MobileUserNavigation";
 import { UserProfileContent } from "@/components/user-profile/UserProfileContent";
 import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfileData";
 
@@ -92,7 +92,7 @@ const UserProfile = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
         {/* Top Navigation */}
         <nav className="bg-white border-b border-gray-200 px-2 md:px-4 lg:px-6 py-2 md:py-4">
           <div className="flex justify-between items-center">
@@ -129,29 +129,6 @@ const UserProfile = () => {
           </div>
         </nav>
 
-        {/* Mobile Tabs - shown only on mobile */}
-        <div className="md:hidden bg-white border-b border-gray-200 px-2 py-2">
-          <div className="flex space-x-1 overflow-x-auto">
-            {[
-              { key: "overview", label: "Επισκόπηση" },
-              { key: "programs", label: "Προγράμματα" },
-              { key: "calendar", label: "Ημερολόγιο" },
-              { key: "tests", label: "Τεστ" },
-              { key: "payments", label: "Πληρωμές" }
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`px-3 py-1 text-xs font-medium rounded-none whitespace-nowrap ${
-                  activeTab === tab.key ? 'bg-[#00ffba] text-black' : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Profile Content */}
         <div className="flex-1 p-2 md:p-4 lg:p-6 overflow-hidden">
           <UserProfileContent
@@ -164,6 +141,13 @@ const UserProfile = () => {
           />
         </div>
       </div>
+
+      {/* Mobile Navigation */}
+      <MobileUserNavigation 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        stats={stats}
+      />
     </div>
   );
 };

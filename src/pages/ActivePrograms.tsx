@@ -1,176 +1,141 @@
-
-import React, { useState, useEffect } from 'react';
-import { CalendarCheck, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Navigate } from "react-router-dom";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
-import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
+import { MobileNavigation } from "@/components/navigation/MobileNavigation";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ProgramsForDateCard } from "@/components/active-programs/calendar/ProgramsForDateCard";
-import { useNavigate } from "react-router-dom";
+import { DatabaseDebugger } from "@/components/debug/DatabaseDebugger";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
-import { supabase } from "@/integrations/supabase/client";
+import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
+import { format } from "date-fns";
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 const ActivePrograms = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const { user, loading, signOut, isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
-  const [dayDialogOpen, setDayDialogOpen] = useState(false);
-  const [selectedProgram, setSelectedProgram] = useState<any>(null);
-  const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [showDebugger, setShowDebugger] = useState(false);
   const [realtimeKey, setRealtimeKey] = useState(0);
-  const navigate = useNavigate();
 
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
-  const { getWorkoutCompletions } = useWorkoutCompletions();
+  const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
 
-  // Φιλτράρουμε τα προγράμματα για την επιλεγμένη ημερομηνία
-  const programsForSelectedDate = activePrograms.filter(assignment => {
-    if (!selectedDate || !assignment.training_dates) return false;
-    
-    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-    return assignment.training_dates.includes(selectedDateStr);
-  });
+  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
 
-  // Φόρτωση workout completions για όλα τα assignments
-  const loadCompletions = async () => {
-    if (activePrograms.length === 0) return;
-    
-    try {
-      const allCompletions = [];
-      for (const assignment of activePrograms) {
-        const completions = await getWorkoutCompletions(assignment.id);
-        allCompletions.push(...completions);
+  useEffect(() => {
+    const loadCompletions = async () => {
+      if (activePrograms.length > 0) {
+        const allCompletions = await getAllWorkoutCompletions();
+        // Filter completions for active programs
+        const assignmentIds = activePrograms.map(p => p.id);
+        const filteredCompletions = allCompletions.filter(c => assignmentIds.includes(c.assignment_id));
+        setWorkoutCompletions(filteredCompletions);
       }
-      setWorkoutCompletions(allCompletions);
-      console.log('✅ Loaded completions:', allCompletions.length);
-    } catch (error) {
-      console.error('Error loading workout completions:', error);
-    }
-  };
-
-  useEffect(() => {
-    loadCompletions();
-  }, [activePrograms, getWorkoutCompletions, realtimeKey]);
-
-  // Real-time subscription
-  useEffect(() => {
-    console.log('🔄 Setting up ENHANCED realtime subscription...');
-    
-    const channel = supabase
-      .channel('workout-completions-enhanced-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'workout_completions'
-        },
-        async (payload) => {
-          console.log('🚀 IMMEDIATE Real-time change detected:', payload);
-          
-          setRealtimeKey(prev => prev + 1);
-          
-          setTimeout(async () => {
-            console.log('🔄 Force refreshing data...');
-            await refetch();
-            await loadCompletions();
-          }, 100);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log('🔌 Cleaning up enhanced realtime subscription...');
-      supabase.removeChannel(channel);
     };
-  }, [refetch]);
+    loadCompletions();
+  }, [activePrograms, getAllWorkoutCompletions]);
 
-  // Υπολογίζουμε τα stats
   const stats = {
     totalPrograms: activePrograms.length,
-    activeToday: programsForSelectedDate.length,
-    completedToday: 0
+    activeToday: activePrograms.filter(program =>
+      program.training_dates?.includes(format(new Date(), 'yyyy-MM-dd'))
+    ).length,
+    completedToday: workoutCompletions.filter(completion =>
+      completion.scheduled_date === format(new Date(), 'yyyy-MM-dd') && completion.status === 'completed'
+    ).length,
   };
 
-  const handleNameClick = (program: any, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setSelectedProgram(program.assignment);
-    setSelectedDialogDate(new Date(program.date));
-    setDayDialogOpen(true);
-  };
+  const programsForSelectedDate = selectedDate 
+    ? activePrograms.filter(assignment => {
+        const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+        return assignment.training_dates?.includes(selectedDateStr);
+      })
+    : [];
 
-  const handleDeleteProgram = async (assignmentId: string) => {
-    try {
-      console.log('Διαγραφή προγράμματος:', assignmentId);
-      refetch();
-    } catch (error) {
-      console.error('Σφάλμα κατά τη διαγραφή:', error);
-    }
-  };
-
-  const getWorkoutStatus = (assignment: any, date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
+  const getWorkoutStatusForDate = (assignmentId: string, dateStr: string) => {
     const completion = workoutCompletions.find(c => 
-      c.assignment_id === assignment.id && c.scheduled_date === dateStr
+      c.assignment_id === assignmentId && c.scheduled_date === dateStr
     );
     return completion?.status || 'scheduled';
   };
 
-  if (isLoading) {
+  const handleRefresh = () => {
+    refetch();
+    setRealtimeKey(prev => prev + 1);
+  };
+
+  const handleDelete = async (assignmentId: string) => {
+    // Optimistically remove the assignment from the local state
+    // setActivePrograms(prevPrograms => prevPrograms.filter(p => p.id !== assignmentId));
+    // setWorkoutCompletions(prevCompletions => prevCompletions.filter(c => c.assignment_id !== assignmentId));
+
+    // Call the API to delete the assignment
+    // await deleteAssignment(assignmentId);
+
+    // Refresh the data to get the latest state from the server
+    refetch();
+    setRealtimeKey(prev => prev + 1);
+  };
+
+  const onNameClick = (program: any, event: React.MouseEvent) => {
+    event.preventDefault();
+    window.open(`/lovable-uploads/${program.video_url}`, '_blank');
+  };
+
+  const onToggleDebugger = () => {
+    setShowDebugger(!showDebugger);
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex w-full items-center justify-center">
-        <div>Φόρτωση προγραμμάτων...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Φόρτωση...</p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex w-full items-center justify-center">
-        <div className="text-red-600">Σφάλμα κατά τη φόρτωση: {error.message}</div>
-      </div>
-    );
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
   }
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
-    <>
-      <div className="min-h-screen bg-gray-50 flex w-full">
-        {/* Sidebar */}
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+      {/* Sidebar - hidden on mobile */}
+      <div className="hidden md:block">
         <ActiveProgramsSidebar 
           isCollapsed={isCollapsed} 
           setIsCollapsed={setIsCollapsed}
           stats={stats}
           activePrograms={activePrograms}
-          onRefresh={refetch}
-          onDelete={handleDeleteProgram}
+          onRefresh={handleRefresh}
+          onDelete={handleDelete}
         />
-        
-        {/* Main Content */}
-        <div className="flex-1 p-6">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/dashboard')}
-                  className="rounded-none"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Επιστροφή
-                </Button>
-                <h1 className="text-3xl font-bold flex items-center gap-2">
-                  <CalendarCheck className="h-8 w-8 text-[#00ffba]" />
-                  Ημερολόγιο
-                </h1>
-              </div>
-            </div>
+      </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              {/* Calendar Section */}
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
+        {/* Top Navigation */}
+        <DashboardHeader
+          userProfile={null}
+          userEmail={user?.email}
+          onSignOut={handleSignOut}
+        />
+
+        {/* Calendar Content */}
+        <div className="flex-1 p-2 md:p-4 lg:p-6 overflow-hidden">
+          {showDebugger && <DatabaseDebugger />}
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4 lg:gap-6 h-full">
+            <div className="lg:col-span-2 min-h-0">
               <CalendarGrid
                 currentMonth={currentMonth}
                 setCurrentMonth={setCurrentMonth}
@@ -179,34 +144,25 @@ const ActivePrograms = () => {
                 activePrograms={activePrograms}
                 workoutCompletions={workoutCompletions}
                 realtimeKey={realtimeKey}
-                onNameClick={handleNameClick}
+                onNameClick={onNameClick}
               />
-
-              {/* Programs List */}
+            </div>
+            
+            <div className="lg:col-span-1 space-y-2 md:space-y-4 hidden lg:block">
               <ProgramsForDateCard
                 selectedDate={selectedDate}
                 programsForSelectedDate={programsForSelectedDate}
-                onRefresh={refetch}
-                onDelete={handleDeleteProgram}
+                onRefresh={handleRefresh}
+                onDelete={handleDelete}
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Day Program Dialog */}
-      <DayProgramDialog
-        isOpen={dayDialogOpen}
-        onClose={() => setDayDialogOpen(false)}
-        program={selectedProgram}
-        selectedDate={selectedDialogDate}
-        workoutStatus={selectedProgram && selectedDialogDate ? getWorkoutStatus(selectedProgram, selectedDialogDate) : 'scheduled'}
-        onRefresh={() => {
-          refetch();
-          setRealtimeKey(prev => prev + 1);
-        }}
-      />
-    </>
+      {/* Mobile Navigation */}
+      <MobileNavigation />
+    </div>
   );
 };
 
