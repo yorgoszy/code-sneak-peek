@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
+import { Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
 import { DaySelector } from "./calendar/DaySelector";
@@ -26,14 +26,6 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
-
-  const handlePlayClick = () => {
-    if (selectedDate) {
-      setDayDialogOpen(true);
-    } else {
-      setDaySelectorOpen(true);
-    }
-  };
 
   const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
     setViewDialogOpen(false);
@@ -66,19 +58,6 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center">
-          {/* Εμφάνιση Play button μόνο αν δεν είμαστε σε user mode */}
-          {!userMode && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handlePlayClick}
-              className="h-6 w-6 p-0 rounded-none"
-              title="Έναρξη Προπόνησης"
-            >
-              <Play className="h-3 w-3" />
-            </Button>
-          )}
-
           <Button
             variant="ghost"
             size="sm"
