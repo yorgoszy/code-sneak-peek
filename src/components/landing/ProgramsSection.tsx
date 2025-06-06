@@ -84,14 +84,14 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             <div className="flex justify-end mb-8 space-x-4">
               <button
                 onClick={prevPage}
-                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300 rounded-md"
                 disabled={totalPages <= 1}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={nextPage}
-                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300 rounded-md"
                 disabled={totalPages <= 1}
               >
                 <ChevronRight className="w-4 h-4" />
@@ -107,8 +107,8 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className="group cursor-pointer"
                     onClick={() => handleProgramClick(program)}
                   >
-                    <div className="bg-white border-2 border-black overflow-hidden h-full">
-                      <div className="relative h-48 overflow-hidden">
+                    <div className="bg-white border-2 border-black overflow-hidden h-full rounded-lg">
+                      <div className="relative h-48 overflow-hidden rounded-t-lg">
                         <img
                           src={program.image}
                           alt={program.title}
@@ -116,7 +116,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         />
                         <div className="absolute top-4 left-4">
                           <span 
-                            className="text-2xl font-bold text-white bg-black/70 px-2 py-1"
+                            className="text-2xl font-bold text-white bg-black/70 px-2 py-1 rounded-md"
                             style={{ color: '#00ffba' }}
                           >
                             {program.id}
@@ -131,7 +131,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         <p className="text-black text-sm leading-relaxed mb-4">
                           {program.description}
                         </p>
-                        <div className="text-white bg-[#00ffba] px-4 py-2 text-sm font-semibold hover:bg-[#00ffba]/90 transition-colors duration-300 inline-block">
+                        <div className="text-[#00ffba] bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50 transition-colors duration-300 inline-block rounded-md">
                           Κλικ για περισσότερες λεπτομέρειες →
                         </div>
                       </div>
@@ -147,7 +147,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                 <button
                   key={index}
                   onClick={() => setCurrentPage(index)}
-                  className={`w-3 h-3 transition-colors ${
+                  className={`w-3 h-3 transition-colors rounded-full ${
                     currentPage === index ? 'bg-[#00ffba]' : 'bg-gray-600'
                   }`}
                 />
