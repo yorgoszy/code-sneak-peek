@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,7 +51,7 @@ const Index = () => {
       id: "02", 
       title: translations.movementDevelopment,
       description: translations.movementDevelopmentDesc,
-      image: "/lovable-uploads/5c575238-ffcf-4f84-aa73-21fa6377ba7d.png",
+      image: "/lovable-uploads/0833c496-f8f2-48ac-9a5c-bdbc319e0708.png",
       color: "#00ffba"
     },
     {
