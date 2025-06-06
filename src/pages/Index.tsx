@@ -100,7 +100,7 @@ const Index = () => {
       id: "09",
       title: "Ready Template",
       description: "Έτοιμα πρότυπα προγραμμάτων προπόνησης για άμεση εφαρμογή και γρήγορα αποτελέσματα",
-      image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&h=300&fit=crop",
+      image: "/lovable-uploads/b00b1740-0d26-4b91-9d41-9c36f78efe94.png",
       color: "#00ffba"
     }
   ];
