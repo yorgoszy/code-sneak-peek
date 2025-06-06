@@ -82,7 +82,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-none">
+        <DialogContent className="max-w-3xl max-h-[60vh] overflow-y-auto rounded-none">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
@@ -93,28 +93,23 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onCancelWorkout={handleCancelWorkout}
           />
 
-          <div className="space-y-2">
-            {/* Program Info - Compact */}
-            <div className="bg-gray-50 border border-gray-200 rounded-none p-2">
-              <div className="flex items-center justify-between text-sm">
-                <div>
-                  <span className="font-medium">{program.programs?.name}</span>
-                  {dayProgram && <span className="text-gray-600 ml-2">• {dayProgram.name}</span>}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {workoutInProgress ? 'Προπόνηση σε εξέλιξη' : workoutStatus}
-                </div>
+          <div className="space-y-1">
+            {/* Program Info - Πολύ συμπαγές */}
+            <div className="bg-gray-50 border border-gray-200 rounded-none p-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium truncate">{program.programs?.name}</span>
+                {dayProgram && <span className="text-gray-600 truncate">• {dayProgram.name}</span>}
               </div>
             </div>
 
             {blocks.length > 0 ? (
               <Tabs defaultValue="0" className="w-full">
-                <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
+                <TabsList className="grid w-full rounded-none h-8" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
                   {blocks.map((block, index) => (
                     <TabsTrigger 
                       key={block.id} 
                       value={index.toString()} 
-                      className="rounded-none text-xs"
+                      className="rounded-none text-xs py-1 px-2 h-7"
                     >
                       {block.name}
                     </TabsTrigger>
@@ -122,8 +117,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                 </TabsList>
 
                 {blocks.map((block, blockIndex) => (
-                  <TabsContent key={block.id} value={blockIndex.toString()} className="mt-2">
-                    <div className="space-y-1">
+                  <TabsContent key={block.id} value={blockIndex.toString()} className="mt-1">
+                    <div className="space-y-0.5">
                       {block.program_exercises?.map((exercise) => (
                         <CompactExerciseItem
                           key={exercise.id}
@@ -152,7 +147,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                 ))}
               </Tabs>
             ) : (
-              <div className="bg-white border border-gray-200 rounded-none p-6 text-center text-gray-500">
+              <div className="bg-white border border-gray-200 rounded-none p-4 text-center text-gray-500 text-sm">
                 Δεν βρέθηκε πρόγραμμα για αυτή την ημέρα
               </div>
             )}
