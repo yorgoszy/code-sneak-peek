@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { Video } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Video } from 'lucide-react';
 
 interface ExerciseHeaderProps {
   exercise: any;
@@ -11,6 +10,7 @@ interface ExerciseHeaderProps {
   remainingText: string;
   workoutInProgress: boolean;
   onVideoClick: (event: React.MouseEvent) => void;
+  onSetClick: (event: React.MouseEvent) => void;
 }
 
 export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
@@ -18,7 +18,8 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
   isComplete,
   remainingText,
   workoutInProgress,
-  onVideoClick
+  onVideoClick,
+  onSetClick
 }) => {
   return (
     <div className="p-2 border-b border-gray-200">
@@ -27,7 +28,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
           <div className="text-sm font-medium text-gray-900">
             {exercise.exercises?.name || 'Unknown Exercise'}
           </div>
-          {isComplete && <CheckCircle className="w-4 h-4 text-[#00ffba]" />}
+          {isComplete && <CheckCircle className="w-4 h-4 text-green-600" />}
           {exercise.exercises?.video_url && (
             <Button
               variant="ghost"
@@ -41,13 +42,24 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
+          {workoutInProgress && !isComplete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onSetClick}
+              className="rounded-none text-xs h-5 px-2"
+            >
+              Complete Set
+            </Button>
+          )}
+          
           <Badge 
             variant="outline" 
             className={`rounded-none text-xs px-1 ${
               isComplete ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
             }`}
           >
-            {isComplete ? 'Complete!' : 'Click to complete'}
+            {isComplete ? 'Complete!' : remainingText}
           </Badge>
         </div>
       </div>
