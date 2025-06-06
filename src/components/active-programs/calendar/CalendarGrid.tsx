@@ -88,7 +88,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             <span>Χαμένες</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-gray-300 rounded-none"></div>
+            <div className="w-3 h-3 bg-gray-200 rounded-none"></div>
             <span>Σήμερα</span>
           </div>
         </div>
