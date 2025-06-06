@@ -28,7 +28,15 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
     videoUrl = null;
   }
   
+  console.log('🎥 VideoThumbnail render:', {
+    exerciseName: exercise.exercises?.name,
+    rawVideoUrl: exercise.exercises?.video_url,
+    processedVideoUrl: videoUrl,
+    isValid: videoUrl ? isValidVideoUrl(videoUrl) : false
+  });
+  
   if (!videoUrl || !isValidVideoUrl(videoUrl)) {
+    console.log('❌ No valid video URL, showing placeholder');
     return (
       <div className="w-8 h-5 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
         <span className="text-xs text-gray-400">-</span>
@@ -37,10 +45,13 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
   }
 
   const thumbnailUrl = getVideoThumbnail(videoUrl);
+  console.log('🖼️ Thumbnail URL generated:', thumbnailUrl);
   
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log('🎬 VideoThumbnail CLICK detected for:', exercise.exercises?.name);
+    console.log('🎬 Calling onVideoClick with exercise:', exercise);
     onVideoClick(exercise);
   };
   
@@ -56,9 +67,13 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVide
           alt={`${exercise.exercises?.name} thumbnail`}
           className="w-full h-full object-cover"
           onError={(e) => {
+            console.log('❌ Thumbnail failed to load:', thumbnailUrl);
             const target = e.currentTarget as HTMLImageElement;
             target.style.display = 'none';
             target.nextElementSibling?.classList.remove('hidden');
+          }}
+          onLoad={() => {
+            console.log('✅ Thumbnail loaded successfully:', thumbnailUrl);
           }}
         />
       ) : null}

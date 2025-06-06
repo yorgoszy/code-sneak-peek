@@ -15,6 +15,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   onSetClick 
 }) => {
   const handleVideoClick = (exerciseData: any) => {
+    console.log('🎬 ExerciseDetails handleVideoClick called with:', exerciseData.exercises?.name);
     if (onVideoClick) {
       onVideoClick(exerciseData);
     }
