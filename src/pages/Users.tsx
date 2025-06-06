@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -43,6 +44,7 @@ interface AppUser {
 
 const Users = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { isAdmin, loading: rolesLoading } = useRoleCheck();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -96,11 +98,11 @@ const Users = () => {
   }, [user]);
 
   useEffect(() => {
-    // Φορτώνουμε πάντα τους χρήστες - χωρίς auth check
+    // Φορτώνουμε πάντα τους χρήστες
     fetchUsers();
   }, []);
 
-  if (loading) {
+  if (loading || rolesLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -112,11 +114,6 @@ const Users = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
-  }
-
-  // Only admins can access the Users page
-  if (!isAdmin()) {
-    return <Navigate to="/dashboard" replace />;
   }
 
   const handleEditUser = (user: AppUser) => {
