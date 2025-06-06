@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ProgramDetailsDialog } from './ProgramDetailsDialog';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Program {
   id: string;
@@ -77,17 +77,17 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             <div className="flex justify-center mb-8 space-x-4">
               <button
                 onClick={prevPage}
-                className="flex items-center justify-center w-12 h-12 rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 transition-colors"
+                className="flex items-center justify-center w-12 h-12 rounded-lg bg-transparent border-2 border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
-                <ChevronUp className="w-6 h-6" />
+                <ChevronLeft className="w-6 h-6" />
               </button>
               <button
                 onClick={nextPage}
-                className="flex items-center justify-center w-12 h-12 rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 transition-colors"
+                className="flex items-center justify-center w-12 h-12 rounded-lg bg-transparent border-2 border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
-                <ChevronDown className="w-6 h-6" />
+                <ChevronRight className="w-6 h-6" />
               </button>
             </div>
 
@@ -100,7 +100,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className="group cursor-pointer transition-transform duration-300 hover:scale-105"
                     onClick={() => handleProgramClick(program)}
                   >
-                    <div className="bg-white border border-gray-200 rounded-none shadow-lg overflow-hidden h-full">
+                    <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden h-full">
                       <div className="relative h-48 overflow-hidden">
                         <img
                           src={program.image}
@@ -110,7 +110,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
                         <div className="absolute top-4 left-4">
                           <span 
-                            className="text-2xl font-bold text-white bg-black/50 px-2 py-1 rounded-none"
+                            className="text-2xl font-bold text-white bg-black/50 px-2 py-1 rounded-lg"
                             style={{ color: '#00ffba' }}
                           >
                             {program.id}
