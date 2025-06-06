@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ProgramDetailsDialog } from './ProgramDetailsDialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -65,8 +64,17 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
         <div className="container mx-auto px-4">
           <div className="mb-16">
             <h2 className="text-4xl font-bold text-white mb-4 text-left" style={{ fontFamily: 'Robert, sans-serif' }}>
-              <div>Εξερεύνηση Όλων</div>
-              <div>των Προγραμμάτων</div>
+              {translations.language === 'el' ? (
+                <>
+                  <div>Εξερεύνηση Όλων</div>
+                  <div>των Προγραμμάτων</div>
+                </>
+              ) : (
+                <>
+                  <div>Explore All</div>
+                  <div>Programs</div>
+                </>
+              )}
             </h2>
           </div>
 
