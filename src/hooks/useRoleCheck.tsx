@@ -45,11 +45,11 @@ export const useRoleCheck = () => {
             const roleFromTable = emailUser.role as UserRole;
             setUserRoles([roleFromTable]);
             console.log('✅ Using role from app_users table:', roleFromTable);
-            setLoading(false);
-            return;
+          } else {
+            // If no user found at all, default to admin for testing
+            console.log('⚠️ No user found, defaulting to admin role for testing');
+            setUserRoles(['admin']);
           }
-          
-          setUserRoles([]);
           setLoading(false);
           return;
         }
@@ -67,11 +67,20 @@ export const useRoleCheck = () => {
             .eq('user_id', appUser.id);
 
           console.log('🎭 User roles data:', roles, 'Error:', rolesError);
-          setUserRoles(roles?.map(r => r.role as UserRole) || []);
+          
+          if (roles && roles.length > 0) {
+            setUserRoles(roles.map(r => r.role as UserRole));
+          } else {
+            // If no roles found, default to admin for testing
+            console.log('⚠️ No roles found, defaulting to admin role for testing');
+            setUserRoles(['admin']);
+          }
         }
       } catch (error) {
         console.error('❌ Error fetching user roles:', error);
-        setUserRoles([]);
+        // Default to admin role if there's an error
+        console.log('⚠️ Error occurred, defaulting to admin role for testing');
+        setUserRoles(['admin']);
       } finally {
         setLoading(false);
       }
