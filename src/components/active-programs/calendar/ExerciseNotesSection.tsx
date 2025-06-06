@@ -22,7 +22,6 @@ export const ExerciseNotesSection: React.FC<ExerciseNotesSectionProps> = ({
 }) => {
   return (
     <div className="space-y-1">
-      {/* Textarea takes the place of divider + one more cell */}
       <div className="flex items-start gap-2">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
@@ -41,7 +40,7 @@ export const ExerciseNotesSection: React.FC<ExerciseNotesSectionProps> = ({
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
             placeholder={workoutInProgress ? "Προσθήκη σημειώσεων..." : "Πάτησε έναρξη για σημειώσεις"}
-            className="min-h-[20px] text-xs rounded-none resize-none"
+            className="min-h-[20px] text-xs rounded-none resize-none h-4"
             disabled={!workoutInProgress}
             rows={1}
           />

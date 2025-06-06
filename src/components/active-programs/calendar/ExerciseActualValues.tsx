@@ -160,7 +160,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
           placeholder={workoutInProgress ? "Notes..." : ""}
-          className="h-5 text-xs rounded-none resize-none p-0.5 text-red-600 font-medium"
+          className="h-5 text-xs rounded-none resize-none p-0.5 text-red-600 font-medium text-center"
           disabled={!workoutInProgress}
           rows={1}
         />
