@@ -89,6 +89,20 @@ const Index = () => {
       description: translations.athletePerformanceDesc,
       image: "/lovable-uploads/a29fcea9-97f7-45a5-8b9f-a0f30b314aa4.png",
       color: "#00ffba"
+    },
+    {
+      id: "08",
+      title: "Custom Program Design",
+      description: "Εξατομικευμένα προγράμματα προπόνησης σχεδιασμένα ειδικά για τους στόχους και τις ανάγκες σας",
+      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=500&h=300&fit=crop",
+      color: "#00ffba"
+    },
+    {
+      id: "09",
+      title: "Ready Template",
+      description: "Έτοιμα πρότυπα προγραμμάτων προπόνησης για άμεση εφαρμογή και γρήγορα αποτελέσματα",
+      image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&h=300&fit=crop",
+      color: "#00ffba"
     }
   ];
 
