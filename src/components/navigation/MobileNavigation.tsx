@@ -10,7 +10,9 @@ import {
   TrendingUp, 
   Calendar,
   CalendarCheck,
-  CreditCard
+  CreditCard,
+  Home,
+  Mail
 } from "lucide-react";
 
 const navigationItems = [
@@ -23,6 +25,8 @@ const navigationItems = [
   { icon: Calendar, label: "Προγράμματα", path: "/dashboard/programs" },
   { icon: CalendarCheck, label: "Ημερολόγιο", path: "/dashboard/active-programs" },
   { icon: CreditCard, label: "Cards", path: "/dashboard/program-cards" },
+  { icon: Home, label: "Αρχική", path: "/" },
+  { icon: Mail, label: "Email", path: "https://webmail.hyperkids.gr/", external: true },
 ];
 
 export const MobileNavigation: React.FC = () => {
@@ -33,6 +37,21 @@ export const MobileNavigation: React.FC = () => {
       <div className="flex overflow-x-auto scrollbar-hide">
         {navigationItems.map((item) => {
           const isActive = location.pathname === item.path;
+          
+          if (item.external) {
+            return (
+              <a
+                key={item.path}
+                href={item.path}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center justify-center min-w-0 flex-1 py-3 px-2 text-xs font-medium transition-colors text-gray-600 hover:text-gray-900"
+              >
+                <item.icon className="h-6 w-6 text-gray-600" />
+              </a>
+            );
+          }
+          
           return (
             <Link
               key={item.path}

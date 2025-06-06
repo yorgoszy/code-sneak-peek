@@ -2,23 +2,31 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { 
+  BarChart3,
   Users, 
   UserPlus, 
   Dumbbell, 
   Activity, 
   TrendingUp, 
   Calendar,
-  LogOut
+  CalendarCheck,
+  CreditCard,
+  LogOut,
+  Home,
+  Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navigationItems = [
+  { icon: BarChart3, label: "Επισκόπηση", path: "/dashboard" },
   { icon: Users, label: "Χρήστες", path: "/dashboard/users" },
   { icon: UserPlus, label: "Ομάδες", path: "/dashboard/groups" },
   { icon: Dumbbell, label: "Ασκήσεις", path: "/dashboard/exercises" },
   { icon: Activity, label: "Τεστ", path: "/dashboard/tests" },
   { icon: TrendingUp, label: "Αποτελέσματα", path: "/dashboard/results" },
   { icon: Calendar, label: "Προγράμματα", path: "/dashboard/programs" },
+  { icon: CalendarCheck, label: "Ημερολόγιο", path: "/dashboard/active-programs" },
+  { icon: CreditCard, label: "Cards", path: "/dashboard/program-cards" },
 ];
 
 interface TabNavigationProps {
@@ -57,6 +65,22 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <Link
+              to="/"
+              className="flex items-center justify-center p-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none"
+              title="Επιστροφή στην Αρχική"
+            >
+              <Home className="h-5 w-5" />
+            </Link>
+            <a
+              href="https://webmail.hyperkids.gr/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center p-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none"
+              title="Webmail"
+            >
+              <Mail className="h-5 w-5" />
+            </a>
             <span className="text-sm text-gray-600">
               {userProfile?.name || user?.email}
               {isAdmin && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
