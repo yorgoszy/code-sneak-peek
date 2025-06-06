@@ -101,25 +101,25 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             {/* Programs Grid */}
             <div className="min-h-[500px] flex items-center justify-center">
               <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-500 ease-in-out">
-                {currentPrograms.map((program, index) => (
+                {currentPrograms.map((program) => (
                   <div 
                     key={program.id}
                     className="group cursor-pointer"
                     onClick={() => handleProgramClick(program)}
                   >
-                    <div className="bg-white border-2 border-white overflow-hidden h-full">
+                    <div className="bg-[#00ffba] border-2 border-black rounded-lg overflow-hidden h-full">
                       <div className="relative h-48 overflow-hidden">
                         <img
-                          src={index === 1 ? "/lovable-uploads/0f919a0d-0ebb-4610-93ce-a159c8fbd9bc.png" : program.image}
+                          src={program.image}
                           alt={program.title}
-                          className="w-full h-full object-cover grayscale transition-all duration-300 group-hover:scale-105 group-hover:grayscale-0"
+                          className="w-full h-full object-cover brightness-100 contrast-100 saturate-100 transition-all duration-300 group-hover:scale-105"
                         />
                         <div className="absolute top-4 left-4">
                           <span 
-                            className="text-2xl font-bold text-white bg-black/70 px-2 py-1"
+                            className="text-2xl font-bold text-white bg-black/70 px-2 py-1 rounded-lg"
                             style={{ color: '#00ffba' }}
                           >
-                            02
+                            {program.id}
                           </span>
                         </div>
                       </div>
