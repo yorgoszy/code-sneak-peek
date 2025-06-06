@@ -91,16 +91,21 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
       case 1:
         return (
           <div className="mb-12">
-            <div className="relative h-64 mb-8 rounded-none overflow-hidden">
+            <div className="relative h-80 mb-8 rounded-none overflow-hidden">
               <img 
                 src={program.image}
                 alt={program.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <h2 className="text-4xl font-bold text-white text-center" style={{ fontFamily: 'Robert, sans-serif' }}>
-                  {program.title}
-                </h2>
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <div className="text-center">
+                  <h2 className="text-5xl font-bold text-white mb-4 border-b-4 border-[#00ffba] pb-2 inline-block" style={{ fontFamily: 'Robert, sans-serif' }}>
+                    {program.title}
+                  </h2>
+                  <p className="text-[#00ffba] text-lg font-semibold">
+                    Εισαγωγικές Τεχνικές Κίνησης
+                  </p>
+                </div>
               </div>
             </div>
             
