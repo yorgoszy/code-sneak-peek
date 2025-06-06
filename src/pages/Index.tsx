@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,7 +44,7 @@ const Index = () => {
       id: "01",
       title: translations.movementLearning,
       description: translations.movementLearningDesc,
-      image: "/lovable-uploads/32d7b875-008c-4cca-a559-c707588d97de.png",
+      image: "/lovable-uploads/980986fa-52f2-4037-8e42-cd74a0db7a79.png",
       color: "#00ffba"
     },
     {
