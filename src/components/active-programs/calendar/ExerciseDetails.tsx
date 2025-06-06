@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThumbnail';
 import { Button } from "@/components/ui/button";
 
 interface ExerciseDetailsProps {
@@ -14,24 +13,8 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   onVideoClick,
   onSetClick 
 }) => {
-  const handleVideoClick = (exerciseData: any) => {
-    if (onVideoClick) {
-      onVideoClick(exerciseData);
-    }
-  };
-
   return (
-    <div className="grid grid-cols-10 gap-0.5 text-xs">
-      <div className="text-center">
-        <div className="text-gray-600 mb-1">Video</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs flex justify-center">
-          {onVideoClick ? (
-            <VideoThumbnail exercise={exercise} onVideoClick={handleVideoClick} />
-          ) : (
-            <span>-</span>
-          )}
-        </div>
-      </div>
+    <div className="grid grid-cols-9 gap-0.5 text-xs">
       <div className="text-center">
         <div className="text-gray-600 mb-1">Sets</div>
         <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs">{exercise.sets || '-'}</div>
