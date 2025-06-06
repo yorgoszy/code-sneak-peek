@@ -44,7 +44,7 @@ const Index = () => {
       id: "01",
       title: translations.movementLearning,
       description: translations.movementLearningDesc,
-      image: "/lovable-uploads/a41e1c78-1c6b-488c-a948-6c4ba28d4cbd.png",
+      image: "/lovable-uploads/d049bee3-9df6-4a4b-8aff-88a05957d3ba.png",
       color: "#00ffba"
     },
     {
