@@ -86,7 +86,7 @@ const Index = () => {
       id: "07",
       title: translations.athletePerformance,
       description: translations.athletePerformanceDesc,
-      image: "/lovable-uploads/a29fcea9-97f7-45a5-8b9f-a0f30b314aa4.png",
+      image: "/lovable-uploads/24db4858-28e8-402b-acaf-095be2a78e56.png",
       color: "#00ffba"
     },
     {
