@@ -41,12 +41,14 @@ export const DashboardContainer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+      {/* Sidebar - hidden on mobile, overlay on medium screens */}
+      <div className="hidden md:block">
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation */}
         <DashboardHeader
           userProfile={userProfile}
@@ -55,18 +57,24 @@ export const DashboardContainer = () => {
         />
 
         {/* Dashboard Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-2 md:p-4 lg:p-6 overflow-hidden">
           {/* Tabs */}
-          <DashboardTabs />
+          <div className="mb-2 md:mb-4">
+            <DashboardTabs />
+          </div>
 
           {/* Statistics Cards */}
-          <DashboardStats stats={stats} />
+          <div className="mb-2 md:mb-4">
+            <DashboardStats stats={stats} />
+          </div>
 
           {/* Lower Section */}
-          <DashboardContent
-            isAdmin={isAdmin()}
-            userProfile={userProfile}
-          />
+          <div className="h-full">
+            <DashboardContent
+              isAdmin={isAdmin()}
+              userProfile={userProfile}
+            />
+          </div>
         </div>
       </div>
     </div>

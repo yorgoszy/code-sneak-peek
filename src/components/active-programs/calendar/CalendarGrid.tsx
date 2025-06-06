@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -71,10 +70,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   };
 
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="text-lg">Ημερολόγιο Προπονήσεων</CardTitle>
-        <div className="text-xs text-gray-500 space-y-1">
+    <Card className="rounded-none h-full">
+      <CardHeader className="pb-2 md:pb-4">
+        <CardTitle className="text-sm md:text-lg">Ημερολόγιο Προπονήσεων</CardTitle>
+        <div className="text-xs text-gray-500 space-y-1 hidden md:block">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
             <span>Προγραμματισμένες</span>
@@ -93,35 +92,35 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-2 md:p-4">
         <div className="w-full">
           {/* Calendar Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2 md:mb-4">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="rounded-none"
+              className="rounded-none h-6 w-6 md:h-8 md:w-8 p-0"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
             </Button>
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-sm md:text-lg font-semibold">
               {format(currentMonth, 'MMMM yyyy', { locale: el })}
             </h3>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="rounded-none"
+              className="rounded-none h-6 w-6 md:h-8 md:w-8 p-0"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
             </Button>
           </div>
 
           {/* Days of Week Header */}
           <div className="grid grid-cols-7 border-b border-gray-200">
             {weekDays.map((day) => (
-              <div key={day} className="p-2 text-center text-sm font-medium text-gray-600 border-r border-gray-200 last:border-r-0">
+              <div key={day} className="p-1 md:p-2 text-center text-xs font-medium text-gray-600 border-r border-gray-200 last:border-r-0">
                 {day}
               </div>
             ))}
@@ -140,7 +139,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 <div
                   key={`${dateStr}-${realtimeKey}`}
                   className={`
-                    h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
+                    h-12 md:h-16 lg:h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
                     ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
                     ${isSelected ? 'bg-[#00ffba] text-black' : ''}
                     ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
@@ -149,24 +148,25 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   onClick={() => handleDateClick(date)}
                 >
                   {/* Date Number */}
-                  <div className={`absolute top-1 left-1 text-sm font-medium ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>
+                  <div className={`absolute top-0.5 left-0.5 md:top-1 md:left-1 text-xs font-medium ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>
                     {date.getDate()}
                   </div>
                   
-                  {/* User Names */}
-                  <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-4 pb-1">
-                    {dateProgramsWithStatus.slice(0, 5).map((program, i) => (
+                  {/* User Names - fewer shown on mobile */}
+                  <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-0.5 md:px-1 pt-3 md:pt-4 pb-0.5 md:pb-1">
+                    {dateProgramsWithStatus.slice(0, window.innerWidth < 768 ? 2 : 5).map((program, i) => (
                       <div 
                         key={`${program.assignmentId}-${i}-${realtimeKey}`}
                         className={`text-xs cursor-pointer hover:underline truncate w-full text-center ${getNameColor(program.status)}`}
                         onClick={(e) => onNameClick(program, e)}
+                        style={{ fontSize: window.innerWidth < 768 ? '10px' : '12px' }}
                       >
                         {program.userName.split(' ')[0]}
                       </div>
                     ))}
-                    {dateProgramsWithStatus.length > 5 && (
-                      <div className="text-xs text-gray-500">
-                        +{dateProgramsWithStatus.length - 5}
+                    {dateProgramsWithStatus.length > (window.innerWidth < 768 ? 2 : 5) && (
+                      <div className="text-xs text-gray-500" style={{ fontSize: window.innerWidth < 768 ? '10px' : '12px' }}>
+                        +{dateProgramsWithStatus.length - (window.innerWidth < 768 ? 2 : 5)}
                       </div>
                     )}
                   </div>

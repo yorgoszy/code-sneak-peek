@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, User } from "lucide-react";
@@ -142,27 +141,27 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="rounded-none">
-        <CardHeader>
+    <div className="space-y-2 md:space-y-4 lg:space-y-6 h-full">
+      <Card className="rounded-none flex-1 min-h-0">
+        <CardHeader className="pb-2 md:pb-4">
           <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Ημερολόγιο Προπονήσεων - {userProfile.name}
+            <span className="flex items-center gap-2 text-sm md:text-base">
+              <Calendar className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">Ημερολόγιο Προπονήσεων -</span> {userProfile.name}
             </span>
             <button 
               onClick={() => setShowDebugger(!showDebugger)}
-              className="text-xs bg-gray-200 px-2 py-1 rounded"
+              className="text-xs bg-gray-200 px-1 md:px-2 py-1 rounded hidden md:block"
             >
               {showDebugger ? 'Απόκρυψη Debug' : 'Debug Video URLs'}
             </button>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-2 md:p-4 lg:p-6 h-full">
           {showDebugger && <DatabaseDebugger />}
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4 lg:gap-6 h-full">
+            <div className="lg:col-span-2 min-h-0">
               <CalendarGrid
                 currentMonth={currentMonth}
                 setCurrentMonth={setCurrentMonth}
@@ -175,7 +174,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
               />
             </div>
             
-            <div className="lg:col-span-1 space-y-4">
+            <div className="lg:col-span-1 space-y-2 md:space-y-4 hidden lg:block">
               <ProgramsForDateCard
                 selectedDate={selectedDate}
                 programsForSelectedDate={programsForSelectedDate}
