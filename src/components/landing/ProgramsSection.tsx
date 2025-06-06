@@ -73,18 +73,18 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
           </div>
 
           <div className="relative">
-            {/* Navigation Buttons */}
-            <div className="flex justify-center mb-8 space-x-4">
+            {/* Navigation Buttons - Far Right */}
+            <div className="flex justify-end mb-8 space-x-4">
               <button
                 onClick={prevPage}
-                className="flex items-center justify-center w-12 h-12 rounded-lg bg-transparent border-2 border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-12 h-12 rounded-none bg-transparent border-2 border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
               <button
                 onClick={nextPage}
-                className="flex items-center justify-center w-12 h-12 rounded-lg bg-transparent border-2 border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-12 h-12 rounded-none bg-transparent border-2 border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
                 <ChevronRight className="w-6 h-6" />
@@ -100,7 +100,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className="group cursor-pointer transition-transform duration-300 hover:scale-105"
                     onClick={() => handleProgramClick(program)}
                   >
-                    <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden h-full">
+                    <div className="bg-white border-0 rounded-lg shadow-lg overflow-hidden h-full">
                       <div className="relative h-48 overflow-hidden">
                         <img
                           src={program.image}
