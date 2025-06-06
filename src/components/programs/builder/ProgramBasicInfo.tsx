@@ -26,8 +26,6 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   onDescriptionChange,
   onAthleteChange
 }) => {
-  const athleteUsers = users.filter(user => user.role === 'athlete');
-
   return (
     <Card className="rounded-none">
       <CardHeader className="pb-3">
@@ -58,7 +56,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Κανένας (Template)</SelectItem>
-                {athleteUsers.map((user) => (
+                {users.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
                     {user.name}
                   </SelectItem>
