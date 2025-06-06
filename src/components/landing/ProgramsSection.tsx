@@ -57,11 +57,6 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                   </h4>
                 </div>
               </div>
-              
-              <div className="flex gap-2">
-                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:bg-white/10" />
-                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:bg-white/10" />
-              </div>
             </div>
 
             <Carousel
@@ -71,6 +66,12 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
               }}
               className="w-full"
             >
+              {/* Navigation buttons positioned absolutely in top right */}
+              <div className="absolute -top-16 right-0 flex gap-2 z-10">
+                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:bg-white/10" />
+                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:bg-white/10" />
+              </div>
+
               <CarouselContent className="-ml-4">
                 {programs.map((program) => (
                   <CarouselItem key={program.id} className="pl-4 basis-1/3">
