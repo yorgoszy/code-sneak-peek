@@ -93,7 +93,7 @@ const Index = () => {
       id: "08",
       title: "Custom Program Design",
       description: "Εξατομικευμένα προγράμματα προπόνησης σχεδιασμένα ειδικά για τους στόχους και τις ανάγκες σας",
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=500&h=300&fit=crop",
+      image: "/lovable-uploads/c6750e89-27d3-4668-b151-ced6a98eb0b1.png",
       color: "#00ffba"
     },
     {
