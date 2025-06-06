@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -199,7 +200,7 @@ const Users = () => {
       />
 
       <div className="p-6">
-        <Card>
+        <Card className="rounded-none">
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle className="text-lg font-semibold">
@@ -222,12 +223,12 @@ const Users = () => {
                   placeholder="Αναζήτηση χρηστών..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 rounded-none"
                 />
               </div>
               
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-none">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Φίλτρο ρόλου" />
                 </SelectTrigger>
@@ -242,7 +243,7 @@ const Users = () => {
               </Select>
               
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-none">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Φίλτρο κατάστασης" />
                 </SelectTrigger>
@@ -286,9 +287,9 @@ const Users = () => {
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center space-x-3">
-                          <Avatar className="w-8 h-8">
+                          <Avatar className="w-8 h-8 rounded-none">
                             <AvatarImage src={user.photo_url} alt={user.name} />
-                            <AvatarFallback>
+                            <AvatarFallback className="rounded-none">
                               {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
@@ -297,13 +298,13 @@ const Users = () => {
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
+                        <span className={`px-2 py-1 text-xs rounded-none ${getRoleColor(user.role)}`}>
                           {user.role}
                         </span>
                       </TableCell>
                       <TableCell>{user.phone || '-'}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 text-xs rounded ${getStatusColor(user.user_status)}`}>
+                        <span className={`px-2 py-1 text-xs rounded-none ${getStatusColor(user.user_status)}`}>
                           {user.user_status}
                         </span>
                       </TableCell>
@@ -343,6 +344,33 @@ const Users = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Dialogs */}
+        <NewUserDialog
+          isOpen={newUserDialogOpen}
+          onClose={() => setNewUserDialogOpen(false)}
+          onUserCreated={handleUserCreated}
+        />
+
+        <EditUserDialog
+          isOpen={editUserDialogOpen}
+          onClose={() => setEditUserDialogOpen(false)}
+          onUserUpdated={handleUserUpdated}
+          user={selectedUser}
+        />
+
+        <DeleteUserDialog
+          isOpen={deleteUserDialogOpen}
+          onClose={() => setDeleteUserDialogOpen(false)}
+          onUserDeleted={handleUserDeleted}
+          user={selectedUser}
+        />
+
+        <UserProfileDialog
+          isOpen={userProfileDialogOpen}
+          onClose={() => setUserProfileDialogOpen(false)}
+          user={selectedUser}
+        />
       </div>
     </div>
   );
