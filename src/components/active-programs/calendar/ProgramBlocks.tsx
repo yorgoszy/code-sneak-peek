@@ -83,6 +83,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
               clearReps={clearReps}
               selectedDate={selectedDate}
               program={program}
+              getRemainingText={getRemainingText}
             />
           ))}
         </div>
@@ -130,6 +131,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                   clearReps={clearReps}
                   selectedDate={selectedDate}
                   program={program}
+                  getRemainingText={getRemainingText}
                 />
               ))}
             </div>
