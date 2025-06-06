@@ -99,12 +99,12 @@ export const DayCard: React.FC<DayCardProps> = ({
   const blocksCount = day.blocks.length;
 
   return (
-    <Card className="rounded-none relative w-full min-w-0" style={{ minHeight: '30px' }}>
+    <Card className="rounded-none relative w-full min-w-0 flex flex-col h-auto max-h-screen overflow-hidden">
       <div className="absolute left-0 top-0 bottom-0 w-2 md:w-4 flex items-center justify-center cursor-move z-10">
         <GripVertical className="w-2 h-2 md:w-3 md:h-3 text-gray-400" />
       </div>
       
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="flex flex-col h-full">
         <DayCardHeader
           dayName={day.name}
           isOpen={isOpen}
@@ -121,25 +121,29 @@ export const DayCard: React.FC<DayCardProps> = ({
         />
         
         {isOpen && (
-          <DayCardContent
-            blocks={day.blocks}
-            exercises={exercises}
-            onAddExercise={onAddExercise}
-            onRemoveBlock={onRemoveBlock}
-            onDuplicateBlock={onDuplicateBlock}
-            onUpdateBlockName={onUpdateBlockName}
-            onUpdateExercise={onUpdateExercise}
-            onRemoveExercise={onRemoveExercise}
-            onDuplicateExercise={onDuplicateExercise}
-            onReorderBlocks={onReorderBlocks}
-            onReorderExercises={onReorderExercises}
-          />
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <DayCardContent
+              blocks={day.blocks}
+              exercises={exercises}
+              onAddExercise={onAddExercise}
+              onRemoveBlock={onRemoveBlock}
+              onDuplicateBlock={onDuplicateBlock}
+              onUpdateBlockName={onUpdateBlockName}
+              onUpdateExercise={onUpdateExercise}
+              onRemoveExercise={onRemoveExercise}
+              onDuplicateExercise={onDuplicateExercise}
+              onReorderBlocks={onReorderBlocks}
+              onReorderExercises={onReorderExercises}
+            />
+          </div>
         )}
         
-        <DayCalculations 
-          blocks={day.blocks} 
-          exercises={exercises} 
-        />
+        <div className="flex-shrink-0">
+          <DayCalculations 
+            blocks={day.blocks} 
+            exercises={exercises} 
+          />
+        </div>
       </Collapsible>
     </Card>
   );
