@@ -105,7 +105,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         <img
                           src={program.image}
                           alt={program.title}
-                          className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                          className="w-full h-full object-cover transition-all duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
                         <div className="absolute top-4 left-4">
@@ -119,7 +119,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                       </div>
                       
                       <div className="p-6">
-                        <h3 className="text-xl font-bold text-gray-900 mb-3 transition-colors duration-300">
+                        <h3 className="text-xl font-bold text-gray-900 mb-3">
                           {program.title}
                         </h3>
                         <p className="text-gray-600 text-sm leading-relaxed mb-4">
