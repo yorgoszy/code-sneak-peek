@@ -107,31 +107,31 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className="group cursor-pointer"
                     onClick={() => handleProgramClick(program)}
                   >
-                    <div className="bg-transparent border border-white rounded-lg overflow-hidden h-full">
+                    <div className="bg-[#00ffba]/90 border-2 border-black rounded-lg overflow-hidden h-full">
                       <div className="relative h-48 overflow-hidden">
                         <img
                           src={program.image}
                           alt={program.title}
-                          className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-300 group-hover:scale-105"
+                          className="w-full h-full object-cover brightness-100 contrast-100 saturate-100 transition-all duration-300 group-hover:scale-105"
                         />
                         <div className="absolute top-4 left-4">
                           <span 
                             className="text-2xl font-bold text-white bg-black/70 px-2 py-1 rounded-lg"
                             style={{ color: '#00ffba' }}
                           >
-                            02
+                            {program.id}
                           </span>
                         </div>
                       </div>
                       
                       <div className="p-6">
-                        <h3 className="text-xl font-bold text-white mb-3">
+                        <h3 className="text-xl font-bold text-black mb-3">
                           {program.title}
                         </h3>
-                        <p className="text-white text-sm leading-relaxed mb-4">
+                        <p className="text-black text-sm leading-relaxed mb-4">
                           {program.description}
                         </p>
-                        <div className="text-white text-sm font-semibold hover:text-gray-300 transition-colors duration-300">
+                        <div className="text-black text-sm font-semibold hover:text-gray-800 transition-colors duration-300">
                           Κλικ για περισσότερες λεπτομέρειες →
                         </div>
                       </div>
