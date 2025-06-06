@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -196,7 +195,7 @@ const Users = () => {
         onSignOut={handleSignOut}
         userProfile={userProfile}
         user={user}
-        isAdmin={isAdmin}
+        isAdmin={isAdmin()}
       />
 
       <div className="p-6">
