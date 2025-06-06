@@ -63,11 +63,12 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
     <>
       <section id="programs" className="py-20 bg-black">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
-              {translations.explorePrograms}
+          <div className="mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4 text-left" style={{ fontFamily: 'Robert, sans-serif' }}>
+              <div>Εξερεύνηση Όλων</div>
+              <div>των Προγραμμάτων</div>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl">
               Ανακαλύψτε τα προγράμματα προπόνησής μας που έχουν σχεδιαστεί για να σας βοηθήσουν να επιτύχετε τους στόχους σας
             </p>
           </div>
