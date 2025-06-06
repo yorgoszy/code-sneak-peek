@@ -61,10 +61,10 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
 
   return (
     <>
-      <section id="programs" className="py-20 bg-white">
+      <section id="programs" className="py-20 bg-black">
         <div className="container mx-auto px-4">
           <div className="mb-16">
-            <h2 className="text-4xl font-bold text-black mb-4 text-left" style={{ fontFamily: 'Robert, sans-serif' }}>
+            <h2 className="text-4xl font-bold text-white mb-4 text-left" style={{ fontFamily: 'Robert, sans-serif' }}>
               {translations.language === 'el' ? (
                 <>
                   <div>Εξερεύνηση Όλων</div>
@@ -84,14 +84,14 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             <div className="flex justify-end mb-8 space-x-4">
               <button
                 onClick={prevPage}
-                className="flex items-center justify-center w-10 h-10 bg-transparent border border-black text-black hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={nextPage}
-                className="flex items-center justify-center w-10 h-10 bg-transparent border border-black text-black hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
                 <ChevronRight className="w-4 h-4" />
