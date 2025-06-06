@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ProgramDetailsDialog } from './ProgramDetailsDialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -112,12 +111,11 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         <img
                           src={program.image}
                           alt={program.title}
-                          className="w-full h-full object-cover transition-all duration-300"
+                          className="w-full h-full object-cover brightness-100 contrast-100 saturate-100 transition-all duration-300 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
                         <div className="absolute top-4 left-4">
                           <span 
-                            className="text-2xl font-bold text-white bg-black/50 px-2 py-1 rounded-lg"
+                            className="text-2xl font-bold text-white bg-black/70 px-2 py-1 rounded-lg"
                             style={{ color: '#00ffba' }}
                           >
                             {program.id}
