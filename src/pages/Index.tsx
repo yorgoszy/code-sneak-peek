@@ -58,7 +58,7 @@ const Index = () => {
       id: "03",
       title: translations.youthStrength, 
       description: translations.youthStrengthDesc,
-      image: "/lovable-uploads/f8f84c19-d969-4da5-a85d-fe764201fc6b.png",
+      image: "/lovable-uploads/df596d6d-6fe5-401f-8a9a-45cc8f2e620a.png",
       color: "#00ffba"
     },
     {
