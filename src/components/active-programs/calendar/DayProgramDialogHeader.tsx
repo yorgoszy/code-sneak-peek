@@ -56,7 +56,7 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
     <DialogHeader>
       <DialogTitle className="flex items-center justify-between">
         <span>
-          Πρόγραμμα Προπόνησης - {format(selectedDate, 'dd MMMM yyyy', { locale: el })}
+          {format(selectedDate, 'EEEE', { locale: el })} - {format(selectedDate, 'dd MMMM yyyy', { locale: el })}
         </span>
         <div className="flex items-center gap-2">
           <WorkoutTimer
