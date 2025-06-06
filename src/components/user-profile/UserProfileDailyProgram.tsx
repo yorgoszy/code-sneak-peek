@@ -6,7 +6,6 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ProgramsForDateCard } from "@/components/active-programs/calendar/ProgramsForDateCard";
-import { ProgramViewDialog } from "@/components/active-programs/calendar/ProgramViewDialog";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { DatabaseDebugger } from "@/components/debug/DatabaseDebugger";
 import { format } from "date-fns";
@@ -22,9 +21,8 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [showDebugger, setShowDebugger] = useState(false);
   
-  // Dialog states
+  // Dialog states - μόνο το DayProgramDialog
   const [selectedProgram, setSelectedProgram] = useState<EnrichedAssignment | null>(null);
-  const [programViewOpen, setProgramViewOpen] = useState(false);
   const [dayProgramOpen, setDayProgramOpen] = useState(false);
 
   // Fetch all active programs and filter for this user
@@ -64,20 +62,16 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     return completion?.status || 'scheduled';
   };
 
+  // Νέα συνάρτηση για χειρισμό κλικ σε όνομα χρήστη - ανοίγει το DayProgramDialog
   const handleNameClick = (program: any, event: React.MouseEvent) => {
     event.stopPropagation();
     const assignment = userPrograms.find(p => p.id === program.assignmentId);
     if (assignment) {
       setSelectedProgram(assignment);
-      setProgramViewOpen(true);
-    }
-  };
-
-  const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
-    if (selectedProgram) {
-      setSelectedDate(new Date());
+      // Χρησιμοποιούμε την ημερομηνία από το program object
+      const programDate = new Date(program.date);
+      setSelectedDate(programDate);
       setDayProgramOpen(true);
-      setProgramViewOpen(false);
     }
   };
 
@@ -193,14 +187,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
-      <ProgramViewDialog
-        isOpen={programViewOpen}
-        onClose={() => setProgramViewOpen(false)}
-        assignment={selectedProgram}
-        onStartWorkout={handleStartWorkout}
-      />
-
+      {/* Μόνο το DayProgramDialog */}
       <DayProgramDialog
         isOpen={dayProgramOpen}
         onClose={() => setDayProgramOpen(false)}
