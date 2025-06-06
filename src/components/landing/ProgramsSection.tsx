@@ -100,7 +100,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className="group cursor-pointer transition-transform duration-300 hover:scale-105"
                     onClick={() => handleProgramClick(program)}
                   >
-                    <div className="bg-white border-0 rounded-lg shadow-lg overflow-hidden h-full">
+                    <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full">
                       <div className="relative h-48 overflow-hidden">
                         <img
                           src={program.image}
@@ -125,7 +125,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         <p className="text-gray-600 text-sm leading-relaxed mb-4">
                           {program.description}
                         </p>
-                        <div className="text-[#00ffba] text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="text-[#00ffba] text-sm font-semibold hover:text-[#00cc94] transition-colors duration-300">
                           Κλικ για περισσότερες λεπτομέρειες →
                         </div>
                       </div>
