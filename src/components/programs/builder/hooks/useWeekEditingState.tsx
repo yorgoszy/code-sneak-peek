@@ -44,9 +44,12 @@ export const useWeekEditingState = (
   const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
   const [editingWeekName, setEditingWeekName] = useState('');
 
-  const handleWeekNameDoubleClick = (week: Week) => {
-    setEditingWeekId(week.id);
-    setEditingWeekName(week.name);
+  const handleWeekNameDoubleClick = (weekId: string) => {
+    const week = weeks.find(w => w.id === weekId);
+    if (week) {
+      setEditingWeekId(week.id);
+      setEditingWeekName(week.name);
+    }
   };
 
   const handleWeekNameSave = () => {
