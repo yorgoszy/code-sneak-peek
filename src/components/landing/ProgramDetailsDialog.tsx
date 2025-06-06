@@ -29,7 +29,7 @@ export const ProgramDetailsDialog: React.FC<ProgramDetailsDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto bg-black text-white border-gray-700 rounded-none p-0">
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto bg-black text-white border-none rounded-none p-0">
         <div className="flex">
           <ProgramDetailsSidebar 
             onClose={onClose} 
