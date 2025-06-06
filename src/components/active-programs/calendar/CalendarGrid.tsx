@@ -88,7 +88,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             <span>Χαμένες</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-yellow-400 rounded-full border-2 border-yellow-600"></div>
+            <div className="w-3 h-3 bg-gray-300 rounded"></div>
             <span>Σήμερα</span>
           </div>
         </div>
@@ -143,20 +143,15 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
                     ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
                     ${isSelected ? 'bg-[#00ffba] text-black' : ''}
-                    ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
+                    ${isTodayDate && !isSelected ? 'bg-gray-200' : ''}
                     hover:bg-gray-50 transition-colors
                   `}
                   onClick={() => handleDateClick(date)}
                 >
                   {/* Date Number */}
-                  <div className={`absolute top-1 left-1 text-sm font-medium ${isTodayDate ? 'text-yellow-800 font-bold' : ''}`}>
+                  <div className="absolute top-1 left-1 text-sm font-medium">
                     {date.getDate()}
                   </div>
-                  
-                  {/* Today indicator */}
-                  {isTodayDate && (
-                    <div className="absolute top-1 right-1 w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  )}
                   
                   {/* User Names */}
                   <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-4 pb-1">
