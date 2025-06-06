@@ -112,11 +112,11 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         <img
                           src={program.image}
                           alt={program.title}
-                          className="w-full h-full object-cover grayscale brightness-100 contrast-100 saturate-0 transition-all duration-300 group-hover:grayscale-0 group-hover:saturate-100 group-hover:scale-105"
+                          className="w-full h-full object-cover grayscale brightness-100 contrast-100 saturate-0 transition-all duration-300 group-hover:grayscale-0 group-hover:saturate-100 group-hover:scale-105 opacity-100"
                         />
                         <div className="absolute top-4 left-4">
                           <span 
-                            className="text-2xl font-bold text-white bg-black/70 px-2 py-1 rounded-md"
+                            className="text-2xl font-bold text-white bg-black/70 px-2 py-1 rounded-md opacity-100"
                             style={{ color: '#00ffba' }}
                           >
                             {program.id}
@@ -125,13 +125,13 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                       </div>
                       
                       <div className="p-6">
-                        <h3 className="text-xl font-bold text-black mb-3">
+                        <h3 className="text-xl font-bold mb-3 opacity-100" style={{ color: '#00ffba' }}>
                           {program.title}
                         </h3>
-                        <p className="text-black text-sm leading-relaxed mb-4">
+                        <p className="text-black text-sm leading-relaxed mb-4 opacity-100">
                           {program.description}
                         </p>
-                        <div className="text-[#00ffba] bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50 transition-colors duration-300 inline-block rounded-md">
+                        <div className="text-[#00ffba] text-sm font-semibold opacity-100">
                           Κλικ για περισσότερες λεπτομέρειες →
                         </div>
                       </div>
