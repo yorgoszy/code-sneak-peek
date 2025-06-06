@@ -39,7 +39,7 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
       
       {/* Remaining part - Light Gray */}
       <div 
-        className="absolute top-0 h-full bg-gray-400 transition-all duration-300"
+        className="absolute top-0 h-full bg-gray-300 transition-all duration-300"
         style={{ 
           left: `${completedPercentage + missedPercentage}%`, 
           width: `${remainingPercentage}%` 
