@@ -44,19 +44,23 @@ export const DeleteUserDialog = ({ isOpen, onClose, onUserDeleted, user }: Delet
     try {
       console.log('🗑️ Ξεκινώ διαγραφή χρήστη:', user.name, user.id);
 
-      // 1. Διαγραφή από exercise_results μέσω workout_completions
-      const { error: exerciseResultsError } = await supabase
-        .from('exercise_results')
-        .delete()
-        .in('workout_completion_id', 
-          supabase
-            .from('workout_completions')
-            .select('id')
-            .eq('user_id', user.id)
-        );
+      // 1. Διαγραφή από exercise_results - πρώτα βρίσκουμε τα workout_completion_ids
+      const { data: workoutCompletions } = await supabase
+        .from('workout_completions')
+        .select('id')
+        .eq('user_id', user.id);
 
-      if (exerciseResultsError) {
-        console.log('⚠️ Exercise results error (πιθανώς δεν υπάρχουν):', exerciseResultsError);
+      if (workoutCompletions && workoutCompletions.length > 0) {
+        const workoutCompletionIds = workoutCompletions.map(wc => wc.id);
+        
+        const { error: exerciseResultsError } = await supabase
+          .from('exercise_results')
+          .delete()
+          .in('workout_completion_id', workoutCompletionIds);
+
+        if (exerciseResultsError) {
+          console.log('⚠️ Exercise results error (πιθανώς δεν υπάρχουν):', exerciseResultsError);
+        }
       }
 
       // 2. Διαγραφή από workout_completions
@@ -119,24 +123,50 @@ export const DeleteUserDialog = ({ isOpen, onClose, onUserDeleted, user }: Delet
         console.log('⚠️ Payments error (πιθανώς δεν υπάρχουν):', paymentsError);
       }
 
-      // 8. Διαγραφή από όλους τους πίνακες τεστ
-      const testTables = [
-        'anthropometric_test_sessions',
-        'endurance_test_sessions', 
-        'functional_test_sessions',
-        'jump_test_sessions',
-        'strength_test_sessions'
-      ];
+      // 8. Διαγραφή από τους πίνακες τεστ - χωρίς loop για να αποφύγουμε TypeScript errors
+      const { error: anthropometricError } = await supabase
+        .from('anthropometric_test_sessions')
+        .delete()
+        .eq('user_id', user.id);
 
-      for (const table of testTables) {
-        const { error } = await supabase
-          .from(table)
-          .delete()
-          .eq('user_id', user.id);
-        
-        if (error) {
-          console.log(`⚠️ ${table} error (πιθανώς δεν υπάρχουν):`, error);
-        }
+      if (anthropometricError) {
+        console.log('⚠️ Anthropometric test sessions error:', anthropometricError);
+      }
+
+      const { error: enduranceError } = await supabase
+        .from('endurance_test_sessions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (enduranceError) {
+        console.log('⚠️ Endurance test sessions error:', enduranceError);
+      }
+
+      const { error: functionalError } = await supabase
+        .from('functional_test_sessions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (functionalError) {
+        console.log('⚠️ Functional test sessions error:', functionalError);
+      }
+
+      const { error: jumpError } = await supabase
+        .from('jump_test_sessions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (jumpError) {
+        console.log('⚠️ Jump test sessions error:', jumpError);
+      }
+
+      const { error: strengthError } = await supabase
+        .from('strength_test_sessions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (strengthError) {
+        console.log('⚠️ Strength test sessions error:', strengthError);
       }
 
       // 9. Διαγραφή από tests
