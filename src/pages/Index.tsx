@@ -72,7 +72,7 @@ const Index = () => {
       id: "05",
       title: translations.muayThai,
       description: translations.muayThaiDesc,
-      image: "/lovable-uploads/e34d4733-416a-4ae3-a438-8182182b40df.png",
+      image: "/lovable-uploads/37c5c9c4-26cd-4d28-8584-2ef582590264.png",
       color: "#00ffba"
     },
     {
