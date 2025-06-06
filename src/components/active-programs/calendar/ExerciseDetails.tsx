@@ -15,7 +15,6 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   onSetClick 
 }) => {
   const handleVideoClick = (exerciseData: any) => {
-    console.log('🎬 ExerciseDetails handleVideoClick called with:', exerciseData.exercises?.name);
     if (onVideoClick) {
       onVideoClick(exerciseData);
     }
@@ -26,7 +25,11 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
       <div className="text-center">
         <div className="text-gray-600 mb-1">Video</div>
         <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs flex justify-center">
-          <VideoThumbnail exercise={exercise} onVideoClick={handleVideoClick} />
+          {onVideoClick ? (
+            <VideoThumbnail exercise={exercise} onVideoClick={handleVideoClick} />
+          ) : (
+            <span>-</span>
+          )}
         </div>
       </div>
       <div className="text-center">
