@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Plus, Search, Edit2, Trash2, Video, Filter, X } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Sidebar } from "@/components/Sidebar";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,6 +11,7 @@ import { AddExerciseDialog } from "@/components/AddExerciseDialog";
 import { EditExerciseDialog } from "@/components/EditExerciseDialog";
 import { toast } from "sonner";
 import { getVideoThumbnail } from "@/utils/videoUtils";
+import { TabNavigation } from "@/components/navigation/TabNavigation";
 
 interface Exercise {
   id: string;
@@ -28,7 +28,8 @@ interface Category {
 }
 
 const Exercises = () => {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, signOut } = useAuth();
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
@@ -188,6 +189,10 @@ const Exercises = () => {
 
   const activeFiltersCount = selectedCategories.length + (searchQuery ? 1 : 0);
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -203,27 +208,30 @@ const Exercises = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+    <div className="min-h-screen bg-gray-50">
+      <TabNavigation 
+        onSignOut={handleSignOut}
+        userProfile={userProfile}
+        user={user}
+        isAdmin={true}
+      />
 
-      <div className="flex-1 flex flex-col">
-        <nav className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Ασκήσεις</h1>
-              <p className="text-sm text-gray-600">
-                Διαχείριση τραπέζας ασκήσεων
-              </p>
-            </div>
-            <Button 
-              onClick={() => setIsAddDialogOpen(true)}
-              className="rounded-none"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Προσθήκη Άσκησης
-            </Button>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Ασκήσεις</h1>
+            <p className="text-sm text-gray-600">
+              Διαχείριση τραπέζας ασκήσεων
+            </p>
           </div>
-        </nav>
+          <Button 
+            onClick={() => setIsAddDialogOpen(true)}
+            className="rounded-none"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Προσθήκη Άσκησης
+          </Button>
+        </div>
 
         <div className="flex-1 p-6">
           <div className="mb-6 space-y-4">
