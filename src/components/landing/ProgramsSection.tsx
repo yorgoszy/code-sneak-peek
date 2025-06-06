@@ -61,10 +61,10 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
 
   return (
     <>
-      <section id="programs" className="py-20 bg-black">
+      <section id="programs" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4 text-left" style={{ fontFamily: 'Robert, sans-serif' }}>
+            <h2 className="text-4xl font-bold text-black mb-4 text-left" style={{ fontFamily: 'Robert, sans-serif' }}>
               {translations.language === 'el' ? (
                 <>
                   <div>Εξερεύνηση Όλων</div>
@@ -84,14 +84,14 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             <div className="flex justify-end mb-8 space-x-4">
               <button
                 onClick={prevPage}
-                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-black text-black hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={nextPage}
-                className="flex items-center justify-center w-10 h-10 bg-transparent border border-white text-white hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 bg-transparent border border-black text-black hover:border-[#00ffba] hover:text-[#00ffba] transition-all duration-300"
                 disabled={totalPages <= 1}
               >
                 <ChevronRight className="w-4 h-4" />
@@ -107,16 +107,16 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className="group cursor-pointer"
                     onClick={() => handleProgramClick(program)}
                   >
-                    <div className="bg-[#00ffba] border-2 border-black rounded-lg overflow-hidden h-full">
+                    <div className="bg-white border-2 border-black overflow-hidden h-full">
                       <div className="relative h-48 overflow-hidden">
                         <img
                           src={program.image}
                           alt={program.title}
-                          className="w-full h-full object-cover brightness-100 contrast-100 saturate-100 transition-all duration-300 group-hover:scale-105"
+                          className="w-full h-full object-cover grayscale brightness-100 contrast-100 saturate-0 transition-all duration-300 group-hover:grayscale-0 group-hover:saturate-100 group-hover:scale-105"
                         />
                         <div className="absolute top-4 left-4">
                           <span 
-                            className="text-2xl font-bold text-white bg-black/70 px-2 py-1 rounded-lg"
+                            className="text-2xl font-bold text-white bg-black/70 px-2 py-1"
                             style={{ color: '#00ffba' }}
                           >
                             {program.id}
@@ -131,7 +131,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         <p className="text-black text-sm leading-relaxed mb-4">
                           {program.description}
                         </p>
-                        <div className="text-black text-sm font-semibold hover:text-gray-800 transition-colors duration-300">
+                        <div className="text-white bg-[#00ffba] px-4 py-2 text-sm font-semibold hover:bg-[#00ffba]/90 transition-colors duration-300 inline-block">
                           Κλικ για περισσότερες λεπτομέρειες →
                         </div>
                       </div>
