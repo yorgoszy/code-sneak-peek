@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Dumbbell, CheckCircle, Info } from "lucide-react";
-import { ExerciseBlock } from "@/components/user-profile/daily-program/ExerciseBlock";
+import { ExerciseItem } from "@/components/user-profile/daily-program/ExerciseItem";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -88,8 +88,8 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
     
     // Κλείνουμε το ProgramViewDialog και καλούμε το onStartWorkout
     if (onStartWorkout && weekIndex >= 0) {
+      onClose(); // Κλείνουμε πρώτα το dialog
       onStartWorkout(weekIndex, dayIndex);
-      onClose(); // Κλείνουμε το dialog
     }
   };
 
@@ -200,7 +200,24 @@ export const ProgramViewDialog: React.FC<ProgramViewDialogProps> = ({
                             </div>
 
                             <div className="space-y-2">
-                              <ExerciseBlock blocks={day.program_blocks} viewOnly={true} />
+                              {day.program_blocks?.map((block: any) => (
+                                <div key={block.id} className="border border-gray-100 rounded-none p-2">
+                                  <h5 className="text-xs font-medium text-gray-700 mb-2">{block.name}</h5>
+                                  <div className="space-y-1">
+                                    {block.program_exercises?.map((exercise: any) => (
+                                      <ExerciseItem
+                                        key={exercise.id}
+                                        exercise={exercise}
+                                        isComplete={false}
+                                        remainingText=""
+                                        onExerciseClick={() => {}}
+                                        onVideoClick={() => {}}
+                                        viewOnly={true}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         </TabsContent>
