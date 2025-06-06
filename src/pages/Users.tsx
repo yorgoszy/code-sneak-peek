@@ -43,7 +43,6 @@ interface AppUser {
 
 const Users = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
-  const { isAdmin, loading: rolesLoading } = useRoleCheck();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -97,12 +96,11 @@ const Users = () => {
   }, [user]);
 
   useEffect(() => {
-    if (isAuthenticated && isAdmin()) {
-      fetchUsers();
-    }
-  }, [isAuthenticated, isAdmin]);
+    // Φορτώνουμε πάντα τους χρήστες - χωρίς auth check
+    fetchUsers();
+  }, []);
 
-  if (loading || rolesLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -215,7 +213,7 @@ const Users = () => {
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
                 {userProfile?.name || user?.email}
-                {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>
               </span>
               <Button 
                 variant="outline" 

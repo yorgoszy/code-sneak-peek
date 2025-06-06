@@ -30,7 +30,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 }) => {
   // Δημιουργούμε μια λίστα με όλες τις ημερομηνίες που έχουν προγράμματα και τα statuses τους
   const programDatesWithStatus = activePrograms.reduce((dates: any[], assignment) => {
-    if (assignment.training_dates) {
+    if (assignment.training_dates && assignment.app_users) {
       const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
       
       assignment.training_dates.forEach(dateStr => {
@@ -39,7 +39,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           date: dateStr,
           status: completion?.status || 'scheduled',
           assignmentId: assignment.id,
-          userName: assignment.app_users?.name || 'Άγνωστος',
+          userName: assignment.app_users.name || 'Άγνωστος',
           assignment: assignment
         });
       });
@@ -88,7 +88,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             <span>Χαμένες</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-gray-200 rounded-none"></div>
+            <div className="w-3 h-3 bg-yellow-300 rounded-none border border-yellow-600"></div>
             <span>Σήμερα</span>
           </div>
         </div>
@@ -143,13 +143,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
                     ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
                     ${isSelected ? 'bg-[#00ffba] text-black' : ''}
-                    ${isTodayDate && !isSelected ? 'bg-gray-200' : ''}
+                    ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
                     hover:bg-gray-50 transition-colors
                   `}
                   onClick={() => handleDateClick(date)}
                 >
                   {/* Date Number */}
-                  <div className="absolute top-1 left-1 text-sm font-medium">
+                  <div className={`absolute top-1 left-1 text-sm font-medium ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>
                     {date.getDate()}
                   </div>
                   
