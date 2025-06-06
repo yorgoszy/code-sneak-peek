@@ -79,7 +79,7 @@ const Index = () => {
       id: "06",
       title: translations.oneByOne,
       description: translations.oneByOneDesc,
-      image: "/lovable-uploads/bff0a31f-54a3-4c49-9e8a-702d714be8d6.png",
+      image: "/lovable-uploads/2ac8013f-f587-4c4e-adfb-2702dcb2e96d.png",
       color: "#00ffba"
     },
     {
