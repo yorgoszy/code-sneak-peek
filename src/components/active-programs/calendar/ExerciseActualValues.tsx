@@ -113,7 +113,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           type="number"
           value={actualReps}
           onChange={(e) => handleRepsChange(e.target.value)}
-          className="h-5 text-xs rounded-none text-center p-0 text-red-600 font-medium"
+          className="h-5 text-xs rounded-none text-center p-0 text-red-600 font-medium no-spinners"
           placeholder={exercise.reps || ''}
           disabled={!workoutInProgress}
         />
@@ -133,7 +133,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           step="0.5"
           value={actualKg}
           onChange={(e) => handleKgChange(e.target.value)}
-          className="h-5 text-xs rounded-none text-center p-0 text-red-600 font-medium"
+          className="h-5 text-xs rounded-none text-center p-0 text-red-600 font-medium no-spinners"
           placeholder={exercise.kg || ''}
           disabled={!workoutInProgress}
         />
@@ -144,7 +144,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           step="0.01"
           value={actualVelocity}
           onChange={(e) => handleVelocityChange(e.target.value)}
-          className="h-5 text-xs rounded-none text-center p-0 text-red-600 font-medium"
+          className="h-5 text-xs rounded-none text-center p-0 text-red-600 font-medium no-spinners"
           placeholder={exercise.velocity_ms || ''}
           disabled={!workoutInProgress}
         />
