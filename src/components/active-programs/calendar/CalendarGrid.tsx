@@ -139,7 +139,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
                     ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
                     ${isSelected ? 'bg-[#00ffba] text-black' : ''}
-                    ${isToday && !isSelected ? 'bg-gray-100' : ''}
+                    ${isToday && !isSelected ? 'bg-gray-300' : ''}
                     hover:bg-gray-50 transition-colors
                   `}
                   onClick={() => handleDateClick(date)}
