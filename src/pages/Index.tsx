@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -65,7 +66,7 @@ const Index = () => {
       id: "04",
       title: translations.fitness,
       description: translations.fitnessDesc,
-      image: "/lovable-uploads/a21faccb-2749-42ef-9686-c8e65fadcc5f.png",
+      image: "/lovable-uploads/b06a27cc-1f96-43d1-a89c-ea4330c70290.png",
       color: "#00ffba"
     },
     {
