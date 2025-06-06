@@ -8,9 +8,9 @@ interface ProgramBenefitsSectionProps {
 export const ProgramBenefitsSection: React.FC<ProgramBenefitsSectionProps> = ({ benefits }) => {
   return (
     <div className="mb-12">
-      <h3 className="text-2xl font-bold text-white mb-6">Program Benefits</h3>
+      <h3 className="text-2xl font-bold text-white mb-6">Οφέλη Προγράμματος</h3>
       <p className="text-gray-300 mb-6">
-        Participating in our Movement Learning program offers numerous benefits that extend beyond physical fitness. Here are the key advantages you'll experience:
+        Η συμμετοχή στο πρόγραμμά μας προσφέρει πολλά οφέλη που επεκτείνονται πέρα από τη σωματική κατάσταση. Εδώ είναι τα βασικά πλεονεκτήματα που θα βιώσετε:
       </p>
       <div className="grid grid-cols-2 gap-6">
         {benefits.map((benefit, index) => (

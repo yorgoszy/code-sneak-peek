@@ -13,21 +13,21 @@ export const ProgramDetailsSidebar: React.FC<ProgramDetailsSidebarProps> = ({
   onSectionChange 
 }) => {
   const sections = [
-    { id: 1, title: "Program Details" },
-    { id: 2, title: "Program Benefits" },
-    { id: 3, title: "Weekly Schedule" },
-    { id: 4, title: "Pricing Plans" }
+    { id: 1, title: "Λεπτομέρειες Προγράμματος" },
+    { id: 2, title: "Οφέλη Προγράμματος" },
+    { id: 3, title: "Εβδομαδιαίο Πρόγραμμα" },
+    { id: 4, title: "Πακέτα Τιμών" }
   ];
 
   return (
     <div className="w-80 bg-black p-8 border-r border-gray-700">
       <div className="mb-8">
-        <div className="text-[#00ffba] text-sm font-medium mb-4">PROGRAM INFORMATION</div>
+        <div className="text-[#00ffba] text-sm font-medium mb-4">ΠΛΗΡΟΦΟΡΙΕΣ ΠΡΟΓΡΑΜΜΑΤΟΣ</div>
         <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
-          Begin Your
+          Ξεκινήστε
         </h1>
         <h1 className="text-4xl font-bold mb-8" style={{ color: '#00ffba', fontFamily: 'Robert, sans-serif' }}>
-          Training Journey
+          το ταξίδι σας
         </h1>
       </div>
 
