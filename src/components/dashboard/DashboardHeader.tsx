@@ -16,7 +16,6 @@ export const DashboardHeader = ({ userProfile, userEmail, onSignOut }: Dashboard
     <nav className="bg-white border-b border-gray-200 px-2 md:px-4 lg:px-6 py-2 md:py-4">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-lg md:text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-xs md:text-sm text-gray-600 hidden sm:block">
             Καλώς ήρθατε, {isAdmin() ? 'Admin User!' : userProfile?.name || userEmail}
           </p>
