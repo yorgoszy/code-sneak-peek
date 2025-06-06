@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addMonths, subMonths, startOfWeek, endOfWeek, isToday } from "date-fns";
 import { el } from "date-fns/locale";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -87,6 +87,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             <div className="w-2 h-2 bg-red-500 rounded-full"></div>
             <span>Χαμένες</span>
           </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-yellow-400 rounded-full border-2 border-yellow-600"></div>
+            <span>Σήμερα</span>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -130,7 +134,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
               const isCurrentMonth = isSameMonth(date, currentMonth);
               const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
-              const isToday = format(new Date(), 'yyyy-MM-dd') === dateStr;
+              const isTodayDate = isToday(date);
 
               return (
                 <div
@@ -139,15 +143,20 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
                     ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
                     ${isSelected ? 'bg-[#00ffba] text-black' : ''}
-                    ${isToday && !isSelected ? 'bg-gray-300' : ''}
+                    ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
                     hover:bg-gray-50 transition-colors
                   `}
                   onClick={() => handleDateClick(date)}
                 >
                   {/* Date Number */}
-                  <div className="absolute top-1 left-1 text-sm font-medium">
+                  <div className={`absolute top-1 left-1 text-sm font-medium ${isTodayDate ? 'text-yellow-800 font-bold' : ''}`}>
                     {date.getDate()}
                   </div>
+                  
+                  {/* Today indicator */}
+                  {isTodayDate && (
+                    <div className="absolute top-1 right-1 w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  )}
                   
                   {/* User Names */}
                   <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-4 pb-1">

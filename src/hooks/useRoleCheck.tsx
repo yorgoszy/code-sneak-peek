@@ -19,28 +19,58 @@ export const useRoleCheck = () => {
       }
 
       try {
+        console.log('🔍 Checking roles for user:', user.id, user.email);
+        
         // First get the app_user record
-        const { data: appUser } = await supabase
+        const { data: appUser, error: appUserError } = await supabase
           .from('app_users')
-          .select('id')
+          .select('id, name, role')
           .eq('auth_user_id', user.id)
           .single();
 
+        console.log('👤 App user data:', appUser, 'Error:', appUserError);
+
         if (!appUser) {
+          // If no app_user found, check if there's one with email match
+          const { data: emailUser } = await supabase
+            .from('app_users')
+            .select('id, name, role')
+            .eq('email', user.email)
+            .single();
+          
+          console.log('📧 Email match user:', emailUser);
+          
+          if (emailUser) {
+            // Use the role from app_users table
+            const roleFromTable = emailUser.role as UserRole;
+            setUserRoles([roleFromTable]);
+            console.log('✅ Using role from app_users table:', roleFromTable);
+            setLoading(false);
+            return;
+          }
+          
           setUserRoles([]);
           setLoading(false);
           return;
         }
 
-        // Then get the user roles
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', appUser.id);
+        // Check if there's a role in the app_users table
+        if (appUser.role) {
+          const roleFromTable = appUser.role as UserRole;
+          setUserRoles([roleFromTable]);
+          console.log('✅ Using role from app_users table:', roleFromTable);
+        } else {
+          // Then get the user roles from user_roles table
+          const { data: roles, error: rolesError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', appUser.id);
 
-        setUserRoles(roles?.map(r => r.role as UserRole) || []);
+          console.log('🎭 User roles data:', roles, 'Error:', rolesError);
+          setUserRoles(roles?.map(r => r.role as UserRole) || []);
+        }
       } catch (error) {
-        console.error('Error fetching user roles:', error);
+        console.error('❌ Error fetching user roles:', error);
         setUserRoles([]);
       } finally {
         setLoading(false);
@@ -51,7 +81,9 @@ export const useRoleCheck = () => {
   }, [user]);
 
   const hasRole = (role: UserRole): boolean => {
-    return userRoles.includes(role);
+    const result = userRoles.includes(role);
+    console.log('🔐 Checking role:', role, 'User roles:', userRoles, 'Result:', result);
+    return result;
   };
 
   const isAdmin = (): boolean => {
