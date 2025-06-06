@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Progress } from "@/components/ui/progress";
+import { EnhancedProgressBar } from './EnhancedProgressBar';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardProgressProps {
@@ -53,7 +53,11 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
           </div>
         )}
         <div className="w-12">
-          <Progress value={progressPercentage} className="h-1" />
+          <EnhancedProgressBar 
+            completed={workoutStats.completed}
+            total={workoutStats.total}
+            missed={workoutStats.missed}
+          />
         </div>
         <div className="text-xs text-gray-600 font-medium min-w-8">
           {progressPercentage}%
