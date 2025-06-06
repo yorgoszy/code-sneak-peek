@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import ProgramDetailsDialog from './ProgramDetailsDialog';
+import { ProgramDetailsDialog } from './ProgramDetailsDialog';
 
 interface Program {
   id: string;
