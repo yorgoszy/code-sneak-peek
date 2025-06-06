@@ -21,8 +21,8 @@ export const ExerciseNotesSection: React.FC<ExerciseNotesSectionProps> = ({
   exercise
 }) => {
   return (
-    <div className="space-y-2">
-      {/* Notes */}
+    <div className="space-y-1">
+      {/* Notes - moved up */}
       <div className="flex items-start gap-2">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
@@ -41,7 +41,7 @@ export const ExerciseNotesSection: React.FC<ExerciseNotesSectionProps> = ({
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
             placeholder={workoutInProgress ? "Προσθήκη σημειώσεων..." : "Πάτησε έναρξη για σημειώσεις"}
-            className="min-h-[24px] text-xs rounded-none resize-none"
+            className="min-h-[20px] text-xs rounded-none resize-none"
             disabled={!workoutInProgress}
             rows={1}
           />
