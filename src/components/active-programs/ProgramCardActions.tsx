@@ -26,9 +26,11 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [daySelectorOpen, setDaySelectorOpen] = useState(false);
+  const [selectedWorkoutDate, setSelectedWorkoutDate] = useState<Date | null>(null);
 
   const handlePlayClick = () => {
     if (selectedDate) {
+      setSelectedWorkoutDate(selectedDate);
       setDayDialogOpen(true);
     } else {
       setDaySelectorOpen(true);
@@ -36,15 +38,24 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   };
 
   const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
-    setViewDialogOpen(false);
-    setDaySelectorOpen(false);
-    console.log('Starting workout:', weekIndex, dayIndex);
-    // Εδώ θα μπορούσε να ανοίξει το DayProgramDialog για την επιλεγμένη ημέρα
+    console.log('🚀 Starting workout from ProgramViewDialog:', weekIndex, dayIndex);
+    
+    // Υπολογίζουμε την ημερομηνία από τα training_dates
+    if (assignment.training_dates && assignment.programs?.program_weeks?.[0]?.program_days) {
+      const daysPerWeek = assignment.programs.program_weeks[0].program_days.length;
+      const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+      
+      if (totalDayIndex < assignment.training_dates.length) {
+        const dateStr = assignment.training_dates[totalDayIndex];
+        setSelectedWorkoutDate(new Date(dateStr));
+        setDayDialogOpen(true);
+      }
+    }
   };
 
   const handleDaySelected = (weekIndex: number, dayIndex: number) => {
     setDaySelectorOpen(false);
-    console.log('Day selected:', weekIndex, dayIndex);
+    handleStartWorkout(weekIndex, dayIndex);
   };
 
   const handleDeleteClick = () => {
@@ -138,7 +149,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         isOpen={dayDialogOpen}
         onClose={() => setDayDialogOpen(false)}
         program={assignment}
-        selectedDate={selectedDate || new Date()}
+        selectedDate={selectedWorkoutDate}
         workoutStatus="scheduled"
         onRefresh={onRefresh}
       />
