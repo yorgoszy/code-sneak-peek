@@ -54,13 +54,14 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     onExerciseClick(exercise, event);
   };
 
-  const handleVideoClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    console.log('🎬 Video click detected for:', exercise.exercises?.name);
+  const handleVideoClick = (exerciseData: any) => {
+    console.log('🎬 ExerciseItem handleVideoClick called for:', exerciseData.exercises?.name);
+    console.log('🎬 Video URL:', exerciseData.exercises?.video_url);
     
     // Έλεγχος αν υπάρχει έγκυρο video URL
-    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-      onVideoClick(exercise);
+    if (exerciseData.exercises?.video_url && isValidVideoUrl(exerciseData.exercises.video_url)) {
+      console.log('✅ Valid video URL found, calling onVideoClick');
+      onVideoClick(exerciseData);
     } else {
       console.log('❌ No valid video URL found');
     }
@@ -90,7 +91,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
       <div className="p-3">
         <ExerciseDetails 
           exercise={exercise} 
-          onVideoClick={onVideoClick}
+          onVideoClick={handleVideoClick}
           onSetClick={(event) => handleSetClick(exercise.id, exercise.sets, event)}
         />
 
