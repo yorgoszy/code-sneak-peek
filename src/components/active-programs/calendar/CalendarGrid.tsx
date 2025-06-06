@@ -39,7 +39,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           date: dateStr,
           status: completion?.status || 'scheduled',
           assignmentId: assignment.id,
-          userName: assignment.app_users?.name || 'Unknown',
+          userName: assignment.app_users?.name || 'Άγνωστος',
           assignment: assignment
         });
       });
