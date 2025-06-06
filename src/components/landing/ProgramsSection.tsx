@@ -68,9 +68,6 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
               <div>Εξερεύνηση Όλων</div>
               <div>των Προγραμμάτων</div>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl">
-              Ανακαλύψτε τα προγράμματα προπόνησής μας που έχουν σχεδιαστεί για να σας βοηθήσουν να επιτύχετε τους στόχους σας
-            </p>
           </div>
 
           <div className="relative">
