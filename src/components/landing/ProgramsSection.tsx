@@ -44,12 +44,10 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
       <section id="programs" className="py-20 bg-black relative">
         <style>{`
           .carousel-btn {
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
             background: transparent !important;
           }
           .carousel-btn:hover {
             background: transparent !important;
-            border: 1px solid #00ffba !important;
           }
           .carousel-btn:hover svg {
             color: #00ffba !important;
