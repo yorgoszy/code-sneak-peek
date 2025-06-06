@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
+import { Play, Edit, CheckCircle, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
 import { DaySelector } from "./calendar/DaySelector";
@@ -65,7 +65,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
             className="h-6 w-6 p-0 rounded-none"
             title="Προβολή Προγράμματος"
           >
-            <Eye className="h-3 w-3" />
+            <Play className="h-3 w-3" />
           </Button>
 
           {/* Εμφάνιση των υπόλοιπων εικονιδίων μόνο αν δεν είμαστε σε user mode */}
