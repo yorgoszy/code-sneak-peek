@@ -107,7 +107,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className="group cursor-pointer"
                     onClick={() => handleProgramClick(program)}
                   >
-                    <div className="bg-[#00ffba] border-2 border-black rounded-lg overflow-hidden h-full">
+                    <div className="bg-[#00ffba]/90 border-2 border-black rounded-lg overflow-hidden h-full">
                       <div className="relative h-48 overflow-hidden">
                         <img
                           src={program.image}
