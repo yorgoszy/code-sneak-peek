@@ -39,6 +39,31 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
           </div>
 
           <div className="relative">
+            {/* Header with navigation */}
+            <div className="flex justify-between items-center mb-8">
+              <div className="text-left">
+                <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: 'Robert, sans-serif' }}>
+                  Explore All
+                </h3>
+                <h4 className="text-2xl font-bold text-[#00ffba]" style={{ fontFamily: 'Robert, sans-serif' }}>
+                  Programs
+                </h4>
+                <div className="mt-2">
+                  <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
+                    Εξερεύνηση Όλων
+                  </h3>
+                  <h4 className="text-lg font-bold text-[#00ffba]" style={{ fontFamily: 'Robert, sans-serif' }}>
+                    των Προγραμμάτων
+                  </h4>
+                </div>
+              </div>
+              
+              <div className="flex gap-2">
+                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:bg-white/10" />
+                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:bg-white/10" />
+              </div>
+            </div>
+
             <Carousel
               opts={{
                 align: "start",
@@ -48,7 +73,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             >
               <CarouselContent className="-ml-4">
                 {programs.map((program) => (
-                  <CarouselItem key={program.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                  <CarouselItem key={program.id} className="pl-4 basis-1/3">
                     <div 
                       className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group h-full"
                       onClick={() => setSelectedProgram(program)}
@@ -61,7 +86,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-30 transition-all duration-300"></div>
                         <div className="absolute top-4 left-4">
-                          <span className="bg-[#00ffba] text-black px-3 py-1 text-sm font-bold">
+                          <span className="bg-[#00ffba] text-black px-3 py-1 text-sm font-bold rounded">
                             {program.id}
                           </span>
                         </div>
@@ -86,8 +111,6 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="rounded-lg bg-white/10 border-white/20 text-white hover:bg-white/20" />
-              <CarouselNext className="rounded-lg bg-white/10 border-white/20 text-white hover:bg-white/20" />
             </Carousel>
           </div>
         </div>
