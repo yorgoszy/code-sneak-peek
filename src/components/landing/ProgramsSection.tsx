@@ -97,7 +97,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                 {currentPrograms.map((program) => (
                   <div 
                     key={program.id}
-                    className="group cursor-pointer transition-transform duration-300 hover:scale-105"
+                    className="group cursor-pointer"
                     onClick={() => handleProgramClick(program)}
                   >
                     <div className="bg-white border-2 border-black rounded-lg overflow-hidden h-full">
@@ -105,7 +105,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         <img
                           src={program.image}
                           alt={program.title}
-                          className="w-full h-full object-cover transition-all duration-300"
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
                         <div className="absolute top-4 left-4">
