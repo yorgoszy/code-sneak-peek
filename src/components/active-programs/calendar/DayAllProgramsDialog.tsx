@@ -1,7 +1,10 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { el } from "date-fns/locale";
+import { Calendar, Clock, User, Dumbbell } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayAllProgramsDialogProps {
@@ -47,53 +50,125 @@ export const DayAllProgramsDialog: React.FC<DayAllProgramsDialogProps> = ({
     return 'scheduled';
   };
 
+  const getStatusBadgeProps = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return { 
+          variant: 'default' as const, 
+          className: 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90',
+          text: 'Ολοκληρώθηκε'
+        };
+      case 'missed':
+        return { 
+          variant: 'destructive' as const, 
+          className: '',
+          text: 'Απουσία'
+        };
+      case 'in_progress':
+        return { 
+          variant: 'default' as const, 
+          className: 'bg-orange-500 text-white hover:bg-orange-600',
+          text: 'Σε εξέλιξη'
+        };
+      default:
+        return { 
+          variant: 'secondary' as const, 
+          className: '',
+          text: 'Προγραμματισμένο'
+        };
+    }
+  };
+
   const dayPrograms = getDayPrograms();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl rounded-none">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle>
-            Προγράμματα για {format(selectedDate, 'dd/MM/yyyy')}
+          <DialogTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-[#00ffba]" />
+            Προγράμματα για {format(selectedDate, 'EEEE, dd MMMM yyyy', { locale: el })}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {dayPrograms.length > 0 ? (
-            dayPrograms.map((program) => {
-              const workoutStatus = getWorkoutStatus(program);
-              const userName = program.app_users?.name || 'Άγνωστος χρήστης';
+            <>
+              <div className="text-sm text-gray-600 mb-4">
+                Συνολικά {dayPrograms.length} προγράμματα για αυτή την ημέρα
+              </div>
               
-              return (
-                <div 
-                  key={program.id} 
-                  className="p-3 border border-gray-200 rounded-none hover:bg-gray-50 cursor-pointer"
-                  onClick={() => onProgramClick(program)}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900">{userName}</h4>
-                    <span className={`px-2 py-1 text-xs rounded-none ${
-                      workoutStatus === 'completed' ? 'bg-green-100 text-green-800' :
-                      workoutStatus === 'missed' ? 'bg-red-100 text-red-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {workoutStatus === 'completed' ? 'Ολοκληρώθηκε' :
-                       workoutStatus === 'missed' ? 'Απουσία' : 'Προγραμματισμένο'}
-                    </span>
-                  </div>
+              <div className="grid gap-4">
+                {dayPrograms.map((program) => {
+                  const workoutStatus = getWorkoutStatus(program);
+                  const userName = program.app_users?.name || 'Άγνωστος χρήστης';
+                  const statusProps = getStatusBadgeProps(workoutStatus);
                   
-                  <div className="mb-2">
-                    <p className="text-sm text-gray-600">{program.programs?.name}</p>
-                    {program.programs?.description && (
-                      <p className="text-xs text-gray-500">{program.programs.description}</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })
+                  return (
+                    <div 
+                      key={program.id} 
+                      className="p-4 border border-gray-200 rounded-none hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => onProgramClick(program)}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-gray-500" />
+                            <h4 className="font-semibold text-gray-900">{userName}</h4>
+                          </div>
+                        </div>
+                        <Badge 
+                          variant={statusProps.variant}
+                          className={`rounded-none ${statusProps.className}`}
+                        >
+                          {statusProps.text}
+                        </Badge>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Dumbbell className="h-4 w-4 text-gray-500" />
+                          <p className="font-medium text-gray-800">{program.programs?.name}</p>
+                        </div>
+                        
+                        {program.programs?.description && (
+                          <p className="text-sm text-gray-600 ml-6">{program.programs.description}</p>
+                        )}
+                        
+                        <div className="flex items-center gap-4 ml-6 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            <span>Εκτιμώμενη διάρκεια: {program.programs?.program_weeks?.[0]?.program_days?.[0]?.estimated_duration_minutes || 'Δεν έχει οριστεί'} λεπτά</span>
+                          </div>
+                        </div>
+
+                        {/* Εμφάνιση των ημερών της εβδομάδας αν υπάρχουν */}
+                        {program.programs?.program_weeks?.[0]?.program_days && (
+                          <div className="ml-6 mt-2">
+                            <div className="text-xs text-gray-500 mb-1">Ημέρες προπόνησης:</div>
+                            <div className="flex flex-wrap gap-1">
+                              {program.programs.program_weeks[0].program_days.map((day, index) => (
+                                <span 
+                                  key={day.id} 
+                                  className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-none"
+                                >
+                                  {day.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              Δεν υπάρχουν προγράμματα για αυτή την ημέρα
+            <div className="text-center py-12 text-gray-500">
+              <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-lg mb-2">Δεν υπάρχουν προγράμματα</p>
+              <p className="text-sm">Δεν έχουν προγραμματιστεί προπονήσεις για αυτή την ημέρα</p>
             </div>
           )}
         </div>
