@@ -70,16 +70,16 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
           id: week.id,
           name: week.name,
           week_number: week.week_number,
-          days: week.program_days?.map((day: any) => ({
+          program_days: week.program_days?.map((day: any) => ({
             id: day.id,
             name: day.name,
             day_number: day.day_number,
             estimated_duration_minutes: day.estimated_duration_minutes,
-            blocks: day.program_blocks?.map((block: any) => ({
+            program_blocks: day.program_blocks?.map((block: any) => ({
               id: block.id,
               name: block.name,
               block_order: block.block_order,
-              exercises: block.program_exercises?.map((exercise: any) => ({
+              program_exercises: block.program_exercises?.map((exercise: any) => ({
                 id: exercise.id,
                 exercise_id: exercise.exercise_id,
                 sets: exercise.sets || 1,
@@ -108,7 +108,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
 
   const getTotalTrainingDays = useCallback(() => {
     return program.weeks?.reduce((total, week) => {
-      return total + (week.days?.length || 0);
+      return total + (week.program_days?.length || 0);
     }, 0) || 0;
   }, [program.weeks]);
 

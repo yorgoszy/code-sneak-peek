@@ -11,7 +11,7 @@ export const useProgramStructure = () => {
     }
     
     for (const week of programData.weeks) {
-      console.log('📅 Creating week:', week.name, 'with', week.days?.length || 0, 'days');
+      console.log('📅 Creating week:', week.name, 'with', week.program_days?.length || 0, 'days');
       
       const { data: weekData, error: weekError } = await supabase
         .from('program_weeks')
@@ -30,13 +30,13 @@ export const useProgramStructure = () => {
 
       console.log('✅ Week created:', weekData.id);
 
-      if (!week.days || week.days.length === 0) {
+      if (!week.program_days || week.program_days.length === 0) {
         console.log('No days to create for week:', week.name);
         continue;
       }
 
-      for (const day of week.days) {
-        console.log('📋 Creating day:', day.name, 'with', day.blocks?.length || 0, 'blocks');
+      for (const day of week.program_days) {
+        console.log('📋 Creating day:', day.name, 'with', day.program_blocks?.length || 0, 'blocks');
         
         const { data: dayData, error: dayError } = await supabase
           .from('program_days')
@@ -55,13 +55,13 @@ export const useProgramStructure = () => {
 
         console.log('✅ Day created:', dayData.id);
 
-        if (!day.blocks || day.blocks.length === 0) {
+        if (!day.program_blocks || day.program_blocks.length === 0) {
           console.log('No blocks to create for day:', day.name);
           continue;
         }
 
-        for (const block of day.blocks) {
-          console.log('🧱 Creating block:', block.name, 'with', block.exercises?.length || 0, 'exercises');
+        for (const block of day.program_blocks) {
+          console.log('🧱 Creating block:', block.name, 'with', block.program_exercises?.length || 0, 'exercises');
           
           const { data: blockData, error: blockError } = await supabase
             .from('program_blocks')
@@ -80,12 +80,12 @@ export const useProgramStructure = () => {
 
           console.log('✅ Block created:', blockData.id);
 
-          if (!block.exercises || block.exercises.length === 0) {
+          if (!block.program_exercises || block.program_exercises.length === 0) {
             console.log('No exercises to create for block:', block.name);
             continue;
           }
 
-          for (const exercise of block.exercises) {
+          for (const exercise of block.program_exercises) {
             if (!exercise.exercise_id) {
               console.log('Skipping exercise without exercise_id');
               continue;
