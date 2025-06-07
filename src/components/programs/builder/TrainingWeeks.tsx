@@ -95,14 +95,34 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
     }
   };
 
+  const handleAddDay = () => {
+    if (activeWeek) {
+      console.log('🟢 Adding day to active week:', activeWeek);
+      onAddDay(activeWeek);
+    } else {
+      console.log('❌ No active week selected');
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Εβδομάδες Προπόνησης</h3>
-        <Button onClick={onAddWeek} className="rounded-none">
-          <Plus className="w-4 h-4 mr-2" />
-          Προσθήκη Εβδομάδας
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={onAddWeek} className="rounded-none">
+            <Plus className="w-4 h-4 mr-2" />
+            Προσθήκη Εβδομάδας
+          </Button>
+          {weeks.length > 0 && (
+            <Button 
+              onClick={handleAddDay} 
+              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Day
+            </Button>
+          )}
+        </div>
       </div>
 
       {weeks.length === 0 ? (
