@@ -89,19 +89,16 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
         {weekDays.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
-          const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
           const isTodayDate = isToday(date);
 
           return (
             <div
               key={`weekly-${dateStr}-${realtimeKey}`}
               className={`
-                min-h-32 border border-gray-200 rounded-none cursor-pointer p-2
-                ${isSelected ? 'bg-[#00ffba] text-black' : 'bg-white'}
-                ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
+                min-h-32 border border-gray-200 rounded-none p-2 bg-white
+                ${isTodayDate ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
                 hover:bg-gray-50 transition-colors
               `}
-              onClick={() => setSelectedDate(date)}
             >
               {/* Date Header */}
               <div className={`text-sm font-medium mb-2 ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format } from "date-fns";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
@@ -135,7 +136,9 @@ const ActivePrograms = () => {
 
   const handleStartWorkout = () => {
     if (selectedProgram) {
+      console.log('🏃 Starting workout and minimizing to sidebar:', selectedProgram.app_users?.name);
       startWorkout(selectedProgram, today);
+      setDayDialogOpen(false);
     }
   };
 
