@@ -90,7 +90,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
         program_id: program.id,
         athlete_id: assignmentForView.user_id,
         user_id: assignmentForView.user_id,
-        assigned_by: assignmentForView.assigned_by || undefined,
+        assigned_by: undefined, // ProgramAssignment doesn't have assigned_by
         start_date: assignmentForView.start_date,
         end_date: assignmentForView.end_date,
         status: assignmentForView.status || 'active',
