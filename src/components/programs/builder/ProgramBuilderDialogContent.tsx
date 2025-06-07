@@ -127,7 +127,6 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
           {onTrainingDatesChange && (
             <CalendarSection
               program={program}
-              totalDays={totalDays}
               onTrainingDatesChange={onTrainingDatesChange}
             />
           )}

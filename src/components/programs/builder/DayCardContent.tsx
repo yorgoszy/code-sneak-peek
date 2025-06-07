@@ -76,6 +76,7 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
                   key={block.id}
                   block={block}
                   exercises={exercises}
+                  allBlockExercises={block.exercises}
                   onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
                   onRemoveBlock={() => onRemoveBlock(block.id)}
                   onDuplicateBlock={() => onDuplicateBlock(block.id)}
@@ -85,7 +86,6 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
                   }
                   onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
                   onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
-                  onReorderExercises={(oldIndex, newIndex) => onReorderExercises(block.id, oldIndex, newIndex)}
                 />
               ))}
             </div>
