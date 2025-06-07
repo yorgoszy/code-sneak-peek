@@ -14,7 +14,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
 }) => {
   // Υπολογισμός συνολικού αριθμού ημερών από όλες τις εβδομάδες
   const totalDays = program.weeks?.reduce((total, week) => {
-    return total + (week.days?.length || 0);
+    return total + (week.program_days?.length || 0);
   }, 0) || 0;
 
   console.log('📅 [CalendarSection] Program weeks:', program.weeks);

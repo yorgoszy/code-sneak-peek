@@ -3,12 +3,12 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { BlockCard } from './BlockCard';
-import { Exercise, Block, ProgramExercise } from '../types';
+import { Exercise, Block } from '../types';
 
 interface SortableBlockProps {
   block: Block;
   exercises: Exercise[];
-  allBlockExercises: ProgramExercise[];
+  allBlockExercises: Block['program_exercises'];
   selectedUserId?: string;
   onUpdateBlockName: (name: string) => void;
   onRemoveBlock: () => void;

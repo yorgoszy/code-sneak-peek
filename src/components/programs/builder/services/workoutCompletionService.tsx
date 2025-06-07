@@ -10,7 +10,7 @@ export const workoutCompletionService = {
     trainingDatesStrings: string[],
     program: ProgramStructure
   ) {
-    const totalDaysInProgram = program.weeks?.reduce((total, week) => total + (week.days?.length || 0), 0) || 1;
+    const totalDaysInProgram = program.weeks?.reduce((total, week) => total + (week.program_days?.length || 0), 0) || 1;
     
     const workoutCompletions = trainingDatesStrings.map((date, index) => {
       const weekNumber = Math.floor(index / (totalDaysInProgram / (program.weeks?.length || 1))) + 1;
