@@ -1,40 +1,7 @@
+
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  blocks: Block[];
-}
-
-interface Week {
-  id: string;
-  name: string;
-  week_number: number;
-  days: Day[];
-}
+import { Week } from '../types';
 
 interface WeekMetricsProps {
   week: Week;
@@ -108,14 +75,14 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
   let totalTimeSeconds = 0;
   let exerciseCount = 0;
 
-  week.days.forEach(day => {
-    day.blocks.forEach(block => {
-      block.exercises.forEach(exercise => {
+  week.program_days.forEach(day => {
+    day.program_blocks.forEach(block => {
+      block.program_exercises.forEach(exercise => {
         if (exercise.exercise_id) {
           // Volume calculation (sets × reps × kg)
           const sets = exercise.sets || 0;
           const reps = parseRepsToTotal(exercise.reps);
-          const kg = parseFloat(exercise.kg) || 0;
+          const kg = parseFloat(exercise.kg || '0') || 0;
           totalVolume += sets * reps * kg;
 
           // Intensity calculation (average percentage of 1RM)
@@ -124,17 +91,17 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
             exerciseCount++;
           }
 
-          // Watts calculation - διορθωμένος υπολογισμός
-          const velocity = parseFloat(exercise.velocity_ms) || 0;
+          // Watts calculation
+          const velocity = exercise.velocity_ms || 0;
           if (kg > 0 && velocity > 0) {
             const force = kg * 9.81; // Convert to Newtons
             const watts = force * velocity;
-            totalWatts += watts * sets * reps; // Συμβαδίζει με DayCalculations
+            totalWatts += watts * sets * reps;
           }
 
           // Time calculation
-          const tempo = parseTempoToSeconds(exercise.tempo);
-          const restSeconds = parseRestTime(exercise.rest);
+          const tempo = parseTempoToSeconds(exercise.tempo || '');
+          const restSeconds = parseRestTime(exercise.rest || '');
           
           // Work time: sets × reps × tempo (in seconds)
           const workTime = sets * reps * tempo;
@@ -151,7 +118,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
   return {
     volume: Math.round(totalVolume),
     intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
-    watts: Math.round(totalWatts), // Τώρα συμβαδίζει με DayCalculations
+    watts: Math.round(totalWatts),
     time: Math.round(totalTimeSeconds / 60) // Convert to minutes
   };
 };
