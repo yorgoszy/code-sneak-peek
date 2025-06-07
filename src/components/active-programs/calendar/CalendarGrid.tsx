@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addMonths, subMonths, startOfWeek, endOfWeek, isToday } from "date-fns";
 import { el } from "date-fns/locale";
 import { DayAllProgramsDialog } from './DayAllProgramsDialog';
+import { DayProgramDialog } from './DayProgramDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface CalendarGridProps {
@@ -31,6 +32,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 }) => {
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
+  const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
+  const [selectedProgramForDay, setSelectedProgramForDay] = useState<EnrichedAssignment | null>(null);
 
   // Δημιουργούμε μια λίστα με όλες τις ημερομηνίες που έχουν προγράμματα και τα statuses τους
   const programDatesWithStatus = activePrograms.reduce((dates: any[], assignment) => {
@@ -71,8 +74,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   const handleProgramClick = (program: EnrichedAssignment) => {
     setDayDialogOpen(false);
-    // Μπορούμε να προσθέσουμε εδώ άλλη λογική αν χρειάζεται
-    console.log('Program clicked:', program);
+    setSelectedProgramForDay(program);
+    setDayProgramDialogOpen(true);
+  };
+
+  const handleUserNameClick = (programData: any, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setSelectedProgramForDay(programData.assignment);
+    setDayProgramDialogOpen(true);
   };
 
   const getNameColor = (status: string) => {
@@ -186,7 +195,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                         <div 
                           key={`${program.assignmentId}-${i}-${realtimeKey}`}
                           className={`text-xs cursor-pointer hover:underline truncate w-full text-center ${getNameColor(program.status)}`}
-                          onClick={(e) => onNameClick(program, e)}
+                          onClick={(e) => handleUserNameClick(program, e)}
                         >
                           {program.userName.split(' ')[0]}
                         </div>
@@ -213,6 +222,27 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         programs={activePrograms}
         allCompletions={workoutCompletions}
         onProgramClick={handleProgramClick}
+      />
+
+      {/* Dialog για συγκεκριμένη προπόνηση */}
+      <DayProgramDialog
+        isOpen={dayProgramDialogOpen}
+        onClose={() => {
+          setDayProgramDialogOpen(false);
+          setSelectedProgramForDay(null);
+        }}
+        program={selectedProgramForDay}
+        selectedDate={selectedDialogDate}
+        workoutStatus={selectedProgramForDay ? 
+          workoutCompletions.find(c => 
+            c.assignment_id === selectedProgramForDay.id && 
+            c.scheduled_date === format(selectedDialogDate || new Date(), 'yyyy-MM-dd')
+          )?.status || 'scheduled'
+          : 'scheduled'
+        }
+        onRefresh={() => {
+          // Refresh logic if needed
+        }}
       />
     </>
   );
