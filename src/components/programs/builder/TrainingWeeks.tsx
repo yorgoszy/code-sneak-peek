@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -60,9 +60,17 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onReorderBlocks,
   onReorderExercises
 }) => {
-  const [activeWeek, setActiveWeek] = useState(weeks[0]?.id || '');
+  const [activeWeek, setActiveWeek] = useState('');
   const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
   const [editingWeekName, setEditingWeekName] = useState('');
+
+  // Ενημέρωση του activeWeek όταν αλλάζουν οι εβδομάδες
+  useEffect(() => {
+    if (weeks.length > 0 && !activeWeek) {
+      console.log('🔄 Setting active week to first week:', weeks[0].id);
+      setActiveWeek(weeks[0].id);
+    }
+  }, [weeks, activeWeek]);
 
   const handleWeekNameDoubleClick = (week: Week) => {
     setEditingWeekId(week.id);
@@ -96,11 +104,18 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   };
 
   const handleAddDay = () => {
+    console.log('🟢 Add Day clicked. Current activeWeek:', activeWeek);
+    console.log('🟢 Available weeks:', weeks.map(w => ({ id: w.id, name: w.name })));
+    
     if (activeWeek) {
-      console.log('🟢 Adding day to active week:', activeWeek);
+      console.log('✅ Adding day to active week:', activeWeek);
       onAddDay(activeWeek);
+    } else if (weeks.length > 0) {
+      console.log('🔧 No active week, using first week:', weeks[0].id);
+      setActiveWeek(weeks[0].id);
+      onAddDay(weeks[0].id);
     } else {
-      console.log('❌ No active week selected');
+      console.log('❌ No weeks available');
     }
   };
 
