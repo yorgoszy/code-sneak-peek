@@ -50,6 +50,17 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // Convert Week to the format expected by WeekMetrics
+  const weekForMetrics = {
+    ...week,
+    days: week.program_days
+  };
+
+  const previousWeekForMetrics = previousWeek ? {
+    ...previousWeek,
+    days: previousWeek.program_days
+  } : undefined;
+
   return (
     <div 
       ref={setNodeRef} 
@@ -115,7 +126,7 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
         </div>
         
         <div className="mt-2 w-full">
-          <WeekMetrics week={week} previousWeek={previousWeek} />
+          <WeekMetrics week={weekForMetrics} previousWeek={previousWeekForMetrics} />
         </div>
       </div>
     </div>
