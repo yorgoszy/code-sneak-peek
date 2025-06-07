@@ -28,7 +28,7 @@ interface Day {
   id: string;
   name: string;
   day_number: number;
-  blocks: Block[];
+  program_blocks: Block[];
 }
 
 interface Week {
@@ -71,7 +71,7 @@ const convertWeeksToDatabaseFormat = (builderWeeks: Week[]) => {
     ...week,
     program_days: week.days?.map(day => ({
       ...day,
-      program_blocks: day.blocks?.map(block => ({
+      program_blocks: day.program_blocks?.map(block => ({
         ...block,
         program_exercises: block.exercises?.map(exercise => ({
           id: exercise.id,
@@ -102,7 +102,7 @@ const convertWeeksFromDatabaseFormat = (dbWeeks: any[]) => {
     ...week,
     days: week.program_days?.map((day: any) => ({
       ...day,
-      blocks: day.program_blocks?.map((block: any) => ({
+      program_blocks: day.program_blocks?.map((block: any) => ({
         ...block,
         exercises: block.program_exercises?.map((exercise: any) => ({
           id: exercise.id,
