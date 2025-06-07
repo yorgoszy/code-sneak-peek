@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { RunningWorkouts } from "@/components/sidebar/RunningWorkouts";
+import { MinimizedWorkout } from "@/components/sidebar/MinimizedWorkout";
 import { useRunningWorkouts } from "@/hooks/useRunningWorkouts";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -21,6 +22,12 @@ interface ActiveProgramsSidebarProps {
   activePrograms: EnrichedAssignment[];
   onRefresh?: () => void;
   onDelete?: (assignmentId: string) => void;
+  minimizedWorkout?: {
+    assignment: EnrichedAssignment;
+    elapsedTime: number;
+  } | null;
+  onRestoreWorkout?: () => void;
+  onCancelMinimizedWorkout?: () => void;
 }
 
 export const ActiveProgramsSidebar = ({ 
@@ -29,7 +36,10 @@ export const ActiveProgramsSidebar = ({
   stats,
   activePrograms,
   onRefresh,
-  onDelete
+  onDelete,
+  minimizedWorkout,
+  onRestoreWorkout,
+  onCancelMinimizedWorkout
 }: ActiveProgramsSidebarProps) => {
   const [selectedMenuItem, setSelectedMenuItem] = useState("calendar");
   const { runningWorkouts, completeWorkout, cancelWorkout, formatTime } = useRunningWorkouts();
@@ -87,6 +97,21 @@ export const ActiveProgramsSidebar = ({
 
   const bottomContent = (
     <div className="space-y-4">
+      {/* Minimized Workout */}
+      {minimizedWorkout && !isCollapsed && (
+        <div>
+          <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
+            Ελαχιστοποιημένη Προπόνηση
+          </h3>
+          <MinimizedWorkout
+            assignment={minimizedWorkout.assignment}
+            elapsedTime={minimizedWorkout.elapsedTime}
+            onRestore={onRestoreWorkout || (() => {})}
+            onCancel={onCancelMinimizedWorkout || (() => {})}
+          />
+        </div>
+      )}
+
       {/* Stats */}
       {!isCollapsed && (
         <div>

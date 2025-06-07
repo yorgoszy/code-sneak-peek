@@ -19,6 +19,10 @@ const ActivePrograms = () => {
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [minimizedWorkout, setMinimizedWorkout] = useState<{
+    assignment: any;
+    elapsedTime: number;
+  } | null>(null);
 
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletions();
@@ -132,12 +136,27 @@ const ActivePrograms = () => {
     setDayDialogOpen(true);
   };
 
-  const handleStartWorkout = () => {
+  const handleMinimizeWorkout = () => {
     if (selectedProgram) {
-      console.log('🏃 Starting workout and minimizing to sidebar:', selectedProgram.app_users?.name);
-      startWorkout(selectedProgram, today);
+      console.log('📱 Minimizing workout to sidebar:', selectedProgram.app_users?.name);
+      setMinimizedWorkout({
+        assignment: selectedProgram,
+        elapsedTime: 0 // Θα ενημερωθεί από το workout state
+      });
       setDayDialogOpen(false);
     }
+  };
+
+  const handleRestoreWorkout = () => {
+    if (minimizedWorkout) {
+      setSelectedProgram(minimizedWorkout.assignment);
+      setDayDialogOpen(true);
+      setMinimizedWorkout(null);
+    }
+  };
+
+  const handleCancelMinimizedWorkout = () => {
+    setMinimizedWorkout(null);
   };
 
   const handleDeleteProgram = async (assignmentId: string) => {
@@ -196,6 +215,9 @@ const ActivePrograms = () => {
           activePrograms={activePrograms}
           onRefresh={refetch}
           onDelete={handleDeleteProgram}
+          minimizedWorkout={minimizedWorkout}
+          onRestoreWorkout={handleRestoreWorkout}
+          onCancelMinimizedWorkout={handleCancelMinimizedWorkout}
         />
         
         {/* Main Content */}
@@ -234,7 +256,7 @@ const ActivePrograms = () => {
         selectedDate={today}
         workoutStatus={selectedProgram ? getWorkoutStatus(selectedProgram) : 'scheduled'}
         onRefresh={handleCalendarRefresh}
-        onMinimize={handleStartWorkout}
+        onMinimize={handleMinimizeWorkout}
       />
     </>
   );
