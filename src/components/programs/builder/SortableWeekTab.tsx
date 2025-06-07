@@ -114,7 +114,6 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
           </div>
         </div>
         
-        {/* Week Metrics below the tab name */}
         <div className="mt-2 w-full">
           <WeekMetrics week={week} previousWeek={previousWeek} />
         </div>
