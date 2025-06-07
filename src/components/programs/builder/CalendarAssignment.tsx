@@ -19,7 +19,6 @@ export const CalendarAssignment: React.FC<CalendarAssignmentProps> = ({
   onTrainingDatesChange
 }) => {
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Υπολογισμός συνολικού αριθμού ημερών από τις εβδομάδες
   const totalDaysRequired = program.weeks?.reduce((total, week) => {
@@ -47,26 +46,29 @@ export const CalendarAssignment: React.FC<CalendarAssignmentProps> = ({
 
     console.log('📅 Date selected:', date);
 
-    const dateString = date.toISOString().split('T')[0];
-    const isAlreadySelected = selectedDates.some(d => 
-      d.toISOString().split('T')[0] === dateString
-    );
+    // Δημιουργία καθαρής ημερομηνίας χωρίς ώρα
+    const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0, 0);
+    const dateString = cleanDate.toISOString().split('T')[0];
+    
+    const isAlreadySelected = selectedDates.some(d => {
+      const existingDateString = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().split('T')[0];
+      return existingDateString === dateString;
+    });
 
     let newDates: Date[];
     
     if (isAlreadySelected) {
       // Αφαίρεση ημερομηνίας
-      newDates = selectedDates.filter(d => 
-        d.toISOString().split('T')[0] !== dateString
-      );
+      newDates = selectedDates.filter(d => {
+        const existingDateString = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().split('T')[0];
+        return existingDateString !== dateString;
+      });
     } else {
       // Προσθήκη ημερομηνίας (αν δεν έχουμε φτάσει το όριο)
       if (selectedDates.length >= totalDaysRequired) {
         console.log('📅 Maximum dates reached');
         return;
       }
-      const cleanDate = new Date(date);
-      cleanDate.setHours(12, 0, 0, 0);
       newDates = [...selectedDates, cleanDate].sort((a, b) => a.getTime() - b.getTime());
     }
 
@@ -77,9 +79,11 @@ export const CalendarAssignment: React.FC<CalendarAssignmentProps> = ({
 
   const removeDate = (dateToRemove: Date) => {
     console.log('📅 Removing date:', dateToRemove);
-    const newDates = selectedDates.filter(d => 
-      d.toISOString().split('T')[0] !== dateToRemove.toISOString().split('T')[0]
-    );
+    const dateToRemoveString = new Date(dateToRemove.getFullYear(), dateToRemove.getMonth(), dateToRemove.getDate()).toISOString().split('T')[0];
+    const newDates = selectedDates.filter(d => {
+      const existingDateString = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().split('T')[0];
+      return existingDateString !== dateToRemoveString;
+    });
     setSelectedDates(newDates);
     onTrainingDatesChange(newDates);
   };
@@ -91,15 +95,19 @@ export const CalendarAssignment: React.FC<CalendarAssignmentProps> = ({
   };
 
   const isDateSelected = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0];
-    return selectedDates.some(d => d.toISOString().split('T')[0] === dateString);
+    const dateString = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString().split('T')[0];
+    return selectedDates.some(d => {
+      const existingDateString = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().split('T')[0];
+      return existingDateString === dateString;
+    });
   };
 
   const isDateDisabled = (date: Date) => {
     // Απενεργοποίηση παλαιών ημερομηνιών
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (date < today) return true;
+    const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    if (checkDate < today) return true;
     
     // Αν η ημερομηνία είναι ήδη επιλεγμένη, δεν την απενεργοποιούμε
     if (isDateSelected(date)) return false;
@@ -134,31 +142,13 @@ export const CalendarAssignment: React.FC<CalendarAssignmentProps> = ({
             <CalendarDays className="w-5 h-5" />
             Ημερολόγιο Ανάθεσης
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="rounded-none">
-              {selectedDates.length}/{totalDaysRequired} ημέρες
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCalendarOpen(!calendarOpen)}
-              className="rounded-none"
-            >
-              {calendarOpen ? 'Κλείσιμο' : 'Άνοιγμα'} Ημερολογίου
-            </Button>
-          </div>
+          <Badge variant="outline" className="rounded-none">
+            {selectedDates.length}/{totalDaysRequired} ημέρες
+          </Badge>
         </CardTitle>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Πληροφορίες */}
-        <div className="bg-blue-50 p-3 rounded-none border border-blue-200">
-          <p className="text-sm text-blue-800">
-            Επιλέξτε {totalDaysRequired} ημερομηνίες για την ανάθεση του προγράμματος.
-            Κάθε ημερομηνία αντιστοιχεί σε μία ημέρα προπόνησης.
-          </p>
-        </div>
-
         {/* Επιλεγμένες ημερομηνίες */}
         {selectedDates.length > 0 && (
           <div>
@@ -196,41 +186,31 @@ export const CalendarAssignment: React.FC<CalendarAssignmentProps> = ({
           </div>
         )}
 
-        {/* Ημερολόγιο */}
-        {calendarOpen && (
-          <div className="border border-gray-200 rounded-none p-4">
-            <Calendar
-              mode="single"
-              selected={undefined}
-              onSelect={handleDateSelect}
-              className="rounded-none w-full"
-              weekStartsOn={1}
-              disabled={isDateDisabled}
-              modifiers={{
-                selected: isDateSelected
-              }}
-              modifiersClassNames={{
-                selected: "bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
-              }}
-            />
-            
-            <div className="mt-3 text-xs text-gray-600 space-y-1">
-              <p>💡 Κάντε κλικ σε μια ημερομηνία για να την επιλέξετε/αφαιρέσετε</p>
-              <p>📅 Μπορείτε να επιλέξετε μέχρι {totalDaysRequired} ημερομηνίες</p>
-              <p>🚫 Παλαιές ημερομηνίες είναι απενεργοποιημένες</p>
-            </div>
+        {/* Ημερολόγιο - Πάντα εμφανές */}
+        <div className="border border-gray-200 rounded-none p-4">
+          <Calendar
+            mode="single"
+            selected={undefined}
+            onSelect={handleDateSelect}
+            className="rounded-none w-full"
+            weekStartsOn={1}
+            disabled={isDateDisabled}
+            modifiers={{
+              selected: isDateSelected
+            }}
+            modifiersClassNames={{
+              selected: "bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
+            }}
+          />
+          
+          <div className="mt-3 text-xs text-gray-600 space-y-1">
+            <p>💡 Κάντε κλικ σε μια ημερομηνία για να την επιλέξετε/αφαιρέσετε</p>
+            <p>📅 Μπορείτε να επιλέξετε μέχρι {totalDaysRequired} ημερομηνίες</p>
+            <p>🚫 Παλαιές ημερομηνίες είναι απενεργοποιημένες</p>
           </div>
-        )}
+        </div>
 
-        {/* Κατάσταση */}
-        {selectedDates.length < totalDaysRequired && (
-          <div className="bg-yellow-50 p-3 rounded-none border border-yellow-200">
-            <p className="text-sm text-yellow-800">
-              ⚠️ Χρειάζεστε {totalDaysRequired - selectedDates.length} επιπλέον ημερομηνίες για να ολοκληρώσετε την ανάθεση
-            </p>
-          </div>
-        )}
-
+        {/* Μόνο κατάσταση ολοκλήρωσης */}
         {selectedDates.length === totalDaysRequired && (
           <div className="bg-green-50 p-3 rounded-none border border-green-200">
             <p className="text-sm text-green-800">
