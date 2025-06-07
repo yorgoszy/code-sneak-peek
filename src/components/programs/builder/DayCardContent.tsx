@@ -10,6 +10,7 @@ import { Exercise, Block } from '../types';
 interface DayCardContentProps {
   blocks: Block[];
   exercises: Exercise[];
+  selectedUserId?: string;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
@@ -24,6 +25,7 @@ interface DayCardContentProps {
 export const DayCardContent: React.FC<DayCardContentProps> = ({
   blocks,
   exercises,
+  selectedUserId,
   onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
@@ -49,13 +51,14 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
       <CardContent className="pt-2 pl-4">
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-0">
+            <div className="space-y-2">
               {blocks.map((block) => (
                 <SortableBlock
                   key={block.id}
                   block={block}
                   exercises={exercises}
                   allBlockExercises={block.program_exercises}
+                  selectedUserId={selectedUserId}
                   onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
                   onRemoveBlock={() => onRemoveBlock(block.id)}
                   onDuplicateBlock={() => onDuplicateBlock(block.id)}

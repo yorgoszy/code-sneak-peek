@@ -2,8 +2,10 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Copy, GripVertical } from "lucide-react";
-import { ExerciseRow } from './ExerciseRow';
+import { Plus, Trash2, Copy } from "lucide-react";
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import { SortableExercise } from './SortableExercise';
 import { Exercise, Block } from '../types';
 
 interface BlockCardProps {
@@ -33,11 +35,18 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   onUpdateExercise,
   onDuplicateExercise
 }) => {
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      // Handle exercise reordering within block
+      console.log('Reordering exercises within block:', active.id, over.id);
+    }
+  };
+
   return (
     <div className="border border-gray-200 rounded-none bg-white">
       {/* Block Header */}
       <div className="p-3 border-b bg-gray-50 flex items-center gap-2">
-        <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
         <Input
           value={block.name}
           onChange={(e) => onUpdateBlockName(e.target.value)}
@@ -67,20 +76,24 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         </div>
       </div>
 
-      {/* Exercises */}
+      {/* Exercises with Drag & Drop */}
       <div className="p-3">
-        {block.program_exercises?.map((exercise) => (
-          <ExerciseRow
-            key={exercise.id}
-            exercise={exercise}
-            exercises={exercises}
-            allBlockExercises={allBlockExercises}
-            selectedUserId={selectedUserId}
-            onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
-            onRemove={() => onRemoveExercise(exercise.id)}
-            onDuplicate={() => onDuplicateExercise(exercise.id)}
-          />
-        ))}
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={block.program_exercises?.map(e => e.id) || []} strategy={verticalListSortingStrategy}>
+            {block.program_exercises?.map((exercise) => (
+              <SortableExercise
+                key={exercise.id}
+                exercise={exercise}
+                exercises={exercises}
+                allBlockExercises={allBlockExercises}
+                selectedUserId={selectedUserId}
+                onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
+                onRemove={() => onRemoveExercise(exercise.id)}
+                onDuplicate={() => onDuplicateExercise(exercise.id)}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
 
         <Button
           onClick={() => onAddExercise('')}

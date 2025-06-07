@@ -11,6 +11,7 @@ import { Day, Exercise } from '../types';
 interface DayCardProps {
   day: Day;
   exercises: Exercise[];
+  selectedUserId?: string;
   onAddBlock: () => void;
   onRemoveDay: () => void;
   onDuplicateDay: () => void;
@@ -29,6 +30,7 @@ interface DayCardProps {
 export const DayCard: React.FC<DayCardProps> = ({
   day,
   exercises,
+  selectedUserId,
   onAddBlock,
   onRemoveDay,
   onDuplicateDay,
@@ -70,9 +72,11 @@ export const DayCard: React.FC<DayCardProps> = ({
 
   const blocksCount = day.program_blocks?.length || 0;
 
-  // Transform blocks to include exercises data for DayCalculations
+  // Transform blocks for DayCalculations - simplified version
   const blocksWithExercises = (day.program_blocks || []).map(block => ({
-    ...block,
+    id: block.id,
+    name: block.name,
+    block_order: block.block_order,
     exercises: block.program_exercises?.map(pe => {
       const exercise = exercises.find(ex => ex.id === pe.exercise_id);
       return {
@@ -117,6 +121,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           <DayCardContent
             blocks={day.program_blocks || []}
             exercises={exercises}
+            selectedUserId={selectedUserId}
             onAddExercise={onAddExercise}
             onRemoveBlock={onRemoveBlock}
             onDuplicateBlock={onDuplicateBlock}

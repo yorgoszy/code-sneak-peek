@@ -1,10 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { WeekTabsHeader } from './WeekTabsHeader';
 import { WeekCard } from './WeekCard';
-import { Exercise, Week, Day, Block, ProgramExercise } from '../types';
+import { Exercise, Week } from '../types';
 
 interface TrainingWeeksProps {
   weeks: Week[];
@@ -57,6 +60,68 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onReorderBlocks,
   onReorderExercises
 }) => {
+  const [activeWeek, setActiveWeek] = useState(weeks[0]?.id || '');
+  const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
+  const [editingWeekName, setEditingWeekName] = useState('');
+
+  const handleWeekNameDoubleClick = (week: Week) => {
+    setEditingWeekId(week.id);
+    setEditingWeekName(week.name);
+  };
+
+  const handleWeekNameSave = () => {
+    if (editingWeekId && editingWeekName.trim()) {
+      onUpdateWeekName(editingWeekId, editingWeekName.trim());
+    }
+    setEditingWeekId(null);
+    setEditingWeekName('');
+  };
+
+  const handleWeekNameKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleWeekNameSave();
+    } else if (e.key === 'Escape') {
+      setEditingWeekId(null);
+      setEditingWeekName('');
+    }
+  };
+
+  const handleWeekDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      const oldIndex = weeks.findIndex(week => week.id === active.id);
+      const newIndex = weeks.findIndex(week => week.id === over.id);
+      onReorderWeeks(oldIndex, newIndex);
+    }
+  };
+
+  // Transform weeks for WeekMetrics
+  const weeksWithMetrics = weeks.map(week => ({
+    ...week,
+    days: week.program_days?.map(day => ({
+      ...day,
+      blocks: day.program_blocks?.map(block => ({
+        ...block,
+        exercises: block.program_exercises?.map(pe => {
+          const exercise = exercises.find(ex => ex.id === pe.exercise_id);
+          return {
+            id: pe.id,
+            exercise_id: pe.exercise_id,
+            exercise_name: exercise?.name || 'Unknown Exercise',
+            sets: pe.sets,
+            reps: pe.reps || '',
+            percentage_1rm: pe.percentage_1rm || 0,
+            kg: pe.kg || '',
+            velocity_ms: pe.velocity_ms?.toString() || '',
+            tempo: pe.tempo || '',
+            rest: pe.rest || '',
+            exercise_order: pe.exercise_order
+          };
+        }) || []
+      })) || []
+    })) || []
+  }));
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -72,14 +137,23 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
           Δεν υπάρχουν εβδομάδες. Προσθέστε την πρώτη εβδομάδα για να ξεκινήσετε.
         </div>
       ) : (
-        <Tabs defaultValue={weeks[0]?.id} className="w-full">
-          <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }}>
-            {weeks.map((week) => (
-              <TabsTrigger key={week.id} value={week.id} className="rounded-none">
-                {week.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
+          <DndContext collisionDetection={closestCenter} onDragEnd={handleWeekDragEnd}>
+            <SortableContext items={weeks.map(w => w.id)} strategy={horizontalListSortingStrategy}>
+              <WeekTabsHeader
+                weeks={weeksWithMetrics}
+                editingWeekId={editingWeekId}
+                editingWeekName={editingWeekName}
+                activeWeek={activeWeek}
+                onWeekNameDoubleClick={handleWeekNameDoubleClick}
+                onWeekNameSave={handleWeekNameSave}
+                onWeekNameKeyPress={handleWeekNameKeyPress}
+                setEditingWeekName={setEditingWeekName}
+                onDuplicateWeek={onDuplicateWeek}
+                onRemoveWeek={onRemoveWeek}
+              />
+            </SortableContext>
+          </DndContext>
 
           {weeks.map((week) => (
             <TabsContent key={week.id} value={week.id}>

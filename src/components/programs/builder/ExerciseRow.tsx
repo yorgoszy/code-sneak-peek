@@ -34,10 +34,12 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
     setShowExerciseDialog(false);
     
     // Αυτόματη συμπλήρωση με 1RM δεδομένα
-    const oneRM = get1RM(exerciseId);
-    if (oneRM) {
-      onUpdate('kg', oneRM.toString());
-      onUpdate('percentage_1rm', 100);
+    if (selectedUserId) {
+      const oneRM = get1RM(exerciseId);
+      if (oneRM) {
+        onUpdate('kg', oneRM.toString());
+        onUpdate('percentage_1rm', 100);
+      }
     }
   };
 
@@ -45,11 +47,13 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
     onUpdate('kg', value);
     
     // Αυτόματος υπολογισμός ποσοστού
-    const weight = parseFloat(value);
-    if (weight && exercise.exercise_id) {
-      const percentage = calculatePercentage(exercise.exercise_id, weight);
-      if (percentage !== null) {
-        onUpdate('percentage_1rm', percentage);
+    if (selectedUserId) {
+      const weight = parseFloat(value);
+      if (weight && exercise.exercise_id) {
+        const percentage = calculatePercentage(exercise.exercise_id, weight);
+        if (percentage !== null) {
+          onUpdate('percentage_1rm', percentage);
+        }
       }
     }
   };
@@ -59,7 +63,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
     onUpdate('percentage_1rm', percentage || '');
     
     // Αυτόματος υπολογισμός κιλών
-    if (percentage && exercise.exercise_id) {
+    if (selectedUserId && percentage && exercise.exercise_id) {
       const weight = calculateWeight(exercise.exercise_id, percentage);
       if (weight !== null) {
         onUpdate('kg', weight.toString());
@@ -127,7 +131,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           </div>
         </div>
         
-        {/* Exercise Details Row - Using flex with fixed widths to align with headers */}
+        {/* Exercise Details Row */}
         <div className="flex p-2 gap-2 w-full" style={{ minHeight: '28px' }}>
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Sets</label>
@@ -151,7 +155,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
             <Input
-              value={exercise.reps}
+              value={exercise.reps || ''}
               onChange={(e) => onUpdate('reps', e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -186,7 +190,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
             <Input
-              value={exercise.kg}
+              value={exercise.kg || ''}
               onChange={(e) => handleKgChange(e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -202,7 +206,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
             <Input
-              value={exercise.velocity_ms}
+              value={exercise.velocity_ms || ''}
               onChange={(e) => onUpdate('velocity_ms', e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -218,7 +222,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Tempo</label>
             <Input
-              value={exercise.tempo}
+              value={exercise.tempo || ''}
               onChange={(e) => onUpdate('tempo', e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -234,7 +238,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '50px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
             <Input
-              value={exercise.rest}
+              value={exercise.rest || ''}
               onChange={(e) => onUpdate('rest', e.target.value)}
               className="text-center w-full"
               style={{ 
