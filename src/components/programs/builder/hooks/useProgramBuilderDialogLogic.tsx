@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import type { User, Exercise } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
 import { useAssignmentDialog } from './useAssignmentDialog';
@@ -29,26 +30,35 @@ export const useProgramBuilderDialogLogic = ({
   isOpen,
   program
 }: UseProgramBuilderDialogLogicProps) => {
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+
   const { currentProgramId, setCurrentProgramId, handleSave, handleClose } = useProgramSaveOperations({
     program,
     onCreateProgram,
     onOpenChange
   });
 
-  const {
-    assignmentDialogOpen,
-    setAssignmentDialogOpen,
-    availableUsers,
-    handleOpenAssignments,
-    handleAssign
-  } = useAssignmentDialog({
-    users,
+  const assignmentDialog = useAssignmentDialog(
     program,
-    currentProgramId,
-    onCreateProgram,
-    onDialogClose: handleClose,
-    editingAssignment
-  });
+    () => {
+      setAssignmentDialogOpen(false);
+      handleClose();
+    }
+  );
+
+  const handleOpenAssignments = () => {
+    setAssignmentDialogOpen(true);
+  };
+
+  const handleAssign = async () => {
+    try {
+      await assignmentDialog.handleSave();
+      setAssignmentDialogOpen(false);
+      handleClose();
+    } catch (error) {
+      console.error('❌ Error during assignment:', error);
+    }
+  };
 
   console.log('🔄 ProgramBuilderDialogLogic - Program state:', {
     programId: program.id,
@@ -65,7 +75,7 @@ export const useProgramBuilderDialogLogic = ({
     handleSave,
     handleOpenAssignments,
     handleAssign,
-    availableUsers,
+    availableUsers: users, // Χρησιμοποιούμε όλους τους users
     editingAssignment
   };
 };

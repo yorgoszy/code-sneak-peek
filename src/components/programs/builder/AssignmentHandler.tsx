@@ -56,16 +56,18 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
         return date;
       });
 
-      // 4. Δημιουργία ανάθεσης
-      const assignment = await assignmentService.createAssignment(
-        savedProgram,
-        program.user_id,
-        trainingDatesStrings
-      );
+      // 4. Δημιουργία ανάθεσης - χρησιμοποιούμε saveAssignment αντί για createAssignment
+      const assignmentData = {
+        program: savedProgram,
+        userId: program.user_id,
+        trainingDates: trainingDatesStrings
+      };
+      
+      const assignment = await assignmentService.saveAssignment(assignmentData);
 
       // 5. Δημιουργία workout completions
       await workoutCompletionService.createWorkoutCompletions(
-        assignment,
+        assignment[0], // saveAssignment επιστρέφει array
         savedProgram,
         program.user_id,
         trainingDatesStrings,
