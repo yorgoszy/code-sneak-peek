@@ -6,7 +6,41 @@ import { Copy, Trash2, GripVertical } from "lucide-react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { WeekMetrics } from './WeekMetrics';
-import type { Week } from '../types';
+
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
+
+interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
+
+interface Day {
+  id: string;
+  name: string;
+  day_number: number;
+  blocks: Block[];
+}
+
+interface Week {
+  id: string;
+  name: string;
+  week_number: number;
+  days: Day[];
+}
 
 interface SortableWeekTabProps {
   week: Week;
@@ -49,53 +83,6 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
-
-  // Transform the week data for WeekMetrics component (which expects days instead of program_days)
-  const transformedWeek = {
-    ...week,
-    days: week.program_days.map(day => ({
-      ...day,
-      blocks: day.program_blocks.map(block => ({
-        ...block,
-        exercises: block.program_exercises.map(pe => ({
-          id: pe.id,
-          exercise_id: pe.exercise_id,
-          exercise_name: pe.exercises?.name || '',
-          sets: pe.sets,
-          reps: pe.reps || '',
-          percentage_1rm: pe.percentage_1rm || 0,
-          kg: pe.kg || '',
-          velocity_ms: pe.velocity_ms?.toString() || '',
-          tempo: pe.tempo || '',
-          rest: pe.rest || '',
-          exercise_order: pe.exercise_order
-        }))
-      }))
-    }))
-  };
-
-  const transformedPreviousWeek = previousWeek ? {
-    ...previousWeek,
-    days: previousWeek.program_days.map(day => ({
-      ...day,
-      blocks: day.program_blocks.map(block => ({
-        ...block,
-        exercises: block.program_exercises.map(pe => ({
-          id: pe.id,
-          exercise_id: pe.exercise_id,
-          exercise_name: pe.exercises?.name || '',
-          sets: pe.sets,
-          reps: pe.reps || '',
-          percentage_1rm: pe.percentage_1rm || 0,
-          kg: pe.kg || '',
-          velocity_ms: pe.velocity_ms?.toString() || '',
-          tempo: pe.tempo || '',
-          rest: pe.rest || '',
-          exercise_order: pe.exercise_order
-        }))
-      }))
-    }))
-  } : undefined;
 
   return (
     <div 
@@ -163,7 +150,7 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
         
         {/* Week Metrics below the tab name */}
         <div className="mt-2 w-full">
-          <WeekMetrics week={transformedWeek} previousWeek={transformedPreviousWeek} />
+          <WeekMetrics week={week} previousWeek={previousWeek} />
         </div>
       </div>
     </div>

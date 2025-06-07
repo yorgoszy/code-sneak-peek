@@ -17,21 +17,14 @@ export interface ProgramExercise {
   exercise_id: string;
   sets: number;
   reps: string;
-  kg?: string;
+  kg?: string;  // Changed from required to optional
   percentage_1rm?: number;
   velocity_ms?: number;
   tempo?: string;
   rest?: string;
   notes?: string;
   exercise_order: number;
-  exercises?: {
-    id: string;
-    name: string;
-    description?: string;
-    video_url?: string;
-    created_at?: string;
-    updated_at?: string;
-  };
+  exercises?: { name: string };
 }
 
 export interface Block {
@@ -103,7 +96,7 @@ export interface ProgramStructure {
   user_id?: string;
   start_date?: Date;
   training_days?: string[];
-  training_dates?: Date[];
+  training_dates?: string[]; // Added training_dates
   weeks?: Week[];
   status?: string;
 }

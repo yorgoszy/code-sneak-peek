@@ -14,34 +14,29 @@ export const useExerciseActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          program_days: (week.program_days || []).map(day => {
+          days: (week.days || []).map(day => {
             if (day.id === dayId) {
               return {
                 ...day,
-                program_blocks: (day.program_blocks || []).map(block => {
+                blocks: (day.blocks || []).map(block => {
                   if (block.id === blockId) {
                     const newExercise = {
                       id: generateId(),
                       exercise_id: exerciseId,
+                      exercise_name: selectedExercise?.name || '',
                       sets: 0,
                       reps: '',
+                      percentage_1rm: 0,
                       kg: '',
-                      percentage_1rm: undefined,
-                      velocity_ms: undefined,
+                      velocity_ms: '',
                       tempo: '',
                       rest: '',
-                      notes: '',
-                      exercise_order: (block.program_exercises?.length || 0) + 1,
-                      exercises: { 
-                        id: exerciseId,
-                        name: selectedExercise?.name || '',
-                        description: selectedExercise?.description
-                      }
+                      exercise_order: (block.exercises?.length || 0) + 1
                     };
                     
                     return {
                       ...block,
-                      program_exercises: [...(block.program_exercises || []), newExercise]
+                      exercises: [...(block.exercises || []), newExercise]
                     };
                   }
                   return block;
@@ -62,15 +57,15 @@ export const useExerciseActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          program_days: (week.program_days || []).map(day => {
+          days: (week.days || []).map(day => {
             if (day.id === dayId) {
               return {
                 ...day,
-                program_blocks: (day.program_blocks || []).map(block => {
+                blocks: (day.blocks || []).map(block => {
                   if (block.id === blockId) {
                     return {
                       ...block,
-                      program_exercises: (block.program_exercises || []).filter(exercise => exercise.id !== exerciseId)
+                      exercises: (block.exercises || []).filter(exercise => exercise.id !== exerciseId)
                     };
                   }
                   return block;
@@ -91,15 +86,15 @@ export const useExerciseActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          program_days: (week.program_days || []).map(day => {
+          days: (week.days || []).map(day => {
             if (day.id === dayId) {
               return {
                 ...day,
-                program_blocks: (day.program_blocks || []).map(block => {
+                blocks: (day.blocks || []).map(block => {
                   if (block.id === blockId) {
                     return {
                       ...block,
-                      program_exercises: (block.program_exercises || []).map(exercise =>
+                      exercises: (block.exercises || []).map(exercise =>
                         exercise.id === exerciseId ? { ...exercise, [field]: value } : exercise
                       )
                     };
@@ -122,24 +117,24 @@ export const useExerciseActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          program_days: (week.program_days || []).map(day => {
+          days: (week.days || []).map(day => {
             if (day.id === dayId) {
               return {
                 ...day,
-                program_blocks: (day.program_blocks || []).map(block => {
+                blocks: (day.blocks || []).map(block => {
                   if (block.id === blockId) {
-                    const exerciseToDuplicate = block.program_exercises?.find(exercise => exercise.id === exerciseId);
+                    const exerciseToDuplicate = block.exercises?.find(exercise => exercise.id === exerciseId);
                     if (!exerciseToDuplicate) return block;
 
                     const newExercise = {
                       ...exerciseToDuplicate,
                       id: generateId(),
-                      exercise_order: (block.program_exercises?.length || 0) + 1
+                      exercise_order: (block.exercises?.length || 0) + 1
                     };
 
                     return {
                       ...block,
-                      program_exercises: [...(block.program_exercises || []), newExercise]
+                      exercises: [...(block.exercises || []), newExercise]
                     };
                   }
                   return block;

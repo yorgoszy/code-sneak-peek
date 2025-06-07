@@ -7,50 +7,30 @@ export const useDayActions = (
   generateId: () => string
 ) => {
   const addDay = (weekId: string) => {
-    console.log('🔵 useDayActions.addDay called with weekId:', weekId);
-    console.log('🔵 Current program weeks:', program.weeks);
-    
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
-        console.log('🔵 Found week to update:', week.name);
-        console.log('🔵 Current program_days:', week.program_days);
-        
-        const currentDays = week.program_days || [];
-        const newDayNumber = currentDays.length + 1;
-        
         const newDay = {
           id: generateId(),
-          name: `Ημέρα ${newDayNumber}`,
-          day_number: newDayNumber,
-          estimated_duration_minutes: 60,
-          program_blocks: []
+          name: `Ημέρα ${(week.days?.length || 0) + 1}`,
+          day_number: (week.days?.length || 0) + 1,
+          blocks: []
         };
-        
-        console.log('🔵 Created new day:', newDay);
-        
-        const updatedWeek = {
+        return {
           ...week,
-          program_days: [...currentDays, newDay]
+          days: [...(week.days || []), newDay]
         };
-        
-        console.log('🔵 Updated week with new day:', updatedWeek);
-        return updatedWeek;
       }
       return week;
     });
-    
-    console.log('🔵 All updated weeks:', updatedWeeks);
     updateProgram({ weeks: updatedWeeks });
-    console.log('✅ Program updated with new day');
   };
 
   const removeDay = (weekId: string, dayId: string) => {
-    console.log('🔴 Removing day:', dayId, 'from week:', weekId);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
           ...week,
-          program_days: (week.program_days || []).filter(day => day.id !== dayId)
+          days: (week.days || []).filter(day => day.id !== dayId)
         };
       }
       return week;
@@ -59,21 +39,20 @@ export const useDayActions = (
   };
 
   const duplicateDay = (weekId: string, dayId: string) => {
-    console.log('🟡 Duplicating day:', dayId, 'in week:', weekId);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
-        const dayToDuplicate = week.program_days?.find(day => day.id === dayId);
+        const dayToDuplicate = week.days?.find(day => day.id === dayId);
         if (!dayToDuplicate) return week;
 
         const newDay = {
           ...JSON.parse(JSON.stringify(dayToDuplicate)),
           id: generateId(),
           name: `${dayToDuplicate.name} (Αντίγραφο)`,
-          day_number: (week.program_days?.length || 0) + 1,
-          program_blocks: dayToDuplicate.program_blocks.map(block => ({
+          day_number: (week.days?.length || 0) + 1,
+          blocks: dayToDuplicate.blocks.map(block => ({
             ...block,
             id: generateId(),
-            program_exercises: block.program_exercises.map(exercise => ({
+            exercises: block.exercises.map(exercise => ({
               ...exercise,
               id: generateId()
             }))
@@ -82,7 +61,7 @@ export const useDayActions = (
 
         return {
           ...week,
-          program_days: [...(week.program_days || []), newDay]
+          days: [...(week.days || []), newDay]
         };
       }
       return week;
@@ -91,12 +70,11 @@ export const useDayActions = (
   };
 
   const updateDayName = (weekId: string, dayId: string, name: string) => {
-    console.log('📝 Updating day name:', dayId, 'to:', name);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
           ...week,
-          program_days: (week.program_days || []).map(day =>
+          days: (week.days || []).map(day =>
             day.id === dayId ? { ...day, name } : day
           )
         };

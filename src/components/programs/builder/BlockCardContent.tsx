@@ -5,7 +5,21 @@ import { CollapsibleContent } from "@/components/ui/collapsible";
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableExercise } from './SortableExercise';
-import { Exercise, ProgramExercise } from '../types';
+import { Exercise } from '../types';
+
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
 
 interface BlockCardContentProps {
   exercises: ProgramExercise[];

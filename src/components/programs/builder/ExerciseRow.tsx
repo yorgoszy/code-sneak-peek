@@ -1,11 +1,24 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Copy } from "lucide-react";
-import { Exercise, ProgramExercise } from '../types';
+import { Exercise } from '../types';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
-import { useStrengthData } from '@/hooks/useStrengthData';
+
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
 
 interface ExerciseRowProps {
   exercise: ProgramExercise;
@@ -14,7 +27,6 @@ interface ExerciseRowProps {
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
   onDuplicate: () => void;
-  selectedUserId?: string;
 }
 
 export const ExerciseRow: React.FC<ExerciseRowProps> = ({
@@ -23,67 +35,13 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   allBlockExercises,
   onUpdate,
   onRemove,
-  onDuplicate,
-  selectedUserId
+  onDuplicate
 }) => {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
-  const { get1RM, calculatePercentage, calculateWeight, strengthData, isLoading } = useStrengthData(selectedUserId);
-
-  // Log για debugging
-  useEffect(() => {
-    if (selectedUserId && exercise.exercise_id) {
-      console.log('🔍 ExerciseRow - userId:', selectedUserId, 'exerciseId:', exercise.exercise_id);
-      console.log('🔍 Available 1RM data:', strengthData);
-      const oneRM = get1RM(exercise.exercise_id);
-      console.log('🔍 1RM for this exercise:', oneRM);
-    }
-  }, [selectedUserId, exercise.exercise_id, strengthData, get1RM]);
 
   const handleExerciseSelect = (exerciseId: string) => {
-    console.log('🏋️‍♂️ Exercise selected:', exerciseId);
     onUpdate('exercise_id', exerciseId);
     setShowExerciseDialog(false);
-    
-    // Αυτόματη συμπλήρωση με 1RM δεδομένα
-    if (selectedUserId) {
-      const oneRM = get1RM(exerciseId);
-      console.log('🎯 Found 1RM for exercise:', oneRM);
-      if (oneRM) {
-        onUpdate('kg', oneRM.toString());
-        onUpdate('percentage_1rm', 100);
-        console.log('✅ Auto-filled with 1RM data:', oneRM, 'kg (100%)');
-      }
-    }
-  };
-
-  const handleKgChange = (value: string) => {
-    onUpdate('kg', value);
-    
-    // Αυτόματος υπολογισμός ποσοστού
-    if (selectedUserId && exercise.exercise_id) {
-      const weight = parseFloat(value);
-      if (weight && !isNaN(weight)) {
-        const percentage = calculatePercentage(exercise.exercise_id, weight);
-        if (percentage !== null) {
-          onUpdate('percentage_1rm', percentage);
-          console.log(`📊 Auto-calculated percentage: ${percentage}% for ${weight}kg`);
-        }
-      }
-    }
-  };
-
-  const handlePercentageChange = (value: string) => {
-    const percentage = parseFloat(value);
-    onUpdate('percentage_1rm', percentage || '');
-    
-    // Αυτόματος υπολογισμός κιλών
-    if (selectedUserId && percentage && !isNaN(percentage) && exercise.exercise_id) {
-      const weight = calculateWeight(exercise.exercise_id, percentage);
-      if (weight !== null) {
-        onUpdate('kg', weight.toString());
-        console.log(`⚖️ Auto-calculated weight: ${weight}kg for ${percentage}%`);
-      }
-    }
   };
 
   const selectedExercise = exercises.find(ex => ex.id === exercise.exercise_id);
@@ -120,11 +78,6 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
                   </span>
                 )}
                 {selectedExercise.name}
-                {selectedUserId && exercise.exercise_id && (
-                  <span className="text-xs text-gray-500 ml-1">
-                    {isLoading ? '...' : get1RM(exercise.exercise_id) ? `(1RM: ${get1RM(exercise.exercise_id)}kg)` : '(No 1RM)'}
-                  </span>
-                )}
               </span>
             ) : 'Επιλογή...'}
           </Button>
@@ -151,7 +104,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           </div>
         </div>
         
-        {/* Exercise Details Row */}
+        {/* Exercise Details Row - Using flex with fixed widths to align with headers */}
         <div className="flex p-2 gap-2 w-full" style={{ minHeight: '28px' }}>
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Sets</label>
@@ -175,7 +128,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
             <Input
-              value={exercise.reps || ''}
+              value={exercise.reps}
               onChange={(e) => onUpdate('reps', e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -195,7 +148,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               inputMode="numeric"
               pattern="[0-9]*"
               value={exercise.percentage_1rm || ''}
-              onChange={(e) => handlePercentageChange(e.target.value)}
+              onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || '')}
               className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
               style={{ 
                 borderRadius: '0px', 
@@ -210,8 +163,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
             <Input
-              value={exercise.kg || ''}
-              onChange={(e) => handleKgChange(e.target.value)}
+              value={exercise.kg}
+              onChange={(e) => onUpdate('kg', e.target.value)}
               className="text-center w-full"
               style={{ 
                 borderRadius: '0px', 
@@ -226,7 +179,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
             <Input
-              value={exercise.velocity_ms || ''}
+              value={exercise.velocity_ms}
               onChange={(e) => onUpdate('velocity_ms', e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -242,7 +195,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Tempo</label>
             <Input
-              value={exercise.tempo || ''}
+              value={exercise.tempo}
               onChange={(e) => onUpdate('tempo', e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -258,7 +211,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '50px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
             <Input
-              value={exercise.rest || ''}
+              value={exercise.rest}
               onChange={(e) => onUpdate('rest', e.target.value)}
               className="text-center w-full"
               style={{ 

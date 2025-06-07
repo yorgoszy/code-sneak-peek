@@ -4,37 +4,43 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from "lucide-react";
 import { BlockCard } from './BlockCard';
-import { Exercise, Block } from '../types';
+import { Exercise } from '../types';
+
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
+
+interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
 
 interface SortableBlockProps {
   block: Block;
   exercises: Exercise[];
-  allBlockExercises: Block['program_exercises'];
-  selectedUserId?: string;
-  onUpdateBlockName: (name: string) => void;
+  onAddExercise: (exerciseId: string) => void;
   onRemoveBlock: () => void;
   onDuplicateBlock: () => void;
-  onAddExercise: (exerciseId: string) => void;
-  onRemoveExercise: (exerciseId: string) => void;
+  onUpdateBlockName: (name: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
+  onRemoveExercise: (exerciseId: string) => void;
   onDuplicateExercise: (exerciseId: string) => void;
   onReorderExercises: (oldIndex: number, newIndex: number) => void;
 }
 
-export const SortableBlock: React.FC<SortableBlockProps> = ({
-  block,
-  exercises,
-  allBlockExercises,
-  selectedUserId,
-  onUpdateBlockName,
-  onRemoveBlock,
-  onDuplicateBlock,
-  onAddExercise,
-  onRemoveExercise,
-  onUpdateExercise,
-  onDuplicateExercise,
-  onReorderExercises
-}) => {
+export const SortableBlock: React.FC<SortableBlockProps> = (props) => {
   const {
     attributes,
     listeners,
@@ -42,7 +48,7 @@ export const SortableBlock: React.FC<SortableBlockProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: block.id });
+  } = useSortable({ id: props.block.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -59,21 +65,7 @@ export const SortableBlock: React.FC<SortableBlockProps> = ({
       >
         <GripVertical className="w-3 h-3 text-gray-400" />
       </div>
-      <div className="ml-4">
-        <BlockCard
-          block={block}
-          exercises={exercises}
-          allBlockExercises={allBlockExercises}
-          selectedUserId={selectedUserId}
-          onUpdateBlockName={onUpdateBlockName}
-          onRemoveBlock={onRemoveBlock}
-          onDuplicateBlock={onDuplicateBlock}
-          onAddExercise={onAddExercise}
-          onRemoveExercise={onRemoveExercise}
-          onUpdateExercise={onUpdateExercise}
-          onDuplicateExercise={onDuplicateExercise}
-        />
-      </div>
+      <BlockCard {...props} />
     </div>
   );
 };

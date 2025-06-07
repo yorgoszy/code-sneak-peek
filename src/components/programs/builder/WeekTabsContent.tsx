@@ -4,7 +4,42 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { DayCard } from './DayCard';
-import { Exercise, Week } from '../types';
+import { Exercise } from '../types';
+
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
+
+interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
+
+interface Day {
+  id: string;
+  name: string;
+  day_number: number;
+  blocks: Block[];
+}
+
+interface Week {
+  id: string;
+  name: string;
+  week_number: number;
+  days: Day[];
+}
 
 interface WeekTabsContentProps {
   weeks: Week[];
@@ -66,9 +101,9 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
               </div>
             </div>
 
-            {week.program_days && week.program_days.length > 0 ? (
+            {week.days && week.days.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {week.program_days.map((day) => (
+                {week.days.map((day) => (
                   <DayCard
                     key={day.id}
                     day={day}

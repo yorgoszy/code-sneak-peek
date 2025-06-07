@@ -6,12 +6,39 @@ import { GripVertical } from "lucide-react";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
-import { Day, Exercise } from '../types';
+import { Exercise } from '../types';
+
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
+
+interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
+
+interface Day {
+  id: string;
+  name: string;
+  day_number: number;
+  blocks: Block[];
+}
 
 interface DayCardProps {
   day: Day;
   exercises: Exercise[];
-  selectedUserId?: string;
   onAddBlock: () => void;
   onRemoveDay: () => void;
   onDuplicateDay: () => void;
@@ -30,7 +57,6 @@ interface DayCardProps {
 export const DayCard: React.FC<DayCardProps> = ({
   day,
   exercises,
-  selectedUserId,
   onAddBlock,
   onRemoveDay,
   onDuplicateDay,
@@ -70,30 +96,7 @@ export const DayCard: React.FC<DayCardProps> = ({
     }
   };
 
-  const blocksCount = day.program_blocks?.length || 0;
-
-  // Transform blocks for DayCalculations with correct field names
-  const blocksWithExercises = (day.program_blocks || []).map(block => ({
-    id: block.id,
-    name: block.name,
-    block_order: block.block_order,
-    exercises: block.program_exercises?.map(pe => {
-      const exercise = exercises.find(ex => ex.id === pe.exercise_id);
-      return {
-        id: pe.id,
-        exercise_id: pe.exercise_id,
-        exercise_name: exercise?.name || 'Unknown Exercise',
-        sets: pe.sets,
-        reps: pe.reps || '',
-        percentage_1rm: pe.percentage_1rm || 0,
-        kg: pe.kg || '',
-        velocity_ms: pe.velocity_ms?.toString() || '',
-        tempo: pe.tempo || '',
-        rest: pe.rest || '',
-        exercise_order: pe.exercise_order
-      };
-    }) || []
-  }));
+  const blocksCount = day.blocks.length;
 
   return (
     <Card className="rounded-none relative" style={{ minHeight: '30px' }}>
@@ -119,9 +122,8 @@ export const DayCard: React.FC<DayCardProps> = ({
         
         {isOpen && (
           <DayCardContent
-            blocks={day.program_blocks || []}
+            blocks={day.blocks}
             exercises={exercises}
-            selectedUserId={selectedUserId}
             onAddExercise={onAddExercise}
             onRemoveBlock={onRemoveBlock}
             onDuplicateBlock={onDuplicateBlock}
@@ -135,7 +137,7 @@ export const DayCard: React.FC<DayCardProps> = ({
         )}
         
         <DayCalculations 
-          blocks={blocksWithExercises} 
+          blocks={day.blocks} 
           exercises={exercises} 
         />
       </Collapsible>

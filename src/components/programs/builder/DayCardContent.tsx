@@ -5,12 +5,32 @@ import { CollapsibleContent } from "@/components/ui/collapsible";
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableBlock } from './SortableBlock';
-import { Exercise, Block } from '../types';
+import { Exercise } from '../types';
+
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
+
+interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
 
 interface DayCardContentProps {
   blocks: Block[];
   exercises: Exercise[];
-  selectedUserId?: string;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
@@ -25,7 +45,6 @@ interface DayCardContentProps {
 export const DayCardContent: React.FC<DayCardContentProps> = ({
   blocks,
   exercises,
-  selectedUserId,
   onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
@@ -51,14 +70,12 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
       <CardContent className="pt-2 pl-4">
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-2">
+            <div className="space-y-0">
               {blocks.map((block) => (
                 <SortableBlock
                   key={block.id}
                   block={block}
                   exercises={exercises}
-                  allBlockExercises={block.program_exercises}
-                  selectedUserId={selectedUserId}
                   onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
                   onRemoveBlock={() => onRemoveBlock(block.id)}
                   onDuplicateBlock={() => onDuplicateBlock(block.id)}
@@ -68,9 +85,7 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
                   }
                   onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
                   onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
-                  onReorderExercises={(oldIndex, newIndex) => 
-                    onReorderExercises(block.id, oldIndex, newIndex)
-                  }
+                  onReorderExercises={(oldIndex, newIndex) => onReorderExercises(block.id, oldIndex, newIndex)}
                 />
               ))}
             </div>

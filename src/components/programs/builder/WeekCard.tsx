@@ -4,19 +4,51 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { DayCard } from './DayCard';
-import { Exercise, Week, Day, Block, ProgramExercise } from '../types';
+import { Exercise } from '../types';
 import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
+
+interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
+
+interface Day {
+  id: string;
+  name: string;
+  day_number: number;
+  blocks: Block[];
+}
+
+interface Week {
+  id: string;
+  name: string;
+  week_number: number;
+  days: Day[];
+}
+
 interface WeekCardProps {
   week: Week;
   exercises: Exercise[];
-  selectedUserId?: string;
   onAddDay: () => void;
   onRemoveWeek: () => void;
-  onDuplicateWeek: () => void;
-  onUpdateWeekName: (name: string) => void;
   onAddBlock: (dayId: string) => void;
   onRemoveDay: (dayId: string) => void;
   onDuplicateDay: (dayId: string) => void;
@@ -84,11 +116,8 @@ const SortableDay: React.FC<{
 export const WeekCard: React.FC<WeekCardProps> = ({
   week,
   exercises,
-  selectedUserId,
   onAddDay,
   onRemoveWeek,
-  onDuplicateWeek,
-  onUpdateWeekName,
   onAddBlock,
   onRemoveDay,
   onDuplicateDay,
@@ -108,31 +137,9 @@ export const WeekCard: React.FC<WeekCardProps> = ({
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      const oldIndex = programDays.findIndex(day => day.id === active.id);
-      const newIndex = programDays.findIndex(day => day.id === over.id);
+      const oldIndex = week.days.findIndex(day => day.id === active.id);
+      const newIndex = week.days.findIndex(day => day.id === over.id);
       onReorderDays(oldIndex, newIndex);
-    }
-  };
-
-  // Διασφαλίζουμε ότι program_days είναι πάντα array
-  const programDays = Array.isArray(week.program_days) ? week.program_days : [];
-
-  console.log('🔍 WeekCard - Week:', week.name, 'Program Days:', programDays);
-  console.log('🔍 WeekCard - onAddDay function:', typeof onAddDay, '- Available:', !!onAddDay);
-
-  const handleAddDay = () => {
-    console.log('🟢 "+Day" button clicked for week:', week.id, week.name);
-    console.log('🟢 onAddDay function check:', {
-      type: typeof onAddDay,
-      available: !!onAddDay,
-      function: onAddDay
-    });
-    
-    if (typeof onAddDay === 'function') {
-      console.log('✅ Calling onAddDay function...');
-      onAddDay();
-    } else {
-      console.error('❌ onAddDay is not a function! Type:', typeof onAddDay);
     }
   };
 
@@ -143,9 +150,9 @@ export const WeekCard: React.FC<WeekCardProps> = ({
           <CardTitle className="text-lg">{week.name}</CardTitle>
           <div className="flex gap-2">
             <Button 
-              onClick={handleAddDay}
+              onClick={onAddDay}
               size="sm"
-              className="rounded-none text-sm bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              className="rounded-none text-sm"
             >
               <Plus className="w-4 h-4 mr-1" />
               +Day
@@ -162,40 +169,34 @@ export const WeekCard: React.FC<WeekCardProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        {programDays.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            Δεν υπάρχουν ημέρες σε αυτή την εβδομάδα. Κάντε κλικ στο "+Day" για να προσθέσετε την πρώτη ημέρα.
-          </div>
-        ) : (
-          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={programDays.map(d => d.id)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {programDays.map((day) => (
-                  <SortableDay
-                    key={day.id}
-                    day={day}
-                    exercises={exercises}
-                    onAddBlock={() => onAddBlock(day.id)}
-                    onRemoveDay={() => onRemoveDay(day.id)}
-                    onDuplicateDay={() => onDuplicateDay(day.id)}
-                    onUpdateDayName={(name) => onUpdateDayName(day.id, name)}
-                    onAddExercise={(blockId, exerciseId) => onAddExercise(day.id, blockId, exerciseId)}
-                    onRemoveBlock={(blockId) => onRemoveBlock(day.id, blockId)}
-                    onDuplicateBlock={(blockId) => onDuplicateBlock(day.id, blockId)}
-                    onUpdateBlockName={(blockId, name) => onUpdateBlockName(day.id, blockId, name)}
-                    onUpdateExercise={(blockId, exerciseId, field, value) => 
-                      onUpdateExercise(day.id, blockId, exerciseId, field, value)
-                    }
-                    onRemoveExercise={(blockId, exerciseId) => onRemoveExercise(day.id, blockId, exerciseId)}
-                    onDuplicateExercise={(blockId, exerciseId) => onDuplicateExercise(day.id, blockId, exerciseId)}
-                    onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(day.id, oldIndex, newIndex)}
-                    onReorderExercises={(blockId, oldIndex, newIndex) => onReorderExercises(day.id, blockId, oldIndex, newIndex)}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        )}
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={week.days.map(d => d.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {week.days.map((day) => (
+                <SortableDay
+                  key={day.id}
+                  day={day}
+                  exercises={exercises}
+                  onAddBlock={() => onAddBlock(day.id)}
+                  onRemoveDay={() => onRemoveDay(day.id)}
+                  onDuplicateDay={() => onDuplicateDay(day.id)}
+                  onUpdateDayName={(name) => onUpdateDayName(day.id, name)}
+                  onAddExercise={(blockId, exerciseId) => onAddExercise(day.id, blockId, exerciseId)}
+                  onRemoveBlock={(blockId) => onRemoveBlock(day.id, blockId)}
+                  onDuplicateBlock={(blockId) => onDuplicateBlock(day.id, blockId)}
+                  onUpdateBlockName={(blockId, name) => onUpdateBlockName(day.id, blockId, name)}
+                  onUpdateExercise={(blockId, exerciseId, field, value) => 
+                    onUpdateExercise(day.id, blockId, exerciseId, field, value)
+                  }
+                  onRemoveExercise={(blockId, exerciseId) => onRemoveExercise(day.id, blockId, exerciseId)}
+                  onDuplicateExercise={(blockId, exerciseId) => onDuplicateExercise(day.id, blockId, exerciseId)}
+                  onReorderBlocks={(oldIndex, newIndex) => onReorderBlocks(day.id, oldIndex, newIndex)}
+                  onReorderExercises={(blockId, oldIndex, newIndex) => onReorderExercises(day.id, blockId, oldIndex, newIndex)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       </CardContent>
     </Card>
   );

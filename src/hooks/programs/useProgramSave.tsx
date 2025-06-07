@@ -27,10 +27,7 @@ export const useProgramSave = () => {
         });
       } else if (programData.weeks && programData.weeks.length > 0) {
         // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
-        const totalDays = programData.weeks.reduce((total, week) => {
-          const daysCount = week.program_days?.length || 0;
-          return total + daysCount;
-        }, 0);
+        const totalDays = programData.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
         const today = new Date();
         trainingDatesArray = [];
         for (let i = 0; i < totalDays; i++) {
@@ -49,7 +46,7 @@ export const useProgramSave = () => {
         status: programData.status || 'draft',
         type: programData.type || 'strength',
         duration: programData.weeks?.length || null,
-        training_days: programData.weeks?.[0]?.program_days?.length || null
+        training_days: programData.weeks?.[0]?.days?.length || null
       };
 
       let savedProgram;
@@ -76,10 +73,8 @@ export const useProgramSave = () => {
             .eq('program_id', programData.id);
         }
 
-        // Διαγραφή υπάρχουσας δομής πριν την αναδημιουργία ΜΟΝΟ αν υπάρχουν αλλαγές στη δομή
-        if (programData.weeks && programData.weeks.length > 0) {
-          await deleteExistingStructure(programData.id);
-        }
+        // Διαγραφή υπάρχουσας δομής πριν την αναδημιουργία
+        await deleteExistingStructure(programData.id);
       } else {
         // Create new program
         console.log('🆕 Creating new program');
@@ -96,22 +91,18 @@ export const useProgramSave = () => {
 
       console.log('✅ Program saved:', savedProgram);
 
-      // Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises) ΜΟΝΟ αν υπάρχουν weeks
+      // Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises)
       if (programData.weeks && programData.weeks.length > 0) {
         console.log('🏗️ Creating program structure...');
         await createProgramStructure(savedProgram.id, programData);
         console.log('✅ Program structure created');
       }
 
-      // Επιστρέφουμε το πρόγραμμα με τη σωστή δομή και διατήρηση των weeks
-      const result = {
+      // Επιστρέφουμε το πρόγραμμα με τις ημερομηνίες
+      return {
         ...savedProgram,
-        training_dates: trainingDatesArray,
-        weeks: programData.weeks || []
+        training_dates: trainingDatesArray
       };
-
-      console.log('📤 Returning program result:', result);
-      return result;
     } catch (error) {
       console.error('❌ Error saving program:', error);
       toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');

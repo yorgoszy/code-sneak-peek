@@ -1,13 +1,48 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { Exercise } from '../types';
 import { WeekTabsHeader } from './WeekTabsHeader';
-import { WeekCard } from './WeekCard';
-import { Exercise, Week } from '../types';
+import { WeekTabsContent } from './WeekTabsContent';
+import { useWeekEditingState } from './hooks/useWeekEditingState';
+
+interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  percentage_1rm: number;
+  kg: string;
+  velocity_ms: string;
+  tempo: string;
+  rest: string;
+  exercise_order: number;
+}
+
+interface Block {
+  id: string;
+  name: string;
+  block_order: number;
+  exercises: ProgramExercise[];
+}
+
+interface Day {
+  id: string;
+  name: string;
+  day_number: number;
+  blocks: Block[];
+}
+
+interface Week {
+  id: string;
+  name: string;
+  week_number: number;
+  days: Day[];
+}
 
 interface TrainingWeeksProps {
   weeks: Week[];
@@ -60,42 +95,26 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onReorderBlocks,
   onReorderExercises
 }) => {
-  const [activeWeek, setActiveWeek] = useState('');
-  const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
-  const [editingWeekName, setEditingWeekName] = useState('');
+  const {
+    activeWeek,
+    setActiveWeek,
+    editingWeekId,
+    editingWeekName,
+    setEditingWeekName,
+    handleWeekNameDoubleClick,
+    handleWeekNameSave,
+    handleWeekNameKeyPress
+  } = useWeekEditingState(weeks, onUpdateWeekName);
 
-  // Ενημέρωση του activeWeek όταν αλλάζουν οι εβδομάδες
   useEffect(() => {
     if (weeks.length > 0 && !activeWeek) {
-      console.log('🔄 Setting active week to first week:', weeks[0].id);
       setActiveWeek(weeks[0].id);
     }
-  }, [weeks, activeWeek]);
+  }, [weeks, activeWeek, setActiveWeek]);
 
-  const handleWeekNameDoubleClick = (week: Week) => {
-    setEditingWeekId(week.id);
-    setEditingWeekName(week.name);
-  };
-
-  const handleWeekNameSave = () => {
-    if (editingWeekId && editingWeekName.trim()) {
-      onUpdateWeekName(editingWeekId, editingWeekName.trim());
-    }
-    setEditingWeekId(null);
-    setEditingWeekName('');
-  };
-
-  const handleWeekNameKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleWeekNameSave();
-    } else if (e.key === 'Escape') {
-      setEditingWeekId(null);
-      setEditingWeekName('');
-    }
-  };
-
-  const handleWeekDragEnd = (event: any) => {
+  const handleDragEnd = (event: any) => {
     const { active, over } = event;
+
     if (active.id !== over.id) {
       const oldIndex = weeks.findIndex(week => week.id === active.id);
       const newIndex = weeks.findIndex(week => week.id === over.id);
@@ -103,95 +122,60 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
     }
   };
 
-  const handleAddDay = () => {
-    console.log('🟢 Add Day clicked. Current activeWeek:', activeWeek);
-    console.log('🟢 Available weeks:', weeks.map(w => ({ id: w.id, name: w.name })));
-    
-    if (activeWeek) {
-      console.log('✅ Adding day to active week:', activeWeek);
-      onAddDay(activeWeek);
-    } else if (weeks.length > 0) {
-      console.log('🔧 No active week, using first week:', weeks[0].id);
-      setActiveWeek(weeks[0].id);
-      onAddDay(weeks[0].id);
-    } else {
-      console.log('❌ No weeks available');
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Εβδομάδες Προπόνησης</h3>
-        <div className="flex gap-2">
+    <Card className="rounded-none">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle>Εβδομάδες Προπόνησης</CardTitle>
           <Button onClick={onAddWeek} className="rounded-none">
             <Plus className="w-4 h-4 mr-2" />
-            Προσθήκη Εβδομάδας
+            +Week
           </Button>
-          {weeks.length > 0 && (
-            <Button 
-              onClick={handleAddDay} 
-              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Day
-            </Button>
-          )}
         </div>
-      </div>
-
-      {weeks.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          Δεν υπάρχουν εβδομάδες. Προσθέστε την πρώτη εβδομάδα για να ξεκινήσετε.
-        </div>
-      ) : (
-        <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
-          <DndContext collisionDetection={closestCenter} onDragEnd={handleWeekDragEnd}>
-            <SortableContext items={weeks.map(w => w.id)} strategy={horizontalListSortingStrategy}>
-              <WeekTabsHeader
-                weeks={weeks}
-                editingWeekId={editingWeekId}
-                editingWeekName={editingWeekName}
-                activeWeek={activeWeek}
-                onWeekNameDoubleClick={handleWeekNameDoubleClick}
-                onWeekNameSave={handleWeekNameSave}
-                onWeekNameKeyPress={handleWeekNameKeyPress}
-                setEditingWeekName={setEditingWeekName}
-                onDuplicateWeek={onDuplicateWeek}
-                onRemoveWeek={onRemoveWeek}
-              />
-            </SortableContext>
-          </DndContext>
-
-          {weeks.map((week) => (
-            <TabsContent key={week.id} value={week.id}>
-              <WeekCard
-                week={week}
-                exercises={exercises}
-                selectedUserId={selectedUserId}
-                onRemoveWeek={() => onRemoveWeek(week.id)}
-                onDuplicateWeek={() => onDuplicateWeek(week.id)}
-                onUpdateWeekName={(name) => onUpdateWeekName(week.id, name)}
-                onAddDay={() => onAddDay(week.id)}
-                onRemoveDay={(dayId) => onRemoveDay(week.id, dayId)}
-                onDuplicateDay={(dayId) => onDuplicateDay(week.id, dayId)}
-                onUpdateDayName={(dayId, name) => onUpdateDayName(week.id, dayId, name)}
-                onAddBlock={(dayId) => onAddBlock(week.id, dayId)}
-                onRemoveBlock={(dayId, blockId) => onRemoveBlock(week.id, dayId, blockId)}
-                onDuplicateBlock={(dayId, blockId) => onDuplicateBlock(week.id, dayId, blockId)}
-                onUpdateBlockName={(dayId, blockId, name) => onUpdateBlockName(week.id, dayId, blockId, name)}
-                onAddExercise={(dayId, blockId, exerciseId) => onAddExercise(week.id, dayId, blockId, exerciseId)}
-                onRemoveExercise={(dayId, blockId, exerciseId) => onRemoveExercise(week.id, dayId, blockId, exerciseId)}
-                onUpdateExercise={(dayId, blockId, exerciseId, field, value) => onUpdateExercise(week.id, dayId, blockId, exerciseId, field, value)}
-                onDuplicateExercise={(dayId, blockId, exerciseId) => onDuplicateExercise(week.id, dayId, blockId, exerciseId)}
-                onReorderDays={(oldIndex, newIndex) => onReorderDays(week.id, oldIndex, newIndex)}
-                onReorderBlocks={(dayId, oldIndex, newIndex) => onReorderBlocks(week.id, dayId, oldIndex, newIndex)}
-                onReorderExercises={(dayId, blockId, oldIndex, newIndex) => onReorderExercises(week.id, dayId, blockId, oldIndex, newIndex)}
-              />
-            </TabsContent>
-          ))}
-        </Tabs>
-      )}
-    </div>
+      </CardHeader>
+      <CardContent>
+        {weeks.length > 0 ? (
+          <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
+            <WeekTabsHeader
+              weeks={weeks}
+              editingWeekId={editingWeekId}
+              editingWeekName={editingWeekName}
+              activeWeek={activeWeek}
+              onWeekNameDoubleClick={handleWeekNameDoubleClick}
+              onWeekNameSave={handleWeekNameSave}
+              onWeekNameKeyPress={handleWeekNameKeyPress}
+              setEditingWeekName={setEditingWeekName}
+              onDuplicateWeek={onDuplicateWeek}
+              onRemoveWeek={onRemoveWeek}
+            />
+            
+            <WeekTabsContent
+              weeks={weeks}
+              exercises={exercises}
+              onAddDay={onAddDay}
+              onRemoveWeek={onRemoveWeek}
+              onAddBlock={onAddBlock}
+              onRemoveDay={onRemoveDay}
+              onDuplicateDay={onDuplicateDay}
+              onUpdateDayName={onUpdateDayName}
+              onAddExercise={onAddExercise}
+              onRemoveBlock={onRemoveBlock}
+              onDuplicateBlock={onDuplicateBlock}
+              onUpdateBlockName={onUpdateBlockName}
+              onUpdateExercise={onUpdateExercise}
+              onRemoveExercise={onRemoveExercise}
+              onDuplicateExercise={onDuplicateExercise}
+              onReorderDays={onReorderDays}
+              onReorderBlocks={onReorderBlocks}
+              onReorderExercises={onReorderExercises}
+            />
+          </Tabs>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            Προσθέστε μια εβδομάδα για να ξεκινήσετε
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
