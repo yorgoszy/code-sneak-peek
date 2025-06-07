@@ -34,7 +34,7 @@ interface Day {
   id: string;
   name: string;
   day_number: number;
-  blocks: Block[];
+  program_blocks: Block[];
 }
 
 interface Week {
