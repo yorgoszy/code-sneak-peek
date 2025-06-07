@@ -8,6 +8,7 @@ import { Trash2, Edit, Copy, Eye, User, Calendar } from "lucide-react";
 import { Program } from './types';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
+import { parseDateFromString } from '@/utils/dateUtils';
 
 interface ProgramsListProps {
   programs: Program[];
@@ -56,6 +57,17 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
       athleteName: assignment.app_users?.name,
       trainingDates: assignment.training_dates || []
     };
+  };
+
+  // Διόρθωση: Προσθήκη proper handler για διαγραφή
+  const handleDeleteProgram = (e: React.MouseEvent, programId: string) => {
+    e.stopPropagation();
+    console.log('🗑️ Attempting to delete program:', programId);
+    
+    if (window.confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;')) {
+      console.log('✅ User confirmed deletion, calling onDeleteProgram with:', programId);
+      onDeleteProgram(programId);
+    }
   };
 
   if (programs.length === 0) {
@@ -157,11 +169,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteProgram(program.id);
-                      }}
-                      className="rounded-none"
+                      onClick={(e) => handleDeleteProgram(e, program.id)}
+                      className="rounded-none text-red-600 hover:text-red-700 hover:bg-red-50"
                       title="Διαγραφή"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -190,7 +199,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                               key={index}
                               className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded"
                             >
-                              {format(new Date(date), 'dd/MM', { locale: el })}
+                              {format(parseDateFromString(date), 'dd/MM', { locale: el })}
                             </span>
                           ))}
                           {assignmentInfo.trainingDates.length > 8 && (

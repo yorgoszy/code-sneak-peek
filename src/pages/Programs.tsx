@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
@@ -63,15 +64,20 @@ const Programs = () => {
 
   const handleDeleteProgram = async (programId: string) => {
     try {
+      console.log('🗑️ Programs page - Attempting to delete program:', programId);
+      
       const success = await deleteProgram(programId);
       if (success) {
+        console.log('✅ Programs page - Program deleted successfully');
         if (selectedProgram?.id === programId) {
           setSelectedProgram(null);
         }
         await loadPrograms(); // Ξαναφόρτωση μετά τη διαγραφή
+      } else {
+        console.log('❌ Programs page - Delete operation failed');
       }
     } catch (error) {
-      console.error('Error deleting program:', error);
+      console.error('❌ Programs page - Error deleting program:', error);
     }
   };
 
