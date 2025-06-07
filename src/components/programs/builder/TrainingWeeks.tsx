@@ -95,14 +95,14 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
     }
   };
 
-  // Transform weeks for WeekMetrics
+  // Transform weeks for WeekMetrics - ensure compatibility with WeekTabsHeader interface
   const weeksWithMetrics = weeks.map(week => ({
     ...week,
-    days: week.program_days?.map(day => ({
+    days: (week.program_days || []).map(day => ({
       ...day,
-      blocks: day.program_blocks?.map(block => ({
+      blocks: (day.program_blocks || []).map(block => ({
         ...block,
-        exercises: block.program_exercises?.map(pe => {
+        exercises: (block.program_exercises || []).map(pe => {
           const exercise = exercises.find(ex => ex.id === pe.exercise_id);
           return {
             id: pe.id,
@@ -117,9 +117,9 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
             rest: pe.rest || '',
             exercise_order: pe.exercise_order
           };
-        }) || []
-      })) || []
-    })) || []
+        })
+      }))
+    }))
   }));
 
   return (
