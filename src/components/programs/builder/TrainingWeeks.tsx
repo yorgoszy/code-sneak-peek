@@ -9,6 +9,7 @@ import { Exercise } from '../types';
 interface Week {
   id: string;
   name: string;
+  week_number: number;
   days?: Day[];
 }
 
