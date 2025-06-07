@@ -4,32 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Copy, GripVertical } from "lucide-react";
 import { ExerciseRow } from './ExerciseRow';
-import { Exercise } from '../types';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  exercises?: ProgramExercise[];
-}
+import { Exercise, Block } from '../types';
 
 interface BlockCardProps {
   block: Block;
   exercises: Exercise[];
-  allBlockExercises: ProgramExercise[];
+  allBlockExercises: Block['program_exercises'];
   selectedUserId?: string;
   onUpdateBlockName: (name: string) => void;
   onRemoveBlock: () => void;
@@ -89,7 +69,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
 
       {/* Exercises */}
       <div className="p-3">
-        {block.exercises?.map((exercise) => (
+        {block.program_exercises?.map((exercise) => (
           <ExerciseRow
             key={exercise.id}
             exercise={exercise}
