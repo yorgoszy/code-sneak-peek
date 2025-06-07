@@ -148,8 +148,8 @@ export const useWorkoutState = (
           .from('workout_completions')
           .insert({
             assignment_id: program.id,
-            user_id: program.user_id,
-            program_id: program.program_id,
+            user_id: program.app_users?.id || program.user_id,
+            program_id: program.programs?.id || program.program_id,
             week_number: weekNumber,
             day_number: dayNumber,
             scheduled_date: selectedDateStr,
