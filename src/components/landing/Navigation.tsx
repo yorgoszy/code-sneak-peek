@@ -26,9 +26,12 @@ const Navigation: React.FC<NavigationProps> = ({
   const handleNavigationClick = (href: string, event: React.MouseEvent) => {
     if (href.startsWith('#')) {
       event.preventDefault();
-      const element = document.querySelector(href);
+      const targetId = href.substring(1); // Remove the #
+      const element = document.getElementById(targetId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        console.log(`Element with id "${targetId}" not found`);
       }
     }
   };
