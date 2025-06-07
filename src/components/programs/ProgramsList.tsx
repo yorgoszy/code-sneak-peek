@@ -12,6 +12,7 @@ import { el } from 'date-fns/locale';
 import { parseDateFromString } from '@/utils/dateUtils';
 import { ProgramViewDialog } from "../active-programs/calendar/ProgramViewDialog";
 import { ProgramPreviewDialog } from './ProgramPreviewDialog';
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramsListProps {
   programs: Program[];
@@ -34,7 +35,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
 }) => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
-  const [selectedProgramForView, setSelectedProgramForView] = useState<Program | null>(null);
+  const [selectedProgramForView, setSelectedProgramForView] = useState<EnrichedAssignment | null>(null);
   const [selectedProgramForPreview, setSelectedProgramForPreview] = useState<Program | null>(null);
 
   const getProgramStats = (program: Program) => {
@@ -84,16 +85,31 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
     // Μετατρέπουμε το Program σε EnrichedAssignment format
     const assignmentForView = program.program_assignments?.[0];
     if (assignmentForView) {
-      const enrichedAssignment = {
-        ...assignmentForView,
+      const enrichedAssignment: EnrichedAssignment = {
+        id: assignmentForView.id,
+        program_id: program.id,
+        athlete_id: assignmentForView.user_id,
+        user_id: assignmentForView.user_id,
+        assigned_by: assignmentForView.assigned_by,
+        start_date: assignmentForView.start_date,
+        end_date: assignmentForView.end_date,
+        status: assignmentForView.status || 'active',
+        notes: assignmentForView.notes,
+        created_at: assignmentForView.created_at,
+        updated_at: assignmentForView.updated_at,
+        assignment_type: assignmentForView.assignment_type,
+        group_id: assignmentForView.group_id,
+        progress: assignmentForView.progress,
+        training_dates: assignmentForView.training_dates,
         programs: {
           id: program.id,
           name: program.name,
           description: program.description || '',
           program_weeks: program.program_weeks || []
-        }
+        },
+        app_users: assignmentForView.app_users
       };
-      setSelectedProgramForView(enrichedAssignment as any);
+      setSelectedProgramForView(enrichedAssignment);
       setViewDialogOpen(true);
     }
   };
