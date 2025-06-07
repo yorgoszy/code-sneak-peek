@@ -3,22 +3,8 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Copy } from "lucide-react";
-import { Exercise } from '../types';
+import { Exercise, ProgramExercise } from '../types';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
 
 interface ExerciseRowProps {
   exercise: ProgramExercise;
@@ -128,7 +114,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
             <Input
-              value={exercise.reps}
+              value={exercise.reps || ''}
               onChange={(e) => onUpdate('reps', e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -163,7 +149,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
             <Input
-              value={exercise.kg}
+              value={exercise.kg || ''}
               onChange={(e) => onUpdate('kg', e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -179,8 +165,10 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
             <Input
-              value={exercise.velocity_ms}
-              onChange={(e) => onUpdate('velocity_ms', e.target.value)}
+              type="text"
+              inputMode="numeric"
+              value={exercise.velocity_ms?.toString() || ''}
+              onChange={(e) => onUpdate('velocity_ms', parseFloat(e.target.value) || 0)}
               className="text-center w-full"
               style={{ 
                 borderRadius: '0px', 
@@ -195,7 +183,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Tempo</label>
             <Input
-              value={exercise.tempo}
+              value={exercise.tempo || ''}
               onChange={(e) => onUpdate('tempo', e.target.value)}
               className="text-center w-full"
               style={{ 
@@ -211,7 +199,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '50px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
             <Input
-              value={exercise.rest}
+              value={exercise.rest || ''}
               onChange={(e) => onUpdate('rest', e.target.value)}
               className="text-center w-full"
               style={{ 

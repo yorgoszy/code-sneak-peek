@@ -5,28 +5,7 @@ import { Collapsible } from "@/components/ui/collapsible";
 import { BlockCardHeader } from './BlockCardHeader';
 import { BlockCardContent } from './BlockCardContent';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
-import { Exercise } from '../types';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
+import { Exercise, Block } from '../types';
 
 interface BlockCardProps {
   block: Block;
@@ -88,7 +67,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
     setShowExerciseDialog(false);
   };
 
-  const exercisesCount = block.exercises.length;
+  const exercisesCount = block.program_exercises.length;
 
   return (
     <>
@@ -110,7 +89,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
           />
           
           <BlockCardContent
-            exercises={block.exercises}
+            exercises={block.program_exercises}
             availableExercises={exercises}
             onUpdateExercise={onUpdateExercise}
             onRemoveExercise={onRemoveExercise}
