@@ -1,13 +1,15 @@
 
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ProgramBasicInfo } from './ProgramBasicInfo';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Save, Users } from "lucide-react";
 import { TrainingWeeks } from './TrainingWeeks';
-import { CalendarSection } from './CalendarSection';
-import { ActionButtons } from './ActionButtons';
-import { useAssignmentHandler } from './AssignmentHandler';
-import type { User, Exercise } from '../types';
+import { CalendarAssignment } from './CalendarAssignment';
+import { Exercise, User } from '../types';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 
 interface ProgramBuilderDialogContentProps {
@@ -16,7 +18,7 @@ interface ProgramBuilderDialogContentProps {
   exercises: Exercise[];
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
-  onAthleteChange: (user_id: string) => void;
+  onAthleteChange: (userId: string) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -39,8 +41,8 @@ interface ProgramBuilderDialogContentProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onSave: () => void;
   onAssignments: () => void;
-  onTrainingDatesChange?: (dates: Date[]) => void;
-  getTotalTrainingDays?: () => number;
+  onTrainingDatesChange: (dates: Date[]) => void;
+  getTotalTrainingDays: () => number;
 }
 
 export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentProps> = ({
@@ -75,70 +77,107 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onTrainingDatesChange,
   getTotalTrainingDays
 }) => {
-  const totalDays = getTotalTrainingDays ? getTotalTrainingDays() : 0;
-  const { handleAssignment } = useAssignmentHandler({ program, getTotalTrainingDays });
-
   return (
-    <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0">
-      <DialogHeader className="flex-shrink-0 p-6 border-b">
-        <DialogTitle>
-          {program.id ? 'Επεξεργασία Προγράμματος' : 'Δημιουργία Νέου Προγράμματος'}
-        </DialogTitle>
+    <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto rounded-none">
+      <DialogHeader>
+        <DialogTitle>Δημιουργία Προγράμματος</DialogTitle>
       </DialogHeader>
-      
-      <ScrollArea className="flex-1 h-full">
-        <div className="space-y-6 p-6">
-          <ProgramBasicInfo
-            name={program.name}
-            description={program.description || ''}
-            selectedUserId={program.user_id}
-            users={users}
-            onNameChange={onNameChange}
-            onDescriptionChange={onDescriptionChange}
-            onAthleteChange={onAthleteChange}
-          />
 
-          <TrainingWeeks
-            weeks={program.weeks || []}
-            exercises={exercises}
-            selectedUserId={program.user_id}
-            onAddWeek={onAddWeek}
-            onRemoveWeek={onRemoveWeek}
-            onDuplicateWeek={onDuplicateWeek}
-            onUpdateWeekName={onUpdateWeekName}
-            onAddDay={onAddDay}
-            onRemoveDay={onRemoveDay}
-            onDuplicateDay={onDuplicateDay}
-            onUpdateDayName={onUpdateDayName}
-            onAddBlock={onAddBlock}
-            onRemoveBlock={onRemoveBlock}
-            onDuplicateBlock={onDuplicateBlock}
-            onUpdateBlockName={onUpdateBlockName}
-            onAddExercise={onAddExercise}
-            onRemoveExercise={onRemoveExercise}
-            onUpdateExercise={onUpdateExercise}
-            onDuplicateExercise={onDuplicateExercise}
-            onReorderWeeks={onReorderWeeks}
-            onReorderDays={onReorderDays}
-            onReorderBlocks={onReorderBlocks}
-            onReorderExercises={onReorderExercises}
-          />
-
-          {onTrainingDatesChange && (
-            <CalendarSection
-              program={program}
-              onTrainingDatesChange={onTrainingDatesChange}
+      <div className="space-y-6">
+        {/* Βασικές Πληροφορίες */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="program-name">Όνομα Προγράμματος</Label>
+            <Input
+              id="program-name"
+              value={program.name || ''}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="Εισάγετε όνομα προγράμματος..."
+              className="rounded-none"
             />
-          )}
+          </div>
+          
+          <div>
+            <Label htmlFor="athlete-select">Αθλητής</Label>
+            <Select value={program.user_id || ''} onValueChange={onAthleteChange}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε αθλητή..." />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </ScrollArea>
 
-      <ActionButtons
-        program={program}
-        totalDays={totalDays}
-        onSave={onSave}
-        onAssignment={handleAssignment}
-      />
+        <div>
+          <Label htmlFor="program-description">Περιγραφή</Label>
+          <Textarea
+            id="program-description"
+            value={program.description || ''}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            placeholder="Περιγραφή προγράμματος..."
+            className="rounded-none"
+            rows={3}
+          />
+        </div>
+
+        {/* Εβδομάδες Προπόνησης */}
+        <TrainingWeeks
+          weeks={program.weeks || []}
+          exercises={exercises}
+          selectedUserId={program.user_id}
+          onAddWeek={onAddWeek}
+          onRemoveWeek={onRemoveWeek}
+          onDuplicateWeek={onDuplicateWeek}
+          onUpdateWeekName={onUpdateWeekName}
+          onAddDay={onAddDay}
+          onRemoveDay={onRemoveDay}
+          onDuplicateDay={onDuplicateDay}
+          onUpdateDayName={onUpdateDayName}
+          onAddBlock={onAddBlock}
+          onRemoveBlock={onRemoveBlock}
+          onDuplicateBlock={onDuplicateBlock}
+          onUpdateBlockName={onUpdateBlockName}
+          onAddExercise={onAddExercise}
+          onRemoveExercise={onRemoveExercise}
+          onUpdateExercise={onUpdateExercise}
+          onDuplicateExercise={onDuplicateExercise}
+          onReorderWeeks={onReorderWeeks}
+          onReorderDays={onReorderDays}
+          onReorderBlocks={onReorderBlocks}
+          onReorderExercises={onReorderExercises}
+        />
+
+        {/* Ημερολόγιο Ανάθεσης */}
+        <CalendarAssignment
+          program={program}
+          onTrainingDatesChange={onTrainingDatesChange}
+        />
+
+        {/* Κουμπιά Ενεργειών */}
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button
+            onClick={onAssignments}
+            variant="outline"
+            className="rounded-none"
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Αναθέσεις
+          </Button>
+          <Button
+            onClick={onSave}
+            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            Αποθήκευση
+          </Button>
+        </div>
+      </div>
     </DialogContent>
   );
 };
