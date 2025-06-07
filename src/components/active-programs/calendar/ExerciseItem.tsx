@@ -66,10 +66,14 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     }
   };
 
-  const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {
+  const handleSetsAreaClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    onSetClick(exerciseId, totalSets, event);
+    if (workoutInProgress) {
+      onSetClick(exercise.id, exercise.sets, event);
+    }
   };
+
+  const remainingSets = getRemainingText(exercise.id, exercise.sets);
 
   return (
     <div 
@@ -84,15 +88,32 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         remainingText={remainingText}
         workoutInProgress={workoutInProgress}
         onVideoClick={handleVideoClick}
-        onSetClick={(event) => handleSetClick(exercise.id, exercise.sets, event)}
+        onSetClick={handleSetsAreaClick}
       />
 
       <div className="p-3">
         <ExerciseDetails 
           exercise={exercise} 
           onVideoClick={onVideoClick}
-          onSetClick={(event) => handleSetClick(exercise.id, exercise.sets, event)}
+          onSetClick={handleSetsAreaClick}
         />
+
+        {/* Sets area - clickable κάτω από τα details */}
+        {workoutInProgress && (
+          <div 
+            className="mt-2 p-2 bg-gray-100 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-200 transition-colors"
+            onClick={handleSetsAreaClick}
+          >
+            <div className="text-center">
+              <div className="text-sm font-medium text-gray-700">
+                Sets: {exercise.sets}
+              </div>
+              <div className="text-xs text-gray-600 mt-1">
+                {remainingSets}
+              </div>
+            </div>
+          </div>
+        )}
 
         <ExerciseActualValues
           exercise={exercise}
@@ -104,7 +125,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           updateNotes={updateNotes}
           selectedDate={selectedDate}
           program={program}
-          onSetClick={handleSetClick}
+          onSetClick={handleSetsAreaClick}
           getRemainingText={getRemainingText}
         />
 

@@ -93,6 +93,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onCompleteWorkout={handleCompleteWorkout}
             onCancelWorkout={handleCancelWorkout}
             onMinimize={onMinimize}
+            program={program}
           />
 
           <div className="space-y-4">

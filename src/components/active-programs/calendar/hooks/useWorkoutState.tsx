@@ -1,10 +1,10 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { saveWorkoutData, getWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 import { useRunningWorkouts } from '@/hooks/useRunningWorkouts';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface UseWorkoutStateProps {
@@ -94,20 +94,58 @@ export const useWorkoutState = (
       
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
       
-      // ΚΡΙΤΙΚΟ: Ενημερώνουμε το status στη βάση δεδομένων
-      console.log('🔄 Updating workout status to COMPLETED for:', {
-        assignmentId: program.id,
-        date: selectedDateStr
+      // ΚΡΙΤΙΚΟ: Χρησιμοποιούμε τα σωστά ονόματα πεδίων
+      console.log('🔄 Updating workout completion with correct field names:', {
+        assignment_id: program.id,
+        scheduled_date: selectedDateStr
       });
       
-      const result = await updateWorkoutStatus(
-        program.id,
-        selectedDateStr,
-        'completed',
-        'green'
-      );
+      // Δημιουργούμε ή ενημερώνουμε το workout completion record
+      const { data: existingCompletion, error: fetchError } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .eq('assignment_id', program.id)
+        .eq('scheduled_date', selectedDateStr)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('❌ Error fetching existing completion:', fetchError);
+        throw fetchError;
+      }
+
+      let result;
+      if (existingCompletion) {
+        // Update existing record
+        const { data, error } = await supabase
+          .from('workout_completions')
+          .update({
+            status: 'completed',
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', existingCompletion.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = data;
+      } else {
+        // Create new record
+        const { data, error } = await supabase
+          .from('workout_completions')
+          .insert({
+            assignment_id: program.id,
+            scheduled_date: selectedDateStr,
+            status: 'completed',
+            completed_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = data;
+      }
       
-      console.log('✅ Workout status updated successfully:', result);
+      console.log('✅ Workout completion saved successfully:', result);
       
       setWorkoutInProgress(false);
       
@@ -120,10 +158,12 @@ export const useWorkoutState = (
       // ΑΜΕΣΗ ανανέωση
       if (onRefresh) {
         console.log('🔄 TRIGGERING IMMEDIATE REFRESH...');
-        onRefresh();
+        setTimeout(() => {
+          onRefresh();
+        }, 100);
       }
       
-      // Κλείνουμε το dialog μετά από μικρή καθυστέρηση για να δούμε την ανανέωση
+      // Κλείνουμε το dialog μετά από μικρή καθυστέρηση
       setTimeout(() => {
         if (onClose) onClose();
       }, 1500);
@@ -132,7 +172,7 @@ export const useWorkoutState = (
       console.error('❌ Error completing workout:', error);
       toast.error('Σφάλμα κατά την ολοκλήρωση της προπόνησης');
     }
-  }, [program, selectedDate, workoutStartTime, updateWorkoutStatus, onRefresh, onClose, removeFromRunningWorkouts]);
+  }, [program, selectedDate, workoutStartTime, onRefresh, onClose, removeFromRunningWorkouts]);
 
   const handleCancelWorkout = useCallback(() => {
     if (!program || !selectedDate) return;
