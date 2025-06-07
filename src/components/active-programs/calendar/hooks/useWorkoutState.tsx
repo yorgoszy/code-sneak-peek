@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
@@ -94,8 +95,7 @@ export const useWorkoutState = (
       
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
       
-      // ΚΡΙΤΙΚΟ: Χρησιμοποιούμε τα σωστά ονόματα πεδίων
-      console.log('🔄 Updating workout completion with correct field names:', {
+      console.log('🔄 Updating workout completion:', {
         assignment_id: program.id,
         scheduled_date: selectedDateStr
       });
@@ -120,7 +120,7 @@ export const useWorkoutState = (
           .from('workout_completions')
           .update({
             status: 'completed',
-            completed_at: new Date().toISOString()
+            completed_date: new Date().toISOString().split('T')[0]
           })
           .eq('id', existingCompletion.id)
           .select()
@@ -136,7 +136,7 @@ export const useWorkoutState = (
             assignment_id: program.id,
             scheduled_date: selectedDateStr,
             status: 'completed',
-            completed_at: new Date().toISOString()
+            completed_date: new Date().toISOString().split('T')[0]
           })
           .select()
           .single();
