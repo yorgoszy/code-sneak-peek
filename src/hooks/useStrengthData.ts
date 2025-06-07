@@ -18,6 +18,8 @@ export const useStrengthData = (userId?: string) => {
     const fetchStrengthData = async () => {
       setIsLoading(true);
       try {
+        console.log('🏋️‍♂️ Fetching strength data for user:', userId);
+        
         const { data, error } = await supabase
           .from('strength_test_attempts')
           .select(`
@@ -33,9 +35,11 @@ export const useStrengthData = (userId?: string) => {
           .order('strength_test_sessions(test_date)', { ascending: false });
 
         if (error) {
-          console.error('Error fetching strength data:', error);
+          console.error('❌ Error fetching strength data:', error);
           return;
         }
+
+        console.log('📊 Raw strength data:', data);
 
         // Κρατάμε μόνο το πιο πρόσφατο 1RM για κάθε άσκηση
         const latestData: StrengthData[] = [];
@@ -52,9 +56,10 @@ export const useStrengthData = (userId?: string) => {
           }
         });
 
+        console.log('✅ Processed strength data:', latestData);
         setStrengthData(latestData);
       } catch (error) {
-        console.error('Error fetching strength data:', error);
+        console.error('❌ Error fetching strength data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -65,19 +70,25 @@ export const useStrengthData = (userId?: string) => {
 
   const get1RM = (exerciseId: string): number | null => {
     const data = strengthData.find(item => item.exerciseId === exerciseId);
-    return data ? data.weight1RM : null;
+    const result = data ? data.weight1RM : null;
+    console.log(`🎯 get1RM for exercise ${exerciseId}:`, result);
+    return result;
   };
 
   const calculatePercentage = (exerciseId: string, weight: number): number | null => {
     const oneRM = get1RM(exerciseId);
     if (!oneRM || oneRM === 0) return null;
-    return Math.round((weight / oneRM) * 100);
+    const percentage = Math.round((weight / oneRM) * 100);
+    console.log(`📊 calculatePercentage: ${weight}kg / ${oneRM}kg = ${percentage}%`);
+    return percentage;
   };
 
   const calculateWeight = (exerciseId: string, percentage: number): number | null => {
     const oneRM = get1RM(exerciseId);
     if (!oneRM) return null;
-    return Math.round((oneRM * percentage / 100) * 2) / 2; // Round to nearest 0.5kg
+    const weight = Math.round((oneRM * percentage / 100) * 2) / 2; // Round to nearest 0.5kg
+    console.log(`⚖️ calculateWeight: ${oneRM}kg * ${percentage}% = ${weight}kg`);
+    return weight;
   };
 
   return {

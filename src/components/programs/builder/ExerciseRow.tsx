@@ -27,18 +27,31 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   selectedUserId
 }) => {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
-  const { get1RM, calculatePercentage, calculateWeight } = useStrengthData(selectedUserId);
+  const { get1RM, calculatePercentage, calculateWeight, strengthData, isLoading } = useStrengthData(selectedUserId);
+
+  // Log για debugging
+  useEffect(() => {
+    if (selectedUserId && exercise.exercise_id) {
+      console.log('🔍 ExerciseRow - userId:', selectedUserId, 'exerciseId:', exercise.exercise_id);
+      console.log('🔍 Available 1RM data:', strengthData);
+      const oneRM = get1RM(exercise.exercise_id);
+      console.log('🔍 1RM for this exercise:', oneRM);
+    }
+  }, [selectedUserId, exercise.exercise_id, strengthData, get1RM]);
 
   const handleExerciseSelect = (exerciseId: string) => {
+    console.log('🏋️‍♂️ Exercise selected:', exerciseId);
     onUpdate('exercise_id', exerciseId);
     setShowExerciseDialog(false);
     
     // Αυτόματη συμπλήρωση με 1RM δεδομένα
     if (selectedUserId) {
       const oneRM = get1RM(exerciseId);
+      console.log('🎯 Found 1RM for exercise:', oneRM);
       if (oneRM) {
         onUpdate('kg', oneRM.toString());
         onUpdate('percentage_1rm', 100);
+        console.log('✅ Auto-filled with 1RM data:', oneRM, 'kg (100%)');
       }
     }
   };
@@ -47,12 +60,13 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
     onUpdate('kg', value);
     
     // Αυτόματος υπολογισμός ποσοστού
-    if (selectedUserId) {
+    if (selectedUserId && exercise.exercise_id) {
       const weight = parseFloat(value);
-      if (weight && exercise.exercise_id) {
+      if (weight && !isNaN(weight)) {
         const percentage = calculatePercentage(exercise.exercise_id, weight);
         if (percentage !== null) {
           onUpdate('percentage_1rm', percentage);
+          console.log(`📊 Auto-calculated percentage: ${percentage}% for ${weight}kg`);
         }
       }
     }
@@ -63,10 +77,11 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
     onUpdate('percentage_1rm', percentage || '');
     
     // Αυτόματος υπολογισμός κιλών
-    if (selectedUserId && percentage && exercise.exercise_id) {
+    if (selectedUserId && percentage && !isNaN(percentage) && exercise.exercise_id) {
       const weight = calculateWeight(exercise.exercise_id, percentage);
       if (weight !== null) {
         onUpdate('kg', weight.toString());
+        console.log(`⚖️ Auto-calculated weight: ${weight}kg for ${percentage}%`);
       }
     }
   };
@@ -105,6 +120,11 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
                   </span>
                 )}
                 {selectedExercise.name}
+                {selectedUserId && exercise.exercise_id && (
+                  <span className="text-xs text-gray-500 ml-1">
+                    {isLoading ? '...' : get1RM(exercise.exercise_id) ? `(1RM: ${get1RM(exercise.exercise_id)}kg)` : '(No 1RM)'}
+                  </span>
+                )}
               </span>
             ) : 'Επιλογή...'}
           </Button>
