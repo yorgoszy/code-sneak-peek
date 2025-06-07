@@ -95,33 +95,6 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
     }
   };
 
-  // Transform weeks for WeekMetrics - ensure compatibility with WeekTabsHeader interface
-  const weeksWithMetrics = weeks.map(week => ({
-    ...week,
-    days: (week.program_days || []).map(day => ({
-      ...day,
-      blocks: (day.program_blocks || []).map(block => ({
-        ...block,
-        exercises: (block.program_exercises || []).map(pe => {
-          const exercise = exercises.find(ex => ex.id === pe.exercise_id);
-          return {
-            id: pe.id,
-            exercise_id: pe.exercise_id,
-            exercise_name: exercise?.name || 'Unknown Exercise',
-            sets: pe.sets,
-            reps: pe.reps || '',
-            percentage_1rm: pe.percentage_1rm || 0,
-            kg: pe.kg || '',
-            velocity_ms: pe.velocity_ms?.toString() || '',
-            tempo: pe.tempo || '',
-            rest: pe.rest || '',
-            exercise_order: pe.exercise_order
-          };
-        })
-      }))
-    }))
-  }));
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -141,7 +114,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
           <DndContext collisionDetection={closestCenter} onDragEnd={handleWeekDragEnd}>
             <SortableContext items={weeks.map(w => w.id)} strategy={horizontalListSortingStrategy}>
               <WeekTabsHeader
-                weeks={weeksWithMetrics}
+                weeks={weeks}
                 editingWeekId={editingWeekId}
                 editingWeekName={editingWeekName}
                 activeWeek={activeWeek}
