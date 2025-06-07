@@ -117,8 +117,24 @@ export const WeekCard: React.FC<WeekCardProps> = ({
   // Διασφαλίζουμε ότι program_days είναι πάντα array
   const programDays = Array.isArray(week.program_days) ? week.program_days : [];
 
-  console.log('WeekCard - Week:', week.name, 'Program Days:', programDays);
-  console.log('WeekCard - onAddDay function:', typeof onAddDay, onAddDay);
+  console.log('🔍 WeekCard - Week:', week.name, 'Program Days:', programDays);
+  console.log('🔍 WeekCard - onAddDay function:', typeof onAddDay, '- Available:', !!onAddDay);
+
+  const handleAddDay = () => {
+    console.log('🟢 "+Day" button clicked for week:', week.id, week.name);
+    console.log('🟢 onAddDay function check:', {
+      type: typeof onAddDay,
+      available: !!onAddDay,
+      function: onAddDay
+    });
+    
+    if (typeof onAddDay === 'function') {
+      console.log('✅ Calling onAddDay function...');
+      onAddDay();
+    } else {
+      console.error('❌ onAddDay is not a function! Type:', typeof onAddDay);
+    }
+  };
 
   return (
     <Card className="rounded-none border-2">
@@ -127,15 +143,7 @@ export const WeekCard: React.FC<WeekCardProps> = ({
           <CardTitle className="text-lg">{week.name}</CardTitle>
           <div className="flex gap-2">
             <Button 
-              onClick={() => {
-                console.log('🟢 Add Day button clicked for week:', week.id);
-                console.log('🟢 onAddDay function available:', !!onAddDay);
-                if (onAddDay) {
-                  onAddDay();
-                } else {
-                  console.error('❌ onAddDay function is not available!');
-                }
-              }}
+              onClick={handleAddDay}
               size="sm"
               className="rounded-none text-sm bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
             >

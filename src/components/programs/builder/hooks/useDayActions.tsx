@@ -12,14 +12,17 @@ export const useDayActions = (
     
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
-        console.log('🔵 Found week to update:', week);
+        console.log('🔵 Found week to update:', week.name);
         console.log('🔵 Current program_days:', week.program_days);
+        
+        const currentDays = week.program_days || [];
+        const newDayNumber = currentDays.length + 1;
         
         const newDay = {
           id: generateId(),
-          name: `Ημέρα ${(week.program_days?.length || 0) + 1}`,
-          day_number: (week.program_days?.length || 0) + 1,
-          estimated_duration_minutes: undefined,
+          name: `Ημέρα ${newDayNumber}`,
+          day_number: newDayNumber,
+          estimated_duration_minutes: 60,
           program_blocks: []
         };
         
@@ -27,10 +30,10 @@ export const useDayActions = (
         
         const updatedWeek = {
           ...week,
-          program_days: [...(week.program_days || []), newDay]
+          program_days: [...currentDays, newDay]
         };
         
-        console.log('🔵 Updated week:', updatedWeek);
+        console.log('🔵 Updated week with new day:', updatedWeek);
         return updatedWeek;
       }
       return week;
@@ -38,9 +41,11 @@ export const useDayActions = (
     
     console.log('🔵 All updated weeks:', updatedWeeks);
     updateProgram({ weeks: updatedWeeks });
+    console.log('✅ Program updated with new day');
   };
 
   const removeDay = (weekId: string, dayId: string) => {
+    console.log('🔴 Removing day:', dayId, 'from week:', weekId);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
@@ -54,6 +59,7 @@ export const useDayActions = (
   };
 
   const duplicateDay = (weekId: string, dayId: string) => {
+    console.log('🟡 Duplicating day:', dayId, 'in week:', weekId);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         const dayToDuplicate = week.program_days?.find(day => day.id === dayId);
@@ -85,6 +91,7 @@ export const useDayActions = (
   };
 
   const updateDayName = (weekId: string, dayId: string, name: string) => {
+    console.log('📝 Updating day name:', dayId, 'to:', name);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
