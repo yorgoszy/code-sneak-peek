@@ -99,6 +99,20 @@ export const useWorkoutState = (
         assignment_id: program.id,
         scheduled_date: selectedDateStr
       });
+
+      // Βρίσκουμε τη σωστή εβδομάδα και ημέρα
+      const trainingDates = program.training_dates || [];
+      const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
+      
+      if (dateIndex === -1) {
+        throw new Error('Training date not found in assignment');
+      }
+
+      // Υπολογίζουμε week_number και day_number
+      const programDays = program.programs?.program_weeks?.[0]?.program_days || [];
+      const daysPerWeek = programDays.length;
+      const weekNumber = Math.floor(dateIndex / daysPerWeek) + 1;
+      const dayNumber = (dateIndex % daysPerWeek) + 1;
       
       // Δημιουργούμε ή ενημερώνουμε το workout completion record
       const { data: existingCompletion, error: fetchError } = await supabase
@@ -129,11 +143,15 @@ export const useWorkoutState = (
         if (error) throw error;
         result = data;
       } else {
-        // Create new record
+        // Create new record with all required fields
         const { data, error } = await supabase
           .from('workout_completions')
           .insert({
             assignment_id: program.id,
+            user_id: program.user_id,
+            program_id: program.program_id,
+            week_number: weekNumber,
+            day_number: dayNumber,
             scheduled_date: selectedDateStr,
             status: 'completed',
             completed_date: new Date().toISOString().split('T')[0]
