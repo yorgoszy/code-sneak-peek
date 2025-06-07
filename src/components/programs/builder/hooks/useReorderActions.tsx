@@ -46,17 +46,17 @@ export const useReorderActions = (
           ...week,
           days: (week.days || []).map(day => {
             if (day.id === dayId) {
-              const blocks = [...(day.blocks || [])];
-              const [reorderedItem] = blocks.splice(oldIndex, 1);
-              blocks.splice(newIndex, 0, reorderedItem);
+              const program_blocks = [...(day.program_blocks || [])];
+              const [reorderedItem] = program_blocks.splice(oldIndex, 1);
+              program_blocks.splice(newIndex, 0, reorderedItem);
               
               // Update block order
-              const updatedBlocks = blocks.map((block, index) => ({
+              const updatedBlocks = program_blocks.map((block, index) => ({
                 ...block,
                 block_order: index + 1
               }));
               
-              return { ...day, blocks: updatedBlocks };
+              return { ...day, program_blocks: updatedBlocks };
             }
             return day;
           })
@@ -76,7 +76,7 @@ export const useReorderActions = (
             if (day.id === dayId) {
               return {
                 ...day,
-                blocks: (day.blocks || []).map(block => {
+                program_blocks: (day.program_blocks || []).map(block => {
                   if (block.id === blockId) {
                     const exercises = [...(block.exercises || [])];
                     const [reorderedItem] = exercises.splice(oldIndex, 1);

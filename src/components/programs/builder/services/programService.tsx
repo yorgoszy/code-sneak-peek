@@ -58,7 +58,7 @@ export const programService = {
           continue;
         }
 
-        for (const block of day.blocks || []) {
+        for (const block of day.program_blocks || []) {
           const { data: savedBlock, error: blockError } = await supabase
             .from('program_blocks')
             .insert({

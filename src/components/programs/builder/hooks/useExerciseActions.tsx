@@ -18,7 +18,7 @@ export const useExerciseActions = (
             if (day.id === dayId) {
               return {
                 ...day,
-                blocks: (day.blocks || []).map(block => {
+                program_blocks: (day.program_blocks || []).map(block => {
                   if (block.id === blockId) {
                     const newExercise = {
                       id: generateId(),
@@ -61,7 +61,7 @@ export const useExerciseActions = (
             if (day.id === dayId) {
               return {
                 ...day,
-                blocks: (day.blocks || []).map(block => {
+                program_blocks: (day.program_blocks || []).map(block => {
                   if (block.id === blockId) {
                     return {
                       ...block,
@@ -90,7 +90,7 @@ export const useExerciseActions = (
             if (day.id === dayId) {
               return {
                 ...day,
-                blocks: (day.blocks || []).map(block => {
+                program_blocks: (day.program_blocks || []).map(block => {
                   if (block.id === blockId) {
                     return {
                       ...block,
@@ -121,7 +121,7 @@ export const useExerciseActions = (
             if (day.id === dayId) {
               return {
                 ...day,
-                blocks: (day.blocks || []).map(block => {
+                program_blocks: (day.program_blocks || []).map(block => {
                   if (block.id === blockId) {
                     const exerciseToDuplicate = block.exercises?.find(exercise => exercise.id === exerciseId);
                     if (!exerciseToDuplicate) return block;

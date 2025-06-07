@@ -35,7 +35,7 @@ export const useWeekActions = (
       days: weekToDuplicate.days.map(day => ({
         ...day,
         id: generateId(),
-        blocks: day.blocks.map(block => ({
+        program_blocks: day.program_blocks.map(block => ({
           ...block,
           id: generateId(),
           exercises: block.exercises.map(exercise => ({

@@ -13,7 +13,7 @@ export const useDayActions = (
           id: generateId(),
           name: `Ημέρα ${(week.days?.length || 0) + 1}`,
           day_number: (week.days?.length || 0) + 1,
-          blocks: []
+          program_blocks: []
         };
         return {
           ...week,
@@ -49,7 +49,7 @@ export const useDayActions = (
           id: generateId(),
           name: `${dayToDuplicate.name} (Αντίγραφο)`,
           day_number: (week.days?.length || 0) + 1,
-          blocks: dayToDuplicate.blocks.map(block => ({
+          program_blocks: dayToDuplicate.program_blocks.map(block => ({
             ...block,
             id: generateId(),
             exercises: block.exercises.map(exercise => ({
