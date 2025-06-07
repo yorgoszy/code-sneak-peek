@@ -60,11 +60,11 @@ export const useAssignmentDialogState = ({
 
   // Calculate program requirements
   const totalRequiredSessions = useMemo(() => {
-    return program.weeks?.reduce((total, week) => total + (week.days?.length || 0), 0) || 0;
+    return program.weeks?.reduce((total, week) => total + (week.program_days?.length || 0), 0) || 0;
   }, [program.weeks]);
 
   const totalWeeks = program.weeks?.length || 0;
-  const daysPerWeek = program.weeks?.[0]?.days?.length || 0;
+  const daysPerWeek = program.weeks?.[0]?.program_days?.length || 0;
 
   const removeSelectedDate = (dateToRemove: string) => {
     setSelectedDates(prev => prev.filter(date => date !== dateToRemove));

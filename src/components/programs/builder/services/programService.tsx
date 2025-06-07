@@ -41,7 +41,7 @@ export const programService = {
         continue;
       }
 
-      for (const day of week.days || []) {
+      for (const day of week.program_days || []) {
         const { data: savedDay, error: dayError } = await supabase
           .from('program_days')
           .insert({
@@ -74,7 +74,7 @@ export const programService = {
             continue;
           }
 
-          for (const exercise of block.exercises || []) {
+          for (const exercise of block.program_exercises || []) {
             const { error: exerciseError } = await supabase
               .from('program_exercises')
               .insert({

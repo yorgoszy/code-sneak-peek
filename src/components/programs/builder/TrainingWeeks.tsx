@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
-import { Exercise, Week, Day, Block, ProgramExercise } from '../types';
+import { Exercise, Week } from '../types';
 import { WeekTabsHeader } from './WeekTabsHeader';
 import { WeekTabsContent } from './WeekTabsContent';
 import { useWeekEditingState } from './hooks/useWeekEditingState';
