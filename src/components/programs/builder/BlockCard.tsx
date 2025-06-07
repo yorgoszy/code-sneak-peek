@@ -1,10 +1,9 @@
 
-import React, { useState } from 'react';
-import { Card } from "@/components/ui/card";
-import { Collapsible } from "@/components/ui/collapsible";
-import { BlockCardHeader } from './BlockCardHeader';
-import { BlockCardContent } from './BlockCardContent';
-import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus, Trash2, Copy, GripVertical } from "lucide-react";
+import { ExerciseRow } from './ExerciseRow';
 import { Exercise } from '../types';
 
 interface ProgramExercise {
@@ -24,108 +23,96 @@ interface ProgramExercise {
 interface Block {
   id: string;
   name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
+  exercises?: ProgramExercise[];
 }
 
 interface BlockCardProps {
   block: Block;
   exercises: Exercise[];
-  onAddExercise: (exerciseId: string) => void;
+  allBlockExercises: ProgramExercise[];
+  selectedUserId?: string;
+  onUpdateBlockName: (name: string) => void;
   onRemoveBlock: () => void;
   onDuplicateBlock: () => void;
-  onUpdateBlockName: (name: string) => void;
-  onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
+  onAddExercise: (exerciseId: string) => void;
   onRemoveExercise: (exerciseId: string) => void;
+  onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onDuplicateExercise: (exerciseId: string) => void;
-  onReorderExercises: (oldIndex: number, newIndex: number) => void;
 }
 
 export const BlockCard: React.FC<BlockCardProps> = ({
   block,
   exercises,
-  onAddExercise,
+  allBlockExercises,
+  selectedUserId,
+  onUpdateBlockName,
   onRemoveBlock,
   onDuplicateBlock,
-  onUpdateBlockName,
-  onUpdateExercise,
+  onAddExercise,
   onRemoveExercise,
-  onDuplicateExercise,
-  onReorderExercises
+  onUpdateExercise,
+  onDuplicateExercise
 }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingName, setEditingName] = useState(block.name);
-  const [showExerciseDialog, setShowExerciseDialog] = useState(false);
-
-  const handleNameDoubleClick = () => {
-    setIsEditing(true);
-    setEditingName(block.name);
-  };
-
-  const handleNameSave = () => {
-    if (editingName.trim()) {
-      onUpdateBlockName(editingName.trim());
-    }
-    setIsEditing(false);
-  };
-
-  const handleNameKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleNameSave();
-    } else if (e.key === 'Escape') {
-      setIsEditing(false);
-      setEditingName(block.name);
-    }
-  };
-
-  const handleAddExerciseClick = () => {
-    setShowExerciseDialog(true);
-  };
-
-  const handleExerciseSelect = (exerciseId: string) => {
-    onAddExercise(exerciseId);
-    setShowExerciseDialog(false);
-  };
-
-  const exercisesCount = block.exercises.length;
-
   return (
-    <>
-      <Card className={`rounded-none w-full transition-all duration-200 ${isOpen ? 'min-h-[120px]' : 'min-h-[40px]'}`} style={{ backgroundColor: '#31365d' }}>
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <BlockCardHeader
-            blockName={block.name}
-            isOpen={isOpen}
-            isEditing={isEditing}
-            editingName={editingName}
-            exercisesCount={exercisesCount}
-            onNameDoubleClick={handleNameDoubleClick}
-            onEditingNameChange={setEditingName}
-            onNameSave={handleNameSave}
-            onNameKeyPress={handleNameKeyPress}
-            onAddExercise={handleAddExerciseClick}
-            onDuplicateBlock={onDuplicateBlock}
-            onRemoveBlock={onRemoveBlock}
-          />
-          
-          <BlockCardContent
-            exercises={block.exercises}
-            availableExercises={exercises}
-            onUpdateExercise={onUpdateExercise}
-            onRemoveExercise={onRemoveExercise}
-            onDuplicateExercise={onDuplicateExercise}
-            onReorderExercises={onReorderExercises}
-          />
-        </Collapsible>
-      </Card>
+    <div className="border border-gray-200 rounded-none bg-white">
+      {/* Block Header */}
+      <div className="p-3 border-b bg-gray-50 flex items-center gap-2">
+        <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
+        <Input
+          value={block.name}
+          onChange={(e) => onUpdateBlockName(e.target.value)}
+          className="flex-1 text-sm font-medium bg-transparent border-none p-0 h-auto focus-visible:ring-0"
+          placeholder="Όνομα Block"
+          style={{ borderRadius: '0px' }}
+        />
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDuplicateBlock}
+            className="p-1 h-6 w-6"
+            style={{ borderRadius: '0px' }}
+          >
+            <Copy className="w-3 h-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRemoveBlock}
+            className="p-1 h-6 w-6"
+            style={{ borderRadius: '0px' }}
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </div>
+      </div>
 
-      <ExerciseSelectionDialog
-        open={showExerciseDialog}
-        onOpenChange={setShowExerciseDialog}
-        exercises={exercises}
-        onSelectExercise={handleExerciseSelect}
-      />
-    </>
+      {/* Exercises */}
+      <div className="p-3">
+        {block.exercises?.map((exercise) => (
+          <ExerciseRow
+            key={exercise.id}
+            exercise={exercise}
+            exercises={exercises}
+            allBlockExercises={allBlockExercises}
+            selectedUserId={selectedUserId}
+            onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
+            onRemove={() => onRemoveExercise(exercise.id)}
+            onDuplicate={() => onDuplicateExercise(exercise.id)}
+          />
+        ))}
+
+        <Button
+          onClick={() => onAddExercise('')}
+          variant="outline"
+          size="sm"
+          className="w-full mt-2"
+          style={{ borderRadius: '0px' }}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Προσθήκη Άσκησης
+        </Button>
+      </div>
+    </div>
   );
 };

@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Copy } from "lucide-react";
 import { Exercise } from '../types';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
+import { useStrengthData } from '@/hooks/useStrengthData';
 
 interface ProgramExercise {
   id: string;
@@ -27,6 +28,7 @@ interface ExerciseRowProps {
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
   onDuplicate: () => void;
+  selectedUserId?: string;
 }
 
 export const ExerciseRow: React.FC<ExerciseRowProps> = ({
@@ -35,13 +37,48 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   allBlockExercises,
   onUpdate,
   onRemove,
-  onDuplicate
+  onDuplicate,
+  selectedUserId
 }) => {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
+  const { get1RM, calculatePercentage, calculateWeight } = useStrengthData(selectedUserId);
 
   const handleExerciseSelect = (exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
     setShowExerciseDialog(false);
+    
+    // Αυτόματη συμπλήρωση με 1RM δεδομένα
+    const oneRM = get1RM(exerciseId);
+    if (oneRM) {
+      onUpdate('kg', oneRM.toString());
+      onUpdate('percentage_1rm', 100);
+    }
+  };
+
+  const handleKgChange = (value: string) => {
+    onUpdate('kg', value);
+    
+    // Αυτόματος υπολογισμός ποσοστού
+    const weight = parseFloat(value);
+    if (weight && exercise.exercise_id) {
+      const percentage = calculatePercentage(exercise.exercise_id, weight);
+      if (percentage !== null) {
+        onUpdate('percentage_1rm', percentage);
+      }
+    }
+  };
+
+  const handlePercentageChange = (value: string) => {
+    const percentage = parseFloat(value);
+    onUpdate('percentage_1rm', percentage || '');
+    
+    // Αυτόματος υπολογισμός κιλών
+    if (percentage && exercise.exercise_id) {
+      const weight = calculateWeight(exercise.exercise_id, percentage);
+      if (weight !== null) {
+        onUpdate('kg', weight.toString());
+      }
+    }
   };
 
   const selectedExercise = exercises.find(ex => ex.id === exercise.exercise_id);
@@ -148,7 +185,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               inputMode="numeric"
               pattern="[0-9]*"
               value={exercise.percentage_1rm || ''}
-              onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || '')}
+              onChange={(e) => handlePercentageChange(e.target.value)}
               className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
               style={{ 
                 borderRadius: '0px', 
@@ -164,7 +201,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
             <Input
               value={exercise.kg}
-              onChange={(e) => onUpdate('kg', e.target.value)}
+              onChange={(e) => handleKgChange(e.target.value)}
               className="text-center w-full"
               style={{ 
                 borderRadius: '0px', 

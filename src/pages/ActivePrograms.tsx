@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User, Play } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "date-fns";
 import { el } from "date-fns/locale";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
+import { CalendarHeader } from "@/components/active-programs/calendar/CalendarHeader";
 import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
@@ -20,6 +21,8 @@ const ActivePrograms = () => {
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [realtimeKey, setRealtimeKey] = useState(0);
   const navigate = useNavigate();
 
@@ -31,11 +34,22 @@ const ActivePrograms = () => {
   const today = new Date();
   const todayStr = format(today, 'yyyy-MM-dd');
 
+  // Υπολογίζουμε τις ημέρες του μήνα
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  // Φιλτράρουμε τα προγράμματα για κάθε μέρα
+  const getProgramsForDate = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return activePrograms.filter(assignment => {
+      if (!assignment.training_dates) return false;
+      return assignment.training_dates.includes(dateStr);
+    });
+  };
+
   // Φιλτράρουμε τα προγράμματα για σήμερα
-  const programsForToday = activePrograms.filter(assignment => {
-    if (!assignment.training_dates) return false;
-    return assignment.training_dates.includes(todayStr);
-  });
+  const programsForToday = getProgramsForDate(today);
 
   // Φόρτωση workout completions
   const loadCompletions = async () => {
@@ -94,14 +108,21 @@ const ActivePrograms = () => {
     ).length
   };
 
-  const handleProgramClick = (assignment: any) => {
-    setSelectedProgram(assignment);
-    setDayDialogOpen(true);
+  const handleDayClick = (date: Date) => {
+    const programsForDate = getProgramsForDate(date);
+    if (programsForDate.length === 1) {
+      setSelectedProgram(programsForDate[0]);
+      setSelectedDate(date);
+      setDayDialogOpen(true);
+    } else if (programsForDate.length > 1) {
+      // TODO: Open multi-program dialog
+      console.log('Multiple programs for this date:', programsForDate);
+    }
   };
 
   const handleStartWorkout = () => {
-    if (selectedProgram) {
-      startWorkout(selectedProgram, today);
+    if (selectedProgram && selectedDate) {
+      startWorkout(selectedProgram, selectedDate);
     }
   };
 
@@ -114,11 +135,20 @@ const ActivePrograms = () => {
     }
   };
 
-  const getWorkoutStatus = (assignment: any) => {
+  const getWorkoutStatus = (assignment: any, date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
     const completion = workoutCompletions.find(c => 
-      c.assignment_id === assignment.id && c.scheduled_date === todayStr
+      c.assignment_id === assignment.id && c.scheduled_date === dateStr
     );
     return completion?.status || 'scheduled';
+  };
+
+  const handlePreviousMonth = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
   if (isLoading) {
@@ -170,7 +200,7 @@ const ActivePrograms = () => {
                 </Button>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
                   <CalendarCheck className="h-8 w-8 text-[#00ffba]" />
-                  Σήμερα - {format(today, 'EEEE, dd MMMM yyyy', { locale: el })}
+                  Ημερολόγιο Προπονήσεων
                 </h1>
               </div>
             </div>
@@ -181,7 +211,7 @@ const ActivePrograms = () => {
                 <CardContent className="p-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">{todayStats.scheduled}</div>
-                    <div className="text-sm text-gray-600">Προγραμματισμένες</div>
+                    <div className="text-sm text-gray-600">Σήμερα</div>
                   </div>
                 </CardContent>
               </Card>
@@ -214,65 +244,60 @@ const ActivePrograms = () => {
               </Card>
             </div>
 
-            {/* Today's Programs */}
+            {/* Calendar */}
             <Card className="rounded-none">
               <CardHeader>
-                <CardTitle>Προγράμματα Σήμερα</CardTitle>
+                <CalendarHeader
+                  currentDate={currentDate}
+                  onPreviousMonth={handlePreviousMonth}
+                  onNextMonth={handleNextMonth}
+                />
               </CardHeader>
               <CardContent>
-                {programsForToday.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Δεν υπάρχουν προγραμματισμένες προπονήσεις για σήμερα
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {programsForToday.map(assignment => {
-                      const status = getWorkoutStatus(assignment);
-                      
-                      return (
-                        <div
-                          key={assignment.id}
-                          onClick={() => handleProgramClick(assignment)}
-                          className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-none hover:shadow-md transition-shadow cursor-pointer"
-                        >
-                          <div className="flex items-center gap-4">
-                            <Avatar className="w-12 h-12">
-                              <AvatarImage src={assignment.app_users?.photo_url || undefined} />
-                              <AvatarFallback className="bg-gray-200">
-                                <User className="w-6 h-6 text-gray-500" />
-                              </AvatarFallback>
-                            </Avatar>
-                            
-                            <div>
-                              <h4 className="font-medium">{assignment.app_users?.name}</h4>
-                              <p className="text-sm text-gray-600">{assignment.programs?.name}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <div className={`px-2 py-1 rounded-none text-xs ${
-                              status === 'completed' ? 'bg-[#00ffba]/10 text-[#00ffba]' :
-                              status === 'missed' ? 'bg-red-100 text-red-600' :
-                              'bg-blue-100 text-blue-600'
-                            }`}>
-                              {status === 'completed' ? 'Ολοκληρωμένη' :
-                               status === 'missed' ? 'Χαμένη' : 'Προγραμματισμένη'}
-                            </div>
-                            
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="rounded-none"
-                              title="Προβολή Προπόνησης"
-                            >
-                              <Play className="w-4 h-4" />
-                            </Button>
-                          </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {/* Day headers */}
+                  {['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'].map((day) => (
+                    <div key={day} className="p-2 text-center text-sm font-medium text-gray-600 border-b">
+                      {day}
+                    </div>
+                  ))}
+                  
+                  {/* Calendar days */}
+                  {daysInMonth.map((date) => {
+                    const programsForDate = getProgramsForDate(date);
+                    const isToday = isSameDay(date, today);
+                    
+                    return (
+                      <div
+                        key={date.toISOString()}
+                        onClick={() => handleDayClick(date)}
+                        className={`p-2 min-h-[80px] border border-gray-200 rounded-none cursor-pointer hover:bg-gray-50 ${
+                          isToday ? 'bg-blue-50 border-blue-300' : ''
+                        }`}
+                      >
+                        <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : ''}`}>
+                          {format(date, 'd')}
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        
+                        {programsForDate.map((program) => {
+                          const status = getWorkoutStatus(program, date);
+                          return (
+                            <div
+                              key={program.id}
+                              className={`text-xs p-1 mb-1 rounded-none truncate ${
+                                status === 'completed' ? 'bg-[#00ffba]/20 text-[#00ffba]' :
+                                status === 'missed' ? 'bg-red-100 text-red-600' :
+                                'bg-blue-100 text-blue-600'
+                              }`}
+                            >
+                              {program.app_users?.name}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -284,8 +309,8 @@ const ActivePrograms = () => {
         isOpen={dayDialogOpen}
         onClose={() => setDayDialogOpen(false)}
         program={selectedProgram}
-        selectedDate={today}
-        workoutStatus={selectedProgram ? getWorkoutStatus(selectedProgram) : 'scheduled'}
+        selectedDate={selectedDate}
+        workoutStatus={selectedProgram ? getWorkoutStatus(selectedProgram, selectedDate) : 'scheduled'}
         onRefresh={() => {
           refetch();
           setRealtimeKey(prev => prev + 1);
