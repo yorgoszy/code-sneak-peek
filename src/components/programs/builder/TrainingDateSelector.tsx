@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
-import { formatDateToLocalString, parseDateFromString } from '@/utils/dateUtils';
+import { formatDateToLocalString, parseDateFromString, debugDate } from '@/utils/dateUtils';
 
 interface TrainingDateSelectorProps {
   selectedDates: string[];
@@ -35,11 +35,16 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
       getTimezoneOffset: date.getTimezoneOffset()
     });
     
+    // ΔΙΟΡΘΩΣΗ: Δημιουργούμε καθαρό Date object με τοπική ημερομηνία
+    const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    debugDate(cleanDate, 'Clean date after selection');
+    
     // Χρησιμοποιούμε τη νέα utility function για σωστό formatting
-    const dateString = formatDateToLocalString(date);
+    const dateString = formatDateToLocalString(cleanDate);
     
     console.log('🗓️ [TrainingDateSelector] Date after formatting:', {
       originalDate: date,
+      cleanDate: cleanDate,
       formattedDateString: dateString,
       parsedBack: parseDateFromString(dateString)
     });
@@ -70,10 +75,13 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   };
 
   const isDateSelected = (date: Date) => {
-    const dateString = formatDateToLocalString(date);
+    // ΔΙΟΡΘΩΣΗ: Δημιουργούμε καθαρό Date object για σύγκριση
+    const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dateString = formatDateToLocalString(cleanDate);
     const isSelected = selectedDates.includes(dateString);
     console.log('🗓️ [TrainingDateSelector] Checking if date is selected:', {
-      date: date,
+      originalDate: date,
+      cleanDate: cleanDate,
       dateString: dateString,
       isSelected: isSelected,
       selectedDates: selectedDates

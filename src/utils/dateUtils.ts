@@ -14,9 +14,9 @@ export const formatDateToLocalString = (date: Date): string => {
     getTimezoneOffset: date.getTimezoneOffset()
   });
   
-  // Χρησιμοποιούμε την τοπική ημερομηνία του χρήστη
+  // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε την τοπική ημερομηνία του χρήστη ΧΩΡΙΣ timezone conversion
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // +1 επειδή getMonth() επιστρέφει 0-11
   const day = String(date.getDate()).padStart(2, '0');
   
   const result = `${year}-${month}-${day}`;
@@ -24,7 +24,8 @@ export const formatDateToLocalString = (date: Date): string => {
   console.log('🔧 [dateUtils] formatDateToLocalString output:', {
     input: date,
     result: result,
-    components: { year, month, day }
+    components: { year, month: date.getMonth() + 1, day: date.getDate() },
+    debugInfo: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} → ${result}`
   });
   
   return result;
@@ -33,14 +34,16 @@ export const formatDateToLocalString = (date: Date): string => {
 export const parseDateFromString = (dateString: string): Date => {
   console.log('🔧 [dateUtils] parseDateFromString input:', dateString);
   
-  // Δημιουργούμε Date object χωρίς timezone conversion
+  // ΔΙΟΡΘΩΣΗ: Δημιουργούμε Date object χωρίς timezone conversion
   const [year, month, day] = dateString.split('-').map(Number);
-  const result = new Date(year, month - 1, day);
+  // ΠΡΟΣΟΧΗ: στο new Date(year, month, day) ο month είναι 0-based!
+  const result = new Date(year, month - 1, day); // -1 επειδή το Date constructor θέλει 0-11
   
   console.log('🔧 [dateUtils] parseDateFromString output:', {
     input: dateString,
     result: result,
-    components: { year, month, day },
+    components: { year, month: month - 1, day },
+    verification: `${result.getDate()}/${result.getMonth() + 1}/${result.getFullYear()}`,
     resultString: result.toString(),
     resultISOString: result.toISOString()
   });
@@ -60,9 +63,14 @@ export const ensureLocalDate = (date: Date | string): Date => {
     return result;
   }
   
-  // Αν είναι ήδη Date object, δημιουργούμε νέο με τοπική ώρα
+  // ΔΙΟΡΘΩΣΗ: Αν είναι ήδη Date object, δημιουργούμε νέο με τοπική ώρα
   const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  console.log('🔧 [dateUtils] ensureLocalDate date→local:', { input: date, result: result });
+  console.log('🔧 [dateUtils] ensureLocalDate date→local:', { 
+    input: date, 
+    result: result,
+    inputDebug: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
+    resultDebug: `${result.getDate()}/${result.getMonth() + 1}/${result.getFullYear()}`
+  });
   return result;
 };
 
@@ -92,4 +100,18 @@ export const formatDatesArray = (dates: (Date | string)[]): string[] => {
   
   console.log('🔧 [dateUtils] formatDatesArray output:', result);
   return result;
+};
+
+// Νέα helper function για debugging
+export const debugDate = (date: Date, label: string = '') => {
+  console.log(`🔧 [dateUtils] DEBUG ${label}:`, {
+    date: date,
+    getFullYear: date.getFullYear(),
+    getMonth: date.getMonth(),
+    getMonthDisplay: date.getMonth() + 1, // Human readable month
+    getDate: date.getDate(),
+    toString: date.toString(),
+    toISOString: date.toISOString(),
+    formatted: formatDateToLocalString(date)
+  });
 };
