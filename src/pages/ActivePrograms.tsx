@@ -61,73 +61,76 @@ const ActivePrograms = () => {
     loadCompletions();
   }, [loadCompletions]);
 
-  // Real-time subscription με καλύτερο cleanup
+  // Enhanced real-time subscription με άμεση ανανέωση
   useEffect(() => {
-    console.log('🔄 ActivePrograms: Setting up real-time subscriptions...');
+    console.log('🔄 ActivePrograms: Setting up enhanced real-time subscriptions...');
     
-    let completionsChannel: any;
-    let assignmentsChannel: any;
+    // Δημιουργούμε unique channel names για καλύτερη απόδοση
+    const completionsChannelName = `workout-completions-${Date.now()}-${Math.random()}`;
+    const assignmentsChannelName = `assignments-${Date.now()}-${Math.random()}`;
     
-    const setupChannels = () => {
-      completionsChannel = supabase
-        .channel(`completions-${Date.now()}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'workout_completions'
-          },
-          async (payload) => {
-            console.log('🔄 Real-time workout completion change:', payload);
-            
-            // Άμεση ανανέωση
-            setRealtimeKey(prev => prev + 1);
-            
-            // Ανανέωση δεδομένων
-            await loadCompletions();
-            refetch();
-          }
-        )
-        .subscribe((status) => {
-          console.log('📡 Completions subscription status:', status);
-        });
+    const completionsChannel = supabase
+      .channel(completionsChannelName)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_completions'
+        },
+        async (payload) => {
+          console.log('🔄 Real-time workout completion change:', payload);
+          
+          // Άμεση ανανέωση των δεδομένων
+          setRealtimeKey(prev => {
+            const newKey = prev + 1;
+            console.log('🔄 Updating realtime key to:', newKey);
+            return newKey;
+          });
+          
+          // Ανανέωση completions
+          await loadCompletions();
+          
+          // Ανανέωση active programs
+          refetch();
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Completions subscription status:', status);
+      });
 
-      assignmentsChannel = supabase
-        .channel(`assignments-${Date.now()}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'program_assignments'
-          },
-          async (payload) => {
-            console.log('🔄 Real-time assignment change:', payload);
-            
-            // Άμεση ανανέωση
-            setRealtimeKey(prev => prev + 1);
-            
-            // Ανανέωση δεδομένων
-            refetch();
-            await loadCompletions();
-          }
-        )
-        .subscribe((status) => {
-          console.log('📡 Assignments subscription status:', status);
-        });
-    };
-
-    setupChannels();
+    const assignmentsChannel = supabase
+      .channel(assignmentsChannelName)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'program_assignments'
+        },
+        async (payload) => {
+          console.log('🔄 Real-time assignment change:', payload);
+          
+          // Άμεση ανανέωση
+          setRealtimeKey(prev => {
+            const newKey = prev + 1;
+            console.log('🔄 Updating realtime key to:', newKey);
+            return newKey;
+          });
+          
+          // Ανανέωση δεδομένων
+          refetch();
+          await loadCompletions();
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Assignments subscription status:', status);
+      });
 
     return () => {
       console.log('🔌 ActivePrograms: Cleaning up real-time subscriptions');
-      if (completionsChannel) {
-        supabase.removeChannel(completionsChannel);
-      }
-      if (assignmentsChannel) {
-        supabase.removeChannel(assignmentsChannel);
-      }
+      supabase.removeChannel(completionsChannel);
+      supabase.removeChannel(assignmentsChannel);
     };
   }, [loadCompletions, refetch]);
 
@@ -141,7 +144,7 @@ const ActivePrograms = () => {
       console.log('📱 Minimizing workout to sidebar:', selectedProgram.app_users?.name);
       setMinimizedWorkout({
         assignment: selectedProgram,
-        elapsedTime: 0 // Θα ενημερωθεί από το workout state
+        elapsedTime: 0
       });
       setDayDialogOpen(false);
     }
@@ -175,9 +178,18 @@ const ActivePrograms = () => {
     return completion?.status || 'scheduled';
   };
 
+  // Enhanced refresh με force update
   const handleCalendarRefresh = useCallback(() => {
-    console.log('🔄 ActivePrograms: Calendar refresh triggered');
-    setRealtimeKey(prev => prev + 1);
+    console.log('🔄 ActivePrograms: FORCED Calendar refresh triggered');
+    
+    // Force update με νέο realtime key
+    setRealtimeKey(prev => {
+      const newKey = Date.now(); // Χρησιμοποιούμε timestamp για unique key
+      console.log('🔄 FORCE updating realtime key to:', newKey);
+      return newKey;
+    });
+    
+    // Ανανέωση δεδομένων
     loadCompletions();
     refetch();
   }, [loadCompletions, refetch]);
@@ -225,7 +237,7 @@ const ActivePrograms = () => {
           <div className="space-y-6">
             <ActiveProgramsHeader />
 
-            {/* Calendar */}
+            {/* Calendar με enhanced realtime key */}
             <CalendarGrid
               currentMonth={currentMonth}
               setCurrentMonth={setCurrentMonth}
@@ -248,7 +260,7 @@ const ActivePrograms = () => {
         </div>
       </div>
 
-      {/* Day Program Dialog */}
+      {/* Day Program Dialog με enhanced refresh */}
       <DayProgramDialog
         isOpen={dayDialogOpen}
         onClose={() => setDayDialogOpen(false)}

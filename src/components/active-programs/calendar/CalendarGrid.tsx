@@ -39,12 +39,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const [calendarView, setCalendarView] = useState<'monthly' | 'weekly' | 'daily'>('monthly');
   const [internalRealtimeKey, setInternalRealtimeKey] = useState(0);
 
-  // Enhanced real-time subscription with better error handling
+  // Enhanced real-time subscription με άμεση ανανέωση
   useEffect(() => {
-    console.log('🔄 CalendarGrid: Setting up enhanced real-time subscription...');
+    console.log('🔄 CalendarGrid: Setting up ENHANCED real-time subscription...');
+    
+    const channelName = `calendar-updates-${Date.now()}-${Math.random()}`;
     
     const channel = supabase
-      .channel('calendar-workout-completions')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -53,8 +55,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           table: 'workout_completions'
         },
         (payload) => {
-          console.log('🔄 CalendarGrid: Real-time workout completion change:', payload);
-          setInternalRealtimeKey(prev => prev + 1);
+          console.log('🔄 CalendarGrid: IMMEDIATE workout completion change:', payload);
+          setInternalRealtimeKey(prev => {
+            const newKey = Date.now(); // Unique timestamp
+            console.log('🔄 CalendarGrid: FORCE updating internal key to:', newKey);
+            return newKey;
+          });
         }
       )
       .on(
@@ -65,30 +71,34 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           table: 'program_assignments'
         },
         (payload) => {
-          console.log('🔄 CalendarGrid: Real-time program assignment change:', payload);
-          setInternalRealtimeKey(prev => prev + 1);
+          console.log('🔄 CalendarGrid: IMMEDIATE assignment change:', payload);
+          setInternalRealtimeKey(prev => {
+            const newKey = Date.now(); // Unique timestamp
+            console.log('🔄 CalendarGrid: FORCE updating internal key to:', newKey);
+            return newKey;
+          });
         }
       )
       .subscribe((status) => {
-        console.log('📡 CalendarGrid subscription status:', status);
+        console.log('📡 CalendarGrid ENHANCED subscription status:', status);
       });
 
     return () => {
-      console.log('🔌 CalendarGrid: Cleaning up real-time subscription');
+      console.log('🔌 CalendarGrid: Cleaning up ENHANCED real-time subscription');
       supabase.removeChannel(channel);
     };
   }, []);
 
-  // Force re-render when workoutCompletions change or internal realtime key changes
+  // Force re-render όταν αλλάζουν τα δεδομένα
   useEffect(() => {
-    console.log('🔄 CalendarGrid: Data updated, triggering re-render', {
+    console.log('🔄 CalendarGrid: FORCE RE-RENDER triggered', {
       workoutCompletionsLength: workoutCompletions.length,
       realtimeKey,
       internalRealtimeKey
     });
   }, [workoutCompletions, realtimeKey, internalRealtimeKey]);
 
-  // Create a list with all dates that have programs and their statuses
+  // Create a list with all dates that have programs and their statuses - με enhanced key
   const programDatesWithStatus = React.useMemo(() => {
     const dates = activePrograms.reduce((acc: any[], assignment) => {
       if (assignment.training_dates && assignment.app_users) {
@@ -108,9 +118,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       return acc;
     }, []);
     
-    console.log('📅 CalendarGrid: Calculated program dates with status:', dates.length);
+    console.log('📅 CalendarGrid: RECALCULATED program dates with status:', dates.length, 'Key:', realtimeKey + internalRealtimeKey);
     return dates;
-  }, [activePrograms, workoutCompletions, internalRealtimeKey]);
+  }, [activePrograms, workoutCompletions, realtimeKey, internalRealtimeKey]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -132,11 +142,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   };
 
   const handleDialogClose = () => {
-    console.log('🔒 CalendarGrid: Dialog closing, triggering refresh');
+    console.log('🔒 CalendarGrid: Dialog closing, FORCING refresh');
     setDayProgramDialogOpen(false);
     setSelectedProgramForDay(null);
-    // Force a refresh when dialog closes
-    setInternalRealtimeKey(prev => prev + 1);
+    // Force άμεση ανανέωση
+    setInternalRealtimeKey(Date.now());
   };
 
   const MonthlyView = () => (
@@ -148,15 +158,18 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
       <CalendarWeekDays />
 
-      {/* Calendar Grid */}
+      {/* Calendar Grid με enhanced key */}
       <div className="grid grid-cols-7 border border-gray-200">
         {days.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
+          
+          // Unique key που συνδυάζει όλα τα realtime keys
+          const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
 
           return (
             <CalendarDay
-              key={`${dateStr}-${realtimeKey}-${internalRealtimeKey}`}
+              key={enhancedKey}
               date={date}
               currentMonth={currentMonth}
               selectedDate={selectedDate}
@@ -170,6 +183,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       </div>
     </div>
   );
+
+  // Enhanced realtime key που συνδυάζει όλα τα keys
+  const totalRealtimeKey = realtimeKey + internalRealtimeKey;
 
   return (
     <>
@@ -193,7 +209,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
                 programDatesWithStatus={programDatesWithStatus}
-                realtimeKey={realtimeKey + internalRealtimeKey}
+                realtimeKey={totalRealtimeKey}
                 onUserNameClick={handleUserNameClick}
               />
             </TabsContent>
@@ -205,7 +221,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
                 programDatesWithStatus={programDatesWithStatus}
-                realtimeKey={realtimeKey + internalRealtimeKey}
+                realtimeKey={totalRealtimeKey}
                 onUserNameClick={handleUserNameClick}
               />
             </TabsContent>
@@ -213,7 +229,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </CardContent>
       </Card>
 
-      {/* Dialog for specific workout */}
+      {/* Dialog για συγκεκριμένη προπόνηση με enhanced refresh */}
       <DayProgramDialog
         isOpen={dayProgramDialogOpen}
         onClose={handleDialogClose}
@@ -227,8 +243,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           : 'scheduled'
         }
         onRefresh={() => {
-          console.log('🔄 CalendarGrid: Manual refresh triggered');
-          setInternalRealtimeKey(prev => prev + 1);
+          console.log('🔄 CalendarGrid: MANUAL FORCE refresh triggered');
+          setInternalRealtimeKey(Date.now());
         }}
       />
     </>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
@@ -90,21 +91,22 @@ export const useWorkoutState = (
     if (!program || !selectedDate || !workoutStartTime) return;
 
     try {
-      console.log('✅ Ολοκλήρωση προπόνησης');
+      console.log('✅ ΟΛΟΚΛΗΡΩΣΗ ΠΡΟΠΟΝΗΣΗΣ - ENHANCED');
       
       const endTime = new Date();
       const durationMinutes = Math.round((endTime.getTime() - workoutStartTime.getTime()) / 60000);
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
 
-      // Ενημερώνουμε το status της προπόνησης
+      // CRITICAL: Ενημερώνουμε το status της προπόνησης με άμεση ανανέωση
+      console.log('🔄 Updating workout status to COMPLETED...');
       await updateWorkoutStatus(
         program.id,
         selectedDateStr,
         'completed',
         'green'
       );
-
-      console.log('💾 Προπόνηση ολοκληρώθηκε επιτυχώς');
+      
+      console.log('💾 Προπόνηση ΟΛΟΚΛΗΡΩΘΗΚΕ - Status updated to COMPLETED');
       
       setWorkoutInProgress(false);
       
@@ -114,21 +116,32 @@ export const useWorkoutState = (
       
       toast.success('Προπόνηση ολοκληρώθηκε!');
       
-      // Άμεσο refresh για να δούμε τις αλλαγές
+      // CRITICAL: ΑΜΕΣΗ και ΕΠΙΘΕΤΙΚΗ ανανέωση
       if (onRefresh) {
-        console.log('🔄 Triggering immediate refresh...');
+        console.log('🔄 FORCING IMMEDIATE REFRESH AFTER COMPLETION...');
+        // Καλούμε το refresh άμεσα χωρίς καθυστέρηση
+        onRefresh();
+        
+        // Και επιπλέον καλούμε ξανά μετά από λίγο για σιγουριά
         setTimeout(() => {
+          console.log('🔄 SECOND FORCE REFRESH AFTER COMPLETION...');
           onRefresh();
         }, 100);
+        
+        // Τρίτη κλήση για απόλυτη σιγουριά
+        setTimeout(() => {
+          console.log('🔄 THIRD FORCE REFRESH AFTER COMPLETION...');
+          onRefresh();
+        }, 500);
       }
       
-      // Κλείνουμε το dialog μετά από μικρή καθυστέρηση για να φανεί το success message
+      // Κλείνουμε το dialog μετά από μικρή καθυστέρηση
       setTimeout(() => {
         if (onClose) onClose();
       }, 1000);
       
     } catch (error) {
-      console.error('Error completing workout:', error);
+      console.error('❌ Error completing workout:', error);
       toast.error('Σφάλμα κατά την ολοκλήρωση της προπόνησης');
     }
   }, [program, selectedDate, workoutStartTime, updateWorkoutStatus, onRefresh, onClose, removeFromRunningWorkouts]);
