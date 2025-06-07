@@ -44,9 +44,16 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   if (!program || !selectedDate) return null;
 
   const handleVideoClick = (exercise: any) => {
-    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+    console.log('🎬 Video click for exercise:', exercise);
+    // Χρησιμοποιούμε το σωστό path για το video URL
+    const videoUrl = exercise.exercises?.video_url;
+    console.log('🎬 Video URL found:', videoUrl);
+    
+    if (videoUrl && isValidVideoUrl(videoUrl)) {
       setSelectedExercise(exercise);
       setIsVideoDialogOpen(true);
+    } else {
+      console.log('❌ No valid video URL found for exercise');
     }
   };
 
@@ -61,14 +68,13 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     }
 
     if ((event.target as HTMLElement).closest('.video-thumbnail')) {
-      if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-        handleVideoClick(exercise);
-      }
+      handleVideoClick(exercise);
       return;
     }
   };
 
   const handleMinimize = () => {
+    console.log('📱 Minimizing to sidebar...');
     if (onMinimize) {
       onMinimize();
     }

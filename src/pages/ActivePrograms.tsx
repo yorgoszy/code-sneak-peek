@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
@@ -34,8 +34,8 @@ const ActivePrograms = () => {
     return assignment.training_dates.includes(todayStr);
   });
 
-  // Φόρτωση workout completions
-  const loadCompletions = async () => {
+  // Φόρτωση workout completions με useCallback για αποφυγή loops
+  const loadCompletions = useCallback(async () => {
     if (activePrograms.length === 0) return;
     
     try {
@@ -50,84 +50,82 @@ const ActivePrograms = () => {
     } catch (error) {
       console.error('❌ ActivePrograms: Error loading workout completions:', error);
     }
-  };
+  }, [activePrograms, getWorkoutCompletions]);
 
   // Initial load
   useEffect(() => {
     loadCompletions();
-  }, [activePrograms, getWorkoutCompletions]);
+  }, [loadCompletions]);
 
-  // Enhanced real-time subscription with immediate updates
+  // Real-time subscription με καλύτερο cleanup
   useEffect(() => {
-    console.log('🔄 ActivePrograms: Setting up enhanced real-time subscription...');
+    console.log('🔄 ActivePrograms: Setting up real-time subscriptions...');
     
-    const completionsChannel = supabase
-      .channel('active-programs-completions')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'workout_completions'
-        },
-        async (payload) => {
-          console.log('🔄 ActivePrograms: Real-time workout completion change detected:', payload);
-          
-          // Immediate re-render trigger
-          setRealtimeKey(prev => prev + 1);
-          
-          // Reload completions
-          await loadCompletions();
-          
-          // Refresh programs if needed
-          refetch();
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 ActivePrograms completions subscription status:', status);
-      });
+    let completionsChannel: any;
+    let assignmentsChannel: any;
+    
+    const setupChannels = () => {
+      completionsChannel = supabase
+        .channel(`completions-${Date.now()}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'workout_completions'
+          },
+          async (payload) => {
+            console.log('🔄 Real-time workout completion change:', payload);
+            
+            // Άμεση ανανέωση
+            setRealtimeKey(prev => prev + 1);
+            
+            // Ανανέωση δεδομένων
+            await loadCompletions();
+            refetch();
+          }
+        )
+        .subscribe((status) => {
+          console.log('📡 Completions subscription status:', status);
+        });
 
-    const assignmentsChannel = supabase
-      .channel('active-programs-assignments')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'program_assignments'
-        },
-        async (payload) => {
-          console.log('🔄 ActivePrograms: Real-time assignment change detected:', payload);
-          
-          // Immediate re-render trigger
-          setRealtimeKey(prev => prev + 1);
-          
-          // Refresh everything
-          refetch();
-          await loadCompletions();
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 ActivePrograms assignments subscription status:', status);
-      });
+      assignmentsChannel = supabase
+        .channel(`assignments-${Date.now()}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'program_assignments'
+          },
+          async (payload) => {
+            console.log('🔄 Real-time assignment change:', payload);
+            
+            // Άμεση ανανέωση
+            setRealtimeKey(prev => prev + 1);
+            
+            // Ανανέωση δεδομένων
+            refetch();
+            await loadCompletions();
+          }
+        )
+        .subscribe((status) => {
+          console.log('📡 Assignments subscription status:', status);
+        });
+    };
+
+    setupChannels();
 
     return () => {
       console.log('🔌 ActivePrograms: Cleaning up real-time subscriptions');
-      supabase.removeChannel(completionsChannel);
-      supabase.removeChannel(assignmentsChannel);
+      if (completionsChannel) {
+        supabase.removeChannel(completionsChannel);
+      }
+      if (assignmentsChannel) {
+        supabase.removeChannel(assignmentsChannel);
+      }
     };
-  }, [refetch, loadCompletions]);
-
-  // Backup polling mechanism for reliability
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('⏰ ActivePrograms: Periodic refresh trigger');
-      setRealtimeKey(prev => prev + 1);
-      loadCompletions();
-    }, 10000); // Every 10 seconds
-
-    return () => clearInterval(interval);
-  }, [loadCompletions]);
+  }, [loadCompletions, refetch]);
 
   const handleProgramClick = (assignment: any) => {
     setSelectedProgram(assignment);
@@ -158,16 +156,12 @@ const ActivePrograms = () => {
     return completion?.status || 'scheduled';
   };
 
-  const handleNameClick = (program: any, event: React.MouseEvent) => {
-    // This function is no longer needed as CalendarGrid handles its own DayProgramDialog
-  };
-
-  const handleCalendarRefresh = () => {
+  const handleCalendarRefresh = useCallback(() => {
     console.log('🔄 ActivePrograms: Calendar refresh triggered');
     setRealtimeKey(prev => prev + 1);
     loadCompletions();
     refetch();
-  };
+  }, [loadCompletions, refetch]);
 
   if (isLoading) {
     return (
@@ -218,7 +212,7 @@ const ActivePrograms = () => {
               activePrograms={activePrograms}
               workoutCompletions={workoutCompletions}
               realtimeKey={realtimeKey}
-              onNameClick={handleNameClick}
+              onNameClick={() => {}}
             />
 
             {/* Today's Programs */}

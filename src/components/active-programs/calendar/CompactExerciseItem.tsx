@@ -1,11 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
-import { Play } from 'lucide-react';
-import { getWorkoutData, saveWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
+import React from 'react';
+import { Play, CheckCircle } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
-import { ExerciseHeader } from './ExerciseHeader';
-import { ExerciseDetails } from './ExerciseDetails';
-import { ExerciseActualValues } from './ExerciseActualValues';
 
 interface CompactExerciseItemProps {
   exercise: any;
@@ -33,123 +30,91 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
   workoutInProgress,
   isComplete,
   remainingText,
+  onExerciseClick,
   onSetClick,
-  onVideoClick,
-  updateKg,
-  updateVelocity,
-  updateReps,
-  getNotes,
-  updateNotes,
-  clearNotes,
-  selectedDate,
-  program
+  onVideoClick
 }) => {
+  const handleClick = (event: React.MouseEvent) => {
+    if ((event.target as HTMLElement).closest('.video-thumbnail')) {
+      return;
+    }
+    onExerciseClick(exercise, event);
+  };
+
+  const handleVideoClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    console.log('🎬 Compact Video click for:', exercise.exercises?.name);
+    onVideoClick(exercise);
+  };
+
   const handleSetClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     onSetClick(exercise.id, exercise.sets, event);
   };
 
-  const handleVideoClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onVideoClick(exercise);
-  };
-
-  const renderVideoThumbnail = () => {
-    const videoUrl = exercise.exercises?.video_url;
-    if (!videoUrl || !isValidVideoUrl(videoUrl)) {
-      return (
-        <div className="w-10 h-6 bg-gray-200 rounded-none flex items-center justify-center flex-shrink-0">
-          <span className="text-xs text-gray-400">-</span>
-        </div>
-      );
-    }
-
-    const thumbnailUrl = getVideoThumbnail(videoUrl);
-    
-    return (
-      <div 
-        className="relative w-10 h-6 rounded-none overflow-hidden cursor-pointer group flex-shrink-0 video-thumbnail"
-        onClick={handleVideoClick}
-      >
-        {thumbnailUrl ? (
-          <img
-            src={thumbnailUrl}
-            alt={`${exercise.exercises?.name} thumbnail`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <Play className="w-2 h-2 text-gray-400" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Play className="w-2 h-2 text-white" />
-        </div>
-      </div>
-    );
-  };
+  // Χρησιμοποιούμε το σωστό path για το video URL
+  const videoUrl = exercise.exercises?.video_url;
+  const hasVideo = videoUrl && isValidVideoUrl(videoUrl);
+  const exerciseName = exercise.exercises?.name || 'Άγνωστη άσκηση';
 
   return (
     <div 
-      className={`border border-gray-200 rounded-none transition-colors ${
-        workoutInProgress ? 'hover:bg-gray-50' : 'bg-gray-100'
-      } ${isComplete ? 'bg-green-50 border-green-200' : ''}`}
+      className={`
+        border border-gray-200 rounded-none p-1 text-xs transition-colors
+        ${workoutInProgress ? 'hover:bg-gray-50 cursor-pointer' : 'bg-gray-100'}
+        ${isComplete ? 'bg-green-50 border-green-200' : ''}
+      `}
+      onClick={handleClick}
     >
-      {/* Compact Exercise Header με Video Thumbnail */}
-      <div className="p-1 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {renderVideoThumbnail()}
-            <div className="text-xs font-medium text-gray-900">
-              {exercise.exercises?.name || 'Unknown Exercise'}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-1 flex-1 min-w-0">
+          {/* Video Thumbnail */}
+          {hasVideo && (
+            <div 
+              className="video-thumbnail flex-shrink-0 w-6 h-6 bg-gray-200 rounded-none flex items-center justify-center cursor-pointer hover:bg-gray-300"
+              onClick={handleVideoClick}
+            >
+              <Play className="w-3 h-3 text-gray-600" />
             </div>
-            {isComplete && <span className="text-green-600 text-xs">✓</span>}
+          )}
+          
+          {/* Exercise Name */}
+          <div className="flex-1 min-w-0">
+            <div className="font-medium truncate">{exerciseName}</div>
           </div>
           
-          <div className="flex items-center gap-1">
-            {workoutInProgress && !isComplete && (
-              <button
-                onClick={handleSetClick}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-xs h-4 px-2"
-              >
-                Complete Set
-              </button>
-            )}
-            
-            <span className={`text-xs px-1 ${
-              isComplete ? 'text-green-800' : 'text-gray-600'
-            }`}>
-              {isComplete ? 'Complete!' : remainingText}
-            </span>
-          </div>
+          {/* Completion Status */}
+          {isComplete && (
+            <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
+          )}
         </div>
-      </div>
-
-      <div className="p-1 space-y-1">
-        {/* Planned Values */}
-        <ExerciseDetails exercise={exercise} />
-
-        {/* Actual Values */}
-        <ExerciseActualValues
-          exercise={exercise}
-          workoutInProgress={workoutInProgress}
-          updateReps={updateReps}
-          updateKg={updateKg}
-          updateVelocity={updateVelocity}
-          getNotes={getNotes}
-          updateNotes={updateNotes}
-          selectedDate={selectedDate}
-          program={program}
-        />
-
-        {/* Program Notes */}
-        {exercise.notes && (
-          <div className="p-1 bg-blue-50 border border-blue-200 rounded-none">
-            <p className="text-xs text-blue-800 font-medium">Program Notes:</p>
-            <p className="text-xs text-blue-700">{exercise.notes}</p>
-          </div>
+        
+        {/* Set Button */}
+        {workoutInProgress && !isComplete && (
+          <Button
+            onClick={handleSetClick}
+            size="sm"
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-5 w-8 text-xs px-1 ml-1"
+          >
+            ✓
+          </Button>
         )}
       </div>
+      
+      {/* Exercise Details */}
+      <div className="flex items-center space-x-2 text-gray-600 mt-0.5">
+        <span>{exercise.sets}x{exercise.reps}</span>
+        {exercise.kg && <span>• {exercise.kg}kg</span>}
+        {exercise.percentage_1rm && <span>• {exercise.percentage_1rm}%</span>}
+        {exercise.rest && <span>• {exercise.rest}s</span>}
+      </div>
+      
+      {/* Remaining Text */}
+      {workoutInProgress && (
+        <div className="text-gray-500 text-xs mt-0.5">
+          {remainingText}
+        </div>
+      )}
     </div>
   );
 };
