@@ -1,18 +1,20 @@
 
 import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDateToLocalString } from '@/utils/dateUtils';
 import type { TodaysProgramAssignment } from './types';
 
 export const useTodaysPrograms = (userId: string) => {
   const [todaysPrograms, setTodaysPrograms] = useState<TodaysProgramAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const today = new Date();
-  const todayString = format(today, 'yyyy-MM-dd');
+  const todayString = formatDateToLocalString(today);
 
   const fetchTodaysPrograms = async () => {
     try {
       setLoading(true);
+      
+      console.log('🔍 Fetching programs for date:', todayString);
       
       const { data: assignments, error } = await supabase
         .from('program_assignments')
@@ -72,6 +74,8 @@ export const useTodaysPrograms = (userId: string) => {
         console.error('Error fetching today programs:', error);
         return;
       }
+
+      console.log('✅ Found assignments for today:', assignments?.length || 0);
 
       // Transform the data to match our expected type structure
       const transformedAssignments = (assignments || []).map(assignment => ({

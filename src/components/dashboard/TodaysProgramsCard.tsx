@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity } from "lucide-react";
-import { format } from "date-fns";
+import { formatDateToLocalString } from "@/utils/dateUtils";
 
 interface TodaysProgramsCardProps {
   todaysPrograms: any[];
@@ -10,12 +10,15 @@ interface TodaysProgramsCardProps {
 }
 
 export const TodaysProgramsCard = ({ todaysPrograms, allCompletions, onRefresh }: TodaysProgramsCardProps) => {
+  const today = new Date();
+  const todayString = formatDateToLocalString(today);
+  
   return (
     <Card className="rounded-none">
       <CardHeader>
         <CardTitle className="flex items-center">
           <Activity className="h-5 w-5 mr-2" />
-          Σημερινά Προγράμματα ({format(new Date(), 'dd/MM/yyyy')})
+          Σημερινά Προγράμματα ({todayString.split('-').reverse().join('/')})
         </CardTitle>
       </CardHeader>
       <CardContent>

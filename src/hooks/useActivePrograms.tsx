@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDateToLocalString } from '@/utils/dateUtils';
 import type { EnrichedAssignment } from './useActivePrograms/types';
 
 export const useActivePrograms = () => {
@@ -147,16 +148,24 @@ export const useSaveAssignment = () => {
       try {
         console.log('💾 Saving assignment to database:', assignmentData);
 
+        // Διασφαλίζουμε ότι οι ημερομηνίες είναι σε σωστό format
+        const formattedTrainingDates = assignmentData.trainingDates.map((date: Date | string) => {
+          if (typeof date === 'string') {
+            return date;
+          }
+          return formatDateToLocalString(date);
+        });
+
         // Αποθήκευση στη βάση δεδομένων
         const { data, error } = await supabase
           .from('program_assignments')
           .insert([{
             program_id: assignmentData.program.id,
             user_id: assignmentData.userId,
-            training_dates: assignmentData.trainingDates,
+            training_dates: formattedTrainingDates,
             status: 'active',
             assignment_type: 'individual',
-            start_date: assignmentData.trainingDates[0] || new Date().toISOString().split('T')[0],
+            start_date: formattedTrainingDates[0] || formatDateToLocalString(new Date()),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }])

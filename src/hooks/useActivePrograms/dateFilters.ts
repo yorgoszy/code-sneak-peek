@@ -1,4 +1,5 @@
 
+import { formatDateToLocalString } from "@/utils/dateUtils";
 import type { EnrichedAssignment } from "./types";
 
 export const isValidAssignment = (assignment: EnrichedAssignment): boolean => {
@@ -24,27 +25,29 @@ export const isValidAssignment = (assignment: EnrichedAssignment): boolean => {
   }
   
   const today = new Date();
+  const todayString = formatDateToLocalString(today);
   const nextWeek = new Date();
   nextWeek.setDate(nextWeek.getDate() + 7);
+  const nextWeekString = formatDateToLocalString(nextWeek);
   
   // Βρίσκουμε την πρώτη και τελευταία ημερομηνία από το training_dates array
-  const trainingDates = assignment.training_dates.map(date => new Date(date)).sort((a, b) => a.getTime() - b.getTime());
+  const trainingDates = assignment.training_dates.sort();
   const firstTrainingDate = trainingDates[0];
   const lastTrainingDate = trainingDates[trainingDates.length - 1];
   
   console.log('📊 Date comparison for assignment:', assignment.id, {
-    today: today.toISOString().split('T')[0],
-    nextWeek: nextWeek.toISOString().split('T')[0],
-    firstTrainingDate: firstTrainingDate.toISOString().split('T')[0],
-    lastTrainingDate: lastTrainingDate.toISOString().split('T')[0],
+    todayString,
+    nextWeekString,
+    firstTrainingDate,
+    lastTrainingDate,
     totalTrainingDates: trainingDates.length
   });
   
   // Program is active if:
   // 1. It has started and not ended (active)
   // 2. It starts within the next week (coming soon)
-  const isActive = firstTrainingDate <= today && lastTrainingDate >= today;
-  const isComingSoon = firstTrainingDate > today && firstTrainingDate <= nextWeek;
+  const isActive = firstTrainingDate <= todayString && lastTrainingDate >= todayString;
+  const isComingSoon = firstTrainingDate > todayString && firstTrainingDate <= nextWeekString;
   
   console.log('📊 Date validation result for assignment:', assignment.id, {
     isActive,

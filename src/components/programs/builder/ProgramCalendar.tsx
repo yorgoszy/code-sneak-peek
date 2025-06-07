@@ -39,6 +39,7 @@ export const ProgramCalendar: React.FC<ProgramCalendarProps> = ({
   });
 
   console.log('📅 Δομή εβδομάδων:', weekStructure);
+  console.log('📅 Selected dates:', selectedDates.map(date => date.toISOString().split('T')[0]));
 
   return (
     <Card className="rounded-none">

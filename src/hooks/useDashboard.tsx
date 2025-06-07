@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateToLocalString } from "@/utils/dateUtils";
 
 interface DashboardStats {
   totalUsers: number;
@@ -30,8 +31,11 @@ export const useDashboard = () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const today = new Date();
+      const todayString = formatDateToLocalString(today);
       const nextWeek = new Date();
       nextWeek.setDate(nextWeek.getDate() + 7);
+
+      console.log('📊 Dashboard fetching stats for date:', todayString);
 
       // Παράλληλα queries για ταχύτητα
       const [
@@ -59,21 +63,30 @@ export const useDashboard = () => {
           return false;
         }
         
-        // Αν δεν έχει ημερομηνίες, το συμπεριλαμβάνουμε
-        if (!assignment.start_date || !assignment.end_date) {
-          return true;
+        // Χρησιμοποιούμε το training_dates array αντί για start_date/end_date
+        if (!assignment.training_dates || assignment.training_dates.length === 0) {
+          return true; // Αν δεν έχει ημερομηνίες, το συμπεριλαμβάνουμε
         }
         
-        const startDate = new Date(assignment.start_date);
-        const endDate = new Date(assignment.end_date);
+        // Βρίσκουμε την πρώτη και τελευταία ημερομηνία από το training_dates array
+        const trainingDates = assignment.training_dates.map((date: string) => new Date(date)).sort((a: Date, b: Date) => a.getTime() - b.getTime());
+        const firstTrainingDate = trainingDates[0];
+        const lastTrainingDate = trainingDates[trainingDates.length - 1];
         
         // Πρόγραμμα είναι ενεργό αν:
         // 1. Έχει αρχίσει και δεν έχει τελειώσει (ενεργό)
         // 2. Αρχίζει μέσα στην επόμενη εβδομάδα (έρχεται σύντομα)
-        const isActive = startDate <= today && endDate >= today;
-        const isComingSoon = startDate > today && startDate <= nextWeek;
+        const isActive = firstTrainingDate <= today && lastTrainingDate >= today;
+        const isComingSoon = firstTrainingDate > today && firstTrainingDate <= nextWeek;
         
         return isActive || isComingSoon;
+      });
+
+      console.log('📊 Dashboard stats calculated:', {
+        totalUsers: totalUsers || 0,
+        activeUsers: uniqueActiveUsers.size,
+        newUsersThisMonth: newUsersThisMonth || 0,
+        activePrograms: activePrograms.length
       });
 
       setStats({
