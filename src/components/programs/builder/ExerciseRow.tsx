@@ -3,23 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Copy } from "lucide-react";
-import { Exercise } from '../types';
+import { Exercise, ProgramExercise } from '../types';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { useStrengthData } from '@/hooks/useStrengthData';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
 
 interface ExerciseRowProps {
   exercise: ProgramExercise;
