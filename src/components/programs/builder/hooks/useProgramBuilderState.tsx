@@ -12,8 +12,6 @@ export interface ProgramStructure {
   training_days?: any[];
   training_dates?: Date[];
   weeks?: Week[];
-  // Προσθήκη των σωστών ονομάτων για συμβατότητα με τη βάση
-  program_weeks?: Week[];
 }
 
 const createInitialProgram = (): ProgramStructure => ({
@@ -24,8 +22,7 @@ const createInitialProgram = (): ProgramStructure => ({
   start_date: new Date().toISOString().split('T')[0],
   training_days: [],
   training_dates: [],
-  weeks: [],
-  program_weeks: []
+  weeks: []
 });
 
 const findExerciseName = (exerciseId: string, exercises: Exercise[]): string => {
@@ -40,12 +37,6 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     console.log('🔄 Updating program with:', updates);
     setProgram(prev => {
       const updatedProgram = { ...prev, ...updates };
-      
-      // Συγχρονισμός weeks και program_weeks
-      if (updates.weeks) {
-        updatedProgram.program_weeks = updates.weeks;
-      }
-      
       console.log('🔄 Updated program state:', updatedProgram);
       return updatedProgram;
     });
@@ -79,16 +70,16 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
           id: week.id,
           name: week.name,
           week_number: week.week_number,
-          program_days: week.program_days?.map((day: any) => ({
+          days: week.program_days?.map((day: any) => ({
             id: day.id,
             name: day.name,
             day_number: day.day_number,
             estimated_duration_minutes: day.estimated_duration_minutes,
-            program_blocks: day.program_blocks?.map((block: any) => ({
+            blocks: day.program_blocks?.map((block: any) => ({
               id: block.id,
               name: block.name,
               block_order: block.block_order,
-              program_exercises: block.program_exercises?.map((exercise: any) => ({
+              exercises: block.program_exercises?.map((exercise: any) => ({
                 id: exercise.id,
                 exercise_id: exercise.exercise_id,
                 sets: exercise.sets || 1,
@@ -104,8 +95,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
               })) || []
             })) || []
           })) || []
-        })),
-        program_weeks: weeksData
+        }))
       };
       
       console.log('📥 Loaded program structure:', loadedProgram);
@@ -118,7 +108,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
 
   const getTotalTrainingDays = useCallback(() => {
     return program.weeks?.reduce((total, week) => {
-      return total + (week.program_days?.length || 0);
+      return total + (week.days?.length || 0);
     }, 0) || 0;
   }, [program.weeks]);
 
@@ -140,8 +130,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       start_date: program.start_date,
       training_days: program.training_days || [],
       training_dates: formattedTrainingDates,
-      weeks: program.weeks || [],
-      program_weeks: program.weeks || [] // Συγχρονισμός για τη βάση
+      weeks: program.weeks || []
     };
 
     console.log('💾 Final prepared program:', preparedProgram);

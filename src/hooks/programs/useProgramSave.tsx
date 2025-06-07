@@ -28,7 +28,7 @@ export const useProgramSave = () => {
       } else if (programData.weeks && programData.weeks.length > 0) {
         // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
         const totalDays = programData.weeks.reduce((total, week) => {
-          const daysCount = week.program_days?.length || 0;
+          const daysCount = week.days?.length || 0;
           return total + daysCount;
         }, 0);
         const today = new Date();
@@ -49,7 +49,7 @@ export const useProgramSave = () => {
         status: programData.status || 'draft',
         type: programData.type || 'strength',
         duration: programData.weeks?.length || null,
-        training_days: programData.weeks?.[0]?.program_days?.length || null
+        training_days: programData.weeks?.[0]?.days?.length || null
       };
 
       let savedProgram;
@@ -103,15 +103,11 @@ export const useProgramSave = () => {
         console.log('✅ Program structure created');
       }
 
-      // Επιστρέφουμε το πρόγραμμα με τις ημερομηνίες και τη διατήρηση της δομής
+      // Επιστρέφουμε το πρόγραμμα με τη σωστή δομή και διατήρηση των weeks
       const result = {
         ...savedProgram,
         training_dates: trainingDatesArray,
-        // Διατηρούμε τη δομή weeks στην απάντηση με τα σωστά ονόματα
-        program_weeks: programData.weeks?.map(week => ({
-          ...week,
-          program_days: week.program_days || []
-        })) || []
+        weeks: programData.weeks || []
       };
 
       console.log('📤 Returning program result:', result);
