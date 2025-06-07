@@ -75,7 +75,19 @@ export const DayCard: React.FC<DayCardProps> = ({
     ...block,
     exercises: block.program_exercises?.map(pe => {
       const exercise = exercises.find(ex => ex.id === pe.exercise_id);
-      return exercise || { id: pe.exercise_id, name: 'Unknown Exercise' };
+      return {
+        id: pe.id,
+        exercise_id: pe.exercise_id,
+        exercise_name: exercise?.name || 'Unknown Exercise',
+        sets: pe.sets,
+        reps: pe.reps || '',
+        percentage_1rm: pe.percentage_1rm || 0,
+        kg: pe.kg || '',
+        velocity_ms: pe.velocity_ms?.toString() || '',
+        tempo: pe.tempo || '',
+        rest: pe.rest || '',
+        exercise_order: pe.exercise_order
+      };
     }) || []
   }));
 
