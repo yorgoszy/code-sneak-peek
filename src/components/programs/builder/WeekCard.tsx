@@ -118,7 +118,7 @@ export const WeekCard: React.FC<WeekCardProps> = ({
   const programDays = Array.isArray(week.program_days) ? week.program_days : [];
 
   console.log('WeekCard - Week:', week.name, 'Program Days:', programDays);
-  console.log('WeekCard - onAddDay function:', typeof onAddDay);
+  console.log('WeekCard - onAddDay function:', typeof onAddDay, onAddDay);
 
   return (
     <Card className="rounded-none border-2">
@@ -128,8 +128,13 @@ export const WeekCard: React.FC<WeekCardProps> = ({
           <div className="flex gap-2">
             <Button 
               onClick={() => {
-                console.log('Add Day button clicked');
-                onAddDay();
+                console.log('🟢 Add Day button clicked for week:', week.id);
+                console.log('🟢 onAddDay function available:', !!onAddDay);
+                if (onAddDay) {
+                  onAddDay();
+                } else {
+                  console.error('❌ onAddDay function is not available!');
+                }
               }}
               size="sm"
               className="rounded-none text-sm bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
