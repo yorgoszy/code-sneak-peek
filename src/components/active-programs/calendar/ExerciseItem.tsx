@@ -125,7 +125,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           updateNotes={updateNotes}
           selectedDate={selectedDate}
           program={program}
-          onSetClick={handleSetsAreaClick}
+          onSetClick={onSetClick}
           getRemainingText={getRemainingText}
         />
 
