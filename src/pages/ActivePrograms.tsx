@@ -1,16 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { CalendarCheck, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User, Play } from "lucide-react";
 import { format } from "date-fns";
-import { el } from "date-fns/locale";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
-import { useNavigate } from "react-router-dom";
+import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
+import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { useRunningWorkouts } from "@/hooks/useRunningWorkouts";
@@ -24,7 +19,6 @@ const ActivePrograms = () => {
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const navigate = useNavigate();
 
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletions();
@@ -163,23 +157,7 @@ const ActivePrograms = () => {
         {/* Main Content */}
         <div className="flex-1 p-6">
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/dashboard')}
-                  className="rounded-none"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Επιστροφή
-                </Button>
-                <h1 className="text-3xl font-bold flex items-center gap-2">
-                  <CalendarCheck className="h-8 w-8 text-[#00ffba]" />
-                  Ενεργά Προγράμματα
-                </h1>
-              </div>
-            </div>
+            <ActiveProgramsHeader />
 
             {/* Calendar */}
             <CalendarGrid
@@ -193,67 +171,13 @@ const ActivePrograms = () => {
               onNameClick={handleNameClick}
             />
 
-            {/* Today's Programs (as additional section) */}
-            <Card className="rounded-none">
-              <CardHeader>
-                <CardTitle>Προγράμματα Σήμερα</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {programsForToday.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Δεν υπάρχουν προγραμματισμένες προπονήσεις για σήμερα
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {programsForToday.map(assignment => {
-                      const status = getWorkoutStatus(assignment);
-                      
-                      return (
-                        <div
-                          key={assignment.id}
-                          onClick={() => handleProgramClick(assignment)}
-                          className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-none hover:shadow-md transition-shadow cursor-pointer"
-                        >
-                          <div className="flex items-center gap-4">
-                            <Avatar className="w-12 h-12">
-                              <AvatarImage src={assignment.app_users?.photo_url || undefined} />
-                              <AvatarFallback className="bg-gray-200">
-                                <User className="w-6 h-6 text-gray-500" />
-                              </AvatarFallback>
-                            </Avatar>
-                            
-                            <div>
-                              <h4 className="font-medium">{assignment.app_users?.name}</h4>
-                              <p className="text-sm text-gray-600">{assignment.programs?.name}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <div className={`px-2 py-1 rounded-none text-xs ${
-                              status === 'completed' ? 'bg-[#00ffba]/10 text-[#00ffba]' :
-                              status === 'missed' ? 'bg-red-100 text-red-600' :
-                              'bg-blue-100 text-blue-600'
-                            }`}>
-                              {status === 'completed' ? 'Ολοκληρωμένη' :
-                               status === 'missed' ? 'Χαμένη' : 'Προγραμματισμένη'}
-                            </div>
-                            
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="rounded-none"
-                              title="Προβολή Προπόνησης"
-                            >
-                              <Play className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {/* Today's Programs */}
+            <TodaysProgramsSection
+              programsForToday={programsForToday}
+              workoutCompletions={workoutCompletions}
+              todayStr={todayStr}
+              onProgramClick={handleProgramClick}
+            />
           </div>
         </div>
       </div>
