@@ -6,35 +6,7 @@ import { GripVertical } from "lucide-react";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
-import { Exercise } from '../types';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  program_blocks: Block[];
-}
+import { Exercise, Day } from '../types';
 
 interface DayCardProps {
   day: Day;

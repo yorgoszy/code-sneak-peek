@@ -11,7 +11,7 @@ export const useWeekActions = (
       id: generateId(),
       name: `Εβδομάδα ${(program.weeks?.length || 0) + 1}`,
       week_number: (program.weeks?.length || 0) + 1,
-      days: []
+      program_days: []
     };
 
     const updatedWeeks = [...(program.weeks || []), newWeek];
@@ -32,13 +32,13 @@ export const useWeekActions = (
       id: generateId(),
       name: `${weekToDuplicate.name} (Αντίγραφο)`,
       week_number: (program.weeks?.length || 0) + 1,
-      days: weekToDuplicate.days.map(day => ({
+      program_days: weekToDuplicate.program_days.map(day => ({
         ...day,
         id: generateId(),
         program_blocks: day.program_blocks.map(block => ({
           ...block,
           id: generateId(),
-          exercises: block.exercises.map(exercise => ({
+          program_exercises: block.program_exercises.map(exercise => ({
             ...exercise,
             id: generateId()
           }))

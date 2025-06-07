@@ -1,28 +1,7 @@
 
 import React from 'react';
 import { Clock, Dumbbell } from 'lucide-react';
-import { Exercise } from '../types';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
+import { Exercise, Block } from '../types';
 
 interface DayCalculationsProps {
   blocks: Block[];
@@ -36,12 +15,12 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
     let estimatedDuration = 0;
 
     blocks.forEach(block => {
-      block.exercises.forEach(exercise => {
+      block.program_exercises.forEach(exercise => {
         totalSets += exercise.sets;
         totalExercises += 1;
         
         // Εκτίμηση διάρκειας: 1 λεπτό ανά σετ + χρόνος ανάπαυσης
-        const restTime = parseFloat(exercise.rest) || 60; // default 60 seconds
+        const restTime = parseFloat(exercise.rest || '60') || 60; // default 60 seconds
         estimatedDuration += (exercise.sets * 60) + (exercise.sets * restTime);
       });
     });

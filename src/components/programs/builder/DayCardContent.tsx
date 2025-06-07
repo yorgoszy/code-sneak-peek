@@ -5,28 +5,7 @@ import { CollapsibleContent } from "@/components/ui/collapsible";
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableBlock } from './SortableBlock';
-import { Exercise } from '../types';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
+import { Exercise, Block } from '../types';
 
 interface DayCardContentProps {
   blocks: Block[];

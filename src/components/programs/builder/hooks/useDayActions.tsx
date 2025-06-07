@@ -11,13 +11,13 @@ export const useDayActions = (
       if (week.id === weekId) {
         const newDay = {
           id: generateId(),
-          name: `Ημέρα ${(week.days?.length || 0) + 1}`,
-          day_number: (week.days?.length || 0) + 1,
+          name: `Ημέρα ${(week.program_days?.length || 0) + 1}`,
+          day_number: (week.program_days?.length || 0) + 1,
           program_blocks: []
         };
         return {
           ...week,
-          days: [...(week.days || []), newDay]
+          program_days: [...(week.program_days || []), newDay]
         };
       }
       return week;
@@ -30,7 +30,7 @@ export const useDayActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).filter(day => day.id !== dayId)
+          program_days: (week.program_days || []).filter(day => day.id !== dayId)
         };
       }
       return week;
@@ -41,18 +41,18 @@ export const useDayActions = (
   const duplicateDay = (weekId: string, dayId: string) => {
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
-        const dayToDuplicate = week.days?.find(day => day.id === dayId);
+        const dayToDuplicate = week.program_days?.find(day => day.id === dayId);
         if (!dayToDuplicate) return week;
 
         const newDay = {
           ...JSON.parse(JSON.stringify(dayToDuplicate)),
           id: generateId(),
           name: `${dayToDuplicate.name} (Αντίγραφο)`,
-          day_number: (week.days?.length || 0) + 1,
+          day_number: (week.program_days?.length || 0) + 1,
           program_blocks: dayToDuplicate.program_blocks.map(block => ({
             ...block,
             id: generateId(),
-            exercises: block.exercises.map(exercise => ({
+            program_exercises: block.program_exercises.map(exercise => ({
               ...exercise,
               id: generateId()
             }))
@@ -61,7 +61,7 @@ export const useDayActions = (
 
         return {
           ...week,
-          days: [...(week.days || []), newDay]
+          program_days: [...(week.program_days || []), newDay]
         };
       }
       return week;
@@ -74,7 +74,7 @@ export const useDayActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).map(day =>
+          program_days: (week.program_days || []).map(day =>
             day.id === dayId ? { ...day, name } : day
           )
         };

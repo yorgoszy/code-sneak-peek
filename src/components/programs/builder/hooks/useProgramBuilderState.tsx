@@ -1,42 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { formatDatesArray } from '@/utils/dateUtils';
-import { Exercise } from '../../types';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  program_blocks: Block[];
-}
-
-interface Week {
-  id: string;
-  name: string;
-  week_number: number;
-  days: Day[];
-}
+import { Exercise, Week, Day, Block, ProgramExercise } from '../../types';
 
 export interface ProgramStructure {
   id: string;
@@ -69,11 +34,11 @@ const findExerciseName = (exerciseId: string, exercises: Exercise[]): string => 
 const convertWeeksToDatabaseFormat = (builderWeeks: Week[]) => {
   return builderWeeks.map(week => ({
     ...week,
-    program_days: week.days?.map(day => ({
+    program_days: week.program_days?.map(day => ({
       ...day,
       program_blocks: day.program_blocks?.map(block => ({
         ...block,
-        program_exercises: block.exercises?.map(exercise => ({
+        program_exercises: block.program_exercises?.map(exercise => ({
           id: exercise.id,
           exercise_id: exercise.exercise_id,
           sets: exercise.sets,
@@ -83,13 +48,9 @@ const convertWeeksToDatabaseFormat = (builderWeeks: Week[]) => {
           velocity_ms: exercise.velocity_ms,
           tempo: exercise.tempo,
           rest: exercise.rest,
-          notes: '',
+          notes: exercise.notes || '',
           exercise_order: exercise.exercise_order,
-          exercises: {
-            id: exercise.exercise_id,
-            name: exercise.exercise_name,
-            description: ''
-          }
+          exercises: exercise.exercises
         })) || []
       })) || []
     })) || []
@@ -100,14 +61,13 @@ const convertWeeksToDatabaseFormat = (builderWeeks: Week[]) => {
 const convertWeeksFromDatabaseFormat = (dbWeeks: any[]) => {
   return dbWeeks.map(week => ({
     ...week,
-    days: week.program_days?.map((day: any) => ({
+    program_days: week.program_days?.map((day: any) => ({
       ...day,
       program_blocks: day.program_blocks?.map((block: any) => ({
         ...block,
-        exercises: block.program_exercises?.map((exercise: any) => ({
+        program_exercises: block.program_exercises?.map((exercise: any) => ({
           id: exercise.id,
           exercise_id: exercise.exercise_id,
-          exercise_name: exercise.exercises?.name || 'Unknown Exercise',
           sets: exercise.sets || 1,
           reps: exercise.reps || '',
           percentage_1rm: exercise.percentage_1rm || 0,
@@ -115,7 +75,8 @@ const convertWeeksFromDatabaseFormat = (dbWeeks: any[]) => {
           velocity_ms: exercise.velocity_ms || '',
           tempo: exercise.tempo || '',
           rest: exercise.rest || '',
-          exercise_order: exercise.exercise_order || 1
+          exercise_order: exercise.exercise_order || 1,
+          exercises: exercise.exercises
         })) || []
       })) || []
     })) || []
@@ -168,7 +129,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
 
   const getTotalTrainingDays = useCallback(() => {
     return program.weeks?.reduce((total, week) => {
-      return total + (week.days?.length || 0);
+      return total + (week.program_days?.length || 0);
     }, 0) || 0;
   }, [program.weeks]);
 

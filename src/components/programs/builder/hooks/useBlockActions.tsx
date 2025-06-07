@@ -11,13 +11,13 @@ export const useBlockActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).map(day => {
+          program_days: (week.program_days || []).map(day => {
             if (day.id === dayId) {
               const newBlock = {
                 id: generateId(),
                 name: `Μπλοκ ${(day.program_blocks?.length || 0) + 1}`,
                 block_order: (day.program_blocks?.length || 0) + 1,
-                exercises: []
+                program_exercises: []
               };
               return {
                 ...day,
@@ -38,7 +38,7 @@ export const useBlockActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).map(day => {
+          program_days: (week.program_days || []).map(day => {
             if (day.id === dayId) {
               return {
                 ...day,
@@ -59,7 +59,7 @@ export const useBlockActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).map(day => {
+          program_days: (week.program_days || []).map(day => {
             if (day.id === dayId) {
               const blockToDuplicate = day.program_blocks?.find(block => block.id === blockId);
               if (!blockToDuplicate) return day;
@@ -69,7 +69,7 @@ export const useBlockActions = (
                 id: generateId(),
                 name: `${blockToDuplicate.name} (Αντίγραφο)`,
                 block_order: (day.program_blocks?.length || 0) + 1,
-                exercises: blockToDuplicate.exercises.map(exercise => ({
+                program_exercises: blockToDuplicate.program_exercises.map(exercise => ({
                   ...exercise,
                   id: generateId()
                 }))
@@ -94,7 +94,7 @@ export const useBlockActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).map(day => {
+          program_days: (week.program_days || []).map(day => {
             if (day.id === dayId) {
               return {
                 ...day,
