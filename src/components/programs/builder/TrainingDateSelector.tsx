@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
-import { formatDateToLocalString, parseDateFromString, debugDate, createDateFromCalendar } from '@/utils/dateUtils';
+import { formatDateToLocalString, parseDateFromString, createDateFromCalendar } from '@/utils/dateUtils';
 
 interface TrainingDateSelectorProps {
   selectedDates: string[];
@@ -27,34 +27,12 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
       return;
     }
     
-    console.log('🗓️ [TrainingDateSelector] Raw date from calendar:', {
-      originalDate: date,
-      toString: date.toString(),
-      toISOString: date.toISOString(),
-      toDateString: date.toDateString(),
-      getFullYear: date.getFullYear(),
-      getMonth: date.getMonth(),
-      getDate: date.getDate(),
-      getTimezoneOffset: date.getTimezoneOffset(),
-      getHours: date.getHours(),
-      getMinutes: date.getMinutes(),
-      getSeconds: date.getSeconds()
-    });
+    console.log('🗓️ [TrainingDateSelector] Date selected:', date);
     
-    // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τη νέα utility function για clean date creation
     const cleanDate = createDateFromCalendar(date);
-    debugDate(cleanDate, 'Clean date after calendar selection');
-    
-    // Χρησιμοποιούμε τη utility function για σωστό formatting
     const dateString = formatDateToLocalString(cleanDate);
     
-    console.log('🗓️ [TrainingDateSelector] Final processing:', {
-      originalCalendarDate: date,
-      cleanDate: cleanDate,
-      formattedDateString: dateString,
-      parsedBack: parseDateFromString(dateString),
-      verificationMatch: parseDateFromString(dateString).getDate() === cleanDate.getDate()
-    });
+    console.log('🗓️ [TrainingDateSelector] Formatted date string:', dateString);
     
     if (selectedDates.includes(dateString)) {
       // Remove date if already selected
@@ -82,42 +60,27 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   };
 
   const isDateSelected = (date: Date) => {
-    // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τη νέα utility function
     const cleanDate = createDateFromCalendar(date);
     const dateString = formatDateToLocalString(cleanDate);
     const isSelected = selectedDates.includes(dateString);
     
     console.log('🗓️ [TrainingDateSelector] Checking if date is selected:', {
-      originalDate: date,
-      cleanDate: cleanDate,
       dateString: dateString,
-      isSelected: isSelected,
-      selectedDates: selectedDates,
-      comparison: `${dateString} in [${selectedDates.join(', ')}] = ${isSelected}`
+      isSelected: isSelected
     });
     
     return isSelected;
   };
 
-  // Log current state
-  console.log('🗓️ [TrainingDateSelector] Current state:', {
-    selectedDates: selectedDates,
-    selectedDatesCount: selectedDates.length,
-    calendarDate: calendarDate
-  });
+  console.log('🗓️ [TrainingDateSelector] Current selectedDates:', selectedDates);
 
   return (
     <Card className="rounded-none">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <CalendarIcon className="w-5 h-5" />
-          Επιλογή Συγκεκριμένων Ημερομηνιών Προπόνησης
+          Επιλογή Ημερομηνιών Προπόνησης
         </CardTitle>
-        {programWeeks > 0 && (
-          <p className="text-sm text-gray-600">
-            Προτεινόμενες προπονήσεις για {programWeeks} εβδομάδες: {programWeeks * 2}-{programWeeks * 3} ημερομηνίες
-          </p>
-        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
