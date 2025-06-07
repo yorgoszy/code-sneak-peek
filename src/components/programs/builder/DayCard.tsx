@@ -70,6 +70,15 @@ export const DayCard: React.FC<DayCardProps> = ({
 
   const blocksCount = day.program_blocks?.length || 0;
 
+  // Transform blocks to include exercises data for DayCalculations
+  const blocksWithExercises = (day.program_blocks || []).map(block => ({
+    ...block,
+    exercises: block.program_exercises?.map(pe => {
+      const exercise = exercises.find(ex => ex.id === pe.exercise_id);
+      return exercise || { id: pe.exercise_id, name: 'Unknown Exercise' };
+    }) || []
+  }));
+
   return (
     <Card className="rounded-none relative" style={{ minHeight: '30px' }}>
       <div className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10">
@@ -109,7 +118,7 @@ export const DayCard: React.FC<DayCardProps> = ({
         )}
         
         <DayCalculations 
-          blocks={day.program_blocks || []} 
+          blocks={blocksWithExercises} 
           exercises={exercises} 
         />
       </Collapsible>
