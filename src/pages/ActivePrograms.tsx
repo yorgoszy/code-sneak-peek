@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
+import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
@@ -21,6 +22,8 @@ const ActivePrograms = () => {
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const [realtimeKey, setRealtimeKey] = useState(0);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const navigate = useNavigate();
 
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
@@ -121,6 +124,11 @@ const ActivePrograms = () => {
     return completion?.status || 'scheduled';
   };
 
+  const handleNameClick = (program: any, event: React.MouseEvent) => {
+    // This function is passed to CalendarGrid but not used anymore
+    // since CalendarGrid now handles its own DayProgramDialog
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex w-full items-center justify-center">
@@ -170,7 +178,7 @@ const ActivePrograms = () => {
                 </Button>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
                   <CalendarCheck className="h-8 w-8 text-[#00ffba]" />
-                  Σήμερα - {format(today, 'EEEE, dd MMMM yyyy', { locale: el })}
+                  Ενεργά Προγράμματα
                 </h1>
               </div>
             </div>
@@ -181,7 +189,7 @@ const ActivePrograms = () => {
                 <CardContent className="p-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">{todayStats.scheduled}</div>
-                    <div className="text-sm text-gray-600">Προγραμματισμένες</div>
+                    <div className="text-sm text-gray-600">Προγραμματισμένες Σήμερα</div>
                   </div>
                 </CardContent>
               </Card>
@@ -190,7 +198,7 @@ const ActivePrograms = () => {
                 <CardContent className="p-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-[#00ffba]">{todayStats.completed}</div>
-                    <div className="text-sm text-gray-600">Ολοκληρωμένες</div>
+                    <div className="text-sm text-gray-600">Ολοκληρωμένες Σήμερα</div>
                   </div>
                 </CardContent>
               </Card>
@@ -199,7 +207,7 @@ const ActivePrograms = () => {
                 <CardContent className="p-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-red-600">{todayStats.missed}</div>
-                    <div className="text-sm text-gray-600">Χαμένες</div>
+                    <div className="text-sm text-gray-600">Χαμένες Σήμερα</div>
                   </div>
                 </CardContent>
               </Card>
@@ -207,14 +215,26 @@ const ActivePrograms = () => {
               <Card className="rounded-none">
                 <CardContent className="p-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">{format(today, 'dd')}</div>
-                    <div className="text-sm text-gray-600">Σήμερα</div>
+                    <div className="text-2xl font-bold text-orange-600">{activePrograms.length}</div>
+                    <div className="text-sm text-gray-600">Σύνολο Ενεργών</div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Today's Programs */}
+            {/* Calendar */}
+            <CalendarGrid
+              currentMonth={currentMonth}
+              setCurrentMonth={setCurrentMonth}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              activePrograms={activePrograms}
+              workoutCompletions={workoutCompletions}
+              realtimeKey={realtimeKey}
+              onNameClick={handleNameClick}
+            />
+
+            {/* Today's Programs (as additional section) */}
             <Card className="rounded-none">
               <CardHeader>
                 <CardTitle>Προγράμματα Σήμερα</CardTitle>
