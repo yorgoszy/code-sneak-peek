@@ -3,44 +3,37 @@ import React from 'react';
 import { TabsList } from "@/components/ui/tabs";
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableWeekTab } from './SortableWeekTab';
+import type { Week, Exercise } from '../types';
 
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  blocks: Block[];
-}
-
-interface Week {
-  id: string;
-  name: string;
-  week_number: number;
-  days: Day[];
+// Transform interface for WeekMetrics compatibility
+interface WeekWithMetrics extends Week {
+  days: Array<{
+    id: string;
+    name: string;
+    day_number: number;
+    blocks: Array<{
+      id: string;
+      name: string;
+      block_order: number;
+      exercises: Array<{
+        id: string;
+        exercise_id: string;
+        exercise_name: string;
+        sets: number;
+        reps: string;
+        percentage_1rm: number;
+        kg: string;
+        velocity_ms: string;
+        tempo: string;
+        rest: string;
+        exercise_order: number;
+      }>;
+    }>;
+  }>;
 }
 
 interface WeekTabsHeaderProps {
-  weeks: Week[];
+  weeks: WeekWithMetrics[];
   editingWeekId: string | null;
   editingWeekName: string;
   activeWeek: string;
