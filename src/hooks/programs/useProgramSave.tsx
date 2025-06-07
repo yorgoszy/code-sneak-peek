@@ -27,7 +27,7 @@ export const useProgramSave = () => {
         });
       } else if (programData.weeks && programData.weeks.length > 0) {
         // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
-        const totalDays = programData.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
+        const totalDays = programData.weeks.reduce((total, week) => total + (week.program_days?.length || 0), 0);
         const today = new Date();
         trainingDatesArray = [];
         for (let i = 0; i < totalDays; i++) {
@@ -100,13 +100,19 @@ export const useProgramSave = () => {
         console.log('✅ Program structure created');
       }
 
-      // Επιστρέφουμε το πρόγραμμα με τις ημερομηνίες
-      return {
+      // Επιστρέφουμε το πρόγραμμα με τις ημερομηνίες και τη διατήρηση της δομής
+      const result = {
         ...savedProgram,
         training_dates: trainingDatesArray,
-        // Διατηρούμε τη δομή weeks στην απάντηση για να μη χαθεί στο UI
-        weeks: programData.weeks || []
+        // Διατηρούμε τη δομή weeks στην απάντηση με τα σωστά ονόματα
+        program_weeks: programData.weeks?.map(week => ({
+          ...week,
+          program_days: week.program_days || []
+        })) || []
       };
+
+      console.log('📤 Returning program result:', result);
+      return result;
     } catch (error) {
       console.error('❌ Error saving program:', error);
       toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
