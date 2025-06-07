@@ -44,15 +44,15 @@ const Navigation: React.FC<NavigationProps> = ({
         }
         .dashboard-btn:hover {
           background-color: #00ffba !important;
-          border-color: #00ffba !important;
+          border-color: transparent !important;
         }
         .logout-btn:hover {
           background-color: #00ffba !important;
-          border-color: #00ffba !important;
+          border-color: transparent !important;
         }
         .language-btn:hover {
           background-color: #00ffba !important;
-          border-color: #00ffba !important;
+          border-color: transparent !important;
         }
         .login-btn {
           background-color: #00ffba !important;
@@ -93,23 +93,23 @@ const Navigation: React.FC<NavigationProps> = ({
               isAuthenticated ? (
                 <div className="flex items-center space-x-4">
                   <Button 
-                    variant="outline" 
-                    className="language-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                    variant="ghost" 
+                    className="language-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
                   </Button>
                   <Link to="/dashboard">
                     <Button 
-                      variant="outline" 
-                      className="dashboard-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                      variant="ghost" 
+                      className="dashboard-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     >
                       Dashboard
                     </Button>
                   </Link>
                   <Button 
-                    variant="outline" 
-                    className="logout-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                    variant="ghost" 
+                    className="logout-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onSignOut}
                   >
                     <LogOut className="h-4 w-4" />
@@ -118,8 +118,8 @@ const Navigation: React.FC<NavigationProps> = ({
               ) : (
                 <div className="flex items-center space-x-4">
                   <Button 
-                    variant="outline" 
-                    className="language-btn rounded-none bg-transparent border-white text-white hover:text-black transition-colors duration-200"
+                    variant="ghost" 
+                    className="language-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
