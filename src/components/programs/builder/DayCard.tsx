@@ -6,7 +6,7 @@ import { GripVertical } from "lucide-react";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
-import { Exercise, Day, Block, ProgramExercise } from '../types';
+import { Exercise, Day } from '../types';
 
 interface DayCardProps {
   day: Day;

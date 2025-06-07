@@ -3,27 +3,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { BlockCard } from './BlockCard';
-import { Exercise } from '../types';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  exercises?: ProgramExercise[];
-}
+import { Exercise, Block, ProgramExercise } from '../types';
 
 interface SortableBlockProps {
   block: Block;
@@ -37,6 +17,7 @@ interface SortableBlockProps {
   onRemoveExercise: (exerciseId: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onDuplicateExercise: (exerciseId: string) => void;
+  onReorderExercises: (oldIndex: number, newIndex: number) => void;
 }
 
 export const SortableBlock: React.FC<SortableBlockProps> = ({
@@ -50,7 +31,8 @@ export const SortableBlock: React.FC<SortableBlockProps> = ({
   onAddExercise,
   onRemoveExercise,
   onUpdateExercise,
-  onDuplicateExercise
+  onDuplicateExercise,
+  onReorderExercises
 }) => {
   const {
     attributes,
