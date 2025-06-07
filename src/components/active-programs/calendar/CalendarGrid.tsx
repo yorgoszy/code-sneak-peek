@@ -117,9 +117,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               <div className="w-3 h-3 bg-yellow-300 rounded-none border border-yellow-600"></div>
               <span>Σήμερα</span>
             </div>
-            <div className="text-xs text-blue-600 font-medium">
-              Κλικ στον αριθμό της ημέρας για όλα τα προγράμματα
-            </div>
           </div>
         </CardHeader>
         <CardContent>

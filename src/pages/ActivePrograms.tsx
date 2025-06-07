@@ -183,45 +183,6 @@ const ActivePrograms = () => {
               </div>
             </div>
 
-            {/* Today's Stats */}
-            <div className="grid grid-cols-4 gap-4">
-              <Card className="rounded-none">
-                <CardContent className="p-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{todayStats.scheduled}</div>
-                    <div className="text-sm text-gray-600">Προγραμματισμένες Σήμερα</div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="rounded-none">
-                <CardContent className="p-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-[#00ffba]">{todayStats.completed}</div>
-                    <div className="text-sm text-gray-600">Ολοκληρωμένες Σήμερα</div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="rounded-none">
-                <CardContent className="p-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">{todayStats.missed}</div>
-                    <div className="text-sm text-gray-600">Χαμένες Σήμερα</div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-none">
-                <CardContent className="p-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">{activePrograms.length}</div>
-                    <div className="text-sm text-gray-600">Σύνολο Ενεργών</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             {/* Calendar */}
             <CalendarGrid
               currentMonth={currentMonth}
