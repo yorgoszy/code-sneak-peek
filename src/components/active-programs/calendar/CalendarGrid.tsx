@@ -1,12 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 import { DayProgramDialog } from './DayProgramDialog';
 import { CalendarLegend } from './CalendarLegend';
 import { CalendarNavigation } from './CalendarNavigation';
 import { CalendarWeekDays } from './CalendarWeekDays';
 import { CalendarDay } from './CalendarDay';
+import { WeeklyView } from './WeeklyView';
+import { DailyView } from './DailyView';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface CalendarGridProps {
@@ -33,6 +36,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
   const [selectedProgramForDay, setSelectedProgramForDay] = useState<EnrichedAssignment | null>(null);
   const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
+  const [calendarView, setCalendarView] = useState<'monthly' | 'weekly' | 'daily'>('monthly');
+
+  // Force re-render when workoutCompletions change
+  useEffect(() => {
+    console.log('🔄 Calendar workoutCompletions updated, triggering re-render');
+  }, [workoutCompletions, realtimeKey]);
 
   // Create a list with all dates that have programs and their statuses
   const programDatesWithStatus = activePrograms.reduce((dates: any[], assignment) => {
@@ -71,6 +80,38 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     setDayProgramDialogOpen(true);
   };
 
+  const MonthlyView = () => (
+    <div className="w-full">
+      <CalendarNavigation 
+        currentMonth={currentMonth}
+        setCurrentMonth={setCurrentMonth}
+      />
+
+      <CalendarWeekDays />
+
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 border border-gray-200">
+        {days.map((date) => {
+          const dateStr = format(date, 'yyyy-MM-dd');
+          const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
+
+          return (
+            <CalendarDay
+              key={`${dateStr}-${realtimeKey}`}
+              date={date}
+              currentMonth={currentMonth}
+              selectedDate={selectedDate}
+              programsForDate={dateProgramsWithStatus}
+              realtimeKey={realtimeKey}
+              onDateClick={handleDateClick}
+              onUserNameClick={handleUserNameClick}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <>
       <Card className="rounded-none">
@@ -79,35 +120,41 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           <CalendarLegend />
         </CardHeader>
         <CardContent>
-          <div className="w-full">
-            <CalendarNavigation 
-              currentMonth={currentMonth}
-              setCurrentMonth={setCurrentMonth}
-            />
+          <Tabs value={calendarView} onValueChange={(value) => setCalendarView(value as 'monthly' | 'weekly' | 'daily')} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 rounded-none">
+              <TabsTrigger value="monthly" className="rounded-none">Μηνιαία</TabsTrigger>
+              <TabsTrigger value="weekly" className="rounded-none">Εβδομαδιαία</TabsTrigger>
+              <TabsTrigger value="daily" className="rounded-none">Ημερήσια</TabsTrigger>
+            </TabsList>
 
-            <CalendarWeekDays />
+            <TabsContent value="monthly" className="mt-4">
+              <MonthlyView />
+            </TabsContent>
 
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 border border-gray-200">
-              {days.map((date) => {
-                const dateStr = format(date, 'yyyy-MM-dd');
-                const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
+            <TabsContent value="weekly" className="mt-4">
+              <WeeklyView
+                currentMonth={currentMonth}
+                setCurrentMonth={setCurrentMonth}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                programDatesWithStatus={programDatesWithStatus}
+                realtimeKey={realtimeKey}
+                onUserNameClick={handleUserNameClick}
+              />
+            </TabsContent>
 
-                return (
-                  <CalendarDay
-                    key={`${dateStr}-${realtimeKey}`}
-                    date={date}
-                    currentMonth={currentMonth}
-                    selectedDate={selectedDate}
-                    programsForDate={dateProgramsWithStatus}
-                    realtimeKey={realtimeKey}
-                    onDateClick={handleDateClick}
-                    onUserNameClick={handleUserNameClick}
-                  />
-                );
-              })}
-            </div>
-          </div>
+            <TabsContent value="daily" className="mt-4">
+              <DailyView
+                currentMonth={currentMonth}
+                setCurrentMonth={setCurrentMonth}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                programDatesWithStatus={programDatesWithStatus}
+                realtimeKey={realtimeKey}
+                onUserNameClick={handleUserNameClick}
+              />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

@@ -44,6 +44,7 @@ const ActivePrograms = () => {
         const completions = await getWorkoutCompletions(assignment.id);
         allCompletions.push(...completions);
       }
+      console.log('📊 Loaded completions:', allCompletions.length);
       setWorkoutCompletions(allCompletions);
     } catch (error) {
       console.error('Error loading workout completions:', error);
@@ -52,12 +53,14 @@ const ActivePrograms = () => {
 
   useEffect(() => {
     loadCompletions();
-  }, [activePrograms, getWorkoutCompletions, realtimeKey]);
+  }, [activePrograms, getWorkoutCompletions]);
 
-  // Real-time subscription με βελτιωμένη ανανέωση
+  // Enhanced real-time subscription
   useEffect(() => {
+    console.log('🔄 Setting up enhanced real-time subscription...');
+    
     const channel = supabase
-      .channel('workout-completions-enhanced-realtime')
+      .channel('workout-completions-realtime')
       .on(
         'postgres_changes',
         {
@@ -67,21 +70,35 @@ const ActivePrograms = () => {
         },
         async (payload) => {
           console.log('🔄 Real-time workout completion change detected:', payload);
-          // Άμεση ανανέωση του realtimeKey για re-render
+          
+          // Άμεση ενημέρωση του realtimeKey για αναγκαστικό re-render
           setRealtimeKey(prev => prev + 1);
-          // Ανανέωση δεδομένων
-          setTimeout(async () => {
-            await refetch();
-            await loadCompletions();
-          }, 100);
+          
+          // Άμεση ανανέωση των completions
+          await loadCompletions();
+          
+          // Ανανέωση των programs
+          refetch();
         }
       )
       .subscribe();
 
     return () => {
+      console.log('🔌 Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
   }, [refetch]);
+
+  // Force refresh every few seconds as fallback
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('⏰ Periodic refresh trigger');
+      setRealtimeKey(prev => prev + 1);
+      loadCompletions();
+    }, 5000); // Every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleProgramClick = (assignment: any) => {
     setSelectedProgram(assignment);
@@ -115,7 +132,9 @@ const ActivePrograms = () => {
   };
 
   const handleCalendarRefresh = () => {
+    console.log('🔄 Calendar refresh triggered');
     setRealtimeKey(prev => prev + 1);
+    loadCompletions();
     refetch();
   };
 
