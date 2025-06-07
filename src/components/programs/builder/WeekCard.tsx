@@ -114,10 +114,11 @@ export const WeekCard: React.FC<WeekCardProps> = ({
     }
   };
 
-  // Ensure program_days is always an array and provide fallback
+  // Διασφαλίζουμε ότι program_days είναι πάντα array
   const programDays = Array.isArray(week.program_days) ? week.program_days : [];
 
   console.log('WeekCard - Week:', week.name, 'Program Days:', programDays);
+  console.log('WeekCard - onAddDay function:', typeof onAddDay);
 
   return (
     <Card className="rounded-none border-2">
@@ -126,7 +127,10 @@ export const WeekCard: React.FC<WeekCardProps> = ({
           <CardTitle className="text-lg">{week.name}</CardTitle>
           <div className="flex gap-2">
             <Button 
-              onClick={onAddDay}
+              onClick={() => {
+                console.log('Add Day button clicked');
+                onAddDay();
+              }}
               size="sm"
               className="rounded-none text-sm bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
             >

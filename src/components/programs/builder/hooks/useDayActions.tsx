@@ -7,8 +7,14 @@ export const useDayActions = (
   generateId: () => string
 ) => {
   const addDay = (weekId: string) => {
+    console.log('🔵 useDayActions.addDay called with weekId:', weekId);
+    console.log('🔵 Current program weeks:', program.weeks);
+    
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
+        console.log('🔵 Found week to update:', week);
+        console.log('🔵 Current program_days:', week.program_days);
+        
         const newDay = {
           id: generateId(),
           name: `Ημέρα ${(week.program_days?.length || 0) + 1}`,
@@ -16,13 +22,21 @@ export const useDayActions = (
           estimated_duration_minutes: undefined,
           program_blocks: []
         };
-        return {
+        
+        console.log('🔵 Created new day:', newDay);
+        
+        const updatedWeek = {
           ...week,
           program_days: [...(week.program_days || []), newDay]
         };
+        
+        console.log('🔵 Updated week:', updatedWeek);
+        return updatedWeek;
       }
       return week;
     });
+    
+    console.log('🔵 All updated weeks:', updatedWeeks);
     updateProgram({ weeks: updatedWeeks });
   };
 
