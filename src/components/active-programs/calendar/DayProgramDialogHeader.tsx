@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { WorkoutTimer } from './WorkoutTimer';
-import { WorkoutControls } from './WorkoutControls';
+import { Play, Square, Trash2, Minimize } from "lucide-react";
 
 interface DayProgramDialogHeaderProps {
   selectedDate: Date;
@@ -15,6 +15,7 @@ interface DayProgramDialogHeaderProps {
   onStartWorkout: () => void;
   onCompleteWorkout: () => void;
   onCancelWorkout: () => void;
+  onMinimize?: () => void;
 }
 
 export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
@@ -24,57 +25,96 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   workoutStatus,
   onStartWorkout,
   onCompleteWorkout,
-  onCancelWorkout
+  onCancelWorkout,
+  onMinimize
 }) => {
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'missed':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'makeup':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'Ολοκληρωμένη';
-      case 'missed':
-        return 'Χαμένη';
-      case 'makeup':
-        return 'Αναπλήρωση';
-      default:
-        return 'Προγραμματισμένη';
-    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
     <DialogHeader>
       <DialogTitle className="flex items-center justify-between">
-        <span>
-          {format(selectedDate, 'EEEE', { locale: el })} - {format(selectedDate, 'dd MMMM yyyy', { locale: el })}
-        </span>
+        <div className="flex items-center gap-3">
+          <span>Προπόνηση - {format(selectedDate, 'EEEE, dd MMMM yyyy', { locale: el })}</span>
+          
+          {workoutInProgress && (
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              <span className="text-red-600 font-mono text-lg">
+                {formatTime(elapsedTime)}
+              </span>
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center gap-2">
-          <WorkoutTimer
-            workoutInProgress={workoutInProgress}
-            elapsedTime={elapsedTime}
-          />
-          
-          <WorkoutControls
-            workoutInProgress={workoutInProgress}
-            workoutStatus={workoutStatus}
-            onStartWorkout={onStartWorkout}
-            onCompleteWorkout={onCompleteWorkout}
-            onCancelWorkout={onCancelWorkout}
-          />
-          
-          <Badge className={`rounded-none ${getStatusBadgeColor(workoutStatus)}`}>
-            {getStatusText(workoutStatus)}
+          {/* Status Badge */}
+          <Badge 
+            variant="outline" 
+            className={`rounded-none ${
+              workoutStatus === 'completed' ? 'bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]' :
+              workoutStatus === 'in_progress' ? 'bg-red-100 text-red-600 border-red-300' :
+              'bg-blue-100 text-blue-600 border-blue-300'
+            }`}
+          >
+            {workoutStatus === 'completed' ? 'Ολοκληρωμένη' :
+             workoutStatus === 'in_progress' ? 'Σε Εξέλιξη' : 'Προγραμματισμένη'}
           </Badge>
+
+          {/* Action Buttons */}
+          <div className="flex gap-1">
+            {/* Minimize Button */}
+            {onMinimize && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onMinimize}
+                className="rounded-none"
+                title="Ελαχιστοποίηση"
+              >
+                <Minimize className="w-4 h-4" />
+              </Button>
+            )}
+
+            {/* Start/Complete/Cancel Buttons */}
+            {!workoutInProgress ? (
+              <Button
+                onClick={onStartWorkout}
+                disabled={workoutStatus === 'completed'}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Έναρξη
+              </Button>
+            ) : (
+              <>
+                <Button
+                  onClick={onCompleteWorkout}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  <Square className="w-4 h-4 mr-2" />
+                  Ολοκλήρωση
+                </Button>
+                
+                <Button
+                  variant="destructive"
+                  onClick={onCancelWorkout}
+                  className="rounded-none"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Ακύρωση
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </DialogTitle>
     </DialogHeader>

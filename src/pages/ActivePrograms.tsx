@@ -2,39 +2,42 @@
 import React, { useState, useEffect } from 'react';
 import { CalendarCheck, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User, Play } from "lucide-react";
 import { format } from "date-fns";
+import { el } from "date-fns/locale";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
-import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
-import { ProgramsForDateCard } from "@/components/active-programs/calendar/ProgramsForDateCard";
 import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { useRunningWorkouts } from "@/hooks/useRunningWorkouts";
 import { supabase } from "@/integrations/supabase/client";
 
 const ActivePrograms = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
-  const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
   const [realtimeKey, setRealtimeKey] = useState(0);
   const navigate = useNavigate();
 
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletions();
+  const { startWorkout } = useRunningWorkouts();
 
-  // Φιλτράρουμε τα προγράμματα για την επιλεγμένη ημερομηνία
-  const programsForSelectedDate = activePrograms.filter(assignment => {
-    if (!selectedDate || !assignment.training_dates) return false;
-    
-    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-    return assignment.training_dates.includes(selectedDateStr);
+  // Σημερινή ημερομηνία
+  const today = new Date();
+  const todayStr = format(today, 'yyyy-MM-dd');
+
+  // Φιλτράρουμε τα προγράμματα για σήμερα
+  const programsForToday = activePrograms.filter(assignment => {
+    if (!assignment.training_dates) return false;
+    return assignment.training_dates.includes(todayStr);
   });
 
-  // Φόρτωση workout completions για όλα τα assignments
+  // Φόρτωση workout completions
   const loadCompletions = async () => {
     if (activePrograms.length === 0) return;
     
@@ -45,7 +48,6 @@ const ActivePrograms = () => {
         allCompletions.push(...completions);
       }
       setWorkoutCompletions(allCompletions);
-      console.log('✅ Loaded completions:', allCompletions.length);
     } catch (error) {
       console.error('Error loading workout completions:', error);
     }
@@ -57,8 +59,6 @@ const ActivePrograms = () => {
 
   // Real-time subscription
   useEffect(() => {
-    console.log('🔄 Setting up ENHANCED realtime subscription...');
-    
     const channel = supabase
       .channel('workout-completions-enhanced-realtime')
       .on(
@@ -69,12 +69,8 @@ const ActivePrograms = () => {
           table: 'workout_completions'
         },
         async (payload) => {
-          console.log('🚀 IMMEDIATE Real-time change detected:', payload);
-          
           setRealtimeKey(prev => prev + 1);
-          
           setTimeout(async () => {
-            console.log('🔄 Force refreshing data...');
             await refetch();
             await loadCompletions();
           }, 100);
@@ -83,23 +79,30 @@ const ActivePrograms = () => {
       .subscribe();
 
     return () => {
-      console.log('🔌 Cleaning up enhanced realtime subscription...');
       supabase.removeChannel(channel);
     };
   }, [refetch]);
 
-  // Υπολογίζουμε τα stats
-  const stats = {
-    totalPrograms: activePrograms.length,
-    activeToday: programsForSelectedDate.length,
-    completedToday: 0
+  // Υπολογίζουμε τα stats για σήμερα
+  const todayStats = {
+    scheduled: programsForToday.length,
+    completed: workoutCompletions.filter(c => 
+      c.scheduled_date === todayStr && c.status === 'completed'
+    ).length,
+    missed: workoutCompletions.filter(c => 
+      c.scheduled_date === todayStr && c.status === 'missed'
+    ).length
   };
 
-  const handleNameClick = (program: any, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setSelectedProgram(program.assignment);
-    setSelectedDialogDate(new Date(program.date));
+  const handleProgramClick = (assignment: any) => {
+    setSelectedProgram(assignment);
     setDayDialogOpen(true);
+  };
+
+  const handleStartWorkout = () => {
+    if (selectedProgram) {
+      startWorkout(selectedProgram, today);
+    }
   };
 
   const handleDeleteProgram = async (assignmentId: string) => {
@@ -111,10 +114,9 @@ const ActivePrograms = () => {
     }
   };
 
-  const getWorkoutStatus = (assignment: any, date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
+  const getWorkoutStatus = (assignment: any) => {
     const completion = workoutCompletions.find(c => 
-      c.assignment_id === assignment.id && c.scheduled_date === dateStr
+      c.assignment_id === assignment.id && c.scheduled_date === todayStr
     );
     return completion?.status || 'scheduled';
   };
@@ -142,7 +144,11 @@ const ActivePrograms = () => {
         <ActiveProgramsSidebar 
           isCollapsed={isCollapsed} 
           setIsCollapsed={setIsCollapsed}
-          stats={stats}
+          stats={{
+            totalPrograms: activePrograms.length,
+            activeToday: todayStats.scheduled,
+            completedToday: todayStats.completed
+          }}
           activePrograms={activePrograms}
           onRefresh={refetch}
           onDelete={handleDeleteProgram}
@@ -164,32 +170,111 @@ const ActivePrograms = () => {
                 </Button>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
                   <CalendarCheck className="h-8 w-8 text-[#00ffba]" />
-                  Ημερολόγιο
+                  Σήμερα - {format(today, 'EEEE, dd MMMM yyyy', { locale: el })}
                 </h1>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              {/* Calendar Section */}
-              <CalendarGrid
-                currentMonth={currentMonth}
-                setCurrentMonth={setCurrentMonth}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                activePrograms={activePrograms}
-                workoutCompletions={workoutCompletions}
-                realtimeKey={realtimeKey}
-                onNameClick={handleNameClick}
-              />
+            {/* Today's Stats */}
+            <div className="grid grid-cols-4 gap-4">
+              <Card className="rounded-none">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">{todayStats.scheduled}</div>
+                    <div className="text-sm text-gray-600">Προγραμματισμένες</div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="rounded-none">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-[#00ffba]">{todayStats.completed}</div>
+                    <div className="text-sm text-gray-600">Ολοκληρωμένες</div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="rounded-none">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">{todayStats.missed}</div>
+                    <div className="text-sm text-gray-600">Χαμένες</div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* Programs List */}
-              <ProgramsForDateCard
-                selectedDate={selectedDate}
-                programsForSelectedDate={programsForSelectedDate}
-                onRefresh={refetch}
-                onDelete={handleDeleteProgram}
-              />
+              <Card className="rounded-none">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">{format(today, 'dd')}</div>
+                    <div className="text-sm text-gray-600">Σήμερα</div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Today's Programs */}
+            <Card className="rounded-none">
+              <CardHeader>
+                <CardTitle>Προγράμματα Σήμερα</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {programsForToday.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Δεν υπάρχουν προγραμματισμένες προπονήσεις για σήμερα
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {programsForToday.map(assignment => {
+                      const status = getWorkoutStatus(assignment);
+                      
+                      return (
+                        <div
+                          key={assignment.id}
+                          onClick={() => handleProgramClick(assignment)}
+                          className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-none hover:shadow-md transition-shadow cursor-pointer"
+                        >
+                          <div className="flex items-center gap-4">
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={assignment.app_users?.photo_url || undefined} />
+                              <AvatarFallback className="bg-gray-200">
+                                <User className="w-6 h-6 text-gray-500" />
+                              </AvatarFallback>
+                            </Avatar>
+                            
+                            <div>
+                              <h4 className="font-medium">{assignment.app_users?.name}</h4>
+                              <p className="text-sm text-gray-600">{assignment.programs?.name}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <div className={`px-2 py-1 rounded-none text-xs ${
+                              status === 'completed' ? 'bg-[#00ffba]/10 text-[#00ffba]' :
+                              status === 'missed' ? 'bg-red-100 text-red-600' :
+                              'bg-blue-100 text-blue-600'
+                            }`}>
+                              {status === 'completed' ? 'Ολοκληρωμένη' :
+                               status === 'missed' ? 'Χαμένη' : 'Προγραμματισμένη'}
+                            </div>
+                            
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-none"
+                              title="Προβολή Προπόνησης"
+                            >
+                              <Play className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -199,12 +284,13 @@ const ActivePrograms = () => {
         isOpen={dayDialogOpen}
         onClose={() => setDayDialogOpen(false)}
         program={selectedProgram}
-        selectedDate={selectedDialogDate}
-        workoutStatus={selectedProgram && selectedDialogDate ? getWorkoutStatus(selectedProgram, selectedDialogDate) : 'scheduled'}
+        selectedDate={today}
+        workoutStatus={selectedProgram ? getWorkoutStatus(selectedProgram) : 'scheduled'}
         onRefresh={() => {
           refetch();
           setRealtimeKey(prev => prev + 1);
         }}
+        onMinimize={handleStartWorkout}
       />
     </>
   );
