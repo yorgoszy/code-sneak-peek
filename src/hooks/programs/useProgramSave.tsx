@@ -27,7 +27,10 @@ export const useProgramSave = () => {
         });
       } else if (programData.weeks && programData.weeks.length > 0) {
         // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
-        const totalDays = programData.weeks.reduce((total, week) => total + (week.program_days?.length || 0), 0);
+        const totalDays = programData.weeks.reduce((total, week) => {
+          const daysCount = week.program_days?.length || 0;
+          return total + daysCount;
+        }, 0);
         const today = new Date();
         trainingDatesArray = [];
         for (let i = 0; i < totalDays; i++) {

@@ -78,104 +78,106 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   getTotalTrainingDays
 }) => {
   return (
-    <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto rounded-none">
-      <DialogHeader>
-        <DialogTitle>Δημιουργία Προγράμματος</DialogTitle>
-      </DialogHeader>
+    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none overflow-y-auto">
+      <div className="p-6">
+        <DialogHeader>
+          <DialogTitle>Δημιουργία Προγράμματος</DialogTitle>
+        </DialogHeader>
 
-      <div className="space-y-6">
-        {/* Βασικές Πληροφορίες */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-6">
+          {/* Βασικές Πληροφορίες */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="program-name">Όνομα Προγράμματος</Label>
+              <Input
+                id="program-name"
+                value={program.name || ''}
+                onChange={(e) => onNameChange(e.target.value)}
+                placeholder="Εισάγετε όνομα προγράμματος..."
+                className="rounded-none"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="athlete-select">Αθλητής</Label>
+              <Select value={program.user_id || ''} onValueChange={onAthleteChange}>
+                <SelectTrigger className="rounded-none">
+                  <SelectValue placeholder="Επιλέξτε αθλητή..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div>
-            <Label htmlFor="program-name">Όνομα Προγράμματος</Label>
-            <Input
-              id="program-name"
-              value={program.name || ''}
-              onChange={(e) => onNameChange(e.target.value)}
-              placeholder="Εισάγετε όνομα προγράμματος..."
+            <Label htmlFor="program-description">Περιγραφή</Label>
+            <Textarea
+              id="program-description"
+              value={program.description || ''}
+              onChange={(e) => onDescriptionChange(e.target.value)}
+              placeholder="Περιγραφή προγράμματος..."
               className="rounded-none"
+              rows={3}
             />
           </div>
-          
-          <div>
-            <Label htmlFor="athlete-select">Αθλητής</Label>
-            <Select value={program.user_id || ''} onValueChange={onAthleteChange}>
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Επιλέξτε αθλητή..." />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
 
-        <div>
-          <Label htmlFor="program-description">Περιγραφή</Label>
-          <Textarea
-            id="program-description"
-            value={program.description || ''}
-            onChange={(e) => onDescriptionChange(e.target.value)}
-            placeholder="Περιγραφή προγράμματος..."
-            className="rounded-none"
-            rows={3}
+          {/* Εβδομάδες Προπόνησης */}
+          <TrainingWeeks
+            weeks={program.weeks || []}
+            exercises={exercises}
+            selectedUserId={program.user_id}
+            onAddWeek={onAddWeek}
+            onRemoveWeek={onRemoveWeek}
+            onDuplicateWeek={onDuplicateWeek}
+            onUpdateWeekName={onUpdateWeekName}
+            onAddDay={onAddDay}
+            onRemoveDay={onRemoveDay}
+            onDuplicateDay={onDuplicateDay}
+            onUpdateDayName={onUpdateDayName}
+            onAddBlock={onAddBlock}
+            onRemoveBlock={onRemoveBlock}
+            onDuplicateBlock={onDuplicateBlock}
+            onUpdateBlockName={onUpdateBlockName}
+            onAddExercise={onAddExercise}
+            onRemoveExercise={onRemoveExercise}
+            onUpdateExercise={onUpdateExercise}
+            onDuplicateExercise={onDuplicateExercise}
+            onReorderWeeks={onReorderWeeks}
+            onReorderDays={onReorderDays}
+            onReorderBlocks={onReorderBlocks}
+            onReorderExercises={onReorderExercises}
           />
-        </div>
 
-        {/* Εβδομάδες Προπόνησης */}
-        <TrainingWeeks
-          weeks={program.weeks || []}
-          exercises={exercises}
-          selectedUserId={program.user_id}
-          onAddWeek={onAddWeek}
-          onRemoveWeek={onRemoveWeek}
-          onDuplicateWeek={onDuplicateWeek}
-          onUpdateWeekName={onUpdateWeekName}
-          onAddDay={onAddDay}
-          onRemoveDay={onRemoveDay}
-          onDuplicateDay={onDuplicateDay}
-          onUpdateDayName={onUpdateDayName}
-          onAddBlock={onAddBlock}
-          onRemoveBlock={onRemoveBlock}
-          onDuplicateBlock={onDuplicateBlock}
-          onUpdateBlockName={onUpdateBlockName}
-          onAddExercise={onAddExercise}
-          onRemoveExercise={onRemoveExercise}
-          onUpdateExercise={onUpdateExercise}
-          onDuplicateExercise={onDuplicateExercise}
-          onReorderWeeks={onReorderWeeks}
-          onReorderDays={onReorderDays}
-          onReorderBlocks={onReorderBlocks}
-          onReorderExercises={onReorderExercises}
-        />
+          {/* Ημερολόγιο Ανάθεσης */}
+          <CalendarAssignment
+            program={program}
+            onTrainingDatesChange={onTrainingDatesChange}
+          />
 
-        {/* Ημερολόγιο Ανάθεσης */}
-        <CalendarAssignment
-          program={program}
-          onTrainingDatesChange={onTrainingDatesChange}
-        />
-
-        {/* Κουμπιά Ενεργειών */}
-        <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button
-            onClick={onAssignments}
-            variant="outline"
-            className="rounded-none"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Αναθέσεις
-          </Button>
-          <Button
-            onClick={onSave}
-            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Αποθήκευση
-          </Button>
+          {/* Κουμπιά Ενεργειών */}
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button
+              onClick={onAssignments}
+              variant="outline"
+              className="rounded-none"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Αναθέσεις
+            </Button>
+            <Button
+              onClick={onSave}
+              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Αποθήκευση
+            </Button>
+          </div>
         </div>
       </div>
     </DialogContent>
