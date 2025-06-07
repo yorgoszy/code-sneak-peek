@@ -72,7 +72,7 @@ export const DayCard: React.FC<DayCardProps> = ({
 
   const blocksCount = day.program_blocks?.length || 0;
 
-  // Transform blocks for DayCalculations - simplified version
+  // Transform blocks for DayCalculations with correct field names
   const blocksWithExercises = (day.program_blocks || []).map(block => ({
     id: block.id,
     name: block.name,

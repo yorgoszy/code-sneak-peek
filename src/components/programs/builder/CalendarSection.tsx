@@ -12,7 +12,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   program,
   onTrainingDatesChange
 }) => {
-  // Υπολογισμός συνολικού αριθμού ημερών από όλες τις εβδομάδες
+  // Υπολογισμός συνολικού αριθμού ημερών από όλες τις εβδομάδες - χρήση program_days
   const totalDays = program.weeks?.reduce((total, week) => {
     return total + (week.program_days?.length || 0);
   }, 0) || 0;
