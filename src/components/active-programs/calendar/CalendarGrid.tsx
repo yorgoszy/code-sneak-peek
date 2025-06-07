@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addMonths, subMonths, startOfWeek, endOfWeek, isToday } from "date-fns";
 import { el } from "date-fns/locale";
-import { DayAllProgramsDialog } from './DayAllProgramsDialog';
 import { DayProgramDialog } from './DayProgramDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -30,10 +29,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   realtimeKey,
   onNameClick
 }) => {
-  const [dayDialogOpen, setDayDialogOpen] = useState(false);
-  const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
   const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
   const [selectedProgramForDay, setSelectedProgramForDay] = useState<EnrichedAssignment | null>(null);
+  const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
 
   // Δημιουργούμε μια λίστα με όλες τις ημερομηνίες που έχουν προγράμματα και τα statuses τους
   const programDatesWithStatus = activePrograms.reduce((dates: any[], assignment) => {
@@ -66,21 +64,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     setSelectedDate(date);
   };
 
-  const handleDateNumberClick = (date: Date, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setSelectedDialogDate(date);
-    setDayDialogOpen(true);
-  };
-
-  const handleProgramClick = (program: EnrichedAssignment) => {
-    setDayDialogOpen(false);
-    setSelectedProgramForDay(program);
-    setDayProgramDialogOpen(true);
-  };
-
   const handleUserNameClick = (programData: any, event: React.MouseEvent) => {
     event.stopPropagation();
     setSelectedProgramForDay(programData.assignment);
+    setSelectedDialogDate(new Date(programData.date));
     setDayProgramDialogOpen(true);
   };
 
@@ -174,19 +161,17 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     `}
                     onClick={() => handleDateClick(date)}
                   >
-                    {/* Date Number - Clickable για να ανοίξει το dialog */}
+                    {/* Date Number - Μόνο εμφάνιση, όχι κλικ */}
                     <div 
                       className={`
-                        absolute top-1 left-1 text-sm font-medium cursor-pointer hover:bg-blue-100 px-1 rounded
+                        absolute top-1 left-1 text-sm font-medium
                         ${isTodayDate ? 'font-bold text-yellow-600' : ''}
-                        ${dateProgramsWithStatus.length > 0 ? 'text-blue-600 hover:text-blue-800' : ''}
                       `}
-                      onClick={(e) => handleDateNumberClick(date, e)}
                     >
                       {date.getDate()}
                     </div>
                     
-                    {/* User Names */}
+                    {/* User Names - Κλικάρισμα για άνοιγμα DayProgramDialog */}
                     <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-4 pb-1">
                       {dateProgramsWithStatus.slice(0, 5).map((program, i) => (
                         <div 
@@ -211,16 +196,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </CardContent>
       </Card>
 
-      {/* Dialog για εμφάνιση όλων των προγραμμάτων της ημέρας */}
-      <DayAllProgramsDialog
-        isOpen={dayDialogOpen}
-        onClose={() => setDayDialogOpen(false)}
-        selectedDate={selectedDialogDate}
-        programs={activePrograms}
-        allCompletions={workoutCompletions}
-        onProgramClick={handleProgramClick}
-      />
-
       {/* Dialog για συγκεκριμένη προπόνηση */}
       <DayProgramDialog
         isOpen={dayProgramDialogOpen}
@@ -230,15 +205,15 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         }}
         program={selectedProgramForDay}
         selectedDate={selectedDialogDate}
-        workoutStatus={selectedProgramForDay ? 
+        workoutStatus={selectedProgramForDay && selectedDialogDate ? 
           workoutCompletions.find(c => 
             c.assignment_id === selectedProgramForDay.id && 
-            c.scheduled_date === format(selectedDialogDate || new Date(), 'yyyy-MM-dd')
+            c.scheduled_date === format(selectedDialogDate, 'yyyy-MM-dd')
           )?.status || 'scheduled'
           : 'scheduled'
         }
         onRefresh={() => {
-          // Refresh logic if needed
+          // Refresh logic handled by parent component
         }}
       />
     </>

@@ -60,7 +60,7 @@ const ActivePrograms = () => {
     loadCompletions();
   }, [activePrograms, getWorkoutCompletions, realtimeKey]);
 
-  // Real-time subscription
+  // Real-time subscription με βελτιωμένη ανανέωση
   useEffect(() => {
     const channel = supabase
       .channel('workout-completions-enhanced-realtime')
@@ -72,7 +72,10 @@ const ActivePrograms = () => {
           table: 'workout_completions'
         },
         async (payload) => {
+          console.log('🔄 Real-time workout completion change detected:', payload);
+          // Άμεση ανανέωση του realtimeKey για re-render
           setRealtimeKey(prev => prev + 1);
+          // Ανανέωση δεδομένων
           setTimeout(async () => {
             await refetch();
             await loadCompletions();
@@ -85,17 +88,6 @@ const ActivePrograms = () => {
       supabase.removeChannel(channel);
     };
   }, [refetch]);
-
-  // Υπολογίζουμε τα stats για σήμερα
-  const todayStats = {
-    scheduled: programsForToday.length,
-    completed: workoutCompletions.filter(c => 
-      c.scheduled_date === todayStr && c.status === 'completed'
-    ).length,
-    missed: workoutCompletions.filter(c => 
-      c.scheduled_date === todayStr && c.status === 'missed'
-    ).length
-  };
 
   const handleProgramClick = (assignment: any) => {
     setSelectedProgram(assignment);
@@ -125,8 +117,12 @@ const ActivePrograms = () => {
   };
 
   const handleNameClick = (program: any, event: React.MouseEvent) => {
-    // This function is passed to CalendarGrid but not used anymore
-    // since CalendarGrid now handles its own DayProgramDialog
+    // This function is no longer needed as CalendarGrid handles its own DayProgramDialog
+  };
+
+  const handleCalendarRefresh = () => {
+    setRealtimeKey(prev => prev + 1);
+    refetch();
   };
 
   if (isLoading) {
@@ -154,8 +150,10 @@ const ActivePrograms = () => {
           setIsCollapsed={setIsCollapsed}
           stats={{
             totalPrograms: activePrograms.length,
-            activeToday: todayStats.scheduled,
-            completedToday: todayStats.completed
+            activeToday: programsForToday.length,
+            completedToday: workoutCompletions.filter(c => 
+              c.scheduled_date === todayStr && c.status === 'completed'
+            ).length
           }}
           activePrograms={activePrograms}
           onRefresh={refetch}
@@ -267,10 +265,7 @@ const ActivePrograms = () => {
         program={selectedProgram}
         selectedDate={today}
         workoutStatus={selectedProgram ? getWorkoutStatus(selectedProgram) : 'scheduled'}
-        onRefresh={() => {
-          refetch();
-          setRealtimeKey(prev => prev + 1);
-        }}
+        onRefresh={handleCalendarRefresh}
         onMinimize={handleStartWorkout}
       />
     </>
