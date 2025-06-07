@@ -90,16 +90,16 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
         program_id: program.id,
         athlete_id: assignmentForView.user_id,
         user_id: assignmentForView.user_id,
-        assigned_by: assignmentForView.assigned_by,
+        assigned_by: assignmentForView.assigned_by || undefined,
         start_date: assignmentForView.start_date,
         end_date: assignmentForView.end_date,
         status: assignmentForView.status || 'active',
-        notes: assignmentForView.notes,
+        notes: undefined, // ProgramAssignment doesn't have notes
         created_at: assignmentForView.created_at,
-        updated_at: assignmentForView.updated_at,
-        assignment_type: assignmentForView.assignment_type,
-        group_id: assignmentForView.group_id,
-        progress: assignmentForView.progress,
+        updated_at: assignmentForView.created_at, // Use created_at as fallback
+        assignment_type: undefined, // ProgramAssignment doesn't have assignment_type
+        group_id: undefined, // ProgramAssignment doesn't have group_id
+        progress: undefined, // ProgramAssignment doesn't have progress
         training_dates: assignmentForView.training_dates,
         programs: {
           id: program.id,
