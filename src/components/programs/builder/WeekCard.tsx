@@ -4,51 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { DayCard } from './DayCard';
-import { Exercise } from '../types';
+import { Exercise, Week, Day, Block, ProgramExercise } from '../types';
 import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  blocks: Block[];
-}
-
-interface Week {
-  id: string;
-  name: string;
-  week_number: number;
-  days: Day[];
-}
-
 interface WeekCardProps {
   week: Week;
   exercises: Exercise[];
+  selectedUserId?: string;
   onAddDay: () => void;
   onRemoveWeek: () => void;
+  onDuplicateWeek: () => void;
+  onUpdateWeekName: (name: string) => void;
   onAddBlock: (dayId: string) => void;
   onRemoveDay: (dayId: string) => void;
   onDuplicateDay: (dayId: string) => void;
@@ -116,8 +84,11 @@ const SortableDay: React.FC<{
 export const WeekCard: React.FC<WeekCardProps> = ({
   week,
   exercises,
+  selectedUserId,
   onAddDay,
   onRemoveWeek,
+  onDuplicateWeek,
+  onUpdateWeekName,
   onAddBlock,
   onRemoveDay,
   onDuplicateDay,
@@ -137,8 +108,8 @@ export const WeekCard: React.FC<WeekCardProps> = ({
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      const oldIndex = week.days.findIndex(day => day.id === active.id);
-      const newIndex = week.days.findIndex(day => day.id === over.id);
+      const oldIndex = week.program_days.findIndex(day => day.id === active.id);
+      const newIndex = week.program_days.findIndex(day => day.id === over.id);
       onReorderDays(oldIndex, newIndex);
     }
   };
@@ -170,9 +141,9 @@ export const WeekCard: React.FC<WeekCardProps> = ({
       </CardHeader>
       <CardContent>
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={week.days.map(d => d.id)} strategy={rectSortingStrategy}>
+          <SortableContext items={week.program_days.map(d => d.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {week.days.map((day) => (
+              {week.program_days.map((day) => (
                 <SortableDay
                   key={day.id}
                   day={day}

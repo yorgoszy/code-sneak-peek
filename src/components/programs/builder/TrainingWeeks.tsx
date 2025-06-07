@@ -4,41 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WeekCard } from './WeekCard';
-import { Exercise } from '../types';
-
-interface Week {
-  id: string;
-  name: string;
-  week_number: number;
-  days?: Day[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  blocks?: Block[];
-}
-
-interface Block {
-  id: string;
-  name: string;
-  exercises?: ProgramExercise[];
-}
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
+import { Exercise, Week, Day, Block, ProgramExercise } from '../types';
 
 interface TrainingWeeksProps {
   weeks: Week[];
