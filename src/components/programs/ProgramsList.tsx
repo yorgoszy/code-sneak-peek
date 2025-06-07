@@ -1,14 +1,17 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Trash2, Edit, Copy, Eye, User, Calendar } from "lucide-react";
+import { Trash2, Edit, Copy, Eye, User, Calendar, Play } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Program } from './types';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { parseDateFromString } from '@/utils/dateUtils';
+import { ProgramViewDialog } from "../active-programs/calendar/ProgramViewDialog";
+import { ProgramPreviewDialog } from './ProgramPreviewDialog';
 
 interface ProgramsListProps {
   programs: Program[];
@@ -29,6 +32,11 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   onDuplicateProgram,
   onPreviewProgram
 }) => {
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [selectedProgramForView, setSelectedProgramForView] = useState<Program | null>(null);
+  const [selectedProgramForPreview, setSelectedProgramForPreview] = useState<Program | null>(null);
+
   const getProgramStats = (program: Program) => {
     const weeksCount = program.program_weeks?.length || 0;
     const avgDaysPerWeek = weeksCount > 0 
@@ -59,7 +67,6 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
     };
   };
 
-  // Διόρθωση: Προσθήκη proper handler για διαγραφή με μεγαλύτερη περιοχή κλικ
   const handleDeleteProgram = (e: React.MouseEvent, programId: string) => {
     e.stopPropagation();
     console.log('🗑️ Attempting to delete program:', programId);
@@ -68,6 +75,33 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
       console.log('✅ User confirmed deletion, calling onDeleteProgram with:', programId);
       onDeleteProgram(programId);
     }
+  };
+
+  const handleViewProgram = (e: React.MouseEvent, program: Program) => {
+    e.stopPropagation();
+    console.log('👁️ Opening program view dialog for:', program.name);
+    
+    // Μετατρέπουμε το Program σε EnrichedAssignment format
+    const assignmentForView = program.program_assignments?.[0];
+    if (assignmentForView) {
+      const enrichedAssignment = {
+        ...assignmentForView,
+        programs: {
+          id: program.id,
+          name: program.name,
+          description: program.description || '',
+          program_weeks: program.program_weeks || []
+        }
+      };
+      setSelectedProgramForView(enrichedAssignment as any);
+      setViewDialogOpen(true);
+    }
+  };
+
+  const handlePreviewProgram = (e: React.MouseEvent, program: Program) => {
+    e.stopPropagation();
+    setSelectedProgramForPreview(program);
+    setPreviewDialogOpen(true);
   };
 
   if (programs.length === 0) {
@@ -82,158 +116,171 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   }
 
   return (
-    <div className="w-full">
-      <h2 className="text-xl font-semibold mb-4">Προγράμματα</h2>
-      <div className="space-y-3">
-        {programs.map(program => {
-          const { weeksCount, avgDaysPerWeek } = getProgramStats(program);
-          const assignmentInfo = getAssignmentInfo(program);
-          const isAssigned = assignmentInfo !== null;
-          
-          return (
-            <div
-              key={program.id}
-              className={`p-4 border cursor-pointer hover:bg-gray-50 transition-colors ${
-                selectedProgram?.id === program.id ? 'bg-blue-50 border-blue-300' : ''
-              } ${isAssigned ? 'min-w-[900px]' : 'min-w-[600px]'}`}
-              onClick={() => onSelectProgram(program)}
-            >
-              <div className="space-y-3">
-                {/* Header with title and actions */}
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start gap-4 flex-1">
-                    {/* Athlete Photo - show for assigned programs */}
-                    {isAssigned && assignmentInfo && (
-                      <Avatar className="w-16 h-16 flex-shrink-0">
-                        <AvatarImage src={assignmentInfo.athletePhoto || undefined} />
-                        <AvatarFallback className="bg-gray-200">
-                          <User className="w-8 h-8 text-gray-500" />
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    
-                    {/* Program Info */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-lg">{program.name}</h4>
+    <>
+      <div className="w-full">
+        <h2 className="text-xl font-semibold mb-4">Προγράμματα</h2>
+        <div className="space-y-3">
+          {programs.map(program => {
+            const { weeksCount, avgDaysPerWeek } = getProgramStats(program);
+            const assignmentInfo = getAssignmentInfo(program);
+            const isAssigned = assignmentInfo !== null;
+            
+            return (
+              <Card key={program.id} className="rounded-none hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between h-full">
+                    {/* Left side - User info and program details */}
+                    <div className="flex items-center gap-4 flex-1">
+                      {/* Avatar - show for assigned programs */}
                       {isAssigned && assignmentInfo && (
-                        <p className="text-sm text-gray-600 font-medium">{assignmentInfo.athleteName}</p>
+                        <Avatar className="w-12 h-12 flex-shrink-0">
+                          <AvatarImage src={assignmentInfo.athletePhoto || undefined} />
+                          <AvatarFallback className="bg-gray-200">
+                            <User className="w-6 h-6 text-gray-500" />
+                          </AvatarFallback>
+                        </Avatar>
                       )}
-                      <div className="text-xs text-gray-500 mt-1">
-                        {weeksCount} εβδομάδες • {avgDaysPerWeek} ημέρες/εβδομάδα
+                      
+                      {/* Program Info */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-lg">{program.name}</h4>
+                        {isAssigned && assignmentInfo && (
+                          <p className="text-sm text-gray-600 font-medium">{assignmentInfo.athleteName}</p>
+                        )}
+                        <div className="text-xs text-gray-500 mt-1">
+                          {weeksCount} εβδομάδες • {avgDaysPerWeek} ημέρες/εβδομάδα
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex gap-1 flex-shrink-0">
-                    {onPreviewProgram && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onPreviewProgram(program);
-                        }}
-                        className="rounded-none"
-                        title="Προεπισκόπηση"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditProgram(program);
-                      }}
-                      className="rounded-none"
-                      title="Επεξεργασία"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    {onDuplicateProgram && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDuplicateProgram(program);
-                        }}
-                        className="rounded-none"
-                        title="Αντιγραφή"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    )}
-                    {/* Μεγαλύτερη περιοχή κλικ για διαγραφή */}
-                    <div
-                      onClick={(e) => handleDeleteProgram(e, program.id)}
-                      className="flex items-center justify-center p-2 hover:bg-red-50 cursor-pointer rounded-none border border-transparent hover:border-red-200"
-                      title="Διαγραφή"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </div>
-                  </div>
-                </div>
 
-                {/* Assignment Details - show for assigned programs */}
-                {isAssigned && assignmentInfo && (
-                  <div className="space-y-3 pl-20">
-                    {/* Assignment Date */}
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">Ημερομηνία Ανάθεσης:</span> {assignmentInfo.assignmentDate}
-                    </div>
-                    
-                    {/* Training Dates */}
-                    {assignmentInfo.trainingDates.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          Ημερομηνίες Προπόνησης ({assignmentInfo.trainingDates.length})
-                        </div>
-                        <div className="flex flex-wrap gap-1 max-w-md">
-                          {assignmentInfo.trainingDates.slice(0, 8).map((date, index) => (
-                            <span 
-                              key={index}
-                              className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded"
-                            >
-                              {format(parseDateFromString(date), 'dd/MM', { locale: el })}
-                            </span>
-                          ))}
-                          {assignmentInfo.trainingDates.length > 8 && (
-                            <span className="text-xs text-gray-500 px-2 py-1">
-                              +{assignmentInfo.trainingDates.length - 8} ακόμα
-                            </span>
-                          )}
+                    {/* Center - Progress and training info for assigned programs */}
+                    {isAssigned && assignmentInfo && (
+                      <div className="flex-1 max-w-md mx-4">
+                        <div className="space-y-2">
+                          {/* Training dates summary */}
+                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <Calendar className="w-3 h-3" />
+                            <span>{assignmentInfo.trainingDates.length} προπονήσεις</span>
+                            {assignmentInfo.trainingDates.length > 0 && (
+                              <span>
+                                ({format(parseDateFromString(assignmentInfo.trainingDates[0]), 'dd/MM', { locale: el })} - 
+                                {format(parseDateFromString(assignmentInfo.trainingDates[assignmentInfo.trainingDates.length - 1]), 'dd/MM', { locale: el })})
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Progress bar */}
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span>Πρόοδος</span>
+                              <span>{assignmentInfo.completedSessions}/{assignmentInfo.totalSessions}</span>
+                            </div>
+                            <Progress 
+                              value={assignmentInfo.progressPercentage} 
+                              className="h-2 w-full"
+                            />
+                          </div>
                         </div>
                       </div>
                     )}
-                    
-                    {/* Progress Section */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="font-medium">Πρόοδος Προγράμματος</span>
-                        <span className="text-gray-600">
-                          {assignmentInfo.completedSessions}/{assignmentInfo.totalSessions} προπονήσεις
-                        </span>
-                      </div>
-                      <Progress 
-                        value={assignmentInfo.progressPercentage} 
-                        className="h-3 w-full"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>Ολοκληρώθηκαν: {assignmentInfo.completedSessions}</span>
-                        <span>Απομένουν: {assignmentInfo.remainingSessions}</span>
+
+                    {/* Right side - Status and action buttons */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {/* Status Badge */}
+                      {isAssigned && (
+                        <Badge 
+                          variant="outline" 
+                          className="rounded-none bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]"
+                        >
+                          Active
+                        </Badge>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-1">
+                        {/* View button - opens ProgramViewDialog for assigned programs */}
+                        {isAssigned && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handleViewProgram(e, program)}
+                            className="rounded-none"
+                            title="Προβολή Προγράμματος"
+                          >
+                            <Play className="w-4 h-4" />
+                          </Button>
+                        )}
+
+                        {/* Preview button - opens ProgramPreviewDialog */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handlePreviewProgram(e, program)}
+                          className="rounded-none"
+                          title="Προεπισκόπηση"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditProgram(program);
+                          }}
+                          className="rounded-none"
+                          title="Επεξεργασία"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+
+                        {onDuplicateProgram && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDuplicateProgram(program);
+                            }}
+                            className="rounded-none"
+                            title="Αντιγραφή"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        )}
+
+                        {/* Larger delete button area */}
+                        <div
+                          onClick={(e) => handleDeleteProgram(e, program.id)}
+                          className="flex items-center justify-center p-2 hover:bg-red-50 cursor-pointer rounded-none border border-transparent hover:border-red-200 min-w-[32px] min-h-[32px]"
+                          title="Διαγραφή"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </div>
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      {/* ProgramViewDialog for assigned programs */}
+      <ProgramViewDialog
+        isOpen={viewDialogOpen}
+        onClose={() => setViewDialogOpen(false)}
+        assignment={selectedProgramForView}
+      />
+
+      {/* ProgramPreviewDialog for all programs */}
+      <ProgramPreviewDialog
+        program={selectedProgramForPreview}
+        isOpen={previewDialogOpen}
+        onOpenChange={setPreviewDialogOpen}
+      />
+    </>
   );
 };

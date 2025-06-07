@@ -11,7 +11,9 @@ export const formatDateToLocalString = (date: Date): string => {
     getFullYear: date.getFullYear(),
     getMonth: date.getMonth(),
     getDate: date.getDate(),
-    getTimezoneOffset: date.getTimezoneOffset()
+    getTimezoneOffset: date.getTimezoneOffset(),
+    toDateString: date.toDateString(),
+    toLocaleDateString: date.toLocaleDateString()
   });
   
   // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε την τοπική ημερομηνία του χρήστη ΧΩΡΙΣ timezone conversion
@@ -25,7 +27,8 @@ export const formatDateToLocalString = (date: Date): string => {
     input: date,
     result: result,
     components: { year, month: date.getMonth() + 1, day: date.getDate() },
-    debugInfo: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} → ${result}`
+    debugInfo: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} → ${result}`,
+    verification: 'Date components extracted directly from Date object'
   });
   
   return result;
@@ -36,8 +39,9 @@ export const parseDateFromString = (dateString: string): Date => {
   
   // ΔΙΟΡΘΩΣΗ: Δημιουργούμε Date object χωρίς timezone conversion
   const [year, month, day] = dateString.split('-').map(Number);
-  // ΠΡΟΣΟΧΗ: στο new Date(year, month, day) ο month είναι 0-based!
-  const result = new Date(year, month - 1, day); // -1 επειδή το Date constructor θέλει 0-11
+  
+  // ΣΗΜΑΝΤΙΚΟ: Χρησιμοποιούμε την ώρα μεσημέρι για να αποφύγουμε DST issues
+  const result = new Date(year, month - 1, day, 12, 0, 0); // -1 επειδή το Date constructor θέλει 0-11, 12:00 PM
   
   console.log('🔧 [dateUtils] parseDateFromString output:', {
     input: dateString,
@@ -45,7 +49,8 @@ export const parseDateFromString = (dateString: string): Date => {
     components: { year, month: month - 1, day },
     verification: `${result.getDate()}/${result.getMonth() + 1}/${result.getFullYear()}`,
     resultString: result.toString(),
-    resultISOString: result.toISOString()
+    resultISOString: result.toISOString(),
+    withNoonTime: 'Set to 12:00 PM to avoid DST issues'
   });
   
   return result;
@@ -63,13 +68,14 @@ export const ensureLocalDate = (date: Date | string): Date => {
     return result;
   }
   
-  // ΔΙΟΡΘΩΣΗ: Αν είναι ήδη Date object, δημιουργούμε νέο με τοπική ώρα
-  const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  // ΔΙΟΡΘΩΣΗ: Αν είναι ήδη Date object, δημιουργούμε νέο με τοπική ώρα στο μεσημέρι
+  const result = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
   console.log('🔧 [dateUtils] ensureLocalDate date→local:', { 
     input: date, 
     result: result,
     inputDebug: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
-    resultDebug: `${result.getDate()}/${result.getMonth() + 1}/${result.getFullYear()}`
+    resultDebug: `${result.getDate()}/${result.getMonth() + 1}/${result.getFullYear()}`,
+    withNoonTime: 'Set to 12:00 PM for consistency'
   });
   return result;
 };
@@ -110,8 +116,35 @@ export const debugDate = (date: Date, label: string = '') => {
     getMonth: date.getMonth(),
     getMonthDisplay: date.getMonth() + 1, // Human readable month
     getDate: date.getDate(),
+    getHours: date.getHours(),
+    getMinutes: date.getMinutes(),
     toString: date.toString(),
     toISOString: date.toISOString(),
+    toLocaleDateString: date.toLocaleDateString(),
     formatted: formatDateToLocalString(date)
   });
+};
+
+// Νέα function για σωστή δημιουργία ημερομηνίας από calendar
+export const createDateFromCalendar = (date: Date): Date => {
+  console.log('🔧 [dateUtils] createDateFromCalendar input:', {
+    originalDate: date,
+    toString: date.toString(),
+    getFullYear: date.getFullYear(),
+    getMonth: date.getMonth(),
+    getDate: date.getDate(),
+    getTimezoneOffset: date.getTimezoneOffset()
+  });
+
+  // Δημιουργούμε νέα ημερομηνία με τα ίδια στοιχεία αλλά στο μεσημέρι
+  const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+  
+  console.log('🔧 [dateUtils] createDateFromCalendar output:', {
+    input: date,
+    output: cleanDate,
+    formatted: formatDateToLocalString(cleanDate),
+    verification: `${cleanDate.getDate()}/${cleanDate.getMonth() + 1}/${cleanDate.getFullYear()}`
+  });
+
+  return cleanDate;
 };

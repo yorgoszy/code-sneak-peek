@@ -2,8 +2,6 @@
 import React from 'react';
 import { ProgramBuilderDialog } from './ProgramBuilderDialog';
 import { ProgramsList } from './ProgramsList';
-import { ProgramDetails } from './ProgramDetails';
-import { ProgramPreviewDialog } from './ProgramPreviewDialog';
 import { ProgramBuilderTrigger } from './builder/ProgramBuilderTrigger';
 import { Program, User, Exercise } from './types';
 
@@ -38,20 +36,12 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   exercises,
   editingProgram,
   builderDialogOpen,
-  previewProgram,
-  previewDialogOpen,
   onSelectProgram,
   onDeleteProgram,
   onEditProgram,
   onCreateProgram,
   onBuilderDialogClose,
   onDuplicateProgram,
-  onPreviewProgram,
-  onPreviewDialogClose,
-  onDeleteWeek,
-  onDeleteDay,
-  onDeleteBlock,
-  onDeleteExercise,
   onOpenBuilder
 }) => {
   return (
@@ -61,31 +51,16 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
         <ProgramBuilderTrigger onClick={onOpenBuilder} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <ProgramsList
-            programs={programs}
-            selectedProgram={selectedProgram}
-            onSelectProgram={onSelectProgram}
-            onDeleteProgram={onDeleteProgram}
-            onEditProgram={onEditProgram}
-            onDuplicateProgram={onDuplicateProgram}
-            onPreviewProgram={onPreviewProgram}
-          />
-        </div>
-
-        <div className="lg:col-span-1">
-          <ProgramDetails
-            selectedProgram={selectedProgram}
-            users={users}
-            exercises={exercises}
-            onDeleteWeek={onDeleteWeek}
-            onDeleteDay={onDeleteDay}
-            onDeleteBlock={onDeleteBlock}
-            onDeleteExercise={onDeleteExercise}
-            onEditProgram={onEditProgram}
-          />
-        </div>
+      {/* Μόνο η λίστα προγραμμάτων - αφαιρέθηκε η προβολή λεπτομερειών */}
+      <div className="w-full">
+        <ProgramsList
+          programs={programs}
+          selectedProgram={selectedProgram}
+          onSelectProgram={onSelectProgram}
+          onDeleteProgram={onDeleteProgram}
+          onEditProgram={onEditProgram}
+          onDuplicateProgram={onDuplicateProgram}
+        />
       </div>
 
       {builderDialogOpen && (
@@ -96,14 +71,6 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           editingProgram={editingProgram}
           isOpen={builderDialogOpen}
           onOpenChange={onBuilderDialogClose}
-        />
-      )}
-
-      {previewDialogOpen && (
-        <ProgramPreviewDialog
-          program={previewProgram}
-          isOpen={previewDialogOpen}
-          onOpenChange={onPreviewDialogClose}
         />
       )}
     </div>

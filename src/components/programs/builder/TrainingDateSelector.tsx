@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
-import { formatDateToLocalString, parseDateFromString, debugDate } from '@/utils/dateUtils';
+import { formatDateToLocalString, parseDateFromString, debugDate, createDateFromCalendar } from '@/utils/dateUtils';
 
 interface TrainingDateSelectorProps {
   selectedDates: string[];
@@ -22,9 +22,12 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
+    if (!date) {
+      console.log('🗓️ [TrainingDateSelector] No date selected');
+      return;
+    }
     
-    console.log('🗓️ [TrainingDateSelector] Date selected from calendar:', {
+    console.log('🗓️ [TrainingDateSelector] Raw date from calendar:', {
       originalDate: date,
       toString: date.toString(),
       toISOString: date.toISOString(),
@@ -32,21 +35,25 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
       getFullYear: date.getFullYear(),
       getMonth: date.getMonth(),
       getDate: date.getDate(),
-      getTimezoneOffset: date.getTimezoneOffset()
+      getTimezoneOffset: date.getTimezoneOffset(),
+      getHours: date.getHours(),
+      getMinutes: date.getMinutes(),
+      getSeconds: date.getSeconds()
     });
     
-    // ΔΙΟΡΘΩΣΗ: Δημιουργούμε καθαρό Date object με τοπική ημερομηνία
-    const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    debugDate(cleanDate, 'Clean date after selection');
+    // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τη νέα utility function για clean date creation
+    const cleanDate = createDateFromCalendar(date);
+    debugDate(cleanDate, 'Clean date after calendar selection');
     
-    // Χρησιμοποιούμε τη νέα utility function για σωστό formatting
+    // Χρησιμοποιούμε τη utility function για σωστό formatting
     const dateString = formatDateToLocalString(cleanDate);
     
-    console.log('🗓️ [TrainingDateSelector] Date after formatting:', {
-      originalDate: date,
+    console.log('🗓️ [TrainingDateSelector] Final processing:', {
+      originalCalendarDate: date,
       cleanDate: cleanDate,
       formattedDateString: dateString,
-      parsedBack: parseDateFromString(dateString)
+      parsedBack: parseDateFromString(dateString),
+      verificationMatch: parseDateFromString(dateString).getDate() === cleanDate.getDate()
     });
     
     if (selectedDates.includes(dateString)) {
@@ -75,24 +82,28 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   };
 
   const isDateSelected = (date: Date) => {
-    // ΔΙΟΡΘΩΣΗ: Δημιουργούμε καθαρό Date object για σύγκριση
-    const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τη νέα utility function
+    const cleanDate = createDateFromCalendar(date);
     const dateString = formatDateToLocalString(cleanDate);
     const isSelected = selectedDates.includes(dateString);
+    
     console.log('🗓️ [TrainingDateSelector] Checking if date is selected:', {
       originalDate: date,
       cleanDate: cleanDate,
       dateString: dateString,
       isSelected: isSelected,
-      selectedDates: selectedDates
+      selectedDates: selectedDates,
+      comparison: `${dateString} in [${selectedDates.join(', ')}] = ${isSelected}`
     });
+    
     return isSelected;
   };
 
   // Log current state
   console.log('🗓️ [TrainingDateSelector] Current state:', {
     selectedDates: selectedDates,
-    selectedDatesCount: selectedDates.length
+    selectedDatesCount: selectedDates.length,
+    calendarDate: calendarDate
   });
 
   return (
