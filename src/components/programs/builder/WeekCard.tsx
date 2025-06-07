@@ -108,14 +108,16 @@ export const WeekCard: React.FC<WeekCardProps> = ({
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      const oldIndex = (week.program_days || []).findIndex(day => day.id === active.id);
-      const newIndex = (week.program_days || []).findIndex(day => day.id === over.id);
+      const oldIndex = programDays.findIndex(day => day.id === active.id);
+      const newIndex = programDays.findIndex(day => day.id === over.id);
       onReorderDays(oldIndex, newIndex);
     }
   };
 
-  // Ensure program_days is always an array
-  const programDays = week.program_days || [];
+  // Ensure program_days is always an array and provide fallback
+  const programDays = Array.isArray(week.program_days) ? week.program_days : [];
+
+  console.log('WeekCard - Week:', week.name, 'Program Days:', programDays);
 
   return (
     <Card className="rounded-none border-2">
