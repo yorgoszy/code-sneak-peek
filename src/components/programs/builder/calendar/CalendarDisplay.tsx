@@ -23,22 +23,16 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
         mode="single"
         selected={undefined}
         onSelect={onDateSelect}
-        className="rounded-none w-full"
+        className="rounded-none w-full [&_.day]:hover:bg-transparent [&_.day]:hover:text-current"
         weekStartsOn={1}
         disabled={isDateDisabled}
         modifiers={{
           selected: isDateSelected
         }}
         modifiersClassNames={{
-          selected: "bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
+          selected: "bg-[#00ffba] text-black hover:bg-[#00ffba] hover:text-black"
         }}
       />
-      
-      <div className="mt-3 text-xs text-gray-600 space-y-1">
-        <p>💡 Κάντε κλικ σε μια ημερομηνία για να την επιλέξετε/αφαιρέσετε</p>
-        <p>📅 Μπορείτε να επιλέξετε μέχρι {totalDaysRequired} ημερομηνίες</p>
-        <p>🚫 Παλαιές ημερομηνίες είναι απενεργοποιημένες</p>
-      </div>
     </div>
   );
 };

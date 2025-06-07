@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarHeader } from './calendar/CalendarHeader';
-import { SelectedDatesSection } from './calendar/SelectedDatesSection';
 import { CalendarDisplay } from './calendar/CalendarDisplay';
 import { CompletionStatus } from './calendar/CompletionStatus';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
@@ -75,23 +74,6 @@ export const CalendarAssignment: React.FC<CalendarAssignmentProps> = ({
     onTrainingDatesChange(newDates);
   };
 
-  const removeDate = (dateToRemove: Date) => {
-    console.log('📅 Removing date:', dateToRemove);
-    const dateToRemoveString = new Date(dateToRemove.getFullYear(), dateToRemove.getMonth(), dateToRemove.getDate()).toISOString().split('T')[0];
-    const newDates = selectedDates.filter(d => {
-      const existingDateString = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().split('T')[0];
-      return existingDateString !== dateToRemoveString;
-    });
-    setSelectedDates(newDates);
-    onTrainingDatesChange(newDates);
-  };
-
-  const clearAllDates = () => {
-    console.log('📅 Clearing all dates');
-    setSelectedDates([]);
-    onTrainingDatesChange([]);
-  };
-
   const isDateSelected = (date: Date) => {
     const dateString = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString().split('T')[0];
     return selectedDates.some(d => {
@@ -135,12 +117,6 @@ export const CalendarAssignment: React.FC<CalendarAssignmentProps> = ({
       />
       
       <CardContent className="space-y-4">
-        <SelectedDatesSection
-          selectedDates={selectedDates}
-          onRemoveDate={removeDate}
-          onClearAllDates={clearAllDates}
-        />
-
         <CalendarDisplay
           selectedDates={selectedDates}
           totalDaysRequired={totalDaysRequired}
