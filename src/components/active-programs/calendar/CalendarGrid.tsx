@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 import { DayProgramDialog } from './DayProgramDialog';
-import { CalendarLegend } from './CalendarLegend';
 import { CalendarNavigation } from './CalendarNavigation';
 import { CalendarWeekDays } from './CalendarWeekDays';
 import { CalendarDay } from './CalendarDay';
@@ -117,7 +116,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       <Card className="rounded-none">
         <CardHeader>
           <CardTitle className="text-lg">Ημερολόγιο Προπονήσεων</CardTitle>
-          <CalendarLegend />
         </CardHeader>
         <CardContent>
           <Tabs value={calendarView} onValueChange={(value) => setCalendarView(value as 'monthly' | 'weekly' | 'daily')} className="w-full">
