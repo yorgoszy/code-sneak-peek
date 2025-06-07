@@ -1,5 +1,6 @@
 
 import { useState, useMemo } from 'react';
+import { formatDateToLocalString } from '@/utils/dateUtils';
 
 interface UseCalendarLogicProps {
   selectedDates: Date[];
@@ -26,14 +27,6 @@ export const useCalendarLogic = ({
       totalDaysBeforeWeek: weeks.slice(0, weekIndex).reduce((sum, w) => sum + (w.days?.length || 0), 0)
     }));
   }, [weeks]);
-
-  // Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone issues
-  const formatDateToLocalString = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;

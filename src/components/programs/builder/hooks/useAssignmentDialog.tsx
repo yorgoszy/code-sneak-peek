@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
 import { useProgramWorkoutCompletions } from "@/hooks/programs/useProgramWorkoutCompletions";
+import { formatDateToLocalString, formatDatesArray } from '@/utils/dateUtils';
 import type { ProgramStructure } from './useProgramBuilderState';
 import type { User } from '../../types';
 
@@ -30,20 +31,6 @@ export const useAssignmentDialog = ({
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const { createWorkoutCompletions } = useProgramWorkoutCompletions();
 
-  // Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone conversion
-  const formatDateToString = (date: Date | string): string => {
-    if (typeof date === 'string') {
-      return date;
-    }
-    
-    // Χρησιμοποιούμε την τοπική ημερομηνία
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-  };
-
   const handleOpenAssignments = async () => {
     try {
       console.log('🔄 Opening assignments dialog - Current program state:', program);
@@ -68,10 +55,10 @@ export const useAssignmentDialog = ({
       // Έλεγχος αν υπάρχουν επαρκείς ημερομηνίες
       const totalDays = program.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
       
-      // Διασφαλίζουμε ότι έχουμε training_dates σε string format
+      // Διασφαλίζουμε ότι έχουμε training_dates σε string format χωρίς timezone conversion
       let trainingDates: string[] = [];
       if (program.training_dates && program.training_dates.length > 0) {
-        trainingDates = program.training_dates.map(formatDateToString);
+        trainingDates = formatDatesArray(program.training_dates);
       }
 
       if (trainingDates.length === 0) {
@@ -147,15 +134,8 @@ export const useAssignmentDialog = ({
         return;
       }
 
-      // Μετατροπή ημερομηνιών σε σωστό format
-      const formattedTrainingDates = trainingDates.map(dateString => {
-        // Διασφαλίζουμε ότι οι ημερομηνίες είναι σε σωστό format
-        if (typeof dateString === 'string' && dateString.includes('T')) {
-          // Αν έχει ήδη timestamp, παίρνουμε μόνο την ημερομηνία
-          return dateString.split('T')[0];
-        }
-        return dateString;
-      });
+      // Μετατροπή ημερομηνιών σε σωστό format χωρίς timezone conversion
+      const formattedTrainingDates = formatDatesArray(trainingDates);
 
       // Υπολογισμός start_date και end_date από τις επιλεγμένες ημερομηνίες
       const sortedDates = [...formattedTrainingDates].sort();

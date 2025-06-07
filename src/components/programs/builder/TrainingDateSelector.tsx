@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
+import { formatDateToLocalString, parseDateFromString } from '@/utils/dateUtils';
 
 interface TrainingDateSelectorProps {
   selectedDates: string[];
@@ -19,20 +20,11 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
 }) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
 
-  // Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone issues
-  const formatDateToString = (date: Date): string => {
-    // Χρησιμοποιούμε την τοπική ημερομηνία του χρήστη
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-  };
-
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    const dateString = formatDateToString(date);
+    // Χρησιμοποιούμε τη νέα utility function για σωστό formatting
+    const dateString = formatDateToLocalString(date);
     
     console.log('📅 Training date selection:', {
       originalDate: date,
@@ -57,7 +49,7 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   };
 
   const isDateSelected = (date: Date) => {
-    const dateString = formatDateToString(date);
+    const dateString = formatDateToLocalString(date);
     return selectedDates.includes(dateString);
   };
 
@@ -123,7 +115,7 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
                     className="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-none"
                   >
                     <span className="text-sm">
-                      {format(parseISO(dateString), 'dd/MM/yyyy - EEEE')}
+                      {format(parseDateFromString(dateString), 'dd/MM/yyyy - EEEE')}
                     </span>
                     <Button
                       variant="ghost"
