@@ -11,17 +11,17 @@ export const useBlockActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).map(day => {
+          program_days: (week.program_days || []).map(day => {
             if (day.id === dayId) {
               const newBlock = {
                 id: generateId(),
-                name: `Μπλοκ ${(day.blocks?.length || 0) + 1}`,
-                block_order: (day.blocks?.length || 0) + 1,
-                exercises: []
+                name: `Μπλοκ ${(day.program_blocks?.length || 0) + 1}`,
+                block_order: (day.program_blocks?.length || 0) + 1,
+                program_exercises: []
               };
               return {
                 ...day,
-                blocks: [...(day.blocks || []), newBlock]
+                program_blocks: [...(day.program_blocks || []), newBlock]
               };
             }
             return day;
@@ -38,11 +38,11 @@ export const useBlockActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).map(day => {
+          program_days: (week.program_days || []).map(day => {
             if (day.id === dayId) {
               return {
                 ...day,
-                blocks: (day.blocks || []).filter(block => block.id !== blockId)
+                program_blocks: (day.program_blocks || []).filter(block => block.id !== blockId)
               };
             }
             return day;
@@ -59,17 +59,17 @@ export const useBlockActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).map(day => {
+          program_days: (week.program_days || []).map(day => {
             if (day.id === dayId) {
-              const blockToDuplicate = day.blocks?.find(block => block.id === blockId);
+              const blockToDuplicate = day.program_blocks?.find(block => block.id === blockId);
               if (!blockToDuplicate) return day;
 
               const newBlock = {
                 ...JSON.parse(JSON.stringify(blockToDuplicate)),
                 id: generateId(),
                 name: `${blockToDuplicate.name} (Αντίγραφο)`,
-                block_order: (day.blocks?.length || 0) + 1,
-                exercises: blockToDuplicate.exercises.map(exercise => ({
+                block_order: (day.program_blocks?.length || 0) + 1,
+                program_exercises: blockToDuplicate.program_exercises.map(exercise => ({
                   ...exercise,
                   id: generateId()
                 }))
@@ -77,7 +77,7 @@ export const useBlockActions = (
 
               return {
                 ...day,
-                blocks: [...(day.blocks || []), newBlock]
+                program_blocks: [...(day.program_blocks || []), newBlock]
               };
             }
             return day;
@@ -94,11 +94,11 @@ export const useBlockActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          days: (week.days || []).map(day => {
+          program_days: (week.program_days || []).map(day => {
             if (day.id === dayId) {
               return {
                 ...day,
-                blocks: (day.blocks || []).map(block =>
+                program_blocks: (day.program_blocks || []).map(block =>
                   block.id === blockId ? { ...block, name } : block
                 )
               };

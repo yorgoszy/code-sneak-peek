@@ -1,41 +1,7 @@
+
 import { useState, useCallback } from 'react';
 import { formatDatesArray } from '@/utils/dateUtils';
-import { Exercise } from '../../types';
-
-interface ProgramExercise {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  percentage_1rm: number;
-  kg: string;
-  velocity_ms: string;
-  tempo: string;
-  rest: string;
-  exercise_order: number;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  block_order: number;
-  exercises: ProgramExercise[];
-}
-
-interface Day {
-  id: string;
-  name: string;
-  day_number: number;
-  blocks: Block[];
-}
-
-interface Week {
-  id: string;
-  name: string;
-  week_number: number;
-  days: Day[];
-}
+import { Exercise, Week, Day, Block, ProgramExercise } from '../../types';
 
 export interface ProgramStructure {
   id: string;
@@ -96,31 +62,33 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
         user_id: programData.user_id || '',
         start_date: programData.start_date,
         training_days: programData.training_days || [],
-        training_dates: programData.training_dates || [], // Κρατάμε τις ημερομηνίες ως έχουν
+        training_dates: programData.training_dates || [],
         weeks: programData.program_weeks?.map((week: any) => ({
           id: week.id,
           name: week.name,
           week_number: week.week_number,
-          days: week.program_days?.map((day: any) => ({
+          program_days: week.program_days?.map((day: any) => ({
             id: day.id,
             name: day.name,
             day_number: day.day_number,
-            blocks: day.program_blocks?.map((block: any) => ({
+            estimated_duration_minutes: day.estimated_duration_minutes,
+            program_blocks: day.program_blocks?.map((block: any) => ({
               id: block.id,
               name: block.name,
               block_order: block.block_order,
-              exercises: block.program_exercises?.map((exercise: any) => ({
+              program_exercises: block.program_exercises?.map((exercise: any) => ({
                 id: exercise.id,
                 exercise_id: exercise.exercise_id,
-                exercise_name: findExerciseName(exercise.exercise_id, exercises),
                 sets: exercise.sets || 1,
                 reps: exercise.reps || '',
-                percentage_1rm: exercise.percentage_1rm || 0,
                 kg: exercise.kg || '',
-                velocity_ms: exercise.velocity_ms || '',
+                percentage_1rm: exercise.percentage_1rm,
+                velocity_ms: exercise.velocity_ms,
                 tempo: exercise.tempo || '',
                 rest: exercise.rest || '',
-                exercise_order: exercise.exercise_order || 1
+                notes: exercise.notes || '',
+                exercise_order: exercise.exercise_order || 1,
+                exercises: exercise.exercises || { name: findExerciseName(exercise.exercise_id, exercises) }
               })) || []
             })) || []
           })) || []
@@ -137,7 +105,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
 
   const getTotalTrainingDays = useCallback(() => {
     return program.weeks?.reduce((total, week) => {
-      return total + (week.days?.length || 0);
+      return total + (week.program_days?.length || 0);
     }, 0) || 0;
   }, [program.weeks]);
 
