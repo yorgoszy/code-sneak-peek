@@ -68,7 +68,7 @@ export const DayCard: React.FC<DayCardProps> = ({
     }
   };
 
-  const blocksCount = day.program_blocks.length;
+  const blocksCount = day.program_blocks?.length || 0;
 
   return (
     <Card className="rounded-none relative" style={{ minHeight: '30px' }}>
@@ -94,7 +94,7 @@ export const DayCard: React.FC<DayCardProps> = ({
         
         {isOpen && (
           <DayCardContent
-            blocks={day.program_blocks}
+            blocks={day.program_blocks || []}
             exercises={exercises}
             onAddExercise={onAddExercise}
             onRemoveBlock={onRemoveBlock}
@@ -109,7 +109,7 @@ export const DayCard: React.FC<DayCardProps> = ({
         )}
         
         <DayCalculations 
-          blocks={day.program_blocks} 
+          blocks={day.program_blocks || []} 
           exercises={exercises} 
         />
       </Collapsible>
