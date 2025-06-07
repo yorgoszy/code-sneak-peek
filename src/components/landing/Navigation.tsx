@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Globe, LogOut } from "lucide-react";
+import { Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface NavigationProps {
@@ -104,7 +103,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       variant="ghost" 
                       className="dashboard-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     >
-                      Dashboard
+                      <LayoutDashboard className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Button 
