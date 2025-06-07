@@ -60,7 +60,7 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
         exercises: block.program_exercises.map(pe => ({
           id: pe.id,
           exercise_id: pe.exercise_id,
-          exercise_name: pe.exercise_name,
+          exercise_name: pe.exercises?.name || '',
           sets: pe.sets,
           reps: pe.reps || '',
           percentage_1rm: pe.percentage_1rm || 0,
@@ -83,7 +83,7 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
         exercises: block.program_exercises.map(pe => ({
           id: pe.id,
           exercise_id: pe.exercise_id,
-          exercise_name: pe.exercise_name,
+          exercise_name: pe.exercises?.name || '',
           sets: pe.sets,
           reps: pe.reps || '',
           percentage_1rm: pe.percentage_1rm || 0,
