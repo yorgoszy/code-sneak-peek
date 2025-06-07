@@ -24,35 +24,68 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
+    console.log('🗓️ [TrainingDateSelector] Date selected from calendar:', {
+      originalDate: date,
+      toString: date.toString(),
+      toISOString: date.toISOString(),
+      toDateString: date.toDateString(),
+      getFullYear: date.getFullYear(),
+      getMonth: date.getMonth(),
+      getDate: date.getDate(),
+      getTimezoneOffset: date.getTimezoneOffset()
+    });
+    
     // Χρησιμοποιούμε τη νέα utility function για σωστό formatting
     const dateString = formatDateToLocalString(date);
     
-    console.log('📅 Training date selection:', {
+    console.log('🗓️ [TrainingDateSelector] Date after formatting:', {
       originalDate: date,
-      dateString: dateString
+      formattedDateString: dateString,
+      parsedBack: parseDateFromString(dateString)
     });
     
     if (selectedDates.includes(dateString)) {
       // Remove date if already selected
-      onDatesChange(selectedDates.filter(d => d !== dateString));
+      const newDates = selectedDates.filter(d => d !== dateString);
+      console.log('🗓️ [TrainingDateSelector] Removing date, new array:', newDates);
+      onDatesChange(newDates);
     } else {
       // Add date if not selected
-      onDatesChange([...selectedDates, dateString].sort());
+      const newDates = [...selectedDates, dateString].sort();
+      console.log('🗓️ [TrainingDateSelector] Adding date, new array:', newDates);
+      onDatesChange(newDates);
     }
   };
 
   const removeDate = (dateToRemove: string) => {
-    onDatesChange(selectedDates.filter(d => d !== dateToRemove));
+    console.log('🗓️ [TrainingDateSelector] Removing date:', dateToRemove);
+    const newDates = selectedDates.filter(d => d !== dateToRemove);
+    console.log('🗓️ [TrainingDateSelector] After removal:', newDates);
+    onDatesChange(newDates);
   };
 
   const clearAllDates = () => {
+    console.log('🗓️ [TrainingDateSelector] Clearing all dates');
     onDatesChange([]);
   };
 
   const isDateSelected = (date: Date) => {
     const dateString = formatDateToLocalString(date);
-    return selectedDates.includes(dateString);
+    const isSelected = selectedDates.includes(dateString);
+    console.log('🗓️ [TrainingDateSelector] Checking if date is selected:', {
+      date: date,
+      dateString: dateString,
+      isSelected: isSelected,
+      selectedDates: selectedDates
+    });
+    return isSelected;
   };
+
+  // Log current state
+  console.log('🗓️ [TrainingDateSelector] Current state:', {
+    selectedDates: selectedDates,
+    selectedDatesCount: selectedDates.length
+  });
 
   return (
     <Card className="rounded-none">

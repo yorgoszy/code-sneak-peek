@@ -59,7 +59,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
     };
   };
 
-  // Διόρθωση: Προσθήκη proper handler για διαγραφή
+  // Διόρθωση: Προσθήκη proper handler για διαγραφή με μεγαλύτερη περιοχή κλικ
   const handleDeleteProgram = (e: React.MouseEvent, programId: string) => {
     e.stopPropagation();
     console.log('🗑️ Attempting to delete program:', programId);
@@ -166,15 +166,14 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                         <Copy className="w-4 h-4" />
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    {/* Μεγαλύτερη περιοχή κλικ για διαγραφή */}
+                    <div
                       onClick={(e) => handleDeleteProgram(e, program.id)}
-                      className="rounded-none text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="flex items-center justify-center p-2 hover:bg-red-50 cursor-pointer rounded-none border border-transparent hover:border-red-200"
                       title="Διαγραφή"
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </div>
                   </div>
                 </div>
 

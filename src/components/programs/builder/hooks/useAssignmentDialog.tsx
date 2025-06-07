@@ -13,17 +13,22 @@ export const useAssignmentDialog = (
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSave = async () => {
+    console.log('💾 [useAssignmentDialog] Starting handleSave');
+    
     if (!program) {
+      console.error('❌ [useAssignmentDialog] No program selected');
       toast.error('Δεν έχει επιλεγεί πρόγραμμα');
       return;
     }
 
     if (!selectedUserId) {
+      console.error('❌ [useAssignmentDialog] No user selected');
       toast.error('Παρακαλώ επιλέξτε αθλητή');
       return;
     }
 
     if (selectedDates.length === 0) {
+      console.error('❌ [useAssignmentDialog] No dates selected');
       toast.error('Παρακαλώ επιλέξτε τουλάχιστον μία ημερομηνία');
       return;
     }
@@ -31,17 +36,26 @@ export const useAssignmentDialog = (
     setIsSubmitting(true);
 
     try {
-      console.log('🎯 Assignment Dialog - Starting save process');
-      console.log('📅 Assignment Dialog - Selected dates before processing:', selectedDates);
+      console.log('💾 [useAssignmentDialog] Processing selected dates:', selectedDates);
 
       // Χρησιμοποιούμε την utility function για σωστό formatting
-      const formattedDates = selectedDates.map(date => {
+      const formattedDates = selectedDates.map((date, index) => {
+        console.log(`💾 [useAssignmentDialog] Processing date ${index}:`, {
+          originalDate: date,
+          dateString: date.toString(),
+          isoString: date.toISOString(),
+          getFullYear: date.getFullYear(),
+          getMonth: date.getMonth(),
+          getDate: date.getDate(),
+          getTimezoneOffset: date.getTimezoneOffset()
+        });
+        
         const formatted = formatDateToLocalString(date);
-        console.log(`📅 Assignment Dialog - Converting ${date.toISOString()} → ${formatted}`);
+        console.log(`💾 [useAssignmentDialog] Date ${index} formatted: ${date.toISOString()} → ${formatted}`);
         return formatted;
       });
 
-      console.log('📅 Assignment Dialog - Final formatted dates:', formattedDates);
+      console.log('💾 [useAssignmentDialog] All dates formatted:', formattedDates);
 
       const assignmentData = {
         program,
@@ -49,10 +63,11 @@ export const useAssignmentDialog = (
         trainingDates: formattedDates
       };
 
-      console.log('💾 Assignment Dialog - Calling assignment service with:', assignmentData);
+      console.log('💾 [useAssignmentDialog] Calling assignment service with:', assignmentData);
 
-      await assignmentService.saveAssignment(assignmentData);
+      const result = await assignmentService.saveAssignment(assignmentData);
       
+      console.log('✅ [useAssignmentDialog] Assignment saved successfully:', result);
       toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς!');
       
       // Reset form
@@ -61,7 +76,7 @@ export const useAssignmentDialog = (
       
       onSaveSuccess();
     } catch (error) {
-      console.error('❌ Assignment Dialog - Error:', error);
+      console.error('❌ [useAssignmentDialog] Error during save:', error);
       toast.error('Σφάλμα κατά την ανάθεση του προγράμματος');
     } finally {
       setIsSubmitting(false);
@@ -69,6 +84,7 @@ export const useAssignmentDialog = (
   };
 
   const reset = () => {
+    console.log('🔄 [useAssignmentDialog] Resetting form');
     setSelectedUserId('');
     setSelectedDates([]);
     setIsSubmitting(false);
