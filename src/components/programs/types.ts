@@ -24,7 +24,11 @@ export interface ProgramExercise {
   rest?: string;
   notes?: string;
   exercise_order: number;
-  exercises?: { name: string };
+  exercises?: { 
+    id: string;
+    name: string;
+    description?: string;
+  };
 }
 
 export interface Block {

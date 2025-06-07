@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { formatDatesArray } from '@/utils/dateUtils';
 import { Exercise } from '../../types';
@@ -64,6 +65,63 @@ const findExerciseName = (exerciseId: string, exercises: Exercise[]): string => 
   return exercise ? exercise.name : 'Unknown Exercise';
 };
 
+// Helper function to convert builder format to database format
+const convertWeeksToDatabaseFormat = (builderWeeks: Week[]) => {
+  return builderWeeks.map(week => ({
+    ...week,
+    program_days: week.days?.map(day => ({
+      ...day,
+      program_blocks: day.blocks?.map(block => ({
+        ...block,
+        program_exercises: block.exercises?.map(exercise => ({
+          id: exercise.id,
+          exercise_id: exercise.exercise_id,
+          sets: exercise.sets,
+          reps: exercise.reps,
+          kg: exercise.kg,
+          percentage_1rm: exercise.percentage_1rm,
+          velocity_ms: exercise.velocity_ms,
+          tempo: exercise.tempo,
+          rest: exercise.rest,
+          notes: '',
+          exercise_order: exercise.exercise_order,
+          exercises: {
+            id: exercise.exercise_id,
+            name: exercise.exercise_name,
+            description: ''
+          }
+        })) || []
+      })) || []
+    })) || []
+  }));
+};
+
+// Helper function to convert database format to builder format
+const convertWeeksFromDatabaseFormat = (dbWeeks: any[]) => {
+  return dbWeeks.map(week => ({
+    ...week,
+    days: week.program_days?.map((day: any) => ({
+      ...day,
+      blocks: day.program_blocks?.map((block: any) => ({
+        ...block,
+        exercises: block.program_exercises?.map((exercise: any) => ({
+          id: exercise.id,
+          exercise_id: exercise.exercise_id,
+          exercise_name: exercise.exercises?.name || 'Unknown Exercise',
+          sets: exercise.sets || 1,
+          reps: exercise.reps || '',
+          percentage_1rm: exercise.percentage_1rm || 0,
+          kg: exercise.kg || '',
+          velocity_ms: exercise.velocity_ms || '',
+          tempo: exercise.tempo || '',
+          rest: exercise.rest || '',
+          exercise_order: exercise.exercise_order || 1
+        })) || []
+      })) || []
+    })) || []
+  }));
+};
+
 export const useProgramBuilderState = (exercises: Exercise[]) => {
   const [program, setProgram] = useState<ProgramStructure>(createInitialProgram());
 
@@ -96,35 +154,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
         user_id: programData.user_id || '',
         start_date: programData.start_date,
         training_days: programData.training_days || [],
-        training_dates: programData.training_dates || [], // Κρατάμε τις ημερομηνίες ως έχουν
-        weeks: programData.program_weeks?.map((week: any) => ({
-          id: week.id,
-          name: week.name,
-          week_number: week.week_number,
-          days: week.program_days?.map((day: any) => ({
-            id: day.id,
-            name: day.name,
-            day_number: day.day_number,
-            blocks: day.program_blocks?.map((block: any) => ({
-              id: block.id,
-              name: block.name,
-              block_order: block.block_order,
-              exercises: block.program_exercises?.map((exercise: any) => ({
-                id: exercise.id,
-                exercise_id: exercise.exercise_id,
-                exercise_name: findExerciseName(exercise.exercise_id, exercises),
-                sets: exercise.sets || 1,
-                reps: exercise.reps || '',
-                percentage_1rm: exercise.percentage_1rm || 0,
-                kg: exercise.kg || '',
-                velocity_ms: exercise.velocity_ms || '',
-                tempo: exercise.tempo || '',
-                rest: exercise.rest || '',
-                exercise_order: exercise.exercise_order || 1
-              })) || []
-            })) || []
-          })) || []
-        })) || []
+        training_dates: programData.training_dates || [],
+        weeks: convertWeeksFromDatabaseFormat(programData.program_weeks || [])
       };
       
       console.log('📥 Loaded program structure:', loadedProgram);
@@ -159,7 +190,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       start_date: program.start_date,
       training_days: program.training_days || [],
       training_dates: formattedTrainingDates,
-      weeks: program.weeks || []
+      weeks: convertWeeksToDatabaseFormat(program.weeks || [])
     };
 
     console.log('💾 Final prepared program:', preparedProgram);
