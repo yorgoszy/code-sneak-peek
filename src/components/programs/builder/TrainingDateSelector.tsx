@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { el } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
 import { formatDateToLocalString, parseDateFromString } from '@/utils/dateUtils';
 
@@ -76,6 +77,7 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
               onSelect={handleDateSelect}
               onMonthChange={setCalendarDate}
               className="rounded-none border"
+              weekStartsOn={1}
               modifiers={{
                 selected: isDateSelected
               }}
@@ -115,7 +117,7 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
                     className="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-none"
                   >
                     <span className="text-sm">
-                      {format(parseDateFromString(dateString), 'dd/MM/yyyy - EEEE')}
+                      {format(parseDateFromString(dateString), 'dd/MM/yyyy - EEEE', { locale: el })}
                     </span>
                     <Button
                       variant="ghost"

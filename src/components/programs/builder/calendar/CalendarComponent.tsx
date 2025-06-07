@@ -35,7 +35,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
         selected={selectedDates}
         onSelect={handleSelect}
         className="rounded-none"
-        weekStartsOn={0}
+        weekStartsOn={1}
         disabled={(date) => {
           // Απενεργοποίηση παλαιών ημερομηνιών
           const today = new Date();
