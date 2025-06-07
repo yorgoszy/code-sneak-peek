@@ -38,7 +38,7 @@ const ActivePrograms = () => {
     return assignment.training_dates.includes(todayStr);
   });
 
-  // Φόρτωση workout completions με useCallback για αποφυγή loops
+  // Φόρτωση workout completions
   const loadCompletions = useCallback(async () => {
     if (activePrograms.length === 0) return;
     
@@ -61,16 +61,12 @@ const ActivePrograms = () => {
     loadCompletions();
   }, [loadCompletions]);
 
-  // Enhanced real-time subscription με άμεση ανανέωση
+  // Enhanced real-time subscription
   useEffect(() => {
-    console.log('🔄 ActivePrograms: Setting up enhanced real-time subscriptions...');
-    
-    // Δημιουργούμε unique channel names για καλύτερη απόδοση
-    const completionsChannelName = `workout-completions-${Date.now()}-${Math.random()}`;
-    const assignmentsChannelName = `assignments-${Date.now()}-${Math.random()}`;
+    console.log('🔄 ActivePrograms: Setting up REAL-TIME subscriptions...');
     
     const completionsChannel = supabase
-      .channel(completionsChannelName)
+      .channel(`workout-completions-${Date.now()}`)
       .on(
         'postgres_changes',
         {
@@ -79,19 +75,15 @@ const ActivePrograms = () => {
           table: 'workout_completions'
         },
         async (payload) => {
-          console.log('🔄 Real-time workout completion change:', payload);
+          console.log('🔄 REALTIME: workout completion change:', payload);
           
-          // Άμεση ανανέωση των δεδομένων
-          setRealtimeKey(prev => {
-            const newKey = prev + 1;
-            console.log('🔄 Updating realtime key to:', newKey);
-            return newKey;
-          });
+          // ΑΜΕΣΗ ανανέωση του realtime key
+          setRealtimeKey(Date.now());
           
-          // Ανανέωση completions
+          // Reload completions
           await loadCompletions();
           
-          // Ανανέωση active programs
+          // Refetch active programs
           refetch();
         }
       )
@@ -100,7 +92,7 @@ const ActivePrograms = () => {
       });
 
     const assignmentsChannel = supabase
-      .channel(assignmentsChannelName)
+      .channel(`assignments-${Date.now()}`)
       .on(
         'postgres_changes',
         {
@@ -109,16 +101,12 @@ const ActivePrograms = () => {
           table: 'program_assignments'
         },
         async (payload) => {
-          console.log('🔄 Real-time assignment change:', payload);
+          console.log('🔄 REALTIME: assignment change:', payload);
           
-          // Άμεση ανανέωση
-          setRealtimeKey(prev => {
-            const newKey = prev + 1;
-            console.log('🔄 Updating realtime key to:', newKey);
-            return newKey;
-          });
+          // ΑΜΕΣΗ ανανέωση του realtime key
+          setRealtimeKey(Date.now());
           
-          // Ανανέωση δεδομένων
+          // Refetch active programs
           refetch();
           await loadCompletions();
         }
@@ -178,20 +166,19 @@ const ActivePrograms = () => {
     return completion?.status || 'scheduled';
   };
 
-  // Enhanced refresh με force update
-  const handleCalendarRefresh = useCallback(() => {
-    console.log('🔄 ActivePrograms: FORCED Calendar refresh triggered');
+  // ΚΡΙΤΙΚΟ: Enhanced refresh για ΑΜΕΣΗ ανανέωση
+  const handleCalendarRefresh = useCallback(async () => {
+    console.log('🔄 ActivePrograms: CRITICAL CALENDAR REFRESH');
     
-    // Force update με νέο realtime key
-    setRealtimeKey(prev => {
-      const newKey = Date.now(); // Χρησιμοποιούμε timestamp για unique key
-      console.log('🔄 FORCE updating realtime key to:', newKey);
-      return newKey;
-    });
+    // ΑΜΕΣΗ ανανέωση με unique timestamp
+    const newKey = Date.now() + Math.random();
+    setRealtimeKey(newKey);
     
-    // Ανανέωση δεδομένων
-    loadCompletions();
+    // Reload δεδομένων
+    await loadCompletions();
     refetch();
+    
+    console.log('🔄 Calendar refresh completed with key:', newKey);
   }, [loadCompletions, refetch]);
 
   if (isLoading) {
@@ -237,7 +224,7 @@ const ActivePrograms = () => {
           <div className="space-y-6">
             <ActiveProgramsHeader />
 
-            {/* Calendar με enhanced realtime key */}
+            {/* Calendar με ENHANCED realtime key */}
             <CalendarGrid
               currentMonth={currentMonth}
               setCurrentMonth={setCurrentMonth}
@@ -260,7 +247,7 @@ const ActivePrograms = () => {
         </div>
       </div>
 
-      {/* Day Program Dialog με enhanced refresh */}
+      {/* Day Program Dialog με CRITICAL refresh */}
       <DayProgramDialog
         isOpen={dayDialogOpen}
         onClose={() => setDayDialogOpen(false)}

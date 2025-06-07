@@ -33,7 +33,6 @@ export const useWorkoutState = (
   // Φόρτωση δεδομένων από localStorage όταν ανοίγει το dialog
   useEffect(() => {
     if (program && selectedDate) {
-      // Φορτώνουμε τα δεδομένα για όλες τις ασκήσεις
       const loadExerciseData = () => {
         const newExerciseData: Record<string, any> = {};
         const newExerciseNotes: Record<string, string> = {};
@@ -91,22 +90,24 @@ export const useWorkoutState = (
     if (!program || !selectedDate || !workoutStartTime) return;
 
     try {
-      console.log('✅ ΟΛΟΚΛΗΡΩΣΗ ΠΡΟΠΟΝΗΣΗΣ - ENHANCED');
+      console.log('✅ ΟΛΟΚΛΗΡΩΣΗ ΠΡΟΠΟΝΗΣΗΣ');
       
-      const endTime = new Date();
-      const durationMinutes = Math.round((endTime.getTime() - workoutStartTime.getTime()) / 60000);
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-
-      // CRITICAL: Ενημερώνουμε το status της προπόνησης με άμεση ανανέωση
-      console.log('🔄 Updating workout status to COMPLETED...');
-      await updateWorkoutStatus(
+      
+      // ΚΡΙΤΙΚΟ: Ενημερώνουμε το status στη βάση δεδομένων
+      console.log('🔄 Updating workout status to COMPLETED for:', {
+        assignmentId: program.id,
+        date: selectedDateStr
+      });
+      
+      const result = await updateWorkoutStatus(
         program.id,
         selectedDateStr,
         'completed',
         'green'
       );
       
-      console.log('💾 Προπόνηση ΟΛΟΚΛΗΡΩΘΗΚΕ - Status updated to COMPLETED');
+      console.log('✅ Workout status updated successfully:', result);
       
       setWorkoutInProgress(false);
       
@@ -116,29 +117,16 @@ export const useWorkoutState = (
       
       toast.success('Προπόνηση ολοκληρώθηκε!');
       
-      // CRITICAL: ΑΜΕΣΗ και ΕΠΙΘΕΤΙΚΗ ανανέωση
+      // ΑΜΕΣΗ ανανέωση
       if (onRefresh) {
-        console.log('🔄 FORCING IMMEDIATE REFRESH AFTER COMPLETION...');
-        // Καλούμε το refresh άμεσα χωρίς καθυστέρηση
+        console.log('🔄 TRIGGERING IMMEDIATE REFRESH...');
         onRefresh();
-        
-        // Και επιπλέον καλούμε ξανά μετά από λίγο για σιγουριά
-        setTimeout(() => {
-          console.log('🔄 SECOND FORCE REFRESH AFTER COMPLETION...');
-          onRefresh();
-        }, 100);
-        
-        // Τρίτη κλήση για απόλυτη σιγουριά
-        setTimeout(() => {
-          console.log('🔄 THIRD FORCE REFRESH AFTER COMPLETION...');
-          onRefresh();
-        }, 500);
       }
       
-      // Κλείνουμε το dialog μετά από μικρή καθυστέρηση
+      // Κλείνουμε το dialog μετά από μικρή καθυστέρηση για να δούμε την ανανέωση
       setTimeout(() => {
         if (onClose) onClose();
-      }, 1000);
+      }, 1500);
       
     } catch (error) {
       console.error('❌ Error completing workout:', error);
