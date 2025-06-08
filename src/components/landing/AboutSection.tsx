@@ -1,4 +1,13 @@
 import React from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface AboutSectionProps {
   translations: any;
@@ -11,6 +20,188 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   activeAboutSection, 
   onSetActiveAboutSection 
 }) => {
+  const isMobile = useIsMobile();
+
+  const aboutSections = [
+    {
+      id: 1,
+      title: translations.headCoach,
+      description: translations.coachDescription,
+      image: "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png",
+      cards: [
+        {
+          title: translations.academicBackground,
+          description: translations.academicDescription
+        },
+        {
+          title: translations.professionalAthlete,
+          description: translations.professionalDescription
+        },
+        {
+          title: translations.coreValues,
+          description: translations.coreValuesDescription
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: translations.ourVision,
+      description: translations.visionDescription,
+      image: "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png",
+      cards: [
+        {
+          title: translations.moreThanPhysical,
+          description: translations.moreThanPhysicalDesc
+        },
+        {
+          title: translations.buildingCharacter,
+          description: translations.buildingCharacterDesc
+        },
+        {
+          title: translations.trustTheProcess,
+          description: translations.trustTheProcessDesc
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: translations.trainingMethodology,
+      description: translations.trainingMethodologyDescription,
+      image: "/lovable-uploads/9aed48c1-1ec9-4f35-9648-0329d5152c4a.png",
+      cards: [
+        {
+          title: translations.movementSkills,
+          description: (
+            <div className="text-gray-400 text-sm">
+              <p className="mb-2">• Ανάπτυξη Αθλητικών Δεξιοτήτων</p>
+              <p className="mb-2">• Κατάλληλα για την Ηλικία</p>
+              <p>• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός</p>
+            </div>
+          )
+        },
+        {
+          title: translations.assessment,
+          description: (
+            <div className="text-gray-400 text-sm">
+              <p className="mb-2">• Κίνηση & Στάση</p>
+              <p className="mb-2">• Προφίλ φορτίου - ταχύτητας</p>
+              <p className="mb-2">• Προφίλ άλματος</p>
+              <p>• Αντοχή</p>
+            </div>
+          )
+        },
+        {
+          title: translations.resultsFocused,
+          description: (
+            <div className="text-gray-400 text-sm">
+              <p className="mb-2">• Παρακολούθηση Αποτελεσμάτων</p>
+              <p className="mb-2">• Καθοδήγηση Απόδοσης</p>
+              <p>• Ανάπτυξη Προσαρμοσμένου Προγράμματος</p>
+            </div>
+          )
+        }
+      ]
+    }
+  ];
+
+  if (isMobile) {
+    return (
+      <section id="about" className="py-20 bg-black relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
+              {translations.aboutSection.toUpperCase()}
+            </p>
+            <h2 className="text-4xl font-bold text-white leading-tight">
+              {translations.supportingYour}<br />
+              <span style={{ color: '#00ffba' }}>{translations.athleticJourney}</span>
+            </h2>
+          </div>
+
+          <div className="relative">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              {/* Navigation buttons */}
+              <div className="absolute -top-16 right-0 flex gap-2 z-10">
+                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
+                  <ChevronLeft className="h-6 w-6" />
+                </CarouselPrevious>
+                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
+                  <ChevronRight className="h-6 w-6" />
+                </CarouselNext>
+              </div>
+
+              <CarouselContent className="-ml-4">
+                {aboutSections.map((section) => (
+                  <CarouselItem key={section.id} className="pl-4 basis-full">
+                    <div className="space-y-6">
+                      {/* Section Header */}
+                      <div className="flex items-center mb-6">
+                        <span className="text-2xl font-bold mr-6" style={{ color: '#00ffba' }}>
+                          {section.id.toString().padStart(2, '0')}
+                        </span>
+                        <h3 className="text-xl text-white font-bold">{section.title}</h3>
+                      </div>
+
+                      {/* Image */}
+                      <div className="relative mb-6">
+                        <img
+                          src={section.image}
+                          alt={section.title}
+                          className="w-full h-[300px] object-cover filter grayscale rounded-none"
+                        />
+                        <div className="absolute flex items-center" style={{ bottom: '20px', left: '20px', right: '20px' }}>
+                          <span className="text-2xl font-bold mr-4" style={{ color: '#00ffba' }}>
+                            {section.id.toString().padStart(2, '0')}
+                          </span>
+                          <div 
+                            className="flex-1"
+                            style={{ backgroundColor: '#00ffba', height: '1px' }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div className="mb-6">
+                        <p className="text-gray-300 text-sm leading-relaxed">
+                          {section.description}
+                        </p>
+                      </div>
+
+                      {/* Cards */}
+                      <div className="space-y-4">
+                        {section.cards.map((card, index) => (
+                          <div 
+                            key={index}
+                            className="p-4 border-l-2 rounded-none"
+                            style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                          >
+                            <h4 className="text-white font-bold mb-2">{card.title}</h4>
+                            {typeof card.description === 'string' ? (
+                              <p className="text-gray-400 text-sm">{card.description}</p>
+                            ) : (
+                              card.description
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Desktop version - keep existing sidebar style
   return (
     <section id="about" className="py-20 bg-black relative overflow-hidden">
       <style>{`
