@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Carousel,
@@ -20,6 +21,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   activeAboutSection, 
   onSetActiveAboutSection 
 }) => {
+  const [api, setApi] = useState<any>();
   const isMobile = useIsMobile();
 
   const aboutSections = [
@@ -104,6 +106,17 @@ const AboutSection: React.FC<AboutSectionProps> = ({
     }
   ];
 
+  // Auto-rotate carousel on mobile
+  useEffect(() => {
+    if (!api || !isMobile) return;
+
+    const interval = setInterval(() => {
+      api.scrollNext();
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [api, isMobile]);
+
   if (isMobile) {
     return (
       <section id="about" className="py-20 bg-black relative overflow-hidden">
@@ -120,6 +133,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
 
           <div className="relative">
             <Carousel
+              setApi={setApi}
               opts={{
                 align: "start",
                 loop: true,

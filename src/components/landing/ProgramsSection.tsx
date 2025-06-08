@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProgramDetailsDialog } from './ProgramDetailsDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
@@ -26,7 +26,19 @@ interface ProgramsSectionProps {
 
 const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translations }) => {
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [api, setApi] = useState<any>();
   const isMobile = useIsMobile();
+
+  // Auto-rotate carousel on mobile
+  useEffect(() => {
+    if (!api || !isMobile) return;
+
+    const interval = setInterval(() => {
+      api.scrollNext();
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [api, isMobile]);
 
   return (
     <>
@@ -68,6 +80,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             </div>
 
             <Carousel
+              setApi={setApi}
               opts={{
                 align: "start",
                 loop: true,

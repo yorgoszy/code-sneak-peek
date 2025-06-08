@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BlogSectionProps, Article } from './blog/types';
 import { articles } from './blog/blogData';
 import ArticleCard from './blog/ArticleCard';
@@ -16,10 +16,22 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [api, setApi] = useState<any>();
   const isMobile = useIsMobile();
 
   const currentLanguage = translations.language || 'el';
   const currentArticles = articles[currentLanguage] || articles.el;
+
+  // Auto-rotate carousel on mobile
+  useEffect(() => {
+    if (!api || !isMobile) return;
+
+    const interval = setInterval(() => {
+      api.scrollNext();
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [api, isMobile]);
 
   return (
     <section id="blog" className="py-20 bg-white">
@@ -35,6 +47,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
 
         <div className="relative">
           <Carousel
+            setApi={setApi}
             opts={{
               align: "start",
               loop: true,
