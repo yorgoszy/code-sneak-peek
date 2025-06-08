@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { ProgramDetailsDialog } from './ProgramDetailsDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Carousel,
   CarouselContent,
@@ -25,6 +26,7 @@ interface ProgramsSectionProps {
 
 const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translations }) => {
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const isMobile = useIsMobile();
 
   return (
     <>
@@ -84,7 +86,10 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
 
               <CarouselContent className="-ml-4">
                 {programs.map((program) => (
-                  <CarouselItem key={program.id} className="pl-4 basis-1/3">
+                  <CarouselItem 
+                    key={program.id} 
+                    className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
+                  >
                     <div 
                       className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group h-full"
                       onClick={() => setSelectedProgram(program)}
