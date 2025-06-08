@@ -4,9 +4,19 @@ import { BlogSectionProps, Article } from './blog/types';
 import { articles } from './blog/blogData';
 import ArticleCard from './blog/ArticleCard';
 import ArticleModal from './blog/ArticleModal';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const isMobile = useIsMobile();
 
   const currentLanguage = translations.language || 'el';
   const currentArticles = articles[currentLanguage] || articles.el;
@@ -23,15 +33,39 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {currentArticles.map((article) => (
-            <ArticleCard
-              key={article.id}
-              article={article}
-              onReadMore={setSelectedArticle}
-              translations={translations}
-            />
-          ))}
+        <div className="relative">
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+          >
+            {/* Navigation buttons positioned absolutely in top right */}
+            <div className="absolute -top-16 right-0 flex gap-2 z-10">
+              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-gray-600 hover:text-[#00ffba] hover:bg-transparent rounded-none">
+                <ChevronLeft className="h-6 w-6" />
+              </CarouselPrevious>
+              <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-gray-600 hover:text-[#00ffba] hover:bg-transparent rounded-none">
+                <ChevronRight className="h-6 w-6" />
+              </CarouselNext>
+            </div>
+
+            <CarouselContent className="-ml-4">
+              {currentArticles.map((article) => (
+                <CarouselItem 
+                  key={article.id} 
+                  className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
+                >
+                  <ArticleCard
+                    article={article}
+                    onReadMore={setSelectedArticle}
+                    translations={translations}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
         </div>
 
         <ArticleModal
