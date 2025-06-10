@@ -58,7 +58,10 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
         .select('*')
         .order('type, name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Categories fetch error:', error);
+        throw error;
+      }
       setCategories(data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -84,7 +87,10 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Category creation error:', error);
+        throw error;
+      }
 
       setCategories(prev => [...prev, data]);
       setNewCategoryName("");
@@ -112,6 +118,11 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
 
     try {
       setLoading(true);
+      console.log('Creating exercise with data:', {
+        name: name.trim(),
+        description: description.trim() || null,
+        video_url: videoUrl.trim() || null,
+      });
 
       const { data: exerciseData, error: exerciseError } = await supabase
         .from('exercises')
@@ -123,25 +134,35 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
         .select()
         .single();
 
-      if (exerciseError) throw exerciseError;
+      if (exerciseError) {
+        console.error('Exercise creation error:', exerciseError);
+        throw exerciseError;
+      }
+
+      console.log('Exercise created:', exerciseData);
 
       const exerciseCategoryInserts = selectedCategories.map(categoryId => ({
         exercise_id: exerciseData.id,
         category_id: categoryId,
       }));
 
+      console.log('Creating exercise categories:', exerciseCategoryInserts);
+
       const { error: relationError } = await supabase
         .from('exercise_to_category')
         .insert(exerciseCategoryInserts);
 
-      if (relationError) throw relationError;
+      if (relationError) {
+        console.error('Exercise category relation error:', relationError);
+        throw relationError;
+      }
 
       toast.success('Η άσκηση προστέθηκε επιτυχώς');
       onSuccess();
       handleClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding exercise:', error);
-      toast.error('Σφάλμα κατά την προσθήκη της άσκησης');
+      toast.error(`Σφάλμα κατά την προσθήκη της άσκησης: ${error.message || 'Άγνωστο σφάλμα'}`);
     } finally {
       setLoading(false);
     }

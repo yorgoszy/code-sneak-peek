@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,19 +39,40 @@ const Auth = () => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            name: name
+          }
         }
       });
 
       if (error) throw error;
 
       if (data.user) {
-        // Note: User creation in app_users table now requires admin privileges
-        // Regular users will be created by admins through the admin panel
-        toast({
-          title: "Εγγραφή ολοκληρώθηκε!",
-          description: "Ελέγξτε το email σας για επιβεβαίωση. Ένας διαχειριστής θα ενεργοποιήσει τον λογαριασμό σας.",
-        });
+        // Create user profile in app_users table
+        const { error: profileError } = await supabase
+          .from('app_users')
+          .insert({
+            auth_user_id: data.user.id,
+            name: name,
+            email: email,
+            role: 'user', // Default role as user, not admin
+            user_status: 'pending' // Pending until admin approval
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          toast({
+            title: "Σφάλμα",
+            description: "Προέκυψε σφάλμα κατά τη δημιουργία του προφίλ.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Εγγραφή ολοκληρώθηκε!",
+            description: "Ελέγξτε το email σας για επιβεβαίωση. Ένας διαχειριστής θα ενεργοποιήσει τον λογαριασμό σας.",
+          });
+        }
       }
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -90,6 +110,16 @@ const Auth = () => {
         .single();
 
       if (!userProfile) {
+        toast({
+          title: "Λογαριασμός μη ενεργοποιημένος",
+          description: "Ο λογαριασμός σας δεν έχει ενεργοποιηθεί ακόμη. Επικοινωνήστε με έναν διαχειριστή.",
+          variant: "destructive",
+        });
+        await supabase.auth.signOut();
+        return;
+      }
+
+      if (userProfile.user_status !== 'active') {
         toast({
           title: "Λογαριασμός μη ενεργοποιημένος",
           description: "Ο λογαριασμός σας δεν έχει ενεργοποιηθεί ακόμη. Επικοινωνήστε με έναν διαχειριστή.",
@@ -193,7 +223,7 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full rounded-none bg-[#00ffba] text-black hover:bg-transparent hover:border-white hover:text-white border-2 border-transparent transition-all duration-300" 
+                  className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00cc95] border-2 border-transparent transition-all duration-300" 
                   disabled={isLoading}
                 >
                   {isLoading ? "Αποστολή..." : "Αποστολή Email Επαναφοράς"}
@@ -226,7 +256,7 @@ const Auth = () => {
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-transparent hover:border-white hover:text-white border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00cc95] border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading}
                     >
                       {isLoading ? "Σύνδεση..." : "Σύνδεση"}
@@ -259,7 +289,7 @@ const Auth = () => {
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-transparent hover:border-white hover:text-white border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00cc95] border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading}
                     >
                       {isLoading ? "Εγγραφή..." : "Εγγραφή"}
