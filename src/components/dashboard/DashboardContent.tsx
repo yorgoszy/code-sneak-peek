@@ -9,6 +9,11 @@ interface DashboardContentProps {
 }
 
 export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps) => {
+  const handleProgramClick = (assignment: any) => {
+    console.log('Program clicked in dashboard:', assignment);
+    // Για το dashboard, μπορούμε να κάνουμε redirect στο ActivePrograms ή άλλη ενέργεια
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="space-y-6">
@@ -16,6 +21,7 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
           todaysPrograms={[]}
           allCompletions={[]}
           onRefresh={() => {}}
+          onProgramClick={handleProgramClick}
         />
         {isAdmin && <QuickActions />}
       </div>
