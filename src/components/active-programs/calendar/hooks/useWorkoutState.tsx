@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
@@ -25,7 +26,7 @@ export const useWorkoutState = (
   const [exerciseData, setExerciseData] = useState<Record<string, any>>({});
 
   const { updateWorkoutStatus } = useWorkoutCompletions();
-  const { startWorkout, completeWorkout: removeFromActiveWorkouts, getWorkout, updateElapsedTime } = useMultipleWorkouts();
+  const { startWorkout, completeWorkout: removeFromActiveWorkouts, getWorkout } = useMultipleWorkouts();
 
   // Δημιουργία unique ID για την προπόνηση
   const workoutId = program && selectedDate 

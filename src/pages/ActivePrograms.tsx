@@ -5,7 +5,7 @@ import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgra
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
-import { useMultiWorkoutManager } from "@/components/active-programs/calendar/MultiWorkoutManager";
+import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
@@ -18,6 +18,7 @@ const ActivePrograms = () => {
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
 
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletions();
@@ -25,10 +26,27 @@ const ActivePrograms = () => {
   // Multi-workout management
   const { 
     activeWorkouts, 
-    openDialogs, 
-    openWorkoutDialog, 
-    closeWorkoutDialog 
-  } = useMultiWorkoutManager();
+    startWorkout,
+    updateElapsedTime,
+    completeWorkout,
+    cancelWorkout,
+    getWorkout,
+    formatTime
+  } = useMultipleWorkouts();
+
+  // Timer για ενημέρωση του elapsed time για όλες τις ενεργές προπονήσεις
+  useEffect(() => {
+    const interval = setInterval(() => {
+      activeWorkouts.forEach(workout => {
+        if (workout.workoutInProgress) {
+          const newElapsedTime = Math.floor((new Date().getTime() - workout.startTime.getTime()) / 1000);
+          updateElapsedTime(workout.id, newElapsedTime);
+        }
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeWorkouts, updateElapsedTime]);
 
   // Σημερινή ημερομηνία
   const today = new Date();
@@ -126,7 +144,21 @@ const ActivePrograms = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα - ανοίγει νέο dialog
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    openWorkoutDialog(assignment, today);
+    const workoutId = `${assignment.id}-${today.toISOString().split('T')[0]}`;
+    
+    // Έναρξη προπόνησης
+    startWorkout(assignment, today);
+    
+    // Άνοιγμα dialog
+    setOpenDialogs(prev => new Set(prev).add(workoutId));
+  };
+
+  const handleDialogClose = (workoutId: string) => {
+    setOpenDialogs(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(workoutId);
+      return newSet;
+    });
   };
 
   const handleDeleteProgram = async (assignmentId: string) => {
@@ -231,7 +263,7 @@ const ActivePrograms = () => {
         <DayProgramDialog
           key={workout.id}
           isOpen={openDialogs.has(workout.id)}
-          onClose={() => closeWorkoutDialog(workout.id)}
+          onClose={() => handleDialogClose(workout.id)}
           program={workout.assignment}
           selectedDate={workout.selectedDate}
           workoutStatus={getWorkoutStatus(workout.assignment)}
