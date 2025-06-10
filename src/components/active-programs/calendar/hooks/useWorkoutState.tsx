@@ -1,9 +1,8 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { saveWorkoutData, getWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
-import { useRunningWorkouts } from '@/hooks/useRunningWorkouts';
+import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -21,15 +20,22 @@ export const useWorkoutState = (
   onRefresh?: () => void,
   onClose?: () => void
 ) => {
-  const [workoutInProgress, setWorkoutInProgress] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
   const [exerciseCompletions, setExerciseCompletions] = useState<Record<string, number>>({});
   const [exerciseNotes, setExerciseNotes] = useState<Record<string, string>>({});
   const [exerciseData, setExerciseData] = useState<Record<string, any>>({});
-  const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
 
   const { updateWorkoutStatus } = useWorkoutCompletions();
-  const { startWorkout: addToRunningWorkouts, completeWorkout: removeFromRunningWorkouts } = useRunningWorkouts();
+  const { startWorkout, completeWorkout: removeFromActiveWorkouts, getWorkout, updateElapsedTime } = useMultipleWorkouts();
+
+  // Δημιουργία unique ID για την προπόνηση
+  const workoutId = program && selectedDate 
+    ? `${program.id}-${selectedDate.toISOString().split('T')[0]}`
+    : null;
+
+  // Παίρνουμε τα στοιχεία της προπόνησης από το multi-workout manager
+  const currentWorkout = workoutId ? getWorkout(workoutId) : null;
+  const workoutInProgress = currentWorkout?.workoutInProgress || false;
+  const elapsedTime = currentWorkout?.elapsedTime || 0;
 
   // Φόρτωση δεδομένων από localStorage όταν ανοίγει το dialog
   useEffect(() => {
@@ -60,44 +66,26 @@ export const useWorkoutState = (
     }
   }, [program, selectedDate]);
 
-  // Timer effect
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (workoutInProgress) {
-      interval = setInterval(() => {
-        setElapsedTime(prev => prev + 1);
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [workoutInProgress]);
-
   const handleStartWorkout = useCallback(() => {
     if (!program || !selectedDate) return;
     
-    console.log('🏋️‍♂️ Έναρξη προπόνησης');
-    setWorkoutInProgress(true);
-    setElapsedTime(0);
-    setWorkoutStartTime(new Date());
-    
-    // Προσθήκη στο running workouts
-    addToRunningWorkouts(program, selectedDate);
-    
-    toast.success('Προπόνηση ξεκίνησε!');
-  }, [program, selectedDate, addToRunningWorkouts]);
+    console.log('🏋️‍♂️ Έναρξη προπόνησης για:', program.app_users?.name);
+    startWorkout(program, selectedDate);
+    toast.success(`Προπόνηση ξεκίνησε για ${program.app_users?.name}!`);
+  }, [program, selectedDate, startWorkout]);
 
   const handleCompleteWorkout = useCallback(async () => {
-    if (!program || !selectedDate || !workoutStartTime) return;
+    if (!program || !selectedDate || !currentWorkout) return;
 
     try {
-      console.log('✅ ΟΛΟΚΛΗΡΩΣΗ ΠΡΟΠΟΝΗΣΗΣ');
+      console.log('✅ ΟΛΟΚΛΗΡΩΣΗ ΠΡΟΠΟΝΗΣΗΣ για:', program.app_users?.name);
       
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
       
       console.log('🔄 Updating workout completion:', {
         assignment_id: program.id,
-        scheduled_date: selectedDateStr
+        scheduled_date: selectedDateStr,
+        user_id: program.app_users?.id || program.user_id
       });
 
       // Βρίσκουμε τη σωστή εβδομάδα και ημέρα
@@ -163,15 +151,14 @@ export const useWorkoutState = (
         result = data;
       }
       
-      console.log('✅ Workout completion saved successfully:', result);
+      console.log('✅ Workout completion saved successfully for:', program.app_users?.name, result);
       
-      setWorkoutInProgress(false);
+      // Αφαίρεση από τις ενεργές προπονήσεις
+      if (workoutId) {
+        removeFromActiveWorkouts(workoutId);
+      }
       
-      // Αφαίρεση από το running workouts
-      const workoutId = `${program.id}-${selectedDateStr}`;
-      removeFromRunningWorkouts(workoutId);
-      
-      toast.success('Προπόνηση ολοκληρώθηκε!');
+      toast.success(`Προπόνηση ολοκληρώθηκε για ${program.app_users?.name}!`);
       
       // ΑΜΕΣΗ ανανέωση
       if (onRefresh) {
@@ -188,29 +175,25 @@ export const useWorkoutState = (
       
     } catch (error) {
       console.error('❌ Error completing workout:', error);
-      toast.error('Σφάλμα κατά την ολοκλήρωση της προπόνησης');
+      toast.error(`Σφάλμα κατά την ολοκλήρωση της προπόνησης για ${program.app_users?.name}`);
     }
-  }, [program, selectedDate, workoutStartTime, onRefresh, onClose, removeFromRunningWorkouts]);
+  }, [program, selectedDate, currentWorkout, onRefresh, onClose, removeFromActiveWorkouts, workoutId]);
 
   const handleCancelWorkout = useCallback(() => {
-    if (!program || !selectedDate) return;
+    if (!program || !selectedDate || !workoutId) return;
     
-    console.log('❌ Ακύρωση προπόνησης');
-    setWorkoutInProgress(false);
-    setElapsedTime(0);
+    console.log('❌ Ακύρωση προπόνησης για:', program.app_users?.name);
     setExerciseCompletions({});
     setExerciseNotes({});
     setExerciseData({});
-    setWorkoutStartTime(null);
     
-    // Αφαίρεση από το running workouts
-    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-    const workoutId = `${program.id}-${selectedDateStr}`;
-    removeFromRunningWorkouts(workoutId);
+    // Αφαίρεση από τις ενεργές προπονήσεις
+    removeFromActiveWorkouts(workoutId);
     
-    toast.info('Προπόνηση ακυρώθηκε');
-  }, [program, selectedDate, removeFromRunningWorkouts]);
+    toast.info(`Προπόνηση ακυρώθηκε για ${program.app_users?.name}`);
+  }, [program, selectedDate, workoutId, removeFromActiveWorkouts]);
 
+  // Exercise completion functions - ίδιες όπως πριν
   const exerciseCompletion = {
     completeSet: (exerciseId: string, totalSets: number) => {
       setExerciseCompletions(prev => {

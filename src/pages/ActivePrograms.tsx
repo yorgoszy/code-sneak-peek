@@ -2,31 +2,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
-import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
+import { useMultiWorkoutManager } from "@/components/active-programs/calendar/MultiWorkoutManager";
+import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
-import { useRunningWorkouts } from "@/hooks/useRunningWorkouts";
 import { supabase } from "@/integrations/supabase/client";
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 const ActivePrograms = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
-  const [dayDialogOpen, setDayDialogOpen] = useState(false);
-  const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [minimizedWorkout, setMinimizedWorkout] = useState<{
-    assignment: any;
-    elapsedTime: number;
-  } | null>(null);
 
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletions();
-  const { startWorkout } = useRunningWorkouts();
+  
+  // Multi-workout management
+  const { 
+    activeWorkouts, 
+    openDialogs, 
+    openWorkoutDialog, 
+    closeWorkoutDialog 
+  } = useMultiWorkoutManager();
 
   // Σημερινή ημερομηνία
   const today = new Date();
@@ -122,32 +124,9 @@ const ActivePrograms = () => {
     };
   }, [loadCompletions, refetch]);
 
-  const handleProgramClick = (assignment: any) => {
-    setSelectedProgram(assignment);
-    setDayDialogOpen(true);
-  };
-
-  const handleMinimizeWorkout = () => {
-    if (selectedProgram) {
-      console.log('📱 Minimizing workout to sidebar:', selectedProgram.app_users?.name);
-      setMinimizedWorkout({
-        assignment: selectedProgram,
-        elapsedTime: 0
-      });
-      setDayDialogOpen(false);
-    }
-  };
-
-  const handleRestoreWorkout = () => {
-    if (minimizedWorkout) {
-      setSelectedProgram(minimizedWorkout.assignment);
-      setDayDialogOpen(true);
-      setMinimizedWorkout(null);
-    }
-  };
-
-  const handleCancelMinimizedWorkout = () => {
-    setMinimizedWorkout(null);
+  // Χειρισμός κλικ σε πρόγραμμα - ανοίγει νέο dialog
+  const handleProgramClick = (assignment: EnrichedAssignment) => {
+    openWorkoutDialog(assignment, today);
   };
 
   const handleDeleteProgram = async (assignmentId: string) => {
@@ -214,9 +193,9 @@ const ActivePrograms = () => {
           activePrograms={activePrograms}
           onRefresh={refetch}
           onDelete={handleDeleteProgram}
-          minimizedWorkout={minimizedWorkout}
-          onRestoreWorkout={handleRestoreWorkout}
-          onCancelMinimizedWorkout={handleCancelMinimizedWorkout}
+          minimizedWorkout={null}
+          onRestoreWorkout={() => {}}
+          onCancelMinimizedWorkout={() => {}}
         />
         
         {/* Main Content */}
@@ -233,7 +212,7 @@ const ActivePrograms = () => {
               activePrograms={activePrograms}
               workoutCompletions={workoutCompletions}
               realtimeKey={realtimeKey}
-              onNameClick={() => {}}
+              onNameClick={handleProgramClick}
             />
 
             {/* Today's Programs */}
@@ -247,16 +226,18 @@ const ActivePrograms = () => {
         </div>
       </div>
 
-      {/* Day Program Dialog με CRITICAL refresh */}
-      <DayProgramDialog
-        isOpen={dayDialogOpen}
-        onClose={() => setDayDialogOpen(false)}
-        program={selectedProgram}
-        selectedDate={today}
-        workoutStatus={selectedProgram ? getWorkoutStatus(selectedProgram) : 'scheduled'}
-        onRefresh={handleCalendarRefresh}
-        onMinimize={handleMinimizeWorkout}
-      />
+      {/* Multiple Day Program Dialogs */}
+      {activeWorkouts.map(workout => (
+        <DayProgramDialog
+          key={workout.id}
+          isOpen={openDialogs.has(workout.id)}
+          onClose={() => closeWorkoutDialog(workout.id)}
+          program={workout.assignment}
+          selectedDate={workout.selectedDate}
+          workoutStatus={getWorkoutStatus(workout.assignment)}
+          onRefresh={handleCalendarRefresh}
+        />
+      ))}
     </>
   );
 };
