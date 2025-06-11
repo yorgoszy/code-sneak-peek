@@ -10,11 +10,14 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileBottomBar } from "@/components/dashboard/MobileBottomBar";
 
 export const DashboardContainer = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const isMobile = useIsMobile();
   
   const {
     userProfile,
@@ -41,9 +44,11 @@ export const DashboardContainer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -55,7 +60,7 @@ export const DashboardContainer = () => {
         />
 
         {/* Dashboard Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-3 md:p-6 pb-20 md:pb-6 overflow-x-hidden">
           {/* Tabs */}
           <DashboardTabs />
 
@@ -69,6 +74,9 @@ export const DashboardContainer = () => {
           />
         </div>
       </div>
+
+      {/* Mobile Bottom Bar */}
+      {isMobile && <MobileBottomBar />}
     </div>
   );
 };

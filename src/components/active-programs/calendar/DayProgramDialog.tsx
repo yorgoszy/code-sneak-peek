@@ -9,6 +9,7 @@ import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramInfo } from './ProgramInfo';
 import { ProgramBlocks } from './ProgramBlocks';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -30,6 +31,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const {
     workoutInProgress,
@@ -81,7 +83,11 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[70vh] overflow-y-auto rounded-none">
+        <DialogContent className={`${
+          isMobile 
+            ? "w-[95vw] h-[95vh] max-w-none max-h-none m-0 rounded-none" 
+            : "max-w-4xl max-h-[70vh]"
+        } overflow-y-auto rounded-none`}>
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
