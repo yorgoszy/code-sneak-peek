@@ -165,12 +165,11 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
             <Input
-              type="number"
-              step="0.01"
-              min="0"
+              type="text"
+              inputMode="decimal"
               value={exercise.velocity_ms?.toString() || ''}
               onChange={(e) => onUpdate('velocity_ms', parseFloat(e.target.value) || 0)}
-              className="text-center w-full"
+              className="text-center w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               style={{ 
                 borderRadius: '0px', 
                 fontSize: '12px', 
