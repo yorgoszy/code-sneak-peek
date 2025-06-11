@@ -18,7 +18,6 @@ interface DayProgramDialogProps {
   selectedDate: Date | null;
   workoutStatus: string;
   onRefresh?: () => void;
-  onMinimize?: () => void;
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -27,8 +26,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   program,
   selectedDate,
   workoutStatus,
-  onRefresh,
-  onMinimize
+  onRefresh
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
@@ -83,7 +81,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none">
+        <DialogContent className="max-w-4xl max-h-[70vh] overflow-y-auto rounded-none">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
@@ -92,8 +90,6 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onStartWorkout={handleStartWorkout}
             onCompleteWorkout={handleCompleteWorkout}
             onCancelWorkout={handleCancelWorkout}
-            onMinimize={onMinimize}
-            program={program}
           />
 
           <div className="space-y-4">
