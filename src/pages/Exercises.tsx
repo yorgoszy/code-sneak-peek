@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Play } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { AddExerciseDialog } from "@/components/AddExerciseDialog";
 import { EditExerciseDialog } from "@/components/EditExerciseDialog";
 import { DeleteUserDialog } from "@/components/DeleteUserDialog";
@@ -140,23 +140,21 @@ const Exercises = () => {
       <AddExerciseDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
-        onExerciseAdded={fetchExercises}
+        onSuccess={fetchExercises}
       />
 
       <EditExerciseDialog
         exercise={editingExercise}
         open={!!editingExercise}
         onOpenChange={(open) => !open && setEditingExercise(null)}
-        onExerciseUpdated={fetchExercises}
+        onSuccess={fetchExercises}
       />
 
       <DeleteUserDialog
         user={deletingExercise}
-        open={!!deletingExercise}
-        onOpenChange={(open) => !open && setDeletingExercise(null)}
-        onConfirm={confirmDelete}
-        title="Διαγραφή Άσκησης"
-        description={`Είστε σίγουροι ότι θέλετε να διαγράψετε την άσκηση "${deletingExercise?.name}";`}
+        isOpen={!!deletingExercise}
+        onClose={() => setDeletingExercise(null)}
+        onUserDeleted={fetchExercises}
       />
 
       <ExerciseVideoDialog
