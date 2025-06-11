@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
@@ -18,7 +17,6 @@ type CarouselProps = {
   plugins?: CarouselPlugin
   orientation?: "horizontal" | "vertical"
   setApi?: (api: CarouselApi) => void
-  autoPlayInterval?: number
 }
 
 type CarouselContextProps = {
@@ -52,7 +50,6 @@ const Carousel = React.forwardRef<
       opts,
       setApi,
       plugins,
-      autoPlayInterval = 3000,
       className,
       children,
       ...props
@@ -133,7 +130,6 @@ const Carousel = React.forwardRef<
           scrollNext,
           canScrollPrev,
           canScrollNext,
-          autoPlayInterval,
         }}
       >
         <div

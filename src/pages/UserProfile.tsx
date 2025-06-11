@@ -8,9 +8,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileSidebar } from "@/components/user-profile/UserProfileSidebar";
 import { UserProfileContent } from "@/components/user-profile/UserProfileContent";
-import { UserProfileMobileBottomBar } from "@/components/user-profile/UserProfileMobileBottomBar";
 import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfileData";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -19,7 +17,6 @@ const UserProfile = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [profileLoading, setProfileLoading] = useState(true);
-  const isMobile = useIsMobile();
 
   const { stats, programs, tests, payments } = useUserProfileData(userProfile, !!userProfile);
 
@@ -81,18 +78,16 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-      {/* Desktop Sidebar */}
-      {!isMobile && (
-        <UserProfileSidebar 
-          isCollapsed={isCollapsed} 
-          setIsCollapsed={setIsCollapsed}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          userProfile={userProfile}
-          stats={stats}
-        />
-      )}
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <UserProfileSidebar 
+        isCollapsed={isCollapsed} 
+        setIsCollapsed={setIsCollapsed}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        userProfile={userProfile}
+        stats={stats}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -132,7 +127,7 @@ const UserProfile = () => {
         </nav>
 
         {/* Profile Content */}
-        <div className="flex-1 p-6 pb-20 md:pb-6">
+        <div className="flex-1 p-6">
           <UserProfileContent
             activeTab={activeTab}
             userProfile={userProfile}
@@ -143,15 +138,6 @@ const UserProfile = () => {
           />
         </div>
       </div>
-
-      {/* Mobile Bottom Bar */}
-      {isMobile && (
-        <UserProfileMobileBottomBar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          stats={stats}
-        />
-      )}
     </div>
   );
 };

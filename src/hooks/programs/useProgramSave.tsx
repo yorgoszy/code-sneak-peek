@@ -13,7 +13,7 @@ export const useProgramSave = () => {
     try {
       console.log('💾 Saving program:', programData);
 
-      // Διασφαλίζουμε ότι έχουμε training_dates - απαραίτητο για draft προγράμματα
+      // Διασφαλίζουμε ότι έχουμε training_dates
       let trainingDatesArray = [];
       if (programData.training_dates && Array.isArray(programData.training_dates)) {
         trainingDatesArray = programData.training_dates.map(date => {
@@ -25,11 +25,22 @@ export const useProgramSave = () => {
             return new Date(date).toISOString().split('T')[0];
           }
         });
+      } else if (programData.weeks && programData.weeks.length > 0) {
+        // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
+        const totalDays = programData.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
+        const today = new Date();
+        trainingDatesArray = [];
+        for (let i = 0; i < totalDays; i++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() + i);
+          trainingDatesArray.push(date.toISOString().split('T')[0]);
+        }
+        console.log('📅 Auto-generated training dates:', trainingDatesArray);
       }
 
-      // Βασικά δεδομένα προγράμματος - ΜΗ απαιτούμε training_dates για draft
+      // Βασικά δεδομένα προγράμματος
       const programPayload = {
-        name: programData.name || 'Untitled Program',
+        name: programData.name,
         description: programData.description || '',
         user_id: programData.user_id || null,
         status: programData.status || 'draft',
@@ -51,13 +62,10 @@ export const useProgramSave = () => {
           .select()
           .single();
 
-        if (error) {
-          console.error('❌ Error updating program:', error);
-          throw error;
-        }
+        if (error) throw error;
         savedProgram = data;
 
-        // Ενημέρωση των training_dates στα program_assignments ΑΝ υπάρχουν
+        // Ενημέρωση των training_dates στα program_assignments αν υπάρχουν
         if (trainingDatesArray.length > 0) {
           await supabase
             .from('program_assignments')
@@ -77,16 +85,13 @@ export const useProgramSave = () => {
           .select()
           .single();
 
-        if (error) {
-          console.error('❌ Error creating program:', error);
-          throw error;
-        }
+        if (error) throw error;
         savedProgram = data;
       }
 
       console.log('✅ Program saved:', savedProgram);
 
-      // Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises) - ΑΝ υπάρχουν
+      // Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises)
       if (programData.weeks && programData.weeks.length > 0) {
         console.log('🏗️ Creating program structure...');
         await createProgramStructure(savedProgram.id, programData);
@@ -100,7 +105,7 @@ export const useProgramSave = () => {
       };
     } catch (error) {
       console.error('❌ Error saving program:', error);
-      toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος: ' + (error as Error).message);
+      toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
       throw error;
     } finally {
       setLoading(false);

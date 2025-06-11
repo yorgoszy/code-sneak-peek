@@ -9,7 +9,6 @@ import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramInfo } from './ProgramInfo';
 import { ProgramBlocks } from './ProgramBlocks';
-import { useIsMobile } from '@/hooks/use-mobile';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -19,6 +18,7 @@ interface DayProgramDialogProps {
   selectedDate: Date | null;
   workoutStatus: string;
   onRefresh?: () => void;
+  onMinimize?: () => void;
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -27,11 +27,11 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   program,
   selectedDate,
   workoutStatus,
-  onRefresh
+  onRefresh,
+  onMinimize
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
-  const isMobile = useIsMobile();
 
   const {
     workoutInProgress,
@@ -83,11 +83,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className={`${
-          isMobile 
-            ? "w-[95vw] h-[95vh] max-w-none max-h-none m-0 rounded-none" 
-            : "max-w-4xl max-h-[70vh]"
-        } overflow-y-auto rounded-none`}>
+        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
@@ -96,6 +92,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onStartWorkout={handleStartWorkout}
             onCompleteWorkout={handleCompleteWorkout}
             onCancelWorkout={handleCancelWorkout}
+            onMinimize={onMinimize}
+            program={program}
           />
 
           <div className="space-y-4">

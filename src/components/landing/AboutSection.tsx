@@ -22,7 +22,6 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   onSetActiveAboutSection 
 }) => {
   const [api, setApi] = useState<any>();
-  const [isPaused, setIsPaused] = useState(false);
   const isMobile = useIsMobile();
 
   const aboutSections = [
@@ -107,42 +106,26 @@ const AboutSection: React.FC<AboutSectionProps> = ({
     }
   ];
 
-  // Auto-rotate carousel on mobile with pause functionality
+  // Auto-rotate carousel on mobile
   useEffect(() => {
-    if (!api || !isMobile || isPaused) return;
+    if (!api || !isMobile) return;
 
     const interval = setInterval(() => {
       api.scrollNext();
-    }, 3000); // Changed from 1.5sec to 3sec
+    }, 1500);
 
     return () => clearInterval(interval);
-  }, [api, isMobile, isPaused]);
-
-  // Touch event handlers for mobile
-  const handleTouchStart = () => {
-    if (isMobile) {
-      setIsPaused(true);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (isMobile) {
-      // Resume auto-rotation after 2 seconds of no touch
-      setTimeout(() => {
-        setIsPaused(false);
-      }, 2000);
-    }
-  };
+  }, [api, isMobile]);
 
   if (isMobile) {
     return (
       <section id="about" className="py-20 bg-black relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 text-left">
+          <div className="mb-12 text-center">
             <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
               {translations.aboutSection.toUpperCase()}
             </p>
-            <h2 className="text-4xl font-bold text-white leading-tight text-left">
+            <h2 className="text-4xl font-bold text-white leading-tight">
               {translations.supportingYour}<br />
               <span style={{ color: '#00ffba' }}>{translations.athleticJourney}</span>
             </h2>
@@ -167,11 +150,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 </CarouselNext>
               </div>
 
-              <CarouselContent 
-                className="-ml-4"
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-              >
+              <CarouselContent className="-ml-4">
                 {aboutSections.map((section) => (
                   <CarouselItem key={section.id} className="pl-4 basis-full">
                     <div className="space-y-6">

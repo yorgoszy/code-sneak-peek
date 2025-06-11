@@ -36,24 +36,6 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
     return completedDates.includes(dateString);
   };
 
-  const handleDateClick = (date: Date | undefined) => {
-    if (!date) return;
-    
-    const dateString = format(date, 'yyyy-MM-dd');
-    
-    // Αν η ημερομηνία είναι ήδη επιλεγμένη, την αποεπιλέγουμε
-    if (isDateSelected(date)) {
-      // Αφαιρούμε την ημερομηνία από τις επιλεγμένες
-      const updatedDates = selectedDates.filter(d => d !== dateString);
-      // Καλούμε το onDateSelect για κάθε εναπομένουσα ημερομηνία
-      onClearAllDates(); // Καθαρίζουμε πρώτα όλες
-      updatedDates.forEach(d => onDateSelect(parseISO(d))); // Και προσθέτουμε τις εναπομένουσες
-    } else {
-      // Αν δεν είναι επιλεγμένη, την προσθέτουμε
-      onDateSelect(date);
-    }
-  };
-
   const getWeekProgress = () => {
     if (selectedDates.length === 0) return [];
     
@@ -135,7 +117,7 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
           <div className="text-sm text-gray-600">
             <p>Επιλέξτε {totalRequiredSessions} ημερομηνίες για {totalWeeks} εβδομάδες × {daysPerWeek} ημέρες/εβδομάδα</p>
             <p className="text-xs text-blue-600 mt-1">
-              💡 Κάθε εβδομάδα πρέπει να έχει ακριβώς {daysPerWeek} προπονήσεις. Κλικ για επιλογή, ξανά κλικ για αποεπιλογή.
+              💡 Κάθε εβδομάδα πρέπει να έχει ακριβώς {daysPerWeek} προπονήσεις
             </p>
             {editMode && completedDates.length > 0 && (
               <p className="text-green-600 mt-1">
@@ -169,7 +151,7 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
             <Calendar
               mode="multiple"
               selected={selectedDates.map(date => parseISO(date))}
-              onDayClick={handleDateClick}
+              onDayClick={onDateSelect}
               disabled={isDateDisabled}
               className="rounded-none border"
               components={{
@@ -192,6 +174,30 @@ export const DateSelectionCard: React.FC<DateSelectionCardProps> = ({
               }}
             />
           </div>
+
+          {selectedDates.length > 0 && (
+            <div>
+              <h4 className="font-medium mb-2">Επιλεγμένες Ημερομηνίες:</h4>
+              <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
+                {selectedDates.map((date, index) => {
+                  const isCompleted = completedDates.includes(date);
+                  return (
+                    <div 
+                      key={date} 
+                      className={`text-xs p-2 rounded-none border flex items-center justify-between ${
+                        isCompleted 
+                          ? 'bg-green-50 border-green-200 text-green-800' 
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <span>{format(parseISO(date), 'dd/MM/yyyy')}</span>
+                      {isCompleted && <CheckCircle2 className="w-3 h-3 text-green-600" />}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
