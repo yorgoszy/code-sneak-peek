@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
 
 interface ExerciseDetailsProps {
   exercise: any;
@@ -14,23 +13,14 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   onSetClick 
 }) => {
   return (
-    <div className="grid grid-cols-9 gap-0.5 text-xs">
+    <div className="grid grid-cols-8 gap-0.5 text-xs">
       <div className="text-center">
         <div className="text-gray-600 mb-1">Sets</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs">{exercise.sets || '-'}</div>
-      </div>
-      <div className="text-center">
-        <div className="text-gray-600 mb-1">Complete</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs flex justify-center">
-          {onSetClick && (
-            <Button
-              onClick={onSetClick}
-              size="sm"
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-5 w-full text-xs px-1"
-            >
-              ✓
-            </Button>
-          )}
+        <div 
+          className="bg-gray-100 px-1 py-0.5 rounded-none text-xs cursor-pointer hover:bg-[#00ffba] hover:text-black transition-colors"
+          onClick={onSetClick}
+        >
+          {exercise.sets || '-'}
         </div>
       </div>
       <div className="text-center">
