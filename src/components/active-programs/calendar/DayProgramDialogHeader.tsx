@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Play, CheckCircle, X, Clock, Minimize2 } from "lucide-react";
 import { format } from "date-fns";
+import { el } from "date-fns/locale";
+import { Play, Square, CheckCircle, X } from "lucide-react";
+import { WorkoutTimer } from "./WorkoutTimer";
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogHeaderProps {
   selectedDate: Date;
@@ -16,7 +17,7 @@ interface DayProgramDialogHeaderProps {
   onCompleteWorkout: () => void;
   onCancelWorkout: () => void;
   onMinimize?: () => void;
-  program?: any;
+  program: EnrichedAssignment;
 }
 
 export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
@@ -30,71 +31,31 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   onMinimize,
   program
 }) => {
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const userName = program?.app_users?.name || 'Άγνωστος';
-  const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+  const isCompleted = workoutStatus === 'completed';
 
   return (
-    <DialogHeader>
-      <DialogTitle className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Avatar className="w-8 h-8 rounded-none">
-            <AvatarImage 
-              src={program?.app_users?.photo_url} 
-              alt={userName}
-              className="rounded-none"
-            />
-            <AvatarFallback className="rounded-none bg-gray-200 text-gray-800 text-xs">
-              {userInitials}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="text-sm font-semibold">{userName}</div>
-            <div className="text-xs text-gray-600">{format(selectedDate, 'dd/MM/yyyy')}</div>
-          </div>
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center space-x-4">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {program.app_users?.name || 'Άγνωστος Αθλητής'}
+          </h2>
+          <p className="text-sm text-gray-600">
+            {format(selectedDate, 'EEEE, d MMMM yyyy', { locale: el })}
+          </p>
         </div>
         
-        <div className="flex items-center gap-2">
-          {workoutInProgress && (
-            <div className="flex items-center gap-2 bg-[#00ffba] text-black px-3 py-1 rounded-none">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm font-mono">{formatTime(elapsedTime)}</span>
-            </div>
-          )}
-          
-          <Badge 
-            variant="outline" 
-            className={`rounded-none ${
-              workoutStatus === 'completed' ? 'bg-[#00ffba] text-black border-[#00ffba]' : ''
-            }`}
-          >
-            {workoutStatus === 'completed' ? 'Ολοκληρωμένη' : 'Προγραμματισμένη'}
-          </Badge>
-        </div>
-      </DialogTitle>
-
-      <div className="flex items-center gap-2 mt-4">
-        {!workoutInProgress && workoutStatus !== 'completed' && (
-          <Button
-            onClick={onStartWorkout}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            Έναρξη Προπόνησης
-          </Button>
-        )}
-
         {workoutInProgress && (
+          <WorkoutTimer elapsedTime={elapsedTime} />
+        )}
+      </div>
+
+      <div className="flex items-center space-x-2">
+        {isCompleted ? (
+          <Badge className="bg-green-100 text-green-800 border-green-200 rounded-none">
+            Ολοκληρωμένη
+          </Badge>
+        ) : workoutInProgress ? (
           <>
             <Button
               onClick={onCompleteWorkout}
@@ -111,19 +72,17 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
               <X className="w-4 h-4 mr-2" />
               Ακύρωση
             </Button>
-            {onMinimize && (
-              <Button
-                onClick={onMinimize}
-                variant="outline"
-                className="rounded-none"
-              >
-                <Minimize2 className="w-4 h-4 mr-2" />
-                Ελαχιστοποίηση
-              </Button>
-            )}
           </>
+        ) : (
+          <Button
+            onClick={onStartWorkout}
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Έναρξη
+          </Button>
         )}
       </div>
-    </DialogHeader>
+    </div>
   );
 };
