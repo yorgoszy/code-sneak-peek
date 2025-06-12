@@ -73,8 +73,6 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     }
   };
 
-  const remainingSets = getRemainingText(exercise.id, exercise.sets);
-
   return (
     <div 
       className={`border border-gray-200 rounded-none transition-colors ${
@@ -96,24 +94,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           exercise={exercise} 
           onVideoClick={onVideoClick}
           onSetClick={handleSetsAreaClick}
+          workoutInProgress={workoutInProgress}
+          getRemainingText={getRemainingText}
         />
-
-        {/* Sets area - clickable κάτω από τα details */}
-        {workoutInProgress && (
-          <div 
-            className="mt-2 p-2 bg-gray-100 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-200 transition-colors"
-            onClick={handleSetsAreaClick}
-          >
-            <div className="text-center">
-              <div className="text-sm font-medium text-gray-700">
-                Sets: {exercise.sets}
-              </div>
-              <div className="text-xs text-gray-600 mt-1">
-                {remainingSets}
-              </div>
-            </div>
-          </div>
-        )}
 
         <ExerciseActualValues
           exercise={exercise}

@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { CheckCircle, X } from "lucide-react";
+import { Play, CheckCircle, X } from "lucide-react";
 import { WorkoutTimer } from "./WorkoutTimer";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -24,6 +24,7 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   workoutInProgress,
   elapsedTime,
   workoutStatus,
+  onStartWorkout,
   onCompleteWorkout,
   onCancelWorkout,
   onMinimize,
@@ -71,7 +72,15 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
               Ακύρωση
             </button>
           </>
-        ) : null}
+        ) : (
+          <button
+            onClick={onStartWorkout}
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2"
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Έναρξη
+          </button>
+        )}
       </div>
     </div>
   );
