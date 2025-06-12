@@ -45,9 +45,10 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
           </p>
         </div>
         
-        {workoutInProgress && (
-          <WorkoutTimer elapsedTime={elapsedTime} />
-        )}
+        <WorkoutTimer 
+          workoutInProgress={workoutInProgress}
+          elapsedTime={elapsedTime} 
+        />
       </div>
 
       <div className="flex items-center space-x-2">
