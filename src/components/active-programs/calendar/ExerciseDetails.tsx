@@ -26,7 +26,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
 
   return (
-    <div className="grid grid-cols-6 gap-0.5 text-xs">
+    <div className="grid grid-cols-7 gap-0.5 text-xs">
       <div className="text-center">
         <div className="text-gray-600 mb-1">Sets</div>
         <div 
@@ -60,6 +60,10 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
       <div className="text-center">
         <div className="text-gray-600 mb-1">Tempo</div>
         <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs">{exercise.tempo || '-'}</div>
+      </div>
+      <div className="text-center">
+        <div className="text-gray-600 mb-1">Rest</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs">{exercise.rest || '-'}</div>
       </div>
     </div>
   );
