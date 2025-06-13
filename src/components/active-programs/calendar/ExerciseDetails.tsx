@@ -23,8 +23,6 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
     }
   };
 
-  const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
-
   return (
     <div className="grid grid-cols-6 gap-0.5 text-xs">
       <div className="text-center">
@@ -38,7 +36,6 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
           onClick={handleSetsClick}
         >
           {exercise.sets || '-'}
-          {remainingText && <div className="text-xs text-gray-600 mt-1">{remainingText}</div>}
         </div>
       </div>
       <div className="text-center">
