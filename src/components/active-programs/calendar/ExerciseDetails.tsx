@@ -37,7 +37,10 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
           }`}
           onClick={handleSetsClick}
         >
-          {exercise.sets || '-'}{remainingText}
+          <div>{exercise.sets || '-'}</div>
+          {workoutInProgress && remainingText && (
+            <div className="text-xs text-gray-600">{remainingText}</div>
+          )}
         </div>
       </div>
       <div className="text-center">
