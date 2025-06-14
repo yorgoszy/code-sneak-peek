@@ -1,21 +1,26 @@
 
-import React, { useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek } from "date-fns";
-import { CalendarHeader } from "./CalendarHeader";
-import { CalendarWeekDays } from "./CalendarWeekDays";
-import { CalendarDay } from "./CalendarDay";
-import { CalendarNavigation } from "./CalendarNavigation";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
+import { DayProgramDialog } from './DayProgramDialog';
+import { CalendarNavigation } from './CalendarNavigation';
+import { CalendarWeekDays } from './CalendarWeekDays';
+import { CalendarDay } from './CalendarDay';
+import { WeeklyView } from './WeeklyView';
+import { DailyView } from './DailyView';
+import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface CalendarGridProps {
   currentMonth: Date;
   setCurrentMonth: (date: Date) => void;
-  selectedDate: Date;
+  selectedDate: Date | undefined;
   setSelectedDate: (date: Date) => void;
   activePrograms: EnrichedAssignment[];
   workoutCompletions: any[];
   realtimeKey: number;
-  onNameClick: (assignment: EnrichedAssignment) => void;
+  onNameClick: (program: any, event: React.MouseEvent) => void;
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -28,82 +33,220 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   realtimeKey,
   onNameClick
 }) => {
-  // Generate calendar days
+  const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
+  const [selectedProgramForDay, setSelectedProgramForDay] = useState<EnrichedAssignment | null>(null);
+  const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
+  const [calendarView, setCalendarView] = useState<'monthly' | 'weekly' | 'daily'>('monthly');
+  const [internalRealtimeKey, setInternalRealtimeKey] = useState(0);
+
+  // Enhanced real-time subscription με άμεση ανανέωση
+  useEffect(() => {
+    console.log('🔄 CalendarGrid: Setting up ENHANCED real-time subscription...');
+    
+    const channelName = `calendar-updates-${Date.now()}-${Math.random()}`;
+    
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_completions'
+        },
+        (payload) => {
+          console.log('🔄 CalendarGrid: IMMEDIATE workout completion change:', payload);
+          setInternalRealtimeKey(prev => {
+            const newKey = Date.now(); // Unique timestamp
+            console.log('🔄 CalendarGrid: FORCE updating internal key to:', newKey);
+            return newKey;
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'program_assignments'
+        },
+        (payload) => {
+          console.log('🔄 CalendarGrid: IMMEDIATE assignment change:', payload);
+          setInternalRealtimeKey(prev => {
+            const newKey = Date.now(); // Unique timestamp
+            console.log('🔄 CalendarGrid: FORCE updating internal key to:', newKey);
+            return newKey;
+          });
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 CalendarGrid ENHANCED subscription status:', status);
+      });
+
+    return () => {
+      console.log('🔌 CalendarGrid: Cleaning up ENHANCED real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Force re-render όταν αλλάζουν τα δεδομένα
+  useEffect(() => {
+    console.log('🔄 CalendarGrid: FORCE RE-RENDER triggered', {
+      workoutCompletionsLength: workoutCompletions.length,
+      realtimeKey,
+      internalRealtimeKey
+    });
+  }, [workoutCompletions, realtimeKey, internalRealtimeKey]);
+
+  // Create a list with all dates that have programs and their statuses - με enhanced key
+  const programDatesWithStatus = React.useMemo(() => {
+    const dates = activePrograms.reduce((acc: any[], assignment) => {
+      if (assignment.training_dates && assignment.app_users) {
+        const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
+        
+        assignment.training_dates.forEach(dateStr => {
+          const completion = assignmentCompletions.find(c => c.scheduled_date === dateStr);
+          acc.push({
+            date: dateStr,
+            status: completion?.status || 'scheduled',
+            assignmentId: assignment.id,
+            userName: assignment.app_users.name || 'Άγνωστος',
+            assignment: assignment
+          });
+        });
+      }
+      return acc;
+    }, []);
+    
+    console.log('📅 CalendarGrid: RECALCULATED program dates with status:', dates.length, 'Key:', realtimeKey + internalRealtimeKey);
+    return dates;
+  }, [activePrograms, workoutCompletions, realtimeKey, internalRealtimeKey]);
+
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  const startDate = startOfWeek(monthStart);
-  const endDate = endOfWeek(monthEnd);
-  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  
+  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-  // ΚΡΙΤΙΚΟ: Enhanced data processing που συμπεριλαμβάνει status_color
-  const programsByDate = useMemo(() => {
-    console.log('🔄 CalendarGrid: Processing programs with enhanced status_color support');
-    
-    const dateMap: Record<string, any[]> = {};
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
+  };
 
-    activePrograms.forEach(assignment => {
-      if (!assignment.training_dates) return;
+  const handleUserNameClick = (programData: any, event: React.MouseEvent) => {
+    event.stopPropagation();
+    console.log('👤 CalendarGrid: User name clicked:', programData);
+    setSelectedProgramForDay(programData.assignment);
+    setSelectedDialogDate(new Date(programData.date));
+    setDayProgramDialogOpen(true);
+  };
 
-      assignment.training_dates.forEach(dateStr => {
-        if (!dateMap[dateStr]) {
-          dateMap[dateStr] = [];
-        }
+  const handleDialogClose = () => {
+    console.log('🔒 CalendarGrid: Dialog closing, FORCING refresh');
+    setDayProgramDialogOpen(false);
+    setSelectedProgramForDay(null);
+    // Force άμεση ανανέωση
+    setInternalRealtimeKey(Date.now());
+  };
 
-        // Βρίσκουμε το workout completion για αυτή την ημερομηνία
-        const completion = workoutCompletions.find(c => 
-          c.assignment_id === assignment.id && c.scheduled_date === dateStr
-        );
-
-        console.log(`📊 CalendarGrid: Assignment ${assignment.id} on ${dateStr}:`, {
-          completion_status: completion?.status,
-          completion_status_color: completion?.status_color,
-          user: assignment.app_users?.name
-        });
-
-        dateMap[dateStr].push({
-          date: dateStr,
-          status: completion?.status || 'scheduled',
-          status_color: completion?.status_color || null, // ΚΡΙΤΙΚΟ: Περνάμε το status_color
-          assignmentId: assignment.id,
-          userName: assignment.app_users?.name || 'Unknown',
-          assignment
-        });
-      });
-    });
-
-    return dateMap;
-  }, [activePrograms, workoutCompletions, realtimeKey]); // ΚΡΙΤΙΚΟ: Dependency στο realtimeKey
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-none">
+  const MonthlyView = () => (
+    <div className="w-full">
       <CalendarNavigation 
-        currentMonth={currentMonth} 
+        currentMonth={currentMonth}
         setCurrentMonth={setCurrentMonth}
       />
+
       <CalendarWeekDays />
-      
-      <div className="grid grid-cols-7">
-        {calendarDays.map(day => {
-          const dayStr = format(day, 'yyyy-MM-dd');
-          const programsForDate = programsByDate[dayStr] || [];
+
+      {/* Calendar Grid με enhanced key */}
+      <div className="grid grid-cols-7 border border-gray-200">
+        {days.map((date) => {
+          const dateStr = format(date, 'yyyy-MM-dd');
+          const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
           
+          // Unique key που συνδυάζει όλα τα realtime keys
+          const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
+
           return (
             <CalendarDay
-              key={`${dayStr}-${realtimeKey}`} // ΚΡΙΤΙΚΟ: Key με realtimeKey
-              date={day}
+              key={enhancedKey}
+              date={date}
               currentMonth={currentMonth}
               selectedDate={selectedDate}
-              programsForDate={programsForDate}
-              realtimeKey={realtimeKey}
-              onDateClick={setSelectedDate}
-              onUserNameClick={(programData, event) => {
-                event.stopPropagation();
-                onNameClick(programData.assignment);
-              }}
+              programsForDate={dateProgramsWithStatus}
+              realtimeKey={realtimeKey + internalRealtimeKey}
+              onDateClick={handleDateClick}
+              onUserNameClick={handleUserNameClick}
             />
           );
         })}
       </div>
     </div>
+  );
+
+  // Enhanced realtime key που συνδυάζει όλα τα keys
+  const totalRealtimeKey = realtimeKey + internalRealtimeKey;
+
+  return (
+    <>
+      <Card className="rounded-none">
+        <CardContent>
+          <Tabs value={calendarView} onValueChange={(value) => setCalendarView(value as 'monthly' | 'weekly' | 'daily')} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 rounded-none">
+              <TabsTrigger value="monthly" className="rounded-none">Μηνιαία</TabsTrigger>
+              <TabsTrigger value="weekly" className="rounded-none">Εβδομαδιαία</TabsTrigger>
+              <TabsTrigger value="daily" className="rounded-none">Ημερήσια</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="monthly" className="mt-4">
+              <MonthlyView />
+            </TabsContent>
+
+            <TabsContent value="weekly" className="mt-4">
+              <WeeklyView
+                currentMonth={currentMonth}
+                setCurrentMonth={setCurrentMonth}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                programDatesWithStatus={programDatesWithStatus}
+                realtimeKey={totalRealtimeKey}
+                onUserNameClick={handleUserNameClick}
+              />
+            </TabsContent>
+
+            <TabsContent value="daily" className="mt-4">
+              <DailyView
+                currentMonth={currentMonth}
+                setCurrentMonth={setCurrentMonth}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                programDatesWithStatus={programDatesWithStatus}
+                realtimeKey={totalRealtimeKey}
+                onUserNameClick={handleUserNameClick}
+              />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Dialog για συγκεκριμένη προπόνηση με enhanced refresh */}
+      <DayProgramDialog
+        isOpen={dayProgramDialogOpen}
+        onClose={handleDialogClose}
+        program={selectedProgramForDay}
+        selectedDate={selectedDialogDate}
+        workoutStatus={selectedProgramForDay && selectedDialogDate ? 
+          workoutCompletions.find(c => 
+            c.assignment_id === selectedProgramForDay.id && 
+            c.scheduled_date === format(selectedDialogDate, 'yyyy-MM-dd')
+          )?.status || 'scheduled'
+          : 'scheduled'
+        }
+        onRefresh={() => {
+          console.log('🔄 CalendarGrid: MANUAL FORCE refresh triggered');
+          setInternalRealtimeKey(Date.now());
+        }}
+      />
+    </>
   );
 };

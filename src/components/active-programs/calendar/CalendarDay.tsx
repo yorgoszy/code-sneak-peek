@@ -8,7 +8,6 @@ interface ProgramData {
   assignmentId: string;
   userName: string;
   assignment: any;
-  status_color?: string; // ΚΡΙΤΙΚΟ: Προσθήκη status_color
 }
 
 interface CalendarDayProps {
@@ -35,26 +34,16 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
   const isTodayDate = isToday(date);
 
-  // ENHANCED color function που χρησιμοποιεί το status_color από το database
-  const getNameColor = (program: ProgramData) => {
-    console.log(`🎨 CalendarDay: Program data for ${dateStr}:`, {
-      status: program.status,
-      status_color: program.status_color,
-      userName: program.userName
-    });
-    
-    // Χρησιμοποιούμε status_color αν υπάρχει, αλλιώς fallback στο status
-    const colorIndicator = program.status_color || program.status;
-    
-    switch (colorIndicator) {
-      case 'green':
+  // Enhanced color function με άμεση ανανέωση - χρησιμοποιούμε status_color
+  const getNameColor = (status: string) => {
+    console.log(`🎨 CalendarDay: Status for ${dateStr}:`, status);
+    switch (status) {
       case 'completed':
         return 'text-[#00ffba] font-semibold'; // Πράσινο για ολοκληρωμένες
-      case 'red':
       case 'missed':
         return 'text-red-500 font-semibold';
-      case 'blue':
       case 'pending':
+        return 'text-blue-500';
       case 'scheduled':
         return 'text-blue-500';
       default:
@@ -91,10 +80,10 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-4 pb-1">
         {programsForDate.slice(0, 5).map((program, i) => {
           // Enhanced unique key για κάθε user name
-          const userKey = `${program.assignmentId}-${i}-${realtimeKey}-${program.status}-${program.status_color}-${Date.now()}`;
-          const colorClass = getNameColor(program);
+          const userKey = `${program.assignmentId}-${i}-${realtimeKey}-${program.status}-${Date.now()}`;
+          const colorClass = getNameColor(program.status);
           
-          console.log(`👤 CalendarDay: Rendering user ${program.userName} with status ${program.status}, status_color ${program.status_color} and color ${colorClass}`);
+          console.log(`👤 CalendarDay: Rendering user ${program.userName} with status ${program.status} and color ${colorClass}`);
           
           return (
             <div 
