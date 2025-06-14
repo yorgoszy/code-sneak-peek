@@ -161,6 +161,62 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     }
   };
 
+  // Device detection - μόνο για rendering, δεν έχει side effects
+  const [isMobile, setIsMobile] = React.useState<boolean>(false);
+  React.useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 768);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  const weekDays = ['Δε', 'Τρ', 'Τε', 'Πε', 'Πα', 'Σα', 'Κυ'];
+
+  // Αν mobile, οριζόντια ως 7 στήλες, κάθε στήλη = header+κοινά days (ομάδες)
+  function MobileMonthlyView() {
+    // Βρίσκουμε τα days ανά στήλη βάσει της θέσης τους στην εβδομάδα
+    // Ορισμός: πρώτη μέρα ημερολογίου = calendarStart (Δευτέρα)
+    // Δημιουργούμε 7 arrays (μία για κάθε μέρα) 
+    const columns = Array.from({ length: 7 }, (_, colIdx) => {
+      return days.filter((date, i) => i % 7 === colIdx);
+    });
+    return (
+      <div className="flex w-full">
+        {columns.map((colDays, colIdx) => (
+          <div key={weekDays[colIdx]} className="flex flex-col flex-1 min-w-0">
+            <div
+              className="
+                h-12 flex items-center justify-center border-b border-gray-200
+                text-xs font-medium text-gray-600 bg-white select-none rounded-none
+                "
+              style={{ minWidth: 0 }}
+            >
+              {weekDays[colIdx]}
+            </div>
+            {colDays.map((date) => {
+              const dateStr = format(date, 'yyyy-MM-dd');
+              const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
+              const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
+              return (
+                <CalendarDay
+                  key={enhancedKey}
+                  date={date}
+                  currentMonth={currentMonth}
+                  selectedDate={selectedDate}
+                  programsForDate={dateProgramsWithStatus}
+                  realtimeKey={realtimeKey + internalRealtimeKey}
+                  onDateClick={handleDateClick}
+                  onUserNameClick={handleUserNameClick}
+                  onDayNumberClick={handleDayNumberClick}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
   const MonthlyView = () => (
     <div className="w-full">
       {/* Navigation και grid εβδομάδων */}
@@ -168,32 +224,36 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         currentMonth={currentMonth}
         setCurrentMonth={setCurrentMonth}
       />
-      <CalendarWeekDays />
-      {/* Responsive grid - οριζόντια scroll σε κινητά */}
-      <div className="grid grid-cols-7 border border-gray-200 gap-px overflow-x-auto md:overflow-x-visible"
-        style={{ minWidth: 410 }}
-      >
-        {days.map((date) => {
-          const dateStr = format(date, 'yyyy-MM-dd');
-          const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
-          
-          // Unique key που συνδυάζει όλα τα realtime keys
-          const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
-          
-          return (
-            <CalendarDay
-              key={enhancedKey}
-              date={date}
-              currentMonth={currentMonth}
-              selectedDate={selectedDate}
-              programsForDate={dateProgramsWithStatus}
-              realtimeKey={realtimeKey + internalRealtimeKey}
-              onDateClick={handleDateClick}
-              onUserNameClick={handleUserNameClick}
-              onDayNumberClick={handleDayNumberClick}
-            />
-          );
-        })}
+      {/* Header/Days: Εναλλαγή ανά breakpoint */}
+      <div className="block md:hidden">
+        <MobileMonthlyView />
+      </div>
+      <div className="hidden md:block">
+        <CalendarWeekDays />
+        {/* Responsive grid - οριζόντια scroll σε κινητά */}
+        <div className="grid grid-cols-7 border border-gray-200 gap-px overflow-x-auto md:overflow-x-visible"
+          style={{ minWidth: 410 }}
+        >
+          {days.map((date) => {
+            const dateStr = format(date, 'yyyy-MM-dd');
+            const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
+            // Unique key
+            const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
+            return (
+              <CalendarDay
+                key={enhancedKey}
+                date={date}
+                currentMonth={currentMonth}
+                selectedDate={selectedDate}
+                programsForDate={dateProgramsWithStatus}
+                realtimeKey={realtimeKey + internalRealtimeKey}
+                onDateClick={handleDateClick}
+                onUserNameClick={handleUserNameClick}
+                onDayNumberClick={handleDayNumberClick}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );
