@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 
@@ -58,10 +57,11 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
 
   return (
     <div
-      key={enhancedKey}
-      // Responsive min-w και min-h για καλύτερη εμφάνιση σε κινητό
+      key={dateStr}
       className={`
-        min-w-[64px] h-20 md:h-24 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
+        min-w-[64px] max-w-[100px] h-20
+        border-r border-b border-gray-200 last:border-r-0
+        flex flex-col relative items-center
         ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
         ${isSelected ? 'bg-[#00ffba] text-black' : ''}
         ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
@@ -69,8 +69,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       `}
       onClick={() => onDateClick(date)}
       style={{
-        flex: '1 0 64px', // για μικρότερα κινητά
-        maxWidth: '100px'
+        flex: '1 0 64px'
       }}
     >
       {/* Date Number (κλικ μόνο στον αριθμό!) */}
@@ -92,15 +91,11 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         {date.getDate()}
       </div>
       
-      {/* User Names με enhanced realtime updates */}
-      <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-4 pb-1">
+      {/* User Names */}
+      <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-4 pb-1 w-full">
         {programsForDate.slice(0, 5).map((program, i) => {
-          // Enhanced unique key για κάθε user name
           const userKey = `${program.assignmentId}-${i}-${realtimeKey}-${program.status}-${Date.now()}`;
           const colorClass = getNameColor(program.status);
-          
-          console.log(`👤 CalendarDay: Rendering user ${program.userName} with status ${program.status} and color ${colorClass}`);
-          
           return (
             <div 
               key={userKey}
