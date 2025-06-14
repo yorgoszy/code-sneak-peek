@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 
@@ -35,12 +36,10 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
   const isTodayDate = isToday(date);
 
-  // Enhanced color function με άμεση ανανέωση - χρησιμοποιούμε status_color
   const getNameColor = (status: string) => {
-    console.log(`🎨 CalendarDay: Status for ${dateStr}:`, status);
     switch (status) {
       case 'completed':
-        return 'text-[#00ffba] font-semibold'; // Πράσινο για ολοκληρωμένες
+        return 'text-[#00ffba] font-semibold';
       case 'missed':
         return 'text-red-500 font-semibold';
       case 'pending':
@@ -52,31 +51,30 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     }
   };
 
-  // Enhanced key με timestamp για force re-render
-  const enhancedKey = `${dateStr}-${realtimeKey}-${Date.now()}`;
-
   return (
     <div
       key={dateStr}
-      className={`
-        min-w-[64px] max-w-[100px] h-20
-        border-r border-b border-gray-200 last:border-r-0
-        flex flex-col relative items-center
-        ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
-        ${isSelected ? 'bg-[#00ffba] text-black' : ''}
+      className={
+        `
+        w-full h-20 flex flex-col relative items-center
+        border-b border-gray-200
         ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
-        hover:bg-gray-50 transition-colors
-      `}
-      onClick={() => onDateClick(date)}
+        ${isSelected ? 'bg-[#00ffba] text-black' : (isCurrentMonth ? 'bg-white' : 'bg-gray-50 text-gray-400')}
+        `
+      }
       style={{
-        flex: '1 0 64px'
+        // remove fixed min/max width to allow grid sizing only
+        // all sizing comes from grid template
       }}
+      // Remove border-r from last column for compactness
+      // Rely on the parent grid-cols-7
+      onClick={() => onDateClick(date)}
     >
       {/* Date Number (κλικ μόνο στον αριθμό!) */}
       <div 
         className={`
           absolute top-1 left-1 text-sm font-medium cursor-pointer z-10
-          ${isTodayDate ? 'font-bold text-yellow-600' : ''}
+          ${isTodayDate && !isSelected ? 'font-bold text-yellow-600' : ''}
         `}
         onClick={(e) => {
           e.stopPropagation();
