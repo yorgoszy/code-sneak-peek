@@ -169,39 +169,29 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         setCurrentMonth={setCurrentMonth}
       />
       <CalendarWeekDays />
-      {/* Responsive grid: vertical on mobile, grid σε tablet/desktop */}
-      <div
-        className="
-          grid grid-cols-1 
-          md:grid-cols-7 
-          border border-gray-200 gap-px
-          md:overflow-x-visible
-        "
-        style={{ minWidth: 0 }}
+      {/* Responsive grid - οριζόντια scroll σε κινητά */}
+      <div className="grid grid-cols-7 border border-gray-200 gap-px overflow-x-auto md:overflow-x-visible"
+        style={{ minWidth: 410 }}
       >
-        {days.map((date, i) => {
+        {days.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
-
-          // Σε κινητό: μία ημέρα ανά γραμμή, σε tablet/desktop κλασικό grid.
+          
+          // Unique key που συνδυάζει όλα τα realtime keys
+          const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
+          
           return (
-            <div 
-              key={`${dateStr}-${realtimeKey}-${internalRealtimeKey}-${i}`}
-              className="w-full"
-            >
-              <CalendarDay
-                key={dateStr}
-                date={date}
-                currentMonth={currentMonth}
-                selectedDate={selectedDate}
-                programsForDate={dateProgramsWithStatus}
-                realtimeKey={realtimeKey + internalRealtimeKey}
-                onDateClick={handleDateClick}
-                onUserNameClick={handleUserNameClick}
-                onDayNumberClick={handleDayNumberClick}
-                isMobileView
-              />
-            </div>
+            <CalendarDay
+              key={enhancedKey}
+              date={date}
+              currentMonth={currentMonth}
+              selectedDate={selectedDate}
+              programsForDate={dateProgramsWithStatus}
+              realtimeKey={realtimeKey + internalRealtimeKey}
+              onDateClick={handleDateClick}
+              onUserNameClick={handleUserNameClick}
+              onDayNumberClick={handleDayNumberClick}
+            />
           );
         })}
       </div>

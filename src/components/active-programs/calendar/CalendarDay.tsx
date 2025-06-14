@@ -19,7 +19,6 @@ interface CalendarDayProps {
   onDateClick: (date: Date) => void;
   onUserNameClick: (programData: ProgramData, event: React.MouseEvent) => void;
   onDayNumberClick?: (date: Date) => void;
-  isMobileView?: boolean;
 }
 
 export const CalendarDay: React.FC<CalendarDayProps> = ({
@@ -30,82 +29,29 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   realtimeKey,
   onDateClick,
   onUserNameClick,
-  onDayNumberClick,
-  isMobileView = false,
+  onDayNumberClick
 }) => {
   const dateStr = format(date, 'yyyy-MM-dd');
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
   const isTodayDate = isToday(date);
 
+  // Enhanced color function με άμεση ανανέωση - χρησιμοποιούμε status_color
   const getNameColor = (status: string) => {
+    console.log(`🎨 CalendarDay: Status for ${dateStr}:`, status);
     switch (status) {
       case 'completed':
         return 'text-[#00ffba] font-semibold'; // Πράσινο για ολοκληρωμένες
       case 'missed':
         return 'text-red-500 font-semibold';
       case 'pending':
+        return 'text-blue-500';
       case 'scheduled':
+        return 'text-blue-500';
       default:
         return 'text-blue-500';
     }
   };
-
-  // Σε κινητό/μικρή οθόνη: Πιο μαζεμένη εμφάνιση
-  if (isMobileView) {
-    return (
-      <div
-        className={`
-          flex flex-col border-b border-gray-200 min-h-[54px]
-          bg-white px-3 py-2 justify-center
-          ${isSelected ? 'bg-[#00ffba] text-black' : ''}
-          ${isTodayDate && !isSelected ? 'bg-yellow-100 border-yellow-400 border-l-4' : ''}
-          transition-colors
-        `}
-        onClick={() => onDateClick(date)}
-        style={{width: "100%"}}
-      >
-        {/* Day header row */}
-        <div className="flex items-center gap-2">
-          <div 
-            className={`text-lg font-semibold ${isTodayDate ? 'text-yellow-600 underline' : ''} cursor-pointer select-none`}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onDayNumberClick) {
-                onDayNumberClick(date);
-              } else {
-                onDateClick(date);
-              }
-            }}
-            title="Μετάβαση στην ημερήσια προβολή"
-          >
-            {date.getDate()}
-            <span className="ml-2 text-xs text-gray-400">{isTodayDate ? "(Σήμερα)" : null}</span>
-          </div>
-          <div className="text-sm">
-            {/* Αν δεν είναι από αυτόν το μήνα, άχρωμο */}
-            {!isCurrentMonth && <span className="text-gray-300">Εκτός μήνα</span>}
-          </div>
-        </div>
-        {/* Προγράμματα */}
-        <div className="flex flex-wrap gap-1 mt-1">
-          {programsForDate.map((program, i) => (
-            <div
-              key={`${program.assignmentId}-${i}-${realtimeKey}-${program.status}`}
-              className={`
-                text-xs px-2 py-0.5 rounded 
-                cursor-pointer hover:underline bg-gray-100
-                ${getNameColor(program.status)}
-              `}
-              onClick={e => onUserNameClick(program, e)}
-            >
-              {program.userName.split(' ')[0]}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   // Enhanced key με timestamp για force re-render
   const enhancedKey = `${dateStr}-${realtimeKey}-${Date.now()}`;
@@ -113,6 +59,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   return (
     <div
       key={enhancedKey}
+      // Responsive min-w και min-h για καλύτερη εμφάνιση σε κινητό
       className={`
         min-w-[64px] h-20 md:h-24 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
         ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
@@ -151,8 +98,9 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           // Enhanced unique key για κάθε user name
           const userKey = `${program.assignmentId}-${i}-${realtimeKey}-${program.status}-${Date.now()}`;
           const colorClass = getNameColor(program.status);
-          // Αν θέλεις console.log μόνο στη desktop εμπειρία:
-          // console.log(`👤 CalendarDay: Rendering user ${program.userName} with status ${program.status} and color ${colorClass}`);
+          
+          console.log(`👤 CalendarDay: Rendering user ${program.userName} with status ${program.status} and color ${colorClass}`);
+          
           return (
             <div 
               key={userKey}

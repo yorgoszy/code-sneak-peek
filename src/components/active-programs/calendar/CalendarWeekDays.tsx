@@ -5,10 +5,7 @@ const weekDays = ['Δε', 'Τρ', 'Τε', 'Πε', 'Πα', 'Σα', 'Κυ'];
 
 export const CalendarWeekDays: React.FC = () => {
   return (
-    // Σε κινητό vertial, σε md και πάνω κανονικό grid
-    <div className="
-      hidden md:grid grid-cols-7 border-b border-gray-200
-    ">
+    <div className="grid grid-cols-7 border-b border-gray-200">
       {weekDays.map((day) => (
         <div key={day} className="p-2 text-center text-sm font-medium text-gray-600 border-r border-gray-200 last:border-r-0">
           {day}
