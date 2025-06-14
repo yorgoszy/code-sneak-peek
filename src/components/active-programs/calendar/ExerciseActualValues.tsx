@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { getWorkoutData, saveWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
@@ -105,65 +106,65 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
 
   return (
-    <div className="grid grid-cols-7 gap-0 text-[8px]">
-      <div className="text-center">
+    <div className="grid grid-cols-7 gap-0 text-[10px] max-w-[280px]">
+      <div className="text-center w-8">
         {workoutInProgress && onSetClick ? (
           <button
             onClick={handleSetClick}
-            className="w-full h-3 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-[7px] font-medium cursor-pointer transition-colors px-0"
+            className="w-full h-4 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-[8px] font-medium cursor-pointer transition-colors px-0"
           >
             {remainingText}
           </button>
         ) : (
-          <div className="bg-gray-200 px-0 py-0 rounded-none text-[7px] flex items-center justify-center h-3">-</div>
+          <div className="bg-gray-200 px-0 py-0 rounded-none text-[8px] flex items-center justify-center h-4">-</div>
         )}
       </div>
-      <div className="text-center">
+      <div className="text-center w-8">
         <Input
           type="number"
           value={actualReps}
           onChange={(e) => handleRepsChange(e.target.value)}
-          className="h-3 text-[7px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
+          className="h-4 text-[8px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0 w-full"
           placeholder={exercise.reps || ''}
           disabled={!workoutInProgress}
         />
       </div>
-      <div className="text-center">
+      <div className="text-center w-10">
         {calculatedPercentage ? (
-          <div className="bg-red-50 px-0 py-0 rounded-none text-[7px] text-red-600 font-medium h-3 flex items-center justify-center">
+          <div className="bg-red-50 px-0 py-0 rounded-none text-[8px] text-red-600 font-medium h-4 flex items-center justify-center">
             {calculatedPercentage}%
           </div>
         ) : (
-          <div className="bg-gray-200 px-0 py-0 rounded-none text-[7px] h-3 flex items-center justify-center">-</div>
+          <div className="bg-gray-200 px-0 py-0 rounded-none text-[8px] h-4 flex items-center justify-center">-</div>
         )}
       </div>
-      <div className="text-center">
+      <div className="text-center w-10">
         <Input
           type="number"
           step="0.5"
           value={actualKg}
           onChange={(e) => handleKgChange(e.target.value)}
-          className="h-3 text-[7px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
+          className="h-4 text-[8px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0 w-full"
           placeholder={exercise.kg || ''}
           disabled={!workoutInProgress}
         />
       </div>
-      <div className="text-center">
+      <div className="text-center w-8">
         <Input
           type="number"
           step="0.01"
           value={actualVelocity}
           onChange={(e) => handleVelocityChange(e.target.value)}
-          className="h-3 text-[7px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
+          className="h-4 text-[8px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0 w-full"
           placeholder={exercise.velocity_ms || ''}
           disabled={!workoutInProgress}
         />
       </div>
-      <div className="text-center flex items-stretch h-full">
-        <div className="bg-gray-200 px-0 py-0 rounded-none text-[7px] flex-1 flex items-center justify-center">-</div>
+      <div className="text-center flex items-stretch h-full w-6">
+        <div className="bg-gray-200 px-0 py-0 rounded-none text-[8px] flex-1 flex items-center justify-center">-</div>
       </div>
-      <div className="text-center flex items-stretch h-full">
-        <div className="bg-gray-200 px-0 py-0 rounded-none text-[7px] flex-1 flex items-center justify-center">-</div>
+      <div className="text-center flex items-stretch h-full w-6">
+        <div className="bg-gray-200 px-0 py-0 rounded-none text-[8px] flex-1 flex items-center justify-center">-</div>
       </div>
     </div>
   );
