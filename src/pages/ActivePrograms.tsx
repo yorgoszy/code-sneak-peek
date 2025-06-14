@@ -48,13 +48,13 @@ const ActivePrograms = () => {
   }, [activeWorkouts, updateElapsedTime]);
 
   // Σημερινή ημερομηνία
-  const today = new Date();
-  const todayStr = format(today, 'yyyy-MM-dd');
+  const dayToShow = selectedDate || new Date();
+  const dayToShowStr = format(dayToShow, 'yyyy-MM-dd');
 
-  // Φιλτράρουμε τα προγράμματα για σήμερα
-  const programsForToday = activePrograms.filter(assignment => {
+  // Φιλτράρουμε τα προγράμματα για την ημερομηνία που έχει επιλεγεί
+  const programsForSelectedDate = activePrograms.filter(assignment => {
     if (!assignment.training_dates) return false;
-    return assignment.training_dates.includes(todayStr);
+    return assignment.training_dates.includes(dayToShowStr);
   });
 
   // Φόρτωση workout completions
@@ -143,10 +143,10 @@ const ActivePrograms = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα - ανοίγει νέο dialog
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    const workoutId = `${assignment.id}-${today.toISOString().split('T')[0]}`;
+    const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
     
     // Έναρξη προπόνησης
-    startWorkout(assignment, today);
+    startWorkout(assignment, dayToShow);
     
     // Άνοιγμα dialog
     setOpenDialogs(prev => new Set(prev).add(workoutId));
@@ -169,9 +169,10 @@ const ActivePrograms = () => {
     }
   };
 
-  const getWorkoutStatus = (assignment: any) => {
+  // Update το getWorkoutStatus να παίρνει ως input ημερομηνία
+  const getWorkoutStatus = (assignment: any, dateStr: string) => {
     const completion = workoutCompletions.find(c => 
-      c.assignment_id === assignment.id && c.scheduled_date === todayStr
+      c.assignment_id === assignment.id && c.scheduled_date === dateStr
     );
     return completion?.status || 'scheduled';
   };
@@ -216,9 +217,9 @@ const ActivePrograms = () => {
           setIsCollapsed={setIsCollapsed}
           stats={{
             totalPrograms: activePrograms.length,
-            activeToday: programsForToday.length,
+            activeToday: programsForSelectedDate.length,
             completedToday: workoutCompletions.filter(c => 
-              c.scheduled_date === todayStr && c.status === 'completed'
+              c.scheduled_date === dayToShowStr && c.status === 'completed'
             ).length
           }}
           activePrograms={activePrograms}
@@ -247,11 +248,11 @@ const ActivePrograms = () => {
               onRefresh={handleCalendarRefresh}
             />
 
-            {/* Today's Programs */}
+            {/* Today's Programs για τη selectedDate */}
             <TodaysProgramsSection
-              programsForToday={programsForToday}
+              programsForToday={programsForSelectedDate}
               workoutCompletions={workoutCompletions}
-              todayStr={todayStr}
+              todayStr={dayToShowStr}
               onProgramClick={handleProgramClick}
             />
           </div>
@@ -266,7 +267,7 @@ const ActivePrograms = () => {
           onClose={() => handleDialogClose(workout.id)}
           program={workout.assignment}
           selectedDate={workout.selectedDate}
-          workoutStatus={getWorkoutStatus(workout.assignment)}
+          workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
           onRefresh={handleCalendarRefresh}
         />
       ))}
