@@ -52,11 +52,13 @@ export const DashboardContainer = () => {
           setIsCollapsed={setIsCollapsed}
         />
         {/* Main Content */}
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${
-          isMobile
-            ? ""
-            : "ml-0 md:ml-64" // Χώρος μόνο για desktop/tablet sidebar
-        }`}>
+        <div
+          className={`
+            flex-1 flex flex-col transition-all duration-300
+            ${isMobile ? "" : "md:ml-64"} 
+            // Βοηθά να μην πέφτει ΠΟΤΕ το main content κάτω/πάνω από το sidebar όταν ΔΕΝ είμαστε σε κινητό
+          `}
+        >
           {/* Top Navigation */}
           <div className="flex items-center">
             <SidebarTrigger className="mr-2 mt-2 mb-2" />

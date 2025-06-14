@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import { 
   Users, 
@@ -131,3 +130,4 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     />
   );
 };
+
