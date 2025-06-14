@@ -25,49 +25,14 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
 
   const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
 
+  if (!remainingText) {
+    return null;
+  }
+
   return (
-    <div className="grid grid-cols-5 gap-0.5 text-xs">
-      <div className="flex flex-col items-center">
-        <div className="text-gray-600 mb-1 text-center">Sets</div>
-        <div 
-          className={`px-1 py-0.5 rounded-none text-xs text-center w-full ${
-            workoutInProgress 
-              ? 'bg-[#00ffba] hover:bg-[#00ffba]/80 text-black cursor-pointer transition-colors' 
-              : 'bg-gray-100'
-          }`}
-          onClick={handleSetsClick}
-        >
-          {exercise.sets || '-'}
-        </div>
-        {remainingText && (
-          <div className="text-xs text-gray-500 mt-1 text-center">
-            {remainingText}
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="text-gray-600 mb-1 text-center">Reps</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
-          {exercise.reps || '-'}
-        </div>
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="text-gray-600 mb-1 text-center">%1RM</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
-          {exercise.percentage_1rm || '-'}%
-        </div>
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="text-gray-600 mb-1 text-center">Kg</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
-          {exercise.kg || '-'}
-        </div>
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="text-gray-600 mb-1 text-center">Tempo</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
-          {exercise.tempo || '-'}
-        </div>
+    <div className="p-2">
+      <div className="text-xs text-gray-500 text-center">
+        {remainingText}
       </div>
     </div>
   );
