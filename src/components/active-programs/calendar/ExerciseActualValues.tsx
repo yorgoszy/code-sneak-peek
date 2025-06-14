@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { getWorkoutData, saveWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ExerciseActualValuesProps {
   exercise: any;
@@ -30,6 +31,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   onSetClick,
   getRemainingText
 }) => {
+  const isMobile = useIsMobile();
   const [actualKg, setActualKg] = useState('');
   const [actualReps, setActualReps] = useState('');
   const [actualVelocity, setActualVelocity] = useState('');
@@ -105,6 +107,82 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
 
   const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
 
+  // Mobile layout - vertical stack
+  if (isMobile) {
+    return (
+      <div className="space-y-2 text-xs">
+        {/* Sets row */}
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600 min-w-16">Sets:</span>
+          {workoutInProgress && onSetClick ? (
+            <button
+              onClick={handleSetClick}
+              className="flex-1 h-8 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-xs font-medium cursor-pointer transition-colors"
+            >
+              {remainingText}
+            </button>
+          ) : (
+            <div className="flex-1 bg-gray-200 px-2 py-1 rounded-none text-xs flex items-center justify-center h-8">-</div>
+          )}
+        </div>
+
+        {/* Reps row */}
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600 min-w-16">Reps:</span>
+          <Input
+            type="number"
+            value={actualReps}
+            onChange={(e) => handleRepsChange(e.target.value)}
+            className="flex-1 h-8 text-xs rounded-none text-center p-1 text-red-600 font-medium no-spinners"
+            placeholder={exercise.reps || ''}
+            disabled={!workoutInProgress}
+          />
+        </div>
+
+        {/* Percentage row */}
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600 min-w-16">%1RM:</span>
+          {calculatedPercentage ? (
+            <div className="flex-1 bg-red-50 px-2 py-1 rounded-none text-xs text-red-600 font-medium h-8 flex items-center justify-center">
+              {calculatedPercentage}%
+            </div>
+          ) : (
+            <div className="flex-1 bg-gray-200 px-2 py-1 rounded-none text-xs h-8 flex items-center justify-center">-</div>
+          )}
+        </div>
+
+        {/* Kg row */}
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600 min-w-16">Kg:</span>
+          <Input
+            type="number"
+            step="0.5"
+            value={actualKg}
+            onChange={(e) => handleKgChange(e.target.value)}
+            className="flex-1 h-8 text-xs rounded-none text-center p-1 text-red-600 font-medium no-spinners"
+            placeholder={exercise.kg || ''}
+            disabled={!workoutInProgress}
+          />
+        </div>
+
+        {/* Velocity row */}
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600 min-w-16">m/s:</span>
+          <Input
+            type="number"
+            step="0.01"
+            value={actualVelocity}
+            onChange={(e) => handleVelocityChange(e.target.value)}
+            className="flex-1 h-8 text-xs rounded-none text-center p-1 text-red-600 font-medium no-spinners"
+            placeholder={exercise.velocity_ms || ''}
+            disabled={!workoutInProgress}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop layout - grid
   return (
     <div className="grid grid-cols-7 gap-0.5 text-xs">
       <div className="text-center">
