@@ -104,6 +104,9 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   };
 
   const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
+  
+  // Extract only the number from the remaining text
+  const remainingNumber = remainingText.match(/\d+/)?.[0] || '';
 
   return (
     <div className="grid grid-cols-7 gap-0 text-[10px]">
@@ -113,7 +116,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
             onClick={handleSetClick}
             className="w-full h-4 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-[9px] font-medium cursor-pointer transition-colors px-0"
           >
-            {remainingText}
+            {remainingNumber}
           </button>
         ) : (
           <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] flex items-center justify-center h-4">-</div>
