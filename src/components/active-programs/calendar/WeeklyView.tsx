@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, isSameMonth, isToday } from "date-fns";
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { el } from "date-fns/locale";
@@ -21,6 +20,7 @@ interface WeeklyViewProps {
   programDatesWithStatus: ProgramData[];
   realtimeKey: number;
   onUserNameClick: (programData: ProgramData, event: React.MouseEvent) => void;
+  onDayNumberClick?: (date: Date) => void;
 }
 
 export const WeeklyView: React.FC<WeeklyViewProps> = ({
@@ -30,7 +30,8 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
   setSelectedDate,
   programDatesWithStatus,
   realtimeKey,
-  onUserNameClick
+  onUserNameClick,
+  onDayNumberClick
 }) => {
   const weekStart = startOfWeek(selectedDate || currentMonth, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(selectedDate || currentMonth, { weekStartsOn: 1 });
@@ -100,8 +101,12 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
                 hover:bg-gray-50 transition-colors
               `}
             >
-              {/* Date Header */}
-              <div className={`text-sm font-medium mb-2 ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>
+              {/* Date Header - Clickable */}
+              <div
+                className={`text-sm font-medium mb-2 cursor-pointer ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}
+                onClick={() => onDayNumberClick && onDayNumberClick(date)}
+                title="Μετάβαση στην ημερήσια προβολή"
+              >
                 <div>{format(date, 'dd')}</div>
                 <div className="text-xs">{format(date, 'EEE', { locale: el })}</div>
               </div>

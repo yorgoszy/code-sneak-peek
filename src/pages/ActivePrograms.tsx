@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
+import { el } from "date-fns/locale";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
@@ -254,6 +255,7 @@ const ActivePrograms = () => {
               workoutCompletions={workoutCompletions}
               todayStr={dayToShowStr}
               onProgramClick={handleProgramClick}
+              // Το customTitle είναι τώρα υπολογισμένο με βάση το selectedDate
             />
           </div>
         </div>
