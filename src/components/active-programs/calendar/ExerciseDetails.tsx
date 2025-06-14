@@ -26,7 +26,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
 
   return (
-    <div className="flex justify-center">
+    <div className="grid grid-cols-5 gap-0.5 text-xs">
       <div className="flex flex-col items-center">
         <div className="text-gray-600 mb-1 text-center">Sets</div>
         <div 
@@ -44,6 +44,30 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
             {remainingText}
           </div>
         )}
+      </div>
+      <div className="flex flex-col items-center">
+        <div className="text-gray-600 mb-1 text-center">Reps</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
+          {exercise.reps || '-'}
+        </div>
+      </div>
+      <div className="flex flex-col items-center">
+        <div className="text-gray-600 mb-1 text-center">%1RM</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
+          {exercise.percentage_1rm || '-'}%
+        </div>
+      </div>
+      <div className="flex flex-col items-center">
+        <div className="text-gray-600 mb-1 text-center">Kg</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
+          {exercise.kg || '-'}
+        </div>
+      </div>
+      <div className="flex flex-col items-center">
+        <div className="text-gray-600 mb-1 text-center">Tempo</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
+          {exercise.tempo || '-'}
+        </div>
       </div>
     </div>
   );
