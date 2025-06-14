@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Heart } from "lucide-react";
@@ -9,20 +10,16 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { SidebarTrigger, SidebarProvider } from "@/components/ui/sidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 export const DashboardContainer = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
-
+  
   const {
     userProfile,
     stats
   } = useDashboard();
-
-  const isMobile = useIsMobile();
 
   if (loading || rolesLoading) {
     return (
@@ -44,41 +41,34 @@ export const DashboardContainer = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-50">
-        {/* Sidebar: σταθερό - responsive για mobile */}
-        <Sidebar 
-          isCollapsed={isMobile ? true : isCollapsed}
-          setIsCollapsed={setIsCollapsed}
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Navigation */}
+        <DashboardHeader
+          userProfile={userProfile}
+          userEmail={user?.email}
+          onSignOut={handleSignOut}
         />
-        {/* Main Content */}
-        <div
-          className={`
-            flex-1 flex flex-col transition-all duration-300
-            ${isMobile ? "" : "md:ml-64"} 
-            // Βοηθά να μην πέφτει ΠΟΤΕ το main content κάτω/πάνω από το sidebar όταν ΔΕΝ είμαστε σε κινητό
-          `}
-        >
-          {/* Top Navigation */}
-          <div className="flex items-center">
-            <SidebarTrigger className="mr-2 mt-2 mb-2" />
-            <DashboardHeader
-              userProfile={userProfile}
-              userEmail={user?.email}
-              onSignOut={handleSignOut}
-            />
-          </div>
-          {/* Dashboard Content */}
-          <div className="flex-1 p-2 sm:p-6">
-            <DashboardTabs />
-            <DashboardStats stats={stats} />
-            <DashboardContent
-              isAdmin={isAdmin()}
-              userProfile={userProfile}
-            />
-          </div>
+
+        {/* Dashboard Content */}
+        <div className="flex-1 p-6">
+          {/* Tabs */}
+          <DashboardTabs />
+
+          {/* Statistics Cards */}
+          <DashboardStats stats={stats} />
+
+          {/* Lower Section */}
+          <DashboardContent
+            isAdmin={isAdmin()}
+            userProfile={userProfile}
+          />
         </div>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };

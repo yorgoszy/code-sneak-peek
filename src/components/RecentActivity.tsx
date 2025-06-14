@@ -22,16 +22,16 @@ const activityData = [
 
 export const RecentActivity = () => {
   return (
-    <Card className="w-full max-w-full rounded-none">
-      <CardHeader className="p-2 sm:p-6">
-        <CardTitle className="text-base sm:text-lg font-semibold">Recent Activity</CardTitle>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
       </CardHeader>
-      <CardContent className="p-2 sm:p-6">
-        <div className="space-y-2 sm:space-y-4">
+      <CardContent>
+        <div className="space-y-4">
           {activityData.map((activity, index) => (
-            <div key={index} className="flex flex-col space-y-0.5 sm:space-y-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-900">{activity.title}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500">{activity.time}</p>
+            <div key={index} className="flex flex-col space-y-1">
+              <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+              <p className="text-xs text-gray-500">{activity.time}</p>
             </div>
           ))}
         </div>
