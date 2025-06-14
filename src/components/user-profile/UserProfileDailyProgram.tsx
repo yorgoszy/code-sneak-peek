@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, User } from "lucide-react";
@@ -62,17 +61,13 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     return completion?.status || 'scheduled';
   };
 
-  // Νέα συνάρτηση για χειρισμό κλικ σε όνομα χρήστη - ανοίγει το DayProgramDialog
-  const handleNameClick = (program: any, event: React.MouseEvent) => {
-    event.stopPropagation();
-    const assignment = userPrograms.find(p => p.id === program.assignmentId);
-    if (assignment) {
-      setSelectedProgram(assignment);
-      // Χρησιμοποιούμε την ημερομηνία από το program object
-      const programDate = new Date(program.date);
-      setSelectedDate(programDate);
-      setDayProgramOpen(true);
-    }
+  // Διορθωμένη συνάρτηση για χειρισμό κλικ σε όνομα χρήστη - ανοίγει το DayProgramDialog
+  const handleNameClick = (assignment: EnrichedAssignment) => {
+    setSelectedProgram(assignment);
+    // Χρησιμοποιούμε την τρέχουσα ημερομηνία ή την επιλεγμένη
+    const dateToUse = selectedDate || new Date();
+    setSelectedDate(dateToUse);
+    setDayProgramOpen(true);
   };
 
   const handleRefresh = () => {
