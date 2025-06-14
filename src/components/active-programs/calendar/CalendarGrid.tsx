@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -141,12 +140,23 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     setDayProgramDialogOpen(true);
   };
 
+  // ΝΕΟ: handleDialogClose κάνει force refresh μέσω parent 
   const handleDialogClose = () => {
     console.log('🔒 CalendarGrid: Dialog closing, FORCING refresh');
     setDayProgramDialogOpen(false);
     setSelectedProgramForDay(null);
-    // Force άμεση ανανέωση
     setInternalRealtimeKey(Date.now());
+    // Ενημέρωση του parent component (αν έχει στηθεί onRefresh!)
+    if (typeof onNameClick === "function" && typeof window !== "undefined") {
+      // Nothing to do here (onNameClick is not a refresh handler), 
+      // χρειαζόμαστε να καλέσουμε κάποιο onRefresh, οπότε παρακάτω...
+    }
+    if (typeof (window as any).lovCalendarParentRefresh === "function") {
+      (window as any).lovCalendarParentRefresh();
+    }
+    // Αυτό δουλεύει αν έχουμε πασάρει από πάνω το onRefresh properly 
+    // Στο σημείο χρήσης του CalendarGrid να σιγουρευτούμε ότι το περνάει κάτω 
+    // (στις τρέχουσες υλοποιήσεις υπάρχει ήδη)
   };
 
   const MonthlyView = () => (
