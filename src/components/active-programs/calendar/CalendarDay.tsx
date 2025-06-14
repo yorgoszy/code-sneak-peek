@@ -34,12 +34,12 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
   const isTodayDate = isToday(date);
 
-  // Enhanced color function με άμεση ανανέωση
+  // Enhanced color function με άμεση ανανέωση - χρησιμοποιούμε status_color
   const getNameColor = (status: string) => {
     console.log(`🎨 CalendarDay: Status for ${dateStr}:`, status);
     switch (status) {
       case 'completed':
-        return 'text-[#00ffba] font-semibold';
+        return 'text-[#00ffba] font-semibold'; // Πράσινο για ολοκληρωμένες
       case 'missed':
         return 'text-red-500 font-semibold';
       case 'pending':

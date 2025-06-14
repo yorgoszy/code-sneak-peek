@@ -118,11 +118,12 @@ export const useWorkoutState = (
 
       let result;
       if (existingCompletion) {
-        // Update existing record
+        // Update existing record with GREEN status color for completed workouts
         const { data, error } = await supabase
           .from('workout_completions')
           .update({
             status: 'completed',
+            status_color: 'green', // ΚΡΙΤΙΚΟ: Ενημέρωση του status_color σε green
             completed_date: new Date().toISOString().split('T')[0]
           })
           .eq('id', existingCompletion.id)
@@ -132,7 +133,7 @@ export const useWorkoutState = (
         if (error) throw error;
         result = data;
       } else {
-        // Create new record with all required fields
+        // Create new record with GREEN status color for completed workouts
         const { data, error } = await supabase
           .from('workout_completions')
           .insert({
@@ -143,6 +144,7 @@ export const useWorkoutState = (
             day_number: dayNumber,
             scheduled_date: selectedDateStr,
             status: 'completed',
+            status_color: 'green', // ΚΡΙΤΙΚΟ: Νέα εγγραφή με green status_color
             completed_date: new Date().toISOString().split('T')[0]
           })
           .select()
@@ -152,7 +154,7 @@ export const useWorkoutState = (
         result = data;
       }
       
-      console.log('✅ Workout completion saved successfully for:', program.app_users?.name, result);
+      console.log('✅ Workout completion saved successfully with GREEN color for:', program.app_users?.name, result);
       
       // Αφαίρεση από τις ενεργές προπονήσεις
       if (workoutId) {
