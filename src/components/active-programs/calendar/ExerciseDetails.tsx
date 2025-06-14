@@ -24,7 +24,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-6 gap-0.5 text-xs">
+    <div className="grid grid-cols-7 gap-0.5 text-xs">
       <div className="flex flex-col items-center">
         <div className="text-gray-600 mb-1 text-center">Sets</div>
         <div 
@@ -66,6 +66,12 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
         <div className="text-gray-600 mb-1 text-center">Tempo</div>
         <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
           {exercise.tempo || '-'}
+        </div>
+      </div>
+      <div className="flex flex-col items-center">
+        <div className="text-gray-600 mb-1 text-center">Rest</div>
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
+          {exercise.rest || '-'}
         </div>
       </div>
     </div>
