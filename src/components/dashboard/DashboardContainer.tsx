@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Heart } from "lucide-react";
@@ -47,17 +46,13 @@ export const DashboardContainer = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
-        {/* Sidebar (visible on desktop, toggleable on mobile) */}
-        {!isMobile && (
-          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-        )}
+        {/* Sidebar: πάντα με εικονίδια */}
+        <Sidebar isCollapsed={true} setIsCollapsed={setIsCollapsed} iconOnly={true} />
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Top Navigation */}
           <div className="flex items-center">
-            {isMobile && (
-              <SidebarTrigger className="mr-2 mt-2 mb-2" />
-            )}
+            <SidebarTrigger className="mr-2 mt-2 mb-2" />
             <DashboardHeader
               userProfile={userProfile}
               userEmail={user?.email}
@@ -66,11 +61,8 @@ export const DashboardContainer = () => {
           </div>
           {/* Dashboard Content */}
           <div className="flex-1 p-2 sm:p-6">
-            {/* Tabs */}
             <DashboardTabs />
-            {/* Statistics Cards */}
             <DashboardStats stats={stats} />
-            {/* Lower Section */}
             <DashboardContent
               isAdmin={isAdmin()}
               userProfile={userProfile}
