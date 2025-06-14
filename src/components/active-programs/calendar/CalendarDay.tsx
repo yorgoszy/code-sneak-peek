@@ -54,16 +54,20 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     <div
       key={enhancedKey}
       className={`
-        min-w-[28px] max-w-[40px] h-8 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
+        min-w-[28px] max-w-[38px] h-8 flex flex-col items-stretch justify-between
+        border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
         ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
         ${isSelected ? 'bg-[#00ffba] text-black' : ''}
         ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
         hover:bg-gray-50 transition-colors
+        rounded-none
       `}
       onClick={() => onDateClick(date)}
       style={{
         flex: '1 0 28px',
-        maxWidth: '38px'
+        maxWidth: '38px',
+        minWidth: '28px',
+        height: '32px',
       }}
     >
       {/* Date Number (κλικ μόνο στον αριθμό!) */}
