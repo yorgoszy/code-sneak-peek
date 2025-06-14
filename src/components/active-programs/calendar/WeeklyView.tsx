@@ -59,6 +59,7 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
     }
   };
 
+  // Responsive weekly: κάθε μέρα κάθετα στο mobile, οριζόντια σε md/desktop
   return (
     <div className="w-full">
       {/* Week Navigation */}
@@ -84,8 +85,10 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
         </Button>
       </div>
 
-      {/* Responsive horizontal scroll: */}
-      <div className="grid grid-cols-7 gap-2 overflow-x-auto md:overflow-x-visible min-w-full" style={{ minWidth: 410 }}>
+      {/* Responsive: vertical stack on mobile, grid σε md+ */}
+      <div className="
+        flex flex-col gap-1 md:grid md:grid-cols-7 md:gap-2
+      ">
         {weekDays.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
@@ -95,19 +98,20 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
             <div
               key={`weekly-${dateStr}-${realtimeKey}`}
               className={`
-                min-h-32 border border-gray-200 rounded-none p-2 bg-white
-                ${isTodayDate ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
+                min-h-24 border border-gray-200 rounded-none bg-white
+                md:p-2 p-2
+                ${isTodayDate ? 'bg-yellow-100 border-yellow-400 border-l-4 md:border-l-0 md:border-2' : ''}
                 hover:bg-gray-50 transition-colors
               `}
             >
               {/* Date Header */}
-              <div className={`text-sm font-medium mb-2 ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>
-                <div>{format(date, 'dd')}</div>
-                <div className="text-xs">{format(date, 'EEE', { locale: el })}</div>
+              <div className={`text-sm font-medium mb-2 flex items-center`}>
+                <div className={isTodayDate ? 'font-bold text-yellow-600 underline' : ''}>{format(date, 'dd')}</div>
+                <div className="text-xs ml-2">{format(date, 'EEE', { locale: el })}</div>
               </div>
               
               {/* User Names */}
-              <div className="space-y-1">
+              <div className="flex flex-wrap md:block gap-1 md:space-y-1">
                 {dateProgramsWithStatus.slice(0, 8).map((program, i) => (
                   <div 
                     key={`${program.assignmentId}-${i}-${realtimeKey}`}
@@ -130,4 +134,3 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
     </div>
   );
 };
-

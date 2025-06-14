@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { format, addDays, subDays, isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -72,7 +73,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h3 className="text-xl font-semibold">
+        <h3 className="text-lg md:text-xl font-semibold">
           {format(currentDate, 'EEEE, dd MMMM yyyy', { locale: el })}
           {isTodayDate && <span className="ml-2 text-yellow-600">(Σήμερα)</span>}
         </h3>
@@ -86,7 +87,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
         </Button>
       </div>
 
-      <div className="space-y-2 min-h-80 sm:min-h-96 px-1 sm:px-0">
+      <div className="space-y-2 min-h-80 sm:min-h-96 px-0">
         {dateProgramsWithStatus.length === 0 ? (
           <div className="text-center py-10 sm:py-12 text-gray-500 bg-gray-50 rounded-none border-2 border-dashed border-gray-200">
             <div className="text-lg mb-2">Δεν υπάρχουν προγραμματισμένες προπονήσεις</div>
@@ -98,9 +99,9 @@ export const DailyView: React.FC<DailyViewProps> = ({
               <div
                 key={`daily-${program.assignmentId}-${i}-${realtimeKey}`}
                 className={`
-                  text-sm cursor-pointer hover:underline p-2 rounded-none border-l-4
-                  ${program.status === 'completed' ? 'border-[#00ffba] bg-[#00ffba]/5' : 
-                    program.status === 'missed' ? 'border-red-500 bg-red-50' : 
+                  text-base md:text-sm cursor-pointer hover:underline p-3 rounded-none border-l-4
+                  ${program.status === 'completed' ? 'border-[#00ffba] bg-[#00ffba]/5' :
+                    program.status === 'missed' ? 'border-red-500 bg-red-50' :
                     'border-blue-500 bg-blue-50'}
                   ${getNameColor(program.status)}
                 `}
@@ -115,3 +116,4 @@ export const DailyView: React.FC<DailyViewProps> = ({
     </div>
   );
 };
+
