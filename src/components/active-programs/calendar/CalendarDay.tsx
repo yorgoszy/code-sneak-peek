@@ -56,7 +56,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       key={dateStr}
       className={
         `
-        w-12 md:w-full min-w-0
+        w-1/7 md:w-full min-w-0
         h-12 md:h-20
         flex flex-col relative items-center
         border-b border-gray-200
