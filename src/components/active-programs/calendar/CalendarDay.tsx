@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 
@@ -106,23 +107,6 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     );
   }
 
-  // Enhanced color function με άμεση ανανέωση - χρησιμοποιούμε status_color
-  const getNameColor = (status: string) => {
-    console.log(`🎨 CalendarDay: Status for ${dateStr}:`, status);
-    switch (status) {
-      case 'completed':
-        return 'text-[#00ffba] font-semibold'; // Πράσινο για ολοκληρωμένες
-      case 'missed':
-        return 'text-red-500 font-semibold';
-      case 'pending':
-        return 'text-blue-500';
-      case 'scheduled':
-        return 'text-blue-500';
-      default:
-        return 'text-blue-500';
-    }
-  };
-
   // Enhanced key με timestamp για force re-render
   const enhancedKey = `${dateStr}-${realtimeKey}-${Date.now()}`;
 
@@ -167,9 +151,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           // Enhanced unique key για κάθε user name
           const userKey = `${program.assignmentId}-${i}-${realtimeKey}-${program.status}-${Date.now()}`;
           const colorClass = getNameColor(program.status);
-          
-          console.log(`👤 CalendarDay: Rendering user ${program.userName} with status ${program.status} and color ${colorClass}`);
-          
+          // Αν θέλεις console.log μόνο στη desktop εμπειρία:
+          // console.log(`👤 CalendarDay: Rendering user ${program.userName} with status ${program.status} and color ${colorClass}`);
           return (
             <div 
               key={userKey}
