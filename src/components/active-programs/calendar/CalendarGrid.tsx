@@ -77,9 +77,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   return (
     <div className="bg-white border border-gray-200 rounded-none">
       <CalendarNavigation 
-        currentDate={currentMonth} 
-        onPreviousMonth={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-        onNextMonth={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+        currentMonth={currentMonth} 
+        setCurrentMonth={setCurrentMonth}
       />
       <CalendarWeekDays />
       
