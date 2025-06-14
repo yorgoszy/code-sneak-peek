@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, User } from "lucide-react";
@@ -10,6 +9,8 @@ import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgr
 import { DatabaseDebugger } from "@/components/debug/DatabaseDebugger";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { UserMonthlyView } from "./UserMonthlyView";
 
 interface UserProfileDailyProgramProps {
   userProfile: any;
@@ -47,6 +48,29 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     };
     loadCompletions();
   }, [userPrograms, getAllWorkoutCompletions]);
+
+  // Σταθερή λίστα ημερών & ονομάτων για το ημερολόγιο (όπως στο ActivePrograms)
+  const weekDays = ['Δευ', 'Τρ', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'];
+  // balance the month grid for display
+  const firstProgramDate = userPrograms[0]?.training_dates?.[0];
+  const currentDate = currentMonth;
+  const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+  const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+  const days: Date[] = [];
+  for (let i = 1; i <= end.getDate(); i++) {
+    days.push(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i));
+  }
+
+  // Συλλέγουμε όλες τις ημερομηνίες με προγράμματα και status για το ημερολόγιο
+  const programDatesWithStatus = userPrograms.flatMap((assignment) =>
+    (assignment.training_dates || []).map((dateStr: string) => ({
+      date: dateStr,
+      status: getWorkoutStatusForDate(assignment.id, dateStr),
+      assignmentId: assignment.id,
+      userName: userProfile.name,
+      assignment
+    }))
+  );
 
   const programsForSelectedDate = selectedDate 
     ? userPrograms.filter(assignment => {
@@ -160,18 +184,20 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
         </CardHeader>
         <CardContent>
           {showDebugger && <DatabaseDebugger />}
-          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <CalendarGrid
+              <UserMonthlyView
+                weekDays={weekDays}
+                days={days}
+                programDatesWithStatus={programDatesWithStatus}
                 currentMonth={currentMonth}
-                setCurrentMonth={setCurrentMonth}
                 selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                activePrograms={userPrograms}
-                workoutCompletions={workoutCompletions}
+                setCurrentMonth={setCurrentMonth}
+                onDateClick={setSelectedDate}
+                onUserNameClick={handleNameClick}
+                onDayNumberClick={setSelectedDate}
                 realtimeKey={realtimeKey}
-                onNameClick={handleNameClick}
+                internalRealtimeKey={0}
               />
             </div>
             
