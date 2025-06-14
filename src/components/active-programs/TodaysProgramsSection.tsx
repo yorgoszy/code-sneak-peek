@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User, Play } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+import { format, isToday } from "date-fns";
+import { el } from "date-fns/locale";
 
 interface TodaysProgramsSectionProps {
   programsForToday: EnrichedAssignment[];
@@ -26,15 +28,24 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
     return completion?.status || 'scheduled';
   };
 
+  // Μετατρέπουμε το todayStr σε Date
+  const selectedDateObj = new Date(todayStr);
+  const isTodaySelected = isToday(selectedDateObj);
+
+  // Μορφοποίηση: "Προγράμματα για Τετάρτη 12/06/2025"
+  const dayText = isTodaySelected
+    ? "Προγράμματα Σήμερα"
+    : `Προγράμματα για ${format(selectedDateObj, "EEEE dd/MM/yyyy", { locale: el })}`;
+
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle>Προγράμματα Σήμερα</CardTitle>
+        <CardTitle>{dayText}</CardTitle>
       </CardHeader>
       <CardContent>
         {programsForToday.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            Δεν υπάρχουν προγραμματισμένες προπονήσεις για σήμερα
+            Δεν υπάρχουν προγραμματισμένες προπονήσεις για {isTodaySelected ? "σήμερα" : "αυτή την ημέρα"}
           </div>
         ) : (
           <div className="space-y-3">
