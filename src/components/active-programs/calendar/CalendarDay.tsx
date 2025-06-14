@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 
@@ -18,6 +17,7 @@ interface CalendarDayProps {
   realtimeKey: number;
   onDateClick: (date: Date) => void;
   onUserNameClick: (programData: ProgramData, event: React.MouseEvent) => void;
+  onDayNumberClick?: (date: Date) => void;
 }
 
 export const CalendarDay: React.FC<CalendarDayProps> = ({
@@ -27,7 +27,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   programsForDate,
   realtimeKey,
   onDateClick,
-  onUserNameClick
+  onUserNameClick,
+  onDayNumberClick
 }) => {
   const dateStr = format(date, 'yyyy-MM-dd');
   const isCurrentMonth = isSameMonth(date, currentMonth);
@@ -66,12 +67,21 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       `}
       onClick={() => onDateClick(date)}
     >
-      {/* Date Number */}
+      {/* Date Number (κλικ μόνο στον αριθμό!) */}
       <div 
         className={`
-          absolute top-1 left-1 text-sm font-medium
+          absolute top-1 left-1 text-sm font-medium cursor-pointer z-10
           ${isTodayDate ? 'font-bold text-yellow-600' : ''}
         `}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onDayNumberClick) {
+            onDayNumberClick(date);
+          } else {
+            onDateClick(date);
+          }
+        }}
+        title="Μετάβαση στην ημερήσια προβολή"
       >
         {date.getDate()}
       </div>

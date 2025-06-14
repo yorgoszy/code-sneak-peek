@@ -142,6 +142,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     setDayProgramDialogOpen(true);
   };
 
+  // ✨ Όταν γίνεται κλικ στον αριθμό ημέρας, αλλάζει σε ημερήσια καρτέλα και επιλέγεται η ημερομηνία!
+  const handleDayNumberClick = (date: Date) => {
+    setSelectedDate(date);
+    setCurrentMonth(date);
+    setCalendarView('daily');
+  };
+
   // ΝΕΟ: handleDialogClose κάνει force refresh μέσω parent 
   const handleDialogClose = () => {
     console.log('🔒 CalendarGrid: Dialog closing, FORCING refresh');
@@ -160,10 +167,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         currentMonth={currentMonth}
         setCurrentMonth={setCurrentMonth}
       />
-
+      
       <CalendarWeekDays />
-
-      {/* Calendar Grid με enhanced key */}
+      
+      {/* Calendar Grid με δυνατότητα αλλαγής σε daily tab */}
       <div className="grid grid-cols-7 border border-gray-200">
         {days.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
@@ -171,7 +178,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           
           // Unique key που συνδυάζει όλα τα realtime keys
           const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
-
+          
           return (
             <CalendarDay
               key={enhancedKey}
@@ -182,6 +189,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               realtimeKey={realtimeKey + internalRealtimeKey}
               onDateClick={handleDateClick}
               onUserNameClick={handleUserNameClick}
+              onDayNumberClick={handleDayNumberClick}
             />
           );
         })}
