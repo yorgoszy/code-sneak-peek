@@ -10,6 +10,8 @@ import { WeeklyView } from './WeeklyView';
 import { DailyView } from './DailyView';
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+import { MonthlyView } from './MonthlyView';
+import { MobileMonthlyView } from './MobileMonthlyView';
 
 interface CalendarGridProps {
   currentMonth: Date;
@@ -123,11 +125,21 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     return dates;
   }, [activePrograms, workoutCompletions, realtimeKey, internalRealtimeKey]);
 
+  // Device detection for mobile
+  const [isMobile, setIsMobile] = React.useState<boolean>(false);
+  React.useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 768);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  const weekDays = ['Δε', 'Τρ', 'Τε', 'Πε', 'Πα', 'Σα', 'Κυ'];
+
+  // Calculate days etc:
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-  
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const handleDateClick = (date: Date) => {
@@ -161,103 +173,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     }
   };
 
-  // Device detection - μόνο για rendering, δεν έχει side effects
-  const [isMobile, setIsMobile] = React.useState<boolean>(false);
-  React.useEffect(() => {
-    const update = () => setIsMobile(window.innerWidth < 768);
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
-
-  const weekDays = ['Δε', 'Τρ', 'Τε', 'Πε', 'Πα', 'Σα', 'Κυ'];
-
-  // Αν mobile, οριζόντια ως 7 στήλες, κάθε στήλη = header+κοινά days (ομάδες)
-  function MobileMonthlyView() {
-    // Βρίσκουμε τα days ανά στήλη βάσει της θέσης τους στην εβδομάδα
-    // Ορισμός: πρώτη μέρα ημερολογίου = calendarStart (Δευτέρα)
-    // Δημιουργούμε 7 arrays (μία για κάθε μέρα) 
-    const columns = Array.from({ length: 7 }, (_, colIdx) => {
-      return days.filter((date, i) => i % 7 === colIdx);
-    });
-    return (
-      <div className="flex w-full">
-        {columns.map((colDays, colIdx) => (
-          <div key={weekDays[colIdx]} className="flex flex-col flex-1 min-w-0">
-            <div
-              className="
-                h-12 flex items-center justify-center border-b border-gray-200
-                text-xs font-medium text-gray-600 bg-white select-none rounded-none
-                "
-              style={{ minWidth: 0 }}
-            >
-              {weekDays[colIdx]}
-            </div>
-            {colDays.map((date) => {
-              const dateStr = format(date, 'yyyy-MM-dd');
-              const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
-              const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
-              return (
-                <CalendarDay
-                  key={enhancedKey}
-                  date={date}
-                  currentMonth={currentMonth}
-                  selectedDate={selectedDate}
-                  programsForDate={dateProgramsWithStatus}
-                  realtimeKey={realtimeKey + internalRealtimeKey}
-                  onDateClick={handleDateClick}
-                  onUserNameClick={handleUserNameClick}
-                  onDayNumberClick={handleDayNumberClick}
-                />
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    );
-  }
-  
-  const MonthlyView = () => (
-    <div className="w-full">
-      {/* Navigation και grid εβδομάδων */}
-      <CalendarNavigation 
-        currentMonth={currentMonth}
-        setCurrentMonth={setCurrentMonth}
-      />
-      {/* Header/Days: Εναλλαγή ανά breakpoint */}
-      <div className="block md:hidden">
-        <MobileMonthlyView />
-      </div>
-      <div className="hidden md:block">
-        <CalendarWeekDays />
-        {/* Responsive grid - οριζόντια scroll σε κινητά */}
-        <div className="grid grid-cols-7 border border-gray-200 gap-px overflow-x-auto md:overflow-x-visible"
-          style={{ minWidth: 410 }}
-        >
-          {days.map((date) => {
-            const dateStr = format(date, 'yyyy-MM-dd');
-            const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
-            // Unique key
-            const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
-            return (
-              <CalendarDay
-                key={enhancedKey}
-                date={date}
-                currentMonth={currentMonth}
-                selectedDate={selectedDate}
-                programsForDate={dateProgramsWithStatus}
-                realtimeKey={realtimeKey + internalRealtimeKey}
-                onDateClick={handleDateClick}
-                onUserNameClick={handleUserNameClick}
-                onDayNumberClick={handleDayNumberClick}
-              />
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-
   // Enhanced realtime key που συνδυάζει όλα τα keys
   const totalRealtimeKey = realtimeKey + internalRealtimeKey;
 
@@ -272,7 +187,20 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               <TabsTrigger value="daily" className="rounded-none">Ημερήσια</TabsTrigger>
             </TabsList>
             <TabsContent value="monthly" className="mt-2 sm:mt-4">
-              <MonthlyView />
+              <MonthlyView
+                isMobile={isMobile}
+                weekDays={weekDays}
+                days={days}
+                programDatesWithStatus={programDatesWithStatus}
+                currentMonth={currentMonth}
+                selectedDate={selectedDate}
+                realtimeKey={realtimeKey}
+                internalRealtimeKey={internalRealtimeKey}
+                setCurrentMonth={setCurrentMonth}
+                onDateClick={handleDateClick}
+                onUserNameClick={handleUserNameClick}
+                onDayNumberClick={handleDayNumberClick}
+              />
             </TabsContent>
             <TabsContent value="weekly" className="mt-2 sm:mt-4">
               <WeeklyView
