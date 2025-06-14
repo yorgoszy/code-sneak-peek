@@ -10,16 +10,20 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const DashboardContainer = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  
+
   const {
     userProfile,
     stats
   } = useDashboard();
+
+  const isMobile = useIsMobile();
 
   if (loading || rolesLoading) {
     return (
@@ -42,26 +46,29 @@ export const DashboardContainer = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-
+      {/* Sidebar (visible on desktop, toggleable on mobile) */}
+      {!isMobile && (
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      )}
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Navigation */}
-        <DashboardHeader
-          userProfile={userProfile}
-          userEmail={user?.email}
-          onSignOut={handleSignOut}
-        />
-
+        <div className="flex items-center">
+          {isMobile && (
+            <SidebarTrigger className="mr-2 mt-2 mb-2" />
+          )}
+          <DashboardHeader
+            userProfile={userProfile}
+            userEmail={user?.email}
+            onSignOut={handleSignOut}
+          />
+        </div>
         {/* Dashboard Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-2 sm:p-6">
           {/* Tabs */}
           <DashboardTabs />
-
           {/* Statistics Cards */}
           <DashboardStats stats={stats} />
-
           {/* Lower Section */}
           <DashboardContent
             isAdmin={isAdmin()}
