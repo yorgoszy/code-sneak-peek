@@ -11,7 +11,7 @@ export const CalendarWeekDays: React.FC = () => {
           key={day}
           className={
             `
-            w-full min-w-0
+            w-12 md:w-full min-w-0
             h-12 md:h-20
             flex items-center justify-center border-gray-200
             text-xs md:text-sm font-medium text-gray-600 bg-white select-none
@@ -19,7 +19,7 @@ export const CalendarWeekDays: React.FC = () => {
             `
           }
           style={{
-            // Identical responsive styling as day cells
+            // Ίδιο responsive styling όπως τα day cells
           }}
         >
           {day}

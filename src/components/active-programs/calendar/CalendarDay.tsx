@@ -56,7 +56,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       key={dateStr}
       className={
         `
-        w-full min-w-0
+        w-12 md:w-full min-w-0
         h-12 md:h-20
         flex flex-col relative items-center
         border-b border-gray-200
@@ -65,7 +65,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         `
       }
       style={{
-        // Ιdentical responsive styling with headers; all sizing comes from grid template
+        // Ίδιο responsive styling με headers
       }}
       onClick={() => onDateClick(date)}
     >
