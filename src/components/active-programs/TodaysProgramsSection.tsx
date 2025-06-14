@@ -4,25 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User, Play } from "lucide-react";
-import { format } from "date-fns";
-import { el } from "date-fns/locale";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
-// Δέχεται και customTitle
 interface TodaysProgramsSectionProps {
   programsForToday: EnrichedAssignment[];
   workoutCompletions: any[];
   todayStr: string;
   onProgramClick: (assignment: any) => void;
-  customTitle?: string;
 }
 
 export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
   programsForToday,
   workoutCompletions,
   todayStr,
-  onProgramClick,
-  customTitle
+  onProgramClick
 }) => {
   const getWorkoutStatus = (assignment: any) => {
     const completion = workoutCompletions.find(c => 
@@ -31,25 +26,15 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
     return completion?.status || 'scheduled';
   };
 
-  // Εξάγω ημερομηνία από σήμερα (π.χ. 'Τρίτη 10/06')
-  const parsedDate = todayStr ? new Date(todayStr) : new Date();
-  const day = format(parsedDate, 'EEEE', { locale: el });
-  const dateStrShort = format(parsedDate, 'dd/MM', { locale: el });
-  const sectionTitle = customTitle || `Προγράμματα ${capitalizeFirstLetter(day)} ${dateStrShort}`;
-
-  function capitalizeFirstLetter(string: string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
-
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle>{sectionTitle}</CardTitle>
+        <CardTitle>Προγράμματα Σήμερα</CardTitle>
       </CardHeader>
       <CardContent>
         {programsForToday.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            Δεν υπάρχουν προγραμματισμένες προπονήσεις για αυτή την ημέρα
+            Δεν υπάρχουν προγραμματισμένες προπονήσεις για σήμερα
           </div>
         ) : (
           <div className="space-y-3">
@@ -104,4 +89,3 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
     </Card>
   );
 };
-

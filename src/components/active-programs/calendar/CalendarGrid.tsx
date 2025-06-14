@@ -224,7 +224,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 programDatesWithStatus={programDatesWithStatus}
                 realtimeKey={totalRealtimeKey}
                 onUserNameClick={handleUserNameClick}
-                onDayNumberClick={handleWeeklyDayNumberClick} {/* προστέθηκε */}
               />
             </TabsContent>
 
