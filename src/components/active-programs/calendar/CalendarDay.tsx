@@ -56,24 +56,23 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       key={dateStr}
       className={
         `
-        w-full h-20 flex flex-col relative items-center
+        w-full min-w-0
+        h-12 md:h-20
+        flex flex-col relative items-center
         border-b border-gray-200
         ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
         ${isSelected ? 'bg-[#00ffba] text-black' : (isCurrentMonth ? 'bg-white' : 'bg-gray-50 text-gray-400')}
         `
       }
       style={{
-        // remove fixed min/max width to allow grid sizing only
-        // all sizing comes from grid template
+        // Ιdentical responsive styling with headers; all sizing comes from grid template
       }}
-      // Remove border-r from last column for compactness
-      // Rely on the parent grid-cols-7
       onClick={() => onDateClick(date)}
     >
-      {/* Date Number (κλικ μόνο στον αριθμό!) */}
+      {/* Date Number */}
       <div 
         className={`
-          absolute top-1 left-1 text-sm font-medium cursor-pointer z-10
+          absolute top-0.5 left-1 text-xs md:text-sm font-medium cursor-pointer z-10
           ${isTodayDate && !isSelected ? 'font-bold text-yellow-600' : ''}
         `}
         onClick={(e) => {
@@ -88,7 +87,6 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       >
         {date.getDate()}
       </div>
-      
       {/* User Names */}
       <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-4 pb-1 w-full">
         {programsForDate.slice(0, 5).map((program, i) => {

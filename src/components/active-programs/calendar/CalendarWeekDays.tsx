@@ -10,10 +10,17 @@ export const CalendarWeekDays: React.FC = () => {
         <div
           key={day}
           className={
-            `w-full h-20 flex items-center justify-center border-gray-200
-             text-sm font-medium text-gray-600 bg-white select-none
-             ${idx < weekDays.length - 1 ? 'border-r' : ''} rounded-none`
+            `
+            w-full min-w-0
+            h-12 md:h-20
+            flex items-center justify-center border-gray-200
+            text-xs md:text-sm font-medium text-gray-600 bg-white select-none
+            ${idx < weekDays.length - 1 ? 'border-r' : ''} rounded-none
+            `
           }
+          style={{
+            // Identical responsive styling as day cells
+          }}
         >
           {day}
         </div>
