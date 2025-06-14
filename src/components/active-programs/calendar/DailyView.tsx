@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, addDays, subDays, isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -87,10 +86,9 @@ export const DailyView: React.FC<DailyViewProps> = ({
         </Button>
       </div>
 
-      {/* Daily Programs - Taller container */}
-      <div className="space-y-2 min-h-96">
+      <div className="space-y-2 min-h-80 sm:min-h-96 px-1 sm:px-0">
         {dateProgramsWithStatus.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-none border-2 border-dashed border-gray-200">
+          <div className="text-center py-10 sm:py-12 text-gray-500 bg-gray-50 rounded-none border-2 border-dashed border-gray-200">
             <div className="text-lg mb-2">Δεν υπάρχουν προγραμματισμένες προπονήσεις</div>
             <div className="text-sm">για αυτή την ημέρα</div>
           </div>

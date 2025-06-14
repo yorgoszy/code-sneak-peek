@@ -84,8 +84,8 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
         </Button>
       </div>
 
-      {/* Week Days Grid */}
-      <div className="grid grid-cols-7 gap-2">
+      {/* Responsive horizontal scroll: */}
+      <div className="grid grid-cols-7 gap-2 overflow-x-auto md:overflow-x-visible min-w-full" style={{ minWidth: 410 }}>
         {weekDays.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
@@ -130,3 +130,4 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
     </div>
   );
 };
+

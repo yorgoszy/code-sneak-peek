@@ -163,15 +163,16 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   const MonthlyView = () => (
     <div className="w-full">
+      {/* Navigation και grid εβδομάδων */}
       <CalendarNavigation 
         currentMonth={currentMonth}
         setCurrentMonth={setCurrentMonth}
       />
-      
       <CalendarWeekDays />
-      
-      {/* Calendar Grid με δυνατότητα αλλαγής σε daily tab */}
-      <div className="grid grid-cols-7 border border-gray-200">
+      {/* Responsive grid - οριζόντια scroll σε κινητά */}
+      <div className="grid grid-cols-7 border border-gray-200 gap-px overflow-x-auto md:overflow-x-visible"
+        style={{ minWidth: 410 }}
+      >
         {days.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
@@ -205,17 +206,15 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       <Card className="rounded-none">
         <CardContent>
           <Tabs value={calendarView} onValueChange={(value) => setCalendarView(value as 'monthly' | 'weekly' | 'daily')} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 rounded-none">
+            <TabsList className="grid w-full grid-cols-3 rounded-none text-xs md:text-base">
               <TabsTrigger value="monthly" className="rounded-none">Μηνιαία</TabsTrigger>
               <TabsTrigger value="weekly" className="rounded-none">Εβδομαδιαία</TabsTrigger>
               <TabsTrigger value="daily" className="rounded-none">Ημερήσια</TabsTrigger>
             </TabsList>
-
-            <TabsContent value="monthly" className="mt-4">
+            <TabsContent value="monthly" className="mt-2 sm:mt-4">
               <MonthlyView />
             </TabsContent>
-
-            <TabsContent value="weekly" className="mt-4">
+            <TabsContent value="weekly" className="mt-2 sm:mt-4">
               <WeeklyView
                 currentMonth={currentMonth}
                 setCurrentMonth={setCurrentMonth}
@@ -226,8 +225,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 onUserNameClick={handleUserNameClick}
               />
             </TabsContent>
-
-            <TabsContent value="daily" className="mt-4">
+            <TabsContent value="daily" className="mt-2 sm:mt-4">
               <DailyView
                 currentMonth={currentMonth}
                 setCurrentMonth={setCurrentMonth}

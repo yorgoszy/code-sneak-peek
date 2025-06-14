@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 
@@ -58,14 +59,19 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   return (
     <div
       key={enhancedKey}
+      // Responsive min-w και min-h για καλύτερη εμφάνιση σε κινητό
       className={`
-        h-20 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
+        min-w-[64px] h-20 md:h-24 border-r border-b border-gray-200 last:border-r-0 cursor-pointer relative
         ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
         ${isSelected ? 'bg-[#00ffba] text-black' : ''}
         ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
         hover:bg-gray-50 transition-colors
       `}
       onClick={() => onDateClick(date)}
+      style={{
+        flex: '1 0 64px', // για μικρότερα κινητά
+        maxWidth: '100px'
+      }}
     >
       {/* Date Number (κλικ μόνο στον αριθμό!) */}
       <div 
