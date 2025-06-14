@@ -210,52 +210,31 @@ const ActivePrograms = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 flex w-full">
-        {/* Sidebar */}
-        <ActiveProgramsSidebar 
-          isCollapsed={isCollapsed} 
-          setIsCollapsed={setIsCollapsed}
-          stats={{
-            totalPrograms: activePrograms.length,
-            activeToday: programsForSelectedDate.length,
-            completedToday: workoutCompletions.filter(c => 
-              c.scheduled_date === dayToShowStr && c.status === 'completed'
-            ).length
-          }}
-          activePrograms={activePrograms}
-          onRefresh={refetch}
-          onDelete={handleDeleteProgram}
-          minimizedWorkout={null}
-          onRestoreWorkout={() => {}}
-          onCancelMinimizedWorkout={() => {}}
-        />
-        
-        {/* Main Content */}
-        <div className="flex-1 p-6">
-          <div className="space-y-6">
-            <ActiveProgramsHeader />
+      {/* Remove Sidebar: Use a single flex column that stretches the whole width */}
+      <div className="min-h-screen bg-gray-50 flex flex-col w-full">
+        <div className="flex-1 p-2 sm:p-4 md:p-6 w-full max-w-5xl mx-auto space-y-6">
+          <ActiveProgramsHeader />
 
-            {/* Calendar με ENHANCED realtime key */}
-            <CalendarGrid
-              currentMonth={currentMonth}
-              setCurrentMonth={setCurrentMonth}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              activePrograms={activePrograms}
-              workoutCompletions={workoutCompletions}
-              realtimeKey={realtimeKey}
-              onNameClick={handleProgramClick}
-              onRefresh={handleCalendarRefresh}
-            />
+          {/* Calendar with ENHANCED realtime key */}
+          <CalendarGrid
+            currentMonth={currentMonth}
+            setCurrentMonth={setCurrentMonth}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            activePrograms={activePrograms}
+            workoutCompletions={workoutCompletions}
+            realtimeKey={realtimeKey}
+            onNameClick={handleProgramClick}
+            onRefresh={handleCalendarRefresh}
+          />
 
-            {/* Today's Programs για τη selectedDate */}
-            <TodaysProgramsSection
-              programsForToday={programsForSelectedDate}
-              workoutCompletions={workoutCompletions}
-              todayStr={dayToShowStr}
-              onProgramClick={handleProgramClick}
-            />
-          </div>
+          {/* Today's Programs for the selected date */}
+          <TodaysProgramsSection
+            programsForToday={programsForSelectedDate}
+            workoutCompletions={workoutCompletions}
+            todayStr={dayToShowStr}
+            onProgramClick={handleProgramClick}
+          />
         </div>
       </div>
 
