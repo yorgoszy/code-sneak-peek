@@ -25,10 +25,10 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
 
   return (
     <div className="grid grid-cols-6 gap-0.5 text-xs">
-      <div className="text-center">
+      <div className="flex flex-col items-center">
         <div className="text-gray-600 mb-1 text-center">Sets</div>
         <div 
-          className={`px-1 py-0.5 rounded-none text-xs text-center ${
+          className={`px-1 py-0.5 rounded-none text-xs text-center w-full ${
             workoutInProgress 
               ? 'bg-[#00ffba] hover:bg-[#00ffba]/80 text-black cursor-pointer transition-colors' 
               : 'bg-gray-100'
@@ -38,33 +38,33 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
           {exercise.sets || '-'}
         </div>
       </div>
-      <div className="text-center">
+      <div className="flex flex-col items-center">
         <div className="text-gray-600 mb-1 text-center">Reps</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center">
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
           {exercise.reps || '-'}
         </div>
       </div>
-      <div className="text-center">
+      <div className="flex flex-col items-center">
         <div className="text-gray-600 mb-1 text-center">%1RM</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center">
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
           {exercise.percentage_1rm || '-'}%
         </div>
       </div>
-      <div className="text-center">
+      <div className="flex flex-col items-center">
         <div className="text-gray-600 mb-1 text-center">Kg</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center">
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
           {exercise.kg || '-'}
         </div>
       </div>
-      <div className="text-center">
+      <div className="flex flex-col items-center">
         <div className="text-gray-600 mb-1 text-center">m/s</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center">
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
           {exercise.velocity_ms || '-'}
         </div>
       </div>
-      <div className="text-center">
+      <div className="flex flex-col items-center">
         <div className="text-gray-600 mb-1 text-center">Tempo</div>
-        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center">
+        <div className="bg-gray-100 px-1 py-0.5 rounded-none text-xs text-center w-full">
           {exercise.tempo || '-'}
         </div>
       </div>
