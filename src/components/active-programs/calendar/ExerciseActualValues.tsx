@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { getWorkoutData, saveWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 
 interface ExerciseActualValuesProps {
@@ -35,7 +34,6 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   const [actualReps, setActualReps] = useState('');
   const [actualVelocity, setActualVelocity] = useState('');
   const [calculatedPercentage, setCalculatedPercentage] = useState('');
-  const notes = getNotes(exercise.id);
   
   // Load data from previous week
   useEffect(() => {
@@ -98,14 +96,6 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
     }
   };
 
-  const handleNotesChange = (value: string) => {
-    updateNotes(exercise.id, value);
-    
-    if (selectedDate && program) {
-      saveWorkoutData(selectedDate, program.id, exercise.id, { notes: value });
-    }
-  };
-
   const handleSetClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     if (onSetClick) {
@@ -116,10 +106,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
 
   return (
-    <div className="grid grid-cols-9 gap-0.5 text-xs">
-      <div className="text-center flex items-stretch h-full">
-        <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs flex-1 flex items-center justify-center">-</div>
-      </div>
+    <div className="grid grid-cols-7 gap-0.5 text-xs">
       <div className="text-center">
         {workoutInProgress && onSetClick ? (
           <button
@@ -178,16 +165,6 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
       </div>
       <div className="text-center flex items-stretch h-full">
         <div className="bg-gray-200 px-1 py-0.5 rounded-none text-xs flex-1 flex items-center justify-center">-</div>
-      </div>
-      <div className="col-span-1 text-center flex items-stretch h-full">
-        <Textarea
-          value={notes}
-          onChange={(e) => handleNotesChange(e.target.value)}
-          placeholder={workoutInProgress ? "Notes..." : ""}
-          className="h-full min-h-0 text-xs rounded-none resize-none p-0.5 text-red-600 font-medium text-center flex-1"
-          disabled={!workoutInProgress}
-          rows={1}
-        />
       </div>
     </div>
   );
