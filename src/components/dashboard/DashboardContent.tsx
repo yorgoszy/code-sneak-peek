@@ -15,8 +15,8 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
-      <div className="space-y-3 sm:space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-4 w-full max-w-full">
+      <div className="space-y-2 sm:space-y-4 w-full max-w-full">
         <TodaysProgramsCard 
           todaysPrograms={[]}
           allCompletions={[]}
@@ -26,9 +26,10 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
         {isAdmin && <QuickActions />}
       </div>
       
-      <div className="space-y-3 sm:space-y-6">
+      <div className="space-y-2 sm:space-y-4 w-full max-w-full">
         <RecentActivity />
       </div>
     </div>
   );
 };
+

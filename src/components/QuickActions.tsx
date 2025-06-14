@@ -86,22 +86,22 @@ export const QuickActions = ({ onProgramCreated }: QuickActionsProps) => {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+      <Card className="w-full max-w-full rounded-none">
+        <CardHeader className="p-2 sm:p-6">
+          <CardTitle className="text-base sm:text-lg font-semibold">Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
+        <CardContent className="p-2 sm:p-6">
+          <div className="space-y-2 sm:space-y-3">
             {quickActions.slice(1).map((action, index) => (
-              <div key={index} className="flex flex-col space-y-1">
+              <div key={index} className="flex flex-col space-y-0.5 sm:space-y-1">
                 <Button 
                   variant="outline" 
-                  className="justify-start rounded-none text-left h-auto py-3"
+                  className="justify-start rounded-none text-left h-auto py-2 sm:py-3 w-full max-w-full"
                   onClick={() => handleActionClick(action.action)}
                 >
                   <div>
-                    <p className={`text-sm font-medium ${action.color}`}>{action.title}</p>
-                    <p className="text-xs text-gray-500">{action.subtitle}</p>
+                    <p className={`text-xs sm:text-sm font-medium ${action.color}`}>{action.title}</p>
+                    <p className="text-[10px] sm:text-xs text-gray-500">{action.subtitle}</p>
                   </div>
                 </Button>
               </div>

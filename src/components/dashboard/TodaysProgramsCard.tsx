@@ -21,14 +21,14 @@ export const TodaysProgramsCard = ({
   const todayString = formatDateToLocalString(today);
   
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Activity className="h-5 w-5 mr-2" />
+    <Card className="rounded-none w-full max-w-full">
+      <CardHeader className="p-2 sm:p-6">
+        <CardTitle className="flex items-center text-sm sm:text-base">
+          <Activity className="h-4 w-4 mr-2" />
           Σημερινά Προγράμματα ({todayString.split('-').reverse().join('/')})
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-2 sm:p-6">
         {todaysPrograms.length > 0 ? (
           <TodaysProgramsList 
             programs={todaysPrograms}
@@ -37,13 +37,14 @@ export const TodaysProgramsCard = ({
             onRefresh={onRefresh}
           />
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Δεν έχετε ενεργά προγράμματα</p>
-            <p className="text-sm">Επικοινωνήστε με τον προπονητή σας για ανάθεση προγράμματος</p>
+          <div className="text-center py-4 sm:py-8 text-gray-500">
+            <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="text-xs sm:text-base">Δεν έχετε ενεργά προγράμματα</p>
+            <p className="text-[10px] sm:text-sm">Επικοινωνήστε με τον προπονητή σας για ανάθεση προγράμματος</p>
           </div>
         )}
       </CardContent>
     </Card>
   );
 };
+
