@@ -60,7 +60,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         flex flex-col relative items-start
         border-b border-gray-200
         ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
-        ${isSelected ? 'bg-[#00ffba] text-black' : (isCurrentMonth ? 'bg-white' : 'bg-gray-50 text-gray-400')}
+        ${isSelected ? 'bg-[#ededed] text-black' : (isCurrentMonth ? 'bg-white' : 'bg-gray-50 text-gray-400')}
         `
       }
       style={{
