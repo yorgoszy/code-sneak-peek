@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 
@@ -58,7 +57,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         `
         w-1/7 md:w-full min-w-0
         h-12 md:h-20
-        flex flex-col relative items-center
+        flex flex-col relative items-start
         border-b border-gray-200
         ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
         ${isSelected ? 'bg-[#00ffba] text-black' : (isCurrentMonth ? 'bg-white' : 'bg-gray-50 text-gray-400')}
@@ -88,14 +87,14 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         {date.getDate()}
       </div>
       {/* User Names */}
-      <div className="h-full flex flex-col items-center justify-center space-y-0.5 px-1 pt-4 pb-1 w-full">
+      <div className="h-full flex flex-col items-start justify-center space-y-0.5 px-1 pt-4 pb-1 w-full">
         {programsForDate.slice(0, 5).map((program, i) => {
           const userKey = `${program.assignmentId}-${i}-${realtimeKey}-${program.status}-${Date.now()}`;
           const colorClass = getNameColor(program.status);
           return (
             <div 
               key={userKey}
-              className={`text-xs cursor-pointer hover:underline truncate w-full text-center ${colorClass}`}
+              className={`text-xs cursor-pointer hover:underline truncate w-full text-left ${colorClass}`}
               onClick={(e) => onUserNameClick(program, e)}
             >
               {program.userName.split(' ')[0]}
@@ -103,7 +102,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           );
         })}
         {programsForDate.length > 5 && (
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-gray-500 text-left w-full">
             +{programsForDate.length - 5}
           </div>
         )}
