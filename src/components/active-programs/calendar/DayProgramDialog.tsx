@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
@@ -9,6 +9,7 @@ import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramInfo } from './ProgramInfo';
 import { ProgramBlocks } from './ProgramBlocks';
+import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -33,6 +34,10 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
 
+  // Νέο state για real-time status:
+  const [dynamicStatus, setDynamicStatus] = useState<string>(workoutStatus);
+  const [statusLoading, setStatusLoading] = useState(false);
+
   const {
     workoutInProgress,
     elapsedTime,
@@ -41,6 +46,39 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     handleCancelWorkout,
     exerciseCompletion
   } = useWorkoutState(program, selectedDate, onRefresh, onClose);
+
+  // Κάνουμε fetch την τρέχουσα κατάσταση completion μόλις ανοίγει το dialog ή αλλάζει η ημερομηνία/assignment
+  useEffect(() => {
+    const fetchStatus = async () => {
+      setStatusLoading(true);
+      setDynamicStatus(workoutStatus);
+      if (!program?.id || !selectedDate) {
+        setStatusLoading(false);
+        return;
+      }
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const { data, error } = await supabase
+        .from('workout_completions')
+        .select('status')
+        .eq('assignment_id', program.id)
+        .eq('scheduled_date', dateStr)
+        .maybeSingle();
+
+      if (error) {
+        // Δεν προβάλλουμε σφάλματα εδώ, απλά επιστρέφουμε στο αρχικό status
+        setDynamicStatus(workoutStatus);
+      } else if (data?.status) {
+        setDynamicStatus(data.status);
+      } else {
+        setDynamicStatus(workoutStatus);
+      }
+      setStatusLoading(false);
+    };
+
+    if (isOpen) {
+      fetchStatus();
+    }
+  }, [isOpen, program?.id, selectedDate, workoutStatus]);
 
   if (!program || !selectedDate) return null;
 
@@ -73,7 +111,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
   const trainingDates = program.training_dates || [];
   const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
-  
+
   let dayProgram = null;
   if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
     const programDays = program.programs.program_weeks[0].program_days;
@@ -88,7 +126,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
             elapsedTime={elapsedTime}
-            workoutStatus={workoutStatus}
+            workoutStatus={dynamicStatus}
             onStartWorkout={handleStartWorkout}
             onCompleteWorkout={handleCompleteWorkout}
             onCancelWorkout={handleCancelWorkout}
@@ -97,11 +135,17 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
           />
 
           <div className="space-y-4">
+            {statusLoading && (
+              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-none px-4 py-2 mb-2 text-center text-xs">
+                Ενημέρωση κατάστασης...
+              </div>
+            )}
+
             <ProgramInfo
               program={program}
               dayProgram={dayProgram}
               workoutInProgress={workoutInProgress}
-              workoutStatus={workoutStatus}
+              workoutStatus={dynamicStatus}
             />
 
             {dayProgram ? (
