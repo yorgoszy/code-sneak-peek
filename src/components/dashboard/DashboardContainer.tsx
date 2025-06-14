@@ -46,10 +46,17 @@ export const DashboardContainer = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
-        {/* Sidebar: πάντα με εικονίδια */}
-        <Sidebar isCollapsed={true} setIsCollapsed={setIsCollapsed} iconOnly={true} />
+        {/* Sidebar: σταθερό - responsive για mobile */}
+        <Sidebar 
+          isCollapsed={isMobile ? true : isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+        />
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${
+          isMobile
+            ? ""
+            : "ml-0 md:ml-64" // Χώρος μόνο για desktop/tablet sidebar
+        }`}>
           {/* Top Navigation */}
           <div className="flex items-center">
             <SidebarTrigger className="mr-2 mt-2 mb-2" />
