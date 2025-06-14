@@ -170,8 +170,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       />
       <CalendarWeekDays />
       {/* Responsive grid - οριζόντια scroll σε κινητά */}
-      {/* ΑΦΑΙΡΟΥΜΕ gap-px και αφήνουμε μόνο border στα κελιά! */}
-      <div className="grid grid-cols-7 border border-gray-200 overflow-x-auto md:overflow-x-visible"
+      <div className="grid grid-cols-7 border border-gray-200 gap-px overflow-x-auto md:overflow-x-visible"
         style={{ minWidth: 410 }}
       >
         {days.map((date) => {

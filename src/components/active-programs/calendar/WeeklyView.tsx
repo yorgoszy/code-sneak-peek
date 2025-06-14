@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, isSameMonth, isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,7 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
   return (
     <div className="w-full">
       {/* Week Navigation */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-4">
         <Button
           variant="outline"
           size="sm"
@@ -70,7 +71,7 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h3 className="text-base font-semibold">
+        <h3 className="text-lg font-semibold">
           {format(weekStart, 'dd', { locale: el })} - {format(weekEnd, 'dd MMMM yyyy', { locale: el })}
         </h3>
         <Button
@@ -83,8 +84,8 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
         </Button>
       </div>
 
-      {/* ΠΟΛΥ μικρότερα κελιά */}
-      <div className="grid grid-cols-7 gap-[1px] overflow-x-auto md:overflow-x-visible min-w-full" style={{ minWidth: 196 }}>
+      {/* Responsive horizontal scroll: */}
+      <div className="grid grid-cols-7 gap-2 overflow-x-auto md:overflow-x-visible min-w-full" style={{ minWidth: 410 }}>
         {weekDays.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
@@ -94,32 +95,31 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
             <div
               key={`weekly-${dateStr}-${realtimeKey}`}
               className={`
-                min-h-8 max-h-10 border border-gray-200 rounded-none px-0.5 py-0.5 bg-white
+                min-h-32 border border-gray-200 rounded-none p-2 bg-white
                 ${isTodayDate ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
                 hover:bg-gray-50 transition-colors
               `}
-              style={{ minWidth: 28, maxWidth: 38 }}
             >
               {/* Date Header */}
-              <div className={`text-[11px] font-medium mb-0 ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>
+              <div className={`text-sm font-medium mb-2 ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>
                 <div>{format(date, 'dd')}</div>
-                <div className="text-[8px]">{format(date, 'EEE', { locale: el })}</div>
+                <div className="text-xs">{format(date, 'EEE', { locale: el })}</div>
               </div>
               
               {/* User Names */}
-              <div className="space-y-0">
-                {dateProgramsWithStatus.slice(0, 3).map((program, i) => (
+              <div className="space-y-1">
+                {dateProgramsWithStatus.slice(0, 8).map((program, i) => (
                   <div 
                     key={`${program.assignmentId}-${i}-${realtimeKey}`}
-                    className={`text-[8px] cursor-pointer hover:underline truncate ${getNameColor(program.status)}`}
+                    className={`text-xs cursor-pointer hover:underline truncate ${getNameColor(program.status)}`}
                     onClick={(e) => onUserNameClick(program, e)}
                   >
                     {program.userName.split(' ')[0]}
                   </div>
                 ))}
-                {dateProgramsWithStatus.length > 3 && (
-                  <div className="text-[8px] text-gray-500">
-                    +{dateProgramsWithStatus.length - 3}
+                {dateProgramsWithStatus.length > 8 && (
+                  <div className="text-xs text-gray-500">
+                    +{dateProgramsWithStatus.length - 8}
                   </div>
                 )}
               </div>
@@ -130,3 +130,4 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
     </div>
   );
 };
+
