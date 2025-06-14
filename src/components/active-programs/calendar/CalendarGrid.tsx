@@ -20,6 +20,7 @@ interface CalendarGridProps {
   workoutCompletions: any[];
   realtimeKey: number;
   onNameClick: (program: any, event: React.MouseEvent) => void;
+  onRefresh?: () => void;
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -30,7 +31,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   activePrograms,
   workoutCompletions,
   realtimeKey,
-  onNameClick
+  onNameClick,
+  onRefresh
 }) => {
   const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
   const [selectedProgramForDay, setSelectedProgramForDay] = useState<EnrichedAssignment | null>(null);
@@ -146,17 +148,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     setDayProgramDialogOpen(false);
     setSelectedProgramForDay(null);
     setInternalRealtimeKey(Date.now());
-    // Ενημέρωση του parent component (αν έχει στηθεί onRefresh!)
-    if (typeof onNameClick === "function" && typeof window !== "undefined") {
-      // Nothing to do here (onNameClick is not a refresh handler), 
-      // χρειαζόμαστε να καλέσουμε κάποιο onRefresh, οπότε παρακάτω...
+    // Κάλεσε το onRefresh αν υπάρχει, για να ανανεώσει τα completions από τη βάση
+    if (typeof onRefresh === "function") {
+      onRefresh();
     }
-    if (typeof (window as any).lovCalendarParentRefresh === "function") {
-      (window as any).lovCalendarParentRefresh();
-    }
-    // Αυτό δουλεύει αν έχουμε πασάρει από πάνω το onRefresh properly 
-    // Στο σημείο χρήσης του CalendarGrid να σιγουρευτούμε ότι το περνάει κάτω 
-    // (στις τρέχουσες υλοποιήσεις υπάρχει ήδη)
   };
 
   const MonthlyView = () => (

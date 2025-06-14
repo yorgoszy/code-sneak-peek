@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
@@ -245,6 +244,7 @@ const ActivePrograms = () => {
               workoutCompletions={workoutCompletions}
               realtimeKey={realtimeKey}
               onNameClick={handleProgramClick}
+              onRefresh={handleCalendarRefresh}
             />
 
             {/* Today's Programs */}
