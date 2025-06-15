@@ -60,19 +60,19 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                 {translations.language === 'en' ? (
                   <>
                     <h3 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Robert, sans-serif' }}>
-                      Explore All
+                      Explore all
                     </h3>
                     <h4 className="text-3xl font-bold text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
-                      Programs
+                      programs
                     </h4>
                   </>
                 ) : (
                   <>
                     <h3 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Robert, sans-serif' }}>
-                      Εξερεύνηση Όλων
+                      Εξερεύνηση όλων
                     </h3>
                     <h4 className="text-3xl font-bold text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
-                      των Προγραμμάτων
+                      των προγραμμάτων
                     </h4>
                   </>
                 )}
