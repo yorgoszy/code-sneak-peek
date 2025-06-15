@@ -8,6 +8,16 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
+  const handleContactClick = () => {
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   return (
     <section id="home" className="relative pt-16 min-h-screen flex items-center">
       <style>{`
@@ -45,6 +55,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             <Button 
               variant="outline" 
               className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black"
+              onClick={handleContactClick}
             >
               {translations.contactBtn}
             </Button>
