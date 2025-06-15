@@ -44,8 +44,7 @@ interface AppUser {
 
 const Users = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
-  const { isAdmin, loading: rolesLoading } = useRoleCheck();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -81,26 +80,10 @@ const Users = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      // Fetch user profile from app_users table
-      const fetchUserProfile = async () => {
-        const { data } = await supabase
-          .from('app_users')
-          .select('*')
-          .eq('auth_user_id', user.id)
-          .single();
-        
-        setUserProfile(data);
-      };
-      
-      fetchUserProfile();
+    if (isAdmin()) {
+      fetchUsers();
     }
-  }, [user]);
-
-  useEffect(() => {
-    // Φορτώνουμε πάντα τους χρήστες
-    fetchUsers();
-  }, []);
+  }, [isAdmin]);
 
   if (loading || rolesLoading) {
     return (
@@ -114,6 +97,11 @@ const Users = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Only allow admin users to access the users page
+  if (!isAdmin()) {
+    return <Navigate to={`/dashboard/user-profile/${userProfile?.id}`} replace />;
   }
 
   const handleEditUser = (user: AppUser) => {
