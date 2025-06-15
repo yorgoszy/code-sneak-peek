@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,7 +36,6 @@ const Index = () => {
     ...translations,
     heroTitle: language === 'el' ? 'Το ταξίδι του πρωταθλητή' : 'The champion\'s journey',
     heroSubtitle: language === 'el' ? 'Ξεκινάει εδώ' : 'Starts here',
-    programs: language === 'el' ? 'Προγράμματα' : 'Programs',
     explorePrograms: language === 'el' ? 'Εξερεύνηση όλων των προγραμμάτων' : 'Explore all programs',
     supportingYour: language === 'el' ? 'Υποστηρίζοντας το' : 'Supporting your',
     athleticJourney: language === 'el' ? 'Αθλητικό σας ταξίδι' : 'Athletic journey',
@@ -105,15 +105,15 @@ const Index = () => {
     },
     {
       id: "08",
-      title: "Custom Program Design",
-      description: "Εξατομικευμένα προγράμματα προπόνησης σχεδιασμένα ειδικά για τους στόχους και τις ανάγκες σας",
+      title: translations.customProgramDesign,
+      description: translations.customProgramDesignDesc,
       image: "/lovable-uploads/5db7f8e4-dd3f-4459-99e0-e211ed9b16f5.png",
       color: "#00ffba"
     },
     {
       id: "09",
-      title: "Ready Template",
-      description: "Έτοιμα πρότυπα προγραμμάτων προπόνησης για άμεση εφαρμογή και γρήγορα αποτελέσματα",
+      title: translations.readyTemplate,
+      description: translations.readyTemplateDesc,
       image: "/lovable-uploads/b00b1740-0d26-4b91-9d41-9c36f78efe94.png",
       color: "#00ffba"
     }

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 
 export const useTranslations = () => {
@@ -42,6 +43,10 @@ export const useTranslations = () => {
       oneByOneDesc: "Εξατομικευμένη προπονητική για μέγιστα αποτελέσματα",
       athletePerformance: "Αθλητική Απόδοση",
       athletePerformanceDesc: "Ελίτ Στρατηγικές Δύναμης & Φυσικής Κατάστασης",
+      customProgramDesign: "Εξατομικευμένος Σχεδιασμός Προγράμματος",
+      customProgramDesignDesc: "Personalized training programs designed specifically for your goals and needs",
+      readyTemplate: "Έτοιμο Πρότυπο",
+      readyTemplateDesc: "Ready-made training program templates for immediate implementation and quick results",
       supportingYour: "Υποστηρίζοντας το",
       athleticJourney: "αθλητικό σας ταξίδι",
       headCoach: "Κύριος προπονητής",
@@ -68,7 +73,8 @@ export const useTranslations = () => {
       assessment: "Αξιολόγηση",
       assessmentDesc: "Κίνηση & Στάση\n• Προφίλ φορτίου - ταχύτητας\n• Προφίλ άλματος\n• Αντοχή",
       resultsFocused: "Εστιασμένα στα Αποτελέσματα",
-      resultsFocusedDesc: "Παρακολούθηση Αποτελεσμάτων\n• Καθοδήγηση Απόδοσης\n• Ανάπτυξη Προσαρμοσμένου Προγράμματος"
+      resultsFocusedDesc: "Παρακολούθηση Αποτελεσμάτων\n• Καθοδήγηση Απόδοσης\n• Ανάπτυξη Προσαρμοσμένου Προγράμματος",
+      learnMore: "Μάθετε περισσότερα"
     },
     en: {
       language: 'en',
@@ -108,6 +114,10 @@ export const useTranslations = () => {
       oneByOneDesc: "Personalized coaching for maximum results",
       athletePerformance: "Athlete Performance",
       athletePerformanceDesc: "Elite Strength & Conditioning Strategies",
+      customProgramDesign: "Custom Program Design",
+      customProgramDesignDesc: "Εξατομικευμένα προγράμματα προπόνησης σχεδιασμένα ειδικά για τους στόχους και τις ανάγκες σας",
+      readyTemplate: "Ready Template",
+      readyTemplateDesc: "Έτοιμα πρότυπα προγραμμάτων προπόνησης για άμεση εφαρμογή και γρήγορα αποτελέσματα",
       supportingYour: "Supporting your",
       athleticJourney: "athletic journey",
       headCoach: "Head coach",
@@ -134,7 +144,8 @@ export const useTranslations = () => {
       assessment: "Assessment",
       assessmentDesc: "Movement & Posture\n• Load-velocity profile\n• Jump profile\n• Endurance",
       resultsFocused: "Results Focused",
-      resultsFocusedDesc: "Results Tracking\n• Performance Guidance\n• Customized Program Development"
+      resultsFocusedDesc: "Results Tracking\n• Performance Guidance\n• Customized Program Development",
+      learnMore: "Learn More"
     }
   };
 
