@@ -1,54 +1,28 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { StrengthTestSession } from "./StrengthTestSession";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
 
 interface StrengthTestsProps {
   selectedAthleteId: string;
   selectedDate: string;
   hideSubmitButton?: boolean;
+  // callback για reset (θα το χρειαστούμε για reset μετά την αποθήκευση από έξω)
+  onReset?: () => void;
 }
 
-export const StrengthTests = ({ selectedAthleteId, selectedDate, hideSubmitButton = false }: StrengthTestsProps) => {
-  const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleRecord = async () => {
-    if (!selectedAthleteId || !user) {
-      toast.error("Παρακαλώ επιλέξτε αθλητή");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      // This will trigger the save through the existing StrengthTestSession component
-      toast.success("Τεστ δύναμης καταγράφηκαν επιτυχώς!");
-    } catch (error) {
-      console.error('Error recording strength tests:', error);
-      toast.error("Σφάλμα κατά την καταγραφή");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+export const StrengthTests = ({
+  selectedAthleteId,
+  selectedDate,
+  hideSubmitButton = false,
+  onReset
+}: StrengthTestsProps) => {
+  // Δεν υπάρχει πλέον handleRecord / κουμπί αποθήκευσης!
   return (
     <div className="space-y-4">
-      <StrengthTestSession selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
-      
-      {!hideSubmitButton && (
-        <div className="flex justify-end">
-          <Button 
-            onClick={handleRecord}
-            className="rounded-none"
-            disabled={!selectedAthleteId || isSubmitting}
-          >
-            Καταγραφή Δύναμης
-          </Button>
-        </div>
-      )}
+      <StrengthTestSession
+        selectedAthleteId={selectedAthleteId}
+        selectedDate={selectedDate}
+        onReset={onReset}
+      />
     </div>
   );
 };

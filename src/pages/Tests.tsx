@@ -129,6 +129,9 @@ const Tests = () => {
     tripleJumpRight: ''
   });
 
+  // Νέο ref για strength session state (φορμα):
+  const strengthSessionRef = useRef<any>(null);
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -431,6 +434,67 @@ const Tests = () => {
     }
   };
 
+  // ΝΕΟ: Αποθήκευση Strength δεδομένων
+  const saveStrengthData = async () => {
+    if (!selectedAthleteId) {
+      toast.error("Παρακαλώ επιλέξτε αθλητή");
+      return;
+    }
+    const strengthForm = strengthSessionRef.current;
+    // Αν δεν υπάρχει φόρμα ή δεν υπάρχουν ασκήσεις με προσπάθειες, skip
+    if (
+      !strengthForm ||
+      !strengthForm.exercise_tests ||
+      strengthForm.exercise_tests.length === 0 ||
+      !strengthForm.exercise_tests.some(et => et.exercise_id && et.attempts.length > 0)
+    ) {
+      return;
+    }
+
+    try {
+      // Βρες/Δημιούργησε test_session
+      const testSession = await getOrCreateTestSession();
+      if (!testSession) return;
+
+      // Σβήσε ό,τι strength_test_data υπάρχει για το session (θα γίνει replace!)
+      await supabase
+        .from('strength_test_data')
+        .delete()
+        .eq('test_session_id', testSession.id);
+
+      // Φτιάξε τη λίστα δεδομένων από τη φόρμα (1 row ανά attempt ανά άσκηση)
+      const toSave: any[] = [];
+      strengthForm.exercise_tests.forEach(et => {
+        if (!et.exercise_id) return;
+        et.attempts.forEach((a: any) => {
+          toSave.push({
+            test_session_id: testSession.id,
+            exercise_id: et.exercise_id,
+            attempt_number: a.attempt_number,
+            weight_kg: a.weight_kg !== undefined ? parseFloat(a.weight_kg) : null,
+            velocity_ms: a.velocity_ms !== undefined ? parseFloat(a.velocity_ms) : null,
+            is_1rm: !!a.is_1rm
+          });
+        });
+      });
+
+      if (toSave.length > 0) {
+        await supabase.from('strength_test_data').insert(toSave);
+        toast.success("Τεστ δύναμης καταγράφηκαν επιτυχώς!");
+        if (strengthForm && strengthForm.reset) {
+          strengthForm.reset();
+        }
+        // Force clear στο ref
+        if (strengthSessionRef.current) {
+          strengthSessionRef.current = { exercise_tests: [] };
+        }
+      }
+    } catch (error) {
+      console.error('Error saving strength data:', error);
+      toast.error("Σφάλμα κατά την καταγραφή");
+    }
+  };
+
   const handleSaveAllTests = async () => {
     if (!selectedAthleteId) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
@@ -438,26 +502,34 @@ const Tests = () => {
     }
 
     try {
-      // Αποθήκευση όλων των τεστ που έχουν δεδομένα
       const promises = [];
-      
+
       if (Object.values(anthropometricData).some(value => value !== '')) {
         promises.push(saveAnthropometricData());
       }
-      
-      if (Object.keys(functionalData.fmsScores).length > 0 || 
-          functionalData.selectedPosture.length > 0 || 
-          functionalData.selectedSquatIssues.length > 0 || 
-          functionalData.selectedSingleLegIssues.length > 0) {
+      if (
+        Object.keys(functionalData.fmsScores).length > 0 ||
+        functionalData.selectedPosture.length > 0 ||
+        functionalData.selectedSquatIssues.length > 0 ||
+        functionalData.selectedSingleLegIssues.length > 0
+      ) {
         promises.push(saveFunctionalData());
       }
-      
       if (Object.values(enduranceData).some(value => value !== '')) {
         promises.push(saveEnduranceData());
       }
-      
       if (Object.values(jumpData).some(value => value !== '')) {
         promises.push(saveJumpData());
+      }
+      // Strength!
+      if (
+        strengthSessionRef.current &&
+        strengthSessionRef.current.exercise_tests &&
+        strengthSessionRef.current.exercise_tests.some(
+          (et: any) => et.exercise_id && et.attempts.length > 0
+        )
+      ) {
+        promises.push(saveStrengthData());
       }
 
       if (promises.length === 0) {
@@ -467,6 +539,56 @@ const Tests = () => {
 
       await Promise.all(promises);
       toast.success("Όλα τα τεστ αποθηκεύτηκαν επιτυχώς!");
+
+      // Reset all states - including strength session ref
+      setAnthropometricData({
+        height: '',
+        weight: '',
+        bodyFatPercentage: '',
+        muscleMassPercentage: '',
+        waistCircumference: '',
+        hipCircumference: '',
+        chestCircumference: '',
+        armCircumference: '',
+        thighCircumference: ''
+      });
+      setFunctionalData({
+        fmsScores: {},
+        selectedPosture: [],
+        selectedSquatIssues: [],
+        selectedSingleLegIssues: []
+      });
+      setEnduranceData({
+        pushUps: '',
+        pullUps: '',
+        crunches: '',
+        maxHr: '',
+        restingHr1min: '',
+        vo2Max: '',
+        farmerKg: '',
+        farmerMeters: '',
+        farmerSeconds: '',
+        sprintSeconds: '',
+        sprintMeters: '',
+        sprintResistance: '',
+        sprintWatt: '',
+        masMeters: '',
+        masMinutes: '',
+        masMs: '',
+        masKmh: ''
+      });
+      setJumpData({
+        nonCounterMovementJump: '',
+        counterMovementJump: '',
+        depthJump: '',
+        broadJump: '',
+        tripleJumpLeft: '',
+        tripleJumpRight: ''
+      });
+      if (strengthSessionRef.current && strengthSessionRef.current.reset) {
+        strengthSessionRef.current.reset();
+      }
+      strengthSessionRef.current = { exercise_tests: [] };
     } catch (error) {
       console.error('Error saving all tests:', error);
       toast.error("Σφάλμα κατά την αποθήκευση");
@@ -601,7 +723,18 @@ const Tests = () => {
               </TabsContent>
 
               <TabsContent value="strength" className="mt-6">
-                <StrengthTests selectedAthleteId={selectedAthleteId} selectedDate={selectedDate} />
+                {/* StrengthTests ΔΕΝ ΕΧΕΙ SUBMIT BUTTON πλέον */}
+                <StrengthTests
+                  selectedAthleteId={selectedAthleteId}
+                  selectedDate={selectedDate}
+                  // Παρέχουμε callback για reset (οπότε το ref.current θα έχει τα combo/callbacks)
+                  onReset={resetFunction => { 
+                    strengthSessionRef.current = { 
+                      ...strengthSessionRef.current, 
+                      reset: resetFunction 
+                    };
+                  }}
+                />
               </TabsContent>
 
               <TabsContent value="endurance" className="mt-6">

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SessionForm } from "./strength/SessionForm";
 import { SessionsList } from "./strength/SessionsList";
@@ -7,9 +6,15 @@ import { useStrengthTestData } from "./strength/useStrengthTestData";
 interface StrengthTestSessionProps {
   selectedAthleteId: string;
   selectedDate: string;
+  // Νέο: callback για reset (χρησιμοποιείται για clear από το parent Tests)
+  onReset?: () => void;
 }
 
-export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: StrengthTestSessionProps) => {
+export const StrengthTestSession = ({
+  selectedAthleteId,
+  selectedDate,
+  onReset
+}: StrengthTestSessionProps) => {
   const {
     exercises,
     sessions,
@@ -21,6 +26,14 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
     resetForm,
     editSession
   } = useStrengthTestData(selectedAthleteId, selectedDate);
+
+  // Wrapper για να μπορεί το parent να κάνει reset το form εξωτερικά
+  React.useEffect(() => {
+    if (onReset) {
+      onReset(() => resetForm());
+    }
+    // eslint-disable-next-line
+  }, [onReset]);
 
   const addExerciseTest = () => {
     const newExerciseTest = {
