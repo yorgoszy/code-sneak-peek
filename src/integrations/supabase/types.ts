@@ -119,6 +119,13 @@ export type Database = {
             referencedRelation: "anthropometric_test_sessions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_anthropometric_test_data_session"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
         ]
       }
       anthropometric_test_sessions: {
@@ -392,6 +399,13 @@ export type Database = {
             columns: ["test_session_id"]
             isOneToOne: false
             referencedRelation: "endurance_test_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_endurance_test_data_session"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "test_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -725,6 +739,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_functional_test_data_session"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "functional_test_data_test_session_id_fkey"
             columns: ["test_session_id"]
             isOneToOne: false
@@ -962,6 +983,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_jump_test_data_session"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "jump_test_data_test_session_id_fkey"
             columns: ["test_session_id"]
@@ -1754,6 +1782,53 @@ export type Database = {
           },
         ]
       }
+      strength_test_data: {
+        Row: {
+          attempt_number: number
+          created_at: string | null
+          exercise_id: string
+          id: string
+          is_1rm: boolean | null
+          notes: string | null
+          test_session_id: string | null
+          updated_at: string | null
+          velocity_ms: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          attempt_number: number
+          created_at?: string | null
+          exercise_id: string
+          id?: string
+          is_1rm?: boolean | null
+          notes?: string | null
+          test_session_id?: string | null
+          updated_at?: string | null
+          velocity_ms?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          attempt_number?: number
+          created_at?: string | null
+          exercise_id?: string
+          id?: string
+          is_1rm?: boolean | null
+          notes?: string | null
+          test_session_id?: string | null
+          updated_at?: string | null
+          velocity_ms?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strength_test_data_test_session_id_fkey"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       strength_test_sessions: {
         Row: {
           created_at: string | null
@@ -2012,6 +2087,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      test_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          session_label: string | null
+          test_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_label?: string | null
+          test_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_label?: string | null
+          test_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       test_types: {
         Row: {
