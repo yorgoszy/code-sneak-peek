@@ -106,12 +106,15 @@ export const useEditUserDialog = (user: AppUser | null, isOpen: boolean) => {
           console.log('✅ Old role deleted successfully');
         }
 
+        // Convert trainer to coach for user_roles table compatibility
+        const roleForUserRoles = role === 'trainer' ? 'coach' : role;
+
         // Insert new role
         const { error: insertError } = await supabase
           .from('user_roles')
           .insert({
             user_id: userIdForRoles,
-            role: role as 'admin' | 'trainer' | 'athlete' | 'general' | 'parent'
+            role: roleForUserRoles as 'admin' | 'coach' | 'athlete' | 'general' | 'parent'
           });
 
         if (insertError) {
