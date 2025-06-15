@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 
 export const useTranslations = () => {
@@ -16,8 +17,8 @@ export const useTranslations = () => {
       dashboard: "Dashboard",
       getStarted: "ΞΕΚΙΝΑ ΤΩΡΑ",
       contactBtn: "ΕΠΙΚΟΙΝΩΝΙΑ",
-      heroTitle: "Το Ταξίδι του Πρωταθλητή",
-      heroSubtitle: "Ξεκινάει Εδώ",
+      heroTitle: "Το ταξίδι του πρωταθλητή",
+      heroSubtitle: "Ξεκινάει εδώ",
       explorePrograms: "Εξερεύνηση Όλων των Προγραμμάτων",
       blogSection: "Άρθρα",
       blogDescription: "Ενημερωθείτε με τα τελευταία άρθρα και συμβουλές από τους ειδικούς μας",
@@ -82,8 +83,8 @@ export const useTranslations = () => {
       dashboard: "Dashboard",
       getStarted: "GET STARTED",
       contactBtn: "CONTACT",
-      heroTitle: "The Champion's Journey",
-      heroSubtitle: "Starts Here",
+      heroTitle: "The champion's journey",
+      heroSubtitle: "Starts here",
       explorePrograms: "Explore All Programs",
       blogSection: "Blog",
       blogDescription: "Read the latest articles and tips from our experts",
