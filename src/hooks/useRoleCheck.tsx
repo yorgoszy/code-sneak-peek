@@ -13,10 +13,14 @@ export const useRoleCheck = () => {
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      console.log('🔍 useRoleCheck: Fetching user role for:', user?.id);
+      console.log('🔍 useRoleCheck: Starting fetchUserRole with:', { 
+        userId: user?.id, 
+        authLoading,
+        userExists: !!user 
+      });
       
-      if (!user) {
-        console.log('🔍 useRoleCheck: No user found, clearing roles');
+      if (!user?.id) {
+        console.log('🔍 useRoleCheck: No user ID found, clearing roles');
         setUserRoles([]);
         setUserProfile(null);
         setLoading(false);
@@ -26,12 +30,14 @@ export const useRoleCheck = () => {
       try {
         console.log('🔍 useRoleCheck: Querying app_users for auth_user_id:', user.id);
         
-        // Fetch user profile from app_users table
+        // Fetch user profile from app_users table using the auth_user_id
         const { data: profile, error } = await supabase
           .from('app_users')
           .select('*')
           .eq('auth_user_id', user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle instead of single to avoid errors
+
+        console.log('🔍 useRoleCheck: Query result:', { profile, error });
 
         if (error) {
           console.error('❌ useRoleCheck: Error fetching user profile:', error);
@@ -44,7 +50,7 @@ export const useRoleCheck = () => {
           setUserRoles([profile.role as UserRole]);
           console.log('🎭 useRoleCheck: User roles set to:', [profile.role]);
         } else {
-          console.log('⚠️ useRoleCheck: No profile found for user');
+          console.log('⚠️ useRoleCheck: No profile found for auth_user_id:', user.id);
           setUserRoles([]);
           setUserProfile(null);
         }
@@ -57,13 +63,20 @@ export const useRoleCheck = () => {
       }
     };
 
-    // Only fetch when auth is not loading and we have user info
+    // Only fetch when auth is not loading and we have a user
     if (!authLoading) {
-      fetchUserRole();
+      if (user?.id) {
+        fetchUserRole();
+      } else {
+        console.log('⚠️ useRoleCheck: No user found, setting default state');
+        setUserRoles([]);
+        setUserProfile(null);
+        setLoading(false);
+      }
     } else {
       console.log('⏳ useRoleCheck: Waiting for auth to finish loading');
     }
-  }, [user, authLoading]);
+  }, [user?.id, authLoading]); // Only depend on user.id, not the entire user object
 
   const hasRole = (role: UserRole): boolean => {
     const result = userRoles.includes(role);
@@ -73,7 +86,7 @@ export const useRoleCheck = () => {
 
   const isAdmin = (): boolean => {
     const result = userRoles.includes('admin');
-    console.log('👑 useRoleCheck: Is admin check:', result);
+    console.log('👑 useRoleCheck: Is admin check:', result, 'UserRoles:', userRoles);
     return result;
   };
 
@@ -94,7 +107,8 @@ export const useRoleCheck = () => {
     loading: loading || authLoading, 
     userProfile: userProfile?.id,
     authLoading,
-    userId: user?.id
+    userId: user?.id,
+    hasUser: !!user
   });
 
   return {
