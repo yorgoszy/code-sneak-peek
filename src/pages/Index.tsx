@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,7 +35,7 @@ const Index = () => {
   const correctedTranslations = {
     ...translations,
     heroTitle: language === 'el' ? 'Το ταξίδι του πρωταθλητή' : 'The champion\'s journey',
-    heroSubtitle: language === 'el' ? 'ξεκινάει εδώ' : 'starts here',
+    heroSubtitle: language === 'el' ? 'Ξεκινάει εδώ' : 'starts here',
     programs: language === 'el' ? 'προγράμματα' : 'programs',
     explorePrograms: language === 'el' ? 'Εξερεύνηση όλων των προγραμμάτων' : 'Explore all programs',
     supportingYour: language === 'el' ? 'Υποστηρίζοντας το' : 'Supporting your',
