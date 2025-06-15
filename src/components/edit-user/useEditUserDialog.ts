@@ -85,29 +85,34 @@ export const useEditUserDialog = (user: AppUser | null, isOpen: boolean) => {
 
       console.log('✅ User updated successfully in app_users');
 
-      // Handle role changes in user_roles table
+      // Handle role changes in user_roles table if role is different
       if (role && role !== user.role) {
         console.log('🎭 Role changed from', user.role, 'to', role);
         
-        // Find the user ID to use for user_roles table
+        // First, let's check if user has auth_user_id and use that, otherwise use the regular id
         const userIdForRoles = user.auth_user_id || user.id;
         console.log('👤 Using user ID for roles:', userIdForRoles);
 
-        // Delete existing role
+        // Delete existing roles for this user
+        console.log('🗑️ Deleting existing roles for user:', userIdForRoles);
         const { error: deleteError } = await supabase
           .from('user_roles')
           .delete()
           .eq('user_id', userIdForRoles);
 
         if (deleteError) {
-          console.error('❌ Error deleting old role:', deleteError);
-          // Don't return here, continue with insert
+          console.error('❌ Error deleting old roles:', deleteError);
         } else {
-          console.log('✅ Old role deleted successfully');
+          console.log('✅ Old roles deleted successfully');
         }
 
-        // Convert trainer to coach for user_roles table compatibility
-        const roleForUserRoles = role === 'trainer' ? 'coach' : role;
+        // Convert role names to match user_roles table enum
+        let roleForUserRoles = role;
+        if (role === 'trainer') {
+          roleForUserRoles = 'coach';
+        }
+
+        console.log('➕ Inserting new role:', roleForUserRoles, 'for user:', userIdForRoles);
 
         // Insert new role
         const { error: insertError } = await supabase
