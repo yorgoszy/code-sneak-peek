@@ -83,7 +83,7 @@ export const useTranslations = () => {
       getStarted: "GET STARTED",
       contactBtn: "CONTACT",
       heroTitle: "The champion's journey",
-      heroSubtitle: "Starts here",
+      heroSubtitle: "starts here",
       explorePrograms: "Explore all programs",
       blogSection: "Blog",
       blogDescription: "Read the latest articles and tips from our experts",
