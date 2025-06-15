@@ -35,7 +35,7 @@ export const useRoleCheck = () => {
           .from('app_users')
           .select('*')
           .eq('auth_user_id', user.id)
-          .maybeSingle(); // Use maybeSingle instead of single to avoid errors
+          .maybeSingle();
 
         console.log('🔍 useRoleCheck: Query result:', { profile, error });
 
@@ -63,7 +63,7 @@ export const useRoleCheck = () => {
       }
     };
 
-    // Only fetch when auth is not loading and we have a user
+    // Only fetch when auth is not loading
     if (!authLoading) {
       if (user?.id) {
         fetchUserRole();
@@ -73,10 +73,8 @@ export const useRoleCheck = () => {
         setUserProfile(null);
         setLoading(false);
       }
-    } else {
-      console.log('⏳ useRoleCheck: Waiting for auth to finish loading');
     }
-  }, [user?.id, authLoading]); // Only depend on user.id, not the entire user object
+  }, [user?.id, authLoading]); // Only depend on user.id and authLoading
 
   const hasRole = (role: UserRole): boolean => {
     const result = userRoles.includes(role);

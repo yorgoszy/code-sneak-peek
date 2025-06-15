@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -47,10 +46,11 @@ const Users = () => {
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [users, setUsers] = useState<AppUser[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   // Dialog states
   const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
@@ -60,6 +60,8 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
 
   const fetchUsers = async () => {
+    if (loadingUsers) return; // Prevent multiple simultaneous requests
+    
     setLoadingUsers(true);
     try {
       console.log('📊 Fetching users...');
@@ -85,14 +87,19 @@ const Users = () => {
     console.log('👥 Users page useEffect:', {
       isAdminResult: isAdmin(),
       rolesLoading,
-      userProfile: userProfile?.id
+      userProfile: userProfile?.id,
+      hasInitialized
     });
 
-    if (!rolesLoading && isAdmin()) {
-      console.log('👑 Admin confirmed, fetching users');
-      fetchUsers();
+    // Only initialize once when roles are loaded and user is admin
+    if (!rolesLoading && !hasInitialized) {
+      if (isAdmin()) {
+        console.log('👑 Admin confirmed, fetching users');
+        fetchUsers();
+      }
+      setHasInitialized(true);
     }
-  }, [isAdmin, rolesLoading]);
+  }, [isAdmin, rolesLoading, hasInitialized]);
 
   if (loading || rolesLoading) {
     console.log('⏳ Users page loading:', { loading, rolesLoading });
