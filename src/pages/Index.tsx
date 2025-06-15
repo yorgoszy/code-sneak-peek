@@ -30,13 +30,27 @@ const Index = () => {
     }
   };
 
+  // Override some translations with corrected capitalization
+  const correctedTranslations = {
+    ...translations,
+    heroTitle: language === 'el' ? 'Το ταξίδι του πρωταθλητή' : 'The champion\'s journey',
+    heroSubtitle: language === 'el' ? 'ξεκινάει εδώ' : 'starts here',
+    programs: language === 'el' ? 'προγράμματα' : 'programs',
+    explorePrograms: language === 'el' ? 'Εξερεύνηση όλων των προγραμμάτων' : 'Explore all programs',
+    supportingYour: language === 'el' ? 'Υποστηρίζοντας το' : 'Supporting your',
+    athleticJourney: language === 'el' ? 'αθλητικό σας ταξίδι' : 'athletic journey',
+    headCoach: language === 'el' ? 'Κύριος προπονητής' : 'Head coach',
+    ourVision: language === 'el' ? 'Το όραμά μας' : 'Our vision',
+    trainingMethodology: language === 'el' ? 'Μεθοδολογία προπόνησης' : 'Training methodology'
+  };
+
   const navigationItems = [
-    { name: translations.home, href: "#home" },
-    { name: translations.programs, href: "#programs" },
-    { name: translations.about, href: "#about" },
-    { name: translations.blog, href: "#blog" },
-    { name: translations.results, href: "#results" },
-    { name: translations.contact, href: "#contact" }
+    { name: correctedTranslations.home, href: "#home" },
+    { name: correctedTranslations.programs, href: "#programs" },
+    { name: correctedTranslations.about, href: "#about" },
+    { name: correctedTranslations.blog, href: "#blog" },
+    { name: correctedTranslations.results, href: "#results" },
+    { name: correctedTranslations.contact, href: "#contact" }
   ];
 
   const programs = [
@@ -114,43 +128,43 @@ const Index = () => {
         language={language}
         onToggleLanguage={toggleLanguage}
         onSignOut={handleSignOut}
-        translations={translations}
+        translations={correctedTranslations}
       />
 
       <HeroSection 
-        translations={translations}
+        translations={correctedTranslations}
         onGetStarted={handleGetStarted}
       />
 
       <ProgramsSection 
         programs={programs}
-        translations={translations}
+        translations={correctedTranslations}
       />
 
       <AboutSection 
-        translations={translations}
+        translations={correctedTranslations}
         activeAboutSection={activeAboutSection}
         onSetActiveAboutSection={setActiveAboutSection}
       />
 
       <EliteTrainingSection 
-        translations={translations}
+        translations={correctedTranslations}
       />
 
       <BlogSection 
-        translations={translations}
+        translations={correctedTranslations}
       />
 
       <ResultsSection 
-        translations={translations}
+        translations={correctedTranslations}
       />
 
       <ContactSection 
-        translations={translations}
+        translations={correctedTranslations}
       />
 
       <Footer 
-        translations={translations}
+        translations={correctedTranslations}
       />
     </div>
   );
