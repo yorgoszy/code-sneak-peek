@@ -32,6 +32,7 @@ interface AppUser {
   birth_date?: string;
   photo_url?: string;
   created_at: string;
+  auth_user_id?: string; // Make it optional since it might not exist
 }
 
 interface EditUserDialogProps {
@@ -118,7 +119,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
       if (role !== user.role) {
         console.log('🎭 Role changed, updating user_roles table');
         
-        // First, delete existing role
+        // First, delete existing role if it exists
         const { error: deleteError } = await supabase
           .from('user_roles')
           .delete()
@@ -130,23 +131,25 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
           console.log('✅ Old role deleted');
         }
 
-        // Then insert new role
-        const { error: insertError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: user.auth_user_id || user.id,
-            role: role
-          });
+        // Then insert new role if user has auth_user_id
+        if (user.auth_user_id || user.id) {
+          const { error: insertError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: user.auth_user_id || user.id,
+              role: role as any // Cast to handle type issues
+            });
 
-        if (insertError) {
-          console.error('❌ Error inserting new role:', insertError);
-          toast({
-            variant: "destructive",
-            title: "Προειδοποίηση",
-            description: "Ο χρήστης ενημερώθηκε αλλά μπορεί να υπάρχει πρόβλημα με τον ρόλο",
-          });
-        } else {
-          console.log('✅ New role inserted');
+          if (insertError) {
+            console.error('❌ Error inserting new role:', insertError);
+            toast({
+              variant: "destructive",
+              title: "Προειδοποίηση",
+              description: "Ο χρήστης ενημερώθηκε αλλά μπορεί να υπάρχει πρόβλημα με τον ρόλο",
+            });
+          } else {
+            console.log('✅ New role inserted');
+          }
         }
       }
 
