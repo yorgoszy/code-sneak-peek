@@ -35,7 +35,7 @@ const Index = () => {
     ...translations,
     heroTitle: language === 'el' ? 'Το ταξίδι του πρωταθλητή' : 'The champion\'s journey',
     heroSubtitle: language === 'el' ? 'Ξεκινάει εδώ' : 'Starts here',
-    programs: language === 'el' ? 'προγράμματα' : 'programs',
+    programs: language === 'el' ? 'Προγράμματα' : 'Programs',
     explorePrograms: language === 'el' ? 'Εξερεύνηση όλων των προγραμμάτων' : 'Explore all programs',
     supportingYour: language === 'el' ? 'Υποστηρίζοντας το' : 'Supporting your',
     athleticJourney: language === 'el' ? 'Αθλητικό σας ταξίδι' : 'Athletic journey',
