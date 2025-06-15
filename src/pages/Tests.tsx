@@ -734,17 +734,20 @@ const Tests = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="strength" className="mt-6">
-                {/* StrengthTests: registerReset prop */}
-                <StrengthTests
-                  selectedAthleteId={selectedAthleteId}
-                  selectedDate={selectedDate}
-                  registerReset={(resetFn: () => void) => {
-                    if (!strengthSessionRef.current) strengthSessionRef.current = {};
-                    strengthSessionRef.current.reset = resetFn;
-                  }}
-                />
-              </TabsContent>
+            <TabsContent value="strength" className="mt-6">
+              {/* ΑΦΑΙΡΩ το έξτρα κουμπί "Αποθήκευση" από το StrengthTests */}
+              <div className="mb-4 text-xs text-gray-600">
+                Η αποθήκευση στα strength tests γίνεται μόνο από το κουμπί στο κάθε session ("Αποθήκευση" ή "Ενημέρωση" κάτω από το τεστ).
+              </div>
+              <StrengthTests
+                selectedAthleteId={selectedAthleteId}
+                selectedDate={selectedDate}
+                registerReset={(resetFn: () => void) => {
+                  if (!strengthSessionRef.current) strengthSessionRef.current = {};
+                  strengthSessionRef.current.reset = resetFn;
+                }}
+              />
+            </TabsContent>
 
               <TabsContent value="endurance" className="mt-6">
                 <div className="space-y-4">
