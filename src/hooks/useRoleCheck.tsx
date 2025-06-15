@@ -6,15 +6,17 @@ import { useAuth } from '@/hooks/useAuth';
 type UserRole = 'admin' | 'trainer' | 'athlete' | 'general' | 'parent';
 
 export const useRoleCheck = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
+      console.log('🔍 useRoleCheck: Fetching user role for:', user?.id);
+      
       if (!user) {
-        console.log('🔍 No user found, clearing roles');
+        console.log('🔍 useRoleCheck: No user found, clearing roles');
         setUserRoles([]);
         setUserProfile(null);
         setLoading(false);
@@ -22,7 +24,7 @@ export const useRoleCheck = () => {
       }
 
       try {
-        console.log('🔍 Fetching user profile for:', user.id);
+        console.log('🔍 useRoleCheck: Querying app_users for auth_user_id:', user.id);
         
         // Fetch user profile from app_users table
         const { data: profile, error } = await supabase
@@ -32,22 +34,22 @@ export const useRoleCheck = () => {
           .single();
 
         if (error) {
-          console.error('❌ Error fetching user profile:', error);
+          console.error('❌ useRoleCheck: Error fetching user profile:', error);
           setUserRoles([]);
           setUserProfile(null);
         } else if (profile) {
-          console.log('✅ User profile found:', profile);
+          console.log('✅ useRoleCheck: User profile found:', profile);
           setUserProfile(profile);
           // Set role based on the user's role in the database
           setUserRoles([profile.role as UserRole]);
-          console.log('🎭 User roles set to:', [profile.role]);
+          console.log('🎭 useRoleCheck: User roles set to:', [profile.role]);
         } else {
-          console.log('⚠️ No profile found for user');
+          console.log('⚠️ useRoleCheck: No profile found for user');
           setUserRoles([]);
           setUserProfile(null);
         }
       } catch (error) {
-        console.error('💥 Error in fetchUserRole:', error);
+        console.error('💥 useRoleCheck: Error in fetchUserRole:', error);
         setUserRoles([]);
         setUserProfile(null);
       } finally {
@@ -55,18 +57,23 @@ export const useRoleCheck = () => {
       }
     };
 
-    fetchUserRole();
-  }, [user]);
+    // Only fetch when auth is not loading and we have user info
+    if (!authLoading) {
+      fetchUserRole();
+    } else {
+      console.log('⏳ useRoleCheck: Waiting for auth to finish loading');
+    }
+  }, [user, authLoading]);
 
   const hasRole = (role: UserRole): boolean => {
     const result = userRoles.includes(role);
-    console.log(`🎭 Checking role ${role}:`, result, 'Current roles:', userRoles);
+    console.log(`🎭 useRoleCheck: Checking role ${role}:`, result, 'Current roles:', userRoles);
     return result;
   };
 
   const isAdmin = (): boolean => {
     const result = userRoles.includes('admin');
-    console.log('👑 Is admin check:', result);
+    console.log('👑 useRoleCheck: Is admin check:', result);
     return result;
   };
 
@@ -82,7 +89,13 @@ export const useRoleCheck = () => {
     return userRoles.includes('general');
   };
 
-  console.log('🔄 useRoleCheck state:', { userRoles, loading, userProfile: userProfile?.id });
+  console.log('🔄 useRoleCheck: Current state:', { 
+    userRoles, 
+    loading: loading || authLoading, 
+    userProfile: userProfile?.id,
+    authLoading,
+    userId: user?.id
+  });
 
   return {
     userRoles,
@@ -92,6 +105,6 @@ export const useRoleCheck = () => {
     isTrainer,
     isAthlete,
     isGeneral,
-    loading
+    loading: loading || authLoading
   };
 };

@@ -9,28 +9,52 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🔧 useAuth: Setting up auth listener');
+    
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        console.log('🔧 useAuth: Initial session:', initialSession?.user?.id || 'No session');
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+        setLoading(false);
+      } catch (error) {
+        console.error('🔧 useAuth: Error getting initial session:', error);
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('🔧 useAuth: Auth state changed:', event, session?.user?.id || 'No session');
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          setLoading(false);
+        }
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('🔧 useAuth: Cleaning up subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
+    console.log('🔧 useAuth: Signing out');
     await supabase.auth.signOut();
   };
+
+  console.log('🔧 useAuth: Current state:', { 
+    userId: user?.id, 
+    loading, 
+    isAuthenticated: !!user 
+  });
 
   return {
     user,

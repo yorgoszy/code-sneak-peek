@@ -12,7 +12,7 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 export const DashboardContainer = () => {
-  const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
@@ -24,26 +24,28 @@ export const DashboardContainer = () => {
 
   // Redirect non-admin users to their personal profile
   useEffect(() => {
-    console.log('🚦 DashboardContainer useEffect:', {
-      loading,
+    console.log('🚦 DashboardContainer: Checking redirect conditions:', {
+      authLoading,
       rolesLoading, 
       isAuthenticated,
-      userProfile: userProfile?.id,
+      userProfileId: userProfile?.id,
       isAdminResult: isAdmin()
     });
 
-    if (!loading && !rolesLoading && isAuthenticated && userProfile) {
+    // Only proceed if all loading is complete and user is authenticated
+    if (!authLoading && !rolesLoading && isAuthenticated && userProfile) {
       if (!isAdmin()) {
-        console.log('🔄 Redirecting non-admin user to profile:', userProfile.id);
+        console.log('🔄 DashboardContainer: Redirecting non-admin user to profile:', userProfile.id);
         navigate(`/dashboard/user-profile/${userProfile.id}`);
       } else {
-        console.log('👑 Admin user, staying on dashboard');
+        console.log('👑 DashboardContainer: Admin user confirmed, staying on dashboard');
       }
     }
-  }, [loading, rolesLoading, isAuthenticated, userProfile, isAdmin, navigate]);
+  }, [authLoading, rolesLoading, isAuthenticated, userProfile, isAdmin, navigate]);
 
-  if (loading || rolesLoading) {
-    console.log('⏳ Loading state:', { loading, rolesLoading });
+  // Show loading while any authentication process is happening
+  if (authLoading || rolesLoading) {
+    console.log('⏳ DashboardContainer: Loading state:', { authLoading, rolesLoading });
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -55,13 +57,13 @@ export const DashboardContainer = () => {
   }
 
   if (!isAuthenticated) {
-    console.log('🚫 Not authenticated, redirecting to auth');
+    console.log('🚫 DashboardContainer: Not authenticated, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 
   // Show dashboard for admin users, redirect will happen in useEffect for non-admin
   if (!isAdmin() && userProfile) {
-    console.log('🔄 Non-admin detected, should redirect...');
+    console.log('🔄 DashboardContainer: Non-admin detected, should redirect...');
     return null; // Let useEffect handle the redirect
   }
 
@@ -69,7 +71,7 @@ export const DashboardContainer = () => {
     await signOut();
   };
 
-  console.log('✅ Rendering dashboard for admin user');
+  console.log('✅ DashboardContainer: Rendering dashboard for admin user');
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
