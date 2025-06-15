@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
@@ -14,7 +14,6 @@ import { StrengthTests } from "@/components/tests/StrengthTests";
 import { EnduranceTests } from "@/components/tests/EnduranceTests";
 import { JumpTests } from "@/components/tests/JumpTests";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 import { toast } from "sonner";
 
 interface User {
