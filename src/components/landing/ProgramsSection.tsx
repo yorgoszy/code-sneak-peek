@@ -104,7 +104,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
                   >
                     <div 
-                      className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group h-full flex flex-col"
+                      className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group h-[400px] flex flex-col"
                       onClick={() => setSelectedProgram(program)}
                     >
                       <div className="relative h-48 overflow-hidden">
@@ -121,10 +121,10 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         </div>
                       </div>
                       <div className="p-6 flex-1 flex flex-col relative">
-                        <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'Robert, sans-serif' }}>
+                        <h3 className="text-xl font-bold text-gray-900 mb-3 min-h-[3rem] flex items-start" style={{ fontFamily: 'Robert, sans-serif' }}>
                           {program.title}
                         </h3>
-                        <p className="text-gray-600 text-sm leading-relaxed flex-1">
+                        <p className="text-gray-600 text-sm leading-relaxed flex-1 overflow-hidden">
                           {program.description}
                         </p>
                         <div className="mt-4 flex items-center justify-between">
