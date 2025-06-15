@@ -8,150 +8,84 @@ export const useTestResults = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // ΝΕΑ ΛΟΓΙΚΗ: συγκεντρώνει τα sessions και τα αντίστοιχα test_data με joined queries
   const fetchAllTests = async () => {
     try {
       setLoading(true);
-      
-      // Fetch strength tests with attempt count
-      const { data: strengthTests } = await supabase
-        .from('strength_test_sessions')
+
+      // Φέρνουμε όλα τα sessions, μαζί με user info
+      const { data: sessions, error: sessionsError } = await supabase
+        .from('test_sessions')
         .select(`
           id,
-          test_date,
-          notes,
           user_id,
-          strength_test_attempts(id)
-        `)
-        .order('test_date', { ascending: false });
-
-      // Fetch anthropometric tests
-      const { data: anthropometricTests } = await supabase
-        .from('anthropometric_test_sessions')
-        .select(`
-          id,
           test_date,
           notes,
-          user_id
+          app_users(name)
         `)
         .order('test_date', { ascending: false });
 
-      // Fetch functional tests
-      const { data: functionalTests } = await supabase
-        .from('functional_test_sessions')
-        .select(`
-          id,
-          test_date,
-          notes,
-          user_id
-        `)
-        .order('test_date', { ascending: false });
+      if (sessionsError) {
+        throw sessionsError;
+      }
 
-      // Fetch endurance tests
-      const { data: enduranceTests } = await supabase
-        .from('endurance_test_sessions')
-        .select(`
-          id,
-          test_date,
-          notes,
-          user_id
-        `)
-        .order('test_date', { ascending: false });
+      // Για κάθε session, βρίσκουμε ποιο test_data έχει
+      // και το χαρακτηρίζουμε ως ανάλογο τύπο τεστ αν υπάρχουν δεδομένα
+      let results: TestResult[] = [];
+      for (const session of sessions || []) {
+        const promises = [
+          supabase.from('anthropometric_test_data').select('id').eq('test_session_id', session.id).maybeSingle(),
+          supabase.from('functional_test_data').select('id').eq('test_session_id', session.id).maybeSingle(),
+          supabase.from('endurance_test_data').select('id').eq('test_session_id', session.id).maybeSingle(),
+          supabase.from('jump_test_data').select('id').eq('test_session_id', session.id).maybeSingle(),
+          supabase.from('strength_test_data').select('id,exercise_id').eq('test_session_id', session.id)
+        ];
+        const [
+          { data: anthro },
+          { data: func },
+          { data: endur },
+          { data: jump },
+          { data: strengthList },
+        ] = await Promise.all(promises);
 
-      // Fetch jump tests
-      const { data: jumpTests } = await supabase
-        .from('jump_test_sessions')
-        .select(`
-          id,
-          test_date,
-          notes,
-          user_id
-        `)
-        .order('test_date', { ascending: false });
+        const userName = session.app_users?.name || "Άγνωστος Χρήστης";
+        const common = {
+          id: session.id,
+          test_date: session.test_date,
+          user_name: userName,
+          user_id: session.user_id,
+          notes: session.notes,
+          table_name: "test_sessions"
+        };
 
-      // Get all unique user IDs
-      const allUserIds = new Set<string>();
-      
-      strengthTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
-      anthropometricTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
-      functionalTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
-      enduranceTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
-      jumpTests?.forEach(test => test.user_id && allUserIds.add(test.user_id));
+        if (anthro) {
+          results.push({ ...common, test_type: "Σωματομετρικά" });
+        }
+        if (func) {
+          results.push({ ...common, test_type: "Λειτουργικότητα" });
+        }
+        if (endur) {
+          results.push({ ...common, test_type: "Αντοχή" });
+        }
+        if (jump) {
+          results.push({ ...common, test_type: "Άλματα" });
+        }
+        if (strengthList && strengthList.length > 0) {
+          // Μετράμε τις unique ασκήσεις για strength
+          const exerciseIds = new Set(strengthList.map(e => e.exercise_id));
+          results.push({ ...common, test_type: "Δύναμη", exercise_count: exerciseIds.size });
+        }
+        // Εάν το session δεν έχει κανένα, δεν εμφανίζεται στη λίστα
+      }
 
-      // Fetch user names
-      const { data: users } = await supabase
-        .from('app_users')
-        .select('id, name')
-        .in('id', Array.from(allUserIds));
+      // Φιλτράρουμε για να μην εμφανίζεται το ίδιο test_type δύο φορές για το ίδιο session
+      // Αλλά εάν θέλεις να τα εμφανίζεις όλα, μπορούμε να το κρατήσουμε (σου αφήνω αυτή τη λογική - μπορείς να μου ζητήσεις να εμφανίζω μόνο ένα τύπο ανά session)
 
-      const userMap = new Map(users?.map(user => [user.id, user.name]) || []);
-
-      console.log('Raw test data:', {
-        strengthTests,
-        anthropometricTests,
-        functionalTests,
-        enduranceTests,
-        jumpTests,
-        users,
-        userMap
-      });
-
-      // Combine all tests
-      const allTests: TestResult[] = [
-        ...(strengthTests?.map(test => ({
-          id: test.id,
-          test_date: test.test_date,
-          test_type: 'Δύναμη',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
-          user_id: test.user_id,
-          notes: test.notes,
-          exercise_count: test.strength_test_attempts?.length || 0,
-          table_name: 'strength_test_sessions'
-        })) || []),
-        ...(anthropometricTests?.map(test => ({
-          id: test.id,
-          test_date: test.test_date,
-          test_type: 'Σωματομετρικά',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
-          user_id: test.user_id,
-          notes: test.notes,
-          table_name: 'anthropometric_test_sessions'
-        })) || []),
-        ...(functionalTests?.map(test => ({
-          id: test.id,
-          test_date: test.test_date,
-          test_type: 'Λειτουργικότητα',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
-          user_id: test.user_id,
-          notes: test.notes,
-          table_name: 'functional_test_sessions'
-        })) || []),
-        ...(enduranceTests?.map(test => ({
-          id: test.id,
-          test_date: test.test_date,
-          test_type: 'Αντοχή',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
-          user_id: test.user_id,
-          notes: test.notes,
-          table_name: 'endurance_test_sessions'
-        })) || []),
-        ...(jumpTests?.map(test => ({
-          id: test.id,
-          test_date: test.test_date,
-          test_type: 'Άλματα',
-          user_name: userMap.get(test.user_id) || 'Άγνωστος Χρήστης',
-          user_id: test.user_id,
-          notes: test.notes,
-          table_name: 'jump_test_sessions'
-        })) || [])
-      ];
-
-      // Sort by date (newest first)
-      allTests.sort((a, b) => new Date(b.test_date).getTime() - new Date(a.test_date).getTime());
-      
-      console.log('Combined tests:', allTests);
-      setTestResults(allTests);
+      // Ταξινομούμε κατά ημερομηνία (newest first)
+      results.sort((a, b) => new Date(b.test_date).getTime() - new Date(a.test_date).getTime());
+      setTestResults(results);
     } catch (error) {
-      console.error('Error fetching tests:', error);
+      console.error('Error fetching unified test sessions:', error);
       toast({
         title: "Σφάλμα",
         description: "Σφάλμα κατά τη φόρτωση των τεστ",
@@ -162,44 +96,37 @@ export const useTestResults = () => {
     }
   };
 
-  const deleteTest = async (testId: string, tableName: string) => {
+  // Ενημερωμένη διαγραφή: διαγράφουμε τα δεδομένα που σχετίζονται με αυτό το session και το test_type
+  const deleteTest = async (sessionId: string, testType: string) => {
     try {
       let error;
-      
-      // Use specific table names instead of dynamic ones
-      if (tableName === 'strength_test_sessions') {
-        const result = await supabase
-          .from('strength_test_sessions')
-          .delete()
-          .eq('id', testId);
-        error = result.error;
-      } else if (tableName === 'anthropometric_test_sessions') {
-        const result = await supabase
-          .from('anthropometric_test_sessions')
-          .delete()
-          .eq('id', testId);
-        error = result.error;
-      } else if (tableName === 'functional_test_sessions') {
-        const result = await supabase
-          .from('functional_test_sessions')
-          .delete()
-          .eq('id', testId);
-        error = result.error;
-      } else if (tableName === 'endurance_test_sessions') {
-        const result = await supabase
-          .from('endurance_test_sessions')
-          .delete()
-          .eq('id', testId);
-        error = result.error;
-      } else if (tableName === 'jump_test_sessions') {
-        const result = await supabase
-          .from('jump_test_sessions')
-          .delete()
-          .eq('id', testId);
-        error = result.error;
+
+      if (testType === "Δύναμη") {
+        // Διαγράφει όλα τα related data (προαιρετικά μπορείς να προσθέσεις cascade μέσω triggers στη ΒΔ)
+        await supabase.from('strength_test_data').delete().eq('test_session_id', sessionId);
+      } else if (testType === "Σωματομετρικά") {
+        await supabase.from('anthropometric_test_data').delete().eq('test_session_id', sessionId);
+      } else if (testType === "Λειτουργικότητα") {
+        await supabase.from('functional_test_data').delete().eq('test_session_id', sessionId);
+      } else if (testType === "Αντοχή") {
+        await supabase.from('endurance_test_data').delete().eq('test_session_id', sessionId);
+      } else if (testType === "Άλματα") {
+        await supabase.from('jump_test_data').delete().eq('test_session_id', sessionId);
       }
 
-      if (error) throw error;
+      // Αν μετά τη διαγραφή δεν υπάρχουν άλλα test_data για το session, διαγράφουμε και το ίδιο το session
+      // Φέρε τα σχετικά test_data
+      const [a, b, c, d, e] = await Promise.all([
+        supabase.from('anthropometric_test_data').select('id').eq('test_session_id', sessionId).maybeSingle(),
+        supabase.from('functional_test_data').select('id').eq('test_session_id', sessionId).maybeSingle(),
+        supabase.from('endurance_test_data').select('id').eq('test_session_id', sessionId).maybeSingle(),
+        supabase.from('jump_test_data').select('id').eq('test_session_id', sessionId).maybeSingle(),
+        supabase.from('strength_test_data').select('id').eq('test_session_id', sessionId)
+      ]);
+      const hasAny = !!(a.data || b.data || c.data || d.data || (e.data && e.data.length));
+      if (!hasAny) {
+        await supabase.from('test_sessions').delete().eq('id', sessionId);
+      }
 
       toast({
         title: "Επιτυχία",
@@ -225,6 +152,6 @@ export const useTestResults = () => {
     testResults,
     loading,
     deleteTest,
-    refetch: fetchAllTests
+    refetch: fetchAllTests,
   };
 };
