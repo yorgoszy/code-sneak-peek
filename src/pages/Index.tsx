@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,11 +34,11 @@ const Index = () => {
   const correctedTranslations = {
     ...translations,
     heroTitle: language === 'el' ? 'Το ταξίδι του πρωταθλητή' : 'The champion\'s journey',
-    heroSubtitle: language === 'el' ? 'Ξεκινάει εδώ' : 'starts here',
+    heroSubtitle: language === 'el' ? 'Ξεκινάει εδώ' : 'Starts here',
     programs: language === 'el' ? 'προγράμματα' : 'programs',
     explorePrograms: language === 'el' ? 'Εξερεύνηση όλων των προγραμμάτων' : 'Explore all programs',
     supportingYour: language === 'el' ? 'Υποστηρίζοντας το' : 'Supporting your',
-    athleticJourney: language === 'el' ? 'αθλητικό σας ταξίδι' : 'athletic journey',
+    athleticJourney: language === 'el' ? 'Αθλητικό σας ταξίδι' : 'Athletic journey',
     headCoach: language === 'el' ? 'Κύριος προπονητής' : 'Head coach',
     ourVision: language === 'el' ? 'Το όραμά μας' : 'Our vision',
     trainingMethodology: language === 'el' ? 'Μεθοδολογία προπόνησης' : 'Training methodology'
