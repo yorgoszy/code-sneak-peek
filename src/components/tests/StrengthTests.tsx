@@ -5,23 +5,23 @@ interface StrengthTestsProps {
   selectedAthleteId: string;
   selectedDate: string;
   hideSubmitButton?: boolean;
-  // callback για reset (θα το χρειαστούμε για reset μετά την αποθήκευση από έξω)
-  onReset?: () => void;
+  // Instead of onReset, use registerReset for lifting the resetForm function
+  registerReset?: (reset: () => void) => void;
 }
 
 export const StrengthTests = ({
   selectedAthleteId,
   selectedDate,
   hideSubmitButton = false,
-  onReset
+  registerReset
 }: StrengthTestsProps) => {
-  // Δεν υπάρχει πλέον handleRecord / κουμπί αποθήκευσης!
+  // There is no save button in this component!
   return (
     <div className="space-y-4">
       <StrengthTestSession
         selectedAthleteId={selectedAthleteId}
         selectedDate={selectedDate}
-        onReset={onReset}
+        registerReset={registerReset}
       />
     </div>
   );

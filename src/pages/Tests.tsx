@@ -130,7 +130,7 @@ const Tests = () => {
   });
 
   // Νέο ref για strength session state (φορμα):
-  const strengthSessionRef = useRef<any>(null);
+  const strengthSessionRef = useRef<any>({});
 
   useEffect(() => {
     fetchUsers();
@@ -723,16 +723,13 @@ const Tests = () => {
               </TabsContent>
 
               <TabsContent value="strength" className="mt-6">
-                {/* StrengthTests ΔΕΝ ΕΧΕΙ SUBMIT BUTTON πλέον */}
+                {/* StrengthTests: registerReset prop */}
                 <StrengthTests
                   selectedAthleteId={selectedAthleteId}
                   selectedDate={selectedDate}
-                  // Παρέχουμε callback για reset (οπότε το ref.current θα έχει τα combo/callbacks)
-                  onReset={resetFunction => { 
-                    strengthSessionRef.current = { 
-                      ...strengthSessionRef.current, 
-                      reset: resetFunction 
-                    };
+                  registerReset={(resetFn: () => void) => {
+                    if (!strengthSessionRef.current) strengthSessionRef.current = {};
+                    strengthSessionRef.current.reset = resetFn;
                   }}
                 />
               </TabsContent>

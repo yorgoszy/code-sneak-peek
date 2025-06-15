@@ -1,3 +1,5 @@
+
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SessionForm } from "./strength/SessionForm";
 import { SessionsList } from "./strength/SessionsList";
@@ -6,14 +8,14 @@ import { useStrengthTestData } from "./strength/useStrengthTestData";
 interface StrengthTestSessionProps {
   selectedAthleteId: string;
   selectedDate: string;
-  // Νέο: callback για reset (χρησιμοποιείται για clear από το parent Tests)
-  onReset?: () => void;
+  // Instead of onReset, now registerReset for lifting the reset function!
+  registerReset?: (reset: () => void) => void;
 }
 
 export const StrengthTestSession = ({
   selectedAthleteId,
   selectedDate,
-  onReset
+  registerReset
 }: StrengthTestSessionProps) => {
   const {
     exercises,
@@ -27,13 +29,13 @@ export const StrengthTestSession = ({
     editSession
   } = useStrengthTestData(selectedAthleteId, selectedDate);
 
-  // Wrapper για να μπορεί το parent να κάνει reset το form εξωτερικά
-  React.useEffect(() => {
-    if (onReset) {
-      onReset(() => resetForm());
+  // Lifting up the resetForm function to the parent through registerReset
+  useEffect(() => {
+    if (registerReset) {
+      registerReset(resetForm);
     }
     // eslint-disable-next-line
-  }, [onReset]);
+  }, [registerReset, resetForm]);
 
   const addExerciseTest = () => {
     const newExerciseTest = {
