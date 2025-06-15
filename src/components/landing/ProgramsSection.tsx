@@ -104,10 +104,10 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
                   >
                     <div 
-                      className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group h-[400px] flex flex-col"
+                      className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group h-[450px] flex flex-col"
                       onClick={() => setSelectedProgram(program)}
                     >
-                      <div className="relative h-48 overflow-hidden">
+                      <div className="relative h-48 overflow-hidden flex-shrink-0">
                         <img 
                           src={program.image} 
                           alt={program.title}
