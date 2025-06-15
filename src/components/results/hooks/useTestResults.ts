@@ -3,36 +3,49 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TestResult } from "../types";
 
+/**
+ * Helper to index users by id for easy lookup
+ */
+const useUserNamesMap = () => {
+  const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map());
+  useEffect(() => {
+    async function fetchUsers() {
+      // Only fetch 'id' and 'name'
+      const { data: users, error } = await supabase
+        .from('app_users')
+        .select('id, name');
+      if (!error && users) {
+        setUsersMap(new Map(users.map(u => [u.id, u.name])));
+      }
+    }
+    fetchUsers();
+  }, []);
+  return usersMap;
+};
+
 export const useTestResults = () => {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const usersMap = useUserNamesMap();
 
-  // ΝΕΑ ΛΟΓΙΚΗ: συγκεντρώνει τα sessions και τα αντίστοιχα test_data με joined queries
   const fetchAllTests = async () => {
     try {
       setLoading(true);
 
-      // Φέρνουμε όλα τα sessions, μαζί με user info
+      // 1. Φέρνουμε όλα τα test_sessions (χωρίς join)
       const { data: sessions, error: sessionsError } = await supabase
         .from('test_sessions')
-        .select(`
-          id,
-          user_id,
-          test_date,
-          notes,
-          app_users(name)
-        `)
+        .select('id, user_id, test_date, notes')
         .order('test_date', { ascending: false });
 
       if (sessionsError) {
         throw sessionsError;
       }
 
-      // Για κάθε session, βρίσκουμε ποιο test_data έχει
-      // και το χαρακτηρίζουμε ως ανάλογο τύπο τεστ αν υπάρχουν δεδομένα
       let results: TestResult[] = [];
       for (const session of sessions || []) {
+        // Για κάθε session, fetch individual test types
         const promises = [
           supabase.from('anthropometric_test_data').select('id').eq('test_session_id', session.id).maybeSingle(),
           supabase.from('functional_test_data').select('id').eq('test_session_id', session.id).maybeSingle(),
@@ -45,10 +58,15 @@ export const useTestResults = () => {
           { data: func },
           { data: endur },
           { data: jump },
-          { data: strengthList },
+          { data: strengthListData },
         ] = await Promise.all(promises);
 
-        const userName = session.app_users?.name || "Άγνωστος Χρήστης";
+        // user_name: Try to map via usersMap, else fallback to user_id
+        const userName =
+          usersMap && typeof usersMap.get === "function"
+            ? usersMap.get(session.user_id) || "Άγνωστος Χρήστης"
+            : session.user_id || "Άγνωστος Χρήστης";
+
         const common = {
           id: session.id,
           test_date: session.test_date,
@@ -70,18 +88,14 @@ export const useTestResults = () => {
         if (jump) {
           results.push({ ...common, test_type: "Άλματα" });
         }
-        if (strengthList && strengthList.length > 0) {
-          // Μετράμε τις unique ασκήσεις για strength
-          const exerciseIds = new Set(strengthList.map(e => e.exercise_id));
+        // strengthListData is always array (never object/null)
+        if (Array.isArray(strengthListData) && strengthListData.length > 0) {
+          // Count unique exercises for strength
+          const exerciseIds = new Set(strengthListData.map(e => e.exercise_id));
           results.push({ ...common, test_type: "Δύναμη", exercise_count: exerciseIds.size });
         }
-        // Εάν το session δεν έχει κανένα, δεν εμφανίζεται στη λίστα
       }
 
-      // Φιλτράρουμε για να μην εμφανίζεται το ίδιο test_type δύο φορές για το ίδιο session
-      // Αλλά εάν θέλεις να τα εμφανίζεις όλα, μπορούμε να το κρατήσουμε (σου αφήνω αυτή τη λογική - μπορείς να μου ζητήσεις να εμφανίζω μόνο ένα τύπο ανά session)
-
-      // Ταξινομούμε κατά ημερομηνία (newest first)
       results.sort((a, b) => new Date(b.test_date).getTime() - new Date(a.test_date).getTime());
       setTestResults(results);
     } catch (error) {
@@ -96,13 +110,10 @@ export const useTestResults = () => {
     }
   };
 
-  // Ενημερωμένη διαγραφή: διαγράφουμε τα δεδομένα που σχετίζονται με αυτό το session και το test_type
+  // Οι υπόλοιπες λειτουργίες διαγραφής/επαναφόρτωσης μένουν ίδιες
   const deleteTest = async (sessionId: string, testType: string) => {
     try {
-      let error;
-
       if (testType === "Δύναμη") {
-        // Διαγράφει όλα τα related data (προαιρετικά μπορείς να προσθέσεις cascade μέσω triggers στη ΒΔ)
         await supabase.from('strength_test_data').delete().eq('test_session_id', sessionId);
       } else if (testType === "Σωματομετρικά") {
         await supabase.from('anthropometric_test_data').delete().eq('test_session_id', sessionId);
@@ -114,8 +125,7 @@ export const useTestResults = () => {
         await supabase.from('jump_test_data').delete().eq('test_session_id', sessionId);
       }
 
-      // Αν μετά τη διαγραφή δεν υπάρχουν άλλα test_data για το session, διαγράφουμε και το ίδιο το session
-      // Φέρε τα σχετικά test_data
+      // After delete, check if no other test_data left, delete test_session
       const [a, b, c, d, e] = await Promise.all([
         supabase.from('anthropometric_test_data').select('id').eq('test_session_id', sessionId).maybeSingle(),
         supabase.from('functional_test_data').select('id').eq('test_session_id', sessionId).maybeSingle(),
@@ -123,7 +133,7 @@ export const useTestResults = () => {
         supabase.from('jump_test_data').select('id').eq('test_session_id', sessionId).maybeSingle(),
         supabase.from('strength_test_data').select('id').eq('test_session_id', sessionId)
       ]);
-      const hasAny = !!(a.data || b.data || c.data || d.data || (e.data && e.data.length));
+      const hasAny = !!(a.data || b.data || c.data || d.data || (Array.isArray(e.data) && e.data.length));
       if (!hasAny) {
         await supabase.from('test_sessions').delete().eq('id', sessionId);
       }
@@ -146,7 +156,8 @@ export const useTestResults = () => {
 
   useEffect(() => {
     fetchAllTests();
-  }, []);
+    // eslint-disable-next-line
+  }, [usersMap]);
 
   return {
     testResults,
