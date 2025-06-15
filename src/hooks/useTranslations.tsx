@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 
 export const useTranslations = () => {
@@ -109,11 +108,11 @@ export const useTranslations = () => {
       oneByOneDesc: "Personalized coaching for maximum results",
       athletePerformance: "Athlete Performance",
       athletePerformanceDesc: "Elite Strength & Conditioning Strategies",
-      supportingYour: "Supporting Your",
-      athleticJourney: "Athletic Journey",
-      headCoach: "Head Coach",
-      ourVision: "Our Vision",
-      trainingMethodology: "Training Methodology",
+      supportingYour: "Supporting your",
+      athleticJourney: "Athletic journey",
+      headCoach: "Head coach",
+      ourVision: "Our vision",
+      trainingMethodology: "Training methodology",
       coachName: "Georgios Zygouris",
       coachDescription: "My name is Georgios Zygouris, and I am a graduate of the School of Physical Education and Sport Science at the Aristotle University of Thessaloniki (2023). I am a professional Muay Thai athlete and a certified coach since 2024. Through my dual perspective as both competitor and educator, I've established a training environment where children, teenagers, and adults don't just learn movement—they discover their strengths, build character through sport, and find their unique position in the athletic world.",
       visionDescription: "Our Vision\nCombining scientific knowledge with real-world experience, we apply skill development and performance-focused training tailored to each age and stage. We see movement as more than physical — it's self-expression, confidence, and the power to grow through challenge. Our mission is to help young people trust the process and explore their potential in a safe, supportive space.",
