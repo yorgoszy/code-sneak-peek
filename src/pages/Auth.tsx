@@ -49,15 +49,15 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.user) {
-        // Create user profile in app_users table
+        // Create user profile in app_users table - now automatically active and general
         const { error: profileError } = await supabase
           .from('app_users')
           .insert({
             auth_user_id: data.user.id,
             name: name,
             email: email,
-            role: 'user', // Default role as user, not admin
-            user_status: 'pending' // Pending until admin approval
+            role: 'general', // Always general by default
+            user_status: 'active' // Always active by default
           });
 
         if (profileError) {
@@ -70,7 +70,7 @@ const Auth = () => {
         } else {
           toast({
             title: "Εγγραφή ολοκληρώθηκε!",
-            description: "Ελέγξτε το email σας για επιβεβαίωση. Ένας διαχειριστής θα ενεργοποιήσει τον λογαριασμό σας.",
+            description: "Ελέγξτε το email σας για επιβεβαίωση. Μπορείτε να συνδεθείτε αμέσως.",
           });
         }
       }
@@ -295,7 +295,7 @@ const Auth = () => {
                       {isLoading ? "Εγγραφή..." : "Εγγραφή"}
                     </Button>
                     <div className="text-xs text-gray-600 text-center">
-                      Μετά την εγγραφή, ένας διαχειριστής θα ενεργοποιήσει τον λογαριασμό σας.
+                      Μετά την εγγραφή, μπορείτε να συνδεθείτε αμέσως.
                     </div>
                   </form>
                 </TabsContent>
