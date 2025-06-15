@@ -30,6 +30,13 @@ const Index = () => {
     }
   };
 
+  const scrollToPrograms = () => {
+    const programsSection = document.getElementById('programs');
+    if (programsSection) {
+      programsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   // Override some translations with corrected capitalization
   const correctedTranslations = {
     ...translations,
@@ -158,6 +165,24 @@ const Index = () => {
       <ResultsSection 
         translations={correctedTranslations}
       />
+
+      {/* Call to Action Section */}
+      <section className="py-16 bg-white text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-black mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+            Έτοιμος να ξεκινήσεις;
+          </h2>
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+            Ανακάλυψε το πρόγραμμα που ταιριάζει στους στόχους σου και ξεκίνα το ταξίδι προς την κορυφαία απόδοση.
+          </p>
+          <button 
+            onClick={scrollToPrograms}
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black px-8 py-3 font-semibold transition-colors"
+          >
+            ΞΕΚΙΝΑ ΤΩΡΑ
+          </button>
+        </div>
+      </section>
 
       <ContactSection 
         translations={correctedTranslations}
