@@ -42,72 +42,87 @@ export const useEditUserDialog = (user: AppUser | null, isOpen: boolean) => {
     if (!user) return;
 
     setLoading(true);
-    console.log('🔄 Updating user:', user.id, { role, userStatus });
+    console.log('🔄 Updating user:', user.id, { 
+      name: name.trim(),
+      email: email.trim(),
+      role,
+      userStatus,
+      phone: phone.trim() || null,
+      category: category.trim() || null,
+      birthDate: birthDate || null,
+      photoUrl: photoUrl || null
+    });
 
     try {
+      // Update app_users table
       const userData: any = {
         name: name.trim(),
         email: email.trim(),
         role: role || 'general',
-        user_status: userStatus || 'active'
+        user_status: userStatus || 'active',
+        phone: phone.trim() || null,
+        category: category.trim() || null,
+        birth_date: birthDate || null,
+        photo_url: photoUrl || null
       };
-
-      userData.phone = phone.trim() || null;
-      userData.category = category.trim() || null;
-      userData.birth_date = birthDate || null;
-      userData.photo_url = photoUrl || null;
 
       console.log('📝 Updating app_users with data:', userData);
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('app_users')
         .update(userData)
         .eq('id', user.id);
 
-      if (error) {
-        console.error('❌ Error updating user in app_users:', error);
+      if (updateError) {
+        console.error('❌ Error updating user in app_users:', updateError);
         toast({
           variant: "destructive",
           title: "Σφάλμα",
-          description: "Δεν ήταν δυνατή η ενημέρωση του χρήστη",
+          description: `Δεν ήταν δυνατή η ενημέρωση του χρήστη: ${updateError.message}`,
         });
         return;
       }
 
       console.log('✅ User updated successfully in app_users');
 
-      if (role !== user.role) {
-        console.log('🎭 Role changed, updating user_roles table');
+      // Handle role changes in user_roles table
+      if (role && role !== user.role) {
+        console.log('🎭 Role changed from', user.role, 'to', role);
         
+        // Find the user ID to use for user_roles table
+        const userIdForRoles = user.auth_user_id || user.id;
+        console.log('👤 Using user ID for roles:', userIdForRoles);
+
+        // Delete existing role
         const { error: deleteError } = await supabase
           .from('user_roles')
           .delete()
-          .eq('user_id', user.auth_user_id || user.id);
+          .eq('user_id', userIdForRoles);
 
         if (deleteError) {
           console.error('❌ Error deleting old role:', deleteError);
+          // Don't return here, continue with insert
         } else {
-          console.log('✅ Old role deleted');
+          console.log('✅ Old role deleted successfully');
         }
 
-        if (user.auth_user_id || user.id) {
-          const { error: insertError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: user.auth_user_id || user.id,
-              role: role as any
-            });
+        // Insert new role
+        const { error: insertError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userIdForRoles,
+            role: role as 'admin' | 'trainer' | 'athlete' | 'general' | 'parent'
+          });
 
-          if (insertError) {
-            console.error('❌ Error inserting new role:', insertError);
-            toast({
-              variant: "destructive",
-              title: "Προειδοποίηση",
-              description: "Ο χρήστης ενημερώθηκε αλλά μπορεί να υπάρχει πρόβλημα με τον ρόλο",
-            });
-          } else {
-            console.log('✅ New role inserted');
-          }
+        if (insertError) {
+          console.error('❌ Error inserting new role:', insertError);
+          toast({
+            variant: "destructive",
+            title: "Προειδοποίηση",
+            description: `Ο χρήστης ενημερώθηκε αλλά υπήρξε πρόβλημα με τον ρόλο: ${insertError.message}`,
+          });
+        } else {
+          console.log('✅ New role inserted successfully');
         }
       }
 
@@ -115,6 +130,7 @@ export const useEditUserDialog = (user: AppUser | null, isOpen: boolean) => {
         title: "Επιτυχία",
         description: "Ο χρήστης ενημερώθηκε επιτυχώς",
       });
+      
       onUserUpdated();
       onClose();
     } catch (error) {
