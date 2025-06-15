@@ -147,6 +147,7 @@ const Tests = () => {
   const getOrCreateTestSession = async () => {
     if (!selectedAthleteId || !selectedDate) {
       toast.error("Παρακαλώ επιλέξτε αθλητή & ημερομηνία");
+      console.log("❌ Δεν έχει οριστεί selectedAthleteId/selectedDate");
       return null;
     }
     // Check if test_session already exists for this user/date
@@ -160,10 +161,12 @@ const Tests = () => {
 
     if (searchError) {
       toast.error("Σφάλμα αναζήτησης test session");
+      console.log("❌ Σφάλμα search test_sessions", searchError);
       return null;
     }
 
     if (existingSession) {
+      console.log("✔️ Υπάρχει ήδη test_session:", existingSession);
       return existingSession;
     }
 
@@ -179,8 +182,10 @@ const Tests = () => {
 
     if (sessionError) {
       toast.error("Σφάλμα δημιουργίας test session");
+      console.log("❌ Σφάλμα insert test_session", sessionError);
       return null;
     }
+    console.log("✅ test_session ΝΕΟ (id):", session?.id);
     return session;
   };
 
@@ -437,6 +442,7 @@ const Tests = () => {
   const saveStrengthData = async () => {
     if (!selectedAthleteId) {
       toast.error("Παρακαλώ επιλέξτε αθλητή");
+      console.log("❌ No selectedAthleteId για Strength");
       return;
     }
     const strengthForm = strengthSessionRef.current;
@@ -447,13 +453,20 @@ const Tests = () => {
       strengthForm.exercise_tests.length === 0 ||
       !strengthForm.exercise_tests.some(et => et.exercise_id && et.attempts.length > 0)
     ) {
+      console.log("❌ Δεν υπάρχουν strength δεδομένα για αποθήκευση", strengthForm);
       return;
     }
 
     try {
       // Βρες/Δημιούργησε test_session
       const testSession = await getOrCreateTestSession();
-      if (!testSession) return;
+      if (!testSession) {
+        console.log("❌ Δεν βρέθηκε/δημιουργήθηκε testSession για Strength");
+        return;
+      }
+
+      // Προσθέτω log
+      console.log("⏺ strength test_session_id:", testSession.id, strengthForm);
 
       // Σβήσε ό,τι strength_test_data υπάρχει για το session (θα γίνει replace!)
       await supabase
@@ -461,7 +474,6 @@ const Tests = () => {
         .delete()
         .eq('test_session_id', testSession.id);
 
-      // Φτιάξε τη λίστα δεδομένων από τη φόρμα (1 row ανά attempt ανά άσκηση)
       const toSave: any[] = [];
       strengthForm.exercise_tests.forEach(et => {
         if (!et.exercise_id) return;
@@ -487,6 +499,7 @@ const Tests = () => {
         if (strengthSessionRef.current) {
           strengthSessionRef.current = { exercise_tests: [] };
         }
+        console.log("✔️ Αποθηκεύτηκε strength_test_data σε test_session", testSession.id);
       }
     } catch (error) {
       console.error('Error saving strength data:', error);
