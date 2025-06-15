@@ -62,30 +62,40 @@ const Users = () => {
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
+      console.log('📊 Fetching users...');
       const { data, error } = await supabase
         .from('app_users')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching users:', error);
+        console.error('❌ Error fetching users:', error);
       } else {
+        console.log('✅ Users fetched:', data?.length);
         setUsers(data || []);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('💥 Error:', error);
     } finally {
       setLoadingUsers(false);
     }
   };
 
   useEffect(() => {
-    if (isAdmin()) {
+    console.log('👥 Users page useEffect:', {
+      isAdminResult: isAdmin(),
+      rolesLoading,
+      userProfile: userProfile?.id
+    });
+
+    if (!rolesLoading && isAdmin()) {
+      console.log('👑 Admin confirmed, fetching users');
       fetchUsers();
     }
-  }, [isAdmin]);
+  }, [isAdmin, rolesLoading]);
 
   if (loading || rolesLoading) {
+    console.log('⏳ Users page loading:', { loading, rolesLoading });
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -96,38 +106,46 @@ const Users = () => {
   }
 
   if (!isAuthenticated) {
+    console.log('🚫 Not authenticated on Users page');
     return <Navigate to="/auth" replace />;
   }
 
   // Only allow admin users to access the users page
   if (!isAdmin()) {
+    console.log('🔄 Non-admin trying to access Users page, redirecting to profile');
     return <Navigate to={`/dashboard/user-profile/${userProfile?.id}`} replace />;
   }
 
   const handleEditUser = (user: AppUser) => {
+    console.log('✏️ Edit user:', user.id);
     setSelectedUser(user);
     setEditUserDialogOpen(true);
   };
 
   const handleDeleteUser = (user: AppUser) => {
+    console.log('🗑️ Delete user:', user.id);
     setSelectedUser(user);
     setDeleteUserDialogOpen(true);
   };
 
   const handleViewUser = (user: AppUser) => {
+    console.log('👁️ View user:', user.id);
     setSelectedUser(user);
     setUserProfileDialogOpen(true);
   };
 
   const handleUserCreated = () => {
+    console.log('✅ User created, refreshing list');
     fetchUsers();
   };
 
   const handleUserUpdated = () => {
+    console.log('✅ User updated, refreshing list');
     fetchUsers();
   };
 
   const handleUserDeleted = () => {
+    console.log('✅ User deleted, refreshing list');
     fetchUsers();
   };
 
@@ -178,6 +196,8 @@ const Users = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  console.log('👑 Rendering Users page for admin');
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

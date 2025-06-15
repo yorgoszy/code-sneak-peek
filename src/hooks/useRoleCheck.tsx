@@ -14,6 +14,7 @@ export const useRoleCheck = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       if (!user) {
+        console.log('🔍 No user found, clearing roles');
         setUserRoles([]);
         setUserProfile(null);
         setLoading(false);
@@ -21,6 +22,8 @@ export const useRoleCheck = () => {
       }
 
       try {
+        console.log('🔍 Fetching user profile for:', user.id);
+        
         // Fetch user profile from app_users table
         const { data: profile, error } = await supabase
           .from('app_users')
@@ -29,19 +32,22 @@ export const useRoleCheck = () => {
           .single();
 
         if (error) {
-          console.error('Error fetching user profile:', error);
+          console.error('❌ Error fetching user profile:', error);
           setUserRoles([]);
           setUserProfile(null);
         } else if (profile) {
+          console.log('✅ User profile found:', profile);
           setUserProfile(profile);
           // Set role based on the user's role in the database
           setUserRoles([profile.role as UserRole]);
+          console.log('🎭 User roles set to:', [profile.role]);
         } else {
+          console.log('⚠️ No profile found for user');
           setUserRoles([]);
           setUserProfile(null);
         }
       } catch (error) {
-        console.error('Error in fetchUserRole:', error);
+        console.error('💥 Error in fetchUserRole:', error);
         setUserRoles([]);
         setUserProfile(null);
       } finally {
@@ -53,11 +59,15 @@ export const useRoleCheck = () => {
   }, [user]);
 
   const hasRole = (role: UserRole): boolean => {
-    return userRoles.includes(role);
+    const result = userRoles.includes(role);
+    console.log(`🎭 Checking role ${role}:`, result, 'Current roles:', userRoles);
+    return result;
   };
 
   const isAdmin = (): boolean => {
-    return userRoles.includes('admin');
+    const result = userRoles.includes('admin');
+    console.log('👑 Is admin check:', result);
+    return result;
   };
 
   const isTrainer = (): boolean => {
@@ -71,6 +81,8 @@ export const useRoleCheck = () => {
   const isGeneral = (): boolean => {
     return userRoles.includes('general');
   };
+
+  console.log('🔄 useRoleCheck state:', { userRoles, loading, userProfile: userProfile?.id });
 
   return {
     userRoles,
