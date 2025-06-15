@@ -79,6 +79,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
     if (!user) return;
 
     setLoading(true);
+    console.log('🔄 Updating user:', user.id, { role, userStatus });
 
     try {
       const userData: any = {
@@ -94,27 +95,69 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
       userData.birth_date = birthDate || null;
       userData.photo_url = photoUrl || null;
 
+      console.log('📝 Updating app_users with data:', userData);
+
       const { error } = await supabase
         .from('app_users')
         .update(userData)
         .eq('id', user.id);
 
       if (error) {
+        console.error('❌ Error updating user in app_users:', error);
         toast({
           variant: "destructive",
           title: "Σφάλμα",
           description: "Δεν ήταν δυνατή η ενημέρωση του χρήστη",
         });
-      } else {
-        toast({
-          title: "Επιτυχία",
-          description: "Ο χρήστης ενημερώθηκε επιτυχώς",
-        });
-        onUserUpdated();
-        onClose();
+        return;
       }
+
+      console.log('✅ User updated successfully in app_users');
+
+      // If role changed, also update the user_roles table
+      if (role !== user.role) {
+        console.log('🎭 Role changed, updating user_roles table');
+        
+        // First, delete existing role
+        const { error: deleteError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', user.auth_user_id || user.id);
+
+        if (deleteError) {
+          console.error('❌ Error deleting old role:', deleteError);
+        } else {
+          console.log('✅ Old role deleted');
+        }
+
+        // Then insert new role
+        const { error: insertError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: user.auth_user_id || user.id,
+            role: role
+          });
+
+        if (insertError) {
+          console.error('❌ Error inserting new role:', insertError);
+          toast({
+            variant: "destructive",
+            title: "Προειδοποίηση",
+            description: "Ο χρήστης ενημερώθηκε αλλά μπορεί να υπάρχει πρόβλημα με τον ρόλο",
+          });
+        } else {
+          console.log('✅ New role inserted');
+        }
+      }
+
+      toast({
+        title: "Επιτυχία",
+        description: "Ο χρήστης ενημερώθηκε επιτυχώς",
+      });
+      onUserUpdated();
+      onClose();
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error('💥 Error updating user:', error);
       toast({
         variant: "destructive",
         title: "Σφάλμα",
@@ -127,7 +170,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto rounded-none">
         <DialogHeader>
           <DialogTitle>Επεξεργασία Χρήστη</DialogTitle>
           <DialogDescription>
@@ -143,6 +186,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Εισάγετε το όνομα"
+              className="rounded-none"
               required
             />
           </div>
@@ -155,6 +199,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Εισάγετε το email"
+              className="rounded-none"
               required
             />
           </div>
@@ -172,13 +217,14 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Εισάγετε το τηλέφωνο"
+              className="rounded-none"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="role">Ρόλος</Label>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger>
+              <SelectTrigger className="rounded-none">
                 <SelectValue placeholder="Επιλέξτε ρόλο" />
               </SelectTrigger>
               <SelectContent>
@@ -198,19 +244,20 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder="Εισάγετε την κατηγορία"
+              className="rounded-none"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="userStatus">Κατάσταση</Label>
             <Select value={userStatus} onValueChange={setUserStatus}>
-              <SelectTrigger>
+              <SelectTrigger className="rounded-none">
                 <SelectValue placeholder="Επιλέξτε κατάσταση" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Ενεργός</SelectItem>
-                <SelectItem value="inactive">Ανενεργός</SelectItem>
-                <SelectItem value="pending">Εκκρεμής</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -222,6 +269,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               type="date"
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
+              className="rounded-none"
             />
           </div>
           
