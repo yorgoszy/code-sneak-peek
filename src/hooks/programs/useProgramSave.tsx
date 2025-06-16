@@ -52,29 +52,57 @@ export const useProgramSave = () => {
       let savedProgram;
 
       if (programData.id) {
-        // Update existing program
-        console.log('🔄 Updating existing program:', programData.id);
+        // Έλεγχος αν το πρόγραμμα υπάρχει πριν την ενημέρωση
+        console.log('🔍 Checking if program exists:', programData.id);
         
-        const { data, error } = await supabase
+        const { data: existingProgram, error: checkError } = await supabase
           .from('programs')
-          .update(programPayload)
+          .select('id')
           .eq('id', programData.id)
-          .select()
-          .single();
+          .maybeSingle();
 
-        if (error) throw error;
-        savedProgram = data;
-
-        // Ενημέρωση των training_dates στα program_assignments αν υπάρχουν
-        if (trainingDatesArray.length > 0) {
-          await supabase
-            .from('program_assignments')
-            .update({ training_dates: trainingDatesArray })
-            .eq('program_id', programData.id);
+        if (checkError) {
+          console.error('❌ Error checking program:', checkError);
+          throw checkError;
         }
 
-        // Διαγραφή υπάρχουσας δομής πριν την αναδημιουργία
-        await deleteExistingStructure(programData.id);
+        if (existingProgram) {
+          // Update existing program
+          console.log('🔄 Updating existing program:', programData.id);
+          
+          const { data, error } = await supabase
+            .from('programs')
+            .update(programPayload)
+            .eq('id', programData.id)
+            .select()
+            .single();
+
+          if (error) throw error;
+          savedProgram = data;
+
+          // Ενημέρωση των training_dates στα program_assignments αν υπάρχουν
+          if (trainingDatesArray.length > 0) {
+            await supabase
+              .from('program_assignments')
+              .update({ training_dates: trainingDatesArray })
+              .eq('program_id', programData.id);
+          }
+
+          // Διαγραφή υπάρχουσας δομής πριν την αναδημιουργία
+          await deleteExistingStructure(programData.id);
+        } else {
+          // Το πρόγραμμα δεν υπάρχει, δημιουργούμε νέο
+          console.log('📝 Program not found, creating new one');
+          
+          const { data, error } = await supabase
+            .from('programs')
+            .insert([programPayload])
+            .select()
+            .single();
+
+          if (error) throw error;
+          savedProgram = data;
+        }
       } else {
         // Create new program
         console.log('🆕 Creating new program');
