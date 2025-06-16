@@ -3,6 +3,35 @@ import { Article } from './types';
 export const articles: Record<string, Article[]> = {
   el: [
     {
+      id: 4,
+      title: "Velocity Based Training",
+      excerpt: "Ο κύριος ρόλος της παρακολούθησης της ταχύτητας στην προπόνηση δύναμης και τα οφέλη της.",
+      image: "/lovable-uploads/d3af2c45-06a0-4a4b-ad64-5f11fbd9de62.png",
+      date: "15 Ιουνίου 2025",
+      content: `Ο κύριος ρόλος της παρακολούθησης της ταχύτητας στην προπόνηση δύναμης είναι η ανατροφοδότηση που παρέχει στον προπονητή. Χρησιμοποιώντας επιταχυνσιόμετρο, μετράται η ταχύτητα και αυτό βοηθάει στα εξής:
+
+• Αξιολόγηση του 1RM του αθλητή
+• Αξιολόγηση της σχετικής έντασης και του όγκου προπόνησης
+• Αξιολόγηση της κόπωσης μέσω της απώλειας ταχύτητας
+• Παρακίνηση και ανταγωνιστικότητα των αθλητών μέσω της ανατροφοδότησης
+
+Αξιολόγηση 1RM
+
+Επειδή η σχέση μεταξύ φορτίου και ταχύτητας είναι γραμμική, μετρώντας την ταχύτητα εκτέλεσης κατά τη διαδικασία αξιολόγησης του 1RM μέσω της μεθόδου του άμεσου προσδιορισμού, μπορούμε να δημιουργήσουμε ένα εξατομικευμένο προφίλ έντασης και ταχύτητας. Αυτό το προφίλ μπορεί να χρησιμοποιηθεί για την επαναξιολόγηση του 1RM με τη μέθοδο των σημείων, όπου εκτελώντας την αξιολόγηση μόνο με δύο αντιστάσεις, μπορούμε να προσδιορίσουμε το 1RM με έμμεσο τρόπο και υψηλή ακρίβεια, αποφεύγοντας έτσι την εξαντλητική και χρονοβόρα διαδικασία του άμεσου προσδιορισμού.
+
+Απώλεια Ταχύτητας
+
+Ένας εναλλακτικός ρόλος της παρακολούθησης της ταχύτητας είναι η αξιολόγηση της έντασης και της κόπωσης. Θέτοντας συγκεκριμένα όρια για την ταχύτητα κίνησης της μπάρας (ή άλλου προπονητικού εργαλείου), μπορούμε να διατηρήσουμε την ένταση σταθερή και να εκπαιδεύσουμε με στόχο τη δημιουργία συγκεκριμένων προσαρμογών. Παρακολουθώντας την ταχύτητα, αποφεύγουμε μια μείωση μεγαλύτερη του 10% ώστε να διατηρήσουμε την κόπωση σε χαμηλά επίπεδα, καθώς οι έρευνες δείχνουν ότι μεγαλύτερη απώλεια ταχύτητας δεν είναι ευεργετική για την απόδοση του αθλητή.
+
+Ανατροφοδότηση
+
+Ο τελικός σκοπός της παρακολούθησης της ταχύτητας είναι η ανατροφοδότηση προς τον αθλητή. Μετρώντας την ταχύτητα εκτέλεσης και ενημερώνοντας τον αθλητή, τον παρακινούμε για καλύτερη απόδοση. Δημιουργούμε επίσης ένα κλίμα ανταγωνισμού μεταξύ των ασκούμενων, με κάθε αθλητή να προσπαθεί να ξεπεράσει την απόδοση των άλλων ή ακόμη και τη δική του. Με αυτόν τον τρόπο, βελτιώνονται τόσο οι αδύναμες όσο και οι ισχυρές επαναλήψεις.
+
+Συμπέρασμα
+
+Συνοψίζοντας, η προπόνηση δύναμης βασισμένη στην ταχύτητα είναι ένα αξιόπιστο εργαλείο για την αξιολόγηση του 1RM, της κόπωσης, του όγκου και της έντασης της προπόνησης. Επίσης, χρησιμοποιείται ως μέσο ανατροφοδότησης του αθλητή, βελτιώνοντας τα επίπεδα δύναμης και ισχύος, ενώ αποφεύγονται τα ανεπιθύμητα αποτελέσματα της κόπωσης.`
+    },
+    {
       id: 1,
       title: "Lift Heavy",
       excerpt: "Η σημασία των υψηλών εντάσεων στην προπόνηση και πώς η τεχνολογία βελτιώνει την απόδοση.",
@@ -80,6 +109,35 @@ Join the camp to be a champ!`
     }
   ],
   en: [
+    {
+      id: 4,
+      title: "Velocity Based Training",
+      excerpt: "The primary role of velocity monitoring in strength training and its benefits for athletes and coaches.",
+      image: "/lovable-uploads/d3af2c45-06a0-4a4b-ad64-5f11fbd9de62.png",
+      date: "June 15, 2025",
+      content: `The primary role of velocity monitoring in strength training is the feedback it provides to the coach. Using accelerometers to measure velocity helps with the following:
+
+• Assessment of the athlete's 1RM
+• Assessment of relative intensity and training volume
+• Assessment of fatigue through velocity loss
+• Motivation and competitiveness of athletes through feedback
+
+1RM Assessment
+
+Because the relationship between load and velocity is linear, by measuring execution velocity during the 1RM assessment process through the direct determination method, we can create a personalized intensity and velocity profile. This profile can be used for 1RM re-assessment using the two-point method, where by performing the assessment with only two resistances, we can determine the 1RM indirectly with high accuracy, thus avoiding the exhausting and time-consuming process of direct determination.
+
+Velocity Loss
+
+An alternative role of velocity monitoring is the assessment of intensity and fatigue. By setting specific limits for the movement velocity of the bar (or other training tool), we can maintain intensity consistently and train with the goal of creating specific adaptations. By monitoring velocity, we avoid a decrease greater than 10% to keep fatigue at low levels, as research shows that greater velocity loss is not beneficial for athlete performance.
+
+Feedback
+
+The ultimate purpose of velocity monitoring is feedback to the athlete. By measuring execution velocity and informing the athlete, we motivate them for better performance. We also create a competitive climate among trainees, with each athlete trying to surpass the performance of others or even their own. In this way, both weak and strong repetitions are improved.
+
+Conclusion
+
+In summary, velocity-based strength training is a reliable tool for assessing 1RM, fatigue, volume, and training intensity. It is also used as a means of athlete feedback, improving strength and power levels while avoiding the unwanted effects of fatigue.`
+    },
     {
       id: 1,
       title: "Lift Heavy",

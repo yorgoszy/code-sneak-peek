@@ -1,6 +1,33 @@
 
 export const getBibliography = (articleId: number, language: string): string => {
-  if (articleId === 1) {
+  if (articleId === 4) {
+    // Velocity Based Training bibliography
+    if (language === 'el') {
+      return `
+<div class="text-xs text-gray-600 mt-6">
+<strong>Βιβλιογραφία:</strong><br/>
+Argus CK, Gill ND, Keogh JW, Hopkins WG. Acute effects of verbal feedback on upper-body performance in elite athletes. J Strength Cond Res 25: 3282–3287, 2011.<br/>
+Fernandes JFT, Lamb KL, Clark CCT, et al. Comparison of the FitroDyne and GymAware rotary encoders for quantifying peak and mean velocity during traditional multijointed exercises. J Strength Cond Res 2018.<br/>
+García-Ramos A, Haff GG, Jiménez-Reyes P, Pérez-Castilla A. Assessment of upper body ballistic performance through the bench press throw exercise: Which velocity outcome provides the highest reliability? J Strength Cond Res 32: 2701-2707, 2018.<br/>
+Conceição F, Fernandes J, Lewis M, Gonzalez-Badillo JJ, Jimenez-Reyes P. Movement velocity as a measure of exercise intensity in three lower limb exercises. J Sports Sci 34: 1099–1106, 2016.<br/>
+Hughes LJ, Banyard HG, Dempsey AR, Scott BR. Using load-velocity relationships to predict 1rm in free-weight exercise: A comparison of the different methods. J Strength Cond Res 2018.<br/>
+Mann JB, Bryant KR, Johnstone B, Ivey PA, Sayers SP. Effect of physical and academic stress on illness and injury in division 1 college football players. J Strength Cond Res 30: 20–25, 2016.<br/>
+Munoz-Lopez M, Marchante D, Cano-Ruiz MA, Chicharro JL, Balsalobre-Fernandez C. Load-, force-, and power-velocity relationships in the prone pull-up exercise. Int J Sport Phys Perf 12: 1249–1255, 2017.
+</div>`;
+    } else {
+      return `
+<div class="text-xs text-gray-600 mt-6">
+<strong>Bibliography:</strong><br/>
+Argus CK, Gill ND, Keogh JW, Hopkins WG. Acute effects of verbal feedback on upper-body performance in elite athletes. J Strength Cond Res 25: 3282–3287, 2011.<br/>
+Fernandes JFT, Lamb KL, Clark CCT, et al. Comparison of the FitroDyne and GymAware rotary encoders for quantifying peak and mean velocity during traditional multijointed exercises. J Strength Cond Res 2018.<br/>
+García-Ramos A, Haff GG, Jiménez-Reyes P, Pérez-Castilla A. Assessment of upper body ballistic performance through the bench press throw exercise: Which velocity outcome provides the highest reliability? J Strength Cond Res 32: 2701-2707, 2018.<br/>
+Conceição F, Fernandes J, Lewis M, Gonzalez-Badillo JJ, Jimenez-Reyes P. Movement velocity as a measure of exercise intensity in three lower limb exercises. J Sports Sci 34: 1099–1106, 2016.<br/>
+Hughes LJ, Banyard HG, Dempsey AR, Scott BR. Using load-velocity relationships to predict 1rm in free-weight exercise: A comparison of the different methods. J Strength Cond Res 2018.<br/>
+Mann JB, Bryant KR, Johnstone B, Ivey PA, Sayers SP. Effect of physical and academic stress on illness and injury in division 1 college football players. J Strength Cond Res 30: 20–25, 2016.<br/>
+Munoz-Lopez M, Marchante D, Cano-Ruiz MA, Chicharro JL, Balsalobre-Fernandez C. Load-, force-, and power-velocity relationships in the prone pull-up exercise. Int J Sport Phys Perf 12: 1249–1255, 2017.
+</div>`;
+    }
+  } else if (articleId === 1) {
     // Lift Heavy bibliography
     if (language === 'el') {
       return `
