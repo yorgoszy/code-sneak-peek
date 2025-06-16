@@ -6,7 +6,7 @@ export const articles: Record<string, Article[]> = {
       id: 4,
       title: "Velocity Based Training",
       excerpt: "Ο κύριος ρόλος της παρακολούθησης της ταχύτητας στην προπόνηση δύναμης και τα οφέλη της.",
-      image: "/lovable-uploads/d3af2c45-06a0-4a4b-ad64-5f11fbd9de62.png",
+      image: "/lovable-uploads/ac4b99ff-0d89-4a91-9bde-6c9a48948265.png",
       date: "15 Ιουνίου 2025",
       content: `Ο κύριος ρόλος της παρακολούθησης της ταχύτητας στην προπόνηση δύναμης είναι η ανατροφοδότηση που παρέχει στον προπονητή. Χρησιμοποιώντας επιταχυνσιόμετρο, μετράται η ταχύτητα και αυτό βοηθάει στα εξής:
 
@@ -113,7 +113,7 @@ Join the camp to be a champ!`
       id: 4,
       title: "Velocity Based Training",
       excerpt: "The primary role of velocity monitoring in strength training and its benefits for athletes and coaches.",
-      image: "/lovable-uploads/d3af2c45-06a0-4a4b-ad64-5f11fbd9de62.png",
+      image: "/lovable-uploads/ac4b99ff-0d89-4a91-9bde-6c9a48948265.png",
       date: "June 15, 2025",
       content: `The primary role of velocity monitoring in strength training is the feedback it provides to the coach. Using accelerometers to measure velocity helps with the following:
 
