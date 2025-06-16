@@ -27,7 +27,7 @@ export const useProgramSave = () => {
         });
       } else if (programData.weeks && programData.weeks.length > 0) {
         // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
-        const totalDays = programData.weeks.reduce((total, week) => total + (week.days?.length || 0), 0);
+        const totalDays = programData.weeks.reduce((total, week) => total + (week.program_days?.length || 0), 0);
         const today = new Date();
         trainingDatesArray = [];
         for (let i = 0; i < totalDays; i++) {
@@ -46,7 +46,7 @@ export const useProgramSave = () => {
         status: programData.status || 'draft',
         type: programData.type || 'strength',
         duration: programData.weeks?.length || null,
-        training_days: programData.weeks?.[0]?.days?.length || null
+        training_days: programData.weeks?.[0]?.program_days?.length || null
       };
 
       let savedProgram;
@@ -91,11 +91,18 @@ export const useProgramSave = () => {
 
       console.log('✅ Program saved:', savedProgram);
 
-      // Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises)
+      // ΚΡΙΤΙΚΟ: Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises)
       if (programData.weeks && programData.weeks.length > 0) {
-        console.log('🏗️ Creating program structure...');
-        await createProgramStructure(savedProgram.id, programData);
-        console.log('✅ Program structure created');
+        console.log('🏗️ Creating program structure with weeks:', programData.weeks.length);
+        
+        // Χρησιμοποιούμε τη μέθοδο createProgramStructure
+        await createProgramStructure(savedProgram.id, {
+          weeks: programData.weeks
+        });
+        
+        console.log('✅ Program structure created successfully');
+      } else {
+        console.log('⚠️ No weeks found in program data');
       }
 
       // Επιστρέφουμε το πρόγραμμα με τις ημερομηνίες
