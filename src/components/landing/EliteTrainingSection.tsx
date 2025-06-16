@@ -27,19 +27,19 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
             <div className="space-y-4 mb-8">
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#00ffba]" />
-                <span className="text-gray-700">accentuated eccentric loading</span>
+                <span className="text-gray-700">Accentuated Eccentric Loading</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#00ffba]" />
-                <span className="text-gray-700">accommodating resistance</span>
+                <span className="text-gray-700">Accommodating Resistance</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#00ffba]" />
-                <span className="text-gray-700">velocity based training</span>
+                <span className="text-gray-700">Velocity Based Training</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#00ffba]" />
-                <span className="text-gray-700">specific energy system development</span>
+                <span className="text-gray-700">Specific Energy System Development</span>
               </div>
             </div>
 
