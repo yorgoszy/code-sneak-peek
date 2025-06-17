@@ -14,6 +14,7 @@ interface BlockCardProps {
   onRemoveBlock: () => void;
   onDuplicateBlock: () => void;
   onUpdateBlockName: (name: string) => void;
+  onUpdateBlock: (field: string, value: any) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onDuplicateExercise: (exerciseId: string) => void;
@@ -27,6 +28,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   onRemoveBlock,
   onDuplicateBlock,
   onUpdateBlockName,
+  onUpdateBlock,
   onUpdateExercise,
   onRemoveExercise,
   onDuplicateExercise,
@@ -89,9 +91,10 @@ export const BlockCard: React.FC<BlockCardProps> = ({
           />
           
           <BlockCardContent
-            exercises={block.program_exercises}
-            availableExercises={exercises}
+            block={block}
+            exercises={exercises}
             onUpdateExercise={onUpdateExercise}
+            onUpdateBlock={onUpdateBlock}
             onRemoveExercise={onRemoveExercise}
             onDuplicateExercise={onDuplicateExercise}
             onReorderExercises={onReorderExercises}
