@@ -115,7 +115,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
     return {
       volume: Math.round(totalVolume / 1000), // Convert kg to tons
       intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
-      watts: Math.round(totalWatts),
+      watts: Math.round(totalWatts / 1000), // Convert watts to kilowatts
       time: Math.round(totalTimeSeconds / 60), // Convert to minutes
       exerciseCount
     };
@@ -147,9 +147,9 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
             <Zap className="w-3 h-3 text-orange-600" />
-            <span className="text-gray-600">Watt</span>
+            <span className="text-gray-600">Ισχύς</span>
           </div>
-          <div className="font-semibold text-orange-700">{watts}w</div>
+          <div className="font-semibold text-orange-700">{watts}KW</div>
         </div>
         
         <div className="text-center">

@@ -123,7 +123,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
   return {
     volume: Math.round(totalVolume / 1000), // Convert kg to tons
     intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
-    watts: Math.round(totalWatts),
+    watts: Math.round(totalWatts / 1000), // Convert watts to kilowatts
     time: Math.round(totalTimeSeconds / 60) // Convert to minutes
   };
 };
@@ -182,7 +182,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
         </div>
         
         <div className="text-center">
-          <div className="font-semibold text-orange-700">{currentStats.watts}w</div>
+          <div className="font-semibold text-orange-700">{currentStats.watts}KW</div>
           {previousStats && (
             <PercentageIndicator 
               percentage={calculatePercentageChange(currentStats.watts, previousStats.watts)} 
