@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Clock, Dumbbell } from 'lucide-react';
+import { Clock, Dumbbell, TrendingUp, Zap } from 'lucide-react';
 import { Exercise, Block } from '../types';
 
 interface DayCalculationsProps {
@@ -8,49 +8,151 @@ interface DayCalculationsProps {
   exercises: Exercise[];
 }
 
+const parseTempoToSeconds = (tempo: string): number => {
+  if (!tempo || tempo.trim() === '') {
+    return 3; // Default tempo
+  }
+  
+  const parts = tempo.split('.');
+  let totalSeconds = 0;
+  
+  parts.forEach(part => {
+    if (part === 'x' || part === 'X') {
+      totalSeconds += 0.5;
+    } else {
+      totalSeconds += parseFloat(part) || 0;
+    }
+  });
+  
+  return totalSeconds;
+};
+
+const parseRepsToTotal = (reps: string): number => {
+  if (!reps) return 0;
+  
+  if (!reps.includes('.')) {
+    return parseInt(reps) || 0;
+  }
+  
+  const parts = reps.split('.');
+  let totalReps = 0;
+  
+  parts.forEach(part => {
+    totalReps += parseInt(part) || 0;
+  });
+  
+  return totalReps;
+};
+
+const parseRestTime = (rest: string): number => {
+  if (!rest) return 0;
+  
+  // Handle formats like "2'", "1:30", "90s", "2"
+  if (rest.includes(':')) {
+    const [minutes, seconds] = rest.split(':');
+    return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
+  } else if (rest.includes("'")) {
+    return (parseFloat(rest.replace("'", "")) || 0) * 60; // Convert minutes to seconds
+  } else if (rest.includes('s')) {
+    return parseFloat(rest.replace('s', '')) || 0;
+  } else {
+    const minutes = parseFloat(rest) || 0;
+    return minutes * 60; // Convert minutes to seconds
+  }
+};
+
 export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exercises }) => {
-  const calculateTotals = () => {
-    let totalSets = 0;
-    let totalExercises = 0;
-    let estimatedDuration = 0;
+  const calculateDayMetrics = () => {
+    let totalVolume = 0;
+    let totalIntensity = 0;
+    let totalWatts = 0;
+    let totalTimeSeconds = 0;
+    let exerciseCount = 0;
 
     blocks.forEach(block => {
       block.program_exercises.forEach(exercise => {
-        totalSets += exercise.sets;
-        totalExercises += 1;
-        
-        // Εκτίμηση διάρκειας: 1 λεπτό ανά σετ + χρόνος ανάπαυσης
-        const restTime = parseFloat(exercise.rest || '60') || 60; // default 60 seconds
-        estimatedDuration += (exercise.sets * 60) + (exercise.sets * restTime);
+        if (exercise.exercise_id) {
+          // Volume calculation (sets × reps × kg)
+          const sets = exercise.sets || 0;
+          const reps = parseRepsToTotal(exercise.reps);
+          const kg = parseFloat(exercise.kg || '0') || 0;
+          totalVolume += sets * reps * kg;
+
+          // Intensity calculation (average percentage of 1RM)
+          if (exercise.percentage_1rm) {
+            totalIntensity += exercise.percentage_1rm;
+            exerciseCount++;
+          }
+
+          // Watts calculation
+          const velocity = exercise.velocity_ms || 0;
+          if (kg > 0 && velocity > 0) {
+            const force = kg * 9.81; // Convert to Newtons
+            const watts = force * velocity;
+            totalWatts += watts * sets * reps;
+          }
+
+          // Time calculation
+          const tempo = parseTempoToSeconds(exercise.tempo || '');
+          const restSeconds = parseRestTime(exercise.rest || '');
+          
+          // Work time: sets × reps × tempo (in seconds)
+          const workTime = sets * reps * tempo;
+          
+          // Rest time: (sets - 1) × rest time between sets
+          const totalRestTime = (sets - 1) * restSeconds;
+          
+          totalTimeSeconds += workTime + totalRestTime;
+        }
       });
     });
 
     return {
-      totalSets,
-      totalExercises,
-      estimatedDuration: Math.round(estimatedDuration / 60) // σε λεπτά
+      volume: Math.round(totalVolume),
+      intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
+      watts: Math.round(totalWatts),
+      time: Math.round(totalTimeSeconds / 60), // Convert to minutes
+      exerciseCount
     };
   };
 
-  const { totalSets, totalExercises, estimatedDuration } = calculateTotals();
+  const { volume, intensity, watts, time, exerciseCount } = calculateDayMetrics();
 
-  if (totalExercises === 0) return null;
+  if (exerciseCount === 0) return null;
 
   return (
-    <div className="bg-gray-50 px-4 py-2 border-t border-gray-200">
-      <div className="flex items-center justify-between text-xs text-gray-600">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
-            <Dumbbell className="w-3 h-3" />
-            <span>{totalExercises} ασκήσεις</span>
+    <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+      <div className="grid grid-cols-4 gap-4 text-xs">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <TrendingUp className="w-3 h-3 text-blue-600" />
+            <span className="text-gray-600">Όγκος</span>
           </div>
-          <div className="flex items-center gap-1">
-            <span>{totalSets} σετ</span>
-          </div>
+          <div className="font-semibold text-blue-700">{volume.toLocaleString()}tn</div>
         </div>
-        <div className="flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          <span>~{estimatedDuration} λεπτά</span>
+        
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Dumbbell className="w-3 h-3 text-green-600" />
+            <span className="text-gray-600">Ένταση</span>
+          </div>
+          <div className="font-semibold text-green-700">{intensity}%</div>
+        </div>
+        
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Zap className="w-3 h-3 text-orange-600" />
+            <span className="text-gray-600">Watt</span>
+          </div>
+          <div className="font-semibold text-orange-700">{watts}w</div>
+        </div>
+        
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Clock className="w-3 h-3 text-red-600" />
+            <span className="text-gray-600">Χρόνος</span>
+          </div>
+          <div className="font-semibold text-red-700">{time}λ</div>
         </div>
       </div>
     </div>
