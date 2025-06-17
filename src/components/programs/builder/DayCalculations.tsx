@@ -121,10 +121,9 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
     };
   };
 
-  const { volume, intensity, watts, time, exerciseCount } = calculateDayMetrics();
+  const { volume, intensity, watts, time } = calculateDayMetrics();
 
-  if (exerciseCount === 0) return null;
-
+  // Πάντα εμφανίζουμε τη γραμμή στατιστικών
   return (
     <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
       <div className="grid grid-cols-4 gap-4 text-xs">
