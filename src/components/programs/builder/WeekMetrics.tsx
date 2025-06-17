@@ -20,6 +20,7 @@ const parseTempoToSeconds = (tempo: string): number => {
     return 3; // Default tempo
   }
   
+  // Split by '.' and sum all numbers
   const parts = tempo.split('.');
   let totalSeconds = 0;
   
@@ -37,10 +38,12 @@ const parseTempoToSeconds = (tempo: string): number => {
 const parseRepsToTotal = (reps: string): number => {
   if (!reps) return 0;
   
+  // If no dots, it's a simple number
   if (!reps.includes('.')) {
     return parseInt(reps) || 0;
   }
   
+  // Split by '.' and sum all numbers
   const parts = reps.split('.');
   let totalReps = 0;
   
@@ -69,7 +72,7 @@ const parseRestTime = (rest: string): number => {
 };
 
 const calculateWeekMetrics = (week: Week): WeekStats => {
-  let totalVolume = 0;
+  let totalVolume = 0; // in kg
   let totalIntensity = 0;
   let totalWatts = 0;
   let totalTimeSeconds = 0;
@@ -79,11 +82,13 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
     day.program_blocks.forEach(block => {
       block.program_exercises.forEach(exercise => {
         if (exercise.exercise_id) {
-          // Volume calculation (sets × reps × kg)
           const sets = exercise.sets || 0;
           const reps = parseRepsToTotal(exercise.reps);
           const kg = parseFloat(exercise.kg || '0') || 0;
-          totalVolume += sets * reps * kg;
+
+          // Volume calculation (sets × reps × kg) in kg
+          const volumeKg = sets * reps * kg;
+          totalVolume += volumeKg;
 
           // Intensity calculation (average percentage of 1RM)
           if (exercise.percentage_1rm) {
@@ -99,12 +104,12 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
             totalWatts += watts * sets * reps;
           }
 
-          // Time calculation
-          const tempo = parseTempoToSeconds(exercise.tempo || '');
+          // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
+          const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
           const restSeconds = parseRestTime(exercise.rest || '');
           
           // Work time: sets × reps × tempo (in seconds)
-          const workTime = sets * reps * tempo;
+          const workTime = sets * reps * tempoSeconds;
           
           // Rest time: (sets - 1) × rest time between sets
           const totalRestTime = (sets - 1) * restSeconds;
@@ -116,7 +121,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
   });
 
   return {
-    volume: Math.round(totalVolume),
+    volume: Math.round(totalVolume / 1000), // Convert kg to tons
     intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
     watts: Math.round(totalWatts),
     time: Math.round(totalTimeSeconds / 60) // Convert to minutes
