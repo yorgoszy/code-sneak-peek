@@ -36,7 +36,13 @@ export const SortableDay: React.FC<SortableDayProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: day.id });
+  } = useSortable({ 
+    id: day.id,
+    data: {
+      type: 'day',
+      day
+    }
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -44,12 +50,19 @@ export const SortableDay: React.FC<SortableDayProps> = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // Δημιουργούμε το drag handle object μόνο με τα απαραίτητα attributes
+  const dragHandleProps = {
+    ...attributes,
+    ...listeners,
+    style: { touchAction: 'none' } // Για mobile compatibility
+  };
+
   return (
     <div ref={setNodeRef} style={style}>
       <DayCard
         day={day}
         exercises={exercises}
-        dragHandleProps={{ ...attributes, ...listeners }}
+        dragHandleProps={dragHandleProps}
         {...dayProps}
       />
     </div>
