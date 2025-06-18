@@ -66,6 +66,48 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
             if (exists) return prev;
             return [...prev, newExercise];
           });
+          
+          // Fetch categories for the new exercise and update exercisesWithCategories
+          try {
+            const { data: exerciseCategories, error } = await supabase
+              .from('exercise_to_category')
+              .select(`
+                exercise_categories!inner(name)
+              `)
+              .eq('exercise_id', newExercise.id);
+
+            if (!error && exerciseCategories) {
+              const categories = exerciseCategories
+                .map(ec => ec.exercise_categories?.name)
+                .filter(Boolean) as string[];
+              
+              const exerciseWithCategories = {
+                ...newExercise,
+                categories: categories
+              };
+              
+              setExercisesWithCategories(prev => {
+                const exists = prev.some(ex => ex.id === newExercise.id);
+                if (exists) return prev;
+                return [...prev, exerciseWithCategories];
+              });
+            } else {
+              // Add without categories if fetch fails
+              setExercisesWithCategories(prev => {
+                const exists = prev.some(ex => ex.id === newExercise.id);
+                if (exists) return prev;
+                return [...prev, { ...newExercise, categories: [] }];
+              });
+            }
+          } catch (error) {
+            console.error('Error fetching categories for new exercise:', error);
+            // Add without categories if fetch fails
+            setExercisesWithCategories(prev => {
+              const exists = prev.some(ex => ex.id === newExercise.id);
+              if (exists) return prev;
+              return [...prev, { ...newExercise, categories: [] }];
+            });
+          }
         }
       )
       .subscribe();
