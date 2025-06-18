@@ -1,9 +1,11 @@
 
 import React, { useState } from 'react';
-import { Card, CardHeader } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { Card } from "@/components/ui/card";
+import { Collapsible } from "@/components/ui/collapsible";
+import { GripVertical } from "lucide-react";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
+import { DayCalculations } from './DayCalculations';
 import { Exercise, Day } from '../types';
 
 interface DayCardProps {
@@ -45,15 +47,15 @@ export const DayCard: React.FC<DayCardProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingName, setEditingName] = useState(day.name || '');
+  const [editingName, setEditingName] = useState(day.name);
 
   const handleNameDoubleClick = () => {
     setIsEditing(true);
-    setEditingName(day.name || '');
+    setEditingName(day.name);
   };
 
   const handleNameSave = () => {
-    if (editingName.trim() && editingName !== day.name) {
+    if (editingName.trim()) {
       onUpdateDayName(editingName.trim());
     }
     setIsEditing(false);
@@ -64,17 +66,21 @@ export const DayCard: React.FC<DayCardProps> = ({
       handleNameSave();
     } else if (e.key === 'Escape') {
       setIsEditing(false);
-      setEditingName(day.name || '');
+      setEditingName(day.name);
     }
   };
 
   const blocksCount = day.program_blocks?.length || 0;
 
   return (
-    <Card className="rounded-none">
+    <Card className="rounded-none relative" style={{ minHeight: '30px' }}>
+      <div className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10">
+        <GripVertical className="w-3 h-3 text-gray-400" />
+      </div>
+      
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <DayCardHeader
-          dayName={day.name || `Ημέρα ${day.day_number}`}
+          dayName={day.name}
           isOpen={isOpen}
           isEditing={isEditing}
           editingName={editingName}
@@ -88,7 +94,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveDay={onRemoveDay}
         />
         
-        <CollapsibleContent>
+        {isOpen && (
           <DayCardContent
             blocks={day.program_blocks || []}
             exercises={exercises}
@@ -103,7 +109,12 @@ export const DayCard: React.FC<DayCardProps> = ({
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
           />
-        </CollapsibleContent>
+        )}
+        
+        <DayCalculations 
+          blocks={day.program_blocks || []} 
+          exercises={exercises} 
+        />
       </Collapsible>
     </Card>
   );
