@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { FilterSection } from './FilterSection';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 
 interface ExerciseFiltersProps {
   selectedCategories: string[];
@@ -12,55 +14,77 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
   onCategoryChange
 }) => {
   const filterCategories = {
-    'Περιοχή Σώματος': ['upper body', 'lower body', 'core'],
-    'Κίνηση': ['push', 'pull', 'hip dominant', 'knee dominant'],
-    'Κατεύθυνση': ['vertical', 'horizontal'],
-    'Πλευρικότητα': ['bilateral', 'unilateral'],
-    'Τύπος': ['stability', 'mobility', 'plyometric']
+    'Περιοχή Σώματος': ['upper body', 'lower body', 'total body', 'core'],
+    'Κίνηση': ['push', 'pull', 'rotational', 'hip dominant', 'knee dominant'],
+    'Κατεύθυνση': ['vertical', 'horizontal', 'linear', 'lateral'],
+    'Πλευρικότητα': ['bilateral', 'unilateral', 'ipsilateral'],
+    'Τύπος': ['mobility', 'stability', 'activation', 'integration', 'movement', 'plyometric', 'med ball', 'power', 'strength', 'endurance', 'cardio', 'balance', 'coordination', 'flexibility', 'recovery', 'warm up', 'cool down']
   };
 
-  const handleCategoryToggle = (category: string) => {
-    const isSelected = selectedCategories.includes(category);
-    if (isSelected) {
-      onCategoryChange(selectedCategories.filter(c => c !== category));
-    } else {
+  const handleCategorySelect = (category: string) => {
+    if (!selectedCategories.includes(category)) {
       onCategoryChange([...selectedCategories, category]);
     }
   };
 
+  const handleCategoryRemove = (category: string) => {
+    onCategoryChange(selectedCategories.filter(c => c !== category));
+  };
+
+  const getAllCategories = () => {
+    return Object.values(filterCategories).flat();
+  };
+
+  const getAvailableCategories = () => {
+    return getAllCategories().filter(cat => !selectedCategories.includes(cat));
+  };
+
   return (
     <div className="bg-gray-50 p-4 rounded-none border">
-      <h4 className="text-sm font-medium text-gray-700 mb-3">Φίλτρα Ασκήσεων</h4>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {Object.entries(filterCategories).map(([groupName, categories]) => (
-          <FilterSection
-            key={groupName}
-            title={groupName}
-            categories={categories}
-            selectedCategories={selectedCategories}
-            onCategoryToggle={handleCategoryToggle}
-          />
-        ))}
+      <div className="flex items-center gap-4 mb-3">
+        <h4 className="text-sm font-medium text-gray-700">Φίλτρα Ασκήσεων</h4>
+        
+        <Select onValueChange={handleCategorySelect}>
+          <SelectTrigger className="w-64 rounded-none">
+            <SelectValue placeholder="Επιλέξτε κατηγορία..." />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            {Object.entries(filterCategories).map(([groupName, categories]) => (
+              <div key={groupName}>
+                <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 bg-gray-100">
+                  {groupName}
+                </div>
+                {categories
+                  .filter(cat => !selectedCategories.includes(cat))
+                  .map(category => (
+                    <SelectItem key={category} value={category} className="rounded-none">
+                      {category}
+                    </SelectItem>
+                  ))}
+              </div>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
+
       {selectedCategories.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-600">Ενεργά φίλτρα:</span>
-            <div className="flex flex-wrap gap-1">
-              {selectedCategories.map(category => (
-                <span
-                  key={category}
-                  className="inline-flex items-center gap-1 bg-[#00ffba] text-black text-xs px-2 py-1 rounded-none cursor-pointer"
-                  onClick={() => handleCategoryToggle(category)}
-                >
-                  {category}
-                  <span className="text-xs">×</span>
-                </span>
-              ))}
-            </div>
+        <div className="space-y-2">
+          <div className="text-xs text-gray-600">Ενεργά φίλτρα:</div>
+          <div className="flex flex-wrap gap-2">
+            {selectedCategories.map(category => (
+              <Badge
+                key={category}
+                variant="secondary"
+                className="bg-[#00ffba] text-black rounded-none flex items-center gap-1 cursor-pointer hover:bg-[#00ffba]/90"
+                onClick={() => handleCategoryRemove(category)}
+              >
+                {category}
+                <X className="w-3 h-3" />
+              </Badge>
+            ))}
             <button
               onClick={() => onCategoryChange([])}
-              className="text-xs text-gray-500 hover:text-gray-700 ml-2"
+              className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 border border-gray-300 rounded-none hover:bg-gray-100"
             >
               Καθαρισμός όλων
             </button>
