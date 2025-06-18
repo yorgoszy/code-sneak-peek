@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +99,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               pattern="[0-9]*"
               value={exercise.sets || ''}
               onChange={(e) => onUpdate('sets', parseInt(e.target.value) || '')}
-              className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
+              className="text-center no-spinners w-full"
               style={{ 
                 borderRadius: '0px', 
                 fontSize: '12px', 
