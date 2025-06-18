@@ -1,11 +1,9 @@
 
-import React, { useState } from 'react';
-import { Card } from "@/components/ui/card";
+import React from 'react';
+import { Card, CardHeader } from "@/components/ui/card";
 import { Collapsible } from "@/components/ui/collapsible";
-import { GripVertical } from "lucide-react";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
-import { DayCalculations } from './DayCalculations';
 import { Exercise, Day } from '../types';
 
 interface DayCardProps {
@@ -45,75 +43,32 @@ export const DayCard: React.FC<DayCardProps> = ({
   onReorderBlocks,
   onReorderExercises
 }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingName, setEditingName] = useState(day.name);
-
-  const handleNameDoubleClick = () => {
-    setIsEditing(true);
-    setEditingName(day.name);
-  };
-
-  const handleNameSave = () => {
-    if (editingName.trim()) {
-      onUpdateDayName(editingName.trim());
-    }
-    setIsEditing(false);
-  };
-
-  const handleNameKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleNameSave();
-    } else if (e.key === 'Escape') {
-      setIsEditing(false);
-      setEditingName(day.name);
-    }
-  };
-
-  const blocksCount = day.program_blocks?.length || 0;
-
   return (
-    <Card className="rounded-none relative" style={{ minHeight: '30px' }}>
-      <div className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10">
-        <GripVertical className="w-3 h-3 text-gray-400" />
-      </div>
-      
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <DayCardHeader
-          dayName={day.name}
-          isOpen={isOpen}
-          isEditing={isEditing}
-          editingName={editingName}
-          blocksCount={blocksCount}
-          onNameDoubleClick={handleNameDoubleClick}
-          onEditingNameChange={setEditingName}
-          onNameSave={handleNameSave}
-          onNameKeyPress={handleNameKeyPress}
-          onAddBlock={onAddBlock}
-          onDuplicateDay={onDuplicateDay}
-          onRemoveDay={onRemoveDay}
-        />
-        
-        {isOpen && (
-          <DayCardContent
-            blocks={day.program_blocks || []}
-            exercises={exercises}
-            onAddExercise={onAddExercise}
-            onRemoveBlock={onRemoveBlock}
-            onDuplicateBlock={onDuplicateBlock}
-            onUpdateBlockName={onUpdateBlockName}
-            onUpdateBlock={onUpdateBlock}
-            onUpdateExercise={onUpdateExercise}
-            onRemoveExercise={onRemoveExercise}
-            onDuplicateExercise={onDuplicateExercise}
-            onReorderBlocks={onReorderBlocks}
-            onReorderExercises={onReorderExercises}
+    <Card className="rounded-none">
+      <Collapsible defaultOpen>
+        <CardHeader className="pb-2">
+          <DayCardHeader
+            day={day}
+            onAddBlock={onAddBlock}
+            onRemoveDay={onRemoveDay}
+            onDuplicateDay={onDuplicateDay}
+            onUpdateDayName={onUpdateDayName}
           />
-        )}
+        </CardHeader>
         
-        <DayCalculations 
-          blocks={day.program_blocks || []} 
-          exercises={exercises} 
+        <DayCardContent
+          blocks={day.program_blocks || []}
+          exercises={exercises}
+          onAddExercise={onAddExercise}
+          onRemoveBlock={onRemoveBlock}
+          onDuplicateBlock={onDuplicateBlock}
+          onUpdateBlockName={onUpdateBlockName}
+          onUpdateBlock={onUpdateBlock}
+          onUpdateExercise={onUpdateExercise}
+          onRemoveExercise={onRemoveExercise}
+          onDuplicateExercise={onDuplicateExercise}
+          onReorderBlocks={onReorderBlocks}
+          onReorderExercises={onReorderExercises}
         />
       </Collapsible>
     </Card>

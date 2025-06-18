@@ -17,19 +17,19 @@ export const ExerciseRowDetails: React.FC<ExerciseRowDetailsProps> = ({
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
         <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Sets</label>
         <Input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
+          type="number"
           value={exercise.sets || ''}
           onChange={(e) => onUpdate('sets', parseInt(e.target.value) || '')}
-          className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
+          className="text-center w-full [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           style={{ 
             borderRadius: '0px', 
             fontSize: '12px', 
             height: '22px', 
-            padding: '0 4px'
+            padding: '0 4px',
+            MozAppearance: 'textfield'
           }}
           placeholder=""
+          min="0"
         />
       </div>
       
@@ -52,19 +52,20 @@ export const ExerciseRowDetails: React.FC<ExerciseRowDetailsProps> = ({
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
         <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>%1RM</label>
         <Input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
+          type="number"
           value={exercise.percentage_1rm || ''}
           onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || '')}
-          className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
+          className="text-center w-full [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           style={{ 
             borderRadius: '0px', 
             fontSize: '12px', 
             height: '22px', 
-            padding: '0 4px'
+            padding: '0 4px',
+            MozAppearance: 'textfield'
           }}
           placeholder=""
+          min="0"
+          step="0.1"
         />
       </div>
       
@@ -87,18 +88,20 @@ export const ExerciseRowDetails: React.FC<ExerciseRowDetailsProps> = ({
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
         <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
         <Input
-          type="text"
-          inputMode="numeric"
+          type="number"
           value={exercise.velocity_ms?.toString() || ''}
           onChange={(e) => onUpdate('velocity_ms', parseFloat(e.target.value) || 0)}
-          className="text-center w-full"
+          className="text-center w-full [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           style={{ 
             borderRadius: '0px', 
             fontSize: '12px', 
             height: '22px', 
-            padding: '0 4px'
+            padding: '0 4px',
+            MozAppearance: 'textfield'
           }}
           placeholder=""
+          min="0"
+          step="0.01"
         />
       </div>
       
