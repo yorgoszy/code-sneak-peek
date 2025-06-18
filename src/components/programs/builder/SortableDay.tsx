@@ -51,10 +51,10 @@ export const SortableDay: React.FC<SortableDayProps> = ({
   };
 
   // Δημιουργούμε το drag handle object μόνο με τα απαραίτητα attributes
+  // ΜΗΝ τα περάσουμε στο setNodeRef - μόνο στο drag handle
   const dragHandleProps = {
     ...attributes,
     ...listeners,
-    style: { touchAction: 'none' } // Για mobile compatibility
   };
 
   return (

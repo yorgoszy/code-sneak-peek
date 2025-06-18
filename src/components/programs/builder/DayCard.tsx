@@ -77,22 +77,23 @@ export const DayCard: React.FC<DayCardProps> = ({
   return (
     <Card className="rounded-none relative" style={{ minHeight: '30px' }}>
       {/* Drag Handle - Απομονωμένο από τα άλλα events */}
-      <div 
-        className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10 hover:bg-gray-100"
-        {...dragHandleProps}
-        onPointerDown={(e) => {
-          // Σταματάμε την propagation μόνο για το drag handle
-          e.stopPropagation();
-          if (dragHandleProps?.onPointerDown) {
-            dragHandleProps.onPointerDown(e);
-          }
-        }}
-      >
-        <GripVertical className="w-3 h-3 text-gray-400" />
-      </div>
+      {dragHandleProps && (
+        <div 
+          className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10 hover:bg-gray-100"
+          {...dragHandleProps}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+          }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <GripVertical className="w-3 h-3 text-gray-400" />
+        </div>
+      )}
       
       {/* Κύριο περιεχόμενο - με padding-left για να μη συγκρούεται με το drag handle */}
-      <div className="pl-4">
+      <div className={dragHandleProps ? "pl-4" : ""}>
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <DayCardHeader
             dayName={day.name}
