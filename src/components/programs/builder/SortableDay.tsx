@@ -45,15 +45,11 @@ export const SortableDay: React.FC<SortableDayProps> = ({
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-    >
+    <div ref={setNodeRef} style={style}>
       <DayCard
         day={day}
         exercises={exercises}
+        dragHandleProps={{ ...attributes, ...listeners }}
         {...dayProps}
       />
     </div>

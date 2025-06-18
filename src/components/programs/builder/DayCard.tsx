@@ -11,6 +11,7 @@ import { Exercise, Day } from '../types';
 interface DayCardProps {
   day: Day;
   exercises: Exercise[];
+  dragHandleProps?: any;
   onAddBlock: () => void;
   onRemoveDay: () => void;
   onDuplicateDay: () => void;
@@ -30,6 +31,7 @@ interface DayCardProps {
 export const DayCard: React.FC<DayCardProps> = ({
   day,
   exercises,
+  dragHandleProps,
   onAddBlock,
   onRemoveDay,
   onDuplicateDay,
@@ -74,7 +76,10 @@ export const DayCard: React.FC<DayCardProps> = ({
 
   return (
     <Card className="rounded-none relative" style={{ minHeight: '30px' }}>
-      <div className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10">
+      <div 
+        className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10"
+        {...dragHandleProps}
+      >
         <GripVertical className="w-3 h-3 text-gray-400" />
       </div>
       
