@@ -66,18 +66,18 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
           {/* Search and Filters - Horizontal Layout */}
           <div className="flex gap-4">
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
+            <div className="relative w-[30%]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 placeholder="Αναζήτηση άσκησης..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 rounded-none"
+                className="pl-10 rounded-none h-8"
               />
             </div>
 
             {/* Filters */}
-            <div className="flex-1 max-w-md">
+            <div className="w-[30%]">
               <ExerciseFilters
                 selectedCategories={selectedCategories}
                 onCategoryChange={setSelectedCategories}

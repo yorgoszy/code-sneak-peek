@@ -32,32 +32,28 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
   };
 
   return (
-    <div className="bg-gray-50 p-2 rounded-none border">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs font-medium text-gray-700">Φίλτρα</span>
-        
-        <Select onValueChange={handleCategorySelect}>
-          <SelectTrigger className="flex-1 rounded-none text-xs h-8">
-            <SelectValue placeholder="Επιλέξτε κατηγορία..." />
-          </SelectTrigger>
-          <SelectContent className="rounded-none">
-            {Object.entries(filterCategories).map(([groupName, categories]) => (
-              <div key={groupName}>
-                <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 bg-gray-100">
-                  {groupName}
-                </div>
-                {categories
-                  .filter(cat => !selectedCategories.includes(cat))
-                  .map(category => (
-                    <SelectItem key={category} value={category} className="rounded-none text-xs">
-                      {category}
-                    </SelectItem>
-                  ))}
+    <div className="space-y-2">
+      <Select onValueChange={handleCategorySelect}>
+        <SelectTrigger className="w-full rounded-none text-xs h-8">
+          <SelectValue placeholder="Επιλέξτε κατηγορία..." />
+        </SelectTrigger>
+        <SelectContent className="rounded-none">
+          {Object.entries(filterCategories).map(([groupName, categories]) => (
+            <div key={groupName}>
+              <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 bg-gray-100">
+                {groupName}
               </div>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+              {categories
+                .filter(cat => !selectedCategories.includes(cat))
+                .map(category => (
+                  <SelectItem key={category} value={category} className="rounded-none text-xs">
+                    {category}
+                  </SelectItem>
+                ))}
+            </div>
+          ))}
+        </SelectContent>
+      </Select>
 
       {selectedCategories.length > 0 && (
         <div className="space-y-1">
