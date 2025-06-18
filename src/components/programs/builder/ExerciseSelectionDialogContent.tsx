@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Filter, Plus } from "lucide-react";
@@ -7,17 +7,14 @@ import { ExerciseFilters } from './ExerciseFilters';
 import { ExerciseSearchInput } from './ExerciseSearchInput';
 import { ExerciseGrid } from './ExerciseGrid';
 import { AddExerciseDialog } from '@/components/AddExerciseDialog';
-import { supabase } from '@/integrations/supabase/client';
+import { useExerciseRealtime } from './hooks/useExerciseRealtime';
+import { useExerciseWithCategories } from './hooks/useExerciseWithCategories';
 
 interface Exercise {
   id: string;
   name: string;
   description?: string;
   video_url?: string;
-}
-
-interface ExerciseWithCategories extends Exercise {
-  categories?: string[];
 }
 
 interface ExerciseSelectionDialogContentProps {
@@ -33,133 +30,18 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [exercisesWithCategories, setExercisesWithCategories] = useState<ExerciseWithCategories[]>([]);
   const [addExerciseDialogOpen, setAddExerciseDialogOpen] = useState(false);
-  const [currentExercises, setCurrentExercises] = useState<Exercise[]>(initialExercises);
 
-  // Update current exercises when initial exercises change
-  useEffect(() => {
-    setCurrentExercises(initialExercises);
-  }, [initialExercises]);
-
-  // Set up real-time subscription for exercises
-  useEffect(() => {
-    console.log('🔄 Setting up real-time subscription for exercises...');
-    
-    const exercisesSubscription = supabase
-      .channel('exercises-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'exercises'
-        },
-        async (payload) => {
-          console.log('✅ New exercise added via realtime:', payload.new);
-          
-          // Add the new exercise to the current list immediately
-          const newExercise = payload.new as Exercise;
-          setCurrentExercises(prev => {
-            // Check if exercise already exists to avoid duplicates
-            const exists = prev.some(ex => ex.id === newExercise.id);
-            if (exists) return prev;
-            return [...prev, newExercise];
-          });
-          
-          // Fetch categories for the new exercise and update exercisesWithCategories
-          try {
-            const { data: exerciseCategories, error } = await supabase
-              .from('exercise_to_category')
-              .select(`
-                exercise_categories!inner(name)
-              `)
-              .eq('exercise_id', newExercise.id);
-
-            if (!error && exerciseCategories) {
-              const categories = exerciseCategories
-                .map(ec => ec.exercise_categories?.name)
-                .filter(Boolean) as string[];
-              
-              const exerciseWithCategories = {
-                ...newExercise,
-                categories: categories
-              };
-              
-              setExercisesWithCategories(prev => {
-                const exists = prev.some(ex => ex.id === newExercise.id);
-                if (exists) return prev;
-                return [...prev, exerciseWithCategories];
-              });
-            } else {
-              // Add without categories if fetch fails
-              setExercisesWithCategories(prev => {
-                const exists = prev.some(ex => ex.id === newExercise.id);
-                if (exists) return prev;
-                return [...prev, { ...newExercise, categories: [] }];
-              });
-            }
-          } catch (error) {
-            console.error('Error fetching categories for new exercise:', error);
-            // Add without categories if fetch fails
-            setExercisesWithCategories(prev => {
-              const exists = prev.some(ex => ex.id === newExercise.id);
-              if (exists) return prev;
-              return [...prev, { ...newExercise, categories: [] }];
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log('🔌 Cleaning up exercises subscription...');
-      supabase.removeChannel(exercisesSubscription);
-    };
-  }, []);
-
-  // Fetch exercise categories when exercises change
-  useEffect(() => {
-    if (currentExercises.length > 0) {
-      fetchExerciseCategories();
+  // Handle real-time exercise updates
+  const { currentExercises } = useExerciseRealtime(
+    initialExercises,
+    (newExercise) => {
+      addExerciseWithCategories(newExercise);
     }
-  }, [currentExercises]);
+  );
 
-  const fetchExerciseCategories = async () => {
-    try {
-      // Fetch exercise categories from the database
-      const { data: exerciseCategories, error } = await supabase
-        .from('exercise_to_category')
-        .select(`
-          exercise_id,
-          exercise_categories!inner(name)
-        `);
-
-      if (error) {
-        console.error('Error fetching exercise categories:', error);
-        setExercisesWithCategories(currentExercises);
-        return;
-      }
-
-      // Map exercises with their categories
-      const exercisesWithCats = currentExercises.map(exercise => {
-        const exerciseCats = exerciseCategories
-          .filter(ec => ec.exercise_id === exercise.id)
-          .map(ec => ec.exercise_categories?.name)
-          .filter(Boolean) as string[];
-        
-        return {
-          ...exercise,
-          categories: exerciseCats
-        };
-      });
-
-      setExercisesWithCategories(exercisesWithCats);
-    } catch (error) {
-      console.error('Error processing exercise categories:', error);
-      setExercisesWithCategories(currentExercises);
-    }
-  };
+  // Handle exercises with categories
+  const { exercisesWithCategories, addExerciseWithCategories } = useExerciseWithCategories(currentExercises);
 
   const filteredExercises = useMemo(() => {
     let filtered = exercisesWithCategories;
