@@ -14,7 +14,7 @@ export const ExerciseSearchInput: React.FC<ExerciseSearchInputProps> = ({
 }) => {
   return (
     <div className="relative w-[30%]">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" style={{ zIndex: 10 }} />
       <Input
         placeholder="Αναζήτηση άσκησης..."
         value={searchTerm}
