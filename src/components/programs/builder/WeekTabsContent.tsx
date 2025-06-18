@@ -3,7 +3,9 @@ import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { DayCard } from './DayCard';
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import { SortableDay } from './SortableDay';
 import { Exercise, Week } from '../types';
 
 interface WeekTabsContentProps {
@@ -49,6 +51,22 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   onReorderBlocks,
   onReorderExercises
 }) => {
+  const handleDragEnd = (weekId: string) => (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const week = weeks.find(w => w.id === weekId);
+      if (!week?.program_days) return;
+
+      const oldIndex = week.program_days.findIndex(day => day.id === active.id);
+      const newIndex = week.program_days.findIndex(day => day.id === over.id);
+      
+      if (oldIndex !== -1 && newIndex !== -1) {
+        onReorderDays(weekId, oldIndex, newIndex);
+      }
+    }
+  };
+
   return (
     <>
       {weeks.map((week) => (
@@ -69,45 +87,55 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
             </div>
 
             {week.program_days && week.program_days.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {week.program_days.map((day) => (
-                  <DayCard
-                    key={day.id}
-                    day={day}
-                    exercises={exercises}
-                    onAddBlock={() => onAddBlock(week.id, day.id)}
-                    onRemoveDay={() => onRemoveDay(week.id, day.id)}
-                    onDuplicateDay={() => onDuplicateDay(week.id, day.id)}
-                    onUpdateDayName={(name) => onUpdateDayName(week.id, day.id, name)}
-                    onAddExercise={(blockId, exerciseId) => 
-                      onAddExercise(week.id, day.id, blockId, exerciseId)
-                    }
-                    onRemoveBlock={(blockId) => onRemoveBlock(week.id, day.id, blockId)}
-                    onDuplicateBlock={(blockId) => onDuplicateBlock(week.id, day.id, blockId)}
-                    onUpdateBlockName={(blockId, name) => 
-                      onUpdateBlockName(week.id, day.id, blockId, name)
-                    }
-                    onUpdateBlock={(blockId, field, value) =>
-                      onUpdateBlock(week.id, day.id, blockId, field, value)
-                    }
-                    onUpdateExercise={(blockId, exerciseId, field, value) =>
-                      onUpdateExercise(week.id, day.id, blockId, exerciseId, field, value)
-                    }
-                    onRemoveExercise={(blockId, exerciseId) =>
-                      onRemoveExercise(week.id, day.id, blockId, exerciseId)
-                    }
-                    onDuplicateExercise={(blockId, exerciseId) =>
-                      onDuplicateExercise(week.id, day.id, blockId, exerciseId)
-                    }
-                    onReorderBlocks={(oldIndex, newIndex) =>
-                      onReorderBlocks(week.id, day.id, oldIndex, newIndex)
-                    }
-                    onReorderExercises={(blockId, oldIndex, newIndex) =>
-                      onReorderExercises(week.id, day.id, blockId, oldIndex, newIndex)
-                    }
-                  />
-                ))}
-              </div>
+              <DndContext 
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd(week.id)}
+              >
+                <SortableContext 
+                  items={week.program_days.map(day => day.id)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {week.program_days.map((day) => (
+                      <SortableDay
+                        key={day.id}
+                        day={day}
+                        exercises={exercises}
+                        onAddBlock={() => onAddBlock(week.id, day.id)}
+                        onRemoveDay={() => onRemoveDay(week.id, day.id)}
+                        onDuplicateDay={() => onDuplicateDay(week.id, day.id)}
+                        onUpdateDayName={(name) => onUpdateDayName(week.id, day.id, name)}
+                        onAddExercise={(blockId, exerciseId) => 
+                          onAddExercise(week.id, day.id, blockId, exerciseId)
+                        }
+                        onRemoveBlock={(blockId) => onRemoveBlock(week.id, day.id, blockId)}
+                        onDuplicateBlock={(blockId) => onDuplicateBlock(week.id, day.id, blockId)}
+                        onUpdateBlockName={(blockId, name) => 
+                          onUpdateBlockName(week.id, day.id, blockId, name)
+                        }
+                        onUpdateBlock={(blockId, field, value) =>
+                          onUpdateBlock(week.id, day.id, blockId, field, value)
+                        }
+                        onUpdateExercise={(blockId, exerciseId, field, value) =>
+                          onUpdateExercise(week.id, day.id, blockId, exerciseId, field, value)
+                        }
+                        onRemoveExercise={(blockId, exerciseId) =>
+                          onRemoveExercise(week.id, day.id, blockId, exerciseId)
+                        }
+                        onDuplicateExercise={(blockId, exerciseId) =>
+                          onDuplicateExercise(week.id, day.id, blockId, exerciseId)
+                        }
+                        onReorderBlocks={(oldIndex, newIndex) =>
+                          onReorderBlocks(week.id, day.id, oldIndex, newIndex)
+                        }
+                        onReorderExercises={(blockId, oldIndex, newIndex) =>
+                          onReorderExercises(week.id, day.id, blockId, oldIndex, newIndex)
+                        }
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <p>Δεν υπάρχουν ημέρες σε αυτή την εβδομάδα</p>
