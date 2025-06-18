@@ -36,6 +36,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   const { currentExercises } = useExerciseRealtime(
     initialExercises,
     (newExercise) => {
+      console.log('🎯 Real-time exercise received, adding with categories:', newExercise.name);
       addExerciseWithCategories(newExercise);
     }
   );
@@ -81,7 +82,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   const handleExerciseAdded = () => {
     // Just close the add exercise dialog - the real-time subscription will handle the update
     setAddExerciseDialogOpen(false);
-    console.log('✅ Exercise added successfully - waiting for real-time update...');
+    console.log('✅ Exercise added successfully - real-time update should show it automatically');
   };
 
   return (
@@ -91,7 +92,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
           <DialogTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Filter className="w-5 h-5" />
-              Επιλογή Άσκησης
+              Επιλογή Άσκησης ({exercisesWithCategories.length} διαθέσιμες)
             </div>
             <Button
               onClick={() => setAddExerciseDialogOpen(true)}

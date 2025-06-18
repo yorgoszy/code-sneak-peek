@@ -19,6 +19,7 @@ export const useExerciseWithCategories = (exercises: Exercise[]) => {
   // Fetch exercise categories when exercises change
   useEffect(() => {
     if (exercises.length > 0) {
+      console.log('📋 Fetching categories for', exercises.length, 'exercises');
       fetchExerciseCategories();
     }
   }, [exercises]);
@@ -35,31 +36,36 @@ export const useExerciseWithCategories = (exercises: Exercise[]) => {
 
       if (error) {
         console.error('Error fetching exercise categories:', error);
-        setExercisesWithCategories(exercises);
+        setExercisesWithCategories(exercises.map(ex => ({ ...ex, categories: [] })));
         return;
       }
+
+      console.log('📊 Fetched exercise categories:', exerciseCategories?.length || 0);
 
       // Map exercises with their categories
       const exercisesWithCats = exercises.map(exercise => {
         const exerciseCats = exerciseCategories
-          .filter(ec => ec.exercise_id === exercise.id)
+          ?.filter(ec => ec.exercise_id === exercise.id)
           .map(ec => ec.exercise_categories?.name)
           .filter(Boolean) as string[];
         
         return {
           ...exercise,
-          categories: exerciseCats
+          categories: exerciseCats || []
         };
       });
 
+      console.log('✅ Mapped exercises with categories:', exercisesWithCats.length);
       setExercisesWithCategories(exercisesWithCats);
     } catch (error) {
       console.error('Error processing exercise categories:', error);
-      setExercisesWithCategories(exercises);
+      setExercisesWithCategories(exercises.map(ex => ({ ...ex, categories: [] })));
     }
   };
 
   const addExerciseWithCategories = async (exercise: Exercise) => {
+    console.log('🆕 Adding exercise with categories:', exercise.name);
+    
     try {
       const { data: exerciseCategories, error } = await supabase
         .from('exercise_to_category')
@@ -78,12 +84,19 @@ export const useExerciseWithCategories = (exercises: Exercise[]) => {
           categories: categories
         };
         
+        console.log('📂 Exercise categories found:', categories.length);
+        
         setExercisesWithCategories(prev => {
           const exists = prev.some(ex => ex.id === exercise.id);
-          if (exists) return prev;
+          if (exists) {
+            console.log('⚠️ Exercise with categories already exists:', exercise.id);
+            return prev;
+          }
+          console.log('➕ Adding exercise with categories to list');
           return [...prev, exerciseWithCategories];
         });
       } else {
+        console.log('📂 No categories found for exercise, adding without categories');
         // Add without categories if fetch fails
         setExercisesWithCategories(prev => {
           const exists = prev.some(ex => ex.id === exercise.id);

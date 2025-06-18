@@ -17,6 +17,7 @@ export const useExerciseRealtime = (
 
   // Update current exercises when initial exercises change
   useEffect(() => {
+    console.log('📥 Initial exercises updated:', initialExercises.length);
     setCurrentExercises(initialExercises);
   }, [initialExercises]);
 
@@ -25,7 +26,7 @@ export const useExerciseRealtime = (
     console.log('🔄 Setting up real-time subscription for exercises...');
     
     const exercisesSubscription = supabase
-      .channel('exercises-changes')
+      .channel('exercises-realtime')
       .on(
         'postgres_changes',
         {
@@ -41,7 +42,11 @@ export const useExerciseRealtime = (
           // Add the new exercise to the current list immediately
           setCurrentExercises(prev => {
             const exists = prev.some(ex => ex.id === newExercise.id);
-            if (exists) return prev;
+            if (exists) {
+              console.log('⚠️ Exercise already exists in list:', newExercise.id);
+              return prev;
+            }
+            console.log('➕ Adding new exercise to list:', newExercise.name);
             return [...prev, newExercise];
           });
           
@@ -49,7 +54,9 @@ export const useExerciseRealtime = (
           onExerciseAdded(newExercise);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔗 Real-time subscription status:', status);
+      });
 
     return () => {
       console.log('🔌 Cleaning up exercises subscription...');
