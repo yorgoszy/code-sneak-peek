@@ -25,6 +25,7 @@ interface ProgramBuilderProps {
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
   onUpdateBlockName: (weekId: string, dayId: string, blockId: string, name: string) => void;
+  onUpdateBlock: (weekId: string, dayId: string, blockId: string, field: string, value: any) => void;
   onAddExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
@@ -55,6 +56,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onRemoveBlock,
   onDuplicateBlock,
   onUpdateBlockName,
+  onUpdateBlock,
   onAddExercise,
   onRemoveExercise,
   onUpdateExercise,
@@ -92,6 +94,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onRemoveBlock={onRemoveBlock}
         onDuplicateBlock={onDuplicateBlock}
         onUpdateBlockName={onUpdateBlockName}
+        onUpdateBlock={onUpdateBlock}
         onAddExercise={onAddExercise}
         onRemoveExercise={onRemoveExercise}
         onUpdateExercise={onUpdateExercise}

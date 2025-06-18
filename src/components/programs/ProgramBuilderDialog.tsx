@@ -92,6 +92,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           onRemoveBlock={actions.removeBlock}
           onDuplicateBlock={actions.duplicateBlock}
           onUpdateBlockName={actions.updateBlockName}
+          onUpdateBlock={actions.updateBlock}
           onAddExercise={actions.addExercise}
           onRemoveExercise={actions.removeExercise}
           onUpdateExercise={actions.updateExercise}
