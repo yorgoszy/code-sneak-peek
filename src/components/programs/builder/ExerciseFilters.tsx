@@ -31,21 +31,13 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
     onCategoryChange(selectedCategories.filter(c => c !== category));
   };
 
-  const getAllCategories = () => {
-    return Object.values(filterCategories).flat();
-  };
-
-  const getAvailableCategories = () => {
-    return getAllCategories().filter(cat => !selectedCategories.includes(cat));
-  };
-
   return (
-    <div className="bg-gray-50 p-4 rounded-none border">
-      <div className="flex items-center gap-4 mb-3">
-        <h4 className="text-sm font-medium text-gray-700">Φίλτρα Ασκήσεων</h4>
+    <div className="bg-gray-50 p-2 rounded-none border">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xs font-medium text-gray-700">Φίλτρα</span>
         
         <Select onValueChange={handleCategorySelect}>
-          <SelectTrigger className="w-64 rounded-none">
+          <SelectTrigger className="flex-1 rounded-none text-xs h-8">
             <SelectValue placeholder="Επιλέξτε κατηγορία..." />
           </SelectTrigger>
           <SelectContent className="rounded-none">
@@ -57,7 +49,7 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
                 {categories
                   .filter(cat => !selectedCategories.includes(cat))
                   .map(category => (
-                    <SelectItem key={category} value={category} className="rounded-none">
+                    <SelectItem key={category} value={category} className="rounded-none text-xs">
                       {category}
                     </SelectItem>
                   ))}
@@ -68,14 +60,13 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
       </div>
 
       {selectedCategories.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-xs text-gray-600">Ενεργά φίλτρα:</div>
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-1">
+          <div className="flex flex-wrap gap-1">
             {selectedCategories.map(category => (
               <Badge
                 key={category}
                 variant="secondary"
-                className="bg-[#00ffba] text-black rounded-none flex items-center gap-1 cursor-pointer hover:bg-[#00ffba]/90"
+                className="bg-[#00ffba] text-black rounded-none flex items-center gap-1 cursor-pointer hover:bg-[#00ffba]/90 text-xs px-1 py-0.5"
                 onClick={() => handleCategoryRemove(category)}
               >
                 {category}
@@ -84,9 +75,9 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
             ))}
             <button
               onClick={() => onCategoryChange([])}
-              className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 border border-gray-300 rounded-none hover:bg-gray-100"
+              className="text-xs text-gray-500 hover:text-gray-700 px-1 py-0.5 border border-gray-300 rounded-none hover:bg-gray-100"
             >
-              Καθαρισμός όλων
+              Καθαρισμός
             </button>
           </div>
         </div>
