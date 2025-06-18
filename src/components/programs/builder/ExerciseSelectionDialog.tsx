@@ -2,11 +2,10 @@
 import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Exercise } from '../types';
 import { Search, Filter } from "lucide-react";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
-import { useExerciseCategories } from './hooks/useExerciseCategories';
+import { ExerciseFilters } from './ExerciseFilters';
 
 interface ExerciseSelectionDialogProps {
   open: boolean;
@@ -22,44 +21,36 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
   onSelectExercise
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const { categories } = useExerciseCategories();
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const filteredExercises = useMemo(() => {
     let filtered = exercises;
 
-    // Search filter only
+    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(exercise => 
         exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
+    // Category filter - για τώρα δεν φιλτράρει γιατί δεν έχουμε σύνδεση στη βάση
+    // Θα λειτουργήσει όταν συνδεθούν οι ασκήσεις με τις κατηγορίες
+
     return filtered;
-  }, [exercises, searchTerm]);
+  }, [exercises, searchTerm, selectedCategories]);
 
   const handleSelectExercise = (exerciseId: string) => {
     onSelectExercise(exerciseId);
     onOpenChange(false);
     setSearchTerm('');
+    setSelectedCategories([]);
   };
 
   const handleClose = () => {
     onOpenChange(false);
     setSearchTerm('');
+    setSelectedCategories([]);
   };
-
-  // Group categories by type for display
-  const categoriesByType = useMemo(() => {
-    const grouped: Record<string, string[]> = {};
-    categories.forEach(cat => {
-      if (!grouped[cat.type]) {
-        grouped[cat.type] = [];
-      }
-      grouped[cat.type].push(cat.name);
-    });
-    return grouped;
-  }, [categories]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -83,24 +74,14 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
             />
           </div>
 
-          {/* Show available categories for reference */}
-          <div className="bg-gray-50 p-3 rounded-none">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Διαθέσιμες Κατηγορίες:</h4>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs">
-              {Object.entries(categoriesByType).map(([type, names]) => (
-                <div key={type} className="bg-white p-2 rounded-none">
-                  <div className="font-medium text-gray-800 mb-1 capitalize">{type}:</div>
-                  <div className="space-y-1">
-                    {names.map(name => (
-                      <div key={name} className="text-gray-600">{name}</div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Filters */}
+          <ExerciseFilters
+            selectedCategories={selectedCategories}
+            onCategoryChange={setSelectedCategories}
+          />
           
-          <div className="max-h-96 overflow-y-auto border rounded">
+          {/* Exercise List */}
+          <div className="max-h-96 overflow-y-auto border rounded-none">
             {filteredExercises.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
                 {filteredExercises.map((exercise) => {
@@ -111,7 +92,7 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
                   return (
                     <div
                       key={exercise.id}
-                      className="border rounded p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="border rounded-none p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                       onClick={() => handleSelectExercise(exercise.id)}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -127,7 +108,7 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
                         {/* Video Thumbnail */}
                         <div className="flex-shrink-0">
                           {hasValidVideo && thumbnailUrl ? (
-                            <div className="w-16 h-12 rounded overflow-hidden bg-gray-100">
+                            <div className="w-16 h-12 rounded-none overflow-hidden bg-gray-100">
                               <img
                                 src={thumbnailUrl}
                                 alt={`${exercise.name} video thumbnail`}
@@ -143,7 +124,7 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
                               </div>
                             </div>
                           ) : (
-                            <div className="w-16 h-12 rounded bg-gray-100 flex items-center justify-center">
+                            <div className="w-16 h-12 rounded-none bg-gray-100 flex items-center justify-center">
                               <span className="text-xs text-gray-400">-</span>
                             </div>
                           )}
@@ -155,7 +136,10 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
-                Δεν βρέθηκαν ασκήσεις που να ταιριάζουν με τα κριτήρια
+                {selectedCategories.length > 0 || searchTerm 
+                  ? 'Δεν βρέθηκαν ασκήσεις που να ταιριάζουν με τα κριτήρια'
+                  : 'Δεν βρέθηκαν ασκήσεις'
+                }
               </div>
             )}
           </div>
