@@ -22,91 +22,43 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
   onSelectExercise
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<string>('all');
-  const [selectedDirection, setSelectedDirection] = useState<string>('all');
-  const [selectedEquipment, setSelectedEquipment] = useState<string>('all');
   
   const { categories } = useExerciseCategories();
 
   const filteredExercises = useMemo(() => {
     let filtered = exercises;
 
-    // Search filter
+    // Search filter only
     if (searchTerm) {
       filtered = filtered.filter(exercise => 
         exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Type filter
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(exercise => {
-        const typeCategories = categories.filter(cat => cat.type === 'type');
-        return typeCategories.some(cat => 
-          cat.name.toLowerCase() === selectedType.toLowerCase()
-        );
-      });
-    }
-
-    // Direction filter
-    if (selectedDirection !== 'all') {
-      filtered = filtered.filter(exercise => {
-        const directionCategories = categories.filter(cat => cat.type === 'direction');
-        return directionCategories.some(cat => 
-          cat.name.toLowerCase() === selectedDirection.toLowerCase()
-        );
-      });
-    }
-
-    // Equipment filter
-    if (selectedEquipment !== 'all') {
-      filtered = filtered.filter(exercise => {
-        const equipmentCategories = categories.filter(cat => cat.type === 'equipment');
-        return equipmentCategories.some(cat => 
-          cat.name.toLowerCase() === selectedEquipment.toLowerCase()
-        );
-      });
-    }
-
     return filtered;
-  }, [exercises, searchTerm, selectedType, selectedDirection, selectedEquipment, categories]);
+  }, [exercises, searchTerm]);
 
   const handleSelectExercise = (exerciseId: string) => {
     onSelectExercise(exerciseId);
     onOpenChange(false);
     setSearchTerm('');
-    setSelectedType('all');
-    setSelectedDirection('all');
-    setSelectedEquipment('all');
   };
 
   const handleClose = () => {
     onOpenChange(false);
     setSearchTerm('');
-    setSelectedType('all');
-    setSelectedDirection('all');
-    setSelectedEquipment('all');
   };
 
-  const uniqueTypes = useMemo(() => {
-    const types = categories
-      .filter(cat => cat.type === 'type')
-      .map(cat => cat.name);
-    return [...new Set(types)];
-  }, [categories]);
-
-  const uniqueDirections = useMemo(() => {
-    const directions = categories
-      .filter(cat => cat.type === 'direction')
-      .map(cat => cat.name);
-    return [...new Set(directions)];
-  }, [categories]);
-
-  const uniqueEquipment = useMemo(() => {
-    const equipment = categories
-      .filter(cat => cat.type === 'equipment')
-      .map(cat => cat.name);
-    return [...new Set(equipment)];
+  // Group categories by type for display
+  const categoriesByType = useMemo(() => {
+    const grouped: Record<string, string[]> = {};
+    categories.forEach(cat => {
+      if (!grouped[cat.type]) {
+        grouped[cat.type] = [];
+      }
+      grouped[cat.type].push(cat.name);
+    });
+    return grouped;
   }, [categories]);
 
   return (
@@ -131,57 +83,20 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
             />
           </div>
 
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Τύπος</label>
-              <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Όλοι οι τύποι" />
-                </SelectTrigger>
-                <SelectContent className="rounded-none">
-                  <SelectItem value="all">Όλοι οι τύποι</SelectItem>
-                  {uniqueTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Κατεύθυνση</label>
-              <Select value={selectedDirection} onValueChange={setSelectedDirection}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Όλες οι κατευθύνσεις" />
-                </SelectTrigger>
-                <SelectContent className="rounded-none">
-                  <SelectItem value="all">Όλες οι κατευθύνσεις</SelectItem>
-                  {uniqueDirections.map((direction) => (
-                    <SelectItem key={direction} value={direction}>
-                      {direction}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Εξοπλισμός</label>
-              <Select value={selectedEquipment} onValueChange={setSelectedEquipment}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Όλος ο εξοπλισμός" />
-                </SelectTrigger>
-                <SelectContent className="rounded-none">
-                  <SelectItem value="all">Όλος ο εξοπλισμός</SelectItem>
-                  {uniqueEquipment.map((equipment) => (
-                    <SelectItem key={equipment} value={equipment}>
-                      {equipment}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Show available categories for reference */}
+          <div className="bg-gray-50 p-3 rounded-none">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Διαθέσιμες Κατηγορίες:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs">
+              {Object.entries(categoriesByType).map(([type, names]) => (
+                <div key={type} className="bg-white p-2 rounded-none">
+                  <div className="font-medium text-gray-800 mb-1 capitalize">{type}:</div>
+                  <div className="space-y-1">
+                    {names.map(name => (
+                      <div key={name} className="text-gray-600">{name}</div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
           
