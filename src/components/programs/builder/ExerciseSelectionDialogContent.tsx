@@ -27,7 +27,7 @@ interface ExerciseSelectionDialogContentProps {
 }
 
 export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogContentProps> = ({
-  exercises,
+  exercises: initialExercises,
   onSelectExercise,
   onClose
 }) => {
@@ -35,13 +35,64 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [exercisesWithCategories, setExercisesWithCategories] = useState<ExerciseWithCategories[]>([]);
   const [addExerciseDialogOpen, setAddExerciseDialogOpen] = useState(false);
+  const [currentExercises, setCurrentExercises] = useState<Exercise[]>(initialExercises);
 
-  // Fetch exercise categories when component mounts
+  // Update current exercises when initial exercises change
   useEffect(() => {
-    if (exercises.length > 0) {
+    setCurrentExercises(initialExercises);
+  }, [initialExercises]);
+
+  // Set up real-time subscription for exercises
+  useEffect(() => {
+    console.log('🔄 Setting up real-time subscription for exercises...');
+    
+    const exercisesSubscription = supabase
+      .channel('exercises-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'exercises'
+        },
+        async (payload) => {
+          console.log('✅ New exercise added:', payload.new);
+          
+          // Fetch the new exercise with categories
+          const { data: newExercise, error } = await supabase
+            .from('exercises')
+            .select(`
+              *,
+              exercise_to_category(
+                exercise_categories(name)
+              )
+            `)
+            .eq('id', payload.new.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching new exercise:', error);
+            return;
+          }
+
+          // Add the new exercise to the current list
+          setCurrentExercises(prev => [...prev, newExercise]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔌 Cleaning up exercises subscription...');
+      supabase.removeChannel(exercisesSubscription);
+    };
+  }, []);
+
+  // Fetch exercise categories when exercises change
+  useEffect(() => {
+    if (currentExercises.length > 0) {
       fetchExerciseCategories();
     }
-  }, [exercises]);
+  }, [currentExercises]);
 
   const fetchExerciseCategories = async () => {
     try {
@@ -55,12 +106,12 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
 
       if (error) {
         console.error('Error fetching exercise categories:', error);
-        setExercisesWithCategories(exercises);
+        setExercisesWithCategories(currentExercises);
         return;
       }
 
       // Map exercises with their categories
-      const exercisesWithCats = exercises.map(exercise => {
+      const exercisesWithCats = currentExercises.map(exercise => {
         const exerciseCats = exerciseCategories
           .filter(ec => ec.exercise_id === exercise.id)
           .map(ec => ec.exercise_categories?.name)
@@ -75,7 +126,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
       setExercisesWithCategories(exercisesWithCats);
     } catch (error) {
       console.error('Error processing exercise categories:', error);
-      setExercisesWithCategories(exercises);
+      setExercisesWithCategories(currentExercises);
     }
   };
 
@@ -115,10 +166,9 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   };
 
   const handleExerciseAdded = () => {
-    // Refresh exercises - this will be handled by the parent component
-    // For now, we just close the dialog
+    // Just close the add exercise dialog - the real-time subscription will handle the update
     setAddExerciseDialogOpen(false);
-    // We could trigger a refresh here if needed
+    console.log('✅ Exercise added successfully - waiting for real-time update...');
   };
 
   return (
