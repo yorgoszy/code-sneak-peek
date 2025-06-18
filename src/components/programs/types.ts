@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -10,6 +9,7 @@ export interface Exercise {
   id: string;
   name: string;
   description?: string;
+  video_url?: string;
 }
 
 export interface ProgramExercise {
