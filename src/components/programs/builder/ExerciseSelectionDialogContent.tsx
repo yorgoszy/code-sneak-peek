@@ -1,10 +1,12 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Filter, Plus } from "lucide-react";
 import { ExerciseFilters } from './ExerciseFilters';
 import { ExerciseSearchInput } from './ExerciseSearchInput';
 import { ExerciseGrid } from './ExerciseGrid';
+import { AddExerciseDialog } from '@/components/AddExerciseDialog';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Exercise {
@@ -32,6 +34,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [exercisesWithCategories, setExercisesWithCategories] = useState<ExerciseWithCategories[]>([]);
+  const [addExerciseDialogOpen, setAddExerciseDialogOpen] = useState(false);
 
   // Fetch exercise categories when component mounts
   useEffect(() => {
@@ -111,42 +114,67 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     setSelectedCategories([]);
   };
 
-  return (
-    <DialogContent className="rounded-none max-w-6xl max-h-[80vh]">
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <Filter className="w-5 h-5" />
-          Επιλογή Άσκησης
-        </DialogTitle>
-      </DialogHeader>
-      
-      <div className="space-y-4">
-        {/* Search and Filters - Horizontal Layout */}
-        <div className="flex gap-4">
-          <ExerciseSearchInput
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-          />
+  const handleExerciseAdded = () => {
+    // Refresh exercises - this will be handled by the parent component
+    // For now, we just close the dialog
+    setAddExerciseDialogOpen(false);
+    // We could trigger a refresh here if needed
+  };
 
-          {/* Filters */}
-          <div className="w-[30%]">
-            <ExerciseFilters
+  return (
+    <>
+      <DialogContent className="rounded-none max-w-6xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Επιλογή Άσκησης
+            </div>
+            <Button
+              onClick={() => setAddExerciseDialogOpen(true)}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              size="sm"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Προσθήκη Άσκησης
+            </Button>
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          {/* Search and Filters - Horizontal Layout */}
+          <div className="flex gap-4">
+            <ExerciseSearchInput
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
+
+            {/* Filters */}
+            <div className="w-[30%]">
+              <ExerciseFilters
+                selectedCategories={selectedCategories}
+                onCategoryChange={setSelectedCategories}
+              />
+            </div>
+          </div>
+          
+          {/* Exercise List */}
+          <div className="max-h-96 overflow-y-auto border rounded-none">
+            <ExerciseGrid
+              exercises={filteredExercises}
+              onSelectExercise={handleSelectExercise}
               selectedCategories={selectedCategories}
-              onCategoryChange={setSelectedCategories}
+              searchTerm={searchTerm}
             />
           </div>
         </div>
-        
-        {/* Exercise List */}
-        <div className="max-h-96 overflow-y-auto border rounded-none">
-          <ExerciseGrid
-            exercises={filteredExercises}
-            onSelectExercise={handleSelectExercise}
-            selectedCategories={selectedCategories}
-            searchTerm={searchTerm}
-          />
-        </div>
-      </div>
-    </DialogContent>
+      </DialogContent>
+
+      <AddExerciseDialog
+        open={addExerciseDialogOpen}
+        onOpenChange={setAddExerciseDialogOpen}
+        onSuccess={handleExerciseAdded}
+      />
+    </>
   );
 };
