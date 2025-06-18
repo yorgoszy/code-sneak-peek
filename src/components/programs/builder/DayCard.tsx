@@ -11,7 +11,6 @@ import { Exercise, Day } from '../types';
 interface DayCardProps {
   day: Day;
   exercises: Exercise[];
-  dragHandleProps?: any;
   onAddBlock: () => void;
   onRemoveDay: () => void;
   onDuplicateDay: () => void;
@@ -20,7 +19,6 @@ interface DayCardProps {
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
   onUpdateBlockName: (blockId: string, name: string) => void;
-  onUpdateBlock: (blockId: string, field: string, value: any) => void;
   onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (blockId: string, exerciseId: string) => void;
   onDuplicateExercise: (blockId: string, exerciseId: string) => void;
@@ -31,7 +29,6 @@ interface DayCardProps {
 export const DayCard: React.FC<DayCardProps> = ({
   day,
   exercises,
-  dragHandleProps,
   onAddBlock,
   onRemoveDay,
   onDuplicateDay,
@@ -40,7 +37,6 @@ export const DayCard: React.FC<DayCardProps> = ({
   onRemoveBlock,
   onDuplicateBlock,
   onUpdateBlockName,
-  onUpdateBlock,
   onUpdateExercise,
   onRemoveExercise,
   onDuplicateExercise,
@@ -76,63 +72,47 @@ export const DayCard: React.FC<DayCardProps> = ({
 
   return (
     <Card className="rounded-none relative" style={{ minHeight: '30px' }}>
-      {/* Drag Handle - Απομονωμένο από τα άλλα events */}
-      {dragHandleProps && (
-        <div 
-          className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10 hover:bg-gray-100"
-          {...dragHandleProps}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-          }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <GripVertical className="w-3 h-3 text-gray-400" />
-        </div>
-      )}
-      
-      {/* Κύριο περιεχόμενο - με padding-left για να μη συγκρούεται με το drag handle */}
-      <div className={dragHandleProps ? "pl-4" : ""}>
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <DayCardHeader
-            dayName={day.name}
-            isOpen={isOpen}
-            isEditing={isEditing}
-            editingName={editingName}
-            blocksCount={blocksCount}
-            onNameDoubleClick={handleNameDoubleClick}
-            onEditingNameChange={setEditingName}
-            onNameSave={handleNameSave}
-            onNameKeyPress={handleNameKeyPress}
-            onAddBlock={onAddBlock}
-            onDuplicateDay={onDuplicateDay}
-            onRemoveDay={onRemoveDay}
-          />
-          
-          {isOpen && (
-            <DayCardContent
-              blocks={day.program_blocks || []}
-              exercises={exercises}
-              onAddExercise={onAddExercise}
-              onRemoveBlock={onRemoveBlock}
-              onDuplicateBlock={onDuplicateBlock}
-              onUpdateBlockName={onUpdateBlockName}
-              onUpdateBlock={onUpdateBlock}
-              onUpdateExercise={onUpdateExercise}
-              onRemoveExercise={onRemoveExercise}
-              onDuplicateExercise={onDuplicateExercise}
-              onReorderBlocks={onReorderBlocks}
-              onReorderExercises={onReorderExercises}
-            />
-          )}
-          
-          <DayCalculations 
-            blocks={day.program_blocks || []} 
-            exercises={exercises} 
-          />
-        </Collapsible>
+      <div className="absolute left-0 top-0 bottom-0 w-4 flex items-center justify-center cursor-move z-10">
+        <GripVertical className="w-3 h-3 text-gray-400" />
       </div>
+      
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <DayCardHeader
+          dayName={day.name}
+          isOpen={isOpen}
+          isEditing={isEditing}
+          editingName={editingName}
+          blocksCount={blocksCount}
+          onNameDoubleClick={handleNameDoubleClick}
+          onEditingNameChange={setEditingName}
+          onNameSave={handleNameSave}
+          onNameKeyPress={handleNameKeyPress}
+          onAddBlock={onAddBlock}
+          onDuplicateDay={onDuplicateDay}
+          onRemoveDay={onRemoveDay}
+        />
+        
+        {isOpen && (
+          <DayCardContent
+            blocks={day.program_blocks || []}
+            exercises={exercises}
+            onAddExercise={onAddExercise}
+            onRemoveBlock={onRemoveBlock}
+            onDuplicateBlock={onDuplicateBlock}
+            onUpdateBlockName={onUpdateBlockName}
+            onUpdateExercise={onUpdateExercise}
+            onRemoveExercise={onRemoveExercise}
+            onDuplicateExercise={onDuplicateExercise}
+            onReorderBlocks={onReorderBlocks}
+            onReorderExercises={onReorderExercises}
+          />
+        )}
+        
+        <DayCalculations 
+          blocks={day.program_blocks || []} 
+          exercises={exercises} 
+        />
+      </Collapsible>
     </Card>
   );
 };

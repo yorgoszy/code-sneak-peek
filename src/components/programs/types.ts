@@ -36,12 +36,6 @@ export interface Block {
   name: string;
   block_order: number;
   program_exercises: ProgramExercise[];
-  // Block-level attributes που ισχύουν για όλες τις ασκήσεις του block
-  block_sets?: number;
-  block_reps?: string;
-  block_time?: string;
-  block_rest?: string;
-  block_timecup?: string;
 }
 
 export interface Day {

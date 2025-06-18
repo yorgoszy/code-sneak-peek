@@ -112,34 +112,10 @@ export const useBlockActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  const updateBlock = (weekId: string, dayId: string, blockId: string, field: string, value: any) => {
-    const updatedWeeks = (program.weeks || []).map(week => {
-      if (week.id === weekId) {
-        return {
-          ...week,
-          program_days: (week.program_days || []).map(day => {
-            if (day.id === dayId) {
-              return {
-                ...day,
-                program_blocks: (day.program_blocks || []).map(block =>
-                  block.id === blockId ? { ...block, [field]: value } : block
-                )
-              };
-            }
-            return day;
-          })
-        };
-      }
-      return week;
-    });
-    updateProgram({ weeks: updatedWeeks });
-  };
-
   return {
     addBlock,
     removeBlock,
     duplicateBlock,
-    updateBlockName,
-    updateBlock
+    updateBlockName
   };
 };
