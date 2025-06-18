@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Exercise } from '../types';
 import { Search } from "lucide-react";
+import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 
 interface ExerciseSelectionDialogProps {
   open: boolean;
@@ -59,30 +60,66 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
           <div className="max-h-96 overflow-y-auto border rounded">
             {filteredExercises.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
-                {filteredExercises.map((exercise) => (
-                  <div
-                    key={exercise.id}
-                    className="border rounded p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => handleSelectExercise(exercise.id)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm">{exercise.name}</h4>
-                        {exercise.description && (
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                            {exercise.description}
-                          </p>
+                {filteredExercises.map((exercise) => {
+                  const videoUrl = exercise.video_url;
+                  const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
+                  const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
+                  
+                  return (
+                    <div
+                      key={exercise.id}
+                      className="border rounded p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => handleSelectExercise(exercise.id)}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-sm">{exercise.name}</h4>
+                          {exercise.description && (
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                              {exercise.description}
+                            </p>
+                          )}
+                        </div>
+                        
+                        {/* Video Thumbnail */}
+                        <div className="flex-shrink-0">
+                          {hasValidVideo && thumbnailUrl ? (
+                            <div className="w-16 h-12 rounded overflow-hidden bg-gray-100">
+                              <img
+                                src={thumbnailUrl}
+                                alt={`${exercise.name} video thumbnail`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.currentTarget as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                              <div className="hidden w-full h-full bg-gray-200 flex items-center justify-center">
+                                <span className="text-xs text-gray-400">Video</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-16 h-12 rounded bg-gray-100 flex items-center justify-center">
+                              <span className="text-xs text-gray-400">-</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          Άσκηση
+                        </span>
+                        {hasValidVideo && (
+                          <span className="text-xs bg-[#00ffba] text-black px-2 py-1 rounded">
+                            Video
+                          </span>
                         )}
                       </div>
                     </div>
-                    
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        Άσκηση
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
