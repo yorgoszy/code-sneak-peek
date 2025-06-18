@@ -1,17 +1,22 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Exercise } from '../types';
 import { Search, Filter } from "lucide-react";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseFilters } from './ExerciseFilters';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ExerciseSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   exercises: Exercise[];
   onSelectExercise: (exerciseId: string) => void;
+}
+
+interface ExerciseWithCategories extends Exercise {
+  categories?: string[];
 }
 
 export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = ({
@@ -22,9 +27,53 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [exercisesWithCategories, setExercisesWithCategories] = useState<ExerciseWithCategories[]>([]);
+
+  // Fetch exercise categories when dialog opens
+  useEffect(() => {
+    if (open && exercises.length > 0) {
+      fetchExerciseCategories();
+    }
+  }, [open, exercises]);
+
+  const fetchExerciseCategories = async () => {
+    try {
+      // Fetch exercise categories from the database
+      const { data: exerciseCategories, error } = await supabase
+        .from('exercise_to_category')
+        .select(`
+          exercise_id,
+          exercise_categories!inner(name)
+        `);
+
+      if (error) {
+        console.error('Error fetching exercise categories:', error);
+        setExercisesWithCategories(exercises);
+        return;
+      }
+
+      // Map exercises with their categories
+      const exercisesWithCats = exercises.map(exercise => {
+        const exerciseCats = exerciseCategories
+          .filter(ec => ec.exercise_id === exercise.id)
+          .map(ec => ec.exercise_categories?.name)
+          .filter(Boolean) as string[];
+        
+        return {
+          ...exercise,
+          categories: exerciseCats
+        };
+      });
+
+      setExercisesWithCategories(exercisesWithCats);
+    } catch (error) {
+      console.error('Error processing exercise categories:', error);
+      setExercisesWithCategories(exercises);
+    }
+  };
 
   const filteredExercises = useMemo(() => {
-    let filtered = exercises;
+    let filtered = exercisesWithCategories;
 
     // Search filter
     if (searchTerm) {
@@ -33,11 +82,23 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
       );
     }
 
-    // Category filter - για τώρα δεν φιλτράρει γιατί δεν έχουμε σύνδεση στη βάση
-    // Θα λειτουργήσει όταν συνδεθούν οι ασκήσεις με τις κατηγορίες
+    // Category filter
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(exercise => {
+        if (!exercise.categories || exercise.categories.length === 0) {
+          return false;
+        }
+        // Check if exercise has ANY of the selected categories
+        return selectedCategories.some(selectedCat => 
+          exercise.categories!.some(exerciseCat => 
+            exerciseCat.toLowerCase() === selectedCat.toLowerCase()
+          )
+        );
+      });
+    }
 
     return filtered;
-  }, [exercises, searchTerm, selectedCategories]);
+  }, [exercisesWithCategories, searchTerm, selectedCategories]);
 
   const handleSelectExercise = (exerciseId: string) => {
     onSelectExercise(exerciseId);
@@ -107,6 +168,21 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
                             <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                               {exercise.description}
                             </p>
+                          )}
+                          {exercise.categories && exercise.categories.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {exercise.categories.slice(0, 3).map((category, index) => (
+                                <span
+                                  key={index}
+                                  className="text-xs bg-[#00ffba] text-black px-1 py-0.5 rounded-none"
+                                >
+                                  {category}
+                                </span>
+                              ))}
+                              {exercise.categories.length > 3 && (
+                                <span className="text-xs text-gray-500">+{exercise.categories.length - 3}</span>
+                              )}
+                            </div>
                           )}
                         </div>
                         
