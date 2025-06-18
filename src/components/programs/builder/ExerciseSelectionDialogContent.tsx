@@ -56,27 +56,16 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
           table: 'exercises'
         },
         async (payload) => {
-          console.log('✅ New exercise added:', payload.new);
+          console.log('✅ New exercise added via realtime:', payload.new);
           
-          // Fetch the new exercise with categories
-          const { data: newExercise, error } = await supabase
-            .from('exercises')
-            .select(`
-              *,
-              exercise_to_category(
-                exercise_categories(name)
-              )
-            `)
-            .eq('id', payload.new.id)
-            .single();
-
-          if (error) {
-            console.error('Error fetching new exercise:', error);
-            return;
-          }
-
-          // Add the new exercise to the current list
-          setCurrentExercises(prev => [...prev, newExercise]);
+          // Add the new exercise to the current list immediately
+          const newExercise = payload.new as Exercise;
+          setCurrentExercises(prev => {
+            // Check if exercise already exists to avoid duplicates
+            const exists = prev.some(ex => ex.id === newExercise.id);
+            if (exists) return prev;
+            return [...prev, newExercise];
+          });
         }
       )
       .subscribe();
