@@ -25,6 +25,15 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
 }) => {
   const hasVideo = exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url);
 
+  const handleVideoThumbnailClick = (exerciseForVideo: any) => {
+    // Convert the exercise parameter to a MouseEvent-like call
+    const syntheticEvent = {
+      stopPropagation: () => {},
+      preventDefault: () => {}
+    } as React.MouseEvent;
+    onVideoClick(syntheticEvent);
+  };
+
   return (
     <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
       <div className="flex items-center justify-between">
@@ -45,10 +54,8 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
             {hasVideo && (
               <div className="video-thumbnail flex-shrink-0">
                 <VideoThumbnail 
-                  videoUrl={exercise.exercises.video_url}
-                  exerciseName={exercise.exercises.name}
-                  onClick={onVideoClick}
-                  size="sm"
+                  exercise={exercise}
+                  onVideoClick={handleVideoThumbnailClick}
                 />
               </div>
             )}
@@ -76,3 +83,4 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
     </div>
   );
 };
+
