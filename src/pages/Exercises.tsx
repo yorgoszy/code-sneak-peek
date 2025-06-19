@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AddExerciseDialog } from "@/components/AddExerciseDialog";
 import { EditExerciseDialog } from "@/components/EditExerciseDialog";
+import { ExerciseVideoDialog } from "@/components/user-profile/daily-program/ExerciseVideoDialog";
 import { toast } from "sonner";
 import { getVideoThumbnail } from "@/utils/videoUtils";
 
@@ -41,6 +42,8 @@ const Exercises = () => {
   const [loadingExercises, setLoadingExercises] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const [selectedVideoExercise, setSelectedVideoExercise] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -145,6 +148,21 @@ const Exercises = () => {
     } finally {
       setLoadingExercises(false);
     }
+  };
+
+  const handleVideoClick = (exercise: Exercise) => {
+    // Μετατρέπουμε το Exercise σε format που χρειάζεται το ExerciseVideoDialog
+    const videoExercise = {
+      id: exercise.id,
+      exercises: {
+        id: exercise.id,
+        name: exercise.name,
+        description: exercise.description,
+        video_url: exercise.video_url
+      }
+    };
+    setSelectedVideoExercise(videoExercise);
+    setIsVideoDialogOpen(true);
   };
 
   const handleEditExercise = (exercise: Exercise) => {
@@ -365,12 +383,12 @@ const Exercises = () => {
                                   src={getVideoThumbnail(exercise.video_url)}
                                   alt="Video thumbnail"
                                   className="w-16 h-12 object-cover border cursor-pointer"
-                                  onClick={() => window.open(exercise.video_url!, '_blank')}
+                                  onClick={() => handleVideoClick(exercise)}
                                 />
                               ) : (
                                 <div 
                                   className="w-16 h-12 bg-gray-100 border flex items-center justify-center cursor-pointer"
-                                  onClick={() => window.open(exercise.video_url!, '_blank')}
+                                  onClick={() => handleVideoClick(exercise)}
                                 >
                                   <Video className="h-4 w-4 text-gray-400" />
                                 </div>
@@ -421,6 +439,12 @@ const Exercises = () => {
         onOpenChange={setIsEditDialogOpen}
         exercise={selectedExercise}
         onSuccess={fetchExercises}
+      />
+
+      <ExerciseVideoDialog
+        isOpen={isVideoDialogOpen}
+        onClose={() => setIsVideoDialogOpen(false)}
+        exercise={selectedVideoExercise}
       />
     </div>
   );
