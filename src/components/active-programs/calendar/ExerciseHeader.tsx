@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CheckCircle, Video } from 'lucide-react';
+import { CheckCircle, Play } from 'lucide-react';
+import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThumbnail';
+import { isValidVideoUrl } from '@/utils/videoUtils';
 
 interface ExerciseHeaderProps {
   exercise: any;
@@ -11,6 +11,7 @@ interface ExerciseHeaderProps {
   workoutInProgress: boolean;
   onVideoClick: (event: React.MouseEvent) => void;
   onSetClick: (event: React.MouseEvent) => void;
+  onExerciseNameClick?: (event: React.MouseEvent) => void;
 }
 
 export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
@@ -19,37 +20,57 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
   remainingText,
   workoutInProgress,
   onVideoClick,
-  onSetClick
+  onSetClick,
+  onExerciseNameClick
 }) => {
+  const hasVideo = exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url);
+
   return (
-    <div className="p-2 border-b border-gray-200">
+    <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="text-sm font-medium text-gray-900">
-            {exercise.exercises?.name || 'Unknown Exercise'}
-          </div>
-          {isComplete && <CheckCircle className="w-4 h-4 text-green-600" />}
-          {exercise.exercises?.video_url && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onVideoClick}
-              className="h-5 w-5 p-0 rounded-none"
+        <div className="flex items-center space-x-2 flex-1 min-w-0">
+          {isComplete && <CheckCircle className="w-4 h-4 text-[#00ffba] flex-shrink-0" />}
+          
+          <div className="flex items-center space-x-2 flex-1 min-w-0">
+            <h4 
+              className={`text-sm font-medium text-gray-900 truncate ${
+                hasVideo ? 'cursor-pointer hover:text-[#00ffba] transition-colors' : ''
+              }`}
+              onClick={hasVideo && onExerciseNameClick ? onExerciseNameClick : undefined}
+              title={exercise.exercises?.name}
             >
-              <Video className="w-3 h-3" />
-            </Button>
-          )}
+              {exercise.exercises?.name || 'Άγνωστη άσκηση'}
+            </h4>
+            
+            {hasVideo && (
+              <div className="video-thumbnail flex-shrink-0">
+                <VideoThumbnail 
+                  videoUrl={exercise.exercises.video_url}
+                  exerciseName={exercise.exercises.name}
+                  onClick={onVideoClick}
+                  size="sm"
+                />
+              </div>
+            )}
+          </div>
         </div>
-        
-        <div className="flex items-center gap-2">          
-          <Badge 
-            variant="outline" 
-            className={`rounded-none text-xs px-1 ${
-              isComplete ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {isComplete ? 'Complete!' : remainingText}
-          </Badge>
+
+        <div className="flex items-center space-x-2 flex-shrink-0">
+          {remainingText && (
+            <span className="text-xs text-gray-600 bg-white px-2 py-1 rounded-none border">
+              {remainingText}
+            </span>
+          )}
+          
+          {workoutInProgress && (
+            <div 
+              className="bg-[#00ffba] hover:bg-[#00ffba]/80 text-black px-2 py-1 rounded-none text-xs cursor-pointer transition-colors flex items-center space-x-1"
+              onClick={onSetClick}
+            >
+              <Play className="w-3 h-3" />
+              <span>Sets</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
