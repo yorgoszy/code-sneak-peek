@@ -87,7 +87,6 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         workoutInProgress={workoutInProgress}
         onVideoClick={handleVideoClick}
         onSetClick={handleSetsAreaClick}
-        onExerciseNameClick={handleVideoClick}
       />
 
       <div className="p-3">
