@@ -23,16 +23,32 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
   onClose,
   exercise
 }) => {
+  // ΔΙΟΡΘΩΣΗ: Καλύτερος χειρισμός του video_url που έρχεται ως object
+  let videoUrl = exercise?.exercises?.video_url;
+  
+  if (videoUrl && typeof videoUrl === 'object') {
+    if ((videoUrl as any).value && (videoUrl as any).value !== 'undefined') {
+      videoUrl = (videoUrl as any).value;
+    } else {
+      videoUrl = undefined;
+    }
+  }
+  
+  if (videoUrl === 'undefined') {
+    videoUrl = undefined;
+  }
+
   console.log('🎬 ExerciseVideoDialog render:', {
     isOpen,
     exerciseName: exercise?.exercises?.name,
-    videoUrl: exercise?.exercises?.video_url
+    rawVideoUrl: exercise?.exercises?.video_url,
+    processedVideoUrl: videoUrl
   });
 
   if (!exercise?.exercises) return null;
 
-  const { name, description, video_url } = exercise.exercises;
-  const hasValidVideo = video_url && isValidVideoUrl(video_url);
+  const { name, description } = exercise.exercises;
+  const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
 
   const renderVideo = () => {
     if (!hasValidVideo) {
@@ -46,12 +62,12 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
     }
 
     // YouTube video
-    if (video_url.includes('youtube.com') || video_url.includes('youtu.be')) {
+    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
       let videoId = '';
-      if (video_url.includes('youtube.com/watch?v=')) {
-        videoId = video_url.split('v=')[1]?.split('&')[0];
-      } else if (video_url.includes('youtu.be/')) {
-        videoId = video_url.split('youtu.be/')[1]?.split('?')[0];
+      if (videoUrl.includes('youtube.com/watch?v=')) {
+        videoId = videoUrl.split('v=')[1]?.split('&')[0];
+      } else if (videoUrl.includes('youtu.be/')) {
+        videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
       }
 
       if (videoId) {
@@ -71,8 +87,8 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
     }
 
     // Vimeo video
-    if (video_url.includes('vimeo.com')) {
-      const videoId = video_url.split('/').pop()?.split('?')[0];
+    if (videoUrl.includes('vimeo.com')) {
+      const videoId = videoUrl.split('/').pop()?.split('?')[0];
       if (videoId) {
         return (
           <div className="aspect-video">
@@ -90,11 +106,11 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
     }
 
     // Direct video file
-    if (video_url.match(/\.(mp4|webm|ogg)$/)) {
+    if (videoUrl.match(/\.(mp4|webm|ogg)$/)) {
       return (
         <div className="aspect-video">
           <video
-            src={video_url}
+            src={videoUrl}
             controls
             className="w-full h-full rounded-none"
             title={name}
