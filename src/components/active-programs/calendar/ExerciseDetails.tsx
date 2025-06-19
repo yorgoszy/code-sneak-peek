@@ -30,12 +30,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
 
   return (
     <div className="space-y-2">
-      {/* Exercise Name Only - No separate thumbnail */}
-      <div className="font-medium text-sm text-gray-900 mb-2">
-        {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-      </div>
-
-      {/* Exercise Details Grid */}
+      {/* Exercise Details Grid - Removed duplicate exercise name */}
       <div className="grid grid-cols-7 gap-0.5 text-xs">
         <div className="flex flex-col items-center">
           <div className="text-gray-600 mb-1 text-center">Sets</div>
