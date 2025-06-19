@@ -24,6 +24,11 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
     }
   };
 
+  console.log('📋 ExerciseDetails render for:', exercise.exercises?.name, {
+    hasVideoUrl: !!exercise.exercises?.video_url,
+    videoUrl: exercise.exercises?.video_url
+  });
+
   return (
     <div className="space-y-2">
       {/* Exercise Name and Video Row */}
