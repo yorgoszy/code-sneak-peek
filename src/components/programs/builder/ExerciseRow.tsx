@@ -44,6 +44,24 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 
   const exerciseNumber = getExerciseNumber();
 
+  const handleVelocityChange = (value: string) => {
+    // Allow starting with 0 and use . for decimals
+    const cleanValue = value.replace(',', '.');
+    onUpdate('velocity_ms', parseFloat(cleanValue) || 0);
+  };
+
+  const handlePercentageChange = (value: string) => {
+    // Allow starting with 0 and use . for decimals
+    const cleanValue = value.replace(',', '.');
+    onUpdate('percentage_1rm', parseFloat(cleanValue) || '');
+  };
+
+  const handleKgChange = (value: string) => {
+    // Allow starting with 0 and use . for decimals
+    const cleanValue = value.replace(',', '.');
+    onUpdate('kg', cleanValue);
+  };
+
   return (
     <>
       <div className="bg-white border-0 border-b w-full" style={{ fontSize: '12px' }}>
@@ -100,9 +118,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
               pattern="[0-9]*"
               value={exercise.sets || ''}
               onChange={(e) => onUpdate('sets', parseInt(e.target.value) || '')}
-              className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
+              className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full rounded-none"
               style={{ 
-                borderRadius: '0px', 
                 fontSize: '12px', 
                 height: '22px', 
                 padding: '0 4px'
@@ -116,9 +133,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <Input
               value={exercise.reps || ''}
               onChange={(e) => onUpdate('reps', e.target.value)}
-              className="text-center w-full"
+              className="text-center w-full rounded-none"
               style={{ 
-                borderRadius: '0px', 
                 fontSize: '12px', 
                 height: '22px', 
                 padding: '0 4px'
@@ -131,13 +147,11 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>%1RM</label>
             <Input
               type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={exercise.percentage_1rm || ''}
-              onChange={(e) => onUpdate('percentage_1rm', parseFloat(e.target.value) || '')}
-              className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
+              inputMode="decimal"
+              value={exercise.percentage_1rm?.toString() || ''}
+              onChange={(e) => handlePercentageChange(e.target.value)}
+              className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full rounded-none"
               style={{ 
-                borderRadius: '0px', 
                 fontSize: '12px', 
                 height: '22px', 
                 padding: '0 4px'
@@ -149,11 +163,12 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           <div className="flex flex-col items-center" style={{ width: '60px' }}>
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
             <Input
+              type="text"
+              inputMode="decimal"
               value={exercise.kg || ''}
-              onChange={(e) => onUpdate('kg', e.target.value)}
-              className="text-center w-full"
+              onChange={(e) => handleKgChange(e.target.value)}
+              className="text-center w-full rounded-none"
               style={{ 
-                borderRadius: '0px', 
                 fontSize: '12px', 
                 height: '22px', 
                 padding: '0 4px'
@@ -166,12 +181,11 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
             <Input
               type="text"
-              inputMode="numeric"
+              inputMode="decimal"
               value={exercise.velocity_ms?.toString() || ''}
-              onChange={(e) => onUpdate('velocity_ms', parseFloat(e.target.value) || 0)}
-              className="text-center w-full"
+              onChange={(e) => handleVelocityChange(e.target.value)}
+              className="text-center w-full rounded-none"
               style={{ 
-                borderRadius: '0px', 
                 fontSize: '12px', 
                 height: '22px', 
                 padding: '0 4px'
@@ -185,9 +199,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <Input
               value={exercise.tempo || ''}
               onChange={(e) => onUpdate('tempo', e.target.value)}
-              className="text-center w-full"
+              className="text-center w-full rounded-none"
               style={{ 
-                borderRadius: '0px', 
                 fontSize: '12px', 
                 height: '22px', 
                 padding: '0 4px'
@@ -201,9 +214,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
             <Input
               value={exercise.rest || ''}
               onChange={(e) => onUpdate('rest', e.target.value)}
-              className="text-center w-full"
+              className="text-center w-full rounded-none"
               style={{ 
-                borderRadius: '0px', 
                 fontSize: '12px', 
                 height: '22px', 
                 padding: '0 4px'
