@@ -8,14 +8,15 @@ import { useStrengthTestData } from "./strength/useStrengthTestData";
 interface StrengthTestSessionProps {
   selectedAthleteId: string;
   selectedDate: string;
-  // Instead of onReset, now registerReset for lifting the reset function!
   registerReset?: (reset: () => void) => void;
+  strengthSessionRef?: React.MutableRefObject<any>;
 }
 
 export const StrengthTestSession = ({
   selectedAthleteId,
   selectedDate,
-  registerReset
+  registerReset,
+  strengthSessionRef
 }: StrengthTestSessionProps) => {
   const {
     exercises,
@@ -34,8 +35,17 @@ export const StrengthTestSession = ({
     if (registerReset) {
       registerReset(resetForm);
     }
-    // eslint-disable-next-line
   }, [registerReset, resetForm]);
+
+  // Expose current session to parent ref
+  useEffect(() => {
+    if (strengthSessionRef) {
+      strengthSessionRef.current = {
+        ...currentSession,
+        reset: resetForm
+      };
+    }
+  }, [currentSession, resetForm, strengthSessionRef]);
 
   const addExerciseTest = () => {
     const newExerciseTest = {
