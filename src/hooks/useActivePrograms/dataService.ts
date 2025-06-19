@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "./types";
 
@@ -107,45 +108,44 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
 };
 
 export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
-  const { data, error } = await supabase
-    .from('program_assignments')
-    .select(`
-      id,
-      program_id,
-      user_id,
-      progress,
-      start_date,
-      end_date,
-      created_at,
-      updated_at,
-      assigned_by,
-      group_id,
-      training_dates,
-      status,
-      assignment_type,
-      notes,
-      programs!inner(
+  try {
+    console.log('🔄 Fetching active programs from database...');
+    
+    // First, fetch program assignments
+    const { data: assignments, error: assignmentsError } = await supabase
+      .from('program_assignments')
+      .select('*')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (assignmentsError) {
+      console.error('❌ Error fetching program assignments:', assignmentsError);
+      throw assignmentsError;
+    }
+
+    console.log('✅ Raw assignments data:', assignments);
+
+    if (!assignments || assignments.length === 0) {
+      return [];
+    }
+
+    // Fetch related programs separately
+    const programIds = assignments.map(a => a.program_id).filter(Boolean);
+    const { data: programs, error: programsError } = await supabase
+      .from('programs')
+      .select(`
         id,
         name,
         description,
-        duration,
-        created_by,
-        created_at,
-        updated_at,
-        is_template,
-        user_id,
-        start_date,
         training_days,
-        status,
-        type,
         program_weeks(
           id,
-          week_number,
           name,
+          week_number,
           program_days(
             id,
-            day_number,
             name,
+            day_number,
             estimated_duration_minutes,
             program_blocks(
               id,
@@ -173,23 +173,68 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
             )
           )
         )
-      ),
-      app_users!inner(
-        id,
-        name,
-        email,
-        photo_url,
-        role
-      )
-    `)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false });
+      `)
+      .in('id', programIds);
 
-  if (error) {
-    console.error('❌ Error fetching active programs:', error);
+    if (programsError) {
+      console.error('❌ Error fetching programs:', programsError);
+      throw programsError;
+    }
+
+    // Fetch related users separately
+    const userIds = assignments.map(a => a.user_id).filter(Boolean);
+    const { data: users, error: usersError } = await supabase
+      .from('app_users')
+      .select('id, name, email, photo_url')
+      .in('id', userIds);
+
+    if (usersError) {
+      console.error('❌ Error fetching users:', usersError);
+      throw usersError;
+    }
+
+    // Combine the data manually
+    const enrichedAssignments: EnrichedAssignment[] = assignments.map(assignment => {
+      const program = programs?.find(p => p.id === assignment.program_id);
+      const user = users?.find(u => u.id === assignment.user_id);
+
+      return {
+        id: assignment.id,
+        program_id: assignment.program_id,
+        user_id: assignment.user_id,
+        assigned_by: assignment.assigned_by,
+        start_date: assignment.start_date,
+        end_date: assignment.end_date,
+        status: assignment.status,
+        notes: assignment.notes,
+        created_at: assignment.created_at,
+        updated_at: assignment.updated_at,
+        assignment_type: assignment.assignment_type,
+        group_id: assignment.group_id,
+        progress: assignment.progress,
+        training_dates: assignment.training_dates,
+        programs: program ? {
+          id: program.id,
+          name: program.name,
+          description: program.description,
+          training_days: typeof program.training_days === 'number' 
+            ? [] 
+            : program.training_days || [],
+          program_weeks: program.program_weeks || []
+        } : undefined,
+        app_users: user ? {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          photo_url: user.photo_url
+        } : null
+      };
+    });
+
+    console.log('✅ Enriched assignments:', enrichedAssignments);
+    return enrichedAssignments;
+  } catch (error) {
+    console.error('❌ Unexpected error fetching active programs:', error);
     throw error;
   }
-
-  console.log('✅ Raw data from Supabase:', data);
-  return data || [];
 };
