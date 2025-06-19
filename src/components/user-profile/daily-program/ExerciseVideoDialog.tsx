@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertCircle } from 'lucide-react';
@@ -86,15 +85,30 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
 
       if (videoId) {
         return (
-          <div className="aspect-video">
+          <div className="aspect-video relative">
             <iframe
-              src={`https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1`}
+              src={`https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1&fs=0&disablekb=1`}
               title={name}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               className="w-full h-full rounded-none"
             />
+            <style jsx>{`
+              iframe {
+                pointer-events: auto;
+              }
+              iframe::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 80px;
+                height: 60px;
+                background: transparent;
+                z-index: 10;
+              }
+            `}</style>
           </div>
         );
       }
