@@ -23,26 +23,40 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
   onClose,
   exercise
 }) => {
-  // ΔΙΟΡΘΩΣΗ: Καλύτερος χειρισμός του video_url που έρχεται ως object
+  // ΔΙΟΡΘΩΣΗ: Πιο προσεκτικός χειρισμός του video_url
   let videoUrl = exercise?.exercises?.video_url;
   
+  console.log('🎬 ExerciseVideoDialog raw video_url:', {
+    isOpen,
+    exerciseName: exercise?.exercises?.name,
+    rawVideoUrl: videoUrl,
+    typeOfRaw: typeof videoUrl
+  });
+  
   if (videoUrl && typeof videoUrl === 'object') {
-    if ((videoUrl as any).value && (videoUrl as any).value !== 'undefined') {
+    if ((videoUrl as any).value && (videoUrl as any).value !== 'undefined' && (videoUrl as any).value !== 'null') {
       videoUrl = (videoUrl as any).value;
     } else {
       videoUrl = undefined;
     }
   }
   
-  if (videoUrl === 'undefined') {
+  if (videoUrl === 'undefined' || videoUrl === 'null' || videoUrl === '') {
     videoUrl = undefined;
   }
+  
+  // Αν είναι string, κάνε trim
+  if (typeof videoUrl === 'string') {
+    videoUrl = videoUrl.trim();
+    if (videoUrl === '') {
+      videoUrl = undefined;
+    }
+  }
 
-  console.log('🎬 ExerciseVideoDialog render:', {
-    isOpen,
+  console.log('🎬 ExerciseVideoDialog processed:', {
     exerciseName: exercise?.exercises?.name,
-    rawVideoUrl: exercise?.exercises?.video_url,
-    processedVideoUrl: videoUrl
+    processedVideoUrl: videoUrl,
+    typeOfProcessed: typeof videoUrl
   });
 
   if (!exercise?.exercises) return null;

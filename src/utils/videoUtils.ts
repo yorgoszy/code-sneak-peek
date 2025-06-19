@@ -1,6 +1,6 @@
 
 export const getVideoThumbnail = (videoUrl: string): string => {
-  if (!videoUrl || videoUrl === 'undefined') {
+  if (!videoUrl || videoUrl === 'undefined' || videoUrl === 'null') {
     console.log('❌ getVideoThumbnail: Empty or undefined URL');
     return '';
   }
@@ -47,12 +47,12 @@ export const isValidVideoUrl = (url: string | any): boolean => {
     return false;
   }
   
-  // ΔΙΟΡΘΩΣΗ: Καλύτερος χειρισμός του object format
+  // ΔΙΟΡΘΩΣΗ: Καλύτερος χειρισμός διαφορετικών formats
   let processedUrl = url;
   
-  if (typeof url === 'object') {
-    // Αν είναι object, προσπάθησε να πάρεις το value
-    if (url.value && url.value !== 'undefined') {
+  // Αν είναι object, προσπάθησε να πάρεις το value
+  if (typeof url === 'object' && url !== null) {
+    if (url.value && url.value !== 'undefined' && url.value !== 'null') {
       processedUrl = url.value;
     } else {
       console.log('❌ isValidVideoUrl: Object has undefined or empty value:', url);
@@ -60,11 +60,14 @@ export const isValidVideoUrl = (url: string | any): boolean => {
     }
   }
   
-  // Αν είναι string αλλά έχει την τιμή "undefined"
-  if (processedUrl === 'undefined' || typeof processedUrl !== 'string') {
-    console.log('❌ isValidVideoUrl: Invalid URL type or "undefined" string:', typeof processedUrl, processedUrl);
+  // Αν είναι string αλλά έχει την τιμή "undefined" ή "null"
+  if (processedUrl === 'undefined' || processedUrl === 'null' || typeof processedUrl !== 'string') {
+    console.log('❌ isValidVideoUrl: Invalid URL type or "undefined/null" string:', typeof processedUrl, processedUrl);
     return false;
   }
+  
+  // Trim whitespace
+  processedUrl = processedUrl.trim();
   
   console.log('🔍 isValidVideoUrl checking processed URL:', processedUrl);
   

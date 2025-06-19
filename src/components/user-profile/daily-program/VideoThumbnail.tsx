@@ -15,29 +15,44 @@ interface VideoThumbnailProps {
 }
 
 export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVideoClick }) => {
-  // ΔΙΟΡΘΩΣΗ: Καλύτερος χειρισμός του video_url που έρχεται ως object
+  // ΔΙΟΡΘΩΣΗ: Πιο προσεκτικός χειρισμός του video_url
   let videoUrl = exercise.exercises?.video_url;
+  
+  console.log('🎥 VideoThumbnail raw video_url:', {
+    exerciseName: exercise.exercises?.name,
+    rawVideoUrl: videoUrl,
+    typeOfRaw: typeof videoUrl,
+    isNull: videoUrl === null,
+    isUndefined: videoUrl === undefined,
+    stringValue: String(videoUrl)
+  });
   
   // Αν το video_url είναι object, πάρε το value
   if (videoUrl && typeof videoUrl === 'object') {
-    if (videoUrl.value && videoUrl.value !== 'undefined') {
+    if (videoUrl.value && videoUrl.value !== 'undefined' && videoUrl.value !== 'null') {
       videoUrl = videoUrl.value;
     } else {
       videoUrl = null;
     }
   }
   
-  // Αν είναι string αλλά έχει την τιμή "undefined"
-  if (videoUrl === 'undefined' || videoUrl === undefined || videoUrl === null) {
+  // Αν είναι string αλλά έχει την τιμή "undefined" ή "null" ή είναι κενό
+  if (videoUrl === 'undefined' || videoUrl === 'null' || videoUrl === undefined || videoUrl === null || videoUrl === '') {
     videoUrl = null;
   }
   
-  // Debugging logs
-  console.log('🎥 VideoThumbnail render:', {
+  // Αν είναι string, κάνε trim
+  if (typeof videoUrl === 'string') {
+    videoUrl = videoUrl.trim();
+    if (videoUrl === '') {
+      videoUrl = null;
+    }
+  }
+  
+  console.log('🎥 VideoThumbnail processed:', {
     exerciseName: exercise.exercises?.name,
-    rawVideoUrl: exercise.exercises?.video_url,
     processedVideoUrl: videoUrl,
-    typeOfVideoUrl: typeof videoUrl,
+    typeOfProcessed: typeof videoUrl,
     isValid: videoUrl ? isValidVideoUrl(videoUrl) : false
   });
   
