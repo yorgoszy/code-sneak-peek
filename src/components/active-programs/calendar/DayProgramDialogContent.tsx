@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
@@ -69,10 +70,30 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
   }, [program?.id, selectedDate, workoutStatus]);
 
   const handleVideoClick = (exercise: any) => {
-    console.log('🎬 DayProgramDialogContent - Video click for exercise:', exercise.exercises?.name);
-    console.log('🎬 DayProgramDialogContent - Video URL:', exercise.exercises?.video_url);
+    console.log('🎬 DayProgramDialogContent - Full exercise object:', exercise);
+    console.log('🎬 DayProgramDialogContent - Exercise structure:', {
+      id: exercise.id,
+      exercise_id: exercise.exercise_id,
+      exercises: exercise.exercises,
+      'exercises?.video_url': exercise.exercises?.video_url,
+      'Direct video_url': exercise.video_url
+    });
     
-    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+    // Δοκιμάζω διαφορετικές διαδρομές για το video URL
+    let videoUrl = null;
+    
+    if (exercise.exercises?.video_url) {
+      videoUrl = exercise.exercises.video_url;
+      console.log('✅ Found video URL in exercises.video_url:', videoUrl);
+    } else if (exercise.video_url) {
+      videoUrl = exercise.video_url;
+      console.log('✅ Found video URL in direct video_url:', videoUrl);
+    }
+    
+    console.log('🎬 Final video URL to check:', videoUrl);
+    console.log('🎬 Is valid video URL:', videoUrl ? isValidVideoUrl(videoUrl) : false);
+    
+    if (videoUrl && isValidVideoUrl(videoUrl)) {
       console.log('✅ DayProgramDialogContent - Opening video dialog');
       setSelectedExercise(exercise);
       setIsVideoDialogOpen(true);
