@@ -15,12 +15,16 @@ interface VideoThumbnailProps {
 }
 
 export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVideoClick }) => {
-  // Διόρθωση για το video_url που μπορεί να έρθει ως object
+  // ΔΙΟΡΘΩΣΗ: Καλύτερος χειρισμός του video_url που έρχεται ως object
   let videoUrl = exercise.exercises?.video_url;
   
-  // Αν το video_url είναι object με value property
-  if (videoUrl && typeof videoUrl === 'object' && videoUrl.value) {
-    videoUrl = videoUrl.value;
+  // Αν το video_url είναι object, πάρε το value
+  if (videoUrl && typeof videoUrl === 'object') {
+    if (videoUrl.value && videoUrl.value !== 'undefined') {
+      videoUrl = videoUrl.value;
+    } else {
+      videoUrl = null;
+    }
   }
   
   // Αν είναι string αλλά έχει την τιμή "undefined"

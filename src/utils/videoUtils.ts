@@ -47,18 +47,26 @@ export const isValidVideoUrl = (url: string | any): boolean => {
     return false;
   }
   
-  // Αν είναι object, προσπάθησε να πάρεις το value
-  if (typeof url === 'object' && url.value) {
-    url = url.value;
+  // ΔΙΟΡΘΩΣΗ: Καλύτερος χειρισμός του object format
+  let processedUrl = url;
+  
+  if (typeof url === 'object') {
+    // Αν είναι object, προσπάθησε να πάρεις το value
+    if (url.value && url.value !== 'undefined') {
+      processedUrl = url.value;
+    } else {
+      console.log('❌ isValidVideoUrl: Object has undefined or empty value:', url);
+      return false;
+    }
   }
   
   // Αν είναι string αλλά έχει την τιμή "undefined"
-  if (url === 'undefined' || typeof url !== 'string') {
-    console.log('❌ isValidVideoUrl: Invalid URL type or "undefined" string:', typeof url, url);
+  if (processedUrl === 'undefined' || typeof processedUrl !== 'string') {
+    console.log('❌ isValidVideoUrl: Invalid URL type or "undefined" string:', typeof processedUrl, processedUrl);
     return false;
   }
   
-  console.log('🔍 isValidVideoUrl checking:', url);
+  console.log('🔍 isValidVideoUrl checking processed URL:', processedUrl);
   
   const videoPatterns = [
     /youtube\.com\/watch\?v=/,
@@ -70,8 +78,8 @@ export const isValidVideoUrl = (url: string | any): boolean => {
     /\.ogg$/i
   ];
   
-  const isValid = videoPatterns.some(pattern => pattern.test(url));
-  console.log('🔍 isValidVideoUrl result:', isValid, 'for URL:', url);
+  const isValid = videoPatterns.some(pattern => pattern.test(processedUrl));
+  console.log('🔍 isValidVideoUrl result:', isValid, 'for URL:', processedUrl);
   
   return isValid;
 };
