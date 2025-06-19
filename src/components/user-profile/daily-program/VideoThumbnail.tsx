@@ -14,7 +14,7 @@ interface VideoThumbnailProps {
   onVideoClick: (exercise: any) => void;
 }
 
-export the VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVideoClick }) => {
+export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ exercise, onVideoClick }) => {
   // ΔΙΟΡΘΩΣΗ: Καλύτερος χειρισμός του video_url που έρχεται ως object
   let videoUrl = exercise.exercises?.video_url;
   
