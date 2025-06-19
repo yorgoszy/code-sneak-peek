@@ -11,7 +11,26 @@ export const useProgramSave = () => {
   const saveProgram = async (programData: any) => {
     setLoading(true);
     try {
-      console.log('💾 Saving program:', programData);
+      console.log('💾 [useProgramSave] Starting saveProgram with data:', {
+        id: programData.id,
+        name: programData.name,
+        hasWeeks: programData.weeks?.length || 0,
+        weeksDetail: programData.weeks?.map(w => ({
+          id: w.id,
+          name: w.name,
+          daysCount: w.program_days?.length || 0,
+          days: w.program_days?.map(d => ({
+            id: d.id,
+            name: d.name,
+            blocksCount: d.program_blocks?.length || 0,
+            blocks: d.program_blocks?.map(b => ({
+              id: b.id,
+              name: b.name,
+              exercisesCount: b.program_exercises?.length || 0
+            }))
+          }))
+        }))
+      });
 
       // Διασφαλίζουμε ότι έχουμε training_dates
       let trainingDatesArray = [];
@@ -48,6 +67,8 @@ export const useProgramSave = () => {
         duration: programData.weeks?.length || null,
         training_days: programData.weeks?.[0]?.program_days?.length || null
       };
+
+      console.log('💾 [useProgramSave] Program payload:', programPayload);
 
       let savedProgram;
 
@@ -117,20 +138,32 @@ export const useProgramSave = () => {
         savedProgram = data;
       }
 
-      console.log('✅ Program saved:', savedProgram);
+      console.log('✅ [useProgramSave] Program saved:', savedProgram);
 
       // ΚΡΙΤΙΚΟ: Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises)
       if (programData.weeks && programData.weeks.length > 0) {
-        console.log('🏗️ Creating program structure with weeks:', programData.weeks.length);
+        console.log('🏗️ [useProgramSave] Creating program structure with weeks:', programData.weeks.length);
+        
+        // Βεβαιωνόμαστε ότι τα δεδομένα είναι σωστά πριν περάσουν στο createProgramStructure
+        console.log('🏗️ [useProgramSave] Structure data being passed:', {
+          weeks: programData.weeks.map(w => ({
+            id: w.id,
+            name: w.name,
+            daysCount: w.program_days?.length,
+            totalExercises: w.program_days?.reduce((total, d) => 
+              total + (d.program_blocks?.reduce((blockTotal, b) => 
+                blockTotal + (b.program_exercises?.length || 0), 0) || 0), 0)
+          }))
+        });
         
         // Χρησιμοποιούμε τη μέθοδο createProgramStructure
         await createProgramStructure(savedProgram.id, {
           weeks: programData.weeks
         });
         
-        console.log('✅ Program structure created successfully');
+        console.log('✅ [useProgramSave] Program structure created successfully');
       } else {
-        console.log('⚠️ No weeks found in program data');
+        console.log('⚠️ [useProgramSave] No weeks found in program data');
       }
 
       // Επιστρέφουμε το πρόγραμμα με τις ημερομηνίες
@@ -139,7 +172,7 @@ export const useProgramSave = () => {
         training_dates: trainingDatesArray
       };
     } catch (error) {
-      console.error('❌ Error saving program:', error);
+      console.error('❌ [useProgramSave] Error saving program:', error);
       toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
       throw error;
     } finally {
@@ -149,7 +182,7 @@ export const useProgramSave = () => {
 
   const deleteExistingStructure = async (programId: string) => {
     try {
-      console.log('🗑️ Deleting existing program structure for:', programId);
+      console.log('🗑️ [useProgramSave] Deleting existing program structure for:', programId);
 
       // Διαγραφή με τη σωστή σειρά και σωστό τρόπο
       
@@ -161,6 +194,7 @@ export const useProgramSave = () => {
 
       if (weeks && weeks.length > 0) {
         const weekIds = weeks.map(w => w.id);
+        console.log('🗑️ [useProgramSave] Found weeks to delete:', weekIds);
 
         // 2. Βρίσκουμε όλες τις days των weeks
         const { data: days } = await supabase
@@ -170,6 +204,7 @@ export const useProgramSave = () => {
 
         if (days && days.length > 0) {
           const dayIds = days.map(d => d.id);
+          console.log('🗑️ [useProgramSave] Found days to delete:', dayIds);
 
           // 3. Βρίσκουμε όλα τα blocks των days
           const { data: blocks } = await supabase
@@ -179,37 +214,62 @@ export const useProgramSave = () => {
 
           if (blocks && blocks.length > 0) {
             const blockIds = blocks.map(b => b.id);
+            console.log('🗑️ [useProgramSave] Found blocks to delete:', blockIds);
 
             // 4. Διαγράφουμε exercises πρώτα
-            await supabase
+            const { error: exercisesError } = await supabase
               .from('program_exercises')
               .delete()
               .in('block_id', blockIds);
+            
+            if (exercisesError) {
+              console.error('❌ [useProgramSave] Error deleting exercises:', exercisesError);
+            } else {
+              console.log('✅ [useProgramSave] Exercises deleted successfully');
+            }
           }
 
           // 5. Διαγράφουμε blocks
-          await supabase
+          const { error: blocksError } = await supabase
             .from('program_blocks')
             .delete()
             .in('day_id', dayIds);
+          
+          if (blocksError) {
+            console.error('❌ [useProgramSave] Error deleting blocks:', blocksError);
+          } else {
+            console.log('✅ [useProgramSave] Blocks deleted successfully');
+          }
         }
 
         // 6. Διαγράφουμε days
-        await supabase
+        const { error: daysError } = await supabase
           .from('program_days')
           .delete()
           .in('week_id', weekIds);
+        
+        if (daysError) {
+          console.error('❌ [useProgramSave] Error deleting days:', daysError);
+        } else {
+          console.log('✅ [useProgramSave] Days deleted successfully');
+        }
       }
 
       // 7. Διαγράφουμε weeks
-      await supabase
+      const { error: weeksError } = await supabase
         .from('program_weeks')
         .delete()
         .eq('program_id', programId);
+      
+      if (weeksError) {
+        console.error('❌ [useProgramSave] Error deleting weeks:', weeksError);
+      } else {
+        console.log('✅ [useProgramSave] Weeks deleted successfully');
+      }
 
-      console.log('✅ Existing structure deleted');
+      console.log('✅ [useProgramSave] Existing structure deleted');
     } catch (error) {
-      console.error('❌ Error deleting existing structure:', error);
+      console.error('❌ [useProgramSave] Error deleting existing structure:', error);
       // Δεν πετάμε error εδώ για να μη σταματήσει η διαδικασία
     }
   };
