@@ -28,7 +28,7 @@ export const useActivePrograms = () => {
           return [];
         }
 
-        // Fetch related programs separately
+        // Fetch related programs separately - ΕΔΩ ΗΤΑΝ ΤΟ ΠΡΟΒΛΗΜΑ!
         const programIds = assignments.map(a => a.program_id).filter(Boolean);
         const { data: programs, error: programsError } = await supabase
           .from('programs')
@@ -65,7 +65,8 @@ export const useActivePrograms = () => {
                     exercises(
                       id,
                       name,
-                      description
+                      description,
+                      video_url
                     )
                   )
                 )
