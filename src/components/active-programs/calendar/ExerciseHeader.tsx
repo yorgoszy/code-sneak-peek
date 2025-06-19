@@ -26,12 +26,23 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
   const hasVideo = exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url);
 
   const handleVideoThumbnailClick = (exerciseForVideo: any) => {
-    // Convert the exercise parameter to a MouseEvent-like call
+    console.log('🎬 Video thumbnail clicked for:', exerciseForVideo.exercises?.name);
+    // Δημιουργούμε ένα synthetic event
     const syntheticEvent = {
       stopPropagation: () => {},
-      preventDefault: () => {}
+      preventDefault: () => {},
+      target: document.createElement('div'),
+      currentTarget: document.createElement('div')
     } as React.MouseEvent;
     onVideoClick(syntheticEvent);
+  };
+
+  const handleExerciseNameClick = (event: React.MouseEvent) => {
+    console.log('🎬 Exercise name clicked:', exercise.exercises?.name, 'Has video:', hasVideo);
+    if (hasVideo) {
+      event.stopPropagation();
+      onVideoClick(event);
+    }
   };
 
   return (
@@ -45,7 +56,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
               className={`text-sm font-medium text-gray-900 truncate ${
                 hasVideo ? 'cursor-pointer hover:text-[#00ffba] transition-colors' : ''
               }`}
-              onClick={hasVideo && onExerciseNameClick ? onExerciseNameClick : undefined}
+              onClick={handleExerciseNameClick}
               title={exercise.exercises?.name}
             >
               {exercise.exercises?.name || 'Άγνωστη άσκηση'}
@@ -83,4 +94,3 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
     </div>
   );
 };
-

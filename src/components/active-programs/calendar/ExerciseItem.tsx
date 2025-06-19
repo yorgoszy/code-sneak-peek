@@ -73,18 +73,6 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     }
   };
 
-  const handleExerciseNameClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    console.log('🎬 Exercise name clicked for:', exercise.exercises?.name);
-    
-    // Έλεγχος αν υπάρχει έγκυρο video URL
-    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-      onVideoClick(exercise);
-    } else {
-      console.log('❌ No valid video URL found for exercise name click');
-    }
-  };
-
   return (
     <div 
       className={`border border-gray-200 rounded-none transition-colors ${
@@ -99,7 +87,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         workoutInProgress={workoutInProgress}
         onVideoClick={handleVideoClick}
         onSetClick={handleSetsAreaClick}
-        onExerciseNameClick={handleExerciseNameClick}
+        onExerciseNameClick={handleVideoClick}
       />
 
       <div className="p-3">
