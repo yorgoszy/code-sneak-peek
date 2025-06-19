@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { el } from 'date-fns/locale';
 import { parseDateFromString } from '@/utils/dateUtils';
 import { ProgramViewDialog } from "../active-programs/calendar/ProgramViewDialog";
 import { ProgramPreviewDialog } from './ProgramPreviewDialog';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramsListProps {
@@ -35,6 +35,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
 }) => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [programToDelete, setProgramToDelete] = useState<string | null>(null);
   const [selectedProgramForView, setSelectedProgramForView] = useState<EnrichedAssignment | null>(null);
   const [selectedProgramForPreview, setSelectedProgramForPreview] = useState<Program | null>(null);
 
@@ -71,10 +73,15 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   const handleDeleteProgram = (e: React.MouseEvent, programId: string) => {
     e.stopPropagation();
     console.log('🗑️ Attempting to delete program:', programId);
-    
-    if (window.confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;')) {
-      console.log('✅ User confirmed deletion, calling onDeleteProgram with:', programId);
-      onDeleteProgram(programId);
+    setProgramToDelete(programId);
+    setConfirmDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (programToDelete) {
+      console.log('✅ User confirmed deletion, calling onDeleteProgram with:', programToDelete);
+      onDeleteProgram(programToDelete);
+      setProgramToDelete(null);
     }
   };
 
@@ -296,6 +303,17 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
         program={selectedProgramForPreview}
         isOpen={previewDialogOpen}
         onOpenChange={setPreviewDialogOpen}
+      />
+
+      {/* Confirmation Dialog for delete */}
+      <ConfirmationDialog
+        isOpen={confirmDialogOpen}
+        onClose={() => {
+          setConfirmDialogOpen(false);
+          setProgramToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        description="Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;"
       />
     </>
   );
