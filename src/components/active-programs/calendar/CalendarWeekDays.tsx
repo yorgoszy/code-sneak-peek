@@ -9,20 +9,16 @@ export const CalendarWeekDays: React.FC = () => {
       {weekDays.map((day, idx) => (
         <div
           key={day}
-          className={
-            `
+          className={`
             w-1/7 md:w-full min-w-0
-            h-12 md:h-20
+            h-8 md:h-12 lg:h-20
             flex items-center justify-center border-gray-200
             text-xs md:text-sm font-medium text-gray-600 bg-white select-none
             ${idx < weekDays.length - 1 ? 'border-r' : ''} rounded-none
-            `
-          }
-          style={{
-            // Ίδιο responsive styling όπως τα day cells
-          }}
+            px-1
+          `}
         >
-          {day}
+          <span className="truncate">{day}</span>
         </div>
       ))}
     </div>

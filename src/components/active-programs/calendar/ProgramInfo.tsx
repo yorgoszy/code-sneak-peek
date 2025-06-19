@@ -87,11 +87,11 @@ export const ProgramInfo: React.FC<ProgramInfoProps> = ({
   const { volume, intensity, watts, time } = calculateCompactMetrics();
 
   return (
-    <div className="bg-white border border-gray-200 rounded-none p-3 mb-4">
-      <div className="flex items-center justify-between gap-3">
-        {/* Avatar and User Info */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <Avatar className="w-8 h-8">
+    <div className="bg-white border border-gray-200 rounded-none p-2 md:p-3 mb-4">
+      <div className="flex items-center justify-between gap-1 md:gap-3">
+        {/* Avatar and User Info - Smaller on mobile */}
+        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0 min-w-0">
+          <Avatar className="w-6 h-6 md:w-8 md:h-8">
             <AvatarImage 
               src={program.app_users?.photo_url} 
               alt={userName}
@@ -101,54 +101,54 @@ export const ProgramInfo: React.FC<ProgramInfoProps> = ({
             </AvatarFallback>
           </Avatar>
           
-          <div className="min-w-0">
-            <div className="text-sm font-medium text-gray-900 truncate">
+          <div className="min-w-0 flex-shrink">
+            <div className="text-xs md:text-sm font-medium text-gray-900 truncate">
               {userName}
             </div>
-            <div className="text-xs text-gray-600 truncate">
+            <div className="text-xs md:text-xs text-gray-600 truncate">
               {program.programs?.name || 'Άγνωστο Πρόγραμμα'}
             </div>
           </div>
         </div>
 
-        {/* Compact Stats */}
-        <div className="flex items-center gap-4 text-xs">
-          <div className="text-center">
-            <div className="text-gray-600">Όγκος</div>
-            <div className="font-semibold text-blue-700">{volume.toLocaleString()}tn</div>
+        {/* Compact Stats - Much smaller on mobile */}
+        <div className="flex items-center gap-1 md:gap-4 text-xs">
+          <div className="text-center min-w-0">
+            <div className="text-gray-600 text-xs md:text-xs">Όγκος</div>
+            <div className="font-semibold text-blue-700 text-xs md:text-sm">{volume.toLocaleString()}tn</div>
           </div>
           
-          <div className="text-center">
-            <div className="text-gray-600">Ένταση</div>
-            <div className="font-semibold text-green-700">{intensity}%</div>
+          <div className="text-center min-w-0">
+            <div className="text-gray-600 text-xs md:text-xs">Ένταση</div>
+            <div className="font-semibold text-green-700 text-xs md:text-sm">{intensity}%</div>
           </div>
           
-          <div className="text-center">
-            <div className="text-gray-600">Ισχύς</div>
-            <div className="font-semibold text-orange-700">{watts}KW</div>
+          <div className="text-center min-w-0">
+            <div className="text-gray-600 text-xs md:text-xs">Ισχύς</div>
+            <div className="font-semibold text-orange-700 text-xs md:text-sm">{watts}KW</div>
           </div>
           
-          <div className="text-center">
-            <div className="text-gray-600">Χρόνος</div>
-            <div className="font-semibold text-red-700">{time}λ</div>
+          <div className="text-center min-w-0">
+            <div className="text-gray-600 text-xs md:text-xs">Χρόνος</div>
+            <div className="font-semibold text-red-700 text-xs md:text-sm">{time}λ</div>
           </div>
         </div>
 
-        {/* Status Badges */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Status Badges - Smaller on mobile */}
+        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
           {isCompleted && (
-            <Badge className="bg-green-100 text-green-800 border-green-200 rounded-none text-xs">
-              Ολοκληρωμένη
+            <Badge className="bg-green-100 text-green-800 border-green-200 rounded-none text-xs px-1 py-0.5 md:px-2.5 md:py-0.5">
+              Ολοκ
             </Badge>
           )}
           
           {workoutInProgress && (
-            <Badge className="bg-[#00ffba]/20 text-[#00ffba] border-[#00ffba]/30 rounded-none text-xs">
-              Σε εξέλιξη
+            <Badge className="bg-[#00ffba]/20 text-[#00ffba] border-[#00ffba]/30 rounded-none text-xs px-1 py-0.5 md:px-2.5 md:py-0.5">
+              Εξέλ
             </Badge>
           )}
           
-          <Badge variant="outline" className="rounded-none text-xs">
+          <Badge variant="outline" className="rounded-none text-xs px-1 py-0.5 md:px-2.5 md:py-0.5">
             {program.status === 'active' ? 'active' : program.status}
           </Badge>
         </div>

@@ -61,31 +61,31 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
 
   return (
     <div className="w-full">
-      {/* Week Navigation */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Week Navigation - Smaller on mobile */}
+      <div className="flex items-center justify-between mb-2 md:mb-4 px-1">
         <Button
           variant="outline"
           size="sm"
           onClick={handlePreviousWeek}
-          className="rounded-none"
+          className="rounded-none h-8 w-8 p-0 md:h-auto md:w-auto md:p-2"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
         </Button>
-        <h3 className="text-lg font-semibold">
+        <h3 className="text-sm md:text-lg font-semibold truncate px-2 text-center">
           {format(weekStart, 'dd', { locale: el })} - {format(weekEnd, 'dd MMMM yyyy', { locale: el })}
         </h3>
         <Button
           variant="outline"
           size="sm"
           onClick={handleNextWeek}
-          className="rounded-none"
+          className="rounded-none h-8 w-8 p-0 md:h-auto md:w-auto md:p-2"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
         </Button>
       </div>
 
-      {/* Responsive horizontal scroll: */}
-      <div className="grid grid-cols-7 gap-2 overflow-x-auto md:overflow-x-visible min-w-full" style={{ minWidth: 410 }}>
+      {/* Responsive horizontal grid - much smaller on mobile */}
+      <div className="grid grid-cols-7 gap-1 md:gap-2 overflow-x-auto md:overflow-x-visible min-w-full">
         {weekDays.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
@@ -95,31 +95,32 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
             <div
               key={`weekly-${dateStr}-${realtimeKey}`}
               className={`
-                min-h-32 border border-gray-200 rounded-none p-2 bg-white
+                min-h-20 md:min-h-32 border border-gray-200 rounded-none p-1 md:p-2 bg-white
                 ${isTodayDate ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
                 hover:bg-gray-50 transition-colors
               `}
             >
-              {/* Date Header */}
-              <div className={`text-sm font-medium mb-2 ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>
-                <div>{format(date, 'dd')}</div>
-                <div className="text-xs">{format(date, 'EEE', { locale: el })}</div>
+              {/* Date Header - Smaller on mobile */}
+              <div className={`text-xs md:text-sm font-medium mb-1 md:mb-2 ${isTodayDate ? 'font-bold text-yellow-600' : ''}`}>
+                <div className="text-center">{format(date, 'dd')}</div>
+                <div className="text-xs text-center truncate">{format(date, 'EEE', { locale: el })}</div>
               </div>
               
-              {/* User Names */}
-              <div className="space-y-1">
-                {dateProgramsWithStatus.slice(0, 8).map((program, i) => (
+              {/* User Names - Much smaller on mobile */}
+              <div className="space-y-0.5 md:space-y-1">
+                {dateProgramsWithStatus.slice(0, 6).map((program, i) => (
                   <div 
                     key={`${program.assignmentId}-${i}-${realtimeKey}`}
                     className={`text-xs cursor-pointer hover:underline truncate ${getNameColor(program.status)}`}
                     onClick={(e) => onUserNameClick(program, e)}
+                    style={{ fontSize: '10px', lineHeight: '12px' }}
                   >
                     {program.userName.split(' ')[0]}
                   </div>
                 ))}
-                {dateProgramsWithStatus.length > 8 && (
-                  <div className="text-xs text-gray-500">
-                    +{dateProgramsWithStatus.length - 8}
+                {dateProgramsWithStatus.length > 6 && (
+                  <div className="text-xs text-gray-500" style={{ fontSize: '10px' }}>
+                    +{dateProgramsWithStatus.length - 6}
                   </div>
                 )}
               </div>
@@ -130,4 +131,3 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
     </div>
   );
 };
-

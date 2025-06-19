@@ -42,17 +42,18 @@ export const MobileMonthlyView: React.FC<MobileMonthlyViewProps> = ({
   });
 
   return (
-    <div className="flex w-full">
+    <div className="flex w-full overflow-hidden">
       {columns.map((colDays, colIdx) => (
         <div key={weekDays[colIdx]} className="flex flex-col flex-1 min-w-0">
           <div
             className="
-              h-12 flex items-center justify-center border-b border-gray-200
+              h-8 md:h-12 flex items-center justify-center border-b border-gray-200
               text-xs font-medium text-gray-600 bg-white select-none rounded-none
+              px-1
             "
             style={{ minWidth: 0 }}
           >
-            {weekDays[colIdx]}
+            <span className="truncate">{weekDays[colIdx]}</span>
           </div>
           {colDays.map((date) => {
             const dateStr = format(date, 'yyyy-MM-dd');
@@ -77,4 +78,3 @@ export const MobileMonthlyView: React.FC<MobileMonthlyViewProps> = ({
     </div>
   );
 };
-
