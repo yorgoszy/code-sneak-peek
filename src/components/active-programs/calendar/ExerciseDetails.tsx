@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThumbnail';
 
 interface ExerciseDetailsProps {
   exercise: any;
@@ -23,6 +24,12 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
     }
   };
 
+  const handleVideoClick = (exercise: any) => {
+    if (onVideoClick) {
+      onVideoClick(exercise);
+    }
+  };
+
   console.log('📋 ExerciseDetails render for:', exercise.exercises?.name, {
     hasVideoUrl: !!exercise.exercises?.video_url,
     videoUrl: exercise.exercises?.video_url
@@ -30,7 +37,15 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
 
   return (
     <div className="space-y-2">
-      {/* Exercise Details Grid - Removed duplicate exercise name */}
+      {/* Exercise Name with Thumbnail */}
+      <div className="flex items-center gap-2 mb-2">
+        <span className="font-medium text-sm text-gray-900">
+          {exercise.exercises?.name || 'Άγνωστη άσκηση'}
+        </span>
+        <VideoThumbnail exercise={exercise} onVideoClick={handleVideoClick} />
+      </div>
+
+      {/* Exercise Details Grid */}
       <div className="grid grid-cols-7 gap-0.5 text-xs">
         <div className="flex flex-col items-center">
           <div className="text-gray-600 mb-1 text-center">Sets</div>
