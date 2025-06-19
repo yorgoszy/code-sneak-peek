@@ -88,7 +88,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
         return (
           <div className="aspect-video">
             <iframe
-              src={`https://www.youtube.com/embed/${videoId}`}
+              src={`https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1`}
               title={name}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -107,7 +107,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
         return (
           <div className="aspect-video">
             <iframe
-              src={`https://player.vimeo.com/video/${videoId}`}
+              src={`https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0`}
               title={name}
               frameBorder="0"
               allow="autoplay; fullscreen; picture-in-picture"
