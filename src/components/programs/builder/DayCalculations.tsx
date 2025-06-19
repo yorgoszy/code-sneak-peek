@@ -64,6 +64,16 @@ const parseRestTime = (rest: string): number => {
   }
 };
 
+// Helper function to parse strings with comma as decimal separator
+const parseNumberWithComma = (value: string | number): number => {
+  if (typeof value === 'number') return value;
+  if (!value || value === '') return 0;
+  
+  // Replace comma with dot for proper parsing
+  const normalizedValue = value.toString().replace(',', '.');
+  return parseFloat(normalizedValue) || 0;
+};
+
 export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exercises }) => {
   const calculateDayMetrics = () => {
     let totalVolume = 0; // in kg
@@ -77,20 +87,21 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
         if (exercise.exercise_id) {
           const sets = exercise.sets || 0;
           const reps = parseRepsToTotal(exercise.reps);
-          const kg = parseFloat(exercise.kg || '0') || 0;
+          const kg = parseNumberWithComma(exercise.kg || '0');
 
           // Volume calculation (sets × reps × kg) in kg
           const volumeKg = sets * reps * kg;
           totalVolume += volumeKg;
 
           // Intensity calculation - μέσος όρος όλων των εντάσεων
-          if (exercise.percentage_1rm && exercise.percentage_1rm > 0) {
-            totalIntensitySum += exercise.percentage_1rm;
+          const intensity = parseNumberWithComma(exercise.percentage_1rm || '0');
+          if (intensity > 0) {
+            totalIntensitySum += intensity;
             intensityCount++;
           }
 
           // Watts calculation - Force × Velocity
-          const velocity = exercise.velocity_ms || 0;
+          const velocity = parseNumberWithComma(exercise.velocity_ms || '0');
           if (kg > 0 && velocity > 0) {
             // Force = mass × acceleration (9.81 m/s²)
             const force = kg * 9.81; // in Newtons
