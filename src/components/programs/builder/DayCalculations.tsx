@@ -67,10 +67,10 @@ const parseRestTime = (rest: string): number => {
 export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exercises }) => {
   const calculateDayMetrics = () => {
     let totalVolume = 0; // in kg
-    let totalIntensity = 0;
+    let totalIntensitySum = 0;
+    let intensityCount = 0;
     let totalWatts = 0;
     let totalTimeSeconds = 0;
-    let exerciseCount = 0;
 
     blocks.forEach(block => {
       block.program_exercises.forEach(exercise => {
@@ -83,17 +83,20 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
           const volumeKg = sets * reps * kg;
           totalVolume += volumeKg;
 
-          // Intensity calculation (average percentage of 1RM)
-          if (exercise.percentage_1rm) {
-            totalIntensity += exercise.percentage_1rm;
-            exerciseCount++;
+          // Intensity calculation - μέσος όρος όλων των εντάσεων
+          if (exercise.percentage_1rm && exercise.percentage_1rm > 0) {
+            totalIntensitySum += exercise.percentage_1rm;
+            intensityCount++;
           }
 
-          // Watts calculation
+          // Watts calculation - Force × Velocity
           const velocity = exercise.velocity_ms || 0;
           if (kg > 0 && velocity > 0) {
-            const force = kg * 9.81; // Convert to Newtons
+            // Force = mass × acceleration (9.81 m/s²)
+            const force = kg * 9.81; // in Newtons
+            // Power = Force × Velocity
             const watts = force * velocity;
+            // Συνολική ισχύς για όλα τα sets και reps
             totalWatts += watts * sets * reps;
           }
 
@@ -114,10 +117,11 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
 
     return {
       volume: Math.round(totalVolume / 1000), // Convert kg to tons
-      intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
+      intensity: intensityCount > 0 ? Math.round(totalIntensitySum / intensityCount) : 0, // Μέσος όρος
       watts: Math.round(totalWatts / 1000), // Convert watts to kilowatts
       time: Math.round(totalTimeSeconds / 60), // Convert to minutes
-      exerciseCount
+      exerciseCount: blocks.reduce((total, block) => 
+        total + (block.program_exercises?.filter(ex => ex.exercise_id).length || 0), 0)
     };
   };
 
