@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertCircle } from 'lucide-react';
@@ -94,21 +95,6 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
               allowFullScreen
               className="w-full h-full rounded-none"
             />
-            <style jsx>{`
-              iframe {
-                pointer-events: auto;
-              }
-              iframe::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                right: 0;
-                width: 80px;
-                height: 60px;
-                background: transparent;
-                z-index: 10;
-              }
-            `}</style>
           </div>
         );
       }
