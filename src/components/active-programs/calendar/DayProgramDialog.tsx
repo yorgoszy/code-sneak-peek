@@ -111,7 +111,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
   const trainingDates = program.training_dates || [];
   const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
-
+  
   let dayProgram = null;
   if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
     const programDays = program.programs.program_weeks[0].program_days;
@@ -121,7 +121,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none">
+        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none w-[95vw] md:w-full">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
@@ -134,9 +134,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             program={program}
           />
 
-          <div className="space-y-4">
+          <div className="space-y-2 md:space-y-4">
             {statusLoading && (
-              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-none px-4 py-2 mb-2 text-center text-xs">
+              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-none px-2 md:px-4 py-1 md:py-2 mb-1 md:mb-2 text-center text-xs">
                 Ενημέρωση κατάστασης...
               </div>
             )}
@@ -149,8 +149,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             />
 
             {dayProgram ? (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
+              <div className="space-y-1 md:space-y-2">
+                <h4 className="text-xs md:text-sm font-medium text-gray-900 flex items-center space-x-2 px-1 md:px-0">
                   <span>{dayProgram.name}</span>
                 </h4>
 
@@ -182,7 +182,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                 </ExerciseInteractionHandler>
               </div>
             ) : (
-              <div className="bg-white border border-gray-200 rounded-none p-6 text-center text-gray-500">
+              <div className="bg-white border border-gray-200 rounded-none p-3 md:p-6 text-center text-gray-500 text-xs md:text-sm">
                 Δεν βρέθηκε πρόγραμμα για αυτή την ημέρα
               </div>
             )}
