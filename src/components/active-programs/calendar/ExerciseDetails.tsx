@@ -30,21 +30,8 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
     }
   };
 
-  console.log('📋 ExerciseDetails render for:', exercise.exercises?.name, {
-    hasVideoUrl: !!exercise.exercises?.video_url,
-    videoUrl: exercise.exercises?.video_url
-  });
-
   return (
     <div className="space-y-2">
-      {/* Exercise Name with Thumbnail */}
-      <div className="flex items-center gap-2 mb-2">
-        <span className="font-medium text-sm text-gray-900">
-          {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-        </span>
-        <VideoThumbnail exercise={exercise} onVideoClick={handleVideoClick} />
-      </div>
-
       {/* Exercise Details Grid */}
       <div className="grid grid-cols-7 gap-0.5 text-xs">
         <div className="flex flex-col items-center">
