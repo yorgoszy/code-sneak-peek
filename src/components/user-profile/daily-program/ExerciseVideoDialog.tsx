@@ -86,7 +86,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
 
       if (videoId) {
         return (
-          <div className="aspect-video relative">
+          <div className="aspect-video relative w-full max-w-2xl md:max-w-full mx-auto">
             <iframe
               src={`https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1&fs=0&disablekb=1`}
               title={name}
@@ -105,7 +105,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
       const videoId = videoUrl.split('/').pop()?.split('?')[0];
       if (videoId) {
         return (
-          <div className="aspect-video">
+          <div className="aspect-video w-full max-w-2xl md:max-w-full mx-auto">
             <iframe
               src={`https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0`}
               title={name}
@@ -122,7 +122,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
     // Direct video file
     if (videoUrl.match(/\.(mp4|webm|ogg)$/)) {
       return (
-        <div className="aspect-video">
+        <div className="aspect-video w-full max-w-2xl md:max-w-full mx-auto">
           <video
             src={videoUrl}
             controls
@@ -144,7 +144,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-none">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-none w-[95vw] md:w-full">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">{name}</DialogTitle>
         </DialogHeader>
