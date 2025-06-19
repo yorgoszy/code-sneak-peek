@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -35,7 +36,137 @@ export const useTestResults = () => {
 
       let results: TestResult[] = [];
 
-      // 1. Φέρνουμε από τον παλιό πίνακα test_sessions (αν υπάρχουν)
+      // 1. Φέρνουμε από τους νέους πίνακες των τεστ
+      
+      // Strength Test Sessions
+      const { data: strengthSessions, error: strengthError } = await supabase
+        .from('strength_test_sessions')
+        .select('id, user_id, test_date, notes')
+        .order('test_date', { ascending: false });
+
+      if (!strengthError && strengthSessions) {
+        console.log('💪 Found strength test sessions:', strengthSessions.length);
+        
+        for (const session of strengthSessions) {
+          // Φέρνουμε τις προσπάθειες για αυτό το session
+          const { data: attempts } = await supabase
+            .from('strength_test_attempts')
+            .select('exercise_id')
+            .eq('test_session_id', session.id);
+
+          const exerciseIds = new Set(attempts?.map(a => a.exercise_id) || []);
+          const userName = usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
+
+          results.push({
+            id: session.id,
+            test_date: session.test_date,
+            user_name: userName,
+            user_id: session.user_id,
+            notes: session.notes,
+            table_name: "strength_test_sessions",
+            test_type: "Δύναμη",
+            exercise_count: exerciseIds.size
+          });
+        }
+      }
+
+      // Anthropometric Test Sessions
+      const { data: anthropometricSessions, error: anthropometricError } = await supabase
+        .from('anthropometric_test_sessions')
+        .select('id, user_id, test_date, notes')
+        .order('test_date', { ascending: false });
+
+      if (!anthropometricError && anthropometricSessions) {
+        console.log('📏 Found anthropometric test sessions:', anthropometricSessions.length);
+        
+        for (const session of anthropometricSessions) {
+          const userName = usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
+
+          results.push({
+            id: session.id,
+            test_date: session.test_date,
+            user_name: userName,
+            user_id: session.user_id,
+            notes: session.notes,
+            table_name: "anthropometric_test_sessions",
+            test_type: "Σωματομετρικά"
+          });
+        }
+      }
+
+      // Functional Test Sessions
+      const { data: functionalSessions, error: functionalError } = await supabase
+        .from('functional_test_sessions')
+        .select('id, user_id, test_date, notes')
+        .order('test_date', { ascending: false });
+
+      if (!functionalError && functionalSessions) {
+        console.log('🏃 Found functional test sessions:', functionalSessions.length);
+        
+        for (const session of functionalSessions) {
+          const userName = usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
+
+          results.push({
+            id: session.id,
+            test_date: session.test_date,
+            user_name: userName,
+            user_id: session.user_id,
+            notes: session.notes,
+            table_name: "functional_test_sessions",
+            test_type: "Λειτουργικότητα"
+          });
+        }
+      }
+
+      // Endurance Test Sessions
+      const { data: enduranceSessions, error: enduranceError } = await supabase
+        .from('endurance_test_sessions')
+        .select('id, user_id, test_date, notes')
+        .order('test_date', { ascending: false });
+
+      if (!enduranceError && enduranceSessions) {
+        console.log('🏃‍♂️ Found endurance test sessions:', enduranceSessions.length);
+        
+        for (const session of enduranceSessions) {
+          const userName = usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
+
+          results.push({
+            id: session.id,
+            test_date: session.test_date,
+            user_name: userName,
+            user_id: session.user_id,
+            notes: session.notes,
+            table_name: "endurance_test_sessions",
+            test_type: "Αντοχή"
+          });
+        }
+      }
+
+      // Jump Test Sessions
+      const { data: jumpSessions, error: jumpError } = await supabase
+        .from('jump_test_sessions')
+        .select('id, user_id, test_date, notes')
+        .order('test_date', { ascending: false });
+
+      if (!jumpError && jumpSessions) {
+        console.log('🦘 Found jump test sessions:', jumpSessions.length);
+        
+        for (const session of jumpSessions) {
+          const userName = usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
+
+          results.push({
+            id: session.id,
+            test_date: session.test_date,
+            user_name: userName,
+            user_id: session.user_id,
+            notes: session.notes,
+            table_name: "jump_test_sessions",
+            test_type: "Άλματα"
+          });
+        }
+      }
+
+      // 2. Φέρνουμε από τον παλιό πίνακα test_sessions (αν υπάρχουν)
       const { data: oldSessions, error: oldSessionsError } = await supabase
         .from('test_sessions')
         .select('id, user_id, test_date, notes')
@@ -73,166 +204,6 @@ export const useTestResults = () => {
             const exerciseIds = new Set(strengthListData.map(e => e.exercise_id));
             results.push({ ...common, test_type: "Δύναμη", exercise_count: exerciseIds.size });
           }
-        }
-      }
-
-      // 2. Φέρνουμε από τους νέους πίνακες των τεστ
-      
-      // Strength Test Sessions
-      const { data: strengthSessions, error: strengthError } = await supabase
-        .from('strength_test_sessions')
-        .select(`
-          id, 
-          user_id, 
-          test_date, 
-          notes,
-          app_users!user_id(name)
-        `)
-        .order('test_date', { ascending: false });
-
-      if (!strengthError && strengthSessions) {
-        console.log('💪 Found strength test sessions:', strengthSessions.length);
-        
-        for (const session of strengthSessions) {
-          // Φέρνουμε τις προσπάθειες για αυτό το session
-          const { data: attempts } = await supabase
-            .from('strength_test_attempts')
-            .select('exercise_id')
-            .eq('test_session_id', session.id);
-
-          const exerciseIds = new Set(attempts?.map(a => a.exercise_id) || []);
-          const userName = session.app_users?.name || usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
-
-          results.push({
-            id: session.id,
-            test_date: session.test_date,
-            user_name: userName,
-            user_id: session.user_id,
-            notes: session.notes,
-            table_name: "strength_test_sessions",
-            test_type: "Δύναμη",
-            exercise_count: exerciseIds.size
-          });
-        }
-      }
-
-      // Anthropometric Test Sessions
-      const { data: anthropometricSessions, error: anthropometricError } = await supabase
-        .from('anthropometric_test_sessions')
-        .select(`
-          id, 
-          user_id, 
-          test_date, 
-          notes,
-          app_users!user_id(name)
-        `)
-        .order('test_date', { ascending: false });
-
-      if (!anthropometricError && anthropometricSessions) {
-        console.log('📏 Found anthropometric test sessions:', anthropometricSessions.length);
-        
-        for (const session of anthropometricSessions) {
-          const userName = session.app_users?.name || usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
-
-          results.push({
-            id: session.id,
-            test_date: session.test_date,
-            user_name: userName,
-            user_id: session.user_id,
-            notes: session.notes,
-            table_name: "anthropometric_test_sessions",
-            test_type: "Σωματομετρικά"
-          });
-        }
-      }
-
-      // Functional Test Sessions
-      const { data: functionalSessions, error: functionalError } = await supabase
-        .from('functional_test_sessions')
-        .select(`
-          id, 
-          user_id, 
-          test_date, 
-          notes,
-          app_users!user_id(name)
-        `)
-        .order('test_date', { ascending: false });
-
-      if (!functionalError && functionalSessions) {
-        console.log('🏃 Found functional test sessions:', functionalSessions.length);
-        
-        for (const session of functionalSessions) {
-          const userName = session.app_users?.name || usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
-
-          results.push({
-            id: session.id,
-            test_date: session.test_date,
-            user_name: userName,
-            user_id: session.user_id,
-            notes: session.notes,
-            table_name: "functional_test_sessions",
-            test_type: "Λειτουργικότητα"
-          });
-        }
-      }
-
-      // Endurance Test Sessions
-      const { data: enduranceSessions, error: enduranceError } = await supabase
-        .from('endurance_test_sessions')
-        .select(`
-          id, 
-          user_id, 
-          test_date, 
-          notes,
-          app_users!user_id(name)
-        `)
-        .order('test_date', { ascending: false });
-
-      if (!enduranceError && enduranceSessions) {
-        console.log('🏃‍♂️ Found endurance test sessions:', enduranceSessions.length);
-        
-        for (const session of enduranceSessions) {
-          const userName = session.app_users?.name || usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
-
-          results.push({
-            id: session.id,
-            test_date: session.test_date,
-            user_name: userName,
-            user_id: session.user_id,
-            notes: session.notes,
-            table_name: "endurance_test_sessions",
-            test_type: "Αντοχή"
-          });
-        }
-      }
-
-      // Jump Test Sessions
-      const { data: jumpSessions, error: jumpError } = await supabase
-        .from('jump_test_sessions')
-        .select(`
-          id, 
-          user_id, 
-          test_date, 
-          notes,
-          app_users!user_id(name)
-        `)
-        .order('test_date', { ascending: false });
-
-      if (!jumpError && jumpSessions) {
-        console.log('🦘 Found jump test sessions:', jumpSessions.length);
-        
-        for (const session of jumpSessions) {
-          const userName = session.app_users?.name || usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
-
-          results.push({
-            id: session.id,
-            test_date: session.test_date,
-            user_name: userName,
-            user_id: session.user_id,
-            notes: session.notes,
-            table_name: "jump_test_sessions",
-            test_type: "Άλματα"
-          });
         }
       }
 
