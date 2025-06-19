@@ -26,6 +26,20 @@ export const DayProgramMainContent: React.FC<DayProgramMainContentProps> = ({
   onSetClick,
   onVideoClick
 }) => {
+  const handleExerciseClick = (exercise: any, event: React.MouseEvent) => {
+    console.log('🎯 DayProgramMainContent - Exercise clicked:', exercise.exercises?.name);
+    console.log('🏃 DayProgramMainContent - Workout in progress:', workoutInProgress);
+    
+    if (!workoutInProgress) {
+      console.log('⚠️ DayProgramMainContent - Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
+      return;
+    }
+
+    // Άμεσα καλούμε το video click για οποιαδήποτε άσκηση
+    console.log('🎬 DayProgramMainContent - Opening video for exercise during workout');
+    onVideoClick(exercise);
+  };
+
   return (
     <>
       <ProgramInfo
@@ -51,6 +65,7 @@ export const DayProgramMainContent: React.FC<DayProgramMainContentProps> = ({
               workoutInProgress={workoutInProgress}
               getRemainingText={exerciseCompletion.getRemainingText}
               isExerciseComplete={exerciseCompletion.isExerciseComplete}
+              onExerciseClick={handleExerciseClick}
               onSetClick={onSetClick}
               onVideoClick={onVideoClick}
               getNotes={exerciseCompletion.getNotes}
