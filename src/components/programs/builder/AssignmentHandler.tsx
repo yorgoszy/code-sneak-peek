@@ -42,11 +42,14 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
     try {
       toast.info('Αποθήκευση προγράμματος...');
 
-      // 1. Αποθήκευση προγράμματος
+      // 1. Αποθήκευση προγράμματος ΜΕ ΤΗ ΔΟΜΗ ΤΟΥ
       const savedProgram = await programService.saveProgram(program);
 
-      // 2. Αποθήκευση δομής προγράμματος
-      await programService.saveProgramStructure(savedProgram, program);
+      // 2. ΚΡΙΤΙΚΟ: Διασφαλίζουμε ότι το αποθηκευμένο πρόγραμμα έχει τη δομή του
+      const programWithStructure = {
+        ...savedProgram,
+        weeks: program.weeks // Περνάμε τη δομή από το original program
+      };
 
       // 3. Μετατροπή ημερομηνιών σε strings
       const trainingDatesStrings = (program.training_dates || []).map(date => {
@@ -56,9 +59,9 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
         return date;
       });
 
-      // 4. Δημιουργία ανάθεσης - χρησιμοποιούμε saveAssignment αντί για createAssignment
+      // 4. Δημιουργία ανάθεσης με τη ΠΛΗΡΗ δομή του προγράμματος
       const assignmentData = {
-        program: savedProgram,
+        program: programWithStructure, // Περνάμε το πρόγραμμα ΜΕ τη δομή
         userId: program.user_id,
         trainingDates: trainingDatesStrings
       };
