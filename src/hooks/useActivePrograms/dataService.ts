@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "./types";
 
@@ -105,4 +104,92 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
     console.error('❌ Unexpected error enriching assignment:', error);
     return assignment;
   }
+};
+
+export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
+  const { data, error } = await supabase
+    .from('program_assignments')
+    .select(`
+      id,
+      program_id,
+      user_id,
+      progress,
+      start_date,
+      end_date,
+      created_at,
+      updated_at,
+      assigned_by,
+      group_id,
+      training_dates,
+      status,
+      assignment_type,
+      notes,
+      programs!inner(
+        id,
+        name,
+        description,
+        duration,
+        created_by,
+        created_at,
+        updated_at,
+        is_template,
+        user_id,
+        start_date,
+        training_days,
+        status,
+        type,
+        program_weeks(
+          id,
+          week_number,
+          name,
+          program_days(
+            id,
+            day_number,
+            name,
+            estimated_duration_minutes,
+            program_blocks(
+              id,
+              name,
+              block_order,
+              program_exercises(
+                id,
+                exercise_id,
+                sets,
+                reps,
+                kg,
+                percentage_1rm,
+                velocity_ms,
+                tempo,
+                rest,
+                notes,
+                exercise_order,
+                exercises(
+                  id,
+                  name,
+                  description,
+                  video_url
+                )
+              )
+            )
+          )
+        )
+      ),
+      app_users!inner(
+        id,
+        name,
+        email,
+        photo_url,
+        role
+      )
+    `)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('❌ Error fetching active programs:', error);
+    throw error;
+  }
+
+  console.log('✅ Raw data from Supabase:', data);
+  return data || [];
 };
