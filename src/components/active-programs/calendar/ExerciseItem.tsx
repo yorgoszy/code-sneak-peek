@@ -47,16 +47,16 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   getRemainingText
 }) => {
   const handleClick = (event: React.MouseEvent) => {
-    // Αν το κλικ είναι στο video thumbnail, μην καλέσουμε το onExerciseClick
-    if ((event.target as HTMLElement).closest('.video-thumbnail')) {
-      return;
-    }
+    console.log('🖱️ ExerciseItem click detected for:', exercise.exercises?.name);
+    console.log('🏃 Workout status:', workoutInProgress);
+    
+    // Πάντα καλούμε το onExerciseClick που θα αποφασίσει τι να κάνει
     onExerciseClick(exercise, event);
   };
 
   const handleVideoClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    console.log('🎬 Video click detected for:', exercise.exercises?.name);
+    console.log('🎬 Direct video click detected for:', exercise.exercises?.name);
     
     // Έλεγχος αν υπάρχει έγκυρο video URL
     if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {

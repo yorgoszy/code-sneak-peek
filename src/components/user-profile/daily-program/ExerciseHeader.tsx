@@ -39,11 +39,14 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
 
   const handleClick = (e: React.MouseEvent) => {
     console.log('🖱️ ExerciseHeader click detected');
+    
     // Αν κλικάραμε στο video thumbnail, μην καλέσουμε το onExerciseClick
     if ((e.target as HTMLElement).closest('.video-thumbnail')) {
-      console.log('🎥 Click was on video thumbnail, skipping exercise click');
+      console.log('🎥 Click was on video thumbnail, calling video handler directly');
+      handleVideoClick(exercise);
       return;
     }
+    
     console.log('🎯 Calling exercise click handler');
     onExerciseClick(exercise, e);
   };
