@@ -55,6 +55,7 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
   // Χρησιμοποιούμε το σωστό path για το video URL
   const videoUrl = exercise.exercises?.video_url;
   const hasVideo = videoUrl && isValidVideoUrl(videoUrl);
+  const thumbnailUrl = hasVideo ? getVideoThumbnail(videoUrl) : null;
   const exerciseName = exercise.exercises?.name || 'Άγνωστη άσκηση';
 
   return (
@@ -71,10 +72,24 @@ export const CompactExerciseItem: React.FC<CompactExerciseItemProps> = ({
           {/* Video Thumbnail */}
           {hasVideo && (
             <div 
-              className="video-thumbnail flex-shrink-0 w-6 h-6 bg-gray-200 rounded-none flex items-center justify-center cursor-pointer hover:bg-gray-300"
+              className="video-thumbnail flex-shrink-0 w-8 h-5 rounded-none overflow-hidden cursor-pointer hover:opacity-75"
               onClick={handleVideoClick}
             >
-              <Play className="w-3 h-3 text-gray-600" />
+              {thumbnailUrl ? (
+                <img
+                  src={thumbnailUrl}
+                  alt={`${exerciseName} thumbnail`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+              ) : null}
+              <div className={`w-full h-full bg-gray-200 flex items-center justify-center ${thumbnailUrl ? 'hidden' : ''}`}>
+                <Play className="w-2 h-2 text-gray-400" />
+              </div>
             </div>
           )}
           
