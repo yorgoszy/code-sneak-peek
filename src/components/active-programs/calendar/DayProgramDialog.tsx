@@ -1,15 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { format } from "date-fns";
-import { isValidVideoUrl } from '@/utils/videoUtils';
-import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
-import { useWorkoutState } from './hooks/useWorkoutState';
-import { DayProgramDialogHeader } from './DayProgramDialogHeader';
-import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
-import { ProgramInfo } from './ProgramInfo';
-import { ProgramBlocks } from './ProgramBlocks';
-import { supabase } from "@/integrations/supabase/client";
+import { DayProgramDialogContent } from './DayProgramDialogContent';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -31,170 +23,19 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   onRefresh,
   onMinimize
 }) => {
-  const [selectedExercise, setSelectedExercise] = useState<any>(null);
-  const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
-
-  // Νέο state για real-time status:
-  const [dynamicStatus, setDynamicStatus] = useState<string>(workoutStatus);
-  const [statusLoading, setStatusLoading] = useState(false);
-
-  const {
-    workoutInProgress,
-    elapsedTime,
-    handleStartWorkout,
-    handleCompleteWorkout,
-    handleCancelWorkout,
-    exerciseCompletion
-  } = useWorkoutState(program, selectedDate, onRefresh, onClose);
-
-  // Κάνουμε fetch την τρέχουσα κατάσταση completion μόλις ανοίγει το dialog ή αλλάζει η ημερομηνία/assignment
-  useEffect(() => {
-    const fetchStatus = async () => {
-      setStatusLoading(true);
-      setDynamicStatus(workoutStatus);
-      if (!program?.id || !selectedDate) {
-        setStatusLoading(false);
-        return;
-      }
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const { data, error } = await supabase
-        .from('workout_completions')
-        .select('status')
-        .eq('assignment_id', program.id)
-        .eq('scheduled_date', dateStr)
-        .maybeSingle();
-
-      if (error) {
-        // Δεν προβάλλουμε σφάλματα εδώ, απλά επιστρέφουμε στο αρχικό status
-        setDynamicStatus(workoutStatus);
-      } else if (data?.status) {
-        setDynamicStatus(data.status);
-      } else {
-        setDynamicStatus(workoutStatus);
-      }
-      setStatusLoading(false);
-    };
-
-    if (isOpen) {
-      fetchStatus();
-    }
-  }, [isOpen, program?.id, selectedDate, workoutStatus]);
-
   if (!program || !selectedDate) return null;
 
-  const handleVideoClick = (exercise: any) => {
-    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-      setSelectedExercise(exercise);
-      setIsVideoDialogOpen(true);
-    }
-  };
-
-  const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {
-    exerciseCompletion.completeSet(exerciseId, totalSets);
-  };
-
-  const handleExerciseClick = (exercise: any, event: React.MouseEvent) => {
-    if (!workoutInProgress) {
-      console.log('⚠️ Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
-      return;
-    }
-
-    if ((event.target as HTMLElement).closest('.video-thumbnail')) {
-      if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-        handleVideoClick(exercise);
-      }
-      return;
-    }
-  };
-
-  // Find the correct day program
-  const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-  const trainingDates = program.training_dates || [];
-  const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
-  
-  let dayProgram = null;
-  if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
-    const programDays = program.programs.program_weeks[0].program_days;
-    dayProgram = programDays[dateIndex % programDays.length];
-  }
-
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none w-[95vw] md:w-full">
-          <DayProgramDialogHeader
-            selectedDate={selectedDate}
-            workoutInProgress={workoutInProgress}
-            elapsedTime={elapsedTime}
-            workoutStatus={dynamicStatus}
-            onStartWorkout={handleStartWorkout}
-            onCompleteWorkout={handleCompleteWorkout}
-            onCancelWorkout={handleCancelWorkout}
-            onMinimize={onMinimize}
-            program={program}
-          />
-
-          <div className="space-y-2 md:space-y-4">
-            {statusLoading && (
-              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-none px-2 md:px-4 py-1 md:py-2 mb-1 md:mb-2 text-center text-xs">
-                Ενημέρωση κατάστασης...
-              </div>
-            )}
-
-            <ProgramInfo
-              program={program}
-              dayProgram={dayProgram}
-              workoutInProgress={workoutInProgress}
-              workoutStatus={dynamicStatus}
-            />
-
-            {dayProgram ? (
-              <div className="space-y-1 md:space-y-2">
-                <h4 className="text-xs md:text-sm font-medium text-gray-900 flex items-center space-x-2 px-1 md:px-0">
-                  <span>{dayProgram.name}</span>
-                </h4>
-
-                <ExerciseInteractionHandler
-                  workoutInProgress={workoutInProgress}
-                  onVideoClick={handleVideoClick}
-                  onSetClick={handleSetClick}
-                >
-                  <ProgramBlocks
-                    blocks={dayProgram.program_blocks}
-                    workoutInProgress={workoutInProgress}
-                    getRemainingText={exerciseCompletion.getRemainingText}
-                    isExerciseComplete={exerciseCompletion.isExerciseComplete}
-                    onExerciseClick={handleExerciseClick}
-                    onSetClick={handleSetClick}
-                    onVideoClick={handleVideoClick}
-                    getNotes={exerciseCompletion.getNotes}
-                    updateNotes={exerciseCompletion.updateNotes}
-                    clearNotes={exerciseCompletion.clearNotes}
-                    updateKg={exerciseCompletion.updateKg}
-                    clearKg={exerciseCompletion.clearKg}
-                    updateVelocity={exerciseCompletion.updateVelocity}
-                    clearVelocity={exerciseCompletion.clearVelocity}
-                    updateReps={exerciseCompletion.updateReps}
-                    clearReps={exerciseCompletion.clearReps}
-                    selectedDate={selectedDate}
-                    program={program}
-                  />
-                </ExerciseInteractionHandler>
-              </div>
-            ) : (
-              <div className="bg-white border border-gray-200 rounded-none p-3 md:p-6 text-center text-gray-500 text-xs md:text-sm">
-                Δεν βρέθηκε πρόγραμμα για αυτή την ημέρα
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <ExerciseVideoDialog
-        isOpen={isVideoDialogOpen}
-        onClose={() => setIsVideoDialogOpen(false)}
-        exercise={selectedExercise}
-      />
-    </>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-none w-[95vw] md:w-full">
+        <DayProgramDialogContent
+          program={program}
+          selectedDate={selectedDate}
+          workoutStatus={workoutStatus}
+          onRefresh={onRefresh}
+          onMinimize={onMinimize}
+        />
+      </DialogContent>
+    </Dialog>
   );
 };
