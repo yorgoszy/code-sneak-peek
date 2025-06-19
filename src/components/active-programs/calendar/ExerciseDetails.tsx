@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThumbnail';
 
 interface ExerciseDetailsProps {
   exercise: any;
@@ -24,7 +25,16 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-7 gap-0.5 text-xs">
+    <div className="grid grid-cols-8 gap-0.5 text-xs">
+      <div className="flex flex-col items-center">
+        <div className="text-gray-600 mb-1 text-center">Video</div>
+        <div className="flex items-center justify-center w-full h-6">
+          <VideoThumbnail 
+            exercise={exercise} 
+            onVideoClick={onVideoClick || (() => {})} 
+          />
+        </div>
+      </div>
       <div className="flex flex-col items-center">
         <div className="text-gray-600 mb-1 text-center">Sets</div>
         <div 
