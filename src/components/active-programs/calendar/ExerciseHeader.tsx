@@ -27,14 +27,13 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
 
   const handleVideoThumbnailClick = (exerciseForVideo: any) => {
     console.log('🎬 Video thumbnail clicked for:', exerciseForVideo.exercises?.name);
-    // Δημιουργούμε ένα synthetic event
-    const syntheticEvent = {
-      stopPropagation: () => {},
-      preventDefault: () => {},
-      target: document.createElement('div'),
-      currentTarget: document.createElement('div')
-    } as React.MouseEvent;
-    onVideoClick(syntheticEvent);
+    // VideoThumbnail component passes the exercise, but we need to call the parent's onVideoClick
+    // We'll trigger the parent component's video click handler directly
+    if (onExerciseNameClick) {
+      // Create a minimal event-like object just for the click
+      const fakeEvent = { stopPropagation: () => {}, preventDefault: () => {} } as any;
+      onExerciseNameClick(fakeEvent);
+    }
   };
 
   const handleExerciseNameClick = (event: React.MouseEvent) => {
