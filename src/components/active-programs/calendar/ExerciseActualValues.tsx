@@ -117,12 +117,12 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
         {workoutInProgress && onSetClick ? (
           <button
             onClick={handleSetClick}
-            className="w-full h-4 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-[9px] font-medium cursor-pointer transition-colors px-0"
+            className="w-full h-6 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-[9px] font-medium cursor-pointer transition-colors px-0 flex items-center justify-center"
           >
             {isComplete ? '0' : remainingNumber}
           </button>
         ) : (
-          <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] flex items-center justify-center h-4">-</div>
+          <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] h-6 flex items-center justify-center">-</div>
         )}
       </div>
       <div className="text-center">
@@ -130,18 +130,18 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           type="number"
           value={actualReps}
           onChange={(e) => handleRepsChange(e.target.value)}
-          className="h-4 text-[9px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
+          className="h-6 text-[9px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
           placeholder={exercise.reps || ''}
           disabled={!workoutInProgress}
         />
       </div>
       <div className="text-center">
         {calculatedPercentage ? (
-          <div className="bg-red-50 px-0 py-0.5 rounded-none text-[9px] text-red-600 font-medium h-4 flex items-center justify-center">
+          <div className="bg-red-50 px-0 py-0.5 rounded-none text-[9px] text-red-600 font-medium h-6 flex items-center justify-center">
             {calculatedPercentage}%
           </div>
         ) : (
-          <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] h-4 flex items-center justify-center">-</div>
+          <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] h-6 flex items-center justify-center">-</div>
         )}
       </div>
       <div className="text-center">
@@ -150,7 +150,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           step="0.5"
           value={actualKg}
           onChange={(e) => handleKgChange(e.target.value)}
-          className="h-4 text-[9px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
+          className="h-6 text-[9px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
           placeholder={exercise.kg || ''}
           disabled={!workoutInProgress}
         />
@@ -161,16 +161,16 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
           step="0.01"
           value={actualVelocity}
           onChange={(e) => handleVelocityChange(e.target.value)}
-          className="h-4 text-[9px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
+          className="h-6 text-[9px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
           placeholder={exercise.velocity_ms || ''}
           disabled={!workoutInProgress}
         />
       </div>
       <div className="text-center flex items-stretch h-full">
-        <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] flex-1 flex items-center justify-center">-</div>
+        <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] flex-1 h-6 flex items-center justify-center">-</div>
       </div>
       <div className="text-center flex items-stretch h-full">
-        <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] flex-1 flex items-center justify-center">-</div>
+        <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] flex-1 h-6 flex items-center justify-center">-</div>
       </div>
     </div>
   );
