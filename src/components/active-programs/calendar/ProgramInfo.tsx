@@ -1,9 +1,12 @@
 
 import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Clock, User, Calendar } from 'lucide-react';
+import { DayCalculations } from './DayCalculations';
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramInfoProps {
-  program: any;
+  program: EnrichedAssignment;
   dayProgram: any;
   workoutInProgress: boolean;
   workoutStatus: string;
@@ -15,58 +18,55 @@ export const ProgramInfo: React.FC<ProgramInfoProps> = ({
   workoutInProgress,
   workoutStatus
 }) => {
-  const userName = program.app_users?.name || 'Άγνωστος χρήστης';
-  
-  const getUserInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  const isCompleted = workoutStatus === 'completed';
 
   return (
-    <div className="bg-white border border-gray-200 rounded-none p-3">
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">
-            {program.programs?.name}
-          </h3>
-          {program.programs?.description && (
-            <p className="text-xs text-gray-600 mt-0.5">
-              {program.programs.description}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-xs text-gray-600 text-right">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-medium">Αθλητής:</span> 
-              <span>{userName}</span>
-            </div>
-            {dayProgram?.estimated_duration_minutes && (
-              <div><span className="font-medium">Διάρκεια:</span> {dayProgram.estimated_duration_minutes} λεπτά</div>
-            )}
+    <div className="bg-white border border-gray-200 rounded-none p-4 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <User className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-900">
+              {program.app_users?.name || 'Άγνωστος Αθλητής'}
+            </span>
           </div>
-          <Avatar className="w-12 h-12">
-            <AvatarImage 
-              src={program.app_users?.photo_url} 
-              alt={userName}
-            />
-            <AvatarFallback className="bg-blue-100 text-blue-700">
-              {getUserInitials(userName)}
-            </AvatarFallback>
-          </Avatar>
+          
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-600">
+              {program.programs?.name || 'Άγνωστο Πρόγραμμα'}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {isCompleted && (
+            <Badge className="bg-green-100 text-green-800 border-green-200 rounded-none">
+              Ολοκληρωμένη
+            </Badge>
+          )}
+          
+          {workoutInProgress && (
+            <Badge className="bg-[#00ffba]/20 text-[#00ffba] border-[#00ffba]/30 rounded-none">
+              Σε εξέλιξη
+            </Badge>
+          )}
+          
+          <Badge variant="outline" className="rounded-none">
+            {program.status}
+          </Badge>
         </div>
       </div>
-      
-      {workoutInProgress && (
-        <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-none">
-          <p className="text-xs text-green-700">
-            🏋️‍♂️ Προπόνηση σε εξέλιξη! Κάνε κλικ στα Sets για να ολοκληρώνεις τα sets.
-          </p>
-        </div>
+
+      {program.programs?.description && (
+        <p className="text-sm text-gray-600 mb-3">
+          {program.programs.description}
+        </p>
+      )}
+
+      {/* Εμφάνιση υπολογισμών ημέρας */}
+      {dayProgram?.program_blocks && (
+        <DayCalculations blocks={dayProgram.program_blocks} />
       )}
     </div>
   );
