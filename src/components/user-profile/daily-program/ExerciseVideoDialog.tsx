@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Play } from 'lucide-react';
+import { Play, AlertCircle } from 'lucide-react';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 
 interface ExerciseVideoDialogProps {
@@ -23,6 +23,12 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
   onClose,
   exercise
 }) => {
+  console.log('🎬 ExerciseVideoDialog render:', {
+    isOpen,
+    exerciseName: exercise?.exercises?.name,
+    videoUrl: exercise?.exercises?.video_url
+  });
+
   if (!exercise?.exercises) return null;
 
   const { name, description, video_url } = exercise.exercises;
@@ -31,8 +37,10 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
   const renderVideo = () => {
     if (!hasValidVideo) {
       return (
-        <div className="aspect-video bg-gray-100 rounded-none flex items-center justify-center">
-          <p className="text-gray-500">Δεν υπάρχει διαθέσιμο βίντεο</p>
+        <div className="aspect-video bg-gray-100 rounded-none flex flex-col items-center justify-center p-8">
+          <AlertCircle className="w-16 h-16 text-gray-400 mb-4" />
+          <p className="text-gray-500 text-center text-lg font-medium">Δεν υπάρχει διαθέσιμο βίντεο</p>
+          <p className="text-gray-400 text-center text-sm mt-2">Για αυτή την άσκηση δεν έχει ανέβει βίντεο ακόμα</p>
         </div>
       );
     }
@@ -108,7 +116,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle>{name}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">{name}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">

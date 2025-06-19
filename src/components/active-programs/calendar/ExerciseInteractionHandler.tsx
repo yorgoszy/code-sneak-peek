@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { isValidVideoUrl } from '@/utils/videoUtils';
 
 interface ExerciseInteractionHandlerProps {
   workoutInProgress: boolean;
@@ -27,23 +26,13 @@ export const ExerciseInteractionHandler: React.FC<ExerciseInteractionHandlerProp
     // Αν το κλικ ήταν στο video thumbnail, χειρίσου το ως video click
     if ((event.target as HTMLElement).closest('.video-thumbnail')) {
       console.log('🎥 ExerciseInteractionHandler - Click was on video thumbnail');
-      if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-        console.log('✅ ExerciseInteractionHandler - Valid video URL found, calling onVideoClick');
-        onVideoClick(exercise);
-      } else {
-        console.log('❌ ExerciseInteractionHandler - No valid video URL');
-      }
+      onVideoClick(exercise);
       return;
     }
 
-    // Αν έχουμε ενεργή προπόνηση και δεν κάναμε κλικ στο video, εμφάνισε το video
-    console.log('🎬 ExerciseInteractionHandler - Opening video for exercise during workout');
-    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-      console.log('✅ ExerciseInteractionHandler - Valid video URL found, calling onVideoClick');
-      onVideoClick(exercise);
-    } else {
-      console.log('❌ ExerciseInteractionHandler - No valid video URL');
-    }
+    // ΑΛΛΑΓΗ: Πάντα καλούμε το onVideoClick όταν έχουμε ενεργή προπόνηση
+    console.log('🎬 ExerciseInteractionHandler - Opening video dialog for exercise during workout');
+    onVideoClick(exercise);
   };
 
   const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {
