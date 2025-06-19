@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
@@ -70,42 +69,21 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
   }, [program?.id, selectedDate, workoutStatus]);
 
   const handleVideoClick = (exercise: any) => {
-    console.log('🎬 Video click for exercise:', exercise.exercises?.name);
-    console.log('🎬 Video URL:', exercise.exercises?.video_url);
+    console.log('🎬 DayProgramDialogContent - Video click for exercise:', exercise.exercises?.name);
+    console.log('🎬 DayProgramDialogContent - Video URL:', exercise.exercises?.video_url);
     
     if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+      console.log('✅ DayProgramDialogContent - Opening video dialog');
       setSelectedExercise(exercise);
       setIsVideoDialogOpen(true);
     } else {
-      console.log('❌ No valid video URL found for exercise');
+      console.log('❌ DayProgramDialogContent - No valid video URL found for exercise');
     }
   };
 
   const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {
+    console.log('🎯 DayProgramDialogContent - Set click for exercise:', exerciseId);
     exerciseCompletion.completeSet(exerciseId, totalSets);
-  };
-
-  const handleExerciseClick = (exercise: any, event: React.MouseEvent) => {
-    console.log('🖱️ Exercise clicked:', exercise.exercises?.name);
-    console.log('🏃 Workout in progress:', workoutInProgress);
-    
-    if (!workoutInProgress) {
-      console.log('⚠️ Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
-      return;
-    }
-
-    // Έλεγχος αν το κλικ ήταν στο video thumbnail
-    if ((event.target as HTMLElement).closest('.video-thumbnail')) {
-      console.log('🎥 Click was on video thumbnail, handling video click');
-      if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
-        handleVideoClick(exercise);
-      }
-      return;
-    }
-
-    // Αν έχουμε ενεργή προπόνηση και δεν κάναμε κλικ στο video, εμφάνισε το video
-    console.log('🎯 Opening video for exercise during workout');
-    handleVideoClick(exercise);
   };
 
   // Find the correct day program
@@ -143,7 +121,6 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
           dynamicStatus={dynamicStatus}
           selectedDate={selectedDate}
           exerciseCompletion={exerciseCompletion}
-          onExerciseClick={handleExerciseClick}
           onSetClick={handleSetClick}
           onVideoClick={handleVideoClick}
         />

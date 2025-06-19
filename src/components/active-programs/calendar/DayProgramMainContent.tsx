@@ -12,7 +12,6 @@ interface DayProgramMainContentProps {
   dynamicStatus: string;
   selectedDate: Date;
   exerciseCompletion: any;
-  onExerciseClick: (exercise: any, event: React.MouseEvent) => void;
   onSetClick: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
   onVideoClick: (exercise: any) => void;
 }
@@ -24,7 +23,6 @@ export const DayProgramMainContent: React.FC<DayProgramMainContentProps> = ({
   dynamicStatus,
   selectedDate,
   exerciseCompletion,
-  onExerciseClick,
   onSetClick,
   onVideoClick
 }) => {
@@ -53,7 +51,6 @@ export const DayProgramMainContent: React.FC<DayProgramMainContentProps> = ({
               workoutInProgress={workoutInProgress}
               getRemainingText={exerciseCompletion.getRemainingText}
               isExerciseComplete={exerciseCompletion.isExerciseComplete}
-              onExerciseClick={onExerciseClick}
               onSetClick={onSetClick}
               onVideoClick={onVideoClick}
               getNotes={exerciseCompletion.getNotes}

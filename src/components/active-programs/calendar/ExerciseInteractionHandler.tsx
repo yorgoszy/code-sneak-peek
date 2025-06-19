@@ -16,16 +16,33 @@ export const ExerciseInteractionHandler: React.FC<ExerciseInteractionHandlerProp
   children
 }) => {
   const handleExerciseClick = (exercise: any, event: React.MouseEvent) => {
+    console.log('🎯 ExerciseInteractionHandler - Exercise clicked:', exercise.exercises?.name);
+    console.log('🏃 ExerciseInteractionHandler - Workout in progress:', workoutInProgress);
+    
     if (!workoutInProgress) {
-      console.log('⚠️ Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
+      console.log('⚠️ ExerciseInteractionHandler - Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
       return;
     }
 
+    // Αν το κλικ ήταν στο video thumbnail, χειρίσου το ως video click
     if ((event.target as HTMLElement).closest('.video-thumbnail')) {
+      console.log('🎥 ExerciseInteractionHandler - Click was on video thumbnail');
       if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+        console.log('✅ ExerciseInteractionHandler - Valid video URL found, calling onVideoClick');
         onVideoClick(exercise);
+      } else {
+        console.log('❌ ExerciseInteractionHandler - No valid video URL');
       }
       return;
+    }
+
+    // Αν έχουμε ενεργή προπόνηση και δεν κάναμε κλικ στο video, εμφάνισε το video
+    console.log('🎬 ExerciseInteractionHandler - Opening video for exercise during workout');
+    if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
+      console.log('✅ ExerciseInteractionHandler - Valid video URL found, calling onVideoClick');
+      onVideoClick(exercise);
+    } else {
+      console.log('❌ ExerciseInteractionHandler - No valid video URL');
     }
   };
 
