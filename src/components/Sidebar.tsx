@@ -95,8 +95,9 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     {
       icon: Mail,
       label: "Webmail",
-      path: "#",
-      badge: null
+      path: "https://webmail.ridgym.com",
+      badge: null,
+      external: true
     },
     {
       icon: ArrowLeft,
@@ -105,6 +106,14 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     }
   ];
+
+  const handleMenuClick = (item: any) => {
+    if (item.external) {
+      window.open(item.path, '_blank');
+    } else {
+      navigate(item.path);
+    }
+  };
 
   const handleAIChatClick = () => {
     setIsAIChatOpen(true);
@@ -122,11 +131,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const navigationContent = (
     <div className="space-y-2">
       {menuItems.map((item) => {
-        const isActive = location.pathname === item.path;
+        const isActive = location.pathname === item.path && !item.external;
         return (
           <button
             key={item.path}
-            onClick={() => navigate(item.path)}
+            onClick={() => handleMenuClick(item)}
             className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
               isActive ? 'bg-[#00ffba]/10 text-[#00ffba] border-r-2 border-[#00ffba]' : 'text-gray-700'
             }`}
