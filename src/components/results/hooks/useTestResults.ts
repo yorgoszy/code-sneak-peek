@@ -137,7 +137,9 @@ export const useTestResults = () => {
   };
 
   useEffect(() => {
-    fetchAllTests();
+    if (usersMap.size > 0) {
+      fetchAllTests();
+    }
   }, [usersMap]);
 
   return {
