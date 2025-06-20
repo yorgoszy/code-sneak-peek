@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -200,32 +199,10 @@ export const SubscriptionManagement: React.FC = () => {
       }
       console.log('✅ User updated to active');
 
-      // Άμεση ενημέρωση του local state
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId 
-            ? { ...user, subscription_status: 'active', user_status: 'active' }
-            : user
-        )
-      );
-
-      if (userSubscription) {
-        setUserSubscriptions(prevSubs => 
-          prevSubs.map(sub => 
-            sub.id === userSubscription.id 
-              ? { ...sub, status: 'active' }
-              : sub
-          )
-        );
-      }
-
       toast.success('Η συνδρομή ενεργοποιήθηκε επιτυχώς!');
       
-      // Περίμενε λίγο και φόρτωσε ξανά για να βεβαιωθείς
-      setTimeout(async () => {
-        console.log('🔄 Reloading data after activation...');
-        await loadData();
-      }, 500);
+      // Άμεση ανανέωση των δεδομένων
+      await loadData();
 
     } catch (error) {
       console.error('❌ Error activating subscription:', error);
@@ -265,30 +242,10 @@ export const SubscriptionManagement: React.FC = () => {
       }
       console.log('✅ User deactivated');
 
-      // Άμεση ενημέρωση του local state
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId 
-            ? { ...user, subscription_status: 'inactive', user_status: 'inactive' }
-            : user
-        )
-      );
-
-      setUserSubscriptions(prevSubs => 
-        prevSubs.map(sub => 
-          sub.user_id === userId && sub.status === 'active'
-            ? { ...sub, status: 'cancelled' }
-            : sub
-        )
-      );
-
       toast.success('Η συνδρομή απενεργοποιήθηκε επιτυχώς!');
       
-      // Περίμενε λίγο και φόρτωσε ξανά για να βεβαιωθείς
-      setTimeout(async () => {
-        console.log('🔄 Reloading data after deactivation...');
-        await loadData();
-      }, 500);
+      // Άμεση ανανέωση των δεδομένων
+      await loadData();
 
     } catch (error) {
       console.error('❌ Error deactivating subscription:', error);
