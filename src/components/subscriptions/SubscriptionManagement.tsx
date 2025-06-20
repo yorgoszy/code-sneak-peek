@@ -170,8 +170,8 @@ export const SubscriptionManagement: React.FC = () => {
 
       console.log('📋 User subscription found:', userSubscription?.id);
 
+      // Πρώτα ενημέρωσε τη συνδρομή σε active (αν υπάρχει)
       if (userSubscription) {
-        // Ενημέρωση συνδρομής σε active
         const { error: subscriptionError } = await supabase
           .from('user_subscriptions')
           .update({ status: 'active' })
@@ -184,20 +184,17 @@ export const SubscriptionManagement: React.FC = () => {
         console.log('✅ Subscription updated to active');
       }
 
-      // Ενημέρωση χρήστη σε active
+      // Στη συνέχεια ενημέρωσε ΜΟΝΟ το subscription_status του χρήστη σε active
       const { error: userError } = await supabase
         .from('app_users')
-        .update({ 
-          subscription_status: 'active',
-          user_status: 'active'
-        })
+        .update({ subscription_status: 'active' })
         .eq('id', userId);
 
       if (userError) {
         console.error('❌ User update error:', userError);
         throw userError;
       }
-      console.log('✅ User updated to active');
+      console.log('✅ User subscription_status updated to active');
 
       toast.success('Η συνδρομή ενεργοποιήθηκε επιτυχώς!');
       
@@ -227,20 +224,17 @@ export const SubscriptionManagement: React.FC = () => {
       }
       console.log('✅ Subscriptions deactivated');
 
-      // Ενημέρωση χρήστη σε inactive
+      // Ενημέρωση ΜΟΝΟ του subscription_status του χρήστη σε inactive
       const { error: userError } = await supabase
         .from('app_users')
-        .update({ 
-          subscription_status: 'inactive',
-          user_status: 'inactive'
-        })
+        .update({ subscription_status: 'inactive' })
         .eq('id', userId);
 
       if (userError) {
         console.error('❌ User deactivation error:', userError);
         throw userError;
       }
-      console.log('✅ User deactivated');
+      console.log('✅ User subscription_status updated to inactive');
 
       toast.success('Η συνδρομή απενεργοποιήθηκε επιτυχώς!');
       
