@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState } from "react";
-import { AIChatDialog } from "@/components/ai-chat/AIChatDialog";
+import { LocalAIChatDialog } from "@/components/ai-chat/LocalAIChatDialog";
 
 interface UserProfileSidebarProps {
   isCollapsed: boolean;
@@ -141,7 +141,7 @@ export const UserProfileSidebar = ({
         bottomContent={bottomContent}
       />
       
-      <AIChatDialog
+      <LocalAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={userProfile.id}
