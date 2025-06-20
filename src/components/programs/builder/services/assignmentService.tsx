@@ -102,22 +102,22 @@ export const assignmentService = {
   async ensureProgramStructureExists(program: any) {
     console.log('🏗️ [AssignmentService] Checking program structure for:', program.id);
     
-    // Ελέγχουμε αν υπάρχουν weeks για το πρόγραμμα
+    // Ελέγχουμε αν υπάρχουν weeks για το πρόγραμμα - ΔΙΟΡΘΩΣΗ του query
     const { data: existingWeeks, error: weeksError } = await supabase
       .from('program_weeks')
       .select(`
         id,
         name,
         week_number,
-        program_days:program_days(
+        program_days!fk_program_days_week_id(
           id,
           name,
           day_number,
-          program_blocks:program_blocks(
+          program_blocks(
             id,
             name,
             block_order,
-            program_exercises:program_exercises(
+            program_exercises(
               id,
               sets,
               reps,
@@ -128,7 +128,7 @@ export const assignmentService = {
               rest,
               notes,
               exercise_order,
-              exercises:exercises(id, name, description, video_url)
+              exercises(id, name, description, video_url)
             )
           )
         )
