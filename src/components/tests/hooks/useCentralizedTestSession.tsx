@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -132,7 +131,6 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
   };
 
   const saveFunctionalData = async (sessionId: string, data: any) => {
-    // Υπολογισμός συνολικού FMS score με σωστό type casting
     const totalFmsScore = data.fmsScores ? 
       Object.values(data.fmsScores).reduce((sum: number, score: any) => sum + (parseInt(String(score)) || 0), 0) : 
       null;
