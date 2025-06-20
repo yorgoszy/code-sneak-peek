@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   name: string;
@@ -17,7 +18,7 @@ export interface ProgramExercise {
   exercise_id: string;
   sets: number;
   reps: string;
-  kg?: string;  // Changed from required to optional
+  kg?: string;
   percentage_1rm?: number;
   velocity_ms?: number;
   tempo?: string;
@@ -69,7 +70,6 @@ export interface ProgramAssignment {
   start_date?: string;
   end_date?: string;
   created_at: string;
-  // Make app_users optional and flexible to handle join failures
   app_users?: ProgramAssignmentUser | null;
 }
 
@@ -81,7 +81,6 @@ export interface Program {
   user_id?: string;
   app_users?: { name: string } | null;
   program_weeks: Week[];
-  // Make program_assignments optional since not all programs have assignments
   program_assignments?: ProgramAssignment[];
 }
 
@@ -100,7 +99,7 @@ export interface ProgramStructure {
   user_id?: string;
   start_date?: Date;
   training_days?: string[];
-  training_dates?: string[]; // Added training_dates
+  training_dates?: string[];
   weeks?: Week[];
   status?: string;
 }
