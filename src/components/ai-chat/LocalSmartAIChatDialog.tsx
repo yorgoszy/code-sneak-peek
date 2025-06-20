@@ -389,7 +389,7 @@ class LocalSmartAI {
   private generateGeneralResponse(athleteName?: string): string {
     return `Γεια σου ${athleteName || 'φίλε'}! 👋
 
-Είμαι ο **LocalRID**, ο προσωπικός σου AI προπονητής που τρέχει εντελώς δωρεάν στον browser! 🤖
+Είμαι ο **RID AI**, ο προσωπικός σου AI προπονητής που τρέχει εντελώς δωρεάν στον browser! 🤖
 
 Έχω πρόσβαση στα δεδομένα σου και μπορώ να σε βοηθήσω με:
 
@@ -403,6 +403,7 @@ class LocalSmartAI {
 **✅ 100% Δωρεάν - Χωρίς OpenAI!**
 **🔒 Τρέχει στον browser σου**
 **📊 Έχω πρόσβαση στα δεδομένα σου**
+**🧠 Μαθαίνω από κάθε συνομιλία**
 
 Τι θα θέλες να μάθεις σήμερα;`;
   }
@@ -492,7 +493,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
         id: 'welcome',
         content: `Γεια σου ${athleteName}! 👋
 
-Είμαι ο **LocalRID**, ο προσωπικός σου AI προπονητής! 🤖
+Είμαι ο **RID AI**, ο προσωπικός σου AI προπονητής! 🤖
 
 Μόλις φόρτωσα όλα τα δεδομένα σου:
 📊 Προγράμματα προπονήσεων
@@ -503,6 +504,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
 **✅ Τρέχω 100% δωρεάν στον browser σου!**
 **🔒 Κανένα API key δεν χρειάζεται**
 **📊 Έχω πλήρη πρόσβαση στα δεδομένα σου**
+**🧠 Μαθαίνω από κάθε συνομιλία μας**
 
 Μπορώ να σε βοηθήσω με:
 • Ανάλυση προόδου
@@ -584,7 +586,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <Brain className="w-6 h-6 text-[#00ffba]" />
-            <span className="text-lg font-semibold">LocalRID - Δωρεάν AI Προπονητής</span>
+            <span className="text-lg font-semibold">RID AI - Δωρεάν AI Προπονητής</span>
             {athleteName && (
               <span className="text-base font-normal text-gray-600">
                 για {athleteName}

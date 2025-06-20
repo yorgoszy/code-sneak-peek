@@ -69,12 +69,13 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
             <div className="border rounded-none p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-blue-500" />
-                <h4 className="font-semibold">RID AI (OpenAI)</h4>
+                <h4 className="font-semibold">RID AI Premium</h4>
               </div>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• Πιο προηγμένες απαντήσεις</li>
                 <li>• Συνομιλίες με μνήμη</li>
                 <li>• Συνεχείς ενημερώσεις</li>
+                <li>• Powered by OpenAI</li>
               </ul>
               <div className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-none">
                 Απαιτεί ενεργή συνδρομή
@@ -91,13 +92,14 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
             <div className="border rounded-none p-4 space-y-3 border-[#00ffba]">
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-[#00ffba]" />
-                <h4 className="font-semibold">LocalRID AI (Δωρεάν)</h4>
+                <h4 className="font-semibold">RID AI (Δωρεάν)</h4>
               </div>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• 100% δωρεάν</li>
                 <li>• Τρέχει στον browser</li>
                 <li>• Πρόσβαση σε όλα τα δεδομένα</li>
                 <li>• Εξατομικευμένες συμβουλές</li>
+                <li>• Μαθαίνει από τη χρήση</li>
               </ul>
               <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-none">
                 Χωρίς κόστος & API keys
@@ -112,7 +114,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
           </div>
 
           <div className="text-xs text-gray-500">
-            💡 Το LocalRID AI αναλύει τα δεδομένα προπόνησης και τεστ για εξατομικευμένες συμβουλές
+            💡 Το RID AI αναλύει τα δεδομένα προπόνησης και τεστ για εξατομικευμένες συμβουλές
           </div>
         </div>
       ) : (
