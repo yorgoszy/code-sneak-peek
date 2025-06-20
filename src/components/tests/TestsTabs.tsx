@@ -21,6 +21,7 @@ interface TestsTabsProps {
   jumpData: any;
   setJumpData: (data: any) => void;
   strengthSessionRef: React.MutableRefObject<any>;
+  saving?: boolean;
 }
 
 export const TestsTabs: React.FC<TestsTabsProps> = ({
@@ -37,6 +38,7 @@ export const TestsTabs: React.FC<TestsTabsProps> = ({
   jumpData,
   setJumpData,
   strengthSessionRef,
+  saving = false,
 }) => {
   if (!selectedAthleteId) return null;
 
@@ -108,6 +110,11 @@ export const TestsTabs: React.FC<TestsTabsProps> = ({
             hideSubmitButton={true}
             strengthSessionRef={strengthSessionRef}
           />
+          {saving && (
+            <div className="text-center text-gray-600 mt-4">
+              <p>Αποθήκευση δεδομένων δύναμης...</p>
+            </div>
+          )}
         </TabsContent>
       </div>
     </Tabs>

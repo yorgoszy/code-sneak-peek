@@ -2090,29 +2090,35 @@ export type Database = {
       }
       test_sessions: {
         Row: {
+          completed_at: string | null
           created_at: string
           id: string
           notes: string | null
           session_label: string | null
           test_date: string
+          test_types: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
           id?: string
           notes?: string | null
           session_label?: string | null
           test_date: string
+          test_types?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
           id?: string
           notes?: string | null
           session_label?: string | null
           test_date?: string
+          test_types?: string[] | null
           updated_at?: string
           user_id?: string
         }

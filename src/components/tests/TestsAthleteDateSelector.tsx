@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface TestsAthleteDateSelectorProps {
   selectedAthleteId: string;
@@ -13,6 +14,7 @@ interface TestsAthleteDateSelectorProps {
   setSelectedDate: (date: string) => void;
   users: { id: string; name: string }[];
   handleSaveAllTests: () => void;
+  saving?: boolean;
 }
 
 export const TestsAthleteDateSelector: React.FC<TestsAthleteDateSelectorProps> = ({
@@ -22,6 +24,7 @@ export const TestsAthleteDateSelector: React.FC<TestsAthleteDateSelectorProps> =
   setSelectedDate,
   users,
   handleSaveAllTests,
+  saving = false,
 }) => (
   <Card className="rounded-none mb-6">
     <CardHeader>
@@ -56,10 +59,17 @@ export const TestsAthleteDateSelector: React.FC<TestsAthleteDateSelectorProps> =
         <div className="flex items-end">
           <Button
             onClick={handleSaveAllTests}
-            className="rounded-none w-full"
-            disabled={!selectedAthleteId}
+            className="rounded-none w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+            disabled={!selectedAthleteId || saving}
           >
-            Αποθήκευση Όλων των Τεστ
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Αποθήκευση...
+              </>
+            ) : (
+              'Αποθήκευση Όλων των Τεστ'
+            )}
           </Button>
         </div>
       </div>
