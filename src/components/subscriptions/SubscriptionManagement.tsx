@@ -29,6 +29,7 @@ interface UserSubscription {
   end_date: string;
   status: string;
   notes: string;
+  created_at: string;
   subscription_types: SubscriptionType;
   app_users: {
     name: string;
