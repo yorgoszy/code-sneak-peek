@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -132,9 +133,17 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
   };
 
   const saveFunctionalData = async (sessionId: string, data: any) => {
-    const totalFmsScore = data.fmsScores ? 
-      Object.values(data.fmsScores).reduce((sum: number, score: any) => sum + (parseInt(String(score)) || 0), 0) : 
-      null;
+    // Calculate total FMS score with proper type handling
+    let totalFmsScore: number | null = null;
+    if (data.fmsScores && typeof data.fmsScores === 'object') {
+      const scores = Object.values(data.fmsScores);
+      if (scores.length > 0) {
+        totalFmsScore = scores.reduce((sum: number, score: any) => {
+          const numericScore = typeof score === 'number' ? score : parseInt(String(score)) || 0;
+          return sum + numericScore;
+        }, 0);
+      }
+    }
 
     const { error } = await supabase
       .from('functional_test_data')
