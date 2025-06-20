@@ -215,6 +215,13 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
     }
   };
 
+  // Έλεγχος συνδρομής
+  useEffect(() => {
+    if (isOpen && athleteId) {
+      checkSubscriptionStatus();
+    }
+  }, [isOpen, athleteId]);
+
   const SubscriptionRequiredContent = () => (
     <div className="flex-1 flex items-center justify-center p-8">
       <div className="text-center max-w-md">
@@ -242,8 +249,8 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[85vh] rounded-none flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl h-[80vh] rounded-none p-0 flex flex-col">
+        <DialogHeader className="p-6 pb-0">
           <DialogTitle className="flex items-center gap-3">
             <Brain className="w-6 h-6 text-[#00ffba]" />
             RID - Έξυπνος AI Προπονητής
@@ -267,100 +274,99 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0">
-          {isCheckingSubscription ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Ελέγχω τη συνδρομή σου...</span>
-              </div>
+        {isCheckingSubscription ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Ελέγχω τη συνδρομή σου...</span>
             </div>
-          ) : !hasActiveSubscription ? (
-            <SubscriptionRequiredContent />
-          ) : isLoadingHistory ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Φορτώνω το ιστορικό συνομιλίας...</span>
-              </div>
+          </div>
+        ) : !hasActiveSubscription ? (
+          <SubscriptionRequiredContent />
+        ) : isLoadingHistory ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Φορτώνω το ιστορικό συνομιλίας...</span>
             </div>
-          ) : (
-            <>
-              {/* Messages Container με σωστό scrollbar */}
-              <div className="flex-1 min-h-0 border rounded-none">
-                <div className="h-full overflow-y-auto p-4 space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          message.role === 'user' 
-                            ? 'bg-blue-500 text-white' 
-                            : 'bg-[#00ffba] text-black'
-                        }`}>
-                          {message.role === 'user' ? <User className="w-5 h-5" /> : <Brain className="w-5 h-5" />}
-                        </div>
-                        <div className={`p-4 rounded-lg ${
-                          message.role === 'user'
-                            ? 'bg-blue-500 text-white rounded-br-none'
-                            : 'bg-gray-100 text-gray-900 rounded-bl-none'
-                        }`}>
-                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                          <p className="text-xs opacity-70 mt-2">
-                            {message.timestamp.toLocaleTimeString('el-GR', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </p>
-                        </div>
+          </div>
+        ) : (
+          <div className="flex flex-col flex-1 min-h-0">
+            {/* Messages Container */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        message.role === 'user' 
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-[#00ffba] text-black'
+                      }`}>
+                        {message.role === 'user' ? <User className="w-5 h-5" /> : <Brain className="w-5 h-5" />}
+                      </div>
+                      <div className={`p-4 rounded-lg ${
+                        message.role === 'user'
+                          ? 'bg-blue-500 text-white rounded-br-none'
+                          : 'bg-gray-100 text-gray-900 rounded-bl-none'
+                      }`}>
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                        <p className="text-xs opacity-70 mt-2">
+                          {message.timestamp.toLocaleTimeString('el-GR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                  
-                  {isLoading && (
-                    <div className="flex gap-3 justify-start">
-                      <div className="w-10 h-10 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                        <Brain className="w-5 h-5" />
-                      </div>
-                      <div className="bg-gray-100 text-gray-900 p-4 rounded-lg rounded-bl-none">
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span className="text-sm">Ο RID αναλύει τα δεδομένα σου και σκέφτεται...</span>
-                        </div>
+                  </div>
+                ))}
+                
+                {isLoading && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-10 h-10 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                      <Brain className="w-5 h-5" />
+                    </div>
+                    <div className="bg-gray-100 text-gray-900 p-4 rounded-lg rounded-bl-none">
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Ο RID αναλύει τα δεδομένα σου και σκέφτεται...</span>
                       </div>
                     </div>
-                  )}
-                  
-                  <div ref={messagesEndRef} />
-                </div>
+                  </div>
+                )}
+                
+                <div ref={messagesEndRef} />
               </div>
+            </div>
 
-              <div className="flex gap-2 p-4 border-t">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Πληκτρολογήστε το μήνυμά σας στον RID..."
-                  className="rounded-none"
-                  disabled={isLoading || !hasActiveSubscription}
-                />
-                <Button
-                  onClick={sendMessage}
-                  disabled={!input.trim() || isLoading || !hasActiveSubscription}
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
+            {/* Input Area */}
+            <div className="flex gap-2 p-4 border-t">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Πληκτρολογήστε το μήνυμά σας στον RID..."
+                className="rounded-none"
+                disabled={isLoading || !hasActiveSubscription}
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={!input.trim() || isLoading || !hasActiveSubscription}
+                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
