@@ -35,14 +35,33 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Αυτόματο scroll στο τέλος των μηνυμάτων
+  // Βελτιωμένο auto-scroll
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: "smooth",
+        block: "end"
+      });
+    }
+    
+    // Εναλλακτικό scroll για το ScrollArea
+    if (scrollAreaRef.current) {
+      const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollElement) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      }
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Delay για να εξασφαλίσουμε ότι το DOM έχει ενημερωθεί
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [messages]);
 
   // Έλεγχος συνδρομής
@@ -57,22 +76,24 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
     
     setIsCheckingSubscription(true);
     try {
-      // Έλεγχος αν ο χρήστης έχει ενεργή συνδρομή
+      console.log('🔍 Checking subscription for user:', athleteId);
+      
       const { data, error } = await supabase.rpc('has_active_subscription', { 
         user_uuid: athleteId 
       });
 
       if (error) {
-        console.error('Error checking subscription:', error);
+        console.error('❌ Error checking subscription:', error);
         setHasActiveSubscription(false);
       } else {
+        console.log('✅ Subscription status:', data);
         setHasActiveSubscription(data);
         if (data) {
           loadConversationHistory();
         }
       }
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      console.error('💥 Error checking subscription:', error);
       setHasActiveSubscription(false);
     } finally {
       setIsCheckingSubscription(false);
@@ -85,6 +106,8 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
     
     setIsLoadingHistory(true);
     try {
+      console.log('📚 Loading conversation history for:', athleteId);
+      
       const { data: history, error } = await supabase
         .from('ai_conversations')
         .select('*')
@@ -102,6 +125,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
           timestamp: new Date(msg.created_at)
         }));
         setMessages(formattedMessages);
+        console.log('✅ Loaded', formattedMessages.length, 'messages from history');
       } else {
         // Μήνυμα καλωσορίσματος από τον RID
         setMessages([{
@@ -133,7 +157,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
         }]);
       }
     } catch (error) {
-      console.error('Error loading conversation history:', error);
+      console.error('❌ Error loading conversation history:', error);
       toast.error('Σφάλμα κατά τη φόρτωση του ιστορικού');
     } finally {
       setIsLoadingHistory(false);
@@ -155,7 +179,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
     setIsLoading(true);
 
     try {
-      console.log('🤖 Calling RID AI for user:', athleteId);
+      console.log('🤖 Calling RID AI for user:', athleteId, 'Message:', input);
       
       const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
         body: {
@@ -164,7 +188,12 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ RID AI Error:', error);
+        throw error;
+      }
+
+      console.log('✅ RID AI Response received:', data);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -175,7 +204,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('RID AI Error:', error);
+      console.error('💥 RID AI Error:', error);
       toast.error('Σφάλμα στον RID AI βοηθό');
       
       const errorMessage: Message = {
@@ -269,7 +298,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
             </div>
           ) : (
             <>
-              <ScrollArea className="flex-1 p-4 border rounded-none">
+              <ScrollArea ref={scrollAreaRef} className="flex-1 p-4 border rounded-none">
                 <div className="space-y-4">
                   {messages.map((message) => (
                     <div

@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -47,7 +48,7 @@ serve(async (req) => {
       });
     }
 
-    // Συλλογή όλων των δεδομένων του χρήστη
+    // Συλλογή όλων των δεδομένων του χρήστη με βελτιωμένες queries
     const userData = await collectUserData(supabase, userId);
     
     // Φόρτωση ιστορικού συνομιλίας
@@ -87,97 +88,215 @@ serve(async (req) => {
 });
 
 async function collectUserData(supabase: any, userId: string) {
-  console.log('📊 Collecting user data for:', userId);
+  console.log('📊 Collecting comprehensive user data for:', userId);
 
-  // Βασικά στοιχεία χρήστη
-  const { data: user } = await supabase
-    .from('app_users')
-    .select('*')
-    .eq('id', userId)
-    .single();
+  try {
+    // Βασικά στοιχεία χρήστη
+    const { data: user } = await supabase
+      .from('app_users')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-  // Τελευταία σωματομετρικά δεδομένα
-  const { data: latestAnthropometric } = await supabase
-    .from('test_sessions')
-    .select(`
-      test_date,
-      anthropometric_test_data (*)
-    `)
-    .eq('user_id', userId)
-    .contains('test_types', ['Σωματομετρικά'])
-    .order('test_date', { ascending: false })
-    .limit(1)
-    .single();
+    console.log('👤 User basic info loaded:', user?.name);
 
-  // Ενεργά προγράμματα
-  const { data: activePrograms } = await supabase
-    .from('program_assignments')
-    .select(`
-      *,
-      programs (
-        name,
-        description,
-        program_weeks (
-          program_days (
+    // Τελευταία σωματομετρικά δεδομένα - ΔΙΟΡΘΩΜΕΝΟ QUERY
+    const { data: latestAnthropometric, error: anthroError } = await supabase
+      .from('test_sessions')
+      .select(`
+        test_date,
+        anthropometric_test_data (*)
+      `)
+      .eq('user_id', userId)
+      .contains('test_types', ['Σωματομετρικά'])
+      .order('test_date', { ascending: false })
+      .limit(1);
+
+    if (anthroError) {
+      console.error('❌ Error fetching anthropometric data:', anthroError);
+    } else {
+      console.log('📊 Anthropometric data loaded:', latestAnthropometric?.length || 0, 'sessions');
+    }
+
+    // Ενεργά προγράμματα - ΒΕΛΤΙΩΜΕΝΟ QUERY
+    const { data: activePrograms, error: programsError } = await supabase
+      .from('program_assignments')
+      .select(`
+        *,
+        programs (
+          name,
+          description,
+          program_weeks (
             name,
-            program_blocks (
-              program_exercises (
-                sets,
-                reps,
-                kg,
-                exercises (name)
+            week_number,
+            program_days (
+              name,
+              day_number,
+              program_blocks (
+                name,
+                program_exercises (
+                  sets,
+                  reps,
+                  kg,
+                  tempo,
+                  rest,
+                  exercises (name, description)
+                )
               )
             )
           )
         )
-      )
-    `)
-    .eq('user_id', userId)
-    .eq('status', 'active');
+      `)
+      .eq('user_id', userId)
+      .eq('status', 'active');
 
-  // Τελευταία ολοκλήρωση προπόνησης
-  const { data: lastWorkout } = await supabase
-    .from('workout_completions')
-    .select('*')
-    .eq('user_id', userId)
-    .order('completed_date', { ascending: false })
-    .limit(1)
-    .single();
+    if (programsError) {
+      console.error('❌ Error fetching programs:', programsError);
+    } else {
+      console.log('💪 Active programs loaded:', activePrograms?.length || 0);
+    }
 
-  // Τελευταία τεστ δύναμης
-  const { data: latestStrength } = await supabase
-    .from('test_sessions')
-    .select(`
-      test_date,
-      strength_test_data (
-        exercise_id,
-        weight_kg,
-        velocity_ms,
-        is_1rm,
-        exercises (name)
-      )
-    `)
-    .eq('user_id', userId)
-    .contains('test_types', ['Δύναμη'])
-    .order('test_date', { ascending: false })
-    .limit(1)
-    .single();
+    // Τελευταίες ολοκληρώσεις προπονήσεων - ΒΕΛΤΙΩΜΕΝΟ
+    const { data: recentWorkouts, error: workoutsError } = await supabase
+      .from('workout_completions')
+      .select(`
+        *,
+        exercise_results (
+          *,
+          program_exercises (
+            exercises (name)
+          )
+        )
+      `)
+      .eq('user_id', userId)
+      .order('completed_date', { ascending: false })
+      .limit(10);
 
-  // AI προφίλ χρήστη
-  const { data: aiProfile } = await supabase
-    .from('ai_user_profiles')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
+    if (workoutsError) {
+      console.error('❌ Error fetching workouts:', workoutsError);
+    } else {
+      console.log('🏃 Recent workouts loaded:', recentWorkouts?.length || 0);
+    }
 
-  return {
-    user,
-    anthropometric: latestAnthropometric?.anthropometric_test_data?.[0],
-    activePrograms,
-    lastWorkout,
-    strengthTests: latestStrength?.strength_test_data || [],
-    aiProfile
-  };
+    // Τελευταία τεστ δύναμης - ΒΕΛΤΙΩΜΕΝΟ
+    const { data: latestStrength, error: strengthError } = await supabase
+      .from('test_sessions')
+      .select(`
+        test_date,
+        strength_test_data (
+          exercise_id,
+          weight_kg,
+          velocity_ms,
+          is_1rm,
+          exercises (name, description)
+        )
+      `)
+      .eq('user_id', userId)
+      .contains('test_types', ['Δύναμη'])
+      .order('test_date', { ascending: false })
+      .limit(1);
+
+    if (strengthError) {
+      console.error('❌ Error fetching strength data:', strengthError);
+    } else {
+      console.log('💪 Strength tests loaded:', latestStrength?.length || 0, 'sessions');
+    }
+
+    // Λειτουργικά τεστ
+    const { data: functionalTests, error: functionalError } = await supabase
+      .from('test_sessions')
+      .select(`
+        test_date,
+        functional_test_data (*)
+      `)
+      .eq('user_id', userId)
+      .contains('test_types', ['Λειτουργική'])
+      .order('test_date', { ascending: false })
+      .limit(3);
+
+    if (functionalError) {
+      console.error('❌ Error fetching functional data:', functionalError);
+    } else {
+      console.log('🧘 Functional tests loaded:', functionalTests?.length || 0, 'sessions');
+    }
+
+    // Jump τεστ
+    const { data: jumpTests, error: jumpError } = await supabase
+      .from('test_sessions')
+      .select(`
+        test_date,
+        jump_test_data (*)
+      `)
+      .eq('user_id', userId)
+      .contains('test_types', ['Jump'])
+      .order('test_date', { ascending: false })
+      .limit(3);
+
+    if (jumpError) {
+      console.error('❌ Error fetching jump data:', jumpError);
+    } else {
+      console.log('🦘 Jump tests loaded:', jumpTests?.length || 0, 'sessions');
+    }
+
+    // Endurance τεστ
+    const { data: enduranceTests, error: enduranceError } = await supabase
+      .from('test_sessions')
+      .select(`
+        test_date,
+        endurance_test_data (*)
+      `)
+      .eq('user_id', userId)
+      .contains('test_types', ['Αντοχή'])
+      .order('test_date', { ascending: false })
+      .limit(3);
+
+    if (enduranceError) {
+      console.error('❌ Error fetching endurance data:', enduranceError);
+    } else {
+      console.log('🏃‍♂️ Endurance tests loaded:', enduranceTests?.length || 0, 'sessions');
+    }
+
+    // AI προφίλ χρήστη
+    const { data: aiProfile, error: aiProfileError } = await supabase
+      .from('ai_user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (aiProfileError && aiProfileError.code !== 'PGRST116') {
+      console.error('❌ Error fetching AI profile:', aiProfileError);
+    } else {
+      console.log('🧠 AI profile loaded:', aiProfile ? 'exists' : 'not found');
+    }
+
+    console.log('✅ User data collection completed successfully');
+
+    return {
+      user,
+      anthropometric: latestAnthropometric?.[0]?.anthropometric_test_data?.[0],
+      activePrograms: activePrograms || [],
+      recentWorkouts: recentWorkouts || [],
+      strengthTests: latestStrength?.[0]?.strength_test_data || [],
+      functionalTests: functionalTests || [],
+      jumpTests: jumpTests || [],
+      enduranceTests: enduranceTests || [],
+      aiProfile
+    };
+
+  } catch (error) {
+    console.error('💥 Error in collectUserData:', error);
+    return {
+      user: null,
+      anthropometric: null,
+      activePrograms: [],
+      recentWorkouts: [],
+      strengthTests: [],
+      functionalTests: [],
+      jumpTests: [],
+      enduranceTests: [],
+      aiProfile: null
+    };
+  }
 }
 
 async function getConversationHistory(supabase: any, userId: string) {
@@ -202,7 +321,7 @@ async function getGlobalKnowledge(supabase: any) {
 }
 
 function createPersonalizedPrompt(userData: any, globalKnowledge: any[]) {
-  const { user, anthropometric, activePrograms, lastWorkout, strengthTests, aiProfile } = userData;
+  const { user, anthropometric, activePrograms, recentWorkouts, strengthTests, functionalTests, jumpTests, enduranceTests, aiProfile } = userData;
 
   let prompt = `Είσαι ο RID, ένας εξειδικευμένος AI προπονητής για τον αθλητή ${user?.name}. Έχεις πρόσβαση σε όλα τα δεδομένα του και μαθαίνεις από κάθε αλληλεπίδραση.
 
@@ -242,20 +361,44 @@ function createPersonalizedPrompt(userData: any, globalKnowledge: any[]) {
   // Ενεργά προγράμματα
   if (activePrograms && activePrograms.length > 0) {
     prompt += `\nΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ:\n`;
-    activePrograms.forEach((program: any) => {
-      prompt += `- ${program.programs?.name}: ${program.status}\n`;
-      if (program.training_dates) {
-        prompt += `  Προπονήσεις: ${program.training_dates.length} συνολικά\n`;
+    activePrograms.forEach((assignment: any) => {
+      if (assignment.programs) {
+        prompt += `- ${assignment.programs.name}: ${assignment.status}\n`;
+        if (assignment.training_dates) {
+          prompt += `  Προπονήσεις: ${assignment.training_dates.length} συνολικά\n`;
+        }
+        
+        // Σημερινό πρόγραμμα
+        const today = new Date().toISOString().split('T')[0];
+        const todayIndex = assignment.training_dates?.indexOf(today);
+        if (todayIndex >= 0 && assignment.programs.program_weeks) {
+          const daysPerWeek = assignment.programs.program_weeks[0]?.program_days?.length || 7;
+          const dayIndex = todayIndex % daysPerWeek;
+          const todayProgram = assignment.programs.program_weeks[0]?.program_days?.[dayIndex];
+          if (todayProgram) {
+            prompt += `  ΣΗΜΕΡΙΝΟ ΠΡΟΓΡΑΜΜΑ: ${todayProgram.name}\n`;
+            todayProgram.program_blocks?.forEach((block: any) => {
+              prompt += `    ${block.name}:\n`;
+              block.program_exercises?.forEach((ex: any) => {
+                prompt += `      - ${ex.exercises?.name}: ${ex.sets}x${ex.reps || '?'} @ ${ex.kg || '?'}kg\n`;
+              });
+            });
+          }
+        }
       }
     });
   }
 
-  // Τελευταία προπόνηση
-  if (lastWorkout) {
-    prompt += `\nΤΕΛΕΥΤΑΙΑ ΠΡΟΠΟΝΗΣΗ:\n`;
-    prompt += `- Ημερομηνία: ${lastWorkout.completed_date}\n`;
-    prompt += `- Διάρκεια: ${lastWorkout.actual_duration_minutes || 'Δεν καταγράφηκε'} λεπτά\n`;
-    prompt += `- Κατάσταση: ${lastWorkout.status}\n`;
+  // Τελευταίες προπονήσεις
+  if (recentWorkouts && recentWorkouts.length > 0) {
+    prompt += `\nΤΕΛΕΥΤΑΙΕΣ ΠΡΟΠΟΝΗΣΕΙΣ:\n`;
+    recentWorkouts.slice(0, 5).forEach((workout: any) => {
+      prompt += `- ${workout.completed_date || workout.scheduled_date}: ${workout.status}`;
+      if (workout.actual_duration_minutes) {
+        prompt += ` (${workout.actual_duration_minutes} λεπτά)`;
+      }
+      prompt += `\n`;
+    });
   }
 
   // Δεδομένα δύναμης
@@ -268,6 +411,39 @@ function createPersonalizedPrompt(userData: any, globalKnowledge: any[]) {
         if (test.is_1rm) prompt += ` (1RM)`;
         prompt += `\n`;
       }
+    });
+  }
+
+  // Λειτουργικά τεστ
+  if (functionalTests && functionalTests.length > 0) {
+    prompt += `\nΛΕΙΤΟΥΡΓΙΚΑ ΤΕΣΤ:\n`;
+    functionalTests.forEach((session: any) => {
+      session.functional_test_data?.forEach((test: any) => {
+        if (test.fms_score) prompt += `- FMS Score: ${test.fms_score}\n`;
+        if (test.sit_and_reach) prompt += `- Sit & Reach: ${test.sit_and_reach} cm\n`;
+      });
+    });
+  }
+
+  // Jump τεστ
+  if (jumpTests && jumpTests.length > 0) {
+    prompt += `\nJUMP ΤΕΣΤ:\n`;
+    jumpTests.forEach((session: any) => {
+      session.jump_test_data?.forEach((test: any) => {
+        if (test.counter_movement_jump) prompt += `- CMJ: ${test.counter_movement_jump} cm\n`;
+        if (test.broad_jump) prompt += `- Broad Jump: ${test.broad_jump} m\n`;
+      });
+    });
+  }
+
+  // Endurance τεστ
+  if (enduranceTests && enduranceTests.length > 0) {
+    prompt += `\nΤΕΣΤ ΑΝΤΟΧΗΣ:\n`;
+    enduranceTests.forEach((session: any) => {
+      session.endurance_test_data?.forEach((test: any) => {
+        if (test.vo2_max) prompt += `- VO2 Max: ${test.vo2_max}\n`;
+        if (test.max_hr) prompt += `- Max HR: ${test.max_hr} bpm\n`;
+      });
     });
   }
 
