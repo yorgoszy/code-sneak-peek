@@ -6,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Subscriptions() {
   return (
-    <DashboardContainer>
-      <div className="p-6">
+    <div className="min-h-screen bg-gray-50 flex">
+      <DashboardContainer />
+      
+      <div className="flex-1 p-6">
         <Tabs defaultValue="management" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6 rounded-none">
             <TabsTrigger value="management" className="rounded-none">Διαχείριση Συνδρομών</TabsTrigger>
@@ -23,6 +25,6 @@ export default function Subscriptions() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardContainer>
+    </div>
   );
 }

@@ -21,6 +21,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
     role, setRole,
     category, setCategory,
     userStatus, setUserStatus,
+    subscriptionStatus, setSubscriptionStatus,
     birthDate, setBirthDate,
     photoUrl, setPhotoUrl,
     loading,
@@ -67,6 +68,8 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
             setRole={setRole}
             userStatus={userStatus}
             setUserStatus={setUserStatus}
+            subscriptionStatus={subscriptionStatus}
+            setSubscriptionStatus={setSubscriptionStatus}
             loading={loading}
           />
           
