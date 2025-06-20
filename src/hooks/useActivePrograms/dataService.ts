@@ -111,7 +111,6 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
   try {
     console.log('🔄 Fetching active programs from database...');
     
-    // Χρησιμοποιώ την ίδια προσέγγιση όπως στο useActivePrograms.tsx
     // Fetch program assignments first
     const { data: assignments, error: assignmentsError } = await supabase
       .from('program_assignments')
@@ -193,10 +192,57 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
       throw usersError;
     }
 
-    // Combine the data manually - same approach as useActivePrograms.tsx
+    // Combine the data manually with proper type handling
     const enrichedAssignments: EnrichedAssignment[] = assignments.map(assignment => {
       const program = programs?.find(p => p.id === assignment.program_id);
       const user = users?.find(u => u.id === assignment.user_id);
+
+      // Clean up program data to handle potential SelectQueryError issues
+      const cleanProgram = program ? {
+        id: program.id,
+        name: program.name,
+        description: program.description || undefined,
+        training_days: typeof program.training_days === 'number' 
+          ? [] 
+          : program.training_days || [],
+        program_weeks: (program.program_weeks || []).map((week: any) => ({
+          id: week.id,
+          name: week.name,
+          week_number: week.week_number,
+          program_days: (week.program_days || []).map((day: any) => ({
+            id: day.id,
+            name: day.name,
+            day_number: day.day_number,
+            estimated_duration_minutes: day.estimated_duration_minutes || undefined,
+            program_blocks: (day.program_blocks || []).map((block: any) => ({
+              id: block.id,
+              name: block.name,
+              block_order: block.block_order,
+              program_exercises: (block.program_exercises || []).map((exercise: any) => ({
+                id: exercise.id,
+                exercise_id: exercise.exercise_id,
+                sets: exercise.sets,
+                reps: exercise.reps,
+                kg: exercise.kg || undefined,
+                percentage_1rm: exercise.percentage_1rm || undefined,
+                velocity_ms: exercise.velocity_ms || undefined,
+                tempo: exercise.tempo || undefined,
+                rest: exercise.rest || undefined,
+                notes: exercise.notes || undefined,
+                exercise_order: exercise.exercise_order,
+                // Handle potential SelectQueryError in exercises
+                exercises: exercise.exercises && typeof exercise.exercises === 'object' && !exercise.exercises.error
+                  ? {
+                      id: exercise.exercises.id,
+                      name: exercise.exercises.name,
+                      description: exercise.exercises.description || undefined
+                    }
+                  : undefined
+              }))
+            }))
+          }))
+        }))
+      } : undefined;
 
       return {
         id: assignment.id,
@@ -213,15 +259,7 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
         group_id: assignment.group_id,
         progress: assignment.progress,
         training_dates: assignment.training_dates,
-        programs: program ? {
-          id: program.id,
-          name: program.name,
-          description: program.description,
-          training_days: typeof program.training_days === 'number' 
-            ? [] 
-            : program.training_days || [],
-          program_weeks: program.program_weeks || []
-        } : undefined,
+        programs: cleanProgram,
         app_users: user ? {
           id: user.id,
           name: user.name,

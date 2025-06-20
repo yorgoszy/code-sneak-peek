@@ -77,16 +77,40 @@ export const useTodaysPrograms = (userId: string) => {
 
       console.log('✅ Found assignments for today:', assignments?.length || 0);
 
-      // Transform the data to match our expected type structure
-      const transformedAssignments = (assignments || []).map(assignment => ({
-        ...assignment,
-        // Ensure app_users is a single object or null, not an array
-        app_users: Array.isArray(assignment.app_users) 
-          ? assignment.app_users[0] || null 
-          : assignment.app_users
-      }));
+      // Transform and clean the data to match our expected type structure
+      const transformedAssignments = (assignments || []).map(assignment => {
+        // Clean up the programs data to handle any SelectQueryError issues
+        const cleanPrograms = assignment.programs ? {
+          ...assignment.programs,
+          program_weeks: (assignment.programs.program_weeks || []).map((week: any) => ({
+            ...week,
+            program_days: (week.program_days || []).map((day: any) => ({
+              ...day,
+              program_blocks: (day.program_blocks || []).map((block: any) => ({
+                ...block,
+                program_exercises: (block.program_exercises || []).map((exercise: any) => ({
+                  ...exercise,
+                  // Handle potential SelectQueryError in exercises
+                  exercises: exercise.exercises && typeof exercise.exercises === 'object' && !exercise.exercises.error 
+                    ? exercise.exercises 
+                    : null
+                }))
+              }))
+            }))
+          }))
+        } : null;
 
-      setTodaysPrograms(transformedAssignments as TodaysProgramAssignment[]);
+        return {
+          ...assignment,
+          programs: cleanPrograms,
+          // Ensure app_users is a single object or null, not an array
+          app_users: Array.isArray(assignment.app_users) 
+            ? assignment.app_users[0] || null 
+            : assignment.app_users
+        };
+      }) as TodaysProgramAssignment[];
+
+      setTodaysPrograms(transformedAssignments);
     } catch (error) {
       console.error('Error:', error);
     } finally {
