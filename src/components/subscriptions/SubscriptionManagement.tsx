@@ -147,15 +147,6 @@ export const SubscriptionManagement: React.FC = () => {
     try {
       console.log('🔄 Ενεργοποίηση συνδρομής για χρήστη:', userId);
       
-      // Άμεση ενημέρωση του local state
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId 
-            ? { ...user, subscription_status: 'active', user_status: 'active' }
-            : user
-        )
-      );
-
       // Βρες την πιο πρόσφατη συνδρομή του χρήστη
       const userSubscription = userSubscriptions
         .filter(sub => sub.user_id === userId)
@@ -185,31 +176,18 @@ export const SubscriptionManagement: React.FC = () => {
       console.log('✅ Συνδρομή ενεργοποιήθηκε επιτυχώς');
       toast.success('Η συνδρομή ενεργοποιήθηκε επιτυχώς!');
       
-      // Ανανέωση των δεδομένων για να είμαστε σίγουροι
-      setTimeout(() => {
-        loadData();
-      }, 500);
+      // Άμεση ενημέρωση του local state χωρίς timeout
+      await loadData();
 
     } catch (error) {
       console.error('❌ Error activating subscription:', error);
       toast.error('Σφάλμα κατά την ενεργοποίηση της συνδρομής');
-      // Revert local state change on error
-      loadData();
     }
   };
 
   const deactivateUserSubscription = async (userId: string) => {
     try {
       console.log('🔄 Απενεργοποίηση συνδρομής για χρήστη:', userId);
-      
-      // Άμεση ενημέρωση του local state
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId 
-            ? { ...user, subscription_status: 'inactive', user_status: 'inactive' }
-            : user
-        )
-      );
       
       // Απενεργοποίηση όλων των ενεργών συνδρομών του χρήστη
       const { error: subscriptionError } = await supabase
@@ -234,16 +212,12 @@ export const SubscriptionManagement: React.FC = () => {
       console.log('✅ Συνδρομή απενεργοποιήθηκε επιτυχώς');
       toast.success('Η συνδρομή απενεργοποιήθηκε επιτυχώς!');
       
-      // Ανανέωση των δεδομένων για να είμαστε σίγουροι
-      setTimeout(() => {
-        loadData();
-      }, 500);
+      // Άμεση ενημέρωση του local state χωρίς timeout
+      await loadData();
 
     } catch (error) {
       console.error('❌ Error deactivating subscription:', error);
       toast.error('Σφάλμα κατά την απενεργοποίηση της συνδρομής');
-      // Revert local state change on error
-      loadData();
     }
   };
 
