@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,13 +56,19 @@ export const SubscriptionManagement: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
+      console.log('🔄 Loading subscription data...');
+      
       // Φόρτωση τύπων συνδρομών
       const { data: types, error: typesError } = await supabase
         .from('subscription_types')
         .select('*')
         .order('price');
 
-      if (typesError) throw typesError;
+      if (typesError) {
+        console.error('Error loading subscription types:', typesError);
+        throw typesError;
+      }
+      console.log('✅ Subscription types loaded:', types?.length);
       setSubscriptionTypes(types || []);
 
       // Φόρτωση συνδρομών χρηστών
@@ -74,7 +81,11 @@ export const SubscriptionManagement: React.FC = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (subscriptionsError) throw subscriptionsError;
+      if (subscriptionsError) {
+        console.error('Error loading user subscriptions:', subscriptionsError);
+        throw subscriptionsError;
+      }
+      console.log('✅ User subscriptions loaded:', subscriptions?.length);
       setUserSubscriptions(subscriptions || []);
 
       // Φόρτωση όλων των χρηστών
@@ -83,11 +94,17 @@ export const SubscriptionManagement: React.FC = () => {
         .select('id, name, email, subscription_status, role, user_status')
         .order('name');
 
-      if (usersError) throw usersError;
+      if (usersError) {
+        console.error('Error loading users:', usersError);
+        throw usersError;
+      }
+      console.log('✅ Users loaded:', allUsers?.length);
       setUsers(allUsers || []);
 
+      console.log('✅ All data loaded successfully');
+
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('❌ Error loading data:', error);
       toast.error('Σφάλμα κατά τη φόρτωση των δεδομένων');
     } finally {
       setLoading(false);
@@ -135,7 +152,7 @@ export const SubscriptionManagement: React.FC = () => {
       setSelectedUser('');
       setSelectedSubscriptionType('');
       setNotes('');
-      loadData();
+      await loadData();
 
     } catch (error) {
       console.error('Error creating subscription:', error);
@@ -152,6 +169,8 @@ export const SubscriptionManagement: React.FC = () => {
         .filter(sub => sub.user_id === userId)
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
+      console.log('📋 User subscription found:', userSubscription?.id);
+
       if (userSubscription) {
         // Ενημέρωση συνδρομής σε active
         const { error: subscriptionError } = await supabase
@@ -159,7 +178,11 @@ export const SubscriptionManagement: React.FC = () => {
           .update({ status: 'active' })
           .eq('id', userSubscription.id);
 
-        if (subscriptionError) throw subscriptionError;
+        if (subscriptionError) {
+          console.error('❌ Subscription update error:', subscriptionError);
+          throw subscriptionError;
+        }
+        console.log('✅ Subscription updated to active');
       }
 
       // Ενημέρωση χρήστη σε active
@@ -171,12 +194,16 @@ export const SubscriptionManagement: React.FC = () => {
         })
         .eq('id', userId);
 
-      if (userError) throw userError;
+      if (userError) {
+        console.error('❌ User update error:', userError);
+        throw userError;
+      }
+      console.log('✅ User updated to active');
 
-      console.log('✅ Συνδρομή ενεργοποιήθηκε επιτυχώς');
       toast.success('Η συνδρομή ενεργοποιήθηκε επιτυχώς!');
       
-      // Άμεση ενημέρωση του local state χωρίς timeout
+      // Επαναφόρτωση δεδομένων
+      console.log('🔄 Reloading data after activation...');
       await loadData();
 
     } catch (error) {
@@ -196,7 +223,11 @@ export const SubscriptionManagement: React.FC = () => {
         .eq('user_id', userId)
         .eq('status', 'active');
 
-      if (subscriptionError) throw subscriptionError;
+      if (subscriptionError) {
+        console.error('❌ Subscription deactivation error:', subscriptionError);
+        throw subscriptionError;
+      }
+      console.log('✅ Subscriptions deactivated');
 
       // Ενημέρωση χρήστη σε inactive
       const { error: userError } = await supabase
@@ -207,12 +238,16 @@ export const SubscriptionManagement: React.FC = () => {
         })
         .eq('id', userId);
 
-      if (userError) throw userError;
+      if (userError) {
+        console.error('❌ User deactivation error:', userError);
+        throw userError;
+      }
+      console.log('✅ User deactivated');
 
-      console.log('✅ Συνδρομή απενεργοποιήθηκε επιτυχώς');
       toast.success('Η συνδρομή απενεργοποιήθηκε επιτυχώς!');
       
-      // Άμεση ενημέρωση του local state χωρίς timeout
+      // Επαναφόρτωση δεδομένων
+      console.log('🔄 Reloading data after deactivation...');
       await loadData();
 
     } catch (error) {
