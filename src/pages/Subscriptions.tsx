@@ -1,13 +1,16 @@
 
-import { DashboardContainer } from "@/components/dashboard/DashboardContainer";
 import { SubscriptionManagement } from "@/components/subscriptions/SubscriptionManagement";
 import { SubscriptionTypeManager } from "@/components/subscriptions/SubscriptionTypeManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sidebar } from "@/components/Sidebar";
+import { useState } from "react";
 
 export default function Subscriptions() {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <DashboardContainer />
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       
       <div className="flex-1 p-6">
         <div className="mb-6">

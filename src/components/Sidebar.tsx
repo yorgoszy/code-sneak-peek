@@ -95,7 +95,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     {
       icon: Mail,
       label: "Webmail",
-      path: "https://webmail.ridgym.com",
+      path: "https://webmail.hyperkids.gr/",
       badge: null,
       external: true
     },
