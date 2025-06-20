@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -82,15 +81,24 @@ export const useTestResults = () => {
         for (const session of anthropometricSessions) {
           const userName = usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
 
-          results.push({
-            id: session.id,
-            test_date: session.test_date,
-            user_name: userName,
-            user_id: session.user_id,
-            notes: session.notes,
-            table_name: "anthropometric_test_sessions",
-            test_type: "Σωματομετρικά"
-          });
+          // Ελέγχουμε αν υπάρχουν δεδομένα για αυτό το session
+          const { data: testData } = await supabase
+            .from('anthropometric_test_data')
+            .select('id')
+            .eq('test_session_id', session.id)
+            .maybeSingle();
+
+          if (testData) {
+            results.push({
+              id: session.id,
+              test_date: session.test_date,
+              user_name: userName,
+              user_id: session.user_id,
+              notes: session.notes,
+              table_name: "anthropometric_test_sessions",
+              test_type: "Σωματομετρικά"
+            });
+          }
         }
       }
 
@@ -106,15 +114,24 @@ export const useTestResults = () => {
         for (const session of functionalSessions) {
           const userName = usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
 
-          results.push({
-            id: session.id,
-            test_date: session.test_date,
-            user_name: userName,
-            user_id: session.user_id,
-            notes: session.notes,
-            table_name: "functional_test_sessions",
-            test_type: "Λειτουργικότητα"
-          });
+          // Ελέγχουμε αν υπάρχουν δεδομένα για αυτό το session
+          const { data: testData } = await supabase
+            .from('functional_test_data')
+            .select('id')
+            .eq('test_session_id', session.id)
+            .maybeSingle();
+
+          if (testData) {
+            results.push({
+              id: session.id,
+              test_date: session.test_date,
+              user_name: userName,
+              user_id: session.user_id,
+              notes: session.notes,
+              table_name: "functional_test_sessions",
+              test_type: "Λειτουργικότητα"
+            });
+          }
         }
       }
 
@@ -130,15 +147,24 @@ export const useTestResults = () => {
         for (const session of enduranceSessions) {
           const userName = usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
 
-          results.push({
-            id: session.id,
-            test_date: session.test_date,
-            user_name: userName,
-            user_id: session.user_id,
-            notes: session.notes,
-            table_name: "endurance_test_sessions",
-            test_type: "Αντοχή"
-          });
+          // Ελέγχουμε αν υπάρχουν δεδομένα για αυτό το session
+          const { data: testData } = await supabase
+            .from('endurance_test_data')
+            .select('id')
+            .eq('test_session_id', session.id)
+            .maybeSingle();
+
+          if (testData) {
+            results.push({
+              id: session.id,
+              test_date: session.test_date,
+              user_name: userName,
+              user_id: session.user_id,
+              notes: session.notes,
+              table_name: "endurance_test_sessions",
+              test_type: "Αντοχή"
+            });
+          }
         }
       }
 
@@ -154,15 +180,24 @@ export const useTestResults = () => {
         for (const session of jumpSessions) {
           const userName = usersMap.get(session.user_id) || "Άγνωστος Χρήστης";
 
-          results.push({
-            id: session.id,
-            test_date: session.test_date,
-            user_name: userName,
-            user_id: session.user_id,
-            notes: session.notes,
-            table_name: "jump_test_sessions",
-            test_type: "Άλματα"
-          });
+          // Ελέγχουμε αν υπάρχουν δεδομένα για αυτό το session
+          const { data: testData } = await supabase
+            .from('jump_test_data')
+            .select('id')
+            .eq('test_session_id', session.id)
+            .maybeSingle();
+
+          if (testData) {
+            results.push({
+              id: session.id,
+              test_date: session.test_date,
+              user_name: userName,
+              user_id: session.user_id,
+              notes: session.notes,
+              table_name: "jump_test_sessions",
+              test_type: "Άλματα"
+            });
+          }
         }
       }
 
@@ -211,6 +246,11 @@ export const useTestResults = () => {
       results.sort((a, b) => new Date(b.test_date).getTime() - new Date(a.test_date).getTime());
       
       console.log('✅ Total test results found:', results.length);
+      console.log('📋 Results by type:', results.reduce((acc, r) => {
+        acc[r.test_type] = (acc[r.test_type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>));
+      
       setTestResults(results);
     } catch (error) {
       console.error('❌ Error fetching test results:', error);
