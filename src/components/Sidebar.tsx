@@ -11,7 +11,8 @@ import {
   Brain,
   UsersIcon,
   Mail,
-  ArrowLeft
+  ArrowLeft,
+  Crown
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -47,6 +48,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: UsersIcon, 
       label: "Ομάδες", 
       path: "/dashboard/groups",
+      badge: null
+    },
+    { 
+      icon: Crown, 
+      label: "Συνδρομές RID", 
+      path: "/dashboard/subscriptions",
       badge: null
     },
     { 

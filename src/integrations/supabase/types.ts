@@ -313,6 +313,7 @@ export type Database = {
           phone: string | null
           photo_url: string | null
           role: string
+          subscription_status: string | null
           updated_at: string | null
           user_status: string
         }
@@ -327,6 +328,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           role: string
+          subscription_status?: string | null
           updated_at?: string | null
           user_status?: string
         }
@@ -341,6 +343,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           role?: string
+          subscription_status?: string | null
           updated_at?: string | null
           user_status?: string
         }
@@ -1334,6 +1337,8 @@ export type Database = {
           payment_date: string | null
           payment_method: string | null
           status: string | null
+          subscription_duration_days: number | null
+          subscription_type_id: string | null
           transaction_id: string | null
           updated_at: string | null
           user_id: string
@@ -1347,6 +1352,8 @@ export type Database = {
           payment_date?: string | null
           payment_method?: string | null
           status?: string | null
+          subscription_duration_days?: number | null
+          subscription_type_id?: string | null
           transaction_id?: string | null
           updated_at?: string | null
           user_id: string
@@ -1360,6 +1367,8 @@ export type Database = {
           payment_date?: string | null
           payment_method?: string | null
           status?: string | null
+          subscription_duration_days?: number | null
+          subscription_type_id?: string | null
           transaction_id?: string | null
           updated_at?: string | null
           user_id?: string
@@ -1370,6 +1379,13 @@ export type Database = {
             columns: ["membership_id"]
             isOneToOne: false
             referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_subscription_type_id_fkey"
+            columns: ["subscription_type_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_types"
             referencedColumns: ["id"]
           },
           {
@@ -2051,6 +2067,39 @@ export type Database = {
           },
         ]
       }
+      subscription_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_days: number
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_days: number
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_days?: number
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
       test_categories: {
         Row: {
           created_at: string | null
@@ -2347,6 +2396,70 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          auto_renewal: boolean | null
+          created_at: string
+          end_date: string
+          id: string
+          notes: string | null
+          payment_id: string | null
+          start_date: string
+          status: string
+          subscription_type_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_renewal?: boolean | null
+          created_at?: string
+          end_date: string
+          id?: string
+          notes?: string | null
+          payment_id?: string | null
+          start_date?: string
+          status?: string
+          subscription_type_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_renewal?: boolean | null
+          created_at?: string
+          end_date?: string
+          id?: string
+          notes?: string | null
+          payment_id?: string | null
+          start_date?: string
+          status?: string
+          subscription_type_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subscriptions_subscription_type_id_fkey"
+            columns: ["subscription_type_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_completions: {
         Row: {
           actual_duration_minutes: number | null
@@ -2462,6 +2575,10 @@ export type Database = {
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      has_active_subscription: {
+        Args: { user_uuid: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

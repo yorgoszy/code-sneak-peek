@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -26,7 +25,27 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('🤖 Smart AI Chat request for user:', userId);
+    console.log('🤖 RID AI Chat request for user:', userId);
+
+    // Έλεγχος συνδρομής πρώτα
+    const { data: hasSubscription, error: subscriptionError } = await supabase.rpc('has_active_subscription', { 
+      user_uuid: userId 
+    });
+
+    if (subscriptionError) {
+      console.error('❌ Error checking subscription:', subscriptionError);
+      throw new Error('Σφάλμα κατά τον έλεγχο συνδρομής');
+    }
+
+    if (!hasSubscription) {
+      return new Response(JSON.stringify({ 
+        error: 'No active subscription',
+        response: 'Λυπάμαι, χρειάζεσαι ενεργή συνδρομή για να έχεις πρόσβαση στον RID AI. Επικοινώνησε με τον διαχειριστή για να ενεργοποιήσεις τη συνδρομή σου.'
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Συλλογή όλων των δεδομένων του χρήστη
     const userData = await collectUserData(supabase, userId);
@@ -49,14 +68,14 @@ serve(async (req) => {
     // Ανάλυση και ενημέρωση AI προφίλ
     await updateAIProfile(supabase, userId, message, aiResponse);
 
-    console.log('✅ Smart AI response generated successfully');
+    console.log('✅ RID AI response generated successfully');
 
     return new Response(JSON.stringify({ response: aiResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('❌ Smart AI Chat Error:', error);
+    console.error('❌ RID AI Chat Error:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
       response: 'Λυπάμαι, αντιμετωπίζω τεχνικά προβλήματα. Παρακαλώ δοκιμάστε ξανά.'
@@ -167,7 +186,7 @@ async function getConversationHistory(supabase: any, userId: string) {
     .select('message_type, content')
     .eq('user_id', userId)
     .order('created_at', { ascending: true })
-    .limit(20); // Τελευταία 20 μηνύματα
+    .limit(20);
 
   return history || [];
 }
@@ -185,7 +204,12 @@ async function getGlobalKnowledge(supabase: any) {
 function createPersonalizedPrompt(userData: any, globalKnowledge: any[]) {
   const { user, anthropometric, activePrograms, lastWorkout, strengthTests, aiProfile } = userData;
 
-  let prompt = `Είσαι ένας εξειδικευμένος AI προπονητής για τον αθλητή ${user?.name}. Έχεις πρόσβαση σε όλα τα δεδομένα του και μαθαίνεις από κάθε αλληλεπίδραση.
+  let prompt = `Είσαι ο RID, ένας εξειδικευμένος AI προπονητής για τον αθλητή ${user?.name}. Έχεις πρόσβαση σε όλα τα δεδομένα του και μαθαίνεις από κάθε αλληλεπίδραση.
+
+**ΤΑΥΤΟΤΗΤΑ:**
+- Όνομα: RID (Rapid Intelligent Development)
+- Ρόλος: Προσωπικός AI προπονητής και διατροφολόγος
+- Χαρακτήρας: Φιλικός, εξειδικευμένος, επιστημονικός αλλά προσιτός
 
 ΣΤΟΙΧΕΙΑ ΑΘΛΗΤΗ:
 `;
@@ -271,17 +295,19 @@ function createPersonalizedPrompt(userData: any, globalKnowledge: any[]) {
     });
   }
 
-  prompt += `\nΟΔΗΓΙΕΣ:
-1. Χρησιμοποίησε όλα τα παραπάνω δεδομένα για εξατομικευμένες συμβουλές
-2. Θυμήσου τις προηγούμενες συμβουλές και βασίσου σε αυτές
-3. Υπολόγισε θερμίδες βάσει των δεδομένων του χρήστη
-4. Λάβε υπόψη τους στόχους και τα ιατρικά προβλήματα
-5. Αν ο χρήστης σε διορθώσει, θυμήσου τη διόρθωση
-6. Δώσε πρακτικές και εφαρμόσιμες συμβουλές
-7. Απάντα στα ελληνικά και με φιλικό τόνο
-8. Αν δεν έχεις αρκετά δεδομένα, ζήτα περισσότερες πληροφορίες
+  prompt += `\nΟΔΗΓΙΕΣ ΓΙΑ ΤΟΝ RID:
+1. Συστήσου πάντα ως "RID" στην αρχή αν είναι νέα συνομιλία
+2. Χρησιμοποίησε όλα τα παραπάνω δεδομένα για εξατομικευμένες συμβουλές
+3. Θυμήσου τις προηγούμενες συμβουλές και βασίσου σε αυτές
+4. Υπολόγισε θερμίδες βάσει των δεδομένων του χρήστη
+5. Λάβε υπόψη τους στόχους και τα ιατρικά προβλήματα
+6. Αν ο χρήστης σε διορθώσει, θυμήσου τη διόρθωση
+7. Δώσε πρακτικές και εφαρμόσιμες συμβουλές
+8. Απάντα στα ελληνικά και με φιλικό τόνο
+9. Αν δεν έχεις αρκετά δεδομένα, ζήτα περισσότερες πληροφορίες
+10. Είσαι ο προσωπικός του προπονητής, διατροφολόγος και σύντροφος στην υγεία!
 
-Είσαι ο προσωπικός του προπονητής και διατροφολόγος!`;
+Χρησιμοποίησε emoji όπου ταιριάζουν για να κάνεις τη συνομιλία πιο ζωντανή! 💪🏃‍♀️🥗`;
 
   return prompt;
 }
@@ -368,7 +394,7 @@ async function updateAIProfile(supabase: any, userId: string, userMessage: strin
   // Αποθήκευση διατροφικών συμβουλών
   if (aiResponse.includes('θερμίδες') || aiResponse.includes('διατροφή') || aiResponse.includes('γεύμα')) {
     updates.last_nutrition_advice = {
-      content: aiResponse.substring(0, 500), // Πρώτα 500 χαρακτήρες
+      content: aiResponse.substring(0, 500),
       date: new Date().toISOString()
     };
   }

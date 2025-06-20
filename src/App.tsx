@@ -1,142 +1,50 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { QueryClient } from "react-query";
 
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Users from "./pages/Users";
-import Groups from "./pages/Groups";
-import Exercises from "./pages/Exercises";
-import Tests from "./pages/Tests";
-import Results from "./pages/Results";
-import Programs from "./pages/Programs";
-import ProgramBuilder from "./pages/ProgramBuilder";
-import UserProfile from "./pages/UserProfile";
-import ActivePrograms from "./pages/ActivePrograms";
-import ProgramCards from "./pages/ProgramCards";
-import NotFound from "./pages/NotFound";
-
-const queryClient = new QueryClient();
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  return <>{children}</>;
-};
+import Index from "@/pages/Index";
+import Auth from "@/pages/Auth";
+import Dashboard from "@/pages/Dashboard";
+import Users from "@/pages/Users";
+import Groups from "@/pages/Groups";
+import Exercises from "@/pages/Exercises";
+import Programs from "@/pages/Programs";
+import ActivePrograms from "@/pages/ActivePrograms";
+import ProgramCards from "@/pages/ProgramCards";
+import Tests from "@/pages/Tests";
+import Results from "@/pages/Results";
+import UserProfile from "@/pages/UserProfile";
+import ProgramBuilder from "@/pages/ProgramBuilder";
+import NotFound from "@/pages/NotFound";
+import Subscriptions from "@/pages/Subscriptions";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <BrowserRouter>
+    <Router>
+      <QueryClient>
+        <div className="min-h-screen bg-gray-50">
+          <Toaster />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/users" 
-              element={
-                <ProtectedRoute>
-                  <Users />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/user-profile/:userId" 
-              element={
-                <ProtectedRoute>
-                  <UserProfile />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/groups" 
-              element={
-                <ProtectedRoute>
-                  <Groups />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/exercises" 
-              element={
-                <ProtectedRoute>
-                  <Exercises />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/tests" 
-              element={
-                <ProtectedRoute>
-                  <Tests />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/results" 
-              element={
-                <ProtectedRoute>
-                  <Results />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/programs" 
-              element={
-                <ProtectedRoute>
-                  <Programs />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/active-programs" 
-              element={
-                <ProtectedRoute>
-                  <ActivePrograms />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/program-cards" 
-              element={
-                <ProtectedRoute>
-                  <ProgramCards />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/program-builder" 
-              element={
-                <ProtectedRoute>
-                  <ProgramBuilder />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/users" element={<Users />} />
+            <Route path="/dashboard/groups" element={<Groups />} />
+            <Route path="/dashboard/subscriptions" element={<Subscriptions />} />
+            <Route path="/dashboard/exercises" element={<Exercises />} />
+            <Route path="/dashboard/programs" element={<Programs />} />
+            <Route path="/dashboard/active-programs" element={<ActivePrograms />} />
+            <Route path="/dashboard/program-cards" element={<ProgramCards />} />
+            <Route path="/dashboard/tests" element={<Tests />} />
+            <Route path="/dashboard/results" element={<Results />} />
+            <Route path="/user/:userId" element={<UserProfile />} />
+            <Route path="/program-builder" element={<ProgramBuilder />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+        </div>
+      </QueryClient>
+    </Router>
   );
 }
 
