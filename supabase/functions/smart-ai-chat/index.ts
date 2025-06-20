@@ -48,26 +48,20 @@ serve(async (req) => {
       });
     }
 
-    // Συλλογή όλων των δεδομένων του χρήστη με βελτιωμένες queries
-    const userData = await collectUserData(supabase, userId);
+    // Συλλογή μόνο των βασικών δεδομένων του χρήστη
+    const userData = await collectEssentialUserData(supabase, userId);
     
-    // Φόρτωση ιστορικού συνομιλίας
-    const conversationHistory = await getConversationHistory(supabase, userId);
-    
-    // Φόρτωση γενικής γνώσης AI
-    const globalKnowledge = await getGlobalKnowledge(supabase);
+    // Φόρτωση μόνο του πρόσφατου ιστορικού συνομιλίας
+    const conversationHistory = await getRecentConversationHistory(supabase, userId);
 
     // Δημιουργία εξατομικευμένου system prompt
-    const systemPrompt = createPersonalizedPrompt(userData, globalKnowledge);
+    const systemPrompt = createOptimizedPrompt(userData);
 
     // Καλώντας το OpenAI API
     const aiResponse = await callOpenAI(systemPrompt, conversationHistory, message);
 
     // Αποθήκευση συνομιλίας
     await saveConversation(supabase, userId, message, aiResponse);
-
-    // Ανάλυση και ενημέρωση AI προφίλ
-    await updateAIProfile(supabase, userId, message, aiResponse);
 
     console.log('✅ RID AI response generated successfully');
 
@@ -87,108 +81,68 @@ serve(async (req) => {
   }
 });
 
-async function collectUserData(supabase: any, userId: string) {
-  console.log('📊 Collecting comprehensive user data for:', userId);
+async function collectEssentialUserData(supabase: any, userId: string) {
+  console.log('📊 Collecting essential user data for:', userId);
 
   try {
     // Βασικά στοιχεία χρήστη
     const { data: user } = await supabase
       .from('app_users')
-      .select('*')
+      .select('id, name, email, birth_date, category, subscription_status')
       .eq('id', userId)
       .single();
 
     console.log('👤 User basic info loaded:', user?.name);
 
-    // Τελευταία σωματομετρικά δεδομένα - ΔΙΟΡΘΩΜΕΝΟ QUERY
-    const { data: latestAnthropometric, error: anthroError } = await supabase
+    // Τελευταία σωματομετρικά δεδομένα (μόνο τα πιο πρόσφατα)
+    const { data: latestAnthropometric } = await supabase
       .from('test_sessions')
       .select(`
         test_date,
-        anthropometric_test_data (*)
+        anthropometric_test_data!fk_anthropometric_test_data_session (
+          height, weight, body_fat_percentage, muscle_mass_percentage
+        )
       `)
       .eq('user_id', userId)
       .contains('test_types', ['Σωματομετρικά'])
       .order('test_date', { ascending: false })
       .limit(1);
 
-    if (anthroError) {
-      console.error('❌ Error fetching anthropometric data:', anthroError);
-    } else {
-      console.log('📊 Anthropometric data loaded:', latestAnthropometric?.length || 0, 'sessions');
-    }
+    console.log('📊 Latest anthropometric data loaded');
 
-    // Ενεργά προγράμματα - ΒΕΛΤΙΩΜΕΝΟ QUERY
-    const { data: activePrograms, error: programsError } = await supabase
+    // Μόνο τα ενεργά προγράμματα (απλοποιημένα)
+    const { data: activePrograms } = await supabase
       .from('program_assignments')
       .select(`
-        *,
-        programs (
-          name,
-          description,
-          program_weeks (
-            name,
-            week_number,
-            program_days (
-              name,
-              day_number,
-              program_blocks (
-                name,
-                program_exercises (
-                  sets,
-                  reps,
-                  kg,
-                  tempo,
-                  rest,
-                  exercises (name, description)
-                )
-              )
-            )
-          )
+        id, status, training_dates,
+        programs!fk_program_assignments_program_id (
+          name, description, type
         )
       `)
       .eq('user_id', userId)
-      .eq('status', 'active');
+      .eq('status', 'active')
+      .limit(3);
 
-    if (programsError) {
-      console.error('❌ Error fetching programs:', programsError);
-    } else {
-      console.log('💪 Active programs loaded:', activePrograms?.length || 0);
-    }
+    console.log('💪 Active programs loaded:', activePrograms?.length || 0);
 
-    // Τελευταίες ολοκληρώσεις προπονήσεων - ΒΕΛΤΙΩΜΕΝΟ
-    const { data: recentWorkouts, error: workoutsError } = await supabase
+    // Μόνο τις πιο πρόσφατες προπονήσεις
+    const { data: recentWorkouts } = await supabase
       .from('workout_completions')
-      .select(`
-        *,
-        exercise_results (
-          *,
-          program_exercises (
-            exercises (name)
-          )
-        )
-      `)
+      .select('scheduled_date, completed_date, status, actual_duration_minutes')
       .eq('user_id', userId)
-      .order('completed_date', { ascending: false })
-      .limit(10);
+      .order('scheduled_date', { ascending: false })
+      .limit(5);
 
-    if (workoutsError) {
-      console.error('❌ Error fetching workouts:', workoutsError);
-    } else {
-      console.log('🏃 Recent workouts loaded:', recentWorkouts?.length || 0);
-    }
+    console.log('🏃 Recent workouts loaded:', recentWorkouts?.length || 0);
 
-    // Τελευταία τεστ δύναμης - ΒΕΛΤΙΩΜΕΝΟ
-    const { data: latestStrength, error: strengthError } = await supabase
+    // Τελευταία τεστ δύναμης (μόνο τα βασικά)
+    const { data: latestStrength } = await supabase
       .from('test_sessions')
       .select(`
         test_date,
-        strength_test_data (
-          exercise_id,
-          weight_kg,
-          velocity_ms,
-          is_1rm,
-          exercises (name, description)
+        strength_test_data!fk_strength_test_data_session (
+          weight_kg, is_1rm,
+          exercises!fk_strength_test_data_exercise (name)
         )
       `)
       .eq('user_id', userId)
@@ -196,80 +150,18 @@ async function collectUserData(supabase: any, userId: string) {
       .order('test_date', { ascending: false })
       .limit(1);
 
-    if (strengthError) {
-      console.error('❌ Error fetching strength data:', strengthError);
-    } else {
-      console.log('💪 Strength tests loaded:', latestStrength?.length || 0, 'sessions');
-    }
-
-    // Λειτουργικά τεστ
-    const { data: functionalTests, error: functionalError } = await supabase
-      .from('test_sessions')
-      .select(`
-        test_date,
-        functional_test_data (*)
-      `)
-      .eq('user_id', userId)
-      .contains('test_types', ['Λειτουργική'])
-      .order('test_date', { ascending: false })
-      .limit(3);
-
-    if (functionalError) {
-      console.error('❌ Error fetching functional data:', functionalError);
-    } else {
-      console.log('🧘 Functional tests loaded:', functionalTests?.length || 0, 'sessions');
-    }
-
-    // Jump τεστ
-    const { data: jumpTests, error: jumpError } = await supabase
-      .from('test_sessions')
-      .select(`
-        test_date,
-        jump_test_data (*)
-      `)
-      .eq('user_id', userId)
-      .contains('test_types', ['Jump'])
-      .order('test_date', { ascending: false })
-      .limit(3);
-
-    if (jumpError) {
-      console.error('❌ Error fetching jump data:', jumpError);
-    } else {
-      console.log('🦘 Jump tests loaded:', jumpTests?.length || 0, 'sessions');
-    }
-
-    // Endurance τεστ
-    const { data: enduranceTests, error: enduranceError } = await supabase
-      .from('test_sessions')
-      .select(`
-        test_date,
-        endurance_test_data (*)
-      `)
-      .eq('user_id', userId)
-      .contains('test_types', ['Αντοχή'])
-      .order('test_date', { ascending: false })
-      .limit(3);
-
-    if (enduranceError) {
-      console.error('❌ Error fetching endurance data:', enduranceError);
-    } else {
-      console.log('🏃‍♂️ Endurance tests loaded:', enduranceTests?.length || 0, 'sessions');
-    }
+    console.log('💪 Latest strength tests loaded');
 
     // AI προφίλ χρήστη
-    const { data: aiProfile, error: aiProfileError } = await supabase
+    const { data: aiProfile } = await supabase
       .from('ai_user_profiles')
-      .select('*')
+      .select('goals, medical_conditions, dietary_preferences, last_nutrition_advice')
       .eq('user_id', userId)
       .single();
 
-    if (aiProfileError && aiProfileError.code !== 'PGRST116') {
-      console.error('❌ Error fetching AI profile:', aiProfileError);
-    } else {
-      console.log('🧠 AI profile loaded:', aiProfile ? 'exists' : 'not found');
-    }
+    console.log('🧠 AI profile loaded:', aiProfile ? 'exists' : 'not found');
 
-    console.log('✅ User data collection completed successfully');
+    console.log('✅ Essential user data collection completed');
 
     return {
       user,
@@ -277,70 +169,54 @@ async function collectUserData(supabase: any, userId: string) {
       activePrograms: activePrograms || [],
       recentWorkouts: recentWorkouts || [],
       strengthTests: latestStrength?.[0]?.strength_test_data || [],
-      functionalTests: functionalTests || [],
-      jumpTests: jumpTests || [],
-      enduranceTests: enduranceTests || [],
       aiProfile
     };
 
   } catch (error) {
-    console.error('💥 Error in collectUserData:', error);
+    console.error('💥 Error in collectEssentialUserData:', error);
     return {
       user: null,
       anthropometric: null,
       activePrograms: [],
       recentWorkouts: [],
       strengthTests: [],
-      functionalTests: [],
-      jumpTests: [],
-      enduranceTests: [],
       aiProfile: null
     };
   }
 }
 
-async function getConversationHistory(supabase: any, userId: string) {
+async function getRecentConversationHistory(supabase: any, userId: string) {
   const { data: history } = await supabase
     .from('ai_conversations')
     .select('message_type, content')
     .eq('user_id', userId)
     .order('created_at', { ascending: true })
-    .limit(20);
+    .limit(10); // Μόνο τα 10 πιο πρόσφατα μηνύματα
 
   return history || [];
 }
 
-async function getGlobalKnowledge(supabase: any) {
-  const { data: knowledge } = await supabase
-    .from('ai_global_knowledge')
-    .select('*')
-    .order('confidence_score', { ascending: false })
-    .limit(50);
+function createOptimizedPrompt(userData: any) {
+  const { user, anthropometric, activePrograms, recentWorkouts, strengthTests, aiProfile } = userData;
 
-  return knowledge || [];
-}
-
-function createPersonalizedPrompt(userData: any, globalKnowledge: any[]) {
-  const { user, anthropometric, activePrograms, recentWorkouts, strengthTests, functionalTests, jumpTests, enduranceTests, aiProfile } = userData;
-
-  let prompt = `Είσαι ο RID, ένας εξειδικευμένος AI προπονητής για τον αθλητή ${user?.name}. Έχεις πρόσβαση σε όλα τα δεδομένα του και μαθαίνεις από κάθε αλληλεπίδραση.
+  let prompt = `Είσαι ο RID, ένας εξειδικευμένος AI προπονητής για τον αθλητή ${user?.name}. Έχεις πρόσβαση στα βασικά δεδομένα του.
 
 **ΤΑΥΤΟΤΗΤΑ:**
 - Όνομα: RID (Rapid Intelligent Development)
 - Ρόλος: Προσωπικός AI προπονητής και διατροφολόγος
 - Χαρακτήρας: Φιλικός, εξειδικευμένος, επιστημονικός αλλά προσιτός
 
-ΣΤΟΙΧΕΙΑ ΑΘΛΗΤΗ:
+ΒΑΣΙΚΑ ΣΤΟΙΧΕΙΑ ΑΘΛΗΤΗ:
 `;
 
   // Βασικά στοιχεία
   if (user) {
     prompt += `- Όνομα: ${user.name}\n`;
-    prompt += `- Email: ${user.email}\n`;
     if (user.birth_date) {
       const age = new Date().getFullYear() - new Date(user.birth_date).getFullYear();
       prompt += `- Ηλικία: ${age} χρόνια\n`;
     }
+    if (user.category) prompt += `- Κατηγορία: ${user.category}\n`;
   }
 
   // Σωματομετρικά δεδομένα
@@ -367,24 +243,6 @@ function createPersonalizedPrompt(userData: any, globalKnowledge: any[]) {
         if (assignment.training_dates) {
           prompt += `  Προπονήσεις: ${assignment.training_dates.length} συνολικά\n`;
         }
-        
-        // Σημερινό πρόγραμμα
-        const today = new Date().toISOString().split('T')[0];
-        const todayIndex = assignment.training_dates?.indexOf(today);
-        if (todayIndex >= 0 && assignment.programs.program_weeks) {
-          const daysPerWeek = assignment.programs.program_weeks[0]?.program_days?.length || 7;
-          const dayIndex = todayIndex % daysPerWeek;
-          const todayProgram = assignment.programs.program_weeks[0]?.program_days?.[dayIndex];
-          if (todayProgram) {
-            prompt += `  ΣΗΜΕΡΙΝΟ ΠΡΟΓΡΑΜΜΑ: ${todayProgram.name}\n`;
-            todayProgram.program_blocks?.forEach((block: any) => {
-              prompt += `    ${block.name}:\n`;
-              block.program_exercises?.forEach((ex: any) => {
-                prompt += `      - ${ex.exercises?.name}: ${ex.sets}x${ex.reps || '?'} @ ${ex.kg || '?'}kg\n`;
-              });
-            });
-          }
-        }
       }
     });
   }
@@ -392,8 +250,8 @@ function createPersonalizedPrompt(userData: any, globalKnowledge: any[]) {
   // Τελευταίες προπονήσεις
   if (recentWorkouts && recentWorkouts.length > 0) {
     prompt += `\nΤΕΛΕΥΤΑΙΕΣ ΠΡΟΠΟΝΗΣΕΙΣ:\n`;
-    recentWorkouts.slice(0, 5).forEach((workout: any) => {
-      prompt += `- ${workout.completed_date || workout.scheduled_date}: ${workout.status}`;
+    recentWorkouts.slice(0, 3).forEach((workout: any) => {
+      prompt += `- ${workout.scheduled_date || workout.completed_date}: ${workout.status}`;
       if (workout.actual_duration_minutes) {
         prompt += ` (${workout.actual_duration_minutes} λεπτά)`;
       }
@@ -404,76 +262,31 @@ function createPersonalizedPrompt(userData: any, globalKnowledge: any[]) {
   // Δεδομένα δύναμης
   if (strengthTests && strengthTests.length > 0) {
     prompt += `\nΤΕΛΕΥΤΑΙΑ ΤΕΣΤ ΔΥΝΑΜΗΣ:\n`;
-    strengthTests.forEach((test: any) => {
+    strengthTests.slice(0, 3).forEach((test: any) => {
       if (test.exercises?.name) {
         prompt += `- ${test.exercises.name}: ${test.weight_kg}kg`;
-        if (test.velocity_ms) prompt += ` @ ${test.velocity_ms}m/s`;
         if (test.is_1rm) prompt += ` (1RM)`;
         prompt += `\n`;
       }
     });
   }
 
-  // Λειτουργικά τεστ
-  if (functionalTests && functionalTests.length > 0) {
-    prompt += `\nΛΕΙΤΟΥΡΓΙΚΑ ΤΕΣΤ:\n`;
-    functionalTests.forEach((session: any) => {
-      session.functional_test_data?.forEach((test: any) => {
-        if (test.fms_score) prompt += `- FMS Score: ${test.fms_score}\n`;
-        if (test.sit_and_reach) prompt += `- Sit & Reach: ${test.sit_and_reach} cm\n`;
-      });
-    });
-  }
-
-  // Jump τεστ
-  if (jumpTests && jumpTests.length > 0) {
-    prompt += `\nJUMP ΤΕΣΤ:\n`;
-    jumpTests.forEach((session: any) => {
-      session.jump_test_data?.forEach((test: any) => {
-        if (test.counter_movement_jump) prompt += `- CMJ: ${test.counter_movement_jump} cm\n`;
-        if (test.broad_jump) prompt += `- Broad Jump: ${test.broad_jump} m\n`;
-      });
-    });
-  }
-
-  // Endurance τεστ
-  if (enduranceTests && enduranceTests.length > 0) {
-    prompt += `\nΤΕΣΤ ΑΝΤΟΧΗΣ:\n`;
-    enduranceTests.forEach((session: any) => {
-      session.endurance_test_data?.forEach((test: any) => {
-        if (test.vo2_max) prompt += `- VO2 Max: ${test.vo2_max}\n`;
-        if (test.max_hr) prompt += `- Max HR: ${test.max_hr} bpm\n`;
-      });
-    });
-  }
-
   // AI προφίλ (στόχοι, προτιμήσεις κτλ)
   if (aiProfile) {
     if (aiProfile.goals && Object.keys(aiProfile.goals).length > 0) {
-      prompt += `\nΣΤΟΧΟΙ:\n${JSON.stringify(aiProfile.goals, null, 2)}\n`;
+      prompt += `\nΣΤΟΧΟΙ: ${JSON.stringify(aiProfile.goals)}\n`;
     }
     if (aiProfile.medical_conditions && Object.keys(aiProfile.medical_conditions).length > 0) {
-      prompt += `\nΙΑΤΡΙΚΑ ΣΤΟΙΧΕΙΑ:\n${JSON.stringify(aiProfile.medical_conditions, null, 2)}\n`;
+      prompt += `\nΙΑΤΡΙΚΑ ΣΤΟΙΧΕΙΑ: ${JSON.stringify(aiProfile.medical_conditions)}\n`;
     }
     if (aiProfile.dietary_preferences && Object.keys(aiProfile.dietary_preferences).length > 0) {
-      prompt += `\nΔΙΑΤΡΟΦΙΚΕΣ ΠΡΟΤΙΜΗΣΕΙΣ:\n${JSON.stringify(aiProfile.dietary_preferences, null, 2)}\n`;
+      prompt += `\nΔΙΑΤΡΟΦΙΚΕΣ ΠΡΟΤΙΜΗΣΕΙΣ: ${JSON.stringify(aiProfile.dietary_preferences)}\n`;
     }
-    if (aiProfile.last_nutrition_advice && Object.keys(aiProfile.last_nutrition_advice).length > 0) {
-      prompt += `\nΤΕΛΕΥΤΑΙΕΣ ΔΙΑΤΡΟΦΙΚΕΣ ΣΥΜΒΟΥΛΕΣ:\n${JSON.stringify(aiProfile.last_nutrition_advice, null, 2)}\n`;
-    }
-  }
-
-  // Γενική γνώση που έμαθε το AI
-  if (globalKnowledge.length > 0) {
-    prompt += `\nΓΝΩΣΗ ΠΟΥ ΕΧΕΙΣ ΜΑΘΕΙ:\n`;
-    globalKnowledge.forEach((knowledge: any) => {
-      prompt += `- ${knowledge.category}: ${knowledge.corrected_info} (εμπιστοσύνη: ${knowledge.confidence_score})\n`;
-    });
   }
 
   prompt += `\nΟΔΗΓΙΕΣ ΓΙΑ ΤΟΝ RID:
 1. Συστήσου πάντα ως "RID" στην αρχή αν είναι νέα συνομιλία
-2. Χρησιμοποίησε όλα τα παραπάνω δεδομένα για εξατομικευμένες συμβουλές
+2. Χρησιμοποίησε τα παραπάνω δεδομένα για εξατομικευμένες συμβουλές
 3. Θυμήσου τις προηγούμενες συμβουλές και βασίσου σε αυτές
 4. Υπολόγισε θερμίδες βάσει των δεδομένων του χρήστη
 5. Λάβε υπόψη τους στόχους και τα ιατρικά προβλήματα
@@ -505,10 +318,10 @@ async function callOpenAI(systemPrompt: string, conversationHistory: any[], mess
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o-mini', // Πιο γρήγορο μοντέλο
       messages: messages,
       temperature: 0.7,
-      max_tokens: 1500,
+      max_tokens: 1000, // Μειωμένο για ταχύτητα
     }),
   });
 
@@ -539,51 +352,4 @@ async function saveConversation(supabase: any, userId: string, userMessage: stri
       message_type: 'assistant',
       content: aiResponse
     });
-}
-
-async function updateAIProfile(supabase: any, userId: string, userMessage: string, aiResponse: string) {
-  // Ανάλυση για εξαγωγή πληροφοριών από τη συνομιλία
-  const updates: any = {};
-  
-  // Ανίχνευση στόχων
-  const weightLossKeywords = ['αδυνάτισμα', 'χάσω κιλά', 'αδυνατίσω', 'foremata', 'δίαιτα'];
-  const muscleGainKeywords = ['όγκος', 'μυϊκή μάζα', 'γυμναστική', 'δύναμη', 'μυς'];
-  
-  if (weightLossKeywords.some(keyword => userMessage.toLowerCase().includes(keyword))) {
-    updates.goals = { primary: 'weight_loss', updated_at: new Date().toISOString() };
-  }
-  
-  if (muscleGainKeywords.some(keyword => userMessage.toLowerCase().includes(keyword))) {
-    updates.goals = { primary: 'muscle_gain', updated_at: new Date().toISOString() };
-  }
-
-  // Ανίχνευση ιατρικών προβλημάτων
-  const medicalKeywords = ['διαβήτης', 'υπέρταση', 'αλλεργία', 'τραυματισμός', 'πόνος'];
-  if (medicalKeywords.some(keyword => userMessage.toLowerCase().includes(keyword))) {
-    updates.medical_conditions = { 
-      detected: userMessage,
-      needs_attention: true,
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  // Αποθήκευση διατροφικών συμβουλών
-  if (aiResponse.includes('θερμίδες') || aiResponse.includes('διατροφή') || aiResponse.includes('γεύμα')) {
-    updates.last_nutrition_advice = {
-      content: aiResponse.substring(0, 500),
-      date: new Date().toISOString()
-    };
-  }
-
-  // Ενημέρωση AI προφίλ αν υπάρχουν αλλαγές
-  if (Object.keys(updates).length > 0) {
-    await supabase
-      .from('ai_user_profiles')
-      .upsert({
-        user_id: userId,
-        ...updates
-      }, {
-        onConflict: 'user_id'
-      });
-  }
 }

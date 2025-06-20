@@ -706,7 +706,22 @@ export type Database = {
           updated_at?: string
           workout_completion_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_exercise_results_program_exercise"
+            columns: ["program_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "program_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_exercise_results_workout_completion"
+            columns: ["workout_completion_id"]
+            isOneToOne: false
+            referencedRelation: "workout_completions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exercise_to_category: {
         Row: {
@@ -1538,6 +1553,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_program_blocks_day_id"
+            columns: ["day_id"]
+            isOneToOne: false
+            referencedRelation: "program_days"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "program_blocks_day_id_fkey"
             columns: ["day_id"]
             isOneToOne: false
@@ -1575,6 +1597,13 @@ export type Database = {
           week_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_program_days_week_id"
+            columns: ["week_id"]
+            isOneToOne: false
+            referencedRelation: "program_weeks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "program_days_week_id_fkey"
             columns: ["week_id"]
@@ -1641,6 +1670,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_program_exercises_block_id"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "program_blocks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_program_exercises_exercise_id"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "program_exercises_block_id_fkey"
             columns: ["block_id"]
             isOneToOne: false
@@ -1706,6 +1749,13 @@ export type Database = {
           week_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_program_weeks_program_id"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "program_weeks_program_id_fkey"
             columns: ["program_id"]
@@ -1957,6 +2007,20 @@ export type Database = {
           weight_kg?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_strength_test_data_exercise"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_strength_test_data_session"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "strength_test_data_test_session_id_fkey"
             columns: ["test_session_id"]

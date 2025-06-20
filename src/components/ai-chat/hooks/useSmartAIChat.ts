@@ -86,7 +86,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
         .select('*')
         .eq('user_id', athleteId)
         .order('created_at', { ascending: true })
-        .limit(50);
+        .limit(20); // Μόνο τα 20 πιο πρόσφατα
 
       if (error) throw error;
 
@@ -104,9 +104,9 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
           id: 'welcome',
           content: `Γεια σου ${athleteName}! 👋
 
-Είμαι ο **RID**, ο προσωπικός σου AI προπονητής και διατροφολόγος! 🤖
+Είμαι ο **RID**, ο προσωπικός σου AI προπονητής! 🤖
 
-Έχω πρόσβαση σε όλα τα δεδομένα σου:
+Έχω πρόσβαση στα βασικά σου δεδομένα:
 
 📊 **Σωματομετρικά στοιχεία**
 💪 **Τεστ δύναμης και προόδους** 
@@ -118,7 +118,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
 • Υπολογίσω τις θερμίδες που έκαψες σήμερα
 • Προτείνω διατροφή βάσει των στόχων σου
 • Αναλύσω την πρόοδό σου στα τεστ
-• Προσαρμόσω συμβουλές στο σημερινό σου πρόγραμμα
+• Δώσω συμβουλές για την προπόνησή σου
 • Θυμάμαι τις προηγούμενες συζητήσεις μας
 
 **Μαθαίνω από κάθε συνομιλία μας!** 🧠
