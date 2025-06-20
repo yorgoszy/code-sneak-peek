@@ -5,9 +5,12 @@ import {
   Activity, 
   Calendar,
   FileText,
-  CreditCard
+  CreditCard,
+  Bot
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
+import { useState } from "react";
+import { AIChatDialog } from "@/components/ai-chat/AIChatDialog";
 
 interface UserProfileSidebarProps {
   isCollapsed: boolean;
@@ -26,6 +29,7 @@ export const UserProfileSidebar = ({
   userProfile,
   stats
 }: UserProfileSidebarProps) => {
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   
   const menuItems = [
     { 
@@ -60,6 +64,10 @@ export const UserProfileSidebar = ({
     },
   ];
 
+  const handleAIChatClick = () => {
+    setIsAIChatOpen(true);
+  };
+
   const headerContent = (
     <div>
       <h2 className="text-sm font-semibold text-gray-800">
@@ -93,6 +101,15 @@ export const UserProfileSidebar = ({
           </button>
         );
       })}
+      
+      {/* AI Βοηθός Button */}
+      <button
+        onClick={handleAIChatClick}
+        className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4"
+      >
+        <Bot className="h-5 w-5 flex-shrink-0 text-[#00ffba]" />
+        {!isCollapsed && <span>AI Βοηθός</span>}
+      </button>
     </div>
   );
 
@@ -115,12 +132,21 @@ export const UserProfileSidebar = ({
   ) : undefined;
 
   return (
-    <BaseSidebar
-      isCollapsed={isCollapsed}
-      setIsCollapsed={setIsCollapsed}
-      headerContent={headerContent}
-      navigationContent={navigationContent}
-      bottomContent={bottomContent}
-    />
+    <>
+      <BaseSidebar
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+        headerContent={headerContent}
+        navigationContent={navigationContent}
+        bottomContent={bottomContent}
+      />
+      
+      <AIChatDialog
+        isOpen={isAIChatOpen}
+        onClose={() => setIsAIChatOpen(false)}
+        athleteId={userProfile.id}
+        athleteName={userProfile.name}
+      />
+    </>
   );
 };
