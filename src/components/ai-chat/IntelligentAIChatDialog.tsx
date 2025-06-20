@@ -38,7 +38,7 @@ export const IntelligentAIChatDialog: React.FC<IntelligentAIChatDialogProps> = (
 
   // Δημιουργία νέου session όταν ανοίγει το dialog
   useEffect(() => {
-    if (is Open && athleteId) {
+    if (isOpen && athleteId) {
       const newSessionId = `session-${athleteId}-${Date.now()}`;
       setSessionId(newSessionId);
       setIsReady(false);
