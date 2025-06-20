@@ -1,8 +1,8 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User, Loader2, Brain, Zap, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -286,56 +286,55 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
             </div>
           ) : (
             <>
-              <div className="flex-1 min-h-0">
-                <ScrollArea className="h-full border rounded-none">
-                  <div className="p-4 space-y-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            message.role === 'user' 
-                              ? 'bg-blue-500 text-white' 
-                              : 'bg-[#00ffba] text-black'
-                          }`}>
-                            {message.role === 'user' ? <User className="w-5 h-5" /> : <Brain className="w-5 h-5" />}
-                          </div>
-                          <div className={`p-4 rounded-lg ${
-                            message.role === 'user'
-                              ? 'bg-blue-500 text-white rounded-br-none'
-                              : 'bg-gray-100 text-gray-900 rounded-bl-none'
-                          }`}>
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                            <p className="text-xs opacity-70 mt-2">
-                              {message.timestamp.toLocaleTimeString('el-GR', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              })}
-                            </p>
-                          </div>
+              {/* Messages Container με σωστό scrollbar */}
+              <div className="flex-1 min-h-0 border rounded-none">
+                <div className="h-full overflow-y-auto p-4 space-y-4">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          message.role === 'user' 
+                            ? 'bg-blue-500 text-white' 
+                            : 'bg-[#00ffba] text-black'
+                        }`}>
+                          {message.role === 'user' ? <User className="w-5 h-5" /> : <Brain className="w-5 h-5" />}
+                        </div>
+                        <div className={`p-4 rounded-lg ${
+                          message.role === 'user'
+                            ? 'bg-blue-500 text-white rounded-br-none'
+                            : 'bg-gray-100 text-gray-900 rounded-bl-none'
+                        }`}>
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                          <p className="text-xs opacity-70 mt-2">
+                            {message.timestamp.toLocaleTimeString('el-GR', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
                         </div>
                       </div>
-                    ))}
-                    
-                    {isLoading && (
-                      <div className="flex gap-3 justify-start">
-                        <div className="w-10 h-10 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                          <Brain className="w-5 h-5" />
-                        </div>
-                        <div className="bg-gray-100 text-gray-900 p-4 rounded-lg rounded-bl-none">
-                          <div className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-sm">Ο RID αναλύει τα δεδομένα σου και σκέφτεται...</span>
-                          </div>
+                    </div>
+                  ))}
+                  
+                  {isLoading && (
+                    <div className="flex gap-3 justify-start">
+                      <div className="w-10 h-10 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                        <Brain className="w-5 h-5" />
+                      </div>
+                      <div className="bg-gray-100 text-gray-900 p-4 rounded-lg rounded-bl-none">
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span className="text-sm">Ο RID αναλύει τα δεδομένα σου και σκέφτεται...</span>
                         </div>
                       </div>
-                    )}
-                    
-                    <div ref={messagesEndRef} />
-                  </div>
-                </ScrollArea>
+                    </div>
+                  )}
+                  
+                  <div ref={messagesEndRef} />
+                </div>
               </div>
 
               <div className="flex gap-2 p-4 border-t">
