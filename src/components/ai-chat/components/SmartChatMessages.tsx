@@ -35,6 +35,16 @@ export const SmartChatMessages: React.FC<SmartChatMessagesProps> = ({
     <div className="flex-1 border rounded-none overflow-hidden">
       <ScrollArea className="h-full">
         <div className="p-4 space-y-4 min-h-full">
+          {messages.length === 0 && !isLoading && (
+            <div className="flex-1 flex items-center justify-center py-16">
+              <div className="text-center text-gray-500">
+                <Brain className="w-16 h-16 text-[#00ffba] mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">Γεια σου! Είμαι ο RID AI 🤖</p>
+                <p className="text-sm">Στείλε μου ένα μήνυμα για να ξεκινήσουμε!</p>
+              </div>
+            </div>
+          )}
+
           {messages.map((message) => (
             <div
               key={message.id}
@@ -42,13 +52,13 @@ export const SmartChatMessages: React.FC<SmartChatMessagesProps> = ({
             >
               <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 {message.role === 'user' ? (
-                  <Avatar className="w-10 h-10 rounded-full">
-                    <AvatarFallback className="bg-blue-500 text-white">
+                  <Avatar className="w-10 h-10 rounded-none">
+                    <AvatarFallback className="bg-blue-500 text-white rounded-none">
                       {getUserInitials(athleteName)}
                     </AvatarFallback>
                   </Avatar>
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-[#00ffba] text-black flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-none bg-[#00ffba] text-black flex items-center justify-center flex-shrink-0">
                     <Brain className="w-5 h-5" />
                   </div>
                 )}
@@ -72,7 +82,7 @@ export const SmartChatMessages: React.FC<SmartChatMessagesProps> = ({
           
           {isLoading && (
             <div className="flex gap-3 justify-start">
-              <div className="w-10 h-10 rounded-full bg-[#00ffba] text-black flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-none bg-[#00ffba] text-black flex items-center justify-center flex-shrink-0">
                 <Brain className="w-5 h-5" />
               </div>
               <div className="bg-gray-50 text-gray-900 p-4 rounded-lg rounded-bl-none border">

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Brain, Database, Zap, Shield } from "lucide-react";
@@ -75,18 +76,7 @@ export const IntelligentAIChatDialog: React.FC<IntelligentAIChatDialogProps> = (
       console.log('🔄 Αρχικοποίηση Intelligent AI...');
       await intelligentAI.loadUserData(athleteId);
       
-      const userData = intelligentAI.getUserData();
-      const isAdmin = intelligentAI.getIsAdmin();
-      
-      // Welcome message βασισμένο στα δεδομένα
-      const welcomeMessage: Message = {
-        id: `welcome-${sessionId}`,
-        content: generateWelcomeMessage(userData, isAdmin, athleteName),
-        role: 'assistant',
-        timestamp: new Date()
-      };
-      
-      setMessages([welcomeMessage]);
+      // Δεν προσθέτουμε welcome message - αρχίζουμε κατευθείαν
       setIsReady(true);
       console.log('✅ AI αρχικοποιήθηκε επιτυχώς');
     } catch (error) {
@@ -104,48 +94,6 @@ export const IntelligentAIChatDialog: React.FC<IntelligentAIChatDialogProps> = (
     } finally {
       setIsInitializing(false);
     }
-  };
-
-  const generateWelcomeMessage = (userData: any, isAdmin: boolean, athleteName?: string): string => {
-    if (!userData || !userData.athlete) {
-      return `Γεια σας! Είμαι ο **RID AI** και είμαι εδώ για να σας βοηθήσω! 🤖`;
-    }
-
-    const { athlete, activePrograms, recentWorkouts, testSessions, allUsers } = userData;
-    
-    let welcome = `Γεια σου ${athlete.name}! 👋\n\n`;
-    welcome += `Είμαι ο **RID AI**, ο προσωπικός σου έξυπνος προπονητής! 🤖\n\n`;
-    
-    if (isAdmin) {
-      welcome += `🔥 **ADMIN MODE** 🔥\n`;
-      welcome += `Έχεις πρόσβαση σε όλα τα δεδομένα!\n`;
-      welcome += `• Σύνολο χρηστών: ${allUsers?.length || 0}\n`;
-      welcome += `• Μπορώ να δω όλα τα προγράμματα και τεστ\n\n`;
-    }
-    
-    welcome += `📊 **Φόρτωσα τα δεδομένα σου:**\n`;
-    welcome += `• Ενεργά προγράμματα: ${activePrograms?.length || 0}\n`;
-    welcome += `• Πρόσφατες προπονήσεις: ${recentWorkouts?.length || 0}\n`;
-    welcome += `• Τεστ στο σύστημα: ${testSessions?.length || 0}\n\n`;
-    
-    welcome += `🧠 **Οι δυνατότητές μου:**\n`;
-    welcome += `• **Μαθαίνω**: Από κάθε συνομιλία μας\n`;
-    welcome += `• **Θυμάμαι**: Τις προτιμήσεις και συνήθειές σου\n`;
-    welcome += `• **Αναλύω**: Την πρόοδό σου και τα αποτελέσματά σου\n`;
-    welcome += `• **Συμβουλεύομαι**: Το OpenAI για δύσκολες ερωτήσεις\n`;
-    welcome += `• **Αποθηκεύω**: Όλες τις συζητήσεις μας\n\n`;
-    
-    welcome += `💪 **Μπορώ να σε βοηθήσω με:**\n`;
-    welcome += `• Ανάλυση προόδου και αποτελεσμάτων\n`;
-    welcome += `• Διατροφικές συμβουλές και υπολογισμούς\n`;
-    welcome += `• Προτάσεις προπόνησης και τροποποιήσεις\n`;
-    welcome += `• Αξιολόγηση τεστ και μετρήσεων\n`;
-    welcome += `• Συμβουλές ανάκαμψης και ύπνου\n`;
-    welcome += `• Στρατηγικές για τους στόχους σου\n\n`;
-    
-    welcome += `🚀 **Είμαι έτοιμος!** Τι θα θέλες να μάθεις σήμερα;`;
-    
-    return welcome;
   };
 
   const sendMessage = async () => {
