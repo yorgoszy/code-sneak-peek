@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Brain, Database, Zap, Shield } from "lucide-react";
@@ -33,12 +32,13 @@ export const IntelligentAIChatDialog: React.FC<IntelligentAIChatDialogProps> = (
   const [isInitializing, setIsInitializing] = useState(false);
   const [sessionId, setSessionId] = useState<string>('');
   const [isReady, setIsReady] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const intelligentAI = IntelligentAI.getInstance();
 
   // Δημιουργία νέου session όταν ανοίγει το dialog
   useEffect(() => {
-    if (isOpen && athleteId) {
+    if (isOpen && athleteId && !hasInitialized) {
       const newSessionId = `session-${athleteId}-${Date.now()}`;
       setSessionId(newSessionId);
       setIsReady(false);
@@ -47,8 +47,14 @@ export const IntelligentAIChatDialog: React.FC<IntelligentAIChatDialogProps> = (
       
       // Αρχικοποίηση AI
       initializeIntelligentAI();
+      setHasInitialized(true);
     }
-  }, [isOpen, athleteId]);
+    
+    // Reset όταν κλείνει το dialog
+    if (!isOpen) {
+      setHasInitialized(false);
+    }
+  }, [isOpen, athleteId, hasInitialized]);
 
   // Auto scroll
   useEffect(() => {
@@ -201,6 +207,7 @@ export const IntelligentAIChatDialog: React.FC<IntelligentAIChatDialogProps> = (
     setIsInitializing(false);
     setSessionId('');
     setIsReady(false);
+    setHasInitialized(false);
     onClose();
   };
 
@@ -257,6 +264,8 @@ export const IntelligentAIChatDialog: React.FC<IntelligentAIChatDialogProps> = (
                 messages={messages}
                 isLoading={isLoading}
                 messagesEndRef={messagesEndRef}
+                athleteId={athleteId}
+                athleteName={athleteName}
               />
 
               <div className="flex-shrink-0">
