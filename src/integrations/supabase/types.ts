@@ -9,6 +9,127 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_conversations: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          message_type: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          message_type: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_global_knowledge: {
+        Row: {
+          category: string
+          confidence_score: number | null
+          corrected_info: string
+          created_at: string
+          id: string
+          knowledge_type: string
+          metadata: Json | null
+          original_info: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          confidence_score?: number | null
+          corrected_info: string
+          created_at?: string
+          id?: string
+          knowledge_type: string
+          metadata?: Json | null
+          original_info: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          confidence_score?: number | null
+          corrected_info?: string
+          created_at?: string
+          id?: string
+          knowledge_type?: string
+          metadata?: Json | null
+          original_info?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_user_profiles: {
+        Row: {
+          created_at: string
+          dietary_preferences: Json | null
+          goals: Json | null
+          habits: Json | null
+          id: string
+          last_nutrition_advice: Json | null
+          learned_corrections: Json | null
+          medical_conditions: Json | null
+          preferences: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dietary_preferences?: Json | null
+          goals?: Json | null
+          habits?: Json | null
+          id?: string
+          last_nutrition_advice?: Json | null
+          learned_corrections?: Json | null
+          medical_conditions?: Json | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dietary_preferences?: Json | null
+          goals?: Json | null
+          habits?: Json | null
+          id?: string
+          last_nutrition_advice?: Json | null
+          learned_corrections?: Json | null
+          medical_conditions?: Json | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_user_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       anthropometric_measurements: {
         Row: {
           arm_circumference: number | null

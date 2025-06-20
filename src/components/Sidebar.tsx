@@ -8,7 +8,7 @@ import {
   Settings,
   FileText,
   CreditCard,
-  Bot,
+  Brain,
   UsersIcon,
   Mail,
   ArrowLeft
@@ -17,7 +17,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useState } from "react";
-import { LocalAIChatDialog } from "@/components/ai-chat/LocalAIChatDialog";
+import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -137,13 +137,18 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         );
       })}
       
-      {/* AI Βοηθός Button */}
+      {/* Έξυπνος AI Βοηθός Button */}
       <button
         onClick={handleAIChatClick}
         className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4"
       >
-        <Bot className="h-5 w-5 flex-shrink-0 text-[#00ffba]" />
-        {!isCollapsed && <span>AI Βοηθός</span>}
+        <Brain className="h-5 w-5 flex-shrink-0 text-[#00ffba]" />
+        {!isCollapsed && (
+          <div className="flex flex-col items-start">
+            <span className="text-sm font-medium">Έξυπνος AI Προπονητής</span>
+            <span className="text-xs text-gray-500">Μαθαίνει & θυμάται</span>
+          </div>
+        )}
       </button>
     </div>
   );
@@ -157,7 +162,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         navigationContent={navigationContent}
       />
       
-      <LocalAIChatDialog
+      <SmartAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={userProfile?.id}
