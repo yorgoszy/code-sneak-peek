@@ -42,6 +42,7 @@ function App() {
             <Route path="/dashboard/tests" element={<Tests />} />
             <Route path="/dashboard/results" element={<Results />} />
             <Route path="/user/:userId" element={<UserProfile />} />
+            <Route path="/dashboard/user-profile/:userId" element={<UserProfile />} />
             <Route path="/program-builder" element={<ProgramBuilder />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
