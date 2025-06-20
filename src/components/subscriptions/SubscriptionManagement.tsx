@@ -143,12 +143,57 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
   const toggleUserStatus = async (userId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    
     try {
+      // Βρες αν ο χρήστης έχει ενεργή συνδρομή
+      const activeSubscription = userSubscriptions.find(
+        sub => sub.user_id === userId && sub.status === 'active'
+      );
+
+      let newStatus: string;
+      let subscriptionStatus: string;
+
+      if (currentStatus === 'active') {
+        // Απενεργοποίηση χρήστη
+        newStatus = 'inactive';
+        subscriptionStatus = 'inactive';
+        
+        // Απενεργοποίηση όλων των ενεργών συνδρομών του χρήστη
+        if (activeSubscription) {
+          const { error: subError } = await supabase
+            .from('user_subscriptions')
+            .update({ status: 'cancelled' })
+            .eq('user_id', userId)
+            .eq('status', 'active');
+
+          if (subError) throw subError;
+        }
+      } else {
+        // Ενεργοποίηση χρήστη
+        newStatus = 'active';
+        
+        if (activeSubscription) {
+          // Αν έχει ενεργή συνδρομή, ενεργοποίηση και της συνδρομής
+          subscriptionStatus = 'active';
+          
+          const { error: subError } = await supabase
+            .from('user_subscriptions')
+            .update({ status: 'active' })
+            .eq('id', activeSubscription.id);
+
+          if (subError) throw subError;
+        } else {
+          // Αν δεν έχει συνδρομή, απλά ενεργοποίηση user status
+          subscriptionStatus = 'inactive';
+        }
+      }
+
+      // Ενημέρωση κατάστασης χρήστη
       const { error } = await supabase
         .from('app_users')
-        .update({ subscription_status: newStatus })
+        .update({ 
+          user_status: newStatus,
+          subscription_status: subscriptionStatus 
+        })
         .eq('id', userId);
 
       if (error) throw error;
@@ -159,6 +204,49 @@ export const SubscriptionManagement: React.FC = () => {
     } catch (error) {
       console.error('Error updating user status:', error);
       toast.error('Σφάλμα κατά την ενημέρωση του χρήστη');
+    }
+  };
+
+  const activateUserSubscription = async (userId: string) => {
+    try {
+      console.log('🔄 Ενεργοποίηση συνδρομής για χρήστη:', userId);
+      
+      // Βρες την πιο πρόσφατη συνδρομή του χρήστη
+      const userSubscription = userSubscriptions
+        .filter(sub => sub.user_id === userId)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+
+      if (!userSubscription) {
+        toast.error('Δεν βρέθηκε συνδρομή για αυτόν τον χρήστη');
+        return;
+      }
+
+      // Ενημέρωση συνδρομής σε active
+      const { error: subscriptionError } = await supabase
+        .from('user_subscriptions')
+        .update({ status: 'active' })
+        .eq('id', userSubscription.id);
+
+      if (subscriptionError) throw subscriptionError;
+
+      // Ενημέρωση χρήστη σε active
+      const { error: userError } = await supabase
+        .from('app_users')
+        .update({ 
+          subscription_status: 'active',
+          user_status: 'active'
+        })
+        .eq('id', userId);
+
+      if (userError) throw userError;
+
+      console.log('✅ Συνδρομή ενεργοποιήθηκε επιτυχώς');
+      toast.success('Η συνδρομή ενεργοποιήθηκε επιτυχώς!');
+      loadData();
+
+    } catch (error) {
+      console.error('❌ Error activating subscription:', error);
+      toast.error('Σφάλμα κατά την ενεργοποίηση της συνδρομής');
     }
   };
 
@@ -335,6 +423,10 @@ export const SubscriptionManagement: React.FC = () => {
                     s => s.user_id === user.id && s.status === 'active'
                   );
                   
+                  const latestSubscription = userSubscriptions
+                    .filter(s => s.user_id === user.id)
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+                  
                   return (
                     <tr key={user.id} className="border-b hover:bg-gray-50">
                       <td className="p-2">
@@ -344,11 +436,13 @@ export const SubscriptionManagement: React.FC = () => {
                         </div>
                       </td>
                       <td className="p-2">
-                        {activeSubscription ? (
+                        {activeSubscription || latestSubscription ? (
                           <div>
-                            <div className="font-medium">{activeSubscription.subscription_types?.name}</div>
+                            <div className="font-medium">
+                              {(activeSubscription || latestSubscription)?.subscription_types?.name}
+                            </div>
                             <div className="text-sm text-gray-500">
-                              €{activeSubscription.subscription_types?.price}
+                              €{(activeSubscription || latestSubscription)?.subscription_types?.price}
                             </div>
                           </div>
                         ) : (
@@ -365,29 +459,45 @@ export const SubscriptionManagement: React.FC = () => {
                           <span className="text-sm">
                             {new Date(activeSubscription.end_date).toLocaleDateString('el-GR')}
                           </span>
+                        ) : latestSubscription ? (
+                          <span className="text-sm text-gray-400">
+                            {new Date(latestSubscription.end_date).toLocaleDateString('el-GR')} (Ανενεργή)
+                          </span>
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}
                       </td>
                       <td className="p-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => toggleUserStatus(user.id, user.subscription_status)}
-                          className="rounded-none"
-                        >
-                          {user.subscription_status === 'active' ? (
-                            <>
-                              <X className="w-3 h-3 mr-1" />
-                              Απενεργοποίηση
-                            </>
-                          ) : (
-                            <>
+                        <div className="flex gap-2">
+                          {latestSubscription && !activeSubscription && (
+                            <Button
+                              size="sm"
+                              onClick={() => activateUserSubscription(user.id)}
+                              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                            >
                               <Check className="w-3 h-3 mr-1" />
                               Ενεργοποίηση
-                            </>
+                            </Button>
                           )}
-                        </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => toggleUserStatus(user.id, user.subscription_status)}
+                            className="rounded-none"
+                          >
+                            {user.subscription_status === 'active' ? (
+                              <>
+                                <X className="w-3 h-3 mr-1" />
+                                Απενεργοποίηση
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-3 h-3 mr-1" />
+                                Ενεργοποίηση
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
