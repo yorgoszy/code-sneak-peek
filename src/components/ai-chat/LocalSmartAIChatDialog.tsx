@@ -31,16 +31,25 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);  
-  const [hasInitialized, setHasInitialized] = useState(false);
+  const [sessionId, setSessionId] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const localAI = LocalSmartAI.getInstance();
 
-  // Initialize AI when dialog opens
+  // Generate unique session ID when dialog opens
   useEffect(() => {
-    if (isOpen && athleteId && !hasInitialized) {
+    if (isOpen && athleteId) {
+      const newSessionId = `${athleteId}-${Date.now()}`;
+      setSessionId(newSessionId);
+      console.log('🆔 Νέο session ID:', newSessionId);
+    }
+  }, [isOpen, athleteId]);
+
+  // Initialize AI when session changes
+  useEffect(() => {
+    if (sessionId && !isInitializing) {
       initializeAI();
     }
-  }, [isOpen, athleteId, hasInitialized]);
+  }, [sessionId]);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -53,13 +62,18 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
   }, [messages, isLoading]);
 
   const initializeAI = async () => {
+    if (!athleteId || !sessionId) return;
+    
     setIsInitializing(true);
+    setMessages([]); // Καθαρίζουμε τα messages πριν αρχίσουμε
+    
     try {
-      await localAI.loadAthleteData(athleteId!);
+      console.log('🔄 Αρχικοποίηση AI για session:', sessionId);
+      await localAI.loadAthleteData(athleteId);
       
-      // Add welcome message only once
+      // Προσθέτουμε το welcome message ΜΟΝΟ εδώ
       const welcomeMessage: Message = {
-        id: 'welcome',
+        id: `welcome-${sessionId}`,
         content: `Γεια σου ${athleteName}! 👋
 
 Είμαι ο **RID AI**, ο προσωπικός σου AI προπονητής! 🤖
@@ -88,9 +102,9 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
       };
       
       setMessages([welcomeMessage]);
-      setHasInitialized(true);
+      console.log('✅ Welcome message προστέθηκε για session:', sessionId);
     } catch (error) {
-      console.error('Σφάλμα αρχικοποίησης AI:', error);
+      console.error('❌ Σφάλμα αρχικοποίησης AI:', error);
       toast.error('Σφάλμα φόρτωσης δεδομένων');
     } finally {
       setIsInitializing(false);
@@ -98,15 +112,16 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || isLoading || isInitializing) return;
+    if (!input.trim() || isLoading || isInitializing || !sessionId) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `user-${Date.now()}`,
       content: input,
       role: 'user',
       timestamp: new Date()
     };
 
+    console.log('📤 Στέλνω μήνυμα:', input);
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -115,19 +130,20 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
       const response = await localAI.generateResponse(input, athleteName);
 
       const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `assistant-${Date.now()}`,
         content: response,
         role: 'assistant',
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      console.log('📥 Λήφθηκε απάντηση AI');
     } catch (error) {
-      console.error('Local AI Error:', error);
+      console.error('❌ Local AI Error:', error);
       toast.error('Σφάλμα στον RID AI');
       
       const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `error-${Date.now()}`,
         content: 'Λυπάμαι, αντιμετωπίζω τεχνικά προβλήματα. Παρακαλώ δοκιμάστε ξανά.',
         role: 'assistant',
         timestamp: new Date()
@@ -146,13 +162,14 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
     }
   };
 
-  // Reset state when dialog closes
+  // Reset state when dialog closes - ΠΛΗΡΗΣ ΚΑΘΑΡΙΣΜΟΣ
   const handleClose = () => {
-    setHasInitialized(false);
+    console.log('🔄 Κλείσιμο dialog - καθαρισμός state');
     setMessages([]);
     setInput('');
     setIsLoading(false);
     setIsInitializing(false);
+    setSessionId('');
     onClose();
   };
 
