@@ -44,7 +44,7 @@ export const useProgramsData = () => {
 
   const fetchProgramsWithAssignments = async (): Promise<Program[]> => {
     try {
-      // First fetch programs with their basic structure
+      // First fetch programs with their basic structure using explicit foreign key hints
       const { data: programsData, error: programsError } = await supabase
         .from('programs')
         .select(`

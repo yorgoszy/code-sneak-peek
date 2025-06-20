@@ -28,7 +28,7 @@ export const useActivePrograms = () => {
           return [];
         }
 
-        // Fetch related programs separately - ΕΔΩ ΗΤΑΝ ΤΟ ΠΡΟΒΛΗΜΑ!
+        // Fetch related programs separately with explicit foreign key hints
         const programIds = assignments.map(a => a.program_id).filter(Boolean);
         const { data: programs, error: programsError } = await supabase
           .from('programs')
@@ -37,20 +37,20 @@ export const useActivePrograms = () => {
             name,
             description,
             training_days,
-            program_weeks(
+            program_weeks!fk_program_weeks_program_id(
               id,
               name,
               week_number,
-              program_days(
+              program_days!fk_program_days_week_id(
                 id,
                 name,
                 day_number,
                 estimated_duration_minutes,
-                program_blocks(
+                program_blocks!fk_program_blocks_day_id(
                   id,
                   name,
                   block_order,
-                  program_exercises(
+                  program_exercises!fk_program_exercises_block_id(
                     id,
                     exercise_id,
                     sets,
@@ -62,7 +62,7 @@ export const useActivePrograms = () => {
                     rest,
                     notes,
                     exercise_order,
-                    exercises(
+                    exercises!fk_program_exercises_exercise_id(
                       id,
                       name,
                       description,
