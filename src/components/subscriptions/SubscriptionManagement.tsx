@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,6 +34,7 @@ interface UserSubscription {
     name: string;
     email: string;
     subscription_status: string;
+    user_status: string;
   };
 }
 
@@ -70,7 +70,7 @@ export const SubscriptionManagement: React.FC = () => {
         .select(`
           *,
           subscription_types (*),
-          app_users (name, email, subscription_status)
+          app_users (name, email, subscription_status, role, user_status)
         `)
         .order('created_at', { ascending: false });
 
@@ -80,7 +80,7 @@ export const SubscriptionManagement: React.FC = () => {
       // Φόρτωση όλων των χρηστών
       const { data: allUsers, error: usersError } = await supabase
         .from('app_users')
-        .select('id, name, email, subscription_status, role')
+        .select('id, name, email, subscription_status, role, user_status')
         .order('name');
 
       if (usersError) throw usersError;
@@ -152,20 +152,17 @@ export const SubscriptionManagement: React.FC = () => {
         .filter(sub => sub.user_id === userId)
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
-      if (!userSubscription) {
-        toast.error('Δεν βρέθηκε συνδρομή για αυτόν τον χρήστη');
-        return;
+      if (userSubscription) {
+        // Ενημέρωση συνδρομής σε active
+        const { error: subscriptionError } = await supabase
+          .from('user_subscriptions')
+          .update({ status: 'active' })
+          .eq('id', userSubscription.id);
+
+        if (subscriptionError) throw subscriptionError;
       }
 
-      // Ενημέρωση συνδρομής σε active
-      const { error: subscriptionError } = await supabase
-        .from('user_subscriptions')
-        .update({ status: 'active' })
-        .eq('id', userSubscription.id);
-
-      if (subscriptionError) throw subscriptionError;
-
-      // Ενημέρωση χρήστη σε active - ΕΔΩ ΗΤΑΝ ΤΟ ΠΡΟΒΛΗΜΑ
+      // Ενημέρωση χρήστη σε active
       const { error: userError } = await supabase
         .from('app_users')
         .update({ 
@@ -185,6 +182,42 @@ export const SubscriptionManagement: React.FC = () => {
     } catch (error) {
       console.error('❌ Error activating subscription:', error);
       toast.error('Σφάλμα κατά την ενεργοποίηση της συνδρομής');
+    }
+  };
+
+  const deactivateUserSubscription = async (userId: string) => {
+    try {
+      console.log('🔄 Απενεργοποίηση συνδρομής για χρήστη:', userId);
+      
+      // Απενεργοποίηση όλων των ενεργών συνδρομών του χρήστη
+      const { error: subscriptionError } = await supabase
+        .from('user_subscriptions')
+        .update({ status: 'cancelled' })
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      if (subscriptionError) throw subscriptionError;
+
+      // Ενημέρωση χρήστη σε inactive
+      const { error: userError } = await supabase
+        .from('app_users')
+        .update({ 
+          subscription_status: 'inactive',
+          user_status: 'inactive'
+        })
+        .eq('id', userId);
+
+      if (userError) throw userError;
+
+      console.log('✅ Συνδρομή απενεργοποιήθηκε επιτυχώς');
+      toast.success('Η συνδρομή απενεργοποιήθηκε επιτυχώς!');
+      
+      // Άμεση ανανέωση των δεδομένων
+      await loadData();
+
+    } catch (error) {
+      console.error('❌ Error deactivating subscription:', error);
+      toast.error('Σφάλμα κατά την απενεργοποίηση της συνδρομής');
     }
   };
 
@@ -435,6 +468,8 @@ export const SubscriptionManagement: React.FC = () => {
                     .filter(s => s.user_id === user.id)
                     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
                   
+                  const isUserActive = user.subscription_status === 'active';
+                  
                   return (
                     <tr key={user.id} className="border-b hover:bg-gray-50">
                       <td className="p-2">
@@ -477,7 +512,17 @@ export const SubscriptionManagement: React.FC = () => {
                       </td>
                       <td className="p-2">
                         <div className="flex gap-2">
-                          {latestSubscription && user.subscription_status !== 'active' && (
+                          {isUserActive ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deactivateUserSubscription(user.id)}
+                              className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                            >
+                              <X className="w-3 h-3 mr-1" />
+                              Απενεργοποίηση
+                            </Button>
+                          ) : (
                             <Button
                               size="sm"
                               onClick={() => activateUserSubscription(user.id)}
@@ -487,24 +532,6 @@ export const SubscriptionManagement: React.FC = () => {
                               Ενεργοποίηση
                             </Button>
                           )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => toggleUserStatus(user.id, user.subscription_status)}
-                            className="rounded-none"
-                          >
-                            {user.subscription_status === 'active' ? (
-                              <>
-                                <X className="w-3 h-3 mr-1" />
-                                Απενεργοποίηση
-                              </>
-                            ) : (
-                              <>
-                                <Check className="w-3 h-3 mr-1" />
-                                Ενεργοποίηση
-                              </>
-                            )}
-                          </Button>
                         </div>
                       </td>
                     </tr>
