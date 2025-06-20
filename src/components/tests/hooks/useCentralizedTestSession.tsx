@@ -132,8 +132,10 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
   };
 
   const saveFunctionalData = async (sessionId: string, data: any) => {
-    // Υπολογισμός συνολικού FMS score
-    const totalFmsScore = data.fmsScores ? Object.values(data.fmsScores).reduce((sum: number, score: any) => sum + (parseInt(score) || 0), 0) : null;
+    // Υπολογισμός συνολικού FMS score με σωστό type casting
+    const totalFmsScore = data.fmsScores ? 
+      Object.values(data.fmsScores).reduce((sum: number, score: any) => sum + (parseInt(String(score)) || 0), 0) : 
+      null;
 
     const { error } = await supabase
       .from('functional_test_data')
