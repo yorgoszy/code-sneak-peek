@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
@@ -81,16 +80,16 @@ export const useWorkoutStatistics = (assignmentId: string) => {
         .select(`
           id,
           name,
-          program_weeks (
+          program_weeks!fk_program_weeks_program_id (
             id,
             week_number,
-            program_days (
+            program_days!fk_program_days_week_id (
               id,
               day_number,
-              program_blocks (
+              program_blocks!fk_program_blocks_day_id (
                 id,
                 name,
-                program_exercises (
+                program_exercises!fk_program_exercises_block_id (
                   id,
                   sets,
                   reps,
@@ -99,7 +98,7 @@ export const useWorkoutStatistics = (assignmentId: string) => {
                   tempo,
                   rest,
                   notes,
-                  exercises (
+                  exercises!fk_program_exercises_exercise_id (
                     id,
                     name,
                     exercise_to_category (
@@ -136,13 +135,13 @@ export const useWorkoutStatistics = (assignmentId: string) => {
 
           day.program_blocks.forEach(block => {
             block.program_exercises.forEach(exercise => {
-              const categories = exercise.exercises.exercise_to_category.map(
+              const categories = exercise.exercises?.exercise_to_category?.map(
                 etc => etc.exercise_categories.name
-              );
+              ) || [];
 
               exerciseData.push({
-                exercise_id: exercise.exercises.id,
-                exercise_name: exercise.exercises.name,
+                exercise_id: exercise.exercises?.id || '',
+                exercise_name: exercise.exercises?.name || '',
                 sets: exercise.sets,
                 reps: exercise.reps || '0',
                 kg: exercise.kg || '0',
