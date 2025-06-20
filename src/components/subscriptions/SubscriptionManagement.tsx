@@ -143,71 +143,6 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const toggleUserStatus = async (userId: string, currentStatus: string) => {
-    try {
-      // Βρες αν ο χρήστης έχει ενεργή συνδρομή
-      const activeSubscription = userSubscriptions.find(
-        sub => sub.user_id === userId && sub.status === 'active'
-      );
-
-      let newStatus: string;
-      let subscriptionStatus: string;
-
-      if (currentStatus === 'active') {
-        // Απενεργοποίηση χρήστη
-        newStatus = 'inactive';
-        subscriptionStatus = 'inactive';
-        
-        // Απενεργοποίηση όλων των ενεργών συνδρομών του χρήστη
-        if (activeSubscription) {
-          const { error: subError } = await supabase
-            .from('user_subscriptions')
-            .update({ status: 'cancelled' })
-            .eq('user_id', userId)
-            .eq('status', 'active');
-
-          if (subError) throw subError;
-        }
-      } else {
-        // Ενεργοποίηση χρήστη
-        newStatus = 'active';
-        
-        if (activeSubscription) {
-          // Αν έχει ενεργή συνδρομή, ενεργοποίηση και της συνδρομής
-          subscriptionStatus = 'active';
-          
-          const { error: subError } = await supabase
-            .from('user_subscriptions')
-            .update({ status: 'active' })
-            .eq('id', activeSubscription.id);
-
-          if (subError) throw subError;
-        } else {
-          // Αν δεν έχει συνδρομή, απλά ενεργοποίηση user status
-          subscriptionStatus = 'inactive';
-        }
-      }
-
-      // Ενημέρωση κατάστασης χρήστη
-      const { error } = await supabase
-        .from('app_users')
-        .update({ 
-          user_status: newStatus,
-          subscription_status: subscriptionStatus 
-        })
-        .eq('id', userId);
-
-      if (error) throw error;
-
-      toast.success(`Ο χρήστης ${newStatus === 'active' ? 'ενεργοποιήθηκε' : 'απενεργοποιήθηκε'} επιτυχώς!`);
-      loadData();
-
-    } catch (error) {
-      console.error('Error updating user status:', error);
-      toast.error('Σφάλμα κατά την ενημέρωση του χρήστη');
-    }
-  };
-
   const activateUserSubscription = async (userId: string) => {
     try {
       console.log('🔄 Ενεργοποίηση συνδρομής για χρήστη:', userId);
@@ -230,7 +165,7 @@ export const SubscriptionManagement: React.FC = () => {
 
       if (subscriptionError) throw subscriptionError;
 
-      // Ενημέρωση χρήστη σε active
+      // Ενημέρωση χρήστη σε active - ΕΔΩ ΗΤΑΝ ΤΟ ΠΡΟΒΛΗΜΑ
       const { error: userError } = await supabase
         .from('app_users')
         .update({ 
@@ -243,11 +178,83 @@ export const SubscriptionManagement: React.FC = () => {
 
       console.log('✅ Συνδρομή ενεργοποιήθηκε επιτυχώς');
       toast.success('Η συνδρομή ενεργοποιήθηκε επιτυχώς!');
-      loadData();
+      
+      // Άμεση ανανέωση των δεδομένων
+      await loadData();
 
     } catch (error) {
       console.error('❌ Error activating subscription:', error);
       toast.error('Σφάλμα κατά την ενεργοποίηση της συνδρομής');
+    }
+  };
+
+  const toggleUserStatus = async (userId: string, currentStatus: string) => {
+    try {
+      console.log('🔄 Αλλαγή κατάστασης χρήστη:', userId, 'από', currentStatus);
+      
+      // Βρες αν ο χρήστης έχει ενεργή συνδρομή
+      const activeSubscription = userSubscriptions.find(
+        sub => sub.user_id === userId && sub.status === 'active'
+      );
+
+      let newSubscriptionStatus: string;
+      let newUserStatus: string;
+
+      if (currentStatus === 'active') {
+        // Απενεργοποίηση χρήστη
+        newSubscriptionStatus = 'inactive';
+        newUserStatus = 'inactive';
+        
+        // Απενεργοποίηση όλων των ενεργών συνδρομών του χρήστη
+        if (activeSubscription) {
+          const { error: subError } = await supabase
+            .from('user_subscriptions')
+            .update({ status: 'cancelled' })
+            .eq('user_id', userId)
+            .eq('status', 'active');
+
+          if (subError) throw subError;
+        }
+      } else {
+        // Ενεργοποίηση χρήστη
+        newUserStatus = 'active';
+        
+        if (activeSubscription) {
+          // Αν έχει ενεργή συνδρομή, ενεργοποίηση και της συνδρομής
+          newSubscriptionStatus = 'active';
+          
+          const { error: subError } = await supabase
+            .from('user_subscriptions')
+            .update({ status: 'active' })
+            .eq('id', activeSubscription.id);
+
+          if (subError) throw subError;
+        } else {
+          // Αν δεν έχει συνδρομή, απλά ενεργοποίηση user status
+          newSubscriptionStatus = 'inactive';
+        }
+      }
+
+      // Ενημέρωση κατάστασης χρήστη
+      const { error } = await supabase
+        .from('app_users')
+        .update({ 
+          user_status: newUserStatus,
+          subscription_status: newSubscriptionStatus 
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      console.log('✅ Κατάσταση χρήστη ενημερώθηκε επιτυχώς');
+      toast.success(`Ο χρήστης ${newUserStatus === 'active' ? 'ενεργοποιήθηκε' : 'απενεργοποιήθηκε'} επιτυχώς!`);
+      
+      // Άμεση ανανέωση των δεδομένων
+      await loadData();
+
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση του χρήστη');
     }
   };
 
@@ -470,7 +477,7 @@ export const SubscriptionManagement: React.FC = () => {
                       </td>
                       <td className="p-2">
                         <div className="flex gap-2">
-                          {latestSubscription && !activeSubscription && (
+                          {latestSubscription && user.subscription_status !== 'active' && (
                             <Button
                               size="sm"
                               onClick={() => activateUserSubscription(user.id)}
