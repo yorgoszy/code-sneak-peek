@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { QueryClient } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
@@ -19,10 +20,12 @@ import ProgramBuilder from "@/pages/ProgramBuilder";
 import NotFound from "@/pages/NotFound";
 import Subscriptions from "@/pages/Subscriptions";
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
     <Router>
-      <QueryClient>
+      <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-gray-50">
           <Toaster />
           <Routes>
@@ -43,7 +46,7 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
-      </QueryClient>
+      </QueryClientProvider>
     </Router>
   );
 }
