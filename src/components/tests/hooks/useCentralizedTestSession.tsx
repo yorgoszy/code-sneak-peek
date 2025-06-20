@@ -139,10 +139,12 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
     if (data.fmsScores && typeof data.fmsScores === 'object') {
       const scores = Object.values(data.fmsScores) as unknown[];
       if (scores.length > 0) {
-        totalFmsScore = scores.reduce((sum: number, score: unknown) => {
+        let sum = 0;
+        for (const score of scores) {
           const numericScore = typeof score === 'number' ? score : parseInt(String(score)) || 0;
-          return sum + numericScore;
-        }, 0);
+          sum += numericScore;
+        }
+        totalFmsScore = sum;
       }
     }
 
