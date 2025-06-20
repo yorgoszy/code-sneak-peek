@@ -32,6 +32,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);  
   const [sessionId, setSessionId] = useState<string>('');
+  const [isInitialized, setIsInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const localAI = LocalSmartAI.getInstance();
 
@@ -40,16 +41,17 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
     if (isOpen && athleteId) {
       const newSessionId = `${athleteId}-${Date.now()}`;
       setSessionId(newSessionId);
+      setIsInitialized(false); // Reset για νέο session
       console.log('🆔 Νέο session ID:', newSessionId);
     }
   }, [isOpen, athleteId]);
 
-  // Initialize AI when session changes
+  // Initialize AI ΜΟΝΟ μια φορά ανά session
   useEffect(() => {
-    if (sessionId && !isInitializing) {
+    if (sessionId && !isInitialized && !isInitializing) {
       initializeAI();
     }
-  }, [sessionId]);
+  }, [sessionId, isInitialized, isInitializing]);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -62,7 +64,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
   }, [messages, isLoading]);
 
   const initializeAI = async () => {
-    if (!athleteId || !sessionId) return;
+    if (!athleteId || !sessionId || isInitialized) return;
     
     setIsInitializing(true);
     setMessages([]); // Καθαρίζουμε τα messages πριν αρχίσουμε
@@ -102,6 +104,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
       };
       
       setMessages([welcomeMessage]);
+      setIsInitialized(true); // Σημαδεύουμε ότι έχει αρχικοποιηθεί
       console.log('✅ Welcome message προστέθηκε για session:', sessionId);
     } catch (error) {
       console.error('❌ Σφάλμα αρχικοποίησης AI:', error);
@@ -112,7 +115,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || isLoading || isInitializing || !sessionId) return;
+    if (!input.trim() || isLoading || isInitializing || !sessionId || !isInitialized) return;
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -170,6 +173,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
     setIsLoading(false);
     setIsInitializing(false);
     setSessionId('');
+    setIsInitialized(false);
     onClose();
   };
 
