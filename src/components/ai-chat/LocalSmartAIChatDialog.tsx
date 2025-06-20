@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -475,7 +474,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const localAI = LocalSmartAI.getInstance();
 
   useEffect(() => {
@@ -483,6 +482,16 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
       initializeAI();
     }
   }, [isOpen, athleteId]);
+
+  // Βελτιωμένο scrolling
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: "smooth",
+        block: "end"
+      });
+    }
+  }, [messages]);
 
   const initializeAI = async () => {
     setIsInitializing(true);
@@ -525,12 +534,6 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
-  }, [messages]);
-
   const sendMessage = async () => {
     if (!input.trim() || isLoading || isInitializing) return;
 
@@ -558,7 +561,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Local AI Error:', error);
-      toast.error('Σφάλμα στον LocalRID AI');
+      toast.error('Σφάλμα στον RID AI');
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -606,7 +609,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
         </DialogHeader>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 p-4 border rounded-none" ref={scrollAreaRef}>
+          <ScrollArea className="flex-1 p-4 border rounded-none">
             {isInitializing ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-8 h-8 animate-spin text-[#00ffba]" />
@@ -657,6 +660,8 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
                     </div>
                   </div>
                 )}
+                
+                <div ref={messagesEndRef} />
               </div>
             )}
           </ScrollArea>
