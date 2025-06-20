@@ -1,59 +1,112 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Play, Eye, Edit, CheckCircle2 } from "lucide-react";
+import { Play, Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
+import { ProgramViewDialog } from "@/components/active-programs/calendar/ProgramViewDialog";
+import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
+import { useNavigate } from "react-router-dom";
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardActionButtonsProps {
-  onStart: () => void;
-  onView: () => void;
-  onEdit: () => void;
-  onComplete: () => void;
+  assignment: EnrichedAssignment;
+  onRefresh?: () => void;
+  selectedDate?: Date;
+  onDelete?: (assignmentId: string) => void;
+  userMode?: boolean;
 }
 
-export const ProgramCardActionButtons: React.FC<ProgramCardActionButtonsProps> = ({
-  onStart,
-  onView,
-  onEdit,
-  onComplete
+export const ProgramCardActionButtons: React.FC<ProgramCardActionButtonsProps> = ({ 
+  assignment, 
+  onRefresh,
+  selectedDate,
+  onDelete,
+  userMode = false
 }) => {
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
+    console.log('🚀 Starting workout:', weekIndex, dayIndex);
+    setIsViewDialogOpen(false);
+    setIsDayDialogOpen(true);
+  };
+
+  const handleEdit = () => {
+    navigate(`/dashboard/program-builder?edit=${assignment.program_id}`);
+  };
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(assignment.id);
+    }
+  };
+
   return (
-    <div className="flex items-center gap-0.5">
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="rounded-none h-5 w-5 p-0"
-        onClick={onStart}
-        title="Έναρξη"
-      >
-        <Play className="w-2.5 h-2.5" />
-      </Button>
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="rounded-none h-5 w-5 p-0"
-        onClick={onView}
-        title="Προβολή"
-      >
-        <Eye className="w-2.5 h-2.5" />
-      </Button>
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="rounded-none h-5 w-5 p-0"
-        onClick={onEdit}
-        title="Επεξεργασία"
-      >
-        <Edit className="w-2.5 h-2.5" />
-      </Button>
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="rounded-none h-5 w-5 p-0"
-        onClick={onComplete}
-        title="Ολοκλήρωση"
-      >
-        <CheckCircle2 className="w-2.5 h-2.5" />
-      </Button>
-    </div>
+    <>
+      <div className="flex items-center gap-1">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 w-6 p-0 rounded-none"
+          onClick={() => setIsViewDialogOpen(true)}
+          title="Προβολή προγράμματος"
+        >
+          <Eye className="h-3 w-3" />
+        </Button>
+
+        {!userMode && (
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 rounded-none"
+              onClick={handleEdit}
+              title="Επεξεργασία"
+            >
+              <Edit className="h-3 w-3" />
+            </Button>
+
+            {onDelete && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={handleDelete}
+                title="Διαγραφή"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+          </>
+        )}
+
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 w-6 p-0 rounded-none text-[#00ffba] hover:text-[#00ffba]/80"
+          onClick={() => setIsViewDialogOpen(true)}
+          title="Έναρξη"
+        >
+          <Play className="h-3 w-3" />
+        </Button>
+      </div>
+
+      <ProgramViewDialog
+        isOpen={isViewDialogOpen}
+        onClose={() => setIsViewDialogOpen(false)}
+        assignment={assignment}
+        onStartWorkout={handleStartWorkout}
+      />
+
+      <DayProgramDialog
+        isOpen={isDayDialogOpen}
+        onClose={() => setIsDayDialogOpen(false)}
+        program={assignment}
+        selectedDate={selectedDate || new Date()}
+        workoutStatus="pending"
+        onRefresh={onRefresh}
+      />
+    </>
   );
 };
