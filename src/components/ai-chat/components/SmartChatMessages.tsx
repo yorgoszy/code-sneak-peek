@@ -22,54 +22,56 @@ export const SmartChatMessages: React.FC<SmartChatMessagesProps> = ({
   messagesEndRef
 }) => {
   return (
-    <ScrollArea className="flex-1 p-4 border rounded-none">
-      <div className="space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                message.role === 'user' 
-                  ? 'bg-blue-500 text-white' 
-                  : 'bg-[#00ffba] text-black'
-              }`}>
-                {message.role === 'user' ? <User className="w-5 h-5" /> : <Brain className="w-5 h-5" />}
-              </div>
-              <div className={`p-4 rounded-lg ${
-                message.role === 'user'
-                  ? 'bg-blue-500 text-white rounded-br-none'
-                  : 'bg-gray-50 text-gray-900 rounded-bl-none border'
-              }`}>
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                <p className="text-xs opacity-70 mt-2">
-                  {message.timestamp.toLocaleTimeString('el-GR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-        
-        {isLoading && (
-          <div className="flex gap-3 justify-start">
-            <div className="w-10 h-10 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-              <Brain className="w-5 h-5" />
-            </div>
-            <div className="bg-gray-50 text-gray-900 p-4 rounded-lg rounded-bl-none border">
-              <div className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-[#00ffba]" />
-                <span className="text-sm">Αναλύω τα δεδομένα σου...</span>
+    <div className="flex-1 border rounded-none overflow-hidden">
+      <ScrollArea className="h-full">
+        <div className="p-4 space-y-4 min-h-full">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  message.role === 'user' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-[#00ffba] text-black'
+                }`}>
+                  {message.role === 'user' ? <User className="w-5 h-5" /> : <Brain className="w-5 h-5" />}
+                </div>
+                <div className={`p-4 rounded-lg ${
+                  message.role === 'user'
+                    ? 'bg-blue-500 text-white rounded-br-none'
+                    : 'bg-gray-50 text-gray-900 rounded-bl-none border'
+                }`}>
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  <p className="text-xs opacity-70 mt-2">
+                    {message.timestamp.toLocaleTimeString('el-GR', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
-    </ScrollArea>
+          ))}
+          
+          {isLoading && (
+            <div className="flex gap-3 justify-start">
+              <div className="w-10 h-10 rounded-full bg-[#00ffba] text-black flex items-center justify-center flex-shrink-0">
+                <Brain className="w-5 h-5" />
+              </div>
+              <div className="bg-gray-50 text-gray-900 p-4 rounded-lg rounded-bl-none border">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-[#00ffba]" />
+                  <span className="text-sm">Αναλύω τα δεδομένα σου...</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
+    </div>
   );
 };

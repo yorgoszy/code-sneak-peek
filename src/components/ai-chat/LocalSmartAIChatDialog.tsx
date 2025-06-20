@@ -35,13 +35,14 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const localAI = LocalSmartAI.getInstance();
 
+  // Initialize AI when dialog opens
   useEffect(() => {
     if (isOpen && athleteId && !hasInitialized) {
       initializeAI();
     }
   }, [isOpen, athleteId, hasInitialized]);
 
-  // Βελτιωμένο scrolling
+  // Auto scroll to bottom
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ 
@@ -49,18 +50,17 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
         block: "end"
       });
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const initializeAI = async () => {
     setIsInitializing(true);
     try {
       await localAI.loadAthleteData(athleteId!);
       
-      // Μόνο αν δεν έχουμε ήδη μηνύματα, προσθέτουμε το καλωσόρισμα
-      if (messages.length === 0) {
-        setMessages([{
-          id: 'welcome',
-          content: `Γεια σου ${athleteName}! 👋
+      // Add welcome message only once
+      const welcomeMessage: Message = {
+        id: 'welcome',
+        content: `Γεια σου ${athleteName}! 👋
 
 Είμαι ο **RID AI**, ο προσωπικός σου AI προπονητής! 🤖
 
@@ -83,11 +83,11 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
 • Συμβουλές ανάκαμψης
 
 Τι θα θέλες να μάθεις πρώτα;`,
-          role: 'assistant',
-          timestamp: new Date()
-        }]);
-      }
+        role: 'assistant',
+        timestamp: new Date()
+      };
       
+      setMessages([welcomeMessage]);
       setHasInitialized(true);
     } catch (error) {
       console.error('Σφάλμα αρχικοποίησης AI:', error);
@@ -146,7 +146,7 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
     }
   };
 
-  // Reset state όταν κλείνει το dialog
+  // Reset state when dialog closes
   const handleClose = () => {
     setHasInitialized(false);
     setMessages([]);
@@ -158,8 +158,8 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[85vh] rounded-none flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl h-[85vh] rounded-none flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-3">
             <Brain className="w-6 h-6 text-[#00ffba]" />
             <span className="text-lg font-semibold">RID AI - Δωρεάν AI Προπονητής</span>
@@ -195,14 +195,16 @@ export const LocalSmartAIChatDialog: React.FC<LocalSmartAIChatDialogProps> = ({
                 messagesEndRef={messagesEndRef}
               />
 
-              <SmartChatInput
-                input={input}
-                setInput={setInput}
-                onSend={sendMessage}
-                onKeyPress={handleKeyPress}
-                isLoading={isLoading}
-                isInitializing={isInitializing}
-              />
+              <div className="flex-shrink-0">
+                <SmartChatInput
+                  input={input}
+                  setInput={setInput}
+                  onSend={sendMessage}
+                  onKeyPress={handleKeyPress}
+                  isLoading={isLoading}
+                  isInitializing={isInitializing}
+                />
+              </div>
             </>
           )}
         </div>
