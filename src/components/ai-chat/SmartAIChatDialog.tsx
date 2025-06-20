@@ -34,7 +34,16 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(true);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Αυτόματο scroll στο τέλος των μηνυμάτων
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Έλεγχος συνδρομής
   useEffect(() => {
@@ -130,12 +139,6 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
       setIsLoadingHistory(false);
     }
   };
-
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
-  }, [messages]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading || !athleteId || !hasActiveSubscription) return;
@@ -266,7 +269,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
             </div>
           ) : (
             <>
-              <ScrollArea className="flex-1 p-4 border rounded-none" ref={scrollAreaRef}>
+              <ScrollArea className="flex-1 p-4 border rounded-none">
                 <div className="space-y-4">
                   {messages.map((message) => (
                     <div
@@ -311,6 +314,8 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
                       </div>
                     </div>
                   )}
+                  
+                  <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
 
