@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Send, Bot, User, Loader2, Brain, Zap, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -34,6 +34,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Βελτιωμένο auto-scroll
   const scrollToBottom = () => {
@@ -223,19 +224,19 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   }, [isOpen, athleteId]);
 
   const SubscriptionRequiredContent = () => (
-    <div className="flex-1 flex items-center justify-center p-8">
+    <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
       <div className="text-center max-w-md">
-        <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <Lock className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
           Απαιτείται Ενεργή Συνδρομή
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
           Για να έχεις πρόσβαση στον **RID AI**, χρειάζεσαι ενεργή συνδρομή. 
           Επικοινώνησε με τον διαχειριστή για να ενεργοποιήσεις τη συνδρομή σου.
         </p>
-        <div className="bg-blue-50 p-4 rounded-none">
-          <h4 className="font-medium text-blue-900 mb-2">Τι περιλαμβάνει η συνδρομή:</h4>
-          <ul className="text-sm text-blue-800 text-left space-y-1">
+        <div className="bg-blue-50 p-3 sm:p-4 rounded-none">
+          <h4 className="font-medium text-blue-900 mb-2 text-sm sm:text-base">Τι περιλαμβάνει η συνδρομή:</h4>
+          <ul className="text-xs sm:text-sm text-blue-800 text-left space-y-1">
             <li>• Απεριόριστη πρόσβαση στον RID AI</li>
             <li>• Εξατομικευμένες συμβουλές διατροφής</li>
             <li>• Ανάλυση προόδου και τεστ</li>
@@ -249,25 +250,27 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh] rounded-none p-0 flex flex-col">
-        <DialogHeader className="p-6 pb-0">
-          <DialogTitle className="flex items-center gap-3">
-            <Brain className="w-6 h-6 text-[#00ffba]" />
-            RID - Έξυπνος AI Προπονητής
+      <DialogContent className={`${isMobile ? 'max-w-[95vw] w-[95vw] h-[90vh] m-2' : 'max-w-4xl h-[80vh]'} rounded-none p-0 flex flex-col`}>
+        <DialogHeader className={`${isMobile ? 'p-3 pb-0' : 'p-6 pb-0'}`}>
+          <DialogTitle className={`flex ${isMobile ? 'flex-col gap-1' : 'items-center gap-3'}`}>
+            <div className="flex items-center gap-2">
+              <Brain className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'} text-[#00ffba]`} />
+              <span className={`${isMobile ? 'text-sm' : 'text-lg'} font-semibold`}>RID - Έξυπνος AI Προπονητής</span>
+            </div>
             {athleteName && (
-              <span className="text-base font-normal text-gray-600">
+              <span className={`${isMobile ? 'text-xs' : 'text-base'} font-normal text-gray-600`}>
                 για {athleteName}
               </span>
             )}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-none">
-                <Zap className="w-3 h-3" />
-                Powered by OpenAI
+            <div className={`flex ${isMobile ? 'flex-col gap-1' : 'items-center gap-2'}`}>
+              <div className={`flex items-center gap-1 ${isMobile ? 'text-xs' : 'text-xs'} bg-blue-100 text-blue-800 px-2 py-1 rounded-none`}>
+                <Zap className={`${isMobile ? 'w-2 h-2' : 'w-3 h-3'}`} />
+                <span>Powered by OpenAI</span>
               </div>
               {hasActiveSubscription && (
-                <div className="flex items-center gap-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-none">
-                  <Brain className="w-3 h-3" />
-                  Ενεργή Συνδρομή
+                <div className={`flex items-center gap-1 ${isMobile ? 'text-xs' : 'text-xs'} bg-green-100 text-green-800 px-2 py-1 rounded-none`}>
+                  <Brain className={`${isMobile ? 'w-2 h-2' : 'w-3 h-3'}`} />
+                  <span>Ενεργή Συνδρομή</span>
                 </div>
               )}
             </div>
@@ -277,8 +280,8 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
         {isCheckingSubscription ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex items-center gap-2 text-gray-600">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Ελέγχω τη συνδρομή σου...</span>
+              <Loader2 className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} animate-spin`} />
+              <span className={`${isMobile ? 'text-sm' : 'text-base'}`}>Ελέγχω τη συνδρομή σου...</span>
             </div>
           </div>
         ) : !hasActiveSubscription ? (
@@ -286,35 +289,38 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
         ) : isLoadingHistory ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex items-center gap-2 text-gray-600">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Φορτώνω το ιστορικό συνομιλίας...</span>
+              <Loader2 className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} animate-spin`} />
+              <span className={`${isMobile ? 'text-sm' : 'text-base'}`}>Φορτώνω το ιστορικό συνομιλίας...</span>
             </div>
           </div>
         ) : (
           <div className="flex flex-col flex-1 min-h-0">
             {/* Messages Container */}
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto">
+              <div className={`space-y-3 ${isMobile ? 'p-3' : 'p-4'}`}>
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    <div className={`flex gap-2 ${isMobile ? 'max-w-[90%]' : 'max-w-[85%]'} ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} rounded-full flex items-center justify-center flex-shrink-0 ${
                         message.role === 'user' 
                           ? 'bg-blue-500 text-white' 
                           : 'bg-[#00ffba] text-black'
                       }`}>
-                        {message.role === 'user' ? <User className="w-5 h-5" /> : <Brain className="w-5 h-5" />}
+                        {message.role === 'user' ? 
+                          <User className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} /> : 
+                          <Brain className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
+                        }
                       </div>
-                      <div className={`p-4 rounded-lg ${
+                      <div className={`${isMobile ? 'p-3' : 'p-4'} rounded-lg ${
                         message.role === 'user'
                           ? 'bg-blue-500 text-white rounded-br-none'
                           : 'bg-gray-100 text-gray-900 rounded-bl-none'
                       }`}>
-                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                        <p className="text-xs opacity-70 mt-2">
+                        <p className={`${isMobile ? 'text-xs' : 'text-sm'} whitespace-pre-wrap leading-relaxed`}>{message.content}</p>
+                        <p className={`${isMobile ? 'text-xs' : 'text-xs'} opacity-70 mt-2`}>
                           {message.timestamp.toLocaleTimeString('el-GR', { 
                             hour: '2-digit', 
                             minute: '2-digit' 
@@ -326,14 +332,14 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
                 ))}
                 
                 {isLoading && (
-                  <div className="flex gap-3 justify-start">
-                    <div className="w-10 h-10 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                      <Brain className="w-5 h-5" />
+                  <div className="flex gap-2 justify-start">
+                    <div className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} rounded-full bg-[#00ffba] text-black flex items-center justify-center`}>
+                      <Brain className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
                     </div>
-                    <div className="bg-gray-100 text-gray-900 p-4 rounded-lg rounded-bl-none">
+                    <div className={`bg-gray-100 text-gray-900 ${isMobile ? 'p-3' : 'p-4'} rounded-lg rounded-bl-none`}>
                       <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Ο RID αναλύει τα δεδομένα σου και σκέφτεται...</span>
+                        <Loader2 className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} animate-spin`} />
+                        <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Ο RID αναλύει τα δεδομένα σου και σκέφτεται...</span>
                       </div>
                     </div>
                   </div>
@@ -344,24 +350,24 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
             </div>
 
             {/* Input Area */}
-            <div className="flex gap-2 p-4 border-t">
+            <div className={`flex gap-2 ${isMobile ? 'p-3' : 'p-4'} border-t`}>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Πληκτρολογήστε το μήνυμά σας στον RID..."
-                className="rounded-none"
+                className={`rounded-none ${isMobile ? 'text-sm' : ''}`}
                 disabled={isLoading || !hasActiveSubscription}
               />
               <Button
                 onClick={sendMessage}
                 disabled={!input.trim() || isLoading || !hasActiveSubscription}
-                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                className={`rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black ${isMobile ? 'px-3' : 'px-4'}`}
               >
                 {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} animate-spin`} />
                 ) : (
-                  <Send className="w-4 h-4" />
+                  <Send className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                 )}
               </Button>
             </div>
