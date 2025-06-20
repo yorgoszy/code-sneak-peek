@@ -1,5 +1,6 @@
 
 
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -136,9 +137,9 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
     // Calculate total FMS score with proper type handling
     let totalFmsScore: number | null = null;
     if (data.fmsScores && typeof data.fmsScores === 'object') {
-      const scores = Object.values(data.fmsScores);
+      const scores = Object.values(data.fmsScores) as unknown[];
       if (scores.length > 0) {
-        totalFmsScore = scores.reduce((sum: number, score: any) => {
+        totalFmsScore = scores.reduce((sum: number, score: unknown) => {
           const numericScore = typeof score === 'number' ? score : parseInt(String(score)) || 0;
           return sum + numericScore;
         }, 0);
