@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Heart } from "lucide-react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -10,6 +9,7 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 
 export const DashboardContainer = () => {
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
@@ -60,14 +60,7 @@ export const DashboardContainer = () => {
   // Show loading while any authentication process is happening
   if (authLoading || rolesLoading) {
     console.log('⏳ DashboardContainer: Loading state:', { authLoading, rolesLoading });
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <Heart className="h-12 w-12 text-pink-500 mx-auto mb-4 animate-pulse" />
-          <p className="text-gray-600">Φόρτωση...</p>
-        </div>
-      </div>
-    );
+    return <CustomLoadingScreen />;
   }
 
   if (!isAuthenticated) {
@@ -78,14 +71,7 @@ export const DashboardContainer = () => {
   // If we're still checking for redirect or if user is not admin and we have userProfile, don't render yet
   if (!hasCheckedRedirect || (!isAdmin() && userProfile?.id)) {
     console.log('🔄 DashboardContainer: Waiting for redirect check or redirecting...');
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <Heart className="h-12 w-12 text-pink-500 mx-auto mb-4 animate-pulse" />
-          <p className="text-gray-600">Ανακατεύθυνση...</p>
-        </div>
-      </div>
-    );
+    return <CustomLoadingScreen />;
   }
 
   const handleSignOut = async () => {
