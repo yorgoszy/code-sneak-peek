@@ -8,7 +8,10 @@ import {
   Settings,
   FileText,
   CreditCard,
-  Bot
+  Bot,
+  UsersIcon,
+  Mail,
+  ArrowLeft
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -41,6 +44,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     { 
+      icon: UsersIcon, 
+      label: "Ομάδες", 
+      path: "/dashboard/groups",
+      badge: null
+    },
+    { 
       icon: Dumbbell, 
       label: "Ασκήσεις", 
       path: "/dashboard/exercises",
@@ -59,6 +68,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     { 
+      icon: CreditCard, 
+      label: "Program Cards", 
+      path: "/dashboard/program-cards",
+      badge: null
+    },
+    { 
       icon: FileText, 
       label: "Τεστ", 
       path: "/dashboard/tests",
@@ -68,6 +83,18 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: BarChart3,
       label: "Αποτελέσματα",
       path: "/dashboard/results",
+      badge: null
+    },
+    {
+      icon: Mail,
+      label: "Webmail",
+      path: "#",
+      badge: null
+    },
+    {
+      icon: ArrowLeft,
+      label: "Επιστροφή στην Αρχική",
+      path: "/",
       badge: null
     }
   ];
