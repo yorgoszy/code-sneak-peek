@@ -214,25 +214,25 @@ const Users = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-6 py-4">
+        <nav className="bg-white border-b border-gray-200 px-3 md:px-6 py-3 md:py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-              <p className="text-sm text-gray-600">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">Users</h1>
+              <p className="text-xs md:text-sm text-gray-600">
                 Διαχείριση χρηστών συστήματος
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <span className="text-xs md:text-sm text-gray-600">
                 {userProfile?.name || user?.email}
-                <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>
+                <span className="ml-1 md:ml-2 px-1 md:px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>
               </span>
               <Button 
                 variant="outline" 
-                className="rounded-none"
+                className="rounded-none text-xs md:text-sm px-2 md:px-4"
                 onClick={handleSignOut}
               >
-                <LogOut className="h-4 w-4 mr-2" />
+                <LogOut className="h-3 md:h-4 w-3 md:w-4 mr-1 md:mr-2" />
                 Αποσύνδεση
               </Button>
             </div>
@@ -240,37 +240,37 @@ const Users = () => {
         </nav>
 
         {/* Users Content */}
-        <div className="flex-1 p-6">
-          <Card>
+        <div className="flex-1 p-3 md:p-6">
+          <Card className="rounded-none">
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg font-semibold">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-0">
+                <CardTitle className="text-base md:text-lg font-semibold">
                   Όλοι οι Χρήστες ({filteredUsers.length})
                 </CardTitle>
                 <Button 
-                  className="rounded-none"
+                  className="rounded-none text-xs md:text-sm w-full md:w-auto"
                   onClick={() => setNewUserDialogOpen(true)}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-3 md:h-4 w-3 md:w-4 mr-1 md:mr-2" />
                   Νέος Χρήστης
                 </Button>
               </div>
               
               {/* Search and Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-3 md:mt-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-2 md:left-3 top-2 md:top-3 h-3 md:h-4 w-3 md:w-4 text-gray-400" />
                   <Input
                     placeholder="Αναζήτηση χρηστών..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-8 md:pl-10 text-xs md:text-sm rounded-none"
                   />
                 </div>
                 
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger>
-                    <Filter className="h-4 w-4 mr-2" />
+                  <SelectTrigger className="rounded-none">
+                    <Filter className="h-3 md:h-4 w-3 md:w-4 mr-1 md:mr-2" />
                     <SelectValue placeholder="Φίλτρο ρόλου" />
                   </SelectTrigger>
                   <SelectContent>
@@ -284,8 +284,8 @@ const Users = () => {
                 </Select>
                 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
-                    <Filter className="h-4 w-4 mr-2" />
+                  <SelectTrigger className="rounded-none">
+                    <Filter className="h-3 md:h-4 w-3 md:w-4 mr-1 md:mr-2" />
                     <SelectValue placeholder="Φίλτρο κατάστασης" />
                   </SelectTrigger>
                   <SelectContent>
@@ -299,89 +299,170 @@ const Users = () => {
             </CardHeader>
             <CardContent>
               {loadingUsers ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">Φόρτωση χρηστών...</p>
+                <div className="text-center py-6 md:py-8">
+                  <p className="text-gray-600 text-sm md:text-base">Φόρτωση χρηστών...</p>
                 </div>
               ) : filteredUsers.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">
+                <div className="text-center py-6 md:py-8">
+                  <p className="text-gray-600 text-sm md:text-base">
                     {searchTerm || roleFilter !== "all" || statusFilter !== "all"
                       ? "Δεν βρέθηκαν χρήστες με τα επιλεγμένα κριτήρια" 
                       : "Δεν βρέθηκαν χρήστες"}
                   </p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Όνομα</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Ρόλος</TableHead>
-                      <TableHead>Τηλέφωνο</TableHead>
-                      <TableHead>Κατάσταση</TableHead>
-                      <TableHead>Εγγραφή</TableHead>
-                      <TableHead>Ενέργειες</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <div>
+                  {/* Mobile View - Cards */}
+                  <div className="block md:hidden space-y-3">
                     {filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage src={user.photo_url} alt={user.name} />
-                              <AvatarFallback>
-                                {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>{user.name}</span>
+                      <div key={user.id} className="border border-gray-200 rounded-none p-3 space-y-3">
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={user.photo_url} alt={user.name} />
+                            <AvatarFallback className="text-xs">
+                              {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate">{user.name}</div>
+                            <div className="text-xs text-gray-500 truncate">{user.email}</div>
                           </div>
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
-                            {user.role}
-                          </span>
-                        </TableCell>
-                        <TableCell>{user.phone || '-'}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 text-xs rounded ${getStatusColor(user.user_status)}`}>
-                            {user.user_status}
-                          </span>
-                        </TableCell>
-                        <TableCell>{formatDate(user.created_at)}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none"
-                              onClick={() => handleViewUser(user)}
-                            >
-                              <Eye className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none"
-                              onClick={() => handleEditUser(user)}
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none text-red-600 hover:text-red-700"
-                              onClick={() => handleDeleteUser(user)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-gray-500">Ρόλος:</span>
+                            <div className="mt-1">
+                              <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
+                                {user.role}
+                              </span>
+                            </div>
                           </div>
-                        </TableCell>
-                      </TableRow>
+                          <div>
+                            <span className="text-gray-500">Κατάσταση:</span>
+                            <div className="mt-1">
+                              <span className={`px-2 py-1 text-xs rounded ${getStatusColor(user.user_status)}`}>
+                                {user.user_status}
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Τηλέφωνο:</span>
+                            <div className="mt-1 text-xs">{user.phone || '-'}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Εγγραφή:</span>
+                            <div className="mt-1 text-xs">{formatDate(user.created_at)}</div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none flex-1 text-xs"
+                            onClick={() => handleViewUser(user)}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Προβολή
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none flex-1 text-xs"
+                            onClick={() => handleEditUser(user)}
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Επεξεργασία
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none text-red-600 hover:text-red-700 text-xs px-2"
+                            onClick={() => handleDeleteUser(user)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+
+                  {/* Desktop/Tablet View - Table */}
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Όνομα</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Ρόλος</TableHead>
+                          <TableHead>Τηλέφωνο</TableHead>
+                          <TableHead>Κατάσταση</TableHead>
+                          <TableHead>Εγγραφή</TableHead>
+                          <TableHead>Ενέργειες</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.map((user) => (
+                          <TableRow key={user.id}>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center space-x-3">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarImage src={user.photo_url} alt={user.name} />
+                                  <AvatarFallback>
+                                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span>{user.name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
+                                {user.role}
+                              </span>
+                            </TableCell>
+                            <TableCell>{user.phone || '-'}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 text-xs rounded ${getStatusColor(user.user_status)}`}>
+                                {user.user_status}
+                              </span>
+                            </TableCell>
+                            <TableCell>{formatDate(user.created_at)}</TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none"
+                                  onClick={() => handleViewUser(user)}
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none"
+                                  onClick={() => handleEditUser(user)}
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none text-red-600 hover:text-red-700"
+                                  onClick={() => handleDeleteUser(user)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
