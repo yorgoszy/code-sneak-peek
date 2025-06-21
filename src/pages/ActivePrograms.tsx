@@ -220,7 +220,8 @@ const ActivePrograms = () => {
           setSelectedDate(null);
         }}
         selectedDate={selectedDate}
-        activePrograms={activePrograms}
+        programs={activePrograms}
+        allCompletions={[]}
         onProgramClick={(program) => {
           setSelectedProgram(program);
           setIsDayAllProgramsOpen(false);

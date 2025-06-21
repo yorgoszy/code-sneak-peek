@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -139,10 +138,12 @@ const Exercises = () => {
               <CardContent>
                 <ExercisesTable 
                   exercises={filteredExercises}
-                  loading={loadingExercises}
+                  loadingExercises={loadingExercises}
+                  searchQuery={searchQuery}
+                  activeFiltersCount={0}
                   onEditExercise={handleEditExercise}
-                  onRefreshExercises={fetchExercises}
-                  isMobile={isMobile}
+                  onDeleteExercise={(exerciseId) => {}}
+                  onVideoClick={(exercise) => {}}
                 />
               </CardContent>
             </Card>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -82,22 +83,23 @@ const Programs = () => {
               selectedProgram={null}
               users={[]}
               exercises={[]}
-              onProgramSelect={() => {}}
-              onProgramEdit={() => {}}
-              onProgramDelete={() => {}}
-              onProgramDuplicate={() => {}}
-              onUserSelect={() => {}}
-              onExerciseSelect={() => {}}
-              onSaveProgram={() => {}}
+              editingProgram={null}
+              builderDialogOpen={false}
+              previewProgram={null}
+              previewDialogOpen={false}
+              onSelectProgram={() => {}}
               onDeleteProgram={() => {}}
-              onAssignProgram={() => {}}
-              refreshPrograms={() => {}}
-              refreshUsers={() => {}}
-              refreshExercises={() => {}}
-              loading={false}
-              error={null}
-              isCreating={false}
-              isEditing={false}
+              onEditProgram={() => {}}
+              onCreateProgram={async () => {}}
+              onBuilderDialogClose={() => {}}
+              onDuplicateProgram={() => {}}
+              onPreviewProgram={() => {}}
+              onPreviewDialogClose={() => {}}
+              onDeleteWeek={() => {}}
+              onDeleteDay={() => {}}
+              onDeleteBlock={() => {}}
+              onDeleteExercise={() => {}}
+              onOpenBuilder={() => {}}
             />
           </div>
         </SidebarInset>
