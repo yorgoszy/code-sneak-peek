@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -131,7 +130,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   if (programs.length === 0) {
     return (
       <div className="w-full">
-        <h2 className="text-lg md:text-xl font-semibold mb-4">Προγράμματα</h2>
+        <h2 className="text-xl font-semibold mb-4">Προγράμματα</h2>
         <div className="text-center py-8 text-gray-500">
           Δεν υπάρχουν προγράμματα ακόμα
         </div>
@@ -142,7 +141,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   return (
     <>
       <div className="w-full">
-        <h2 className="text-lg md:text-xl font-semibold mb-4">Προγράμματα</h2>
+        <h2 className="text-xl font-semibold mb-4">Προγράμματα</h2>
         <div className="space-y-3">
           {programs.map(program => {
             const { weeksCount, avgDaysPerWeek } = getProgramStats(program);
@@ -151,25 +150,25 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
             
             return (
               <Card key={program.id} className="rounded-none hover:shadow-md transition-shadow">
-                <CardContent className="p-3 md:p-4">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 md:h-full">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between h-full">
                     {/* Left side - User info and program details */}
-                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                    <div className="flex items-center gap-4 flex-1">
                       {/* Avatar - show for assigned programs */}
                       {isAssigned && assignmentInfo && (
-                        <Avatar className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
+                        <Avatar className="w-12 h-12 flex-shrink-0">
                           <AvatarImage src={assignmentInfo.athletePhoto || undefined} />
                           <AvatarFallback className="bg-gray-200">
-                            <User className="w-5 h-5 md:w-6 md:h-6 text-gray-500" />
+                            <User className="w-6 h-6 text-gray-500" />
                           </AvatarFallback>
                         </Avatar>
                       )}
                       
                       {/* Program Info */}
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-base md:text-lg truncate">{program.name}</h4>
+                        <h4 className="font-medium text-lg">{program.name}</h4>
                         {isAssigned && assignmentInfo && (
-                          <p className="text-sm text-gray-600 font-medium truncate">{assignmentInfo.athleteName}</p>
+                          <p className="text-sm text-gray-600 font-medium">{assignmentInfo.athleteName}</p>
                         )}
                         <div className="text-xs text-gray-500 mt-1">
                           {weeksCount} εβδομάδες • {avgDaysPerWeek} ημέρες/εβδομάδα
@@ -179,14 +178,14 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
 
                     {/* Center - Progress and training info for assigned programs */}
                     {isAssigned && assignmentInfo && (
-                      <div className="flex-1 md:max-w-md md:mx-4 order-3 md:order-2">
+                      <div className="flex-1 max-w-md mx-4">
                         <div className="space-y-2">
                           {/* Training dates summary */}
                           <div className="flex items-center gap-2 text-xs text-gray-600">
                             <Calendar className="w-3 h-3" />
                             <span>{assignmentInfo.trainingDates.length} προπονήσεις</span>
                             {assignmentInfo.trainingDates.length > 0 && (
-                              <span className="hidden md:inline">
+                              <span>
                                 ({format(parseDateFromString(assignmentInfo.trainingDates[0]), 'dd/MM', { locale: el })} - 
                                 {format(parseDateFromString(assignmentInfo.trainingDates[assignmentInfo.trainingDates.length - 1]), 'dd/MM', { locale: el })})
                               </span>
@@ -209,12 +208,12 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                     )}
 
                     {/* Right side - Status and action buttons */}
-                    <div className="flex items-center justify-between md:justify-end gap-2 flex-shrink-0 order-2 md:order-3">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {/* Status Badge */}
                       {isAssigned && (
                         <Badge 
                           variant="outline" 
-                          className="rounded-none bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba] text-xs"
+                          className="rounded-none bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]"
                         >
                           Active
                         </Badge>
@@ -228,7 +227,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                             variant="ghost"
                             size="sm"
                             onClick={(e) => handleViewProgram(e, program)}
-                            className="rounded-none h-8 w-8 p-0"
+                            className="rounded-none"
                             title="Προβολή Προγράμματος"
                           >
                             <Play className="w-4 h-4" />
@@ -240,7 +239,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={(e) => handlePreviewProgram(e, program)}
-                          className="rounded-none h-8 w-8 p-0"
+                          className="rounded-none"
                           title="Προεπισκόπηση"
                         >
                           <Eye className="w-4 h-4" />
@@ -253,7 +252,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                             e.stopPropagation();
                             onEditProgram(program);
                           }}
-                          className="rounded-none h-8 w-8 p-0"
+                          className="rounded-none"
                           title="Επεξεργασία"
                         >
                           <Edit className="w-4 h-4" />
@@ -267,7 +266,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                               e.stopPropagation();
                               onDuplicateProgram(program);
                             }}
-                            className="rounded-none h-8 w-8 p-0"
+                            className="rounded-none"
                             title="Αντιγραφή"
                           >
                             <Copy className="w-4 h-4" />

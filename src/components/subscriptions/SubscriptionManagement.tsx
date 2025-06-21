@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -337,23 +336,23 @@ export const SubscriptionManagement: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900">Διαχείριση Συνδρομών RID AI</h2>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Διαχείριση Συνδρομών RID AI</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full md:w-auto">
+            <Button className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
               <Plus className="w-4 h-4 mr-2" />
               Νέα Συνδρομή
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-none max-w-sm md:max-w-md mx-4 md:mx-auto">
+          <DialogContent className="rounded-none">
             <DialogHeader>
-              <DialogTitle className="text-lg md:text-xl">Δημιουργία Νέας Συνδρομής</DialogTitle>
+              <DialogTitle>Δημιουργία Νέας Συνδρομής</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="user" className="text-sm">Επιλογή Χρήστη</Label>
+                <Label htmlFor="user">Επιλογή Χρήστη</Label>
                 <Select value={selectedUser} onValueChange={setSelectedUser}>
                   <SelectTrigger className="rounded-none">
                     <SelectValue placeholder="Επιλέξτε χρήστη" />
@@ -361,9 +360,7 @@ export const SubscriptionManagement: React.FC = () => {
                   <SelectContent>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
-                        <div className="truncate">
-                          {user.name} ({user.email})
-                        </div>
+                        {user.name} ({user.email})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -371,7 +368,7 @@ export const SubscriptionManagement: React.FC = () => {
               </div>
               
               <div>
-                <Label htmlFor="subscriptionType" className="text-sm">Τύπος Συνδρομής</Label>
+                <Label htmlFor="subscriptionType">Τύπος Συνδρομής</Label>
                 <Select value={selectedSubscriptionType} onValueChange={setSelectedSubscriptionType}>
                   <SelectTrigger className="rounded-none">
                     <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
@@ -379,9 +376,7 @@ export const SubscriptionManagement: React.FC = () => {
                   <SelectContent>
                     {subscriptionTypes.map((type) => (
                       <SelectItem key={type.id} value={type.id}>
-                        <div className="truncate">
-                          {type.name} - €{type.price} ({type.duration_days} ημέρες)
-                        </div>
+                        {type.name} - €{type.price} ({type.duration_days} ημέρες)
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -389,14 +384,13 @@ export const SubscriptionManagement: React.FC = () => {
               </div>
 
               <div>
-                <Label htmlFor="notes" className="text-sm">Σημειώσεις</Label>
+                <Label htmlFor="notes">Σημειώσεις</Label>
                 <Textarea
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Προσθέστε σημειώσεις..."
                   className="rounded-none"
-                  rows={3}
                 />
               </div>
 
@@ -409,14 +403,14 @@ export const SubscriptionManagement: React.FC = () => {
       </div>
 
       {/* Στατιστικά */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="rounded-none">
-          <CardContent className="p-3 md:p-4">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <Crown className="h-6 md:h-8 w-6 md:w-8 text-[#00ffba]" />
-              <div className="ml-2 md:ml-4">
-                <p className="text-xs md:text-sm font-medium text-gray-600">Ενεργές Συνδρομές</p>
-                <p className="text-lg md:text-2xl font-bold text-gray-900">
+              <Crown className="h-8 w-8 text-[#00ffba]" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Ενεργές Συνδρομές</p>
+                <p className="text-2xl font-bold text-gray-900">
                   {userSubscriptions.filter(s => s.status === 'active').length}
                 </p>
               </div>
@@ -425,24 +419,24 @@ export const SubscriptionManagement: React.FC = () => {
         </Card>
 
         <Card className="rounded-none">
-          <CardContent className="p-3 md:p-4">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <User className="h-6 md:h-8 w-6 md:w-8 text-blue-500" />
-              <div className="ml-2 md:ml-4">
-                <p className="text-xs md:text-sm font-medium text-gray-600">Συνολικοί Χρήστες</p>
-                <p className="text-lg md:text-2xl font-bold text-gray-900">{users.length}</p>
+              <User className="h-8 w-8 text-blue-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Συνολικοί Χρήστες</p>
+                <p className="text-2xl font-bold text-gray-900">{users.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="rounded-none">
-          <CardContent className="p-3 md:p-4">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <DollarSign className="h-6 md:h-8 w-6 md:w-8 text-green-500" />
-              <div className="ml-2 md:ml-4">
-                <p className="text-xs md:text-sm font-medium text-gray-600">Μηνιαίος Τζίρος</p>
-                <p className="text-sm md:text-2xl font-bold text-gray-900">
+              <DollarSign className="h-8 w-8 text-green-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Μηνιαίος Τζίρος</p>
+                <p className="text-2xl font-bold text-gray-900">
                   €{userSubscriptions
                     .filter(s => s.status === 'active')
                     .reduce((sum, s) => sum + (s.subscription_types?.price || 0), 0)
@@ -454,12 +448,12 @@ export const SubscriptionManagement: React.FC = () => {
         </Card>
 
         <Card className="rounded-none">
-          <CardContent className="p-3 md:p-4">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <Calendar className="h-6 md:h-8 w-6 md:w-8 text-orange-500" />
-              <div className="ml-2 md:ml-4">
-                <p className="text-xs md:text-sm font-medium text-gray-600">Λήγουν Σύντομα</p>
-                <p className="text-lg md:text-2xl font-bold text-gray-900">
+              <Calendar className="h-8 w-8 text-orange-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Λήγουν Σύντομα</p>
+                <p className="text-2xl font-bold text-gray-900">
                   {userSubscriptions.filter(s => {
                     const endDate = new Date(s.end_date);
                     const today = new Date();
@@ -476,13 +470,21 @@ export const SubscriptionManagement: React.FC = () => {
       {/* Λίστα χρηστών με συνδρομές */}
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="text-lg md:text-xl">Χρήστες & Συνδρομές</CardTitle>
+          <CardTitle>Χρήστες & Συνδρομές</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <div className="min-w-full">
-              {/* Mobile view */}
-              <div className="block md:hidden space-y-4">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2">Χρήστης</th>
+                  <th className="text-left p-2">Συνδρομή</th>
+                  <th className="text-left p-2">Κατάσταση</th>
+                  <th className="text-left p-2">Λήξη</th>
+                  <th className="text-left p-2">Ενέργειες</th>
+                </tr>
+              </thead>
+              <tbody>
                 {users.map((user) => {
                   const activeSubscription = userSubscriptions.find(
                     s => s.user_id === user.id && s.status === 'active'
@@ -495,167 +497,74 @@ export const SubscriptionManagement: React.FC = () => {
                   const isUserActive = user.subscription_status === 'active';
                   
                   return (
-                    <div key={user.id} className="border border-gray-200 rounded-none p-4 space-y-3">
-                      <div>
-                        <div className="font-medium text-sm">{user.name}</div>
-                        <div className="text-xs text-gray-500 truncate">{user.email}</div>
-                      </div>
-                      
-                      <div>
+                    <tr key={user.id} className="border-b hover:bg-gray-50">
+                      <td className="p-2">
+                        <div>
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
+                        </div>
+                      </td>
+                      <td className="p-2">
                         {activeSubscription || latestSubscription ? (
                           <div>
-                            <div className="font-medium text-sm">
+                            <div className="font-medium">
                               {(activeSubscription || latestSubscription)?.subscription_types?.name}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-sm text-gray-500">
                               €{(activeSubscription || latestSubscription)?.subscription_types?.price}
                             </div>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">Χωρίς συνδρομή</span>
+                          <span className="text-gray-400">Χωρίς συνδρομή</span>
                         )}
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <Badge className={`rounded-none text-xs ${getStatusColor(user.subscription_status)}`}>
+                      </td>
+                      <td className="p-2">
+                        <Badge className={`rounded-none ${getStatusColor(user.subscription_status)}`}>
                           {user.subscription_status}
                         </Badge>
-                        
-                        <div className="text-xs">
-                          {activeSubscription ? (
-                            <span>
-                              {new Date(activeSubscription.end_date).toLocaleDateString('el-GR')}
-                            </span>
-                          ) : latestSubscription ? (
-                            <span className="text-gray-400">
-                              {new Date(latestSubscription.end_date).toLocaleDateString('el-GR')} (Ανενεργή)
-                            </span>
+                      </td>
+                      <td className="p-2">
+                        {activeSubscription ? (
+                          <span className="text-sm">
+                            {new Date(activeSubscription.end_date).toLocaleDateString('el-GR')}
+                          </span>
+                        ) : latestSubscription ? (
+                          <span className="text-sm text-gray-400">
+                            {new Date(latestSubscription.end_date).toLocaleDateString('el-GR')} (Ανενεργή)
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="p-2">
+                        <div className="flex gap-2">
+                          {isUserActive ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deactivateUserSubscription(user.id)}
+                              className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                            >
+                              <X className="w-3 h-3 mr-1" />
+                              Απενεργοποίηση
+                            </Button>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <Button
+                              size="sm"
+                              onClick={() => activateUserSubscription(user.id)}
+                              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                            >
+                              <Check className="w-3 h-3 mr-1" />
+                              Ενεργοποίηση
+                            </Button>
                           )}
                         </div>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        {isUserActive ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => deactivateUserSubscription(user.id)}
-                            className="rounded-none border-red-300 text-red-600 hover:bg-red-50 text-xs flex-1"
-                          >
-                            <X className="w-3 h-3 mr-1" />
-                            Απενεργοποίηση
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => activateUserSubscription(user.id)}
-                            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-xs flex-1"
-                          >
-                            <Check className="w-3 h-3 mr-1" />
-                            Ενεργοποίηση
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+                      </td>
+                    </tr>
                   );
                 })}
-              </div>
-
-              {/* Desktop view */}
-              <table className="hidden md:table w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2">Χρήστης</th>
-                    <th className="text-left p-2">Συνδρομή</th>
-                    <th className="text-left p-2">Κατάσταση</th>
-                    <th className="text-left p-2">Λήξη</th>
-                    <th className="text-left p-2">Ενέργειες</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => {
-                    const activeSubscription = userSubscriptions.find(
-                      s => s.user_id === user.id && s.status === 'active'
-                    );
-                    
-                    const latestSubscription = userSubscriptions
-                      .filter(s => s.user_id === user.id)
-                      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-                    
-                    const isUserActive = user.subscription_status === 'active';
-                    
-                    return (
-                      <tr key={user.id} className="border-b hover:bg-gray-50">
-                        <td className="p-2">
-                          <div>
-                            <div className="font-medium">{user.name}</div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
-                          </div>
-                        </td>
-                        <td className="p-2">
-                          {activeSubscription || latestSubscription ? (
-                            <div>
-                              <div className="font-medium">
-                                {(activeSubscription || latestSubscription)?.subscription_types?.name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                €{(activeSubscription || latestSubscription)?.subscription_types?.price}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">Χωρίς συνδρομή</span>
-                          )}
-                        </td>
-                        <td className="p-2">
-                          <Badge className={`rounded-none ${getStatusColor(user.subscription_status)}`}>
-                            {user.subscription_status}
-                          </Badge>
-                        </td>
-                        <td className="p-2">
-                          {activeSubscription ? (
-                            <span className="text-sm">
-                              {new Date(activeSubscription.end_date).toLocaleDateString('el-GR')}
-                            </span>
-                          ) : latestSubscription ? (
-                            <span className="text-sm text-gray-400">
-                              {new Date(latestSubscription.end_date).toLocaleDateString('el-GR')} (Ανενεργή)
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="p-2">
-                          <div className="flex gap-2">
-                            {isUserActive ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => deactivateUserSubscription(user.id)}
-                                className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                              >
-                                <X className="w-3 h-3 mr-1" />
-                                Απενεργοποίηση
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                onClick={() => activateUserSubscription(user.id)}
-                                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                              >
-                                <Check className="w-3 h-3 mr-1" />
-                                Ενεργοποίηση
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>

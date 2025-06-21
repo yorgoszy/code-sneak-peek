@@ -35,9 +35,9 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
   };
 
   return (
-    <Card className="rounded-none hover:shadow-md transition-shadow h-auto md:h-12 w-full max-w-[450px] md:w-[450px]">
-      <CardContent className="p-2 md:p-1.5 h-full">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between h-full gap-2 md:gap-1">
+    <Card className="rounded-none hover:shadow-md transition-shadow h-10 md:h-12 w-full max-w-[450px] md:w-[450px]">
+      <CardContent className="p-1 md:p-1.5 h-full">
+        <div className="flex items-center justify-between h-full gap-1 md:gap-0">
           <ProgramCardUserInfo assignment={assignment} />
           <ProgramCardProgress assignment={assignment} workoutStats={stats} />
           <ProgramCardActions 

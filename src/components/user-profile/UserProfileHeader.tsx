@@ -2,15 +2,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UserProfileHeaderProps {
   user: any;
 }
 
 export const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
-  const isMobile = useIsMobile();
-  
   const getRoleColor = (role: string) => {
     switch (role.toLowerCase()) {
       case 'admin':
@@ -29,27 +26,23 @@ export const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
   };
 
   return (
-    <Card className="rounded-none">
-      <CardHeader className={`${isMobile ? 'p-3' : 'p-6'}`}>
-        <div className={`flex items-center ${isMobile ? 'space-x-3' : 'space-x-4'}`}>
-          <Avatar className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'}`}>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center space-x-4">
+          <Avatar className="w-16 h-16">
             <AvatarImage src={user.photo_url} alt={user.name} />
-            <AvatarFallback className={`${isMobile ? 'text-sm' : 'text-base'}`}>
+            <AvatarFallback>
               {user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0">
-            <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold truncate`}>
-              {user.name}
-            </h3>
-            <p className={`${isMobile ? 'text-sm' : 'text-base'} text-gray-600 truncate`}>
-              {user.email}
-            </p>
-            <div className={`flex items-center space-x-2 ${isMobile ? 'mt-1' : 'mt-2'}`}>
-              <Badge className={`${getRoleColor(user.role)} ${isMobile ? 'text-xs px-2 py-1' : ''}`}>
+          <div>
+            <h3 className="text-xl font-semibold">{user.name}</h3>
+            <p className="text-gray-600">{user.email}</p>
+            <div className="flex items-center space-x-2 mt-2">
+              <Badge className={getRoleColor(user.role)}>
                 {user.role}
               </Badge>
-              <Badge variant="outline" className={`${isMobile ? 'text-xs px-2 py-1' : ''}`}>
+              <Badge variant="outline">
                 {user.user_status}
               </Badge>
             </div>

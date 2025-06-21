@@ -153,30 +153,30 @@ export const SubscriptionTypeManager: React.FC = () => {
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Package className="w-4 md:w-5 h-4 md:h-5" />
-            <span className="text-lg md:text-xl">Διαχείριση Τύπων Συνδρομών</span>
+            <Package className="w-5 h-5" />
+            Διαχείριση Τύπων Συνδρομών
           </div>
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full md:w-auto">
+              <Button className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
                 <Plus className="w-4 h-4 mr-2" />
                 Νέος Τύπος
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-none max-w-sm md:max-w-md mx-4 md:mx-auto">
+            <DialogContent className="rounded-none max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-lg md:text-xl">
+                <DialogTitle>
                   {editingType ? 'Επεξεργασία' : 'Δημιουργία'} Τύπου Συνδρομής
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="name" className="text-sm">Όνομα*</Label>
+                  <Label htmlFor="name">Όνομα*</Label>
                   <Input
                     id="name"
                     value={name}
@@ -186,19 +186,18 @@ export const SubscriptionTypeManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="description" className="text-sm">Περιγραφή</Label>
+                  <Label htmlFor="description">Περιγραφή</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="rounded-none"
                     placeholder="Περιγραφή του πακέτου..."
-                    rows={3}
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="price" className="text-sm">Τιμή (€)*</Label>
+                    <Label htmlFor="price">Τιμή (€)*</Label>
                     <Input
                       id="price"
                       type="number"
@@ -209,7 +208,7 @@ export const SubscriptionTypeManager: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="duration" className="text-sm">Διάρκεια (ημέρες)*</Label>
+                    <Label htmlFor="duration">Διάρκεια (ημέρες)*</Label>
                     <Input
                       id="duration"
                       type="number"
@@ -220,14 +219,14 @@ export const SubscriptionTypeManager: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="features" className="text-sm">Χαρακτηριστικά (JSON)</Label>
+                  <Label htmlFor="features">Χαρακτηριστικά (JSON)</Label>
                   <Textarea
                     id="features"
                     value={features}
                     onChange={(e) => setFeatures(e.target.value)}
                     className="rounded-none font-mono text-xs"
                     placeholder='{"ai_access": true, "max_conversations": 100}'
-                    rows={3}
+                    rows={4}
                   />
                 </div>
                 <Button onClick={handleSave} className="w-full rounded-none">
@@ -241,54 +240,8 @@ export const SubscriptionTypeManager: React.FC = () => {
       <CardContent>
         <div className="space-y-4">
           {subscriptionTypes.map((type) => (
-            <div key={type.id} className="border rounded-none p-3 md:p-4 hover:bg-gray-50">
-              {/* Mobile Layout */}
-              <div className="block md:hidden space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm">{type.name}</h3>
-                  <Badge className={`rounded-none text-xs ${type.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                    {type.is_active ? 'Ενεργό' : 'Ανενεργό'}
-                  </Badge>
-                </div>
-                
-                {type.description && (
-                  <p className="text-xs text-gray-600">{type.description}</p>
-                )}
-                
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div><strong>Τιμή:</strong> €{type.price}</div>
-                  <div><strong>Διάρκεια:</strong> {type.duration_days} ημέρες</div>
-                </div>
-                
-                {Object.keys(type.features || {}).length > 0 && (
-                  <div className="text-xs">
-                    <strong>Χαρακτηριστικά:</strong> {Object.keys(type.features).join(', ')}
-                  </div>
-                )}
-                
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openEditDialog(type)}
-                    className="rounded-none flex-1 text-xs"
-                  >
-                    <Edit2 className="w-3 h-3 mr-1" />
-                    Επεξεργασία
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={type.is_active ? "destructive" : "default"}
-                    onClick={() => toggleActiveStatus(type)}
-                    className="rounded-none flex-1 text-xs"
-                  >
-                    {type.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Desktop Layout */}
-              <div className="hidden md:flex md:items-center md:justify-between">
+            <div key={type.id} className="border rounded-none p-4 hover:bg-gray-50">
+              <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold">{type.name}</h3>

@@ -6,22 +6,25 @@ interface UseExerciseInputHandlersProps {
 }
 
 export const useExerciseInputHandlers = ({ onUpdate }: UseExerciseInputHandlersProps) => {
-  const handleVelocityChange = (value: string) => {
+  const handleVelocityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
     // Replace period with comma for Greek decimal format
-    const formattedValue = value.replace('.', ',');
-    onUpdate('velocity_ms', formattedValue);
+    value = value.replace('.', ',');
+    onUpdate('velocity_ms', value);
   };
 
-  const handleKgChange = (value: string) => {
+  const handleKgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
     // Replace period with comma for Greek decimal format
-    const formattedValue = value.replace('.', ',');
-    onUpdate('kg', formattedValue);
+    value = value.replace('.', ',');
+    onUpdate('kg', value);
   };
 
-  const handlePercentageChange = (value: string) => {
+  const handlePercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
     // Replace period with comma for Greek decimal format
-    const formattedValue = value.replace('.', ',');
-    onUpdate('percentage_1rm', formattedValue);
+    value = value.replace('.', ',');
+    onUpdate('percentage_1rm', value);
   };
 
   return {
