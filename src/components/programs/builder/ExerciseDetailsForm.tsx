@@ -19,85 +19,85 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   onPercentageChange
 }) => {
   return (
-    <div className="grid grid-cols-7 gap-1 p-2 text-xs">
-      <div className="space-y-1">
+    <div className="grid grid-cols-7 gap-0.5 p-1 text-xs">
+      <div className="space-y-0.5">
         <label className="text-xs text-gray-600">Sets</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.sets || ''}
           onChange={(e) => onUpdate('sets', e.target.value)}
-          className="h-7 text-xs rounded-none no-spinners"
+          className="h-6 text-xs rounded-none px-1 py-0"
           placeholder="Sets"
         />
       </div>
       
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         <label className="text-xs text-gray-600">Reps</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.reps || ''}
           onChange={(e) => onUpdate('reps', e.target.value)}
-          className="h-7 text-xs rounded-none no-spinners"
+          className="h-6 text-xs rounded-none px-1 py-0"
           placeholder="Reps"
         />
       </div>
       
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         <label className="text-xs text-gray-600">%1RM</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.percentage_1rm || ''}
           onChange={(e) => onPercentageChange(e.target.value)}
-          className="h-7 text-xs rounded-none no-spinners"
+          className="h-6 text-xs rounded-none px-1 py-0"
           placeholder="%"
         />
       </div>
       
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         <label className="text-xs text-gray-600">Kg</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.kg || ''}
           onChange={(e) => onKgChange(e.target.value)}
-          className="h-7 text-xs rounded-none no-spinners"
+          className="h-6 text-xs rounded-none px-1 py-0"
           placeholder="Kg"
         />
       </div>
       
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         <label className="text-xs text-gray-600">m/s</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.velocity_ms || ''}
           onChange={(e) => onVelocityChange(e.target.value)}
-          className="h-7 text-xs rounded-none no-spinners"
+          className="h-6 text-xs rounded-none px-1 py-0"
           placeholder="m/s"
         />
       </div>
       
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         <label className="text-xs text-gray-600">Tempo</label>
         <Input
           type="text"
           value={exercise.tempo || ''}
           onChange={(e) => onUpdate('tempo', e.target.value)}
-          className="h-7 text-xs rounded-none"
+          className="h-6 text-xs rounded-none px-1 py-0"
           placeholder="Tempo"
         />
       </div>
       
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         <label className="text-xs text-gray-600">Rest</label>
         <Input
           type="text"
           value={exercise.rest || ''}
           onChange={(e) => onUpdate('rest', e.target.value)}
-          className="h-7 text-xs rounded-none"
+          className="h-6 text-xs rounded-none px-1 py-0"
           placeholder="Rest"
         />
       </div>
