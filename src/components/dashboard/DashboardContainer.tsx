@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -10,7 +11,7 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export const DashboardContainer = () => {
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
@@ -84,18 +85,27 @@ export const DashboardContainer = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-gray-50 flex w-full">
+        {/* Sidebar - Hidden on mobile using Sheet */}
         <AppSidebar />
 
+        {/* Main Content */}
         <SidebarInset className="flex-1 flex flex-col">
+          {/* Top Navigation */}
           <DashboardHeader
             userProfile={dashboardUserProfile}
             userEmail={user?.email}
             onSignOut={handleSignOut}
           />
 
+          {/* Dashboard Content */}
           <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
+            {/* Tabs */}
             <DashboardTabs />
+
+            {/* Statistics Cards */}
             <DashboardStats stats={stats} />
+
+            {/* Lower Section */}
             <DashboardContent
               isAdmin={isAdmin()}
               userProfile={dashboardUserProfile}
