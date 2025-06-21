@@ -2,20 +2,20 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Sidebar } from "@/components/Sidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
+import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export const DashboardContainer = () => {
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [hasCheckedRedirect, setHasCheckedRedirect] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -83,36 +83,36 @@ export const DashboardContainer = () => {
   console.log('✅ DashboardContainer: Rendering dashboard for admin user');
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar - Hidden on mobile */}
-      {!isMobile && (
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      )}
+    <SidebarProvider>
+      <div className="min-h-screen bg-gray-50 flex w-full">
+        {/* Sidebar - Hidden on mobile using Sheet */}
+        <AppSidebar />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Navigation */}
-        <DashboardHeader
-          userProfile={dashboardUserProfile}
-          userEmail={user?.email}
-          onSignOut={handleSignOut}
-        />
-
-        {/* Dashboard Content */}
-        <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
-          {/* Tabs */}
-          <DashboardTabs />
-
-          {/* Statistics Cards */}
-          <DashboardStats stats={stats} />
-
-          {/* Lower Section */}
-          <DashboardContent
-            isAdmin={isAdmin()}
+        {/* Main Content */}
+        <SidebarInset className="flex-1 flex flex-col">
+          {/* Top Navigation */}
+          <DashboardHeader
             userProfile={dashboardUserProfile}
+            userEmail={user?.email}
+            onSignOut={handleSignOut}
           />
-        </div>
+
+          {/* Dashboard Content */}
+          <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
+            {/* Tabs */}
+            <DashboardTabs />
+
+            {/* Statistics Cards */}
+            <DashboardStats stats={stats} />
+
+            {/* Lower Section */}
+            <DashboardContent
+              isAdmin={isAdmin()}
+              userProfile={dashboardUserProfile}
+            />
+          </div>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
