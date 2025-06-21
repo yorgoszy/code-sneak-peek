@@ -49,7 +49,7 @@ export const parseRepsToTotal = (reps: string): number => {
 
 export const parseTempoToSeconds = (tempo: string): number => {
   if (!tempo || tempo.trim() === '') {
-    return 3;
+    return 3; // Default tempo 1.1.1 = 1+1+1 = 3 seconds
   }
   
   const parts = tempo.split('.');

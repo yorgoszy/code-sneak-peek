@@ -87,7 +87,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           value={exercise.tempo || ''}
           onChange={(e) => onUpdate('tempo', e.target.value)}
           className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
-          placeholder=""
+          placeholder="1.1.1"
         />
       </div>
       
