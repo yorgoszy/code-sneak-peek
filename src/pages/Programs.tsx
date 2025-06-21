@@ -1,157 +1,88 @@
 
-import React, { useState, useEffect } from 'react';
-import { Sidebar } from "@/components/Sidebar";
-import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
-import { Program } from "@/components/programs/types";
-import { usePrograms } from "@/hooks/usePrograms";
-import { useProgramsData } from "@/hooks/useProgramsData";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Navigate } from "react-router-dom";
+import { AppSidebar } from "@/components/dashboard/AppSidebar";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { ProgramsLayout } from "@/components/programs/ProgramsLayout"; 
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 const Programs = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-  
-  // Builder dialog state
-  const [builderOpen, setBuilderOpen] = useState(false);
-  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
-  
-  // Preview dialog state
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
+  const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
+  const isMobile = useIsMobile();
 
-  const { users, exercises } = useProgramsData();
-  const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
-
-  useEffect(() => {
-    loadPrograms();
-  }, []);
-
-  const loadPrograms = async () => {
-    try {
-      console.log('🔄 Loading draft/template programs...');
-      const data = await fetchProgramsWithAssignments();
-      // Filter to show only programs without assignments (draft/template programs)
-      const draftPrograms = data.filter(program => 
-        !program.program_assignments || program.program_assignments.length === 0
-      );
-      console.log('✅ Draft programs loaded:', draftPrograms.length);
-      setPrograms(draftPrograms);
-    } catch (error) {
-      console.error('❌ Error loading programs:', error);
-    }
-  };
-
-  const handleCreateProgram = async (programData: any) => {
-    try {
-      console.log('Creating/updating program:', programData);
-      const savedProgram = await saveProgram(programData);
-      console.log('✅ Program saved, result:', savedProgram);
-      await loadPrograms(); // Ξαναφόρτωση για να ενημερωθούν τα δεδομένα
-      setBuilderOpen(false);
-      setEditingProgram(null);
-      return savedProgram; // ΕΠΙΣΤΡΕΦΟΥΜΕ το αποθηκευμένο πρόγραμμα
-    } catch (error) {
-      console.error('Error creating program:', error);
-      throw error; // Ξαναπετάμε το error για να το πιάσει το useAssignmentDialog
-    }
-  };
-
-  const handleEditProgram = (program: Program) => {
-    console.log('Editing program:', program);
-    setEditingProgram(program);
-    setBuilderOpen(true);
-  };
-
-  const handleDeleteProgram = async (programId: string) => {
-    try {
-      console.log('🗑️ Programs page - Attempting to delete program:', programId);
-      
-      const success = await deleteProgram(programId);
-      if (success) {
-        console.log('✅ Programs page - Program deleted successfully');
-        if (selectedProgram?.id === programId) {
-          setSelectedProgram(null);
-        }
-        await loadPrograms(); // Ξαναφόρτωση μετά τη διαγραφή
-      } else {
-        console.log('❌ Programs page - Delete operation failed');
-      }
-    } catch (error) {
-      console.error('❌ Programs page - Error deleting program:', error);
-    }
-  };
-
-  const handleDuplicateProgram = async (program: Program) => {
-    try {
-      await duplicateProgram(program);
-      await loadPrograms(); // Ξαναφόρτωση μετά την αντιγραφή
-    } catch (error) {
-      console.error('Error duplicating program:', error);
-    }
-  };
-
-  const handlePreviewProgram = (program: Program) => {
-    setPreviewProgram(program);
-    setPreviewOpen(true);
-  };
-
-  const handleBuilderClose = () => {
-    console.log('Closing builder dialog');
-    setBuilderOpen(false);
-    setEditingProgram(null);
-  };
-
-  const handlePreviewClose = () => {
-    setPreviewOpen(false);
-    setPreviewProgram(null);
-  };
-
-  const handleOpenBuilder = () => {
-    console.log('Opening new program builder');
-    setEditingProgram(null);
-    setBuilderOpen(true);
-  };
-
-  if (loading) {
+  if (loading || rolesLoading) {
     return (
-      <div className="min-h-screen flex w-full">
-        <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
-        <div className="flex-1 p-3 md:p-6">
-          <div className="text-center">Φόρτωση...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Φόρτωση...</p>
         </div>
       </div>
     );
   }
 
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (!isAdmin()) {
+    return <Navigate to={`/dashboard/user-profile/${userProfile?.id}`} replace />;
+  }
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
-    <div className="min-h-screen flex w-full">
-      <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
-      <div className="flex-1 p-3 md:p-6">
-        <ProgramsLayout
-          programs={programs}
-          selectedProgram={selectedProgram}
-          users={users}
-          exercises={exercises}
-          editingProgram={editingProgram}
-          builderDialogOpen={builderOpen}
-          previewProgram={previewProgram}
-          previewDialogOpen={previewOpen}
-          onSelectProgram={setSelectedProgram}
-          onDeleteProgram={handleDeleteProgram}
-          onEditProgram={handleEditProgram}
-          onCreateProgram={handleCreateProgram}
-          onBuilderDialogClose={handleBuilderClose}
-          onDuplicateProgram={handleDuplicateProgram}
-          onPreviewProgram={handlePreviewProgram}
-          onPreviewDialogClose={handlePreviewClose}
-          onDeleteWeek={() => {}}
-          onDeleteDay={() => {}}
-          onDeleteBlock={() => {}}
-          onDeleteExercise={() => {}}
-          onOpenBuilder={handleOpenBuilder}
-        />
+    <SidebarProvider>
+      <div className="min-h-screen bg-gray-50 flex w-full">
+        <AppSidebar />
+
+        <SidebarInset className="flex-1 flex flex-col">
+          {/* Top Navigation */}
+          <nav className={`bg-white border-b border-gray-200 ${isMobile ? 'px-3 py-3' : 'px-6 py-4'}`}>
+            <div className="flex justify-between items-center">
+              <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
+                {isMobile && <SidebarTrigger />}
+                <div className={`${isMobile ? 'min-w-0 flex-1' : ''}`}>
+                  <h1 className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 ${isMobile ? 'truncate' : ''}`}>
+                    Προγράμματα
+                  </h1>
+                  <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 ${isMobile ? 'truncate' : ''}`}>
+                    Δημιουργία και διαχείριση προγραμμάτων προπόνησης
+                  </p>
+                </div>
+              </div>
+              <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
+                {!isMobile && (
+                  <span className="text-sm text-gray-600">
+                    {userProfile?.name || user?.email}
+                    {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                  </span>
+                )}
+                <Button 
+                  variant="outline" 
+                  className={`rounded-none ${isMobile ? 'text-xs px-2' : ''}`}
+                  onClick={handleSignOut}
+                >
+                  <LogOut className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+                  {isMobile ? 'Exit' : 'Αποσύνδεση'}
+                </Button>
+              </div>
+            </div>
+          </nav>
+
+          {/* Programs Content */}
+          <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
+            <ProgramsLayout />
+          </div>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
