@@ -27,8 +27,8 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           inputMode="numeric"
           value={exercise.sets || ''}
           onChange={(e) => onUpdate('sets', e.target.value)}
-          className="h-6 text-xs rounded-none px-1 py-0"
-          placeholder="Sets"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-10 min-w-0"
+          placeholder=""
         />
       </div>
       
@@ -39,8 +39,8 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           inputMode="numeric"
           value={exercise.reps || ''}
           onChange={(e) => onUpdate('reps', e.target.value)}
-          className="h-6 text-xs rounded-none px-1 py-0"
-          placeholder="Reps"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-10 min-w-0"
+          placeholder=""
         />
       </div>
       
@@ -51,8 +51,8 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           inputMode="numeric"
           value={exercise.percentage_1rm || ''}
           onChange={(e) => onPercentageChange(e.target.value)}
-          className="h-6 text-xs rounded-none px-1 py-0"
-          placeholder="%"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-10 min-w-0"
+          placeholder=""
         />
       </div>
       
@@ -63,8 +63,8 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           inputMode="numeric"
           value={exercise.kg || ''}
           onChange={(e) => onKgChange(e.target.value)}
-          className="h-6 text-xs rounded-none px-1 py-0"
-          placeholder="Kg"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-10 min-w-0"
+          placeholder=""
         />
       </div>
       
@@ -75,8 +75,8 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           inputMode="numeric"
           value={exercise.velocity_ms || ''}
           onChange={(e) => onVelocityChange(e.target.value)}
-          className="h-6 text-xs rounded-none px-1 py-0"
-          placeholder="m/s"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-10 min-w-0"
+          placeholder=""
         />
       </div>
       
@@ -86,8 +86,8 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           type="text"
           value={exercise.tempo || ''}
           onChange={(e) => onUpdate('tempo', e.target.value)}
-          className="h-6 text-xs rounded-none px-1 py-0"
-          placeholder="Tempo"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-12 min-w-0"
+          placeholder=""
         />
       </div>
       
@@ -97,8 +97,8 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           type="text"
           value={exercise.rest || ''}
           onChange={(e) => onUpdate('rest', e.target.value)}
-          className="h-6 text-xs rounded-none px-1 py-0"
-          placeholder="Rest"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-12 min-w-0"
+          placeholder=""
         />
       </div>
     </div>
