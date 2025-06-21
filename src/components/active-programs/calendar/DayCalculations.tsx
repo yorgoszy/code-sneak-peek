@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Clock, Dumbbell, TrendingUp, Zap } from 'lucide-react';
 
@@ -7,7 +8,7 @@ interface DayCalculationsProps {
 
 const parseTempoToSeconds = (tempo: string): number => {
   if (!tempo || tempo.trim() === '') {
-    return 3; // Default tempo 1.1.1 = 1+1+1 = 3 seconds
+    return 3; // Default tempo
   }
   
   // Split by '.' and sum all numbers
