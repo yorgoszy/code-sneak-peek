@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserProfileSidebar } from "@/components/user-profile/UserProfileSidebar";
 import { UserProfileContent } from "@/components/user-profile/UserProfileContent";
 import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfileData";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -17,6 +18,7 @@ const UserProfile = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [profileLoading, setProfileLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   const { stats, programs, tests, payments } = useUserProfileData(userProfile, !!userProfile);
 
@@ -79,55 +81,69 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <UserProfileSidebar 
-        isCollapsed={isCollapsed} 
-        setIsCollapsed={setIsCollapsed}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        userProfile={userProfile}
-        stats={stats}
-      />
+      {/* Sidebar - Hidden on mobile, shown with overlay */}
+      <div className={`${isMobile ? 'hidden' : 'block'}`}>
+        <UserProfileSidebar 
+          isCollapsed={isCollapsed} 
+          setIsCollapsed={setIsCollapsed}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          userProfile={userProfile}
+          stats={stats}
+        />
+      </div>
+
+      {/* Mobile Sidebar */}
+      {isMobile && (
+        <UserProfileSidebar 
+          isCollapsed={false} 
+          setIsCollapsed={setIsCollapsed}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          userProfile={userProfile}
+          stats={stats}
+        />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-6 py-4">
+        <nav className="bg-white border-b border-gray-200 px-3 md:px-6 py-3 md:py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
+            <div className={`flex items-center space-x-2 md:space-x-4 ${isMobile ? 'ml-12' : ''}`}>
               <Link to="/dashboard/users">
-                <Button variant="outline" size="sm" className="rounded-none">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Επιστροφή
+                <Button variant="outline" size="sm" className="rounded-none text-xs md:text-sm px-2 md:px-4">
+                  <ArrowLeft className="h-3 md:h-4 w-3 md:w-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Επιστροφή</span>
                 </Button>
               </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Προφίλ: {userProfile.name}
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg md:text-2xl font-bold text-gray-900 truncate">
+                  {isMobile ? userProfile.name : `Προφίλ: ${userProfile.name}`}
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs md:text-sm text-gray-600 truncate">
                   {userProfile.email} - {userProfile.role}
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <span className="text-xs md:text-sm text-gray-600 hidden sm:block truncate">
                 {currentUser?.email}
               </span>
               <Button 
                 variant="outline" 
-                className="rounded-none"
+                className="rounded-none text-xs md:text-sm px-2 md:px-4"
                 onClick={handleSignOut}
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Αποσύνδεση
+                <LogOut className="h-3 md:h-4 w-3 md:w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">Αποσύνδεση</span>
               </Button>
             </div>
           </div>
         </nav>
 
         {/* Profile Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-3 md:p-6">
           <UserProfileContent
             activeTab={activeTab}
             userProfile={userProfile}
