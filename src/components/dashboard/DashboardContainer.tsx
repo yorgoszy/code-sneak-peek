@@ -10,6 +10,7 @@ import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const DashboardContainer = () => {
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
@@ -17,6 +18,7 @@ export const DashboardContainer = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [hasCheckedRedirect, setHasCheckedRedirect] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const {
     userProfile: dashboardUserProfile,
@@ -82,8 +84,10 @@ export const DashboardContainer = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      {/* Sidebar - Hidden on mobile */}
+      {!isMobile && (
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -95,7 +99,7 @@ export const DashboardContainer = () => {
         />
 
         {/* Dashboard Content */}
-        <div className="flex-1 p-6">
+        <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
           {/* Tabs */}
           <DashboardTabs />
 
