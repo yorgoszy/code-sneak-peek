@@ -25,20 +25,19 @@ const Exercises = () => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const isMobile = useIsMobile();
 
-  const { 
-    exercises, 
-    categories, 
-    loading: exercisesLoading, 
-    fetchExercises 
-  } = useExercises();
+  const exercisesData = useExercises();
+  const filtersData = useExerciseFilters(exercisesData?.exercises || []);
 
-  const {
-    searchTerm,
-    setSearchTerm,
-    selectedCategory,
-    setSelectedCategory,
-    filteredExercises
-  } = useExerciseFilters(exercises);
+  // Extract data safely
+  const exercises = exercisesData?.exercises || [];
+  const categories = exercisesData?.categories || [];
+  const loadingExercises = exercisesData?.loadingExercises || false;
+  const fetchExercises = exercisesData?.fetchExercises || (() => Promise.resolve());
+
+  const searchQuery = filtersData?.searchQuery || '';
+  const setSearchQuery = filtersData?.setSearchQuery || (() => {});
+  const selectedCategories = filtersData?.selectedCategories || [];
+  const filteredExercises = filtersData?.filteredExercises || [];
 
   useEffect(() => {
     fetchExercises();
@@ -118,26 +117,31 @@ const Exercises = () => {
                   <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>
                     Όλες οι Ασκήσεις ({filteredExercises.length})
                   </CardTitle>
-                  <ExercisesActions 
-                    onAddExercise={() => setAddDialogOpen(true)}
-                    exercisesCount={filteredExercises.length}
-                    isMobile={isMobile}
-                  />
+                  <Button 
+                    className={`rounded-none ${isMobile ? 'text-xs w-full' : ''}`}
+                    onClick={() => setAddDialogOpen(true)}
+                  >
+                    <Plus className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+                    Νέα Άσκηση
+                  </Button>
                 </div>
                 
-                <ExercisesFilters
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                  selectedCategory={selectedCategory}
-                  setSelectedCategory={setSelectedCategory}
-                  categories={categories}
-                  isMobile={isMobile}
-                />
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="Αναζήτηση ασκήσεων..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#00ffba]"
+                    />
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <ExercisesTable 
                   exercises={filteredExercises}
-                  loading={exercisesLoading}
+                  isLoading={loadingExercises}
                   onEditExercise={handleEditExercise}
                   onRefreshExercises={fetchExercises}
                   isMobile={isMobile}
@@ -149,16 +153,16 @@ const Exercises = () => {
       </div>
 
       <AddExerciseDialog
-        isOpen={addDialogOpen}
-        onClose={() => setAddDialogOpen(false)}
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
         onExerciseAdded={fetchExercises}
       />
 
       <EditExerciseDialog
-        isOpen={editDialogOpen}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedExercise(null);
+        open={editDialogOpen}
+        onOpenChange={(open) => {
+          setEditDialogOpen(open);
+          if (!open) setSelectedExercise(null);
         }}
         onExerciseUpdated={fetchExercises}
         exercise={selectedExercise}

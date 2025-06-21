@@ -36,25 +36,26 @@ const ActivePrograms = () => {
   });
   const isMobile = useIsMobile();
 
-  const {
-    activePrograms,
-    stats,
-    todaysPrograms,
-    loading,
-    error,
-    refreshData
-  } = useActivePrograms();
+  const activeProgramsData = useActivePrograms();
+  const { data: workoutCompletionsData } = useWorkoutCompletions();
+  const multipleWorkoutsData = useMultipleWorkouts();
 
-  const { getWorkoutStatus } = useWorkoutCompletions();
+  // Extract data safely
+  const activePrograms = activeProgramsData?.data || [];
+  const stats = activeProgramsData?.stats || {};
+  const todaysPrograms = activeProgramsData?.todaysPrograms || [];
+  const loading = activeProgramsData?.isLoading || false;
+  const error = activeProgramsData?.error || null;
+  const refreshData = activeProgramsData?.refetch || (() => {});
 
-  const {
-    multiWorkoutState,
-    handleStartWorkout,
-    handleCloseWorkout,
-    handleMinimizeWorkout,
-    handleRestoreWorkout,
-    handleCancelMinimizedWorkout
-  } = useMultipleWorkouts();
+  const getWorkoutStatus = workoutCompletionsData?.getWorkoutStatus || (() => Promise.resolve('not_started'));
+
+  const multiWorkoutState = multipleWorkoutsData?.state || { activeWorkouts: [], minimizedWorkout: null };
+  const handleStartWorkout = multipleWorkoutsData?.startWorkout || (() => {});
+  const handleCloseWorkout = multipleWorkoutsData?.closeWorkout || (() => {});
+  const handleMinimizeWorkout = multipleWorkoutsData?.minimizeWorkout || (() => {});
+  const handleRestoreWorkout = multipleWorkoutsData?.restoreWorkout || (() => {});
+  const handleCancelMinimizedWorkout = multipleWorkoutsData?.cancelMinimizedWorkout || (() => {});
 
   useEffect(() => {
     if (selectedDate && selectedProgram) {
@@ -110,7 +111,6 @@ const ActivePrograms = () => {
 
   const handleDeleteAssignment = async (assignmentId: string) => {
     console.log('🗑️ Delete assignment requested for:', assignmentId);
-    // This would trigger a refresh of the data
     refreshData();
   };
 
@@ -126,7 +126,7 @@ const ActivePrograms = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">Σφάλμα: {error}</p>
+          <p className="text-red-600">Σφάλμα: {String(error)}</p>
           <button 
             onClick={refreshData}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -163,7 +163,7 @@ const ActivePrograms = () => {
           <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'} space-y-6`}>
             {/* Today's Programs Section */}
             <TodaysProgramsSection
-              todaysPrograms={todaysPrograms}
+              programs={todaysPrograms}
               onRefresh={refreshData}
               onProgramClick={handleProgramClick}
               onAttendance={handleAttendance}
@@ -171,7 +171,7 @@ const ActivePrograms = () => {
 
             {/* Calendar Grid */}
             <CalendarGrid
-              activePrograms={activePrograms}
+              programs={activePrograms}
               onDayClick={handleDayClick}
               onProgramClick={handleProgramClick}
             />
@@ -210,7 +210,7 @@ const ActivePrograms = () => {
           setSelectedDate(null);
         }}
         selectedDate={selectedDate}
-        activePrograms={activePrograms}
+        programs={activePrograms}
         onProgramSelect={(program) => {
           setSelectedProgram(program);
           setIsDayAllProgramsOpen(false);
@@ -222,12 +222,12 @@ const ActivePrograms = () => {
         isOpen={attendanceDialogData.isOpen}
         onClose={() => setAttendanceDialogData({ isOpen: false, assignment: null })}
         assignment={attendanceDialogData.assignment}
-        onSuccess={refreshData}
+        onRefresh={refreshData}
       />
 
       {/* Multi-Workout Manager */}
       <MultiWorkoutManager
-        workouts={multiWorkoutState.activeWorkouts}
+        activeWorkouts={multiWorkoutState.activeWorkouts}
         onCloseWorkout={handleCloseWorkout}
         onMinimizeWorkout={handleMinimizeWorkout}
       />
