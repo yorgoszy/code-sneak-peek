@@ -128,9 +128,9 @@ const ProgramCards = () => {
   return (
     <div className="min-h-screen flex w-full">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      <div className="flex-1 p-6">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
+      <div className="flex-1 p-3 md:p-6">
+        <div className="space-y-4 md:space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
@@ -141,19 +141,19 @@ const ProgramCards = () => {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Επιστροφή
               </Button>
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <CreditCard className="h-8 w-8 text-[#00ffba]" />
+              <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+                <CreditCard className="h-6 md:h-8 w-6 md:w-8 text-[#00ffba]" />
                 Program Cards
               </h1>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
             {/* Αριστερή στήλη - Ενεργά Προγράμματα */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-blue-600" />
+                <h2 className="text-lg md:text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  <Clock className="h-4 md:h-5 w-4 md:w-5 text-blue-600" />
                   Ενεργά Προγράμματα
                 </h2>
                 <div className="text-sm text-gray-500">
@@ -175,9 +175,9 @@ const ProgramCards = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
-                  <Clock className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg mb-2">Δεν υπάρχουν ενεργά προγράμματα</p>
+                <div className="text-center py-8 md:py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
+                  <Clock className="h-12 md:h-16 w-12 md:w-16 mx-auto mb-4 text-gray-300" />
+                  <p className="text-base md:text-lg mb-2">Δεν υπάρχουν ενεργά προγράμματα</p>
                   <p className="text-sm">Δημιουργήστε νέες αναθέσεις από το ProgramBuilder</p>
                 </div>
               )}
@@ -186,8 +186,8 @@ const ProgramCards = () => {
             {/* Δεξιά στήλη - Ολοκληρωμένα Προγράμματα */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-[#00ffba]" />
+                <h2 className="text-lg md:text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  <CheckCircle className="h-4 md:h-5 w-4 md:w-5 text-[#00ffba]" />
                   Ολοκληρωμένα Προγράμματα
                 </h2>
                 <div className="text-sm text-gray-500">
@@ -209,9 +209,9 @@ const ProgramCards = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
-                  <CheckCircle className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg mb-2">Δεν υπάρχουν ολοκληρωμένα προγράμματα</p>
+                <div className="text-center py-8 md:py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
+                  <CheckCircle className="h-12 md:h-16 w-12 md:w-16 mx-auto mb-4 text-gray-300" />
+                  <p className="text-base md:text-lg mb-2">Δεν υπάρχουν ολοκληρωμένα προγράμματα</p>
                   <p className="text-sm">Τα προγράμματα με 100% πρόοδο θα εμφανίζονται εδώ</p>
                 </div>
               )}

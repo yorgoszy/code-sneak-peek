@@ -116,7 +116,9 @@ const Programs = () => {
     return (
       <div className="min-h-screen flex w-full">
         <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
-        <div className="flex-1 p-6">Φόρτωση...</div>
+        <div className="flex-1 p-3 md:p-6">
+          <div className="text-center">Φόρτωση...</div>
+        </div>
       </div>
     );
   }
@@ -124,7 +126,7 @@ const Programs = () => {
   return (
     <div className="min-h-screen flex w-full">
       <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-3 md:p-6">
         <ProgramsLayout
           programs={programs}
           selectedProgram={selectedProgram}
