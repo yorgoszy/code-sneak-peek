@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -124,7 +125,7 @@ const Users = () => {
   }
 
   const handleEditUser = (user: AppUser) => {
-    console.log('✏️ Edit user:', user.id);
+    console.log('✏️ Edit user:', user.id, user);
     setSelectedUser(user);
     setEditUserDialogOpen(true);
   };
@@ -149,6 +150,8 @@ const Users = () => {
   const handleUserUpdated = () => {
     console.log('✅ User updated, refreshing list');
     fetchUsers();
+    setEditUserDialogOpen(false);
+    setSelectedUser(null);
   };
 
   const handleUserDeleted = () => {
@@ -478,7 +481,10 @@ const Users = () => {
       
       <EditUserDialog
         isOpen={editUserDialogOpen}
-        onClose={() => setEditUserDialogOpen(false)}
+        onClose={() => {
+          setEditUserDialogOpen(false);
+          setSelectedUser(null);
+        }}
         onUserUpdated={handleUserUpdated}
         user={selectedUser}
       />
