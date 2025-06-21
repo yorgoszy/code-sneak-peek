@@ -9,11 +9,25 @@ import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { usePrograms } from "@/hooks/usePrograms";
+import { useProgramsData } from "@/hooks/useProgramsData";
 
 const Programs = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const isMobile = useIsMobile();
+  
+  // Program management states
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [selectedProgram, setSelectedProgram] = useState<any>(null);
+  const [editingProgram, setEditingProgram] = useState<any>(null);
+  const [builderDialogOpen, setBuilderDialogOpen] = useState(false);
+  const [previewProgram, setPreviewProgram] = useState<any>(null);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+
+  // Hooks for data and operations
+  const { users, exercises } = useProgramsData();
+  const { saveProgram, deleteProgram, duplicateProgram, fetchPrograms } = usePrograms();
 
   if (loading || rolesLoading) {
     return (
@@ -35,6 +49,62 @@ const Programs = () => {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleSelectProgram = (program: any) => {
+    setSelectedProgram(program);
+  };
+
+  const handleDeleteProgram = async (programId: string) => {
+    const success = await deleteProgram(programId);
+    if (success) {
+      // Refresh programs list
+      const updatedPrograms = await fetchPrograms();
+      setPrograms(updatedPrograms);
+    }
+  };
+
+  const handleEditProgram = (program: any) => {
+    setEditingProgram(program);
+    setBuilderDialogOpen(true);
+  };
+
+  const handleCreateProgram = async (program: any) => {
+    try {
+      await saveProgram(program);
+      // Refresh programs list
+      const updatedPrograms = await fetchPrograms();
+      setPrograms(updatedPrograms);
+    } catch (error) {
+      console.error('Error creating program:', error);
+    }
+  };
+
+  const handleBuilderDialogClose = () => {
+    setBuilderDialogOpen(false);
+    setEditingProgram(null);
+  };
+
+  const handleDuplicateProgram = async (program: any) => {
+    await duplicateProgram(program);
+    // Refresh programs list
+    const updatedPrograms = await fetchPrograms();
+    setPrograms(updatedPrograms);
+  };
+
+  const handlePreviewProgram = (program: any) => {
+    setPreviewProgram(program);
+    setPreviewDialogOpen(true);
+  };
+
+  const handlePreviewDialogClose = () => {
+    setPreviewDialogOpen(false);
+    setPreviewProgram(null);
+  };
+
+  const handleOpenBuilder = () => {
+    setEditingProgram(null);
+    setBuilderDialogOpen(true);
   };
 
   return (
@@ -79,27 +149,27 @@ const Programs = () => {
           {/* Programs Content */}
           <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
             <ProgramsLayout 
-              programs={[]}
-              selectedProgram={null}
-              users={[]}
-              exercises={[]}
-              editingProgram={null}
-              builderDialogOpen={false}
-              previewProgram={null}
-              previewDialogOpen={false}
-              onSelectProgram={() => {}}
-              onDeleteProgram={() => {}}
-              onEditProgram={() => {}}
-              onCreateProgram={async () => {}}
-              onBuilderDialogClose={() => {}}
-              onDuplicateProgram={() => {}}
-              onPreviewProgram={() => {}}
-              onPreviewDialogClose={() => {}}
+              programs={programs}
+              selectedProgram={selectedProgram}
+              users={users || []}
+              exercises={exercises || []}
+              editingProgram={editingProgram}
+              builderDialogOpen={builderDialogOpen}
+              previewProgram={previewProgram}
+              previewDialogOpen={previewDialogOpen}
+              onSelectProgram={handleSelectProgram}
+              onDeleteProgram={handleDeleteProgram}
+              onEditProgram={handleEditProgram}
+              onCreateProgram={handleCreateProgram}
+              onBuilderDialogClose={handleBuilderDialogClose}
+              onDuplicateProgram={handleDuplicateProgram}
+              onPreviewProgram={handlePreviewProgram}
+              onPreviewDialogClose={handlePreviewDialogClose}
               onDeleteWeek={() => {}}
               onDeleteDay={() => {}}
               onDeleteBlock={() => {}}
               onDeleteExercise={() => {}}
-              onOpenBuilder={() => {}}
+              onOpenBuilder={handleOpenBuilder}
             />
           </div>
         </SidebarInset>
