@@ -1,13 +1,12 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Copy, Trash2, Play } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
 import { Exercise } from '../types';
-import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 
 interface ExerciseSelectionButtonProps {
   selectedExercise: Exercise | undefined;
-  exerciseNumber: number | null;
+  exerciseNumber: number;
   onSelectExercise: () => void;
   onDuplicate: () => void;
   onRemove: () => void;
@@ -20,78 +19,39 @@ export const ExerciseSelectionButton: React.FC<ExerciseSelectionButtonProps> = (
   onDuplicate,
   onRemove
 }) => {
-  const videoUrl = selectedExercise?.video_url;
-  const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
-  const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
-
   return (
-    <div className="p-2 border-b bg-gray-50 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
-      <Button
-        variant="outline"
-        size="sm"
-        className="flex-1 text-sm h-6 justify-start px-2"
-        style={{ borderRadius: '0px', fontSize: '12px' }}
-        onClick={onSelectExercise}
-      >
-        {selectedExercise ? (
-          <div className="flex items-center gap-2 w-full">
-            <div className="flex items-center gap-1 flex-1">
-              {exerciseNumber && (
-                <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm">
-                  {exerciseNumber}
-                </span>
-              )}
-              <span className="truncate">{selectedExercise.name}</span>
-            </div>
-            
-            {/* Video Thumbnail */}
-            {hasValidVideo && thumbnailUrl ? (
-              <div className="w-8 h-5 rounded-none overflow-hidden bg-gray-100 flex-shrink-0">
-                <img
-                  src={thumbnailUrl}
-                  alt={`${selectedExercise.name} video thumbnail`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.currentTarget as HTMLImageElement;
-                    target.style.display = 'none';
-                    target.nextElementSibling?.classList.remove('hidden');
-                  }}
-                />
-                <div className="hidden w-full h-full bg-gray-200 flex items-center justify-center">
-                  <Play className="w-2 h-2 text-gray-400" />
-                </div>
-              </div>
-            ) : hasValidVideo ? (
-              <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <Play className="w-2 h-2 text-gray-400" />
-              </div>
-            ) : (
-              <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs text-gray-400">-</span>
-              </div>
-            )}
-          </div>
-        ) : 'Επιλογή...'}
-      </Button>
+    <div className="flex items-center justify-between p-2 border-b bg-gray-50">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <span className="text-xs font-medium text-gray-500 flex-shrink-0">
+          #{exerciseNumber}
+        </span>
+        <button
+          onClick={onSelectExercise}
+          className="text-left text-xs text-blue-600 hover:text-blue-800 truncate flex-1 min-w-0"
+          title={selectedExercise?.name || 'Επιλέξτε άσκηση'}
+        >
+          {selectedExercise?.name || 'Επιλέξτε άσκηση'}
+        </button>
+      </div>
       
-      <div className="flex gap-1">
+      <div className="flex gap-1 flex-shrink-0 ml-2">
         <Button
           variant="ghost"
           size="sm"
           onClick={onDuplicate}
-          className="p-1 h-6 w-6"
-          style={{ borderRadius: '0px' }}
+          className="h-6 w-6 p-0 hover:bg-gray-200"
+          title="Αντιγραφή"
         >
-          <Copy className="w-3 h-3" />
+          <Copy className="h-3 w-3" />
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={onRemove}
-          className="p-1 h-6 w-6"
-          style={{ borderRadius: '0px' }}
+          className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
+          title="Διαγραφή"
         >
-          <Trash2 className="w-3 h-3" />
+          <Trash2 className="h-3 w-3" />
         </Button>
       </div>
     </div>

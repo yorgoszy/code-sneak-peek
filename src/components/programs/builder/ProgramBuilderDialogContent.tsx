@@ -79,15 +79,15 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   const { handleAssignment } = useAssignmentHandler({ program, getTotalTrainingDays });
 
   return (
-    <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0">
-      <DialogHeader className="flex-shrink-0 p-6 border-b">
-        <DialogTitle>
+    <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0 md:max-w-[90vw] md:max-h-[90vh] md:w-[90vw] md:h-[90vh]">
+      <DialogHeader className="flex-shrink-0 p-3 md:p-6 border-b">
+        <DialogTitle className="text-sm md:text-base">
           {program.id ? 'Επεξεργασία Προγράμματος' : 'Δημιουργία Νέου Προγράμματος'}
         </DialogTitle>
       </DialogHeader>
       
       <ScrollArea className="flex-1 h-full">
-        <div className="space-y-6 p-6">
+        <div className="space-y-3 md:space-y-6 p-3 md:p-6">
           <ProgramBasicInfo
             name={program.name}
             description={program.description || ''}

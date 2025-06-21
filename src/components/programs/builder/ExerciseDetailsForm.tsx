@@ -6,9 +6,9 @@ import { ProgramExercise } from '../types';
 interface ExerciseDetailsFormProps {
   exercise: ProgramExercise;
   onUpdate: (field: string, value: any) => void;
-  onVelocityChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onKgChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onPercentageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onVelocityChange: (value: string) => void;
+  onKgChange: (value: string) => void;
+  onPercentageChange: (value: string) => void;
 }
 
 export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
@@ -19,125 +19,85 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   onPercentageChange
 }) => {
   return (
-    <div className="flex p-2 gap-2 w-full" style={{ minHeight: '28px' }}>
-      <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Sets</label>
+    <div className="grid grid-cols-2 md:grid-cols-6 gap-1 p-2 text-xs">
+      <div className="space-y-1">
+        <label className="text-xs text-gray-600">Sets</label>
         <Input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
+          type="number"
           value={exercise.sets || ''}
-          onChange={(e) => onUpdate('sets', parseInt(e.target.value) || '')}
-          className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
-          style={{ 
-            borderRadius: '0px', 
-            fontSize: '12px', 
-            height: '22px', 
-            padding: '0 4px'
-          }}
-          placeholder=""
+          onChange={(e) => onUpdate('sets', e.target.value)}
+          className="h-7 text-xs rounded-none"
+          placeholder="Sets"
         />
       </div>
       
-      <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
+      <div className="space-y-1">
+        <label className="text-xs text-gray-600">Reps</label>
         <Input
           value={exercise.reps || ''}
           onChange={(e) => onUpdate('reps', e.target.value)}
-          className="text-center w-full"
-          style={{ 
-            borderRadius: '0px', 
-            fontSize: '12px', 
-            height: '22px', 
-            padding: '0 4px'
-          }}
-          placeholder=""
+          className="h-7 text-xs rounded-none"
+          placeholder="Reps"
         />
       </div>
       
-      <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>%1RM</label>
+      <div className="space-y-1">
+        <label className="text-xs text-gray-600">Kg</label>
         <Input
-          type="text"
-          inputMode="decimal"
-          value={exercise.percentage_1rm || ''}
-          onChange={onPercentageChange}
-          className="text-center w-full"
-          style={{ 
-            borderRadius: '0px', 
-            fontSize: '12px', 
-            height: '22px', 
-            padding: '0 4px'
-          }}
-          placeholder=""
-        />
-      </div>
-      
-      <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
-        <Input
-          type="text"
-          inputMode="decimal"
           value={exercise.kg || ''}
-          onChange={onKgChange}
-          className="text-center w-full"
-          style={{ 
-            borderRadius: '0px', 
-            fontSize: '12px', 
-            height: '22px', 
-            padding: '0 4px'
-          }}
-          placeholder=""
+          onChange={(e) => onKgChange(e.target.value)}
+          className="h-7 text-xs rounded-none"
+          placeholder="Kg"
         />
       </div>
       
-      <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
+      <div className="space-y-1">
+        <label className="text-xs text-gray-600">%</label>
         <Input
-          type="text"
-          inputMode="decimal"
-          value={exercise.velocity_ms?.toString() || ''}
-          onChange={onVelocityChange}
-          className="text-center w-full"
-          style={{ 
-            borderRadius: '0px', 
-            fontSize: '12px', 
-            height: '22px', 
-            padding: '0 4px'
-          }}
-          placeholder=""
+          value={exercise.percentage || ''}
+          onChange={(e) => onPercentageChange(e.target.value)}
+          className="h-7 text-xs rounded-none"
+          placeholder="%"
         />
       </div>
       
-      <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Tempo</label>
+      <div className="space-y-1">
+        <label className="text-xs text-gray-600">Tempo</label>
         <Input
           value={exercise.tempo || ''}
           onChange={(e) => onUpdate('tempo', e.target.value)}
-          className="text-center w-full"
-          style={{ 
-            borderRadius: '0px', 
-            fontSize: '12px', 
-            height: '22px', 
-            padding: '0 4px'
-          }}
-          placeholder="1.1.1"
+          className="h-7 text-xs rounded-none"
+          placeholder="Tempo"
         />
       </div>
       
-      <div className="flex flex-col items-center" style={{ width: '50px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
+      <div className="space-y-1">
+        <label className="text-xs text-gray-600">Rest</label>
         <Input
           value={exercise.rest || ''}
           onChange={(e) => onUpdate('rest', e.target.value)}
-          className="text-center w-full"
-          style={{ 
-            borderRadius: '0px', 
-            fontSize: '12px', 
-            height: '22px', 
-            padding: '0 4px'
-          }}
-          placeholder=""
+          className="h-7 text-xs rounded-none"
+          placeholder="Rest"
+        />
+      </div>
+      
+      <div className="space-y-1 col-span-2 md:col-span-3">
+        <label className="text-xs text-gray-600">Velocity</label>
+        <Input
+          value={exercise.velocity || ''}
+          onChange={(e) => onVelocityChange(e.target.value)}
+          className="h-7 text-xs rounded-none"
+          placeholder="Velocity"
+        />
+      </div>
+      
+      <div className="space-y-1 col-span-2 md:col-span-3">
+        <label className="text-xs text-gray-600">Σημειώσεις</label>
+        <Input
+          value={exercise.notes || ''}
+          onChange={(e) => onUpdate('notes', e.target.value)}
+          className="h-7 text-xs rounded-none"
+          placeholder="Σημειώσεις"
         />
       </div>
     </div>

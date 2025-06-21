@@ -38,22 +38,24 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 
   return (
     <>
-      <div className="bg-white border-0 border-b w-full" style={{ fontSize: '12px' }}>
-        <ExerciseSelectionButton
-          selectedExercise={selectedExercise}
-          exerciseNumber={exerciseNumber}
-          onSelectExercise={() => setShowExerciseDialog(true)}
-          onDuplicate={onDuplicate}
-          onRemove={onRemove}
-        />
-        
-        <ExerciseDetailsForm
-          exercise={exercise}
-          onUpdate={onUpdate}
-          onVelocityChange={handleVelocityChange}
-          onKgChange={handleKgChange}
-          onPercentageChange={handlePercentageChange}
-        />
+      <div className="bg-white border-0 border-b w-full overflow-x-auto md:overflow-x-visible" style={{ fontSize: '12px' }}>
+        <div className="min-w-[800px] md:min-w-0">
+          <ExerciseSelectionButton
+            selectedExercise={selectedExercise}
+            exerciseNumber={exerciseNumber}
+            onSelectExercise={() => setShowExerciseDialog(true)}
+            onDuplicate={onDuplicate}
+            onRemove={onRemove}
+          />
+          
+          <ExerciseDetailsForm
+            exercise={exercise}
+            onUpdate={onUpdate}
+            onVelocityChange={handleVelocityChange}
+            onKgChange={handleKgChange}
+            onPercentageChange={handlePercentageChange}
+          />
+        </div>
       </div>
 
       <ExerciseSelectionDialog
