@@ -54,7 +54,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       <div className="space-y-1">
         <label className="text-xs text-gray-600">%</label>
         <Input
-          value={exercise.percentage || ''}
+          value={exercise.percentage_1rm || ''}
           onChange={(e) => onPercentageChange(e.target.value)}
           className="h-7 text-xs rounded-none"
           placeholder="%"
@@ -84,7 +84,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       <div className="space-y-1 col-span-2 md:col-span-3">
         <label className="text-xs text-gray-600">Velocity</label>
         <Input
-          value={exercise.velocity || ''}
+          value={exercise.velocity_ms || ''}
           onChange={(e) => onVelocityChange(e.target.value)}
           className="h-7 text-xs rounded-none"
           placeholder="Velocity"
