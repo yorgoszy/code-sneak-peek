@@ -61,6 +61,7 @@ const Groups = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingGroups, setLoadingGroups] = useState(true);
+  const [userProfileState, setUserProfile] = useState<any>(null);
   const isMobile = useIsMobile();
   
   // Dialog states
@@ -147,7 +148,7 @@ const Groups = () => {
       return;
     }
 
-    if (!userProfile?.id) {
+    if (!userProfileState?.id) {
       toast({
         variant: "destructive",
         title: "Σφάλμα",
@@ -164,7 +165,7 @@ const Groups = () => {
         .insert([{
           name: groupName,
           description: groupDescription,
-          created_by: userProfile.id
+          created_by: userProfileState.id
         }])
         .select()
         .single();

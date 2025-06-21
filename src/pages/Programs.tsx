@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -83,21 +82,18 @@ const Programs = () => {
               selectedProgram={null}
               users={[]}
               exercises={[]}
-              categories={[]}
               onProgramSelect={() => {}}
               onProgramEdit={() => {}}
               onProgramDelete={() => {}}
               onProgramDuplicate={() => {}}
               onUserSelect={() => {}}
               onExerciseSelect={() => {}}
-              onCategorySelect={() => {}}
               onSaveProgram={() => {}}
               onDeleteProgram={() => {}}
               onAssignProgram={() => {}}
               refreshPrograms={() => {}}
               refreshUsers={() => {}}
               refreshExercises={() => {}}
-              refreshCategories={() => {}}
               loading={false}
               error={null}
               isCreating={false}

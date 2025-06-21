@@ -18,6 +18,7 @@ import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { format, isToday } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 const ActivePrograms = () => {
@@ -41,17 +42,30 @@ const ActivePrograms = () => {
   const multipleWorkoutsData = useMultipleWorkouts();
 
   // Extract data safely with fallbacks
-  const stats = {}; // Temporary empty stats
-  const todaysPrograms = activePrograms.filter(() => false); // Temporary empty today's programs
+  const stats = {
+    totalPrograms: activePrograms.length,
+    activeToday: 0,
+    completedToday: 0
+  };
 
-  const getWorkoutStatus = workoutCompletionsData?.getWorkoutStatus || (() => Promise.resolve('not_started'));
+  // Get today's programs
+  const today = new Date();
+  const todayStr = format(today, 'yyyy-MM-dd');
+  const todaysPrograms = activePrograms.filter(assignment => {
+    return assignment.training_dates?.some(date => date === todayStr);
+  });
+
+  // Mock function for workout status - you'll need to implement this properly
+  const getWorkoutStatus = async (assignmentId: string, date: Date) => {
+    return 'not_started';
+  };
 
   const multiWorkoutState = { activeWorkouts: multipleWorkoutsData?.activeWorkouts || [] };
   const handleStartWorkout = multipleWorkoutsData?.startWorkout || (() => {});
-  const handleCloseWorkout = multipleWorkoutsData?.completeWorkout || (() => {});
-  const handleMinimizeWorkout = multipleWorkoutsData?.updateElapsedTime || (() => {});
+  const handleCloseWorkout = () => {};
+  const handleMinimizeWorkout = () => {};
   const handleRestoreWorkout = () => {};
-  const handleCancelMinimizedWorkout = multipleWorkoutsData?.cancelWorkout || (() => {});
+  const handleCancelMinimizedWorkout = () => {};
 
   useEffect(() => {
     if (selectedDate && selectedProgram) {
@@ -66,7 +80,7 @@ const ActivePrograms = () => {
       };
       checkWorkoutStatus();
     }
-  }, [selectedDate, selectedProgram, getWorkoutStatus]);
+  }, [selectedDate, selectedProgram]);
 
   if (authLoading || rolesLoading) {
     return <CustomLoadingScreen />;
@@ -159,10 +173,10 @@ const ActivePrograms = () => {
           <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'} space-y-6`}>
             {/* Today's Programs Section */}
             <TodaysProgramsSection
-              todaysPrograms={todaysPrograms}
-              onRefresh={handleRefresh}
+              programsForToday={todaysPrograms}
+              workoutCompletions={[]}
+              todayStr={todayStr}
               onProgramClick={handleProgramClick}
-              onAttendance={handleAttendance}
             />
 
             {/* Calendar Grid */}
