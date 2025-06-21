@@ -9,8 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddExerciseDialog } from "@/components/AddExerciseDialog";
 import { EditExerciseDialog } from "@/components/EditExerciseDialog";
 import { ExercisesTable } from "@/components/exercises/ExercisesTable";
-import { ExercisesFilters } from "@/components/exercises/ExercisesFilters";
-import { ExercisesActions } from "@/components/exercises/ExercisesActions";
 import { useExercises } from "@/hooks/useExercises";
 import { useExerciseFilters } from "@/hooks/useExerciseFilters";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -141,7 +139,7 @@ const Exercises = () => {
               <CardContent>
                 <ExercisesTable 
                   exercises={filteredExercises}
-                  isLoading={loadingExercises}
+                  loading={loadingExercises}
                   onEditExercise={handleEditExercise}
                   onRefreshExercises={fetchExercises}
                   isMobile={isMobile}
@@ -155,7 +153,7 @@ const Exercises = () => {
       <AddExerciseDialog
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
-        onExerciseAdded={fetchExercises}
+        onSuccess={fetchExercises}
       />
 
       <EditExerciseDialog
@@ -164,7 +162,7 @@ const Exercises = () => {
           setEditDialogOpen(open);
           if (!open) setSelectedExercise(null);
         }}
-        onExerciseUpdated={fetchExercises}
+        onSuccess={fetchExercises}
         exercise={selectedExercise}
       />
     </SidebarProvider>

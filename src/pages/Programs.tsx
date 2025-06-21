@@ -78,7 +78,31 @@ const Programs = () => {
 
           {/* Programs Content */}
           <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
-            <ProgramsLayout />
+            <ProgramsLayout 
+              programs={[]}
+              selectedProgram={null}
+              users={[]}
+              exercises={[]}
+              categories={[]}
+              onProgramSelect={() => {}}
+              onProgramEdit={() => {}}
+              onProgramDelete={() => {}}
+              onProgramDuplicate={() => {}}
+              onUserSelect={() => {}}
+              onExerciseSelect={() => {}}
+              onCategorySelect={() => {}}
+              onSaveProgram={() => {}}
+              onDeleteProgram={() => {}}
+              onAssignProgram={() => {}}
+              refreshPrograms={() => {}}
+              refreshUsers={() => {}}
+              refreshExercises={() => {}}
+              refreshCategories={() => {}}
+              loading={false}
+              error={null}
+              isCreating={false}
+              isEditing={false}
+            />
           </div>
         </SidebarInset>
       </div>

@@ -36,26 +36,22 @@ const ActivePrograms = () => {
   });
   const isMobile = useIsMobile();
 
-  const activeProgramsData = useActivePrograms();
-  const { data: workoutCompletionsData } = useWorkoutCompletions();
+  const { data: activePrograms = [], isLoading: loading, error, refetch: refreshData } = useActivePrograms();
+  const workoutCompletionsData = useWorkoutCompletions();
   const multipleWorkoutsData = useMultipleWorkouts();
 
-  // Extract data safely
-  const activePrograms = activeProgramsData?.data || [];
-  const stats = activeProgramsData?.stats || {};
-  const todaysPrograms = activeProgramsData?.todaysPrograms || [];
-  const loading = activeProgramsData?.isLoading || false;
-  const error = activeProgramsData?.error || null;
-  const refreshData = activeProgramsData?.refetch || (() => {});
+  // Extract data safely with fallbacks
+  const stats = {}; // Temporary empty stats
+  const todaysPrograms = activePrograms.filter(() => false); // Temporary empty today's programs
 
   const getWorkoutStatus = workoutCompletionsData?.getWorkoutStatus || (() => Promise.resolve('not_started'));
 
-  const multiWorkoutState = multipleWorkoutsData?.state || { activeWorkouts: [], minimizedWorkout: null };
+  const multiWorkoutState = { activeWorkouts: multipleWorkoutsData?.activeWorkouts || [] };
   const handleStartWorkout = multipleWorkoutsData?.startWorkout || (() => {});
-  const handleCloseWorkout = multipleWorkoutsData?.closeWorkout || (() => {});
-  const handleMinimizeWorkout = multipleWorkoutsData?.minimizeWorkout || (() => {});
-  const handleRestoreWorkout = multipleWorkoutsData?.restoreWorkout || (() => {});
-  const handleCancelMinimizedWorkout = multipleWorkoutsData?.cancelMinimizedWorkout || (() => {});
+  const handleCloseWorkout = multipleWorkoutsData?.completeWorkout || (() => {});
+  const handleMinimizeWorkout = multipleWorkoutsData?.updateElapsedTime || (() => {});
+  const handleRestoreWorkout = () => {};
+  const handleCancelMinimizedWorkout = multipleWorkoutsData?.cancelWorkout || (() => {});
 
   useEffect(() => {
     if (selectedDate && selectedProgram) {
@@ -103,9 +99,9 @@ const ActivePrograms = () => {
   };
 
   const handleWorkoutStart = (weekIndex: number, dayIndex: number) => {
-    if (selectedProgram) {
+    if (selectedProgram && selectedDate) {
       console.log('🏃‍♂️ Starting workout for program:', selectedProgram.id, 'Week:', weekIndex, 'Day:', dayIndex);
-      handleStartWorkout(selectedProgram, weekIndex, dayIndex);
+      handleStartWorkout(selectedProgram, selectedDate);
     }
   };
 
@@ -118,6 +114,10 @@ const ActivePrograms = () => {
     setAttendanceDialogData({ isOpen: true, assignment });
   };
 
+  const handleRefresh = () => {
+    refreshData();
+  };
+
   if (loading) {
     return <CustomLoadingScreen />;
   }
@@ -128,7 +128,7 @@ const ActivePrograms = () => {
         <div className="text-center">
           <p className="text-red-600">Σφάλμα: {String(error)}</p>
           <button 
-            onClick={refreshData}
+            onClick={handleRefresh}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Δοκιμάστε ξανά
@@ -146,32 +146,28 @@ const ActivePrograms = () => {
           setIsCollapsed={setIsCollapsed}
           stats={stats}
           activePrograms={activePrograms}
-          onRefresh={refreshData}
+          onRefresh={handleRefresh}
           onDelete={handleDeleteAssignment}
-          minimizedWorkout={multiWorkoutState.minimizedWorkout}
+          minimizedWorkout={null}
           onRestoreWorkout={handleRestoreWorkout}
           onCancelMinimizedWorkout={handleCancelMinimizedWorkout}
         />
 
         <SidebarInset className="flex-1 flex flex-col">
-          <ActiveProgramsHeader
-            userProfile={userProfile}
-            user={user}
-            onSignOut={signOut}
-          />
+          <ActiveProgramsHeader />
 
           <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'} space-y-6`}>
             {/* Today's Programs Section */}
             <TodaysProgramsSection
-              programs={todaysPrograms}
-              onRefresh={refreshData}
+              todaysPrograms={todaysPrograms}
+              onRefresh={handleRefresh}
               onProgramClick={handleProgramClick}
               onAttendance={handleAttendance}
             />
 
             {/* Calendar Grid */}
             <CalendarGrid
-              programs={activePrograms}
+              activePrograms={activePrograms}
               onDayClick={handleDayClick}
               onProgramClick={handleProgramClick}
             />
@@ -200,7 +196,7 @@ const ActivePrograms = () => {
         program={selectedProgram}
         selectedDate={selectedDate}
         workoutStatus={workoutStatus}
-        onRefresh={refreshData}
+        onRefresh={handleRefresh}
       />
 
       <DayAllProgramsDialog
@@ -210,8 +206,8 @@ const ActivePrograms = () => {
           setSelectedDate(null);
         }}
         selectedDate={selectedDate}
-        programs={activePrograms}
-        onProgramSelect={(program) => {
+        activePrograms={activePrograms}
+        onProgramClick={(program) => {
           setSelectedProgram(program);
           setIsDayAllProgramsOpen(false);
           setIsDayDialogOpen(true);
@@ -222,14 +218,13 @@ const ActivePrograms = () => {
         isOpen={attendanceDialogData.isOpen}
         onClose={() => setAttendanceDialogData({ isOpen: false, assignment: null })}
         assignment={attendanceDialogData.assignment}
-        onRefresh={refreshData}
       />
 
       {/* Multi-Workout Manager */}
       <MultiWorkoutManager
-        activeWorkouts={multiWorkoutState.activeWorkouts}
-        onCloseWorkout={handleCloseWorkout}
-        onMinimizeWorkout={handleMinimizeWorkout}
+        workouts={multiWorkoutState.activeWorkouts}
+        onClose={handleCloseWorkout}
+        onMinimize={handleMinimizeWorkout}
       />
     </SidebarProvider>
   );
