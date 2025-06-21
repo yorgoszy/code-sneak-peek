@@ -19,9 +19,9 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   onPercentageChange
 }) => {
   return (
-    <div className="grid grid-cols-7 gap-0 p-1 text-xs">
+    <div className="grid grid-cols-7 gap-0 text-xs">
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600 text-center block">Sets</label>
+        <label className="text-[10px] text-gray-600 text-center block">Sets</label>
         <Input
           type="text"
           inputMode="numeric"
@@ -33,7 +33,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600 text-center block">Reps</label>
+        <label className="text-[10px] text-gray-600 text-center block">Reps</label>
         <Input
           type="text"
           inputMode="numeric"
@@ -45,7 +45,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600 text-center block">%1RM</label>
+        <label className="text-[10px] text-gray-600 text-center block">%1RM</label>
         <Input
           type="text"
           inputMode="numeric"
@@ -57,7 +57,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600 text-center block">Kg</label>
+        <label className="text-[10px] text-gray-600 text-center block">Kg</label>
         <Input
           type="text"
           inputMode="numeric"
@@ -69,7 +69,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600 text-center block">m/s</label>
+        <label className="text-[10px] text-gray-600 text-center block">m/s</label>
         <Input
           type="text"
           inputMode="numeric"
@@ -81,7 +81,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600 text-center block">Tempo</label>
+        <label className="text-[10px] text-gray-600 text-center block">Tempo</label>
         <Input
           type="text"
           value={exercise.tempo || ''}
@@ -92,7 +92,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600 text-center block">Rest</label>
+        <label className="text-[10px] text-gray-600 text-center block">Rest</label>
         <Input
           type="text"
           value={exercise.rest || ''}

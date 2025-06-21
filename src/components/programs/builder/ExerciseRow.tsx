@@ -47,13 +47,15 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
           onRemove={onRemove}
         />
         
-        <ExerciseDetailsForm
-          exercise={exercise}
-          onUpdate={onUpdate}
-          onVelocityChange={handleVelocityChange}
-          onKgChange={handleKgChange}
-          onPercentageChange={handlePercentageChange}
-        />
+        <div className="px-0">
+          <ExerciseDetailsForm
+            exercise={exercise}
+            onUpdate={onUpdate}
+            onVelocityChange={handleVelocityChange}
+            onKgChange={handleKgChange}
+            onPercentageChange={handlePercentageChange}
+          />
+        </div>
       </div>
 
       <ExerciseSelectionDialog
