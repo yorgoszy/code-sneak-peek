@@ -19,7 +19,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   onPercentageChange
 }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-6 gap-1 p-2 text-xs">
+    <div className="grid grid-cols-2 md:grid-cols-7 gap-1 p-2 text-xs">
       <div className="space-y-1">
         <label className="text-xs text-gray-600">Sets</label>
         <Input
@@ -42,6 +42,16 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="space-y-1">
+        <label className="text-xs text-gray-600">%1RM</label>
+        <Input
+          value={exercise.percentage_1rm || ''}
+          onChange={(e) => onPercentageChange(e.target.value)}
+          className="h-7 text-xs rounded-none"
+          placeholder="%"
+        />
+      </div>
+      
+      <div className="space-y-1">
         <label className="text-xs text-gray-600">Kg</label>
         <Input
           value={exercise.kg || ''}
@@ -52,12 +62,12 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="space-y-1">
-        <label className="text-xs text-gray-600">%</label>
+        <label className="text-xs text-gray-600">m/s</label>
         <Input
-          value={exercise.percentage_1rm || ''}
-          onChange={(e) => onPercentageChange(e.target.value)}
+          value={exercise.velocity_ms || ''}
+          onChange={(e) => onVelocityChange(e.target.value)}
           className="h-7 text-xs rounded-none"
-          placeholder="%"
+          placeholder="m/s"
         />
       </div>
       
@@ -78,26 +88,6 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           onChange={(e) => onUpdate('rest', e.target.value)}
           className="h-7 text-xs rounded-none"
           placeholder="Rest"
-        />
-      </div>
-      
-      <div className="space-y-1 col-span-2 md:col-span-3">
-        <label className="text-xs text-gray-600">Velocity</label>
-        <Input
-          value={exercise.velocity_ms || ''}
-          onChange={(e) => onVelocityChange(e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="Velocity"
-        />
-      </div>
-      
-      <div className="space-y-1 col-span-2 md:col-span-3">
-        <label className="text-xs text-gray-600">Σημειώσεις</label>
-        <Input
-          value={exercise.notes || ''}
-          onChange={(e) => onUpdate('notes', e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="Σημειώσεις"
         />
       </div>
     </div>
