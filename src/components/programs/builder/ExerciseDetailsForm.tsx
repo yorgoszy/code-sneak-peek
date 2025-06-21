@@ -19,85 +19,86 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   onPercentageChange
 }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-6 gap-1 p-2 text-xs">
-      <div className="space-y-1">
-        <label className="text-xs text-gray-600">Sets</label>
+    <div className="grid grid-cols-7 gap-0 text-xs">
+      <div className="space-y-0.5">
+        <label className="text-[10px] text-gray-600 text-center block">Sets</label>
         <Input
-          type="number"
+          type="text"
+          inputMode="numeric"
           value={exercise.sets || ''}
           onChange={(e) => onUpdate('sets', e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="Sets"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
+          placeholder=""
         />
       </div>
       
-      <div className="space-y-1">
-        <label className="text-xs text-gray-600">Reps</label>
+      <div className="space-y-0.5">
+        <label className="text-[10px] text-gray-600 text-center block">Reps</label>
         <Input
+          type="text"
+          inputMode="numeric"
           value={exercise.reps || ''}
           onChange={(e) => onUpdate('reps', e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="Reps"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
+          placeholder=""
         />
       </div>
       
-      <div className="space-y-1">
-        <label className="text-xs text-gray-600">Kg</label>
+      <div className="space-y-0.5">
+        <label className="text-[10px] text-gray-600 text-center block">%1RM</label>
         <Input
-          value={exercise.kg || ''}
-          onChange={(e) => onKgChange(e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="Kg"
-        />
-      </div>
-      
-      <div className="space-y-1">
-        <label className="text-xs text-gray-600">%</label>
-        <Input
+          type="text"
+          inputMode="numeric"
           value={exercise.percentage_1rm || ''}
           onChange={(e) => onPercentageChange(e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="%"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
+          placeholder=""
         />
       </div>
       
-      <div className="space-y-1">
-        <label className="text-xs text-gray-600">Tempo</label>
+      <div className="space-y-0.5">
+        <label className="text-[10px] text-gray-600 text-center block">Kg</label>
         <Input
-          value={exercise.tempo || ''}
-          onChange={(e) => onUpdate('tempo', e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="Tempo"
+          type="text"
+          inputMode="numeric"
+          value={exercise.kg || ''}
+          onChange={(e) => onKgChange(e.target.value)}
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
+          placeholder=""
         />
       </div>
       
-      <div className="space-y-1">
-        <label className="text-xs text-gray-600">Rest</label>
+      <div className="space-y-0.5">
+        <label className="text-[10px] text-gray-600 text-center block">m/s</label>
         <Input
-          value={exercise.rest || ''}
-          onChange={(e) => onUpdate('rest', e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="Rest"
-        />
-      </div>
-      
-      <div className="space-y-1 col-span-2 md:col-span-3">
-        <label className="text-xs text-gray-600">Velocity</label>
-        <Input
+          type="text"
+          inputMode="numeric"
           value={exercise.velocity_ms || ''}
           onChange={(e) => onVelocityChange(e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="Velocity"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
+          placeholder=""
         />
       </div>
       
-      <div className="space-y-1 col-span-2 md:col-span-3">
-        <label className="text-xs text-gray-600">Σημειώσεις</label>
+      <div className="space-y-0.5">
+        <label className="text-[10px] text-gray-600 text-center block">Tempo</label>
         <Input
-          value={exercise.notes || ''}
-          onChange={(e) => onUpdate('notes', e.target.value)}
-          className="h-7 text-xs rounded-none"
-          placeholder="Σημειώσεις"
+          type="text"
+          value={exercise.tempo || ''}
+          onChange={(e) => onUpdate('tempo', e.target.value)}
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
+          placeholder="1.1.1"
+        />
+      </div>
+      
+      <div className="space-y-0.5">
+        <label className="text-[10px] text-gray-600 text-center block">Rest</label>
+        <Input
+          type="text"
+          value={exercise.rest || ''}
+          onChange={(e) => onUpdate('rest', e.target.value)}
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
+          placeholder=""
         />
       </div>
     </div>
