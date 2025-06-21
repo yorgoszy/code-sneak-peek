@@ -21,83 +21,83 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   return (
     <div className="grid grid-cols-7 gap-0 p-1 text-xs">
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600">Sets</label>
+        <label className="text-xs text-gray-600 text-center block">Sets</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.sets || ''}
           onChange={(e) => onUpdate('sets', e.target.value)}
-          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
           placeholder=""
         />
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600">Reps</label>
+        <label className="text-xs text-gray-600 text-center block">Reps</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.reps || ''}
           onChange={(e) => onUpdate('reps', e.target.value)}
-          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
           placeholder=""
         />
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600">%1RM</label>
+        <label className="text-xs text-gray-600 text-center block">%1RM</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.percentage_1rm || ''}
           onChange={(e) => onPercentageChange(e.target.value)}
-          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
           placeholder=""
         />
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600">Kg</label>
+        <label className="text-xs text-gray-600 text-center block">Kg</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.kg || ''}
           onChange={(e) => onKgChange(e.target.value)}
-          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
           placeholder=""
         />
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600">m/s</label>
+        <label className="text-xs text-gray-600 text-center block">m/s</label>
         <Input
           type="text"
           inputMode="numeric"
           value={exercise.velocity_ms || ''}
           onChange={(e) => onVelocityChange(e.target.value)}
-          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
           placeholder=""
         />
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600">Tempo</label>
+        <label className="text-xs text-gray-600 text-center block">Tempo</label>
         <Input
           type="text"
           value={exercise.tempo || ''}
           onChange={(e) => onUpdate('tempo', e.target.value)}
-          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
           placeholder=""
         />
       </div>
       
       <div className="space-y-0.5">
-        <label className="text-xs text-gray-600">Rest</label>
+        <label className="text-xs text-gray-600 text-center block">Rest</label>
         <Input
           type="text"
           value={exercise.rest || ''}
           onChange={(e) => onUpdate('rest', e.target.value)}
-          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0"
+          className="h-5 text-xs rounded-none px-0.5 py-0 w-full min-w-0 text-center"
           placeholder=""
         />
       </div>
