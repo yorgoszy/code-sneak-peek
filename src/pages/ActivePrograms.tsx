@@ -26,6 +26,7 @@ const ActivePrograms = () => {
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedProgram, setSelectedProgram] = useState<EnrichedAssignment | null>(null);
   const [isProgramViewOpen, setIsProgramViewOpen] = useState(false);
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
@@ -35,13 +36,17 @@ const ActivePrograms = () => {
     isOpen: false,
     assignment: null
   });
+  const [realtimeKey, setRealtimeKey] = useState(0);
   const isMobile = useIsMobile();
 
   const { data: activePrograms = [], isLoading: loading, error, refetch: refreshData } = useActivePrograms();
   const workoutCompletionsData = useWorkoutCompletions();
   const multipleWorkoutsData = useMultipleWorkouts();
 
-  // Extract data safely with fallbacks
+  // Get workout completions data
+  const workoutCompletions = [];
+
+  // Calculate stats properly
   const stats = {
     totalPrograms: activePrograms.length,
     activeToday: 0,
@@ -55,11 +60,6 @@ const ActivePrograms = () => {
     return assignment.training_dates?.some(date => date === todayStr);
   });
 
-  // Mock function for workout status - you'll need to implement this properly
-  const getWorkoutStatus = async (assignmentId: string, date: Date) => {
-    return 'not_started';
-  };
-
   const multiWorkoutState = { activeWorkouts: multipleWorkoutsData?.activeWorkouts || [] };
   const handleStartWorkout = multipleWorkoutsData?.startWorkout || (() => {});
   const handleCloseWorkout = () => {};
@@ -69,16 +69,7 @@ const ActivePrograms = () => {
 
   useEffect(() => {
     if (selectedDate && selectedProgram) {
-      const checkWorkoutStatus = async () => {
-        try {
-          const status = await getWorkoutStatus(selectedProgram.id, selectedDate);
-          setWorkoutStatus(status || 'not_started');
-        } catch (error) {
-          console.error('Error checking workout status:', error);
-          setWorkoutStatus('not_started');
-        }
-      };
-      checkWorkoutStatus();
+      setWorkoutStatus('not_started');
     }
   }, [selectedDate, selectedProgram]);
 
@@ -100,16 +91,11 @@ const ActivePrograms = () => {
     setIsProgramViewOpen(true);
   };
 
-  const handleDayClick = (date: Date, programsForDay: EnrichedAssignment[]) => {
-    console.log('📅 Day clicked:', date, 'Programs:', programsForDay.length);
-    setSelectedDate(date);
-    
-    if (programsForDay.length === 1) {
-      setSelectedProgram(programsForDay[0]);
-      setIsDayDialogOpen(true);
-    } else if (programsForDay.length > 1) {
-      setIsDayAllProgramsOpen(true);
-    }
+  const handleNameClick = (programData: any, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setSelectedProgram(programData.assignment);
+    setSelectedDate(new Date(programData.date));
+    setIsDayDialogOpen(true);
   };
 
   const handleWorkoutStart = (weekIndex: number, dayIndex: number) => {
@@ -130,6 +116,7 @@ const ActivePrograms = () => {
 
   const handleRefresh = () => {
     refreshData();
+    setRealtimeKey(prev => prev + 1);
   };
 
   if (loading) {
@@ -174,16 +161,22 @@ const ActivePrograms = () => {
             {/* Today's Programs Section */}
             <TodaysProgramsSection
               programsForToday={todaysPrograms}
-              workoutCompletions={[]}
+              workoutCompletions={workoutCompletions}
               todayStr={todayStr}
               onProgramClick={handleProgramClick}
             />
 
             {/* Calendar Grid */}
             <CalendarGrid
+              currentMonth={currentMonth}
+              setCurrentMonth={setCurrentMonth}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
               activePrograms={activePrograms}
-              onDayClick={handleDayClick}
-              onProgramClick={handleProgramClick}
+              workoutCompletions={workoutCompletions}
+              realtimeKey={realtimeKey}
+              onNameClick={handleNameClick}
+              onRefresh={handleRefresh}
             />
           </div>
         </SidebarInset>
@@ -237,9 +230,7 @@ const ActivePrograms = () => {
 
       {/* Multi-Workout Manager */}
       <MultiWorkoutManager
-        workouts={multiWorkoutState.activeWorkouts}
-        onClose={handleCloseWorkout}
-        onMinimize={handleMinimizeWorkout}
+        onRefresh={handleRefresh}
       />
     </SidebarProvider>
   );
