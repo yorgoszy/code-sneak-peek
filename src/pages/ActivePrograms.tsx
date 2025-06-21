@@ -1,238 +1,256 @@
-
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
-import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
-import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
+import React, { useState, useEffect, useCallback } from 'react';
+import { format } from "date-fns";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
-import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
-import { DayAllProgramsDialog } from "@/components/active-programs/calendar/DayAllProgramsDialog";
-import { ProgramViewDialog } from "@/components/active-programs/calendar/ProgramViewDialog";
-import { MultiWorkoutManager } from "@/components/active-programs/calendar/MultiWorkoutManager";
-import { AttendanceDialog } from "@/components/active-programs/AttendanceDialog";
-import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
+import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
-import { CustomLoadingScreen } from "@/components/ui/custom-loading";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { format, isToday } from "date-fns";
+import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
+import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 const ActivePrograms = () => {
-  const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
-  const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [selectedProgram, setSelectedProgram] = useState<EnrichedAssignment | null>(null);
-  const [isProgramViewOpen, setIsProgramViewOpen] = useState(false);
-  const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
-  const [isDayAllProgramsOpen, setIsDayAllProgramsOpen] = useState(false);
-  const [workoutStatus, setWorkoutStatus] = useState<string>('not_started');
-  const [attendanceDialogData, setAttendanceDialogData] = useState<{isOpen: boolean, assignment: EnrichedAssignment | null}>({
-    isOpen: false,
-    assignment: null
-  });
+  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [realtimeKey, setRealtimeKey] = useState(0);
-  const isMobile = useIsMobile();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
 
-  const { data: activePrograms = [], isLoading: loading, error, refetch: refreshData } = useActivePrograms();
-  const workoutCompletionsData = useWorkoutCompletions();
-  const multipleWorkoutsData = useMultipleWorkouts();
+  const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
+  const { getWorkoutCompletions } = useWorkoutCompletions();
+  
+  // Multi-workout management
+  const { 
+    activeWorkouts, 
+    startWorkout,
+    updateElapsedTime,
+    completeWorkout,
+    cancelWorkout,
+    getWorkout,
+    formatTime
+  } = useMultipleWorkouts();
 
-  // Get workout completions data
-  const workoutCompletions = [];
+  // Timer για ενημέρωση του elapsed time για όλες τις ενεργές προπονήσεις
+  useEffect(() => {
+    const interval = setInterval(() => {
+      activeWorkouts.forEach(workout => {
+        if (workout.workoutInProgress) {
+          const newElapsedTime = Math.floor((new Date().getTime() - workout.startTime.getTime()) / 1000);
+          updateElapsedTime(workout.id, newElapsedTime);
+        }
+      });
+    }, 1000);
 
-  // Calculate stats properly
-  const stats = {
-    totalPrograms: activePrograms.length,
-    activeToday: 0,
-    completedToday: 0
-  };
+    return () => clearInterval(interval);
+  }, [activeWorkouts, updateElapsedTime]);
 
-  // Get today's programs
-  const today = new Date();
-  const todayStr = format(today, 'yyyy-MM-dd');
-  const todaysPrograms = activePrograms.filter(assignment => {
-    return assignment.training_dates?.some(date => date === todayStr);
+  // Σημερινή ημερομηνία
+  const dayToShow = selectedDate || new Date();
+  const dayToShowStr = format(dayToShow, 'yyyy-MM-dd');
+
+  // Φιλτράρουμε τα προγράμματα για την ημερομηνία που έχει επιλεγεί
+  const programsForSelectedDate = activePrograms.filter(assignment => {
+    if (!assignment.training_dates) return false;
+    return assignment.training_dates.includes(dayToShowStr);
   });
 
-  const multiWorkoutState = { activeWorkouts: multipleWorkoutsData?.activeWorkouts || [] };
-  const handleStartWorkout = multipleWorkoutsData?.startWorkout || (() => {});
-  const handleCloseWorkout = () => {};
-  const handleMinimizeWorkout = () => {};
-  const handleRestoreWorkout = () => {};
-  const handleCancelMinimizedWorkout = () => {};
+  // Φόρτωση workout completions
+  const loadCompletions = useCallback(async () => {
+    if (activePrograms.length === 0) return;
+    
+    try {
+      console.log('📊 ActivePrograms: Loading completions for', activePrograms.length, 'assignments');
+      const allCompletions = [];
+      for (const assignment of activePrograms) {
+        const completions = await getWorkoutCompletions(assignment.id);
+        allCompletions.push(...completions);
+      }
+      console.log('📊 ActivePrograms: Loaded completions:', allCompletions.length);
+      setWorkoutCompletions(allCompletions);
+    } catch (error) {
+      console.error('❌ ActivePrograms: Error loading workout completions:', error);
+    }
+  }, [activePrograms, getWorkoutCompletions]);
 
+  // Initial load
   useEffect(() => {
-    if (selectedDate && selectedProgram) {
-      setWorkoutStatus('not_started');
-    }
-  }, [selectedDate, selectedProgram]);
+    loadCompletions();
+  }, [loadCompletions]);
 
-  if (authLoading || rolesLoading) {
-    return <CustomLoadingScreen />;
-  }
+  // Enhanced real-time subscription
+  useEffect(() => {
+    console.log('🔄 ActivePrograms: Setting up REAL-TIME subscriptions...');
+    
+    const completionsChannel = supabase
+      .channel(`workout-completions-${Date.now()}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_completions'
+        },
+        async (payload) => {
+          console.log('🔄 REALTIME: workout completion change:', payload);
+          
+          // ΑΜΕΣΗ ανανέωση του realtime key
+          setRealtimeKey(Date.now());
+          
+          // Reload completions
+          await loadCompletions();
+          
+          // Refetch active programs
+          refetch();
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Completions subscription status:', status);
+      });
 
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
+    const assignmentsChannel = supabase
+      .channel(`assignments-${Date.now()}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'program_assignments'
+        },
+        async (payload) => {
+          console.log('🔄 REALTIME: assignment change:', payload);
+          
+          // ΑΜΕΣΗ ανανέωση του realtime key
+          setRealtimeKey(Date.now());
+          
+          // Refetch active programs
+          refetch();
+          await loadCompletions();
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Assignments subscription status:', status);
+      });
 
-  if (!isAdmin()) {
-    return <Navigate to={`/dashboard/user-profile/${userProfile?.id}`} replace />;
-  }
+    return () => {
+      console.log('🔌 ActivePrograms: Cleaning up real-time subscriptions');
+      supabase.removeChannel(completionsChannel);
+      supabase.removeChannel(assignmentsChannel);
+    };
+  }, [loadCompletions, refetch]);
 
+  // Χειρισμός κλικ σε πρόγραμμα - ανοίγει νέο dialog
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    console.log('🎯 Program clicked:', assignment.id, assignment.app_users?.name);
-    setSelectedProgram(assignment);
-    setIsProgramViewOpen(true);
+    const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
+    
+    // Έναρξη προπόνησης
+    startWorkout(assignment, dayToShow);
+    
+    // Άνοιγμα dialog
+    setOpenDialogs(prev => new Set(prev).add(workoutId));
   };
 
-  const handleNameClick = (programData: any, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setSelectedProgram(programData.assignment);
-    setSelectedDate(new Date(programData.date));
-    setIsDayDialogOpen(true);
+  const handleDialogClose = (workoutId: string) => {
+    setOpenDialogs(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(workoutId);
+      return newSet;
+    });
   };
 
-  const handleWorkoutStart = (weekIndex: number, dayIndex: number) => {
-    if (selectedProgram && selectedDate) {
-      console.log('🏃‍♂️ Starting workout for program:', selectedProgram.id, 'Week:', weekIndex, 'Day:', dayIndex);
-      handleStartWorkout(selectedProgram, selectedDate);
+  const handleDeleteProgram = async (assignmentId: string) => {
+    try {
+      console.log('Διαγραφή προγράμματος:', assignmentId);
+      refetch();
+    } catch (error) {
+      console.error('Σφάλμα κατά τη διαγραφή:', error);
     }
   };
 
-  const handleDeleteAssignment = async (assignmentId: string) => {
-    console.log('🗑️ Delete assignment requested for:', assignmentId);
-    refreshData();
+  // Update το getWorkoutStatus να παίρνει ως input ημερομηνία
+  const getWorkoutStatus = (assignment: any, dateStr: string) => {
+    const completion = workoutCompletions.find(c => 
+      c.assignment_id === assignment.id && c.scheduled_date === dateStr
+    );
+    return completion?.status || 'scheduled';
   };
 
-  const handleAttendance = (assignment: EnrichedAssignment) => {
-    setAttendanceDialogData({ isOpen: true, assignment });
-  };
+  // ΚΡΙΤΙΚΟ: Enhanced refresh για ΑΜΕΣΗ ανανέωση
+  const handleCalendarRefresh = useCallback(async () => {
+    console.log('🔄 ActivePrograms: CRITICAL CALENDAR REFRESH');
+    
+    // ΑΜΕΣΗ ανανέωση με unique timestamp
+    const newKey = Date.now() + Math.random();
+    setRealtimeKey(newKey);
+    
+    // Reload δεδομένων
+    await loadCompletions();
+    refetch();
+    
+    console.log('🔄 Calendar refresh completed with key:', newKey);
+  }, [loadCompletions, refetch]);
 
-  const handleRefresh = () => {
-    refreshData();
-    setRealtimeKey(prev => prev + 1);
-  };
-
-  if (loading) {
-    return <CustomLoadingScreen />;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex w-full items-center justify-center">
+        <div>Φόρτωση προγραμμάτων...</div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">Σφάλμα: {String(error)}</p>
-          <button 
-            onClick={handleRefresh}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Δοκιμάστε ξανά
-          </button>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex w-full items-center justify-center">
+        <div className="text-red-600">Σφάλμα κατά τη φόρτωση: {error.message}</div>
       </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-gray-50 flex w-full">
-        <ActiveProgramsSidebar 
-          isCollapsed={isCollapsed} 
-          setIsCollapsed={setIsCollapsed}
-          stats={stats}
-          activePrograms={activePrograms}
-          onRefresh={handleRefresh}
-          onDelete={handleDeleteAssignment}
-          minimizedWorkout={null}
-          onRestoreWorkout={handleRestoreWorkout}
-          onCancelMinimizedWorkout={handleCancelMinimizedWorkout}
-        />
-
-        <SidebarInset className="flex-1 flex flex-col">
+    <>
+      {/* Remove Sidebar: Use a single flex column that stretches the whole width */}
+      <div className="min-h-screen bg-gray-50 flex flex-col w-full">
+        <div className="flex-1 p-2 sm:p-4 md:p-6 w-full max-w-5xl mx-auto space-y-6">
           <ActiveProgramsHeader />
 
-          <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'} space-y-6`}>
-            {/* Today's Programs Section */}
-            <TodaysProgramsSection
-              programsForToday={todaysPrograms}
-              workoutCompletions={workoutCompletions}
-              todayStr={todayStr}
-              onProgramClick={handleProgramClick}
-            />
+          {/* Calendar with ENHANCED realtime key */}
+          <CalendarGrid
+            currentMonth={currentMonth}
+            setCurrentMonth={setCurrentMonth}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            activePrograms={activePrograms}
+            workoutCompletions={workoutCompletions}
+            realtimeKey={realtimeKey}
+            onNameClick={handleProgramClick}
+            onRefresh={handleCalendarRefresh}
+          />
 
-            {/* Calendar Grid */}
-            <CalendarGrid
-              currentMonth={currentMonth}
-              setCurrentMonth={setCurrentMonth}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              activePrograms={activePrograms}
-              workoutCompletions={workoutCompletions}
-              realtimeKey={realtimeKey}
-              onNameClick={handleNameClick}
-              onRefresh={handleRefresh}
-            />
-          </div>
-        </SidebarInset>
+          {/* Today's Programs for the selected date */}
+          <TodaysProgramsSection
+            programsForToday={programsForSelectedDate}
+            workoutCompletions={workoutCompletions}
+            todayStr={dayToShowStr}
+            onProgramClick={handleProgramClick}
+          />
+        </div>
       </div>
 
-      {/* Dialogs */}
-      <ProgramViewDialog
-        isOpen={isProgramViewOpen}
-        onClose={() => {
-          setIsProgramViewOpen(false);
-          setSelectedProgram(null);
-        }}
-        assignment={selectedProgram}
-        onStartWorkout={handleWorkoutStart}
-      />
-
-      <DayProgramDialog
-        isOpen={isDayDialogOpen}
-        onClose={() => {
-          setIsDayDialogOpen(false);
-          setSelectedDate(null);
-          setSelectedProgram(null);
-        }}
-        program={selectedProgram}
-        selectedDate={selectedDate}
-        workoutStatus={workoutStatus}
-        onRefresh={handleRefresh}
-      />
-
-      <DayAllProgramsDialog
-        isOpen={isDayAllProgramsOpen}
-        onClose={() => {
-          setIsDayAllProgramsOpen(false);
-          setSelectedDate(null);
-        }}
-        selectedDate={selectedDate}
-        programs={activePrograms}
-        allCompletions={[]}
-        onProgramClick={(program) => {
-          setSelectedProgram(program);
-          setIsDayAllProgramsOpen(false);
-          setIsDayDialogOpen(true);
-        }}
-      />
-
-      <AttendanceDialog
-        isOpen={attendanceDialogData.isOpen}
-        onClose={() => setAttendanceDialogData({ isOpen: false, assignment: null })}
-        assignment={attendanceDialogData.assignment}
-      />
-
-      {/* Multi-Workout Manager */}
-      <MultiWorkoutManager
-        onRefresh={handleRefresh}
-      />
-    </SidebarProvider>
+      {/* Multiple Day Program Dialogs */}
+      {activeWorkouts.map(workout => (
+        <DayProgramDialog
+          key={workout.id}
+          isOpen={openDialogs.has(workout.id)}
+          onClose={() => handleDialogClose(workout.id)}
+          program={workout.assignment}
+          selectedDate={workout.selectedDate}
+          workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
+          onRefresh={handleCalendarRefresh}
+        />
+      ))}
+    </>
   );
 };
 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { useWorkoutCompletions, type AssignmentAttendance } from "@/hooks/useWor
 import { useWorkoutStatistics } from "@/hooks/useWorkoutStatistics";
 
 interface AttendanceDialogProps {
-  assignment: EnrichedAssignment | null;
+  assignment: EnrichedAssignment;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -22,16 +23,15 @@ export const AttendanceDialog: React.FC<AttendanceDialogProps> = ({
   const [attendance, setAttendance] = useState<AssignmentAttendance | null>(null);
   const [completions, setCompletions] = useState<any[]>([]);
   const { getAssignmentAttendance, getWorkoutCompletions } = useWorkoutCompletions();
-  const { statistics, loading: statsLoading } = useWorkoutStatistics(assignment?.id || '');
+  const { statistics, loading: statsLoading } = useWorkoutStatistics(assignment.id);
 
   useEffect(() => {
-    if (isOpen && assignment?.id) {
+    if (isOpen && assignment.id) {
       fetchData();
     }
-  }, [isOpen, assignment?.id]);
+  }, [isOpen, assignment.id]);
 
   const fetchData = async () => {
-    if (!assignment?.id) return;
     try {
       const [attendanceData, completionsData] = await Promise.all([
         getAssignmentAttendance(assignment.id),
@@ -44,11 +44,6 @@ export const AttendanceDialog: React.FC<AttendanceDialogProps> = ({
       console.error('Error fetching attendance data:', error);
     }
   };
-
-  // Early return if assignment is null
-  if (!assignment) {
-    return null;
-  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('el-GR');
