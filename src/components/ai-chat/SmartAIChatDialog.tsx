@@ -117,7 +117,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
         </DialogHeader>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 p-4 border rounded-none" ref={scrollAreaRef}>
+          <div className="flex-1 overflow-y-auto p-4 border rounded-none" ref={scrollAreaRef}>
             <div className="space-y-4">
               {messages.map((message) => (
                 <div
@@ -163,7 +163,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
                 </div>
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           <div className="flex gap-2 p-4 border-t">
             <Input
