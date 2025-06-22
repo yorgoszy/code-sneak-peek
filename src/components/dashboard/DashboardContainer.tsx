@@ -10,18 +10,28 @@ import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const DashboardContainer = () => {
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [hasCheckedRedirect, setHasCheckedRedirect] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const {
     userProfile: dashboardUserProfile,
     stats
   } = useDashboard();
+
+  // Close mobile sidebar when route changes or screen size changes
+  useEffect(() => {
+    if (isMobile) {
+      setShowMobileSidebar(false);
+    }
+  }, [isMobile]);
 
   // Redirect non-admin users to their personal profile
   useEffect(() => {
@@ -81,21 +91,41 @@ export const DashboardContainer = () => {
   console.log('✅ DashboardContainer: Rendering dashboard for admin user');
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+    <div className="min-h-screen bg-gray-50 flex w-full">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobile && showMobileSidebar && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowMobileSidebar(false)}
+          />
+          <div className="relative w-64 h-full">
+            <Sidebar 
+              isCollapsed={false} 
+              setIsCollapsed={setIsCollapsed}
+              onMobileClose={() => setShowMobileSidebar(false)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation */}
         <DashboardHeader
           userProfile={dashboardUserProfile}
           userEmail={user?.email}
           onSignOut={handleSignOut}
+          onMobileMenuClick={() => setShowMobileSidebar(true)}
         />
 
         {/* Dashboard Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-3 md:p-6">
           {/* Tabs */}
           <DashboardTabs />
 
