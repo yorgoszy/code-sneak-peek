@@ -4,6 +4,7 @@ import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
 import { WorkoutStatsTabsSection } from "./WorkoutStatsTabsSection";
 import { Activity, Calendar, FileText, CreditCard } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UserProfileOverviewProps {
   userProfile: any;
@@ -20,9 +21,10 @@ export const UserProfileOverview = ({
   tests,
   payments
 }: UserProfileOverviewProps) => {
+  const isMobile = useIsMobile();
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* User Header */}
       <UserProfileHeader user={userProfile} />
       
@@ -33,53 +35,53 @@ export const UserProfileOverview = ({
       <WorkoutStatsTabsSection userId={userProfile.id} />
       
       {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className={`grid gap-4 md:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
         {/* Recent Programs */}
         <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Activity className="h-5 w-5" />
+          <CardHeader className={isMobile ? "pb-3" : ""}>
+            <CardTitle className={`flex items-center space-x-2 ${isMobile ? 'text-base' : ''}`}>
+              <Activity className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
               <span>Πρόσφατα Προγράμματα</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className={isMobile ? "pt-0" : ""}>
             {programs.length > 0 ? (
               <div className="space-y-3">
                 {programs.slice(0, 3).map((program) => (
                   <div key={program.id} className="border-l-4 border-blue-500 pl-3">
-                    <h4 className="font-medium text-sm">{program.name}</h4>
-                    <p className="text-xs text-gray-600">{program.description}</p>
+                    <h4 className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>{program.name}</h4>
+                    <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-xs'}`}>{program.description}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-sm">Δεν υπάρχουν προγράμματα</p>
+              <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-sm'}`}>Δεν υπάρχουν προγράμματα</p>
             )}
           </CardContent>
         </Card>
 
         {/* Recent Tests */}
         <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <FileText className="h-5 w-5" />
+          <CardHeader className={isMobile ? "pb-3" : ""}>
+            <CardTitle className={`flex items-center space-x-2 ${isMobile ? 'text-base' : ''}`}>
+              <FileText className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
               <span>Πρόσφατα Τεστ</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className={isMobile ? "pt-0" : ""}>
             {tests.length > 0 ? (
               <div className="space-y-3">
                 {tests.slice(0, 3).map((test) => (
                   <div key={test.id} className="border-l-4 border-green-500 pl-3">
-                    <h4 className="font-medium text-sm">{test.test_type}</h4>
-                    <p className="text-xs text-gray-600">
+                    <h4 className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>{test.test_type}</h4>
+                    <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-xs'}`}>
                       {new Date(test.created_at).toLocaleDateString('el-GR')}
                     </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-sm">Δεν υπάρχουν τεστ</p>
+              <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-sm'}`}>Δεν υπάρχουν τεστ</p>
             )}
           </CardContent>
         </Card>
@@ -87,28 +89,28 @@ export const UserProfileOverview = ({
 
       {/* Additional Info */}
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Στοιχεία Λογαριασμού</CardTitle>
+        <CardHeader className={isMobile ? "pb-3" : ""}>
+          <CardTitle className={isMobile ? 'text-base' : ''}>Στοιχεία Λογαριασμού</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className={isMobile ? "pt-0" : ""}>
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
             <div>
-              <label className="text-sm font-medium text-gray-600">Email</label>
-              <p className="text-sm">{userProfile.email}</p>
+              <label className={`font-medium text-gray-600 ${isMobile ? 'text-sm' : 'text-sm'}`}>Email</label>
+              <p className={`${isMobile ? 'text-sm' : 'text-sm'} break-all`}>{userProfile.email}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600">Ρόλος</label>
-              <p className="text-sm capitalize">{userProfile.role}</p>
+              <label className={`font-medium text-gray-600 ${isMobile ? 'text-sm' : 'text-sm'}`}>Ρόλος</label>
+              <p className={`capitalize ${isMobile ? 'text-sm' : 'text-sm'}`}>{userProfile.role}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600">Δημιουργήθηκε</label>
-              <p className="text-sm">
+              <label className={`font-medium text-gray-600 ${isMobile ? 'text-sm' : 'text-sm'}`}>Δημιουργήθηκε</label>
+              <p className={isMobile ? 'text-sm' : 'text-sm'}>
                 {new Date(userProfile.created_at).toLocaleDateString('el-GR')}
               </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600">Τελευταία Ενημέρωση</label>
-              <p className="text-sm">
+              <label className={`font-medium text-gray-600 ${isMobile ? 'text-sm' : 'text-sm'}`}>Τελευταία Ενημέρωση</label>
+              <p className={isMobile ? 'text-sm' : 'text-sm'}>
                 {new Date(userProfile.updated_at).toLocaleDateString('el-GR')}
               </p>
             </div>

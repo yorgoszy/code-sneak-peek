@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Users, Dumbbell, CreditCard } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UserProfileStatsProps {
   user: any;
@@ -13,33 +14,37 @@ interface UserProfileStatsProps {
 }
 
 export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <Card className="rounded-none">
+      <CardContent className={isMobile ? "pt-4" : "pt-6"}>
+        <div className={`grid gap-4 ${
+          isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'
+        }`}>
           {user.role === 'trainer' && (
             <div className="text-center">
-              <Users className="h-8 w-8 mx-auto text-blue-500 mb-2" />
-              <p className="text-2xl font-bold">{stats.athletesCount}</p>
-              <p className="text-sm text-gray-600">Αθλητές</p>
+              <Users className={`mx-auto text-blue-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.athletesCount}</p>
+              <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Αθλητές</p>
             </div>
           )}
           <div className="text-center">
-            <Dumbbell className="h-8 w-8 mx-auto text-green-500 mb-2" />
-            <p className="text-2xl font-bold">{stats.programsCount}</p>
-            <p className="text-sm text-gray-600">
+            <Dumbbell className={`mx-auto text-green-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.programsCount}</p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
               {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ανατεθέντα Προγράμματα'}
             </p>
           </div>
           <div className="text-center">
-            <Calendar className="h-8 w-8 mx-auto text-purple-500 mb-2" />
-            <p className="text-2xl font-bold">{stats.testsCount}</p>
-            <p className="text-sm text-gray-600">Τεστ</p>
+            <Calendar className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.testsCount}</p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Τεστ</p>
           </div>
           <div className="text-center">
-            <CreditCard className="h-8 w-8 mx-auto text-orange-500 mb-2" />
-            <p className="text-2xl font-bold">{stats.paymentsCount}</p>
-            <p className="text-sm text-gray-600">Πληρωμές</p>
+            <CreditCard className={`mx-auto text-orange-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.paymentsCount}</p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Πληρωμές</p>
           </div>
         </div>
       </CardContent>
