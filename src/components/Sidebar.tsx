@@ -1,3 +1,4 @@
+
 import { 
   Home, 
   Users, 
@@ -17,7 +18,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useState } from "react";
-import { LocalAIChatDialog } from "@/components/ai-chat/LocalAIChatDialog";
+import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
@@ -143,9 +144,9 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
           >
             <div className="flex items-center space-x-3">
               <item.icon className="h-5 w-5 flex-shrink-0" />
-              <span className="truncate">{item.label}</span>
+              {(!isCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
             </div>
-            {item.badge && (
+            {(!isCollapsed || isMobile) && item.badge && (
               <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full flex-shrink-0">
                 {item.badge}
               </span>
@@ -154,16 +155,18 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         );
       })}
       
-      {/* Τοπικός AI Βοηθός Button */}
+      {/* Έξυπνος AI Βοηθός Button */}
       <button
         onClick={handleAIChatClick}
         className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4`}
       >
         <Brain className="h-5 w-5 flex-shrink-0 text-[#00ffba]" />
-        <div className="flex flex-col items-start min-w-0">
-          <span className="text-sm font-medium truncate">Τοπικός AI Προπονητής</span>
-          <span className="text-xs text-gray-500 truncate">100% Δωρεάν & Ιδιωτικός</span>
-        </div>
+        {(!isCollapsed || isMobile) && (
+          <div className="flex flex-col items-start min-w-0">
+            <span className="text-sm font-medium truncate">Έξυπνος AI Προπονητής</span>
+            <span className="text-xs text-gray-500 truncate">Μαθαίνει & θυμάται</span>
+          </div>
+        )}
       </button>
     </div>
   );
@@ -177,7 +180,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         navigationContent={navigationContent}
       />
       
-      <LocalAIChatDialog
+      <SmartAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={userProfile?.id}

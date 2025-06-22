@@ -51,9 +51,8 @@ class LocalAI {
       }
     }
 
-    // Προσομοίωση χρόνου σκέψης
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    // Εδώ θα μπορούσαμε να χρησιμοποιήσουμε το @xenova/transformers
+    // Προς το παρόν, θα χρησιμοποιήσω έναν έξυπνο rule-based chatbot
     return this.generateFitnessResponse(message, athleteName);
   }
 
@@ -63,11 +62,10 @@ class LocalAI {
     // Διατροφικές συμβουλές
     if (lowerMessage.includes('διατροφή') || lowerMessage.includes('φαγητό') || lowerMessage.includes('τροφή')) {
       return `Για βέλτιστη διατροφή ${athleteName ? `για τον/την ${athleteName}` : ''}, συνιστώ:
-
-🥗 **Πρωτεΐνες**: 1.6-2.2g ανά κιλό σωματικού βάρους
-🍞 **Υδατάνθρακες**: 3-7g ανά κιλό (ανάλογα με την εντατικότητα)
-🥑 **Λίπη**: 20-35% των συνολικών θερμίδων
-💧 **Νερό**: 35-40ml ανά κιλό σωματικού βάρους
+• Πρωτεΐνες: 1.6-2.2g ανά κιλό σωματικού βάρους
+• Υδατάνθρακες: 3-7g ανά κιλό (ανάλογα με την εντατικότητα)
+• Λίπη: 20-35% των συνολικών θερμίδων
+• Νερό: 35-40ml ανά κιλό σωματικού βάρους
 
 Προτιμήστε φρέσκα, ελάχιστα επεξεργασμένα τρόφιμα!`;
     }
@@ -75,12 +73,11 @@ class LocalAI {
     // Ασκησιολογικές συμβουλές
     if (lowerMessage.includes('άσκηση') || lowerMessage.includes('προπόνηση') || lowerMessage.includes('γυμναστική')) {
       return `Για αποτελεσματική προπόνηση ${athleteName ? `του/της ${athleteName}` : ''}:
-
-🔥 **Ξεκινήστε** με 5-10 λεπτά ζέστασμα
-💪 **Συνδυάστε** καρδιοαγγειακή και δύναμη
-📈 **Προοδευτική** αύξηση φορτίου
-⏰ **48-72 ώρες** ανάπαυση ανά μυϊκή ομάδα
-🧘 **Τελειώστε** με stretching
+• Ξεκινήστε με 5-10 λεπτά ζέστασμα
+• Συνδυάστε καρδιοαγγειακή και δύναμη
+• Προοδευτική αύξηση φορτίου
+• 48-72 ώρες ανάπαυση ανά μυϊκή ομάδα
+• Τελειώστε με stretching
 
 Η συνέπεια είναι πιο σημαντική από την εντατικότητα!`;
     }
@@ -88,51 +85,48 @@ class LocalAI {
     // Ανάκαμψη
     if (lowerMessage.includes('ανάκαμψη') || lowerMessage.includes('κούραση') || lowerMessage.includes('πόνος')) {
       return `Για καλύτερη ανάκαμψη:
+• Ύπνος: 7-9 ώρες ποιοτικού ύπνου
+• Ενυδάτωση: Αυξημένη πρόσληψη νερού
+• Ενεργητική ανάκαμψη: Ελαφριά κίνηση, περπάτημα
+• Διατροφή: Πρωτεΐνη + υδατάνθρακες μετά την προπόνηση
+• Διάταση και mobility work
 
-😴 **Ύπνος**: 7-9 ώρες ποιοτικού ύπνου
-💧 **Ενυδάτωση**: Αυξημένη πρόσληψη νερού
-🚶 **Ενεργητική ανάκαμψη**: Ελαφριά κίνηση, περπάτημα
-🍽️ **Διατροφή**: Πρωτεΐνη + υδατάνθρακες μετά την προπόνηση
-🤸 **Διάταση** και mobility work
-
-⚠️ Αν ο πόνος επιμένει, συμβουλευτείτε ειδικό!`;
+Αν ο πόνος επιμένει, συμβουλευτείτε ειδικό!`;
     }
 
     // Αδυνάτισμα
     if (lowerMessage.includes('αδυνάτισμα') || lowerMessage.includes('απώλεια βάρους') || lowerMessage.includes('δίαιτα')) {
       return `Για υγιή απώλεια βάρους:
+• Δημιουργήστε έλλειμμα 300-500 θερμίδων ημερησίως
+• Συνδυάστε καρδιοαγγειακή άσκηση με δύναμη
+• Μην μειώσετε δραστικά τις θερμίδες
+• Προτεραιότητα στην πρωτεΐνη
+• Υπομονή: 0.5-1kg ανά εβδομάδα είναι ιδανικό
 
-⚖️ **Δημιουργήστε έλλειμμα** 300-500 θερμίδων ημερησίως
-🏃‍♀️ **Συνδυάστε** καρδιοαγγειακή άσκηση με δύναμη
-🚫 **Μην μειώσετε δραστικά** τις θερμίδες
-🥩 **Προτεραιότητα** στην πρωτεΐνη
-⏳ **Υπομονή**: 0.5-1kg ανά εβδομάδα είναι ιδανικό
-
-Η απώλεια βάρους είναι ταξίδι, όχι προορισμός! 🎯`;
+Η απώλεια βάρους είναι ταξίδι, όχι προορισμός!`;
     }
 
     // Μυϊκή μάζα
     if (lowerMessage.includes('μυς') || lowerMessage.includes('μάζα') || lowerMessage.includes('όγκος')) {
       return `Για αύξηση μυϊκής μάζας:
+• Προοδευτική υπερφόρτωση
+• Σύνθετες ασκήσεις (squat, deadlift, bench press)
+• Πρωτεΐνη: 1.8-2.5g ανά κιλό
+• Πλεόνασμα θερμίδων: +200-500 ημερησίως
+• Ανάπαυση: Αφήστε τους μυς να αναπτυχθούν
 
-📈 **Προοδευτική υπερφόρτωση**
-🏋️ **Σύνθετες ασκήσεις** (squat, deadlift, bench press)
-🥩 **Πρωτεΐνη**: 1.8-2.5g ανά κιλό
-➕ **Πλεόνασμα θερμίδων**: +200-500 ημερησίως
-😴 **Ανάπαυση**: Αφήστε τους μυς να αναπτυχθούν
-
-Η υπομονή και η συνέπεια είναι κλειδί! 🔑`;
+Η υπομονή και η συνέπεια είναι κλειδί!`;
     }
 
     // Γενική συμβουλή
     return `Γεια σας! ${athleteName ? `Χαίρομαι που μιλάμε για τον/την ${athleteName}.` : ''} 
 Είμαι εδώ για να σας βοηθήσω με συμβουλές για:
 
-🏋️ **Προπόνηση** και ασκήσεις
-🥗 **Διατροφή** και θερμίδες  
-😴 **Ανάκαμψη** και ύπνο
-💪 **Μυϊκή** ανάπτυξη
-🔥 **Απώλεια** βάρους
+🏋️ Προπόνηση και ασκήσεις
+🥗 Διατροφή και θερμίδες  
+😴 Ανάκαμψη και ύπνο
+💪 Μυϊκή ανάπτυξη
+🔥 Απώλεια βάρους
 
 Τι θα θέλατε να μάθετε;`;
   }
@@ -155,13 +149,11 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const localAI = LocalAI.getInstance();
 
-  // Initialize welcome message only once
   useEffect(() => {
-    if (isOpen && !hasInitialized) {
+    if (isOpen) {
       setMessages([{
         id: 'welcome',
         content: `Γεια σας! Είμαι ο τοπικός AI βοηθός σας για διατροφικές και ασκησιολογικές συμβουλές. ${athleteName ? `Μπορώ να σας βοηθήσω με ερωτήσεις σχετικά με τον αθλητή ${athleteName}.` : 'Πώς μπορώ να σας βοηθήσω σήμερα;'} 
@@ -170,24 +162,12 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
         role: 'assistant',
         timestamp: new Date()
       }]);
-      setHasInitialized(true);
     }
-  }, [isOpen, athleteName, hasInitialized]);
+  }, [isOpen, athleteName]);
 
-  // Reset when dialog closes
   useEffect(() => {
-    if (!isOpen) {
-      setHasInitialized(false);
-      setMessages([]);
-      setInput('');
-      setIsLoading(false);
-    }
-  }, [isOpen]);
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
 
@@ -260,7 +240,7 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
         </DialogHeader>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 p-4 border rounded-none">
+          <ScrollArea className="flex-1 p-4 border rounded-none" ref={scrollAreaRef}>
             <div className="space-y-4">
               {messages.map((message) => (
                 <div
@@ -305,8 +285,6 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
                   </div>
                 </div>
               )}
-              
-              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
 
