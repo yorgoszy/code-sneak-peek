@@ -27,7 +27,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   const {
     messages,
     isLoading,
-    hasSubscription,
+    hasActiveSubscription,
     sendMessage,
     clearConversation
   } = useSmartAIChat({ athleteId, athleteName, isOpen });
@@ -58,7 +58,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
     toast.success("Η συνομιλία διαγράφηκε επιτυχώς!");
   };
 
-  if (!hasSubscription) {
+  if (!hasActiveSubscription) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-md rounded-none">

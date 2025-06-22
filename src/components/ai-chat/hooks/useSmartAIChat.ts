@@ -136,26 +136,25 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     }
   };
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading || !athleteId || !hasActiveSubscription) return;
+  const sendMessage = async (userMessage: string) => {
+    if (!userMessage.trim() || isLoading || !athleteId || !hasActiveSubscription) return;
 
-    const userMessage: Message = {
+    const userMsg: Message = {
       id: Date.now().toString(),
-      content: input,
+      content: userMessage,
       role: 'user',
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
     try {
-      console.log('🤖 Calling RID AI for user:', athleteId, 'Message:', input);
+      console.log('🤖 Calling RID AI for user:', athleteId, 'Message:', userMessage);
       
       const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
         body: {
-          message: input,
+          message: userMessage,
           userId: athleteId
         }
       });
@@ -192,10 +191,40 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     }
   };
 
+  const clearConversation = () => {
+    setMessages([{
+      id: 'welcome',
+      content: `Γεια σου ${athleteName}! 👋
+
+Είμαι ο **RID**, ο προσωπικός σου AI προπονητής! 🤖
+
+Έχω πρόσβαση στα βασικά σου δεδομένα:
+
+📊 **Σωματομετρικά στοιχεία**
+💪 **Τεστ δύναμης και προόδους** 
+🏃 **Προγράμματα προπονήσεων**
+🍎 **Διατροφικές συμβουλές**
+🎯 **Στόχους και προτιμήσεις**
+
+Μπορώ να:
+• Υπολογίσω τις θερμίδες που έκαψες σήμερα
+• Προτείνω διατροφή βάσει των στόχων σου
+• Αναλύσω την πρόοδό σου στα τεστ
+• Δώσω συμβουλές για την προπόνησή σου
+• Θυμάμαι τις προηγούμενες συζητήσεις μας
+
+**Μαθαίνω από κάθε συνομιλία μας!** 🧠
+
+Τι θα θέλες να μάθεις σήμερα;`,
+      role: 'assistant',
+      timestamp: new Date()
+    }]);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      sendMessage(input);
     }
   };
 
@@ -209,6 +238,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     isCheckingSubscription,
     messagesEndRef,
     sendMessage,
+    clearConversation,
     handleKeyPress
   };
 };
