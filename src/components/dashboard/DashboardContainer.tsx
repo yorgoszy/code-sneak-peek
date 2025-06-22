@@ -108,7 +108,6 @@ export const DashboardContainer = () => {
             <Sidebar 
               isCollapsed={false} 
               setIsCollapsed={setIsCollapsed}
-              onMobileClose={() => setShowMobileSidebar(false)}
             />
           </div>
         </div>
