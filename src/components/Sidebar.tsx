@@ -19,6 +19,7 @@ import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useState } from "react";
 import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -30,6 +31,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const location = useLocation();
   const { userProfile } = useRoleCheck();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const menuItems = [
     { 
@@ -121,15 +123,15 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
   const headerContent = (
     <div>
-      <h2 className="text-sm font-semibold text-gray-800">
+      <h2 className={`font-semibold text-gray-800 ${isMobile ? 'text-base' : 'text-sm'}`}>
         Admin Panel
       </h2>
-      <p className="text-xs text-gray-500">Διαχείριση συστήματος</p>
+      <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-xs'}`}>Διαχείριση συστήματος</p>
     </div>
   );
 
   const navigationContent = (
-    <div className="space-y-2">
+    <div className={`space-y-1 ${isMobile ? 'md:space-y-2' : 'space-y-2'}`}>
       {menuItems.map((item) => {
         const isActive = location.pathname === item.path && !item.external;
         return (
@@ -142,10 +144,10 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
           >
             <div className="flex items-center space-x-3">
               <item.icon className="h-5 w-5 flex-shrink-0" />
-              {!isCollapsed && <span>{item.label}</span>}
+              {(!isCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
             </div>
-            {!isCollapsed && item.badge && (
-              <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">
+            {(!isCollapsed || isMobile) && item.badge && (
+              <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full flex-shrink-0">
                 {item.badge}
               </span>
             )}
@@ -156,13 +158,13 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       {/* Έξυπνος AI Βοηθός Button */}
       <button
         onClick={handleAIChatClick}
-        className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4"
+        className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4`}
       >
         <Brain className="h-5 w-5 flex-shrink-0 text-[#00ffba]" />
-        {!isCollapsed && (
-          <div className="flex flex-col items-start">
-            <span className="text-sm font-medium">Έξυπνος AI Προπονητής</span>
-            <span className="text-xs text-gray-500">Μαθαίνει & θυμάται</span>
+        {(!isCollapsed || isMobile) && (
+          <div className="flex flex-col items-start min-w-0">
+            <span className="text-sm font-medium truncate">Έξυπνος AI Προπονητής</span>
+            <span className="text-xs text-gray-500 truncate">Μαθαίνει & θυμάται</span>
           </div>
         )}
       </button>
@@ -172,7 +174,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   return (
     <>
       <BaseSidebar
-        isCollapsed={isCollapsed}
+        isCollapsed={isCollapsed && !isMobile}
         setIsCollapsed={setIsCollapsed}
         headerContent={headerContent}
         navigationContent={navigationContent}
