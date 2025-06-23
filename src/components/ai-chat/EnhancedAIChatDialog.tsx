@@ -14,7 +14,7 @@ interface Message {
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
-  aiType?: 'ensemble';
+  aiType?: 'rid-smart';
 }
 
 interface EnhancedAIChatDialogProps {
@@ -25,74 +25,71 @@ interface EnhancedAIChatDialogProps {
   athletePhotoUrl?: string;
 }
 
-// Τοπικό AI που τρέχει στον browser
-class LocalAI {
-  private static instance: LocalAI;
+// Έξυπνο Local AI που μαθαίνει από Gemini και OpenAI
+class SmartLocalAI {
+  private static instance: SmartLocalAI;
+  private knowledgeBase: Map<string, string> = new Map();
 
-  static getInstance(): LocalAI {
-    if (!LocalAI.instance) {
-      LocalAI.instance = new LocalAI();
+  static getInstance(): SmartLocalAI {
+    if (!SmartLocalAI.instance) {
+      SmartLocalAI.instance = new SmartLocalAI();
     }
-    return LocalAI.instance;
+    return SmartLocalAI.instance;
   }
 
-  async generateResponse(message: string, athleteName?: string): Promise<string> {
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-    return this.generateFitnessResponse(message, athleteName);
+  // Το Local AI μαθαίνει από τις απαντήσεις του Gemini και OpenAI
+  learnFromResponse(question: string, response: string, source: 'gemini' | 'openai') {
+    const normalizedQuestion = question.toLowerCase().trim();
+    
+    // Αποθηκεύει τη γνώση για μελλοντική χρήση
+    this.knowledgeBase.set(normalizedQuestion, response);
+    
+    console.log(`🧠 Local AI έμαθε από ${source.toUpperCase()}: "${normalizedQuestion.substring(0, 50)}..."`);
   }
 
-  private generateFitnessResponse(message: string, athleteName?: string): string {
+  // Ελέγχει αν το Local AI γνωρίζει την απάντηση
+  hasKnowledge(question: string): string | null {
+    const normalizedQuestion = question.toLowerCase().trim();
+    
+    // Ακριβής match
+    if (this.knowledgeBase.has(normalizedQuestion)) {
+      return this.knowledgeBase.get(normalizedQuestion) || null;
+    }
+
+    // Partial match για παρόμοιες ερωτήσεις
+    for (const [storedQuestion, answer] of this.knowledgeBase.entries()) {
+      if (storedQuestion.includes(normalizedQuestion) || normalizedQuestion.includes(storedQuestion)) {
+        return answer;
+      }
+    }
+
+    return null;
+  }
+
+  // Βασικές απαντήσεις που γνωρίζει ήδη το Local AI
+  getBasicResponse(message: string, athleteName?: string): string | null {
     const lowerMessage = message.toLowerCase();
     const greeting = athleteName ? `${athleteName}` : 'φίλε μου';
     
     if (lowerMessage.includes('γεια') || lowerMessage.includes('hello') || lowerMessage.includes('καλησπέρα') || lowerMessage.includes('καλημέρα')) {
       return `Γεια σου ${greeting}! 👋 
-      
-Είμαι ο **Local AI Προπονητής** σου! 🤖💪
 
-Μπορώ να σε βοηθήσω με:
-• 🏋️ Συμβουλές προπόνησης
-• 🥗 Διατροφικές οδηγίες  
-• 💪 Μυϊκή ανάπτυξη
-• 🔥 Απώλεια βάρους
-• 😴 Ανάκαμψη και ύπνο
+Είμαι ο **RID AI Προπονητής** - ένα έξυπνο σύστημα που συνδυάζει:
+🔥 **Gemini AI** (δωρεάν και γρήγορο)
+🚀 **OpenAI GPT** (για πολύπλοκες ερωτήσεις)  
+🧠 **Smart Local AI** (μαθαίνει από τα άλλα δύο)
 
-Τι θα θέλες να μάθεις σήμερα;`;
+**Ειδικεύομαι σε:**
+🏋️ Προπόνηση & Ασκήσεις
+🥗 Διατροφή & Θερμίδες  
+💪 Μυϊκή Ανάπτυξη
+🔥 Απώλεια Βάρους
+😴 Ανάκαμψη & Ύπνο
+
+Ρώτα με ό,τι θέλεις και θα σου δώσω την καλύτερη δυνατή απάντηση! 🚀`;
     }
 
-    // Διατροφικές συμβουλές
-    if (lowerMessage.includes('διατροφή') || lowerMessage.includes('φαγητό') || lowerMessage.includes('τροφή') || lowerMessage.includes('θερμίδες')) {
-      return `🥗 **Διατροφικές Συμβουλές για τον/την ${greeting}:**
-
-**Βασικές Αρχές:**
-• Πρωτεΐνες: 1.6-2.2g ανά κιλό σωματικού βάρους
-• Υδατάνθρακες: 3-7g ανά κιλό (ανάλογα με την εντατικότητα)  
-• Λίπη: 20-35% των συνολικών θερμίδων
-• Νερό: 35-40ml ανά κιλό σωματικού βάρους
-
-**Καλές Επιλογές:**
-✅ Κοτόπουλο, ψάρι, αυγά (πρωτεΐνη)
-✅ Ρύζι, βρώμη, γλυκοπατάτα (υδατάνθρακες)
-✅ Αβοκάντο, ξηροί καρποί, ελαιόλαδο (λίπη)
-✅ Φρούτα και λαχανικά (βιταμίνες)
-
-Προτιμήστε φρέσκα, ελάχιστα επεξεργασμένα τρόφιμα! 🌱`;
-    }
-
-    return `Γεια σου ${greeting}! 👋 
-
-Είμαι ο **Local AI Προπονητής** και είμαι εδώ για να σε βοηθήσω! 🤖💪
-
-**Μπορώ να σε βοηθήσω με:**
-
-🏋️ **Προπόνηση:** Ασκήσεις, τεχνική, προγραμματισμό
-🥗 **Διατροφή:** Μακροθρεπτικά, γεύματα, υδατάνθρακες  
-😴 **Ανάκαμψη:** Ύπνο, stretching, πρόληψη τραυματισμών
-💪 **Μυϊκή ανάπτυξη:** Πρωτεΐνη, όγκο, δύναμη
-🔥 **Απώλεια βάρους:** Θερμίδες, καρδιό, διατροφή
-📊 **Τεστ & Μετρήσεις:** Πρόοδος, αξιολόγηση
-
-Τι θα θέλες να μάθεις σήμερα; 🚀`;
+    return null;
   }
 }
 
@@ -107,7 +104,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const localAI = LocalAI.getInstance();
+  const smartLocalAI = SmartLocalAI.getInstance();
 
   useEffect(() => {
     if (isOpen) {
@@ -115,26 +112,26 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         id: 'welcome',
         content: `Γεια σου${athleteName ? ` ${athleteName}` : ''}! 👋
 
-Έχεις στη διάθεσή σου **τρεις AI προπονητές** που δουλεύουν μαζί! 🤖💪
+Καλώς ήρθες στον **RID AI Προπονητή** - το πιο έξυπνο AI σύστημα για fitness! 🤖💪
 
-🔥 **Local AI** - Τρέχει στον browser σου (100% δωρεάν)
-🧠 **Gemini AI** - Προηγμένη τεχνητή νοημοσύνη από Google
-🚀 **OpenAI GPT** - Ισχυρότατη AI από την OpenAI
+**Πώς λειτουργώ:**
+🔥 **Πρώτα δοκιμάζω το Gemini AI** (δωρεάν & γρήγορο)
+🚀 **Αν χρειάζεται, καλώ το OpenAI GPT** (για δύσκολες ερωτήσεις)
+🧠 **Το Smart Local AI μαθαίνει** από κάθε απάντηση
 
-**Τώρα όλα τρέχουν ταυτόχρονα!** ⚡
-Κάθε ερώτησή σου θα πάρει απαντήσεις από όλα τα AI συστήματα για να έχεις την πιο ολοκληρωμένη βοήθεια!
+**Αποτέλεσμα:** Μία τέλεια απάντηση που γίνεται καλύτερη με κάθε ερώτηση! ⚡
 
 **Ειδικεύομαι σε:**
-🏋️ Προπόνηση & Ασκήσεις
-🥗 Διατροφή & Θερμίδες  
-💪 Μυϊκή Ανάπτυξη
-🔥 Απώλεια Βάρους
-😴 Ανάκαμψη & Ύπνο
+🏋️ Προπόνηση & Τεχνική Ασκήσεων
+🥗 Διατροφή & Μακροθρεπτικά  
+💪 Μυϊκή Ανάπτυξη & Δύναμη
+🔥 Απώλεια Βάρους & Καρδιό
+😴 Ανάκαμψη & Ποιότητα Ύπνου
 
 Ρώτα με ό,τι θέλεις για fitness και διατροφή! 🚀`,
         role: 'assistant',
         timestamp: new Date(),
-        aiType: 'ensemble'
+        aiType: 'rid-smart'
       }]);
     }
   }, [isOpen, athleteName]);
@@ -161,6 +158,26 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     return data.response;
   };
 
+  // Ελέγχει αν μια απάντηση είναι ικανοποιητική
+  const isGoodResponse = (response: string): boolean => {
+    const lowResponse = response.toLowerCase();
+    
+    // Αν η απάντηση είναι πολύ σύντομη ή γενική
+    if (response.length < 50) return false;
+    
+    // Αν περιέχει φράσεις που δείχνουν αβεβαιότητα
+    const uncertainPhrases = [
+      'δεν είμαι σίγουρος',
+      'δεν γνωρίζω',
+      'δεν μπορώ να',
+      'λυπάμαι',
+      'δεν έχω πληροφορίες',
+      'δεν είμαι ειδικός'
+    ];
+    
+    return !uncertainPhrases.some(phrase => lowResponse.includes(phrase));
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -172,71 +189,78 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
 
     try {
-      // Καλούμε όλα τα AI ταυτόχρονα
-      const [localResponse, geminiResponse, openaiResponse] = await Promise.allSettled([
-        localAI.generateResponse(input, athleteName),
-        callGeminiAI(input),
-        callOpenAI(input)
-      ]);
+      let finalResponse = '';
+      let usedSource = '';
 
-      let responses: { content: string; type: string; icon: string }[] = [];
+      // Βήμα 1: Έλεγχος αν το Smart Local AI γνωρίζει την απάντηση
+      const localKnowledge = smartLocalAI.hasKnowledge(currentInput);
+      const basicResponse = smartLocalAI.getBasicResponse(currentInput, athleteName);
 
-      if (localResponse.status === 'fulfilled') {
-        responses.push({ 
-          content: localResponse.value, 
-          type: 'Local AI', 
-          icon: '🤖' 
-        });
-      }
-      if (geminiResponse.status === 'fulfilled') {
-        responses.push({ 
-          content: geminiResponse.value, 
-          type: 'Gemini AI', 
-          icon: '🧠' 
-        });
-      }
-      if (openaiResponse.status === 'fulfilled') {
-        responses.push({ 
-          content: openaiResponse.value, 
-          type: 'OpenAI GPT', 
-          icon: '🚀' 
-        });
-      }
-
-      // Δημιουργούμε την ensemble απάντηση
-      let finalContent = '';
-
-      if (responses.length === 0) {
-        finalContent = 'Λυπάμαι, αντιμετωπίζω τεχνικά προβλήματα με όλα τα AI συστήματα. Παρακαλώ δοκιμάστε ξανά.';
+      if (localKnowledge) {
+        finalResponse = `🧠 **Smart Local AI:**\n${localKnowledge}\n\n*Έμαθα αυτή την απάντηση από προηγούμενες ερωτήσεις!*`;
+        usedSource = 'local-learned';
+      } else if (basicResponse) {
+        finalResponse = basicResponse;
+        usedSource = 'local-basic';
       } else {
-        finalContent = `**🤖💪 Τρεις AI Προπονητές Απαντούν:**\n\n`;
-        
-        responses.forEach((response, index) => {
-          finalContent += `**${response.icon} ${response.type}:**\n${response.content}\n\n`;
-          if (index < responses.length - 1) {
-            finalContent += `---\n\n`;
+        // Βήμα 2: Δοκιμάζουμε πρώτα το Gemini AI (δωρεάν)
+        try {
+          console.log('🔥 Δοκιμάζω Gemini AI πρώτα...');
+          const geminiResponse = await callGeminiAI(currentInput);
+          
+          if (isGoodResponse(geminiResponse)) {
+            finalResponse = `🔥 **Gemini AI:**\n${geminiResponse}`;
+            usedSource = 'gemini';
+            
+            // Το Smart Local AI μαθαίνει από το Gemini
+            smartLocalAI.learnFromResponse(currentInput, geminiResponse, 'gemini');
+          } else {
+            throw new Error('Gemini response not satisfactory');
           }
-        });
+        } catch (geminiError) {
+          console.log('⚠️ Gemini AI δεν μπόρεσε, δοκιμάζω OpenAI...');
+          
+          // Βήμα 3: Αν το Gemini αποτύχει, καλούμε το OpenAI
+          try {
+            const openaiResponse = await callOpenAI(currentInput);
+            finalResponse = `🚀 **OpenAI GPT:**\n${openaiResponse}\n\n*Χρησιμοποίησα το προηγμένο OpenAI επειδή η ερώτηση ήταν πολύπλοκη*`;
+            usedSource = 'openai';
+            
+            // Το Smart Local AI μαθαίνει από το OpenAI
+            smartLocalAI.learnFromResponse(currentInput, openaiResponse, 'openai');
+          } catch (openaiError) {
+            finalResponse = `❌ **Σφάλμα:**\nΔυστυχώς αντιμετωπίζω τεχνικά προβλήματα με όλα τα AI συστήματα.\n\nΠαρακαλώ δοκιμάστε ξανά σε λίγο.`;
+            usedSource = 'error';
+          }
+        }
+      }
 
-        finalContent += `*Σύγκριση ${responses.length} διαφορετικών AI συστημάτων για την πιο ολοκληρωμένη απάντηση*`;
+      // Προσθήκη πληροφοριών για το ποιο σύστημα χρησιμοποιήθηκε
+      if (usedSource === 'gemini') {
+        finalResponse += `\n\n📊 **Χρησιμοποιήθηκε:** Gemini AI (Δωρεάν & Γρήγορο)`;
+      } else if (usedSource === 'openai') {
+        finalResponse += `\n\n📊 **Χρησιμοποιήθηκε:** OpenAI GPT (Προηγμένο για δύσκολες ερωτήσεις)`;
+      } else if (usedSource === 'local-learned') {
+        finalResponse += `\n\n📊 **Χρησιμοποιήθηκε:** Smart Local AI (Έμαθα από προηγούμενες απαντήσεις)`;
       }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: finalContent,
+        content: finalResponse,
         role: 'assistant',
         timestamp: new Date(),
-        aiType: 'ensemble'
+        aiType: 'rid-smart'
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('AI Error:', error);
-      toast.error('Σφάλμα στους AI βοηθούς');
+      console.error('RID AI Error:', error);
+      toast.error('Σφάλμα στον RID AI Προπονητή');
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -273,8 +297,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
         <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#00ffba]" />
-            Triple AI Προπονητής
+            <Brain className="w-5 h-5 text-[#00ffba]" />
+            RID AI Προπονητής
             {athleteName && (
               <span className="text-sm font-normal text-gray-600">
                 για {athleteName}
@@ -302,7 +326,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
                         </Avatar>
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                          <Sparkles className="w-4 h-4" />
+                          <Brain className="w-4 h-4" />
                         </div>
                       )}
                     </div>
@@ -321,7 +345,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
                         </p>
                         {message.role === 'assistant' && (
                           <span className="text-xs opacity-70 ml-2">
-                            Triple AI
+                            RID AI
                           </span>
                         )}
                       </div>
@@ -333,12 +357,12 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               {isLoading && (
                 <div className="flex gap-3 justify-start">
                   <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                    <Sparkles className="w-4 h-4" />
+                    <Brain className="w-4 h-4" />
                   </div>
                   <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Τα 3 AI σκέφτονται ταυτόχρονα...</span>
+                      <span className="text-sm">Το RID AI σκέφτεται έξυπνα...</span>
                     </div>
                   </div>
                 </div>
@@ -353,7 +377,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ρώτα τους 3 AI προπονητές για προπόνηση, διατροφή, ανάκαμψη..."
+              placeholder="Ρώτα τον RID AI Προπονητή για προπόνηση, διατροφή, ανάκαμψη..."
               className="rounded-none"
               disabled={isLoading}
             />
