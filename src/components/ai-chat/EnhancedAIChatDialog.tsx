@@ -29,6 +29,8 @@ interface EnhancedAIChatDialogProps {
 class SmartLocalAI {
   private static instance: SmartLocalAI;
   private knowledgeBase: Map<string, string> = new Map();
+  private userProfiles: Map<string, any> = new Map();
+  private conversationMemory: Map<string, any[]> = new Map();
 
   static getInstance(): SmartLocalAI {
     if (!SmartLocalAI.instance) {
@@ -37,59 +39,290 @@ class SmartLocalAI {
     return SmartLocalAI.instance;
   }
 
-  // Το Local AI μαθαίνει από τις απαντήσεις του Gemini και OpenAI
-  learnFromResponse(question: string, response: string, source: 'gemini' | 'openai') {
+  // Μαθαίνει από τις απαντήσεις του Gemini και OpenAI
+  async learnFromResponse(question: string, response: string, source: 'gemini' | 'openai', userId?: string) {
     const normalizedQuestion = question.toLowerCase().trim();
     
     // Αποθηκεύει τη γνώση για μελλοντική χρήση
     this.knowledgeBase.set(normalizedQuestion, response);
     
+    // Αναλύει και εξάγει προσωπικές πληροφορίες από τη συνομιλία
+    if (userId) {
+      await this.extractPersonalInfo(question, response, userId);
+    }
+    
     console.log(`🧠 Local AI έμαθε από ${source.toUpperCase()}: "${normalizedQuestion.substring(0, 50)}..."`);
+    
+    // Αποθηκεύει στη βάση δεδομένων
+    await this.saveToDatabase(question, response, source, userId);
+  }
+
+  // Εξάγει προσωπικές πληροφορίες από τη συνομιλία
+  async extractPersonalInfo(question: string, response: string, userId: string) {
+    const lowerText = (question + ' ' + response).toLowerCase();
+    const userProfile = this.userProfiles.get(userId) || {};
+
+    // Διατροφικές προτιμήσεις
+    if (lowerText.includes('βίγκαν') || lowerText.includes('vegan')) {
+      userProfile.dietary_preferences = [...(userProfile.dietary_preferences || []), 'vegan'];
+    }
+    if (lowerText.includes('χορτοφάγος') || lowerText.includes('vegetarian')) {
+      userProfile.dietary_preferences = [...(userProfile.dietary_preferences || []), 'vegetarian'];
+    }
+    
+    // Ιατρικές καταστάσεις
+    if (lowerText.includes('διαβητικός') || lowerText.includes('διαβήτη')) {
+      userProfile.medical_conditions = [...(userProfile.medical_conditions || []), 'diabetes'];
+    }
+    if (lowerText.includes('καρδιακός') || lowerText.includes('καρδιά')) {
+      userProfile.medical_conditions = [...(userProfile.medical_conditions || []), 'heart_condition'];
+    }
+    if (lowerText.includes('υπέρταση') || lowerText.includes('πίεση')) {
+      userProfile.medical_conditions = [...(userProfile.medical_conditions || []), 'hypertension'];
+    }
+
+    // Στόχοι προπόνησης
+    if (lowerText.includes('αδυνάτισμα') || lowerText.includes('χάσω κιλά')) {
+      userProfile.goals = [...(userProfile.goals || []), 'weight_loss'];
+    }
+    if (lowerText.includes('μυϊκή μάζα') || lowerText.includes('όγκος')) {
+      userProfile.goals = [...(userProfile.goals || []), 'muscle_gain'];
+    }
+    if (lowerText.includes('δύναμη')) {
+      userProfile.goals = [...(userProfile.goals || []), 'strength'];
+    }
+
+    this.userProfiles.set(userId, userProfile);
+    
+    // Ενημερώνει τη βάση δεδομένων
+    await this.updateUserProfile(userId, userProfile);
+  }
+
+  // Αποθηκεύει συνομιλία στη βάση δεδομένων
+  async saveToDatabase(question: string, response: string, source: string, userId?: string) {
+    try {
+      // Αποθηκεύει τη συνομιλία
+      if (userId) {
+        await supabase.from('ai_conversations').insert([
+          { user_id: userId, message_type: 'user', content: question },
+          { user_id: userId, message_type: 'assistant', content: response, metadata: { source } }
+        ]);
+      }
+
+      // Αποθηκεύει τη γενική γνώση
+      await supabase.from('ai_global_knowledge').insert({
+        knowledge_type: 'learned_response',
+        category: this.categorizeQuestion(question),
+        original_info: question,
+        corrected_info: response,
+        confidence_score: source === 'openai' ? 8 : 6,
+        metadata: { source, learned_at: new Date().toISOString() }
+      });
+    } catch (error) {
+      console.error('Σφάλμα αποθήκευσης:', error);
+    }
+  }
+
+  // Ενημερώνει το προφίλ χρήστη
+  async updateUserProfile(userId: string, profileData: any) {
+    try {
+      await supabase.from('ai_user_profiles').upsert({
+        user_id: userId,
+        goals: profileData.goals || [],
+        medical_conditions: profileData.medical_conditions || [],
+        dietary_preferences: profileData.dietary_preferences || [],
+        updated_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Σφάλμα ενημέρωσης προφίλ:', error);
+    }
+  }
+
+  // Κατηγοριοποιεί την ερώτηση
+  categorizeQuestion(question: string): string {
+    const lowerQ = question.toLowerCase();
+    if (lowerQ.includes('διατροφή') || lowerQ.includes('φαγητό')) return 'nutrition';
+    if (lowerQ.includes('προπόνηση') || lowerQ.includes('άσκηση')) return 'training';
+    if (lowerQ.includes('υγεία') || lowerQ.includes('ιατρικό')) return 'medical';
+    return 'general';
+  }
+
+  // Φορτώνει το προφίλ χρήστη
+  async loadUserProfile(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('ai_user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (data && !error) {
+        this.userProfiles.set(userId, data);
+        return data;
+      }
+    } catch (error) {
+      console.error('Σφάλμα φόρτωσης προφίλ:', error);
+    }
+    return null;
   }
 
   // Ελέγχει αν το Local AI γνωρίζει την απάντηση
-  hasKnowledge(question: string): string | null {
+  async hasKnowledge(question: string, userId?: string): Promise<string | null> {
     const normalizedQuestion = question.toLowerCase().trim();
     
-    // Ακριβής match
+    // Ακριβής match στη μνήμη
     if (this.knowledgeBase.has(normalizedQuestion)) {
       return this.knowledgeBase.get(normalizedQuestion) || null;
     }
 
-    // Partial match για παρόμοιες ερωτήσεις
-    for (const [storedQuestion, answer] of this.knowledgeBase.entries()) {
-      if (storedQuestion.includes(normalizedQuestion) || normalizedQuestion.includes(storedQuestion)) {
-        return answer;
+    // Αναζήτηση στη βάση δεδομένων
+    try {
+      const { data, error } = await supabase
+        .from('ai_global_knowledge')
+        .select('corrected_info, confidence_score')
+        .ilike('original_info', `%${normalizedQuestion}%`)
+        .order('confidence_score', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (data && !error && data.confidence_score > 5) {
+        return data.corrected_info;
       }
+    } catch (error) {
+      console.log('Δεν βρέθηκε στη βάση γνώσης');
     }
 
     return null;
   }
 
-  // Βασικές απαντήσεις που γνωρίζει ήδη το Local AI
-  getBasicResponse(message: string, athleteName?: string): string | null {
+  // Βασικές απαντήσεις με εξατομίκευση
+  async getBasicResponse(message: string, athleteName?: string, userId?: string): Promise<string | null> {
     const lowerMessage = message.toLowerCase();
     const greeting = athleteName ? `${athleteName}` : 'φίλε μου';
     
+    // Φορτώνει το προφίλ του χρήστη
+    const userProfile = userId ? await this.loadUserProfile(userId) : null;
+    
     if (lowerMessage.includes('γεια') || lowerMessage.includes('hello') || lowerMessage.includes('καλησπέρα') || lowerMessage.includes('καλημέρα')) {
-      return `Γεια σου ${greeting}! 👋 
+      let personalizedGreeting = `Γεια σου ${greeting}! 👋 
 
 Είμαι ο **RID AI Προπονητής** - ένα έξυπνο σύστημα που συνδυάζει:
 🔥 **Gemini AI** (δωρεάν και γρήγορο)
 🚀 **OpenAI GPT** (για πολύπλοκες ερωτήσεις)  
-🧠 **Smart Local AI** (μαθαίνει από τα άλλα δύο)
+🧠 **Smart Local AI** (μαθαίνω από τα άλλα δύο)
 
 **Ειδικεύομαι σε:**
 🏋️ Προπόνηση & Ασκήσεις
 🥗 Διατροφή & Θερμίδες  
 💪 Μυϊκή Ανάπτυξη
 🔥 Απώλεια Βάρους
-😴 Ανάκαμψη & Ύπνο
+😴 Ανάκαμψη & Ύπνο`;
 
-Ρώτα με ό,τι θέλεις και θα σου δώσω την καλύτερη δυνατή απάντηση! 🚀`;
+      // Προσθέτει εξατομικευμένες πληροφορίες αν υπάρχουν
+      if (userProfile) {
+        if (userProfile.dietary_preferences?.length > 0) {
+          personalizedGreeting += `\n\n🌱 **Θυμάμαι ότι είσαι:** ${userProfile.dietary_preferences.join(', ')}`;
+        }
+        if (userProfile.medical_conditions?.length > 0) {
+          personalizedGreeting += `\n💊 **Λαμβάνω υπόψη:** ${userProfile.medical_conditions.join(', ')}`;
+        }
+        if (userProfile.goals?.length > 0) {
+          personalizedGreeting += `\n🎯 **Οι στόχοι σου:** ${userProfile.goals.join(', ')}`;
+        }
+      }
+
+      personalizedGreeting += `\n\nΡώτα με ό,τι θέλεις και θα σου δώσω την καλύτερη δυνατή απάντηση! 🚀`;
+      
+      return personalizedGreeting;
     }
 
     return null;
+  }
+
+  // Αναλύει τις προπονήσεις του χρήστη
+  async analyzeUserWorkouts(userId: string) {
+    try {
+      // Φέρνει τα προγράμματα του χρήστη
+      const { data: assignments } = await supabase
+        .from('program_assignments')
+        .select(`
+          *,
+          programs(
+            *,
+            program_weeks(
+              *,
+              program_days(
+                *,
+                program_blocks(
+                  *,
+                  program_exercises(
+                    *,
+                    exercises(name)
+                  )
+                )
+              )
+            )
+          )
+        `)
+        .eq('user_id', userId);
+
+      if (!assignments) return null;
+
+      const workoutAnalysis = {
+        strength_hours: 0,
+        endurance_hours: 0,
+        power_hours: 0,
+        speed_hours: 0
+      };
+
+      assignments.forEach(assignment => {
+        if (assignment.programs?.program_weeks) {
+          assignment.programs.program_weeks.forEach((week: any) => {
+            week.program_days?.forEach((day: any) => {
+              day.program_blocks?.forEach((block: any) => {
+                block.program_exercises?.forEach((exercise: any) => {
+                  const type = this.categorizeExerciseType(exercise);
+                  const duration = this.calculateExerciseDuration(exercise);
+                  workoutAnalysis[`${type}_hours`] += duration;
+                });
+              });
+            });
+          });
+        }
+      });
+
+      return workoutAnalysis;
+    } catch (error) {
+      console.error('Σφάλμα ανάλυσης προπονήσεων:', error);
+      return null;
+    }
+  }
+
+  // Κατηγοριοποιεί τον τύπο άσκησης
+  categorizeExerciseType(exercise: any): 'strength' | 'endurance' | 'power' | 'speed' {
+    const reps = parseInt(exercise.reps) || 0;
+    const percentage = parseFloat(exercise.percentage_1rm) || 0;
+    const velocity = parseFloat(exercise.velocity_ms) || 0;
+
+    if (percentage > 85 || reps <= 5) return 'strength';
+    if (percentage < 65 || reps > 12) return 'endurance';
+    if (velocity > 0.8 && percentage < 60) return 'speed';
+    return 'power';
+  }
+
+  // Υπολογίζει τη διάρκεια άσκησης
+  calculateExerciseDuration(exercise: any): number {
+    const sets = parseInt(exercise.sets) || 1;
+    const reps = parseInt(exercise.reps) || 1;
+    const tempo = exercise.tempo || '2.1.2';
+    const rest = parseInt(exercise.rest) || 60;
+
+    // Υπολογίζει τον χρόνο του tempo
+    const tempoSeconds = tempo.split('.').reduce((sum: number, phase: string) => sum + parseInt(phase), 0);
+    
+    // Συνολικός χρόνος: (sets * reps * tempo) + (sets-1) * rest
+    const totalSeconds = (sets * reps * tempoSeconds) + ((sets - 1) * rest);
+    return totalSeconds / 3600; // μετατροπή σε ώρες
   }
 }
 
@@ -108,37 +341,29 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      setMessages([{
-        id: 'welcome',
-        content: `Γεια σου${athleteName ? ` ${athleteName}` : ''}! 👋
-
-Καλώς ήρθες στον **RID AI Προπονητή** - το πιο έξυπνο AI σύστημα για fitness! 🤖💪
-
-**Πώς λειτουργώ:**
-🔥 **Πρώτα δοκιμάζω το Gemini AI** (δωρεάν & γρήγορο)
-🚀 **Αν χρειάζεται, καλώ το OpenAI GPT** (για δύσκολες ερωτήσεις)
-🧠 **Το Smart Local AI μαθαίνει** από κάθε απάντηση
-
-**Αποτέλεσμα:** Μία τέλεια απάντηση που γίνεται καλύτερη με κάθε ερώτηση! ⚡
-
-**Ειδικεύομαι σε:**
-🏋️ Προπόνηση & Τεχνική Ασκήσεων
-🥗 Διατροφή & Μακροθρεπτικά  
-💪 Μυϊκή Ανάπτυξη & Δύναμη
-🔥 Απώλεια Βάρους & Καρδιό
-😴 Ανάκαμψη & Ποιότητα Ύπνου
-
-Ρώτα με ό,τι θέλεις για fitness και διατροφή! 🚀`,
-        role: 'assistant',
-        timestamp: new Date(),
-        aiType: 'rid-smart'
-      }]);
+      initializeChat();
     }
-  }, [isOpen, athleteName]);
+  }, [isOpen, athleteName, athleteId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const initializeChat = async () => {
+    const welcomeResponse = await smartLocalAI.getBasicResponse(
+      'γεια σου', 
+      athleteName, 
+      athleteId
+    );
+
+    setMessages([{
+      id: 'welcome',
+      content: welcomeResponse || 'Γεια σου! Είμαι ο RID AI Προπονητής!',
+      role: 'assistant',
+      timestamp: new Date(),
+      aiType: 'rid-smart'
+    }]);
+  };
 
   const callGeminiAI = async (message: string): Promise<string> => {
     const { data, error } = await supabase.functions.invoke('gemini-ai-chat', {
@@ -162,10 +387,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const isGoodResponse = (response: string): boolean => {
     const lowResponse = response.toLowerCase();
     
-    // Αν η απάντηση είναι πολύ σύντομη ή γενική
     if (response.length < 50) return false;
     
-    // Αν περιέχει φράσεις που δείχνουν αβεβαιότητα
     const uncertainPhrases = [
       'δεν είμαι σίγουρος',
       'δεν γνωρίζω',
@@ -198,8 +421,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       let usedSource = '';
 
       // Βήμα 1: Έλεγχος αν το Smart Local AI γνωρίζει την απάντηση
-      const localKnowledge = smartLocalAI.hasKnowledge(currentInput);
-      const basicResponse = smartLocalAI.getBasicResponse(currentInput, athleteName);
+      const localKnowledge = await smartLocalAI.hasKnowledge(currentInput, athleteId);
+      const basicResponse = await smartLocalAI.getBasicResponse(currentInput, athleteName, athleteId);
 
       if (localKnowledge) {
         finalResponse = `🧠 **Smart Local AI:**\n${localKnowledge}\n\n*Έμαθα αυτή την απάντηση από προηγούμενες ερωτήσεις!*`;
@@ -218,7 +441,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             usedSource = 'gemini';
             
             // Το Smart Local AI μαθαίνει από το Gemini
-            smartLocalAI.learnFromResponse(currentInput, geminiResponse, 'gemini');
+            await smartLocalAI.learnFromResponse(currentInput, geminiResponse, 'gemini', athleteId);
           } else {
             throw new Error('Gemini response not satisfactory');
           }
@@ -232,7 +455,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             usedSource = 'openai';
             
             // Το Smart Local AI μαθαίνει από το OpenAI
-            smartLocalAI.learnFromResponse(currentInput, openaiResponse, 'openai');
+            await smartLocalAI.learnFromResponse(currentInput, openaiResponse, 'openai', athleteId);
           } catch (openaiError) {
             finalResponse = `❌ **Σφάλμα:**\nΔυστυχώς αντιμετωπίζω τεχνικά προβλήματα με όλα τα AI συστήματα.\n\nΠαρακαλώ δοκιμάστε ξανά σε λίγο.`;
             usedSource = 'error';
