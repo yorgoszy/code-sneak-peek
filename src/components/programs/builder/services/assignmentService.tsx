@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToLocalString } from '@/utils/dateUtils';
 
@@ -96,7 +95,7 @@ export const assignmentService = {
     console.log('🏗️ [AssignmentService] Checking program structure for:', program.id);
     
     try {
-      // Ελέγχουμε αν υπάρχουν weeks για το πρόγραμμα
+      // Χρησιμοποιούμε το σωστό foreign key για program_days -> week_id
       const { data: existingWeeks, error: weeksError } = await supabase
         .from('program_weeks')
         .select(`
@@ -107,11 +106,11 @@ export const assignmentService = {
             id,
             name,
             day_number,
-            program_blocks(
+            program_blocks!fk_program_blocks_day_id(
               id,
               name,
               block_order,
-              program_exercises(
+              program_exercises!fk_program_exercises_block_id(
                 id,
                 sets,
                 reps,
@@ -122,7 +121,7 @@ export const assignmentService = {
                 rest,
                 notes,
                 exercise_order,
-                exercises(id, name, description, video_url)
+                exercises!fk_program_exercises_exercise_id(id, name, description, video_url)
               )
             )
           )
