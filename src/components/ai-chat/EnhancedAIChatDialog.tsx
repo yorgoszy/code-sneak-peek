@@ -220,14 +220,18 @@ class SmartLocalAI {
 
       // Προσθέτει εξατομικευμένες πληροφορίες αν υπάρχουν
       if (userProfile) {
-        if (userProfile.dietary_preferences?.length > 0) {
-          personalizedGreeting += `\n\n🌱 **Θυμάμαι ότι είσαι:** ${userProfile.dietary_preferences.join(', ')}`;
+        const dietaryPrefs = Array.isArray(userProfile.dietary_preferences) ? userProfile.dietary_preferences : [];
+        const medicalConds = Array.isArray(userProfile.medical_conditions) ? userProfile.medical_conditions : [];
+        const userGoals = Array.isArray(userProfile.goals) ? userProfile.goals : [];
+
+        if (dietaryPrefs.length > 0) {
+          personalizedGreeting += `\n\n🌱 **Θυμάμαι ότι είσαι:** ${dietaryPrefs.join(', ')}`;
         }
-        if (userProfile.medical_conditions?.length > 0) {
-          personalizedGreeting += `\n💊 **Λαμβάνω υπόψη:** ${userProfile.medical_conditions.join(', ')}`;
+        if (medicalConds.length > 0) {
+          personalizedGreeting += `\n💊 **Λαμβάνω υπόψη:** ${medicalConds.join(', ')}`;
         }
-        if (userProfile.goals?.length > 0) {
-          personalizedGreeting += `\n🎯 **Οι στόχοι σου:** ${userProfile.goals.join(', ')}`;
+        if (userGoals.length > 0) {
+          personalizedGreeting += `\n🎯 **Οι στόχοι σου:** ${userGoals.join(', ')}`;
         }
       }
 
@@ -242,12 +246,12 @@ class SmartLocalAI {
   // Αναλύει τις προπονήσεις του χρήστη
   async analyzeUserWorkouts(userId: string) {
     try {
-      // Φέρνει τα προγράμματα του χρήστη
+      // Φέρνει τα προγράμματα του χρήστη με διευκρίνιση της σχέσης
       const { data: assignments } = await supabase
         .from('program_assignments')
         .select(`
           *,
-          programs(
+          programs!program_assignments_program_id_fkey(
             *,
             program_weeks(
               *,

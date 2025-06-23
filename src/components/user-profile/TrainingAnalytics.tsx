@@ -29,12 +29,12 @@ export const TrainingAnalytics: React.FC<TrainingAnalyticsProps> = ({ userId }) 
     try {
       setLoading(true);
       
-      // Φέρνουμε τα προγράμματα του χρήστη
+      // Φέρνουμε τα προγράμματα του χρήστη με διευκρίνιση της σχέσης
       const { data: assignments } = await supabase
         .from('program_assignments')
         .select(`
           *,
-          programs(
+          programs!program_assignments_program_id_fkey(
             *,
             program_weeks(
               *,
