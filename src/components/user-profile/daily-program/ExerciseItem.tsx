@@ -46,14 +46,24 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     hasVideo: !!exercise.exercises?.video_url
   });
 
+  const handleExerciseClick = (exerciseData: Exercise, event: React.MouseEvent) => {
+    console.log('🎯 ExerciseItem - Exercise click handler called');
+    onExerciseClick(exerciseData, event);
+  };
+
+  const handleVideoClick = (exerciseData: Exercise) => {
+    console.log('🎬 ExerciseItem - Video click handler called');
+    onVideoClick(exerciseData);
+  };
+
   return (
     <div className="bg-white rounded-none">
       <ExerciseHeader
         exercise={exercise}
         isComplete={isComplete}
         remainingText={remainingText}
-        onExerciseClick={onExerciseClick}
-        onVideoClick={onVideoClick}
+        onExerciseClick={handleExerciseClick}
+        onVideoClick={handleVideoClick}
         viewOnly={viewOnly}
       />
       <ExerciseDetailsGrid

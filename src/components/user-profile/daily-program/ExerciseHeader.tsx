@@ -37,33 +37,40 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
     onVideoClick(exerciseData);
   };
 
-  const handleClick = (e: React.MouseEvent) => {
-    console.log('🖱️ ExerciseHeader click detected');
-    
-    // Αν κλικάραμε στο video thumbnail, μην καλέσουμε το onExerciseClick
-    if ((e.target as HTMLElement).closest('.video-thumbnail')) {
-      console.log('🎥 Click was on video thumbnail, calling video handler directly');
-      handleVideoClick(exercise);
+  const handleNameClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log('🎯 ExerciseHeader name click detected');
+    onVideoClick(exercise);
+  };
+
+  const handleContainerClick = (e: React.MouseEvent) => {
+    // Αν κλικάραμε στο video thumbnail ή στο όνομα, μην κάνουμε τίποτα
+    if ((e.target as HTMLElement).closest('.video-thumbnail') || 
+        (e.target as HTMLElement).closest('.exercise-name-clickable')) {
       return;
     }
     
-    console.log('🎯 Calling exercise click handler');
+    // Για οποιοδήποτε άλλο κλικ, καλούμε το onExerciseClick
+    console.log('🖱️ ExerciseHeader container click - calling exercise click');
     onExerciseClick(exercise, e);
   };
 
   return (
     <div 
       className={`flex items-center gap-2 p-1 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${isComplete ? 'bg-green-50' : ''}`}
-      onClick={handleClick}
+      onClick={handleContainerClick}
     >
       <div className="flex items-center flex-1 min-w-0">
         <VideoThumbnail 
           exercise={exercise} 
           onVideoClick={handleVideoClick} 
         />
-        <h6 className={`text-xs font-medium truncate ${
-          isComplete ? 'text-green-800' : 'text-gray-900'
-        }`}>
+        <h6 
+          className={`exercise-name-clickable text-xs font-medium truncate cursor-pointer hover:text-blue-600 ${
+            isComplete ? 'text-green-800' : 'text-gray-900'
+          }`}
+          onClick={handleNameClick}
+        >
           {exercise.exercises?.name || 'Άγνωστη άσκηση'}
         </h6>
       </div>
