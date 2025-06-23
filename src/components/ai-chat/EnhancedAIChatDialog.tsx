@@ -24,6 +24,35 @@ interface EnhancedAIChatDialogProps {
   athletePhotoUrl?: string;
 }
 
+// Κλήσεις στα AI Edge Functions
+const callGeminiAI = async (message: string): Promise<string> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('gemini-ai-chat', {
+      body: { message }
+    });
+
+    if (error) throw error;
+    return data?.response || 'Σφάλμα στην απάντηση του Gemini AI';
+  } catch (error) {
+    console.error('Gemini AI Error:', error);
+    throw new Error('Το Gemini AI δεν είναι διαθέσιμο αυτή τη στιγμή');
+  }
+};
+
+const callOpenAI = async (message: string): Promise<string> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('ai-fitness-chat', {
+      body: { message }
+    });
+
+    if (error) throw error;
+    return data?.response || 'Σφάλμα στην απάντηση του OpenAI';
+  } catch (error) {
+    console.error('OpenAI Error:', error);
+    throw new Error('Το OpenAI δεν είναι διαθέσιμο αυτή τη στιγμή');
+  }
+};
+
 // Έξυπνο Local AI που μαθαίνει από Gemini και OpenAI
 class SmartLocalAI {
   private static instance: SmartLocalAI;
