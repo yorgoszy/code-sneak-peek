@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -63,32 +64,32 @@ class SmartLocalAI {
 
     // Διατροφικές προτιμήσεις
     if (lowerText.includes('βίγκαν') || lowerText.includes('vegan')) {
-      userProfile.dietary_preferences = [...(userProfile.dietary_preferences || []), 'vegan'];
+      userProfile.dietary_preferences = [...(Array.isArray(userProfile.dietary_preferences) ? userProfile.dietary_preferences : []), 'vegan'];
     }
     if (lowerText.includes('χορτοφάγος') || lowerText.includes('vegetarian')) {
-      userProfile.dietary_preferences = [...(userProfile.dietary_preferences || []), 'vegetarian'];
+      userProfile.dietary_preferences = [...(Array.isArray(userProfile.dietary_preferences) ? userProfile.dietary_preferences : []), 'vegetarian'];
     }
     
     // Ιατρικές καταστάσεις
     if (lowerText.includes('διαβητικός') || lowerText.includes('διαβήτη')) {
-      userProfile.medical_conditions = [...(userProfile.medical_conditions || []), 'diabetes'];
+      userProfile.medical_conditions = [...(Array.isArray(userProfile.medical_conditions) ? userProfile.medical_conditions : []), 'diabetes'];
     }
     if (lowerText.includes('καρδιακός') || lowerText.includes('καρδιά')) {
-      userProfile.medical_conditions = [...(userProfile.medical_conditions || []), 'heart_condition'];
+      userProfile.medical_conditions = [...(Array.isArray(userProfile.medical_conditions) ? userProfile.medical_conditions : []), 'heart_condition'];
     }
     if (lowerText.includes('υπέρταση') || lowerText.includes('πίεση')) {
-      userProfile.medical_conditions = [...(userProfile.medical_conditions || []), 'hypertension'];
+      userProfile.medical_conditions = [...(Array.isArray(userProfile.medical_conditions) ? userProfile.medical_conditions : []), 'hypertension'];
     }
 
     // Στόχοι προπόνησης
     if (lowerText.includes('αδυνάτισμα') || lowerText.includes('χάσω κιλά')) {
-      userProfile.goals = [...(userProfile.goals || []), 'weight_loss'];
+      userProfile.goals = [...(Array.isArray(userProfile.goals) ? userProfile.goals : []), 'weight_loss'];
     }
     if (lowerText.includes('μυϊκή μάζα') || lowerText.includes('όγκος')) {
-      userProfile.goals = [...(userProfile.goals || []), 'muscle_gain'];
+      userProfile.goals = [...(Array.isArray(userProfile.goals) ? userProfile.goals : []), 'muscle_gain'];
     }
     if (lowerText.includes('δύναμη')) {
-      userProfile.goals = [...(userProfile.goals || []), 'strength'];
+      userProfile.goals = [...(Array.isArray(userProfile.goals) ? userProfile.goals : []), 'strength'];
     }
 
     this.userProfiles.set(userId, userProfile);
@@ -127,9 +128,9 @@ class SmartLocalAI {
     try {
       await supabase.from('ai_user_profiles').upsert({
         user_id: userId,
-        goals: profileData.goals || [],
-        medical_conditions: profileData.medical_conditions || [],
-        dietary_preferences: profileData.dietary_preferences || [],
+        goals: Array.isArray(profileData.goals) ? profileData.goals : [],
+        medical_conditions: Array.isArray(profileData.medical_conditions) ? profileData.medical_conditions : [],
+        dietary_preferences: Array.isArray(profileData.dietary_preferences) ? profileData.dietary_preferences : [],
         updated_at: new Date().toISOString()
       });
     } catch (error) {
@@ -205,7 +206,7 @@ class SmartLocalAI {
     if (lowerMessage.includes('γεια') || lowerMessage.includes('hello') || lowerMessage.includes('καλησπέρα') || lowerMessage.includes('καλημέρα')) {
       let personalizedGreeting = `Γεια σου ${greeting}! 👋 
 
-Είμαι ο **RID AI Προπονητής** - ένα έξυπνο σύστημα που συνδυάζει:
+Είμαι ο **RidAI Προπονητής** - ένα έξυπνο σύστημα που συνδυάζει:
 🔥 **Gemini AI** (δωρεάν και γρήγορο)
 🚀 **OpenAI GPT** (για πολύπλοκες ερωτήσεις)  
 🧠 **Smart Local AI** (μαθαίνω από τα άλλα δύο)
@@ -279,18 +280,21 @@ class SmartLocalAI {
       };
 
       assignments.forEach(assignment => {
-        if (assignment.programs?.program_weeks) {
-          assignment.programs.program_weeks.forEach((week: any) => {
-            week.program_days?.forEach((day: any) => {
-              day.program_blocks?.forEach((block: any) => {
-                block.program_exercises?.forEach((exercise: any) => {
-                  const type = this.categorizeExerciseType(exercise);
-                  const duration = this.calculateExerciseDuration(exercise);
-                  workoutAnalysis[`${type}_hours`] += duration;
+        if (assignment.programs && typeof assignment.programs === 'object' && 'program_weeks' in assignment.programs) {
+          const programs = assignment.programs as any;
+          if (Array.isArray(programs.program_weeks)) {
+            programs.program_weeks.forEach((week: any) => {
+              week.program_days?.forEach((day: any) => {
+                day.program_blocks?.forEach((block: any) => {
+                  block.program_exercises?.forEach((exercise: any) => {
+                    const type = this.categorizeExerciseType(exercise);
+                    const duration = this.calculateExerciseDuration(exercise);
+                    workoutAnalysis[`${type}_hours`] += duration;
+                  });
                 });
               });
             });
-          });
+          }
         }
       });
 
@@ -510,116 +514,108 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   };
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
-          <DialogHeader className="p-6 pb-4 border-b">
-            <DialogTitle className="flex items-center gap-2">
-              <Brain className="w-5 h-5 text-[#00ffba]" />
-              RidAI Προπονητής
-              {athleteName && (
-                <span className="text-sm font-normal text-gray-600">
-                  για {athleteName}
-                </span>
-              )}
-            </DialogTitle>
-          </DialogHeader>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
+        <DialogHeader className="p-6 pb-4 border-b">
+          <DialogTitle className="flex items-center gap-2">
+            <Brain className="w-5 h-5 text-[#00ffba]" />
+            RidAI Προπονητής
+            {athleteName && (
+              <span className="text-sm font-normal text-gray-600">
+                για {athleteName}
+              </span>
+            )}
+          </DialogTitle>
+        </DialogHeader>
 
-          <div className="flex-1 flex flex-col min-h-0">
-            <ScrollArea className="flex-1 px-4">
-              <div className="space-y-4 py-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                      <div className="flex-shrink-0">
-                        {message.role === 'user' ? (
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
-                            <AvatarFallback className="bg-blue-500 text-white text-xs">
-                              {getUserInitials(athleteName)}
-                            </AvatarFallback>
-                          </Avatar>
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                            <Brain className="w-4 h-4" />
-                          </div>
+        <div className="flex-1 flex flex-col min-h-0">
+          <ScrollArea className="flex-1 px-4">
+            <div className="space-y-4 py-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <div className="flex-shrink-0">
+                      {message.role === 'user' ? (
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
+                          <AvatarFallback className="bg-blue-500 text-white text-xs">
+                            {getUserInitials(athleteName)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                          <Brain className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
+                    <div className={`p-3 rounded-lg ${
+                      message.role === 'user'
+                        ? 'bg-blue-500 text-white rounded-br-none'
+                        : 'bg-gray-100 text-gray-900 rounded-bl-none'
+                    }`}>
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-xs opacity-70">
+                          {message.timestamp.toLocaleTimeString('el-GR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </p>
+                        {message.role === 'assistant' && (
+                          <span className="text-xs opacity-70 ml-2">
+                            RidAI
+                          </span>
                         )}
                       </div>
-                      <div className={`p-3 rounded-lg ${
-                        message.role === 'user'
-                          ? 'bg-blue-500 text-white rounded-br-none'
-                          : 'bg-gray-100 text-gray-900 rounded-bl-none'
-                      }`}>
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                        <div className="flex items-center justify-between mt-1">
-                          <p className="text-xs opacity-70">
-                            {message.timestamp.toLocaleTimeString('el-GR', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </p>
-                          {message.role === 'assistant' && (
-                            <span className="text-xs opacity-70 ml-2">
-                              RidAI
-                            </span>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   </div>
-                ))}
-                
-                {isLoading && (
-                  <div className="flex gap-3 justify-start">
-                    <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                      <Brain className="w-4 h-4" />
-                    </div>
-                    <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Το RidAI σκέφτεται έξυπνα...</span>
-                      </div>
+                </div>
+              ))}
+              
+              {isLoading && (
+                <div className="flex gap-3 justify-start">
+                  <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                    <Brain className="w-4 h-4" />
+                  </div>
+                  <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="text-sm">Το RidAI σκέφτεται έξυπνα...</span>
                     </div>
                   </div>
-                )}
-                
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            <div className="flex gap-2 p-4 border-t bg-white">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ρώτα τον RidAI Προπονητή για προπόνηση, διατροφή, ανάκαμψη..."
-                className="rounded-none"
-                disabled={isLoading}
-              />
-              <Button
-                onClick={sendMessage}
-                disabled={!input.trim() || isLoading}
-                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </ScrollArea>
 
-      <ExerciseVideoDialog
-        isOpen={isVideoDialogOpen}
-        onClose={() => setIsVideoDialogOpen(false)}
-        exercise={selectedExercise}
-      />
-    </>
+          <div className="flex gap-2 p-4 border-t bg-white">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ρώτα τον RidAI Προπονητή για προπόνηση, διατροφή, ανάκαμψη..."
+              className="rounded-none"
+              disabled={isLoading}
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={!input.trim() || isLoading}
+              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
