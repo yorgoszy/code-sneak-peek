@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -118,37 +117,12 @@ export const SubscriptionManagement: React.FC = () => {
     }
 
     try {
-      console.log('🔄 Creating subscription for user:', selectedUser);
-      
-      // Πρώτα ελέγχουμε την τρέχουσα κατάσταση του χρήστη
-      const { data: currentUser, error: fetchError } = await supabase
-        .from('app_users')
-        .select('name, email, subscription_status')
-        .eq('id', selectedUser)
-        .single();
-
-      if (fetchError) {
-        console.error('❌ Error fetching user:', fetchError);
-        throw fetchError;
-      }
-      
-      console.log('👤 Current user data:', currentUser);
-      
       const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
-      if (!subscriptionType) {
-        toast.error('Ο τύπος συνδρομής δεν βρέθηκε');
-        return;
-      }
+      if (!subscriptionType) return;
 
       const startDate = new Date();
       const endDate = new Date();
       endDate.setDate(startDate.getDate() + subscriptionType.duration_days);
-
-      console.log('📅 Subscription dates:', {
-        start: startDate.toISOString().split('T')[0],
-        end: endDate.toISOString().split('T')[0],
-        duration: subscriptionType.duration_days
-      });
 
       // Δημιουργία νέας συνδρομής
       const { error: subscriptionError } = await supabase
@@ -162,44 +136,17 @@ export const SubscriptionManagement: React.FC = () => {
           notes: notes
         });
 
-      if (subscriptionError) {
-        console.error('❌ Subscription creation error:', subscriptionError);
-        throw subscriptionError;
-      }
-      console.log('✅ Subscription created successfully');
+      if (subscriptionError) throw subscriptionError;
 
-      // Ενημέρωση subscription_status χρήστη σε active με explicit casting
-      console.log('🔄 Updating user subscription_status to active...');
-      const { data: updateResult, error: userError } = await supabase
+      // Ενημέρωση status χρήστη
+      const { error: userError } = await supabase
         .from('app_users')
-        .update({ 
-          subscription_status: 'active'
-        })
-        .eq('id', selectedUser)
-        .select('subscription_status');
+        .update({ subscription_status: 'active' })
+        .eq('id', selectedUser);
 
-      if (userError) {
-        console.error('❌ User subscription_status update error:', userError);
-        throw userError;
-      }
-      
-      console.log('✅ User update result:', updateResult);
-      console.log('✅ User subscription_status updated to active');
+      if (userError) throw userError;
 
-      // Επαλήθευση ότι η ενημέρωση έγινε
-      const { data: verifyUser, error: verifyError } = await supabase
-        .from('app_users')
-        .select('subscription_status')
-        .eq('id', selectedUser)
-        .single();
-
-      if (verifyError) {
-        console.error('❌ Verification error:', verifyError);
-      } else {
-        console.log('🔍 Verification - User subscription_status after update:', verifyUser.subscription_status);
-      }
-
-      toast.success('Η συνδρομή δημιουργήθηκε επιτυχώς και ο χρήστης ενεργοποιήθηκε!');
+      toast.success('Η συνδρομή δημιουργήθηκε επιτυχώς!');
       setIsDialogOpen(false);
       setSelectedUser('');
       setSelectedSubscriptionType('');
@@ -207,7 +154,7 @@ export const SubscriptionManagement: React.FC = () => {
       await loadData();
 
     } catch (error) {
-      console.error('❌ Error creating subscription:', error);
+      console.error('Error creating subscription:', error);
       toast.error('Σφάλμα κατά τη δημιουργία της συνδρομής');
     }
   };
