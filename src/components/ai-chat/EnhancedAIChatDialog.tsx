@@ -339,18 +339,80 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const smartLocalAI = SmartLocalAI.getInstance();
 
   useEffect(() => {
-    if (isOpen) {
-      initializeChat();
+    if (isOpen && athleteId) {
+      loadConversationHistory();
     }
-  }, [isOpen, athleteName, athleteId]);
+  }, [isOpen, athleteId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const loadConversationHistory = async () => {
+    if (!athleteId) return;
+    
+    setIsLoadingHistory(true);
+    try {
+      console.log('📚 Loading conversation history for:', athleteId);
+      
+      const { data: history, error } = await supabase
+        .from('ai_conversations')
+        .select('*')
+        .eq('user_id', athleteId)
+        .order('created_at', { ascending: true })
+        .limit(50); // Τα 50 πιο πρόσφατα μηνύματα
+
+      if (error) throw error;
+
+      if (history && history.length > 0) {
+        const formattedMessages: Message[] = history.map((msg: any) => ({
+          id: msg.id,
+          content: msg.content,
+          role: msg.message_type as 'user' | 'assistant',
+          timestamp: new Date(msg.created_at),
+          aiType: msg.message_type === 'assistant' ? 'rid-smart' : undefined
+        }));
+        setMessages(formattedMessages);
+        console.log('✅ Loaded', formattedMessages.length, 'messages from history');
+      } else {
+        // Αν δεν υπάρχει ιστορικό, δείχνουμε το καλωσόρισμα
+        await initializeChat();
+      }
+    } catch (error) {
+      console.error('❌ Error loading conversation history:', error);
+      toast.error('Σφάλμα κατά τη φόρτωση του ιστορικού');
+      // Αν αποτύχει η φόρτωση, δείχνουμε τουλάχιστον το καλωσόρισμα
+      await initializeChat();
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const saveMessageToDatabase = async (message: Message) => {
+    if (!athleteId) return;
+    
+    try {
+      const { error } = await supabase
+        .from('ai_conversations')
+        .insert({
+          user_id: athleteId,
+          message_type: message.role,
+          content: message.content,
+          metadata: message.aiType ? { aiType: message.aiType } : {}
+        });
+
+      if (error) {
+        console.error('❌ Error saving message:', error);
+      }
+    } catch (error) {
+      console.error('❌ Error saving message to database:', error);
+    }
+  };
 
   const initializeChat = async () => {
     const welcomeResponse = await smartLocalAI.getBasicResponse(
@@ -359,31 +421,18 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       athleteId
     );
 
-    setMessages([{
+    const welcomeMessage: Message = {
       id: 'welcome',
       content: welcomeResponse || 'Γεια σου! Είμαι ο RidAI Προπονητής!',
       role: 'assistant',
       timestamp: new Date(),
       aiType: 'rid-smart'
-    }]);
-  };
+    };
 
-  const callGeminiAI = async (message: string): Promise<string> => {
-    const { data, error } = await supabase.functions.invoke('gemini-ai-chat', {
-      body: { message, athleteName }
-    });
-
-    if (error) throw error;
-    return data.response;
-  };
-
-  const callOpenAI = async (message: string): Promise<string> => {
-    const { data, error } = await supabase.functions.invoke('ai-fitness-chat', {
-      body: { message, athleteName }
-    });
-
-    if (error) throw error;
-    return data.response;
+    setMessages([welcomeMessage]);
+    
+    // Αποθηκεύουμε το μήνυμα καλωσορίσματος
+    await saveMessageToDatabase(welcomeMessage);
   };
 
   // Ελέγχει αν μια απάντηση είναι ικανοποιητική
@@ -415,6 +464,10 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     };
 
     setMessages(prev => [...prev, userMessage]);
+    
+    // Αποθηκεύουμε το μήνυμα του χρήστη
+    await saveMessageToDatabase(userMessage);
+    
     const currentInput = input;
     setInput('');
     setIsLoading(true);
@@ -469,6 +522,10 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Αποθηκεύουμε την απάντηση του AI
+      await saveMessageToDatabase(assistantMessage);
+      
     } catch (error) {
       console.error('RidAI Error:', error);
       toast.error('Σφάλμα στον RidAI Προπονητή');
@@ -481,6 +538,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       };
       
       setMessages(prev => [...prev, errorMessage]);
+      await saveMessageToDatabase(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -521,49 +579,56 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         <div className="flex-1 flex flex-col min-h-0">
           <ScrollArea className="flex-1 px-4">
             <div className="space-y-4 py-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className="flex-shrink-0">
-                      {message.role === 'user' ? (
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
-                          <AvatarFallback className="bg-blue-500 text-white text-xs">
-                            {getUserInitials(athleteName)}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                          <Brain className="w-4 h-4" />
-                        </div>
-                      )}
-                    </div>
-                    <div className={`p-3 rounded-lg ${
-                      message.role === 'user'
-                        ? 'bg-blue-500 text-white rounded-br-none'
-                        : 'bg-gray-100 text-gray-900 rounded-bl-none'
-                    }`}>
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs opacity-70">
-                          {message.timestamp.toLocaleTimeString('el-GR', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                        {message.role === 'assistant' && (
-                          <span className="text-xs opacity-70 ml-2">
-                            RidAI
-                          </span>
+              {isLoadingHistory ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                  <span className="text-gray-500">Φόρτωση ιστορικού...</span>
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className="flex-shrink-0">
+                        {message.role === 'user' ? (
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
+                            <AvatarFallback className="bg-blue-500 text-white text-xs">
+                              {getUserInitials(athleteName)}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                            <Brain className="w-4 h-4" />
+                          </div>
                         )}
+                      </div>
+                      <div className={`p-3 rounded-lg ${
+                        message.role === 'user'
+                          ? 'bg-blue-500 text-white rounded-br-none'
+                          : 'bg-gray-100 text-gray-900 rounded-bl-none'
+                      }`}>
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-xs opacity-70">
+                            {message.timestamp.toLocaleTimeString('el-GR', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                          {message.role === 'assistant' && (
+                            <span className="text-xs opacity-70 ml-2">
+                              RidAI
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
               
               {isLoading && (
                 <div className="flex gap-3 justify-start">
@@ -590,11 +655,11 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               onKeyPress={handleKeyPress}
               placeholder="Ρώτα τον RidAI Προπονητή για προπόνηση, διατροφή, ανάκαμψη..."
               className="rounded-none"
-              disabled={isLoading}
+              disabled={isLoading || isLoadingHistory}
             />
             <Button
               onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || isLoadingHistory}
               className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
             >
               {isLoading ? (
