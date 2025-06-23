@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Save, CalendarCheck } from "lucide-react";
+import { Check, Calendar } from "lucide-react";
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 
 interface ActionButtonsProps {
@@ -17,28 +17,60 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onSave,
   onAssignment
 }) => {
-  const selectedDatesCount = program.training_dates?.length || 0;
-  const hasRequiredDates = selectedDatesCount >= totalDays;
+  const hasRequiredData = program.name && program.weeks && program.weeks.length > 0;
+  const hasTrainingDates = program.training_dates && program.training_dates.length >= totalDays;
+  const hasSelectedUser = program.user_id;
+  
+  const canAssign = hasRequiredData && hasTrainingDates && hasSelectedUser && totalDays > 0;
+
+  console.log('ActionButtons state:', {
+    hasRequiredData,
+    hasTrainingDates,
+    hasSelectedUser,
+    totalDays,
+    canAssign,
+    programName: program.name,
+    weeksCount: program.weeks?.length,
+    datesCount: program.training_dates?.length,
+    userId: program.user_id
+  });
 
   return (
-    <div className="flex justify-end gap-2 p-6 border-t flex-shrink-0">
-      <Button
-        onClick={onSave}
-        variant="outline"
-        className="rounded-none"
-      >
-        <Save className="w-4 h-4 mr-2" />
-        Αποθήκευση ως Προσχέδιο
-      </Button>
+    <div className="flex-shrink-0 p-6 border-t bg-white">
+      <div className="flex justify-end gap-3">
+        <Button
+          onClick={onSave}
+          variant="outline"
+          className="rounded-none"
+          disabled={!program.name}
+        >
+          <Check className="w-4 h-4 mr-2" />
+          Αποθήκευση Προγράμματος
+        </Button>
+        
+        <Button
+          onClick={onAssignment}
+          disabled={!canAssign}
+          className="rounded-none"
+          style={{ 
+            backgroundColor: canAssign ? '#00ffba' : undefined,
+            color: canAssign ? 'black' : undefined
+          }}
+        >
+          <Calendar className="w-4 h-4 mr-2" />
+          Ανάθεση Προγράμματος
+        </Button>
+      </div>
       
-      <Button
-        onClick={onAssignment}
-        className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-        disabled={!program.name || !program.user_id || totalDays === 0 || !hasRequiredDates}
-      >
-        <CalendarCheck className="w-4 h-4 mr-2" />
-        Ανάθεση
-      </Button>
+      {!canAssign && (
+        <div className="mt-2 text-sm text-red-600">
+          {!hasRequiredData && "Συμπληρώστε όνομα και δημιουργήστε εβδομάδες"}
+          {hasRequiredData && !hasSelectedUser && "Επιλέξτε αθλητή"}
+          {hasRequiredData && hasSelectedUser && !hasTrainingDates && 
+            `Επιλέξτε ${totalDays} ημερομηνίες προπόνησης`
+          }
+        </div>
+      )}
     </div>
   );
 };
