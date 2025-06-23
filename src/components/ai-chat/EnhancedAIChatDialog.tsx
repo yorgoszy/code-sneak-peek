@@ -270,8 +270,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] rounded-none flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
+        <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-[#00ffba]" />
             Triple AI Προπονητής
@@ -284,8 +284,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         </DialogHeader>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 p-4 border rounded-none">
-            <div className="space-y-4">
+          <ScrollArea className="flex-1 px-4">
+            <div className="space-y-4 py-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -348,7 +348,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             </div>
           </ScrollArea>
 
-          <div className="flex gap-2 p-4 border-t">
+          <div className="flex gap-2 p-4 border-t bg-white">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
