@@ -1,9 +1,9 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserProfilePrograms } from "./UserProfilePrograms";
+import { UserProfileProgramCards } from "./UserProfileProgramCards";
 import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
-import { UserProfileCalendar } from "./UserProfileCalendar";
+import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
 
 interface UserProfileTabsProps {
   user: any;
@@ -23,11 +23,11 @@ export const UserProfileTabs = ({ user, programs, tests, payments }: UserProfile
       </TabsList>
       
       <TabsContent value="programs" className="space-y-4">
-        <UserProfilePrograms user={user} programs={programs} />
+        <UserProfileProgramCards userProfile={user} />
       </TabsContent>
 
       <TabsContent value="calendar" className="space-y-4">
-        <UserProfileCalendar user={user} />
+        <UserProfileDailyProgram userProfile={user} />
       </TabsContent>
 
       <TabsContent value="tests" className="space-y-4">
