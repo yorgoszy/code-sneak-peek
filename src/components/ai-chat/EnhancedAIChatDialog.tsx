@@ -5,10 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, Bot, User, Loader2, Download, Sparkles, Settings, Brain } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { Send, Bot, User, Loader2, Download, Sparkles, Brain } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,7 +14,7 @@ interface Message {
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
-  aiType?: 'local' | 'gemini' | 'ensemble';
+  aiType?: 'ensemble';
 }
 
 interface EnhancedAIChatDialogProps {
@@ -109,10 +106,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [localAIEnabled, setLocalAIEnabled] = useState(true);
-  const [geminiAIEnabled, setGeminiAIEnabled] = useState(true);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const localAI = LocalAI.getInstance();
 
   useEffect(() => {
@@ -121,17 +115,14 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         id: 'welcome',
         content: `Γεια σου${athleteName ? ` ${athleteName}` : ''}! 👋
 
-Έχεις στη διάθεσή σου **δύο AI προπονητές**! 🤖💪
+Έχεις στη διάθεσή σου **τρεις AI προπονητές** που δουλεύουν μαζί! 🤖💪
 
 🔥 **Local AI** - Τρέχει στον browser σου (100% δωρεάν)
 🧠 **Gemini AI** - Προηγμένη τεχνητή νοημοσύνη από Google
+🚀 **OpenAI GPT** - Ισχυρότατη AI από την OpenAI
 
-**Λειτουργίες:**
-✅ **Ensemble Mode** - Συνδυάζει και τα δύο AI για καλύτερες απαντήσεις
-✅ **Local Mode** - Μόνο τοπικό AI (εντελώς offline)
-✅ **Gemini Mode** - Μόνο Gemini AI (προηγμένες απαντήσεις)
-
-Πάτα το κουμπί ⚙️ για να επιλέξεις ποιο AI θέλεις!
+**Τώρα όλα τρέχουν ταυτόχρονα!** ⚡
+Κάθε ερώτησή σου θα πάρει απαντήσεις από όλα τα AI συστήματα για να έχεις την πιο ολοκληρωμένη βοήθεια!
 
 **Ειδικεύομαι σε:**
 🏋️ Προπόνηση & Ασκήσεις
@@ -149,13 +140,20 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   }, [isOpen, athleteName]);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const callGeminiAI = async (message: string): Promise<string> => {
     const { data, error } = await supabase.functions.invoke('gemini-ai-chat', {
+      body: { message, athleteName }
+    });
+
+    if (error) throw error;
+    return data.response;
+  };
+
+  const callOpenAI = async (message: string): Promise<string> => {
+    const { data, error } = await supabase.functions.invoke('ai-fitness-chat', {
       body: { message, athleteName }
     });
 
@@ -178,54 +176,53 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     setIsLoading(true);
 
     try {
-      let responses: { content: string; type: string }[] = [];
+      // Καλούμε όλα τα AI ταυτόχρονα
+      const [localResponse, geminiResponse, openaiResponse] = await Promise.allSettled([
+        localAI.generateResponse(input, athleteName),
+        callGeminiAI(input),
+        callOpenAI(input)
+      ]);
 
-      // Αποφασίζουμε ποια AI να καλέσουμε
-      if (localAIEnabled && geminiAIEnabled) {
-        // Ensemble mode - καλούμε και τα δύο
-        const [localResponse, geminiResponse] = await Promise.allSettled([
-          localAI.generateResponse(input, athleteName),
-          callGeminiAI(input)
-        ]);
+      let responses: { content: string; type: string; icon: string }[] = [];
 
-        if (localResponse.status === 'fulfilled') {
-          responses.push({ content: localResponse.value, type: 'Local AI' });
-        }
-        if (geminiResponse.status === 'fulfilled') {
-          responses.push({ content: geminiResponse.value, type: 'Gemini AI' });
-        }
-      } else if (localAIEnabled) {
-        // Μόνο Local AI
-        const response = await localAI.generateResponse(input, athleteName);
-        responses.push({ content: response, type: 'Local AI' });
-      } else if (geminiAIEnabled) {
-        // Μόνο Gemini AI
-        const response = await callGeminiAI(input);
-        responses.push({ content: response, type: 'Gemini AI' });
+      if (localResponse.status === 'fulfilled') {
+        responses.push({ 
+          content: localResponse.value, 
+          type: 'Local AI', 
+          icon: '🤖' 
+        });
+      }
+      if (geminiResponse.status === 'fulfilled') {
+        responses.push({ 
+          content: geminiResponse.value, 
+          type: 'Gemini AI', 
+          icon: '🧠' 
+        });
+      }
+      if (openaiResponse.status === 'fulfilled') {
+        responses.push({ 
+          content: openaiResponse.value, 
+          type: 'OpenAI GPT', 
+          icon: '🚀' 
+        });
       }
 
-      // Δημιουργούμε την τελική απάντηση
+      // Δημιουργούμε την ensemble απάντηση
       let finalContent = '';
-      let aiType: 'local' | 'gemini' | 'ensemble' = 'local';
 
       if (responses.length === 0) {
-        finalContent = 'Λυπάμαι, δεν μπορώ να απαντήσω αυτή τη στιγμή. Παρακαλώ ενεργοποιήστε τουλάχιστον ένα AI στις ρυθμίσεις.';
-      } else if (responses.length === 1) {
-        finalContent = responses[0].content;
-        aiType = responses[0].type === 'Local AI' ? 'local' : 'gemini';
+        finalContent = 'Λυπάμαι, αντιμετωπίζω τεχνικά προβλήματα με όλα τα AI συστήματα. Παρακαλώ δοκιμάστε ξανά.';
       } else {
-        // Ensemble response
-        finalContent = `**🤖 Ensemble AI Response:**
+        finalContent = `**🤖💪 Τρεις AI Προπονητές Απαντούν:**\n\n`;
+        
+        responses.forEach((response, index) => {
+          finalContent += `**${response.icon} ${response.type}:**\n${response.content}\n\n`;
+          if (index < responses.length - 1) {
+            finalContent += `---\n\n`;
+          }
+        });
 
-**Local AI:**
-${responses.find(r => r.type === 'Local AI')?.content}
-
-**Gemini AI:**
-${responses.find(r => r.type === 'Gemini AI')?.content}
-
----
-*Σύγκριση δύο διαφορετικών AI συστημάτων για πιο ολοκληρωμένη απάντηση*`;
-        aiType = 'ensemble';
+        finalContent += `*Σύγκριση ${responses.length} διαφορετικών AI συστημάτων για την πιο ολοκληρωμένη απάντηση*`;
       }
 
       const assistantMessage: Message = {
@@ -233,13 +230,13 @@ ${responses.find(r => r.type === 'Gemini AI')?.content}
         content: finalContent,
         role: 'assistant',
         timestamp: new Date(),
-        aiType
+        aiType: 'ensemble'
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('AI Error:', error);
-      toast.error('Σφάλμα στον AI βοηθό');
+      toast.error('Σφάλμα στους AI βοηθούς');
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -271,97 +268,23 @@ ${responses.find(r => r.type === 'Gemini AI')?.content}
       .slice(0, 2);
   };
 
-  const getAIIcon = (aiType?: string) => {
-    switch (aiType) {
-      case 'local':
-        return <Download className="w-4 h-4" />;
-      case 'gemini':
-        return <Brain className="w-4 h-4" />;
-      case 'ensemble':
-        return <Sparkles className="w-4 h-4" />;
-      default:
-        return <Sparkles className="w-4 h-4" />;
-    }
-  };
-
-  const getAIColor = (aiType?: string) => {
-    switch (aiType) {
-      case 'local':
-        return 'bg-blue-500';
-      case 'gemini':
-        return 'bg-purple-500';
-      case 'ensemble':
-        return 'bg-[#00ffba]';
-      default:
-        return 'bg-[#00ffba]';
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] rounded-none flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#00ffba]" />
-              Enhanced AI Προπονητής
-              {athleteName && (
-                <span className="text-sm font-normal text-gray-600">
-                  για {athleteName}
-                </span>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-1"
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#00ffba]" />
+            Triple AI Προπονητής
+            {athleteName && (
+              <span className="text-sm font-normal text-gray-600">
+                για {athleteName}
+              </span>
+            )}
           </DialogTitle>
-
-          {showSettings && (
-            <div className="bg-gray-50 p-4 rounded-none border space-y-4">
-              <h3 className="font-medium text-sm">AI Settings</h3>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="local-ai" className="text-sm">Local AI (Browser)</Label>
-                    <p className="text-xs text-gray-500">100% δωρεάν, τρέχει στον browser</p>
-                  </div>
-                  <Switch 
-                    id="local-ai" 
-                    checked={localAIEnabled} 
-                    onCheckedChange={setLocalAIEnabled}
-                  />
-                </div>
-
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="gemini-ai" className="text-sm">Gemini AI (Google)</Label>
-                    <p className="text-xs text-gray-500">Προηγμένη AI τεχνολογία</p>
-                  </div>
-                  <Switch 
-                    id="gemini-ai" 
-                    checked={geminiAIEnabled} 
-                    onCheckedChange={setGeminiAIEnabled}
-                  />
-                </div>
-              </div>
-
-              <div className="text-xs text-gray-600 bg-white p-2 rounded-none">
-                <strong>Ensemble Mode:</strong> Όταν είναι ενεργά και τα δύο AI, θα λαμβάνεις απαντήσεις από αμφότερα για σύγκριση.
-              </div>
-            </div>
-          )}
         </DialogHeader>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 p-4 border rounded-none" ref={scrollAreaRef}>
+          <ScrollArea className="flex-1 p-4 border rounded-none">
             <div className="space-y-4">
               {messages.map((message) => (
                 <div
@@ -378,8 +301,8 @@ ${responses.find(r => r.type === 'Gemini AI')?.content}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <div className={`w-8 h-8 rounded-full ${getAIColor(message.aiType)} text-white flex items-center justify-center`}>
-                          {getAIIcon(message.aiType)}
+                        <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                          <Sparkles className="w-4 h-4" />
                         </div>
                       )}
                     </div>
@@ -396,11 +319,9 @@ ${responses.find(r => r.type === 'Gemini AI')?.content}
                             minute: '2-digit' 
                           })}
                         </p>
-                        {message.role === 'assistant' && message.aiType && (
+                        {message.role === 'assistant' && (
                           <span className="text-xs opacity-70 ml-2">
-                            {message.aiType === 'local' && 'Local AI'}
-                            {message.aiType === 'gemini' && 'Gemini AI'}
-                            {message.aiType === 'ensemble' && 'Ensemble AI'}
+                            Triple AI
                           </span>
                         )}
                       </div>
@@ -417,11 +338,13 @@ ${responses.find(r => r.type === 'Gemini AI')?.content}
                   <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Σκέφτομαι...</span>
+                      <span className="text-sm">Τα 3 AI σκέφτονται ταυτόχρονα...</span>
                     </div>
                   </div>
                 </div>
               )}
+              
+              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
 
@@ -430,7 +353,7 @@ ${responses.find(r => r.type === 'Gemini AI')?.content}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ρώτα με για προπόνηση, διατροφή, ανάκαμψη..."
+              placeholder="Ρώτα τους 3 AI προπονητές για προπόνηση, διατροφή, ανάκαμψη..."
               className="rounded-none"
               disabled={isLoading}
             />
