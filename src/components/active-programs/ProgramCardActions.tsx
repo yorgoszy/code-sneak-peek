@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Eye, Edit, CheckCircle, Sparkles, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
-import { FreeAIChatDialog } from "@/components/ai-chat/FreeAIChatDialog";
+import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -81,7 +82,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
               size="sm"
               className="h-6 w-6 p-0 hover:bg-gray-100"
               onClick={handleAIChatClick}
-              title="FREE AI Chat"
+              title="Enhanced AI Chat"
             >
               <Sparkles className="h-3 w-3" />
             </Button>
@@ -141,7 +142,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         />
       )}
 
-      <FreeAIChatDialog
+      <EnhancedAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={assignment.user_id}

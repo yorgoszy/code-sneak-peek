@@ -5,7 +5,7 @@ import { UserProfileStats } from "./UserProfileStats";
 import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
 import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
-import { FreeAIChatDialog } from "@/components/ai-chat/FreeAIChatDialog";
+import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 
@@ -40,7 +40,7 @@ export const UserProfileContent = ({
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                FREE AI Προπονητής
+                Enhanced AI Προπονητής
               </Button>
             </div>
             <UserProfileHeader user={userProfile} />
@@ -57,7 +57,7 @@ export const UserProfileContent = ({
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                FREE AI Προπονητής
+                Enhanced AI Προπονητής
               </Button>
             </div>
             <UserProfileDailyProgram userProfile={userProfile} />
@@ -73,7 +73,7 @@ export const UserProfileContent = ({
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                FREE AI Προπονητής
+                Enhanced AI Προπονητής
               </Button>
             </div>
             <UserProfileTests tests={tests} />
@@ -89,7 +89,7 @@ export const UserProfileContent = ({
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                FREE AI Προπονητής
+                Enhanced AI Προπονητής
               </Button>
             </div>
             <UserProfilePayments payments={payments} />
@@ -104,7 +104,7 @@ export const UserProfileContent = ({
     <>
       {renderContent()}
       
-      <FreeAIChatDialog
+      <EnhancedAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={userProfile?.id}
