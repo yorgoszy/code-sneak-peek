@@ -44,20 +44,9 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
     onVideoClick(exercise);
   };
 
-  const handleContainerClick = (e: React.MouseEvent) => {
-    // Μόνο αν δεν είμαστε σε viewOnly mode
-    if (!viewOnly) {
-      console.log('🖱️ ExerciseHeader container click - calling exercise click');
-      onExerciseClick(exercise, e);
-    }
-  };
-
   return (
     <div 
-      className={`flex items-center gap-2 p-1 border-b border-gray-100 ${
-        !viewOnly ? 'cursor-pointer hover:bg-gray-50' : ''
-      } ${isComplete ? 'bg-green-50' : ''}`}
-      onClick={handleContainerClick}
+      className={`flex items-center gap-2 p-1 border-b border-gray-100 ${isComplete ? 'bg-green-50' : ''}`}
     >
       <div className="flex items-center flex-1 min-w-0">
         <VideoThumbnail 
