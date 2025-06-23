@@ -23,11 +23,11 @@ export const UserProfileTabs = ({ user, programs, tests, payments }: UserProfile
       </TabsList>
       
       <TabsContent value="programs" className="space-y-4">
-        <UserProfileProgramCards userProfile={user} />
+        <UserProfileDailyProgram userProfile={user} />
       </TabsContent>
 
       <TabsContent value="calendar" className="space-y-4">
-        <UserProfileDailyProgram userProfile={user} />
+        <UserProfileProgramCards userProfile={user} />
       </TabsContent>
 
       <TabsContent value="tests" className="space-y-4">
