@@ -30,9 +30,15 @@ export const ExerciseInteractionHandler: React.FC<ExerciseInteractionHandlerProp
       return;
     }
 
-    // ΑΛΛΑΓΗ: Πάντα καλούμε το onVideoClick όταν έχουμε ενεργή προπόνηση
-    console.log('🎬 ExerciseInteractionHandler - Opening video dialog for exercise during workout');
-    onVideoClick(exercise);
+    // Αν το κλικ ήταν στο όνομα της άσκησης, άνοιξε το video dialog
+    if ((event.target as HTMLElement).closest('.exercise-name-click')) {
+      console.log('🎬 ExerciseInteractionHandler - Click was on exercise name');
+      onVideoClick(exercise);
+      return;
+    }
+
+    // Για όλα τα άλλα κλικ, δεν κάνουμε τίποτα
+    console.log('👆 ExerciseInteractionHandler - Click was on other area, ignoring');
   };
 
   const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {

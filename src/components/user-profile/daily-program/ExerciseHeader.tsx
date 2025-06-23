@@ -54,7 +54,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
           onVideoClick={handleVideoClick} 
         />
         <h6 
-          className={`text-xs font-medium truncate cursor-pointer hover:text-blue-600 ${
+          className={`exercise-name-click text-xs font-medium truncate cursor-pointer hover:text-blue-600 ${
             isComplete ? 'text-green-800' : 'text-gray-900'
           }`}
           onClick={handleNameClick}
