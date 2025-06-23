@@ -2628,6 +2628,10 @@ export type Database = {
         Args: { athlete_id: string }
         Returns: undefined
       }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_latest_1rm: {
         Args: { athlete_id: string; exercise_id: string }
         Returns: number
