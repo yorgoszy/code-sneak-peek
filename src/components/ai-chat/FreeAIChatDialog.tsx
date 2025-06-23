@@ -4,15 +4,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, Bot, User, Loader2, Zap, Settings } from "lucide-react";
+import { Send, Bot, User, Loader2, Zap, Settings, Brain, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { EnsembleController, type EnsembleConfig } from './services/ensembleController';
+import { ResponseCombiner } from './services/responseCombiner';
 
 interface Message {
   id: string;
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
+  sources?: string[];
+  confidence?: number;
 }
 
 interface FreeAIChatDialogProps {
@@ -33,10 +39,22 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiProvider, setApiProvider] = useState<'local' | 'gemini'>('local');
-  const [geminiApiKey, setGeminiApiKey] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [ensembleConfig, setEnsembleConfig] = useState<EnsembleConfig>({
+    useLocal: true,
+    useGemini: false,
+    geminiApiKey: '',
+    combineResponses: true,
+    fallbackMode: true
+  });
+  
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const ensembleController = useRef<EnsembleController>();
+  const responseCombiner = useRef(new ResponseCombiner());
+
+  useEffect(() => {
+    ensembleController.current = new EnsembleController(ensembleConfig);
+  }, [ensembleConfig]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -50,86 +68,31 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
         id: 'welcome',
         content: `Γεια σου ${athleteName}! 👋
 
-Είμαι ο **RID Free**, ο δωρεάν AI προπονητής σου! 🤖
+Είμαι ο **RID Ensemble AI**, ο προηγμένος AI προπονητής σου! 🧠✨
 
-**Διαθέσιμες επιλογές:**
-🔹 **Local AI** - Τρέχει στον browser σου (100% δωρεάν)
-🔸 **Gemini AI** - Με API key (δωρεάν tier 15 αιτήματα/λεπτό)
+**Διαθέσιμες τεχνολογίες:**
+🏠 **Local AI** - Τρέχει στον browser σου (100% δωρεάν)
+💎 **Gemini AI** - Με API key (δωρεάν tier 15 αιτήματα/λεπτό)
+🚀 **Ensemble Mode** - Συνδυάζει πολλά AI για καλύτερες απαντήσεις
 
-Μπορώ να σε βοηθήσω με:
-💪 **Συμβουλές προπόνησης**
-🍎 **Διατροφικές οδηγίες** 
-📊 **Ανάλυση προόδου**
-🎯 **Στόχους fitness**
+**Μπορώ να σε βοηθήσω με:**
+💪 **Εξατομικευμένες συμβουλές προπόνησης**
+🍎 **Προχωρημένες διατροφικές οδηγίες** 
+📊 **Λεπτομερή ανάλυση προόδου**
+🎯 **Στρατηγικούς στόχους fitness**
+🧠 **Ψυχολογική υποστήριξη**
 
-Τι θα θέλες να συζητήσουμε σήμερα;`,
+Χρησιμοποιώ τεχνολογία ensemble για να σου δώσω τις καλύτερες δυνατές απαντήσεις!`,
         role: 'assistant',
-        timestamp: new Date()
+        timestamp: new Date(),
+        sources: ['ensemble'],
+        confidence: 1.0
       }]);
     }
   }, [isOpen, athleteName, messages.length]);
 
-  const callLocalAI = async (userMessage: string): Promise<string> => {
-    // Simulated local AI responses for fitness/nutrition
-    const responses = [
-      `Εξαιρετική ερώτηση! Για την προπόνηση σου, συνιστώ να εστιάσεις σε σύνθετες κινήσεις όπως squats, deadlifts και push-ups. Αυτές δουλεύουν πολλές μυϊκές ομάδες ταυτόχρονα! 💪`,
-      
-      `Η διατροφή είναι το 70% της επιτυχίας σου! Προτείνω να τρως πρωτεΐνη σε κάθε γεύμα, πολλά λαχανικά και να υδατώνεσαι καλά. Τι είδους στόχους έχεις; 🥗`,
-      
-      `Η ανάπαυση είναι εξίσου σημαντική με την προπόνηση! Φρόντισε να κοιμάσαι 7-9 ώρες και να έχεις τουλάχιστον μία ημέρα ξεκούρασης την εβδομάδα. 😴`,
-      
-      `Για καλύτερα αποτελέσματα, κράτα ένα ημερολόγιο προπόνησης και διατροφής. Η παρακολούθηση της προόδου σου θα σε κρατήσει παρακινημένο! 📈`,
-      
-      `Θυμήσου: η συνέπεια είναι το κλειδί! Καλύτερα 20 λεπτά κάθε μέρα παρά 2 ώρες μία φορά την εβδομάδα. Μικρά βήματα οδηγούν σε μεγάλα αποτελέσματα! 🎯`
-    ];
-    
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
-
-  const callGeminiAI = async (userMessage: string): Promise<string> => {
-    if (!geminiApiKey.trim()) {
-      throw new Error('Παρακαλώ εισάγετε το Gemini API key στις ρυθμίσεις');
-    }
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `Είσαι ο RID, ένας εξειδικευμένος AI προπονητής και διατροφολόγος για τον αθλητή ${athleteName}. 
-
-Δώσε συμβουλές για:
-- Προπόνηση και fitness
-- Διατροφή και θρέψη  
-- Ανάπαυση και αποκατάσταση
-- Κίνητρα και ψυχολογία
-
-Απάντα στα ελληνικά, με φιλικό τόνο και χρησιμοποίησε emoji.
-
-Ερώτηση: ${userMessage}`
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 800,
-        }
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Σφάλμα στο Gemini API');
-    }
-
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
-  };
-
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !ensembleController.current) return;
 
     const userInput = input;
     setInput('');
@@ -145,33 +108,47 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
     setIsLoading(true);
 
     try {
-      let aiResponse: string;
+      // Use ensemble controller to get responses
+      const responses = await ensembleController.current.processQuery(userInput, athleteName || 'Αθλητή');
       
-      if (apiProvider === 'gemini') {
-        aiResponse = await callGeminiAI(userInput);
-      } else {
-        // Simulate processing time for local AI
-        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-        aiResponse = await callLocalAI(userInput);
-      }
+      let assistantMessage: Message;
 
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: aiResponse,
-        role: 'assistant',
-        timestamp: new Date()
-      };
+      if (ensembleConfig.combineResponses && responses.length > 1) {
+        // Combine multiple responses
+        const combined = responseCombiner.current.combineResponses(responses);
+        assistantMessage = {
+          id: (Date.now() + 1).toString(),
+          content: combined.content,
+          role: 'assistant',
+          timestamp: new Date(),
+          sources: combined.sources,
+          confidence: combined.totalConfidence
+        };
+      } else {
+        // Use best single response
+        const bestResponse = responseCombiner.current.selectBestResponse(responses);
+        assistantMessage = {
+          id: (Date.now() + 1).toString(),
+          content: bestResponse.content,
+          role: 'assistant',
+          timestamp: new Date(),
+          sources: [bestResponse.source],
+          confidence: bestResponse.confidence
+        };
+      }
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('AI Error:', error);
+      console.error('Ensemble AI Error:', error);
       toast.error(error instanceof Error ? error.message : 'Σφάλμα στον AI βοηθό');
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: 'Λυπάμαι, αντιμετωπίζω τεχνικά προβλήματα. Παρακαλώ δοκιμάστε ξανά σε λίγο.',
         role: 'assistant',
-        timestamp: new Date()
+        timestamp: new Date(),
+        sources: ['error'],
+        confidence: 0
       };
       
       setMessages(prev => [...prev, errorMessage]);
@@ -192,23 +169,35 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
       id: 'welcome',
       content: `Γεια σου ${athleteName}! 👋
 
-Είμαι ο **RID Free**, ο δωρεάν AI προπονητής σου! 🤖
+Είμαι ο **RID Ensemble AI**, ο προηγμένος AI προπονητής σου! 🧠✨
 
-**Διαθέσιμες επιλογές:**
-🔹 **Local AI** - Τρέχει στον browser σου (100% δωρεάν)
-🔸 **Gemini AI** - Με API key (δωρεάν tier 15 αιτήματα/λεπτό)
+**Διαθέσιμες τεχνολογίες:**
+🏠 **Local AI** - Τρέχει στον browser σου (100% δωρεάν)
+💎 **Gemini AI** - Με API key (δωρεάν tier 15 αιτήματα/λεπτό)
+🚀 **Ensemble Mode** - Συνδυάζει πολλά AI για καλύτερες απαντήσεις
 
-Μπορώ να σε βοηθήσω με:
-💪 **Συμβουλές προπόνησης**
-🍎 **Διατροφικές οδηγίες** 
-📊 **Ανάλυση προόδου**
-🎯 **Στόχους fitness**
+**Μπορώ να σε βοηθήσω με:**
+💪 **Εξατομικευμένες συμβουλές προπόνησης**
+🍎 **Προχωρημένες διατροφικές οδηγίες** 
+📊 **Λεπτομερή ανάλυση προόδου**
+🎯 **Στρατηγικούς στόχους fitness**
+🧠 **Ψυχολογική υποστήριξη**
 
-Τι θα θέλες να συζητήσουμε σήμερα;`,
+Χρησιμοποιώ τεχνολογία ensemble για να σου δώσω τις καλύτερες δυνατές απαντήσεις!`,
       role: 'assistant',
-      timestamp: new Date()
+      timestamp: new Date(),
+      sources: ['ensemble'],
+      confidence: 1.0
     }]);
     toast.success("Η συνομιλία διαγράφηκε επιτυχώς!");
+  };
+
+  const updateEnsembleConfig = (updates: Partial<EnsembleConfig>) => {
+    const newConfig = { ...ensembleConfig, ...updates };
+    setEnsembleConfig(newConfig);
+    if (ensembleController.current) {
+      ensembleController.current.updateConfig(newConfig);
+    }
   };
 
   const getUserInitials = (name?: string) => {
@@ -221,14 +210,21 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
       .slice(0, 2);
   };
 
+  const getActiveSourcesText = () => {
+    const sources = [];
+    if (ensembleConfig.useLocal) sources.push('Local');
+    if (ensembleConfig.useGemini && ensembleConfig.geminiApiKey) sources.push('Gemini');
+    return sources.length > 0 ? sources.join(' + ') : 'Κανένα';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] rounded-none flex flex-col">
+      <DialogContent className="max-w-3xl max-h-[85vh] rounded-none flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Bot className="w-5 h-5 text-[#00ffba]" />
-              RID Free AI Προπονητής
+              <Brain className="w-5 h-5 text-[#00ffba]" />
+              RID Ensemble AI
               {athleteName && (
                 <span className="text-sm font-normal text-gray-600">
                   για {athleteName}
@@ -236,9 +232,9 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
               )}
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-none">
-                <Zap className="w-3 h-3" />
-                100% Δωρεάν
+              <div className="flex items-center gap-1 text-xs bg-gradient-to-r from-green-100 to-blue-100 text-gray-800 px-2 py-1 rounded-none">
+                <Sparkles className="w-3 h-3" />
+                Ensemble AI
               </div>
               <Button
                 variant="outline"
@@ -262,21 +258,54 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
         </DialogHeader>
 
         {showSettings && (
-          <div className="p-4 border rounded-none bg-gray-50 space-y-3">
-            <div>
-              <label className="block text-sm font-medium mb-2">AI Provider</label>
-              <Select value={apiProvider} onValueChange={(value: 'local' | 'gemini') => setApiProvider(value)}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="local">Local AI (Δωρεάν - Browser)</SelectItem>
-                  <SelectItem value="gemini">Gemini AI (API Key)</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="p-4 border rounded-none bg-gray-50 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm">AI Πηγές</h4>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="useLocal"
+                    checked={ensembleConfig.useLocal}
+                    onCheckedChange={(checked) => updateEnsembleConfig({ useLocal: checked })}
+                  />
+                  <Label htmlFor="useLocal" className="text-sm">Local AI (Δωρεάν)</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="useGemini"
+                    checked={ensembleConfig.useGemini}
+                    onCheckedChange={(checked) => updateEnsembleConfig({ useGemini: checked })}
+                  />
+                  <Label htmlFor="useGemini" className="text-sm">Gemini AI</Label>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm">Λειτουργίες</h4>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="combineResponses"
+                    checked={ensembleConfig.combineResponses}
+                    onCheckedChange={(checked) => updateEnsembleConfig({ combineResponses: checked })}
+                  />
+                  <Label htmlFor="combineResponses" className="text-sm">Συνδυασμός απαντήσεων</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="fallbackMode"
+                    checked={ensembleConfig.fallbackMode}
+                    onCheckedChange={(checked) => updateEnsembleConfig({ fallbackMode: checked })}
+                  />
+                  <Label htmlFor="fallbackMode" className="text-sm">Fallback mode</Label>
+                </div>
+              </div>
             </div>
 
-            {apiProvider === 'gemini' && (
+            {ensembleConfig.useGemini && (
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Gemini API Key 
@@ -291,8 +320,8 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
                 </label>
                 <Input
                   type="password"
-                  value={geminiApiKey}
-                  onChange={(e) => setGeminiApiKey(e.target.value)}
+                  value={ensembleConfig.geminiApiKey}
+                  onChange={(e) => updateEnsembleConfig({ geminiApiKey: e.target.value })}
                   placeholder="Εισάγετε το Gemini API key..."
                   className="rounded-none"
                 />
@@ -301,6 +330,10 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
                 </p>
               </div>
             )}
+
+            <div className="text-sm text-gray-600 bg-white p-3 rounded-none border-l-4 border-[#00ffba]">
+              <strong>Ενεργές πηγές:</strong> {getActiveSourcesText()}
+            </div>
           </div>
         )}
 
@@ -312,7 +345,7 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
                   key={message.id}
                   className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                     <div className="flex-shrink-0">
                       {message.role === 'user' ? (
                         <Avatar className="w-8 h-8">
@@ -322,8 +355,8 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                          <Bot className="w-4 h-4" />
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#00ffba] to-blue-400 text-black flex items-center justify-center">
+                          <Brain className="w-4 h-4" />
                         </div>
                       )}
                     </div>
@@ -333,12 +366,28 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
                         : 'bg-gray-100 text-gray-900 rounded-bl-none'
                     }`}>
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      <p className="text-xs opacity-70 mt-1">
-                        {message.timestamp.toLocaleTimeString('el-GR', { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xs opacity-70">
+                          {message.timestamp.toLocaleTimeString('el-GR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </p>
+                        {message.sources && message.sources.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            {message.sources.map((source, idx) => (
+                              <span key={idx} className="text-xs opacity-60 bg-black/10 px-1 rounded">
+                                {source}
+                              </span>
+                            ))}
+                            {message.confidence && (
+                              <span className="text-xs opacity-60">
+                                {Math.round(message.confidence * 100)}%
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -346,14 +395,14 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
               
               {isLoading && (
                 <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                    <Bot className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#00ffba] to-blue-400 text-black flex items-center justify-center">
+                    <Brain className="w-4 h-4" />
                   </div>
                   <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span className="text-sm">
-                        {apiProvider === 'gemini' ? 'Το Gemini σκέφτεται...' : 'Ο RID σκέφτεται...'}
+                        Το Ensemble AI σκέφτεται...
                       </span>
                     </div>
                   </div>
@@ -367,14 +416,14 @@ export const FreeAIChatDialog: React.FC<FreeAIChatDialogProps> = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={`Πληκτρολογήστε το μήνυμά σας στον RID ${apiProvider === 'gemini' ? '(Gemini)' : '(Local)'}...`}
+              placeholder={`Ρωτήστε το Ensemble AI (${getActiveSourcesText()})...`}
               className="rounded-none"
               disabled={isLoading}
             />
             <Button
               onClick={handleSendMessage}
               disabled={!input.trim() || isLoading}
-              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              className="rounded-none bg-gradient-to-r from-[#00ffba] to-blue-400 hover:from-[#00ffba]/90 hover:to-blue-400/90 text-black"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
