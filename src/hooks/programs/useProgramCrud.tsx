@@ -145,6 +145,58 @@ export const useProgramCrud = () => {
 
   const duplicateProgram = async (program: Program, saveProgram: (data: any) => Promise<any>) => {
     try {
+      console.log('🔄 Starting program duplication for:', program.name);
+      console.log('📊 Original program structure:', {
+        id: program.id,
+        weeksCount: program.program_weeks?.length || 0,
+        structure: program.program_weeks?.map(w => ({
+          weekName: w.name,
+          daysCount: w.program_days?.length || 0,
+          days: w.program_days?.map(d => ({
+            dayName: d.name,
+            blocksCount: d.program_blocks?.length || 0,
+            blocks: d.program_blocks?.map(b => ({
+              blockName: b.name,
+              exercisesCount: b.program_exercises?.length || 0
+            }))
+          }))
+        }))
+      });
+
+      // Δημιουργούμε τη δομή εβδομάδων με νέα IDs
+      const duplicatedWeeks = (program.program_weeks || []).map(week => ({
+        id: crypto.randomUUID(),
+        name: week.name,
+        week_number: week.week_number,
+        program_days: (week.program_days || []).map(day => ({
+          id: crypto.randomUUID(),
+          name: day.name,
+          day_number: day.day_number,
+          estimated_duration_minutes: day.estimated_duration_minutes,
+          program_blocks: (day.program_blocks || []).map(block => ({
+            id: crypto.randomUUID(),
+            name: block.name,
+            block_order: block.block_order,
+            program_exercises: (block.program_exercises || []).map(exercise => ({
+              id: crypto.randomUUID(),
+              exercise_id: exercise.exercise_id,
+              sets: exercise.sets,
+              reps: exercise.reps,
+              kg: exercise.kg,
+              percentage_1rm: exercise.percentage_1rm,
+              velocity_ms: exercise.velocity_ms,
+              tempo: exercise.tempo,
+              rest: exercise.rest,
+              notes: exercise.notes,
+              exercise_order: exercise.exercise_order,
+              exercises: exercise.exercises // Διατηρούμε την αναφορά στην άσκηση
+            }))
+          }))
+        }))
+      }));
+
+      console.log('✅ Duplicated weeks structure created:', duplicatedWeeks.length, 'weeks');
+
       const duplicatedProgram = {
         ...program,
         id: undefined,
@@ -152,12 +204,17 @@ export const useProgramCrud = () => {
         user_id: null,
         created_at: undefined,
         updated_at: undefined,
+        weeks: duplicatedWeeks, // Χρησιμοποιούμε τη νέα δομή
+        program_weeks: undefined // Αφαιρούμε το παλιό format
       };
 
+      console.log('💾 Saving duplicated program with structure...');
       await saveProgram(duplicatedProgram);
-      toast.success('Το πρόγραμμα αντιγράφηκε επιτυχώς');
+      
+      console.log('🎉 Program duplicated successfully with full structure');
+      toast.success('Το πρόγραμμα αντιγράφηκε επιτυχώς με όλη τη δομή του');
     } catch (error) {
-      console.error('Error duplicating program:', error);
+      console.error('❌ Error duplicating program:', error);
       toast.error('Σφάλμα αντιγραφής προγράμματος');
     }
   };

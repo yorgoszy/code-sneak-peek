@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,22 +13,8 @@ export const useProgramSave = () => {
       console.log('💾 [useProgramSave] Starting saveProgram with data:', {
         id: programData.id,
         name: programData.name,
-        hasWeeks: programData.weeks?.length || 0,
-        weeksDetail: programData.weeks?.map(w => ({
-          id: w.id,
-          name: w.name,
-          daysCount: w.program_days?.length || 0,
-          days: w.program_days?.map(d => ({
-            id: d.id,
-            name: d.name,
-            blocksCount: d.program_blocks?.length || 0,
-            blocks: d.program_blocks?.map(b => ({
-              id: b.id,
-              name: b.name,
-              exercisesCount: b.program_exercises?.length || 0
-            }))
-          }))
-        }))
+        hasWeeks: (programData.weeks || programData.program_weeks)?.length || 0,
+        weeksSource: programData.weeks ? 'weeks' : programData.program_weeks ? 'program_weeks' : 'none'
       });
 
       // Διασφαλίζουμε ότι έχουμε training_dates
@@ -44,17 +29,20 @@ export const useProgramSave = () => {
             return new Date(date).toISOString().split('T')[0];
           }
         });
-      } else if (programData.weeks && programData.weeks.length > 0) {
-        // Αν δεν υπάρχουν training_dates, δημιουργούμε αυτόματα
-        const totalDays = programData.weeks.reduce((total, week) => total + (week.program_days?.length || 0), 0);
-        const today = new Date();
-        trainingDatesArray = [];
-        for (let i = 0; i < totalDays; i++) {
-          const date = new Date(today);
-          date.setDate(today.getDate() + i);
-          trainingDatesArray.push(date.toISOString().split('T')[0]);
+      } else {
+        // Προσπαθούμε να δημιουργήσουμε dates από τη δομή εβδομάδων
+        const weeks = programData.weeks || programData.program_weeks || [];
+        if (weeks.length > 0) {
+          const totalDays = weeks.reduce((total, week) => total + (week.program_days?.length || 0), 0);
+          const today = new Date();
+          trainingDatesArray = [];
+          for (let i = 0; i < totalDays; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            trainingDatesArray.push(date.toISOString().split('T')[0]);
+          }
+          console.log('📅 Auto-generated training dates:', trainingDatesArray);
         }
-        console.log('📅 Auto-generated training dates:', trainingDatesArray);
       }
 
       // Βασικά δεδομένα προγράμματος
@@ -64,8 +52,8 @@ export const useProgramSave = () => {
         user_id: programData.user_id || null,
         status: programData.status || 'draft',
         type: programData.type || 'strength',
-        duration: programData.weeks?.length || null,
-        training_days: programData.weeks?.[0]?.program_days?.length || null
+        duration: (programData.weeks || programData.program_weeks)?.length || null,
+        training_days: (programData.weeks || programData.program_weeks)?.[0]?.program_days?.length || null
       };
 
       console.log('💾 [useProgramSave] Program payload:', programPayload);
@@ -141,12 +129,13 @@ export const useProgramSave = () => {
       console.log('✅ [useProgramSave] Program saved:', savedProgram);
 
       // ΚΡΙΤΙΚΟ: Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises)
-      if (programData.weeks && programData.weeks.length > 0) {
-        console.log('🏗️ [useProgramSave] Creating program structure with weeks:', programData.weeks.length);
+      const weeks = programData.weeks || programData.program_weeks || [];
+      if (weeks && weeks.length > 0) {
+        console.log('🏗️ [useProgramSave] Creating program structure with weeks:', weeks.length);
         
         // Βεβαιωνόμαστε ότι τα δεδομένα είναι σωστά πριν περάσουν στο createProgramStructure
         console.log('🏗️ [useProgramSave] Structure data being passed:', {
-          weeks: programData.weeks.map(w => ({
+          weeks: weeks.map(w => ({
             id: w.id,
             name: w.name,
             daysCount: w.program_days?.length,
@@ -158,7 +147,7 @@ export const useProgramSave = () => {
         
         // Χρησιμοποιούμε τη μέθοδο createProgramStructure
         await createProgramStructure(savedProgram.id, {
-          weeks: programData.weeks
+          weeks: weeks
         });
         
         console.log('✅ [useProgramSave] Program structure created successfully');
