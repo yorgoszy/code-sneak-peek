@@ -117,12 +117,23 @@ export const SubscriptionManagement: React.FC = () => {
     }
 
     try {
+      console.log('🔄 Creating subscription for user:', selectedUser);
+      
       const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
-      if (!subscriptionType) return;
+      if (!subscriptionType) {
+        toast.error('Ο τύπος συνδρομής δεν βρέθηκε');
+        return;
+      }
 
       const startDate = new Date();
       const endDate = new Date();
       endDate.setDate(startDate.getDate() + subscriptionType.duration_days);
+
+      console.log('📅 Subscription dates:', {
+        start: startDate.toISOString().split('T')[0],
+        end: endDate.toISOString().split('T')[0],
+        duration: subscriptionType.duration_days
+      });
 
       // Δημιουργία νέας συνδρομής
       const { error: subscriptionError } = await supabase
@@ -136,17 +147,25 @@ export const SubscriptionManagement: React.FC = () => {
           notes: notes
         });
 
-      if (subscriptionError) throw subscriptionError;
+      if (subscriptionError) {
+        console.error('❌ Subscription creation error:', subscriptionError);
+        throw subscriptionError;
+      }
+      console.log('✅ Subscription created successfully');
 
-      // Ενημέρωση status χρήστη
+      // Ενημέρωση subscription_status χρήστη σε active
       const { error: userError } = await supabase
         .from('app_users')
         .update({ subscription_status: 'active' })
         .eq('id', selectedUser);
 
-      if (userError) throw userError;
+      if (userError) {
+        console.error('❌ User subscription_status update error:', userError);
+        throw userError;
+      }
+      console.log('✅ User subscription_status updated to active');
 
-      toast.success('Η συνδρομή δημιουργήθηκε επιτυχώς!');
+      toast.success('Η συνδρομή δημιουργήθηκε επιτυχώς και ο χρήστης ενεργοποιήθηκε!');
       setIsDialogOpen(false);
       setSelectedUser('');
       setSelectedSubscriptionType('');
@@ -154,7 +173,7 @@ export const SubscriptionManagement: React.FC = () => {
       await loadData();
 
     } catch (error) {
-      console.error('Error creating subscription:', error);
+      console.error('❌ Error creating subscription:', error);
       toast.error('Σφάλμα κατά τη δημιουργία της συνδρομής');
     }
   };
