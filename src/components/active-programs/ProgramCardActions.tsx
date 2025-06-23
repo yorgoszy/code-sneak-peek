@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Play, Eye, Edit, CheckCircle, MessageSquare, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
-import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
+import { FreeAIChatDialog } from "@/components/ai-chat/FreeAIChatDialog";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -142,7 +142,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         />
       )}
 
-      <SmartAIChatDialog
+      <FreeAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={assignment.user_id}

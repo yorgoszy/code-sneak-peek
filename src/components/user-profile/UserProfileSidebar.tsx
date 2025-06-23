@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState } from "react";
-import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
+import { FreeAIChatDialog } from "@/components/ai-chat/FreeAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UserProfileSidebarProps {
@@ -154,7 +154,7 @@ export const UserProfileSidebar = ({
         bottomContent={bottomContent}
       />
       
-      <SmartAIChatDialog
+      <FreeAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={userProfile.id}

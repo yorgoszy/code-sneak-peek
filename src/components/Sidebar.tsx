@@ -18,7 +18,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useState } from "react";
-import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
+import { FreeAIChatDialog } from "@/components/ai-chat/FreeAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
@@ -180,7 +180,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         navigationContent={navigationContent}
       />
       
-      <SmartAIChatDialog
+      <FreeAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={userProfile?.id}

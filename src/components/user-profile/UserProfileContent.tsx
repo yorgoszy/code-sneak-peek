@@ -5,7 +5,7 @@ import { UserProfileStats } from "./UserProfileStats";
 import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
 import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
-import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
+import { FreeAIChatDialog } from "@/components/ai-chat/FreeAIChatDialog";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
 
@@ -104,7 +104,7 @@ export const UserProfileContent = ({
     <>
       {renderContent()}
       
-      <SmartAIChatDialog
+      <FreeAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={userProfile?.id}
