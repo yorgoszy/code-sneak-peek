@@ -107,9 +107,9 @@ export const UserProfileContent = ({
       <SmartAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
-        athleteId={userProfile.id}
-        athleteName={userProfile.name}
-        athletePhotoUrl={userProfile.photo_url}
+        athleteId={userProfile?.id}
+        athleteName={userProfile?.name}
+        athletePhotoUrl={userProfile?.photo_url}
       />
     </>
   );
