@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
-import { DailyProgram } from "./daily-program/DailyProgram";
-import { UserTests } from "./tests/UserTests";
-import { UserPayments } from "./payments/UserPayments";
+import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
+import { UserProfileTests } from "./UserProfileTests";
+import { UserProfilePayments } from "./UserProfilePayments";
 import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
@@ -44,7 +44,7 @@ export const UserProfileContent = ({
               </Button>
             </div>
             <UserProfileHeader user={userProfile} />
-            <UserProfileStats stats={stats} />
+            <UserProfileStats user={userProfile} stats={stats} />
           </div>
         );
       case "programs":
@@ -60,7 +60,7 @@ export const UserProfileContent = ({
                 AI Προπονητής
               </Button>
             </div>
-            <DailyProgram userProfile={userProfile} programs={programs} />
+            <UserProfileDailyProgram userProfile={userProfile} />
           </div>
         );
       case "tests":
@@ -76,7 +76,7 @@ export const UserProfileContent = ({
                 AI Προπονητής
               </Button>
             </div>
-            <UserTests userProfile={userProfile} tests={tests} />
+            <UserProfileTests tests={tests} />
           </div>
         );
       case "payments":
@@ -92,7 +92,7 @@ export const UserProfileContent = ({
                 AI Προπονητής
               </Button>
             </div>
-            <UserPayments userProfile={userProfile} payments={payments} />
+            <UserProfilePayments payments={payments} />
           </div>
         );
       default:
