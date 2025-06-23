@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -362,7 +361,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
     setMessages([{
       id: 'welcome',
-      content: welcomeResponse || 'Γεια σου! Είμαι ο RID AI Προπονητής!',
+      content: welcomeResponse || 'Γεια σου! Είμαι ο RidAI Προπονητής!',
       role: 'assistant',
       timestamp: new Date(),
       aiType: 'rid-smart'
@@ -429,7 +428,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       const basicResponse = await smartLocalAI.getBasicResponse(currentInput, athleteName, athleteId);
 
       if (localKnowledge) {
-        finalResponse = `🧠 **Smart Local AI:**\n${localKnowledge}\n\n*Έμαθα αυτή την απάντηση από προηγούμενες ερωτήσεις!*`;
+        finalResponse = localKnowledge;
         usedSource = 'local-learned';
       } else if (basicResponse) {
         finalResponse = basicResponse;
@@ -441,7 +440,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           const geminiResponse = await callGeminiAI(currentInput);
           
           if (isGoodResponse(geminiResponse)) {
-            finalResponse = `🔥 **Gemini AI:**\n${geminiResponse}`;
+            finalResponse = geminiResponse;
             usedSource = 'gemini';
             
             // Το Smart Local AI μαθαίνει από το Gemini
@@ -455,7 +454,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           // Βήμα 3: Αν το Gemini αποτύχει, καλούμε το OpenAI
           try {
             const openaiResponse = await callOpenAI(currentInput);
-            finalResponse = `🚀 **OpenAI GPT:**\n${openaiResponse}\n\n*Χρησιμοποίησα το προηγμένο OpenAI επειδή η ερώτηση ήταν πολύπλοκη*`;
+            finalResponse = openaiResponse;
             usedSource = 'openai';
             
             // Το Smart Local AI μαθαίνει από το OpenAI
@@ -465,15 +464,6 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             usedSource = 'error';
           }
         }
-      }
-
-      // Προσθήκη πληροφοριών για το ποιο σύστημα χρησιμοποιήθηκε
-      if (usedSource === 'gemini') {
-        finalResponse += `\n\n📊 **Χρησιμοποιήθηκε:** Gemini AI (Δωρεάν & Γρήγορο)`;
-      } else if (usedSource === 'openai') {
-        finalResponse += `\n\n📊 **Χρησιμοποιήθηκε:** OpenAI GPT (Προηγμένο για δύσκολες ερωτήσεις)`;
-      } else if (usedSource === 'local-learned') {
-        finalResponse += `\n\n📊 **Χρησιμοποιήθηκε:** Smart Local AI (Έμαθα από προηγούμενες απαντήσεις)`;
       }
 
       const assistantMessage: Message = {
@@ -486,8 +476,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('RID AI Error:', error);
-      toast.error('Σφάλμα στον RID AI Προπονητή');
+      console.error('RidAI Error:', error);
+      toast.error('Σφάλμα στον RidAI Προπονητή');
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -520,108 +510,116 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-[#00ffba]" />
-            RID AI Προπονητής
-            {athleteName && (
-              <span className="text-sm font-normal text-gray-600">
-                για {athleteName}
-              </span>
-            )}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
+          <DialogHeader className="p-6 pb-4 border-b">
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-[#00ffba]" />
+              RidAI Προπονητής
+              {athleteName && (
+                <span className="text-sm font-normal text-gray-600">
+                  για {athleteName}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 px-4">
-            <div className="space-y-4 py-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className="flex-shrink-0">
-                      {message.role === 'user' ? (
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
-                          <AvatarFallback className="bg-blue-500 text-white text-xs">
-                            {getUserInitials(athleteName)}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                          <Brain className="w-4 h-4" />
-                        </div>
-                      )}
-                    </div>
-                    <div className={`p-3 rounded-lg ${
-                      message.role === 'user'
-                        ? 'bg-blue-500 text-white rounded-br-none'
-                        : 'bg-gray-100 text-gray-900 rounded-bl-none'
-                    }`}>
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs opacity-70">
-                          {message.timestamp.toLocaleTimeString('el-GR', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                        {message.role === 'assistant' && (
-                          <span className="text-xs opacity-70 ml-2">
-                            RID AI
-                          </span>
+          <div className="flex-1 flex flex-col min-h-0">
+            <ScrollArea className="flex-1 px-4">
+              <div className="space-y-4 py-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className="flex-shrink-0">
+                        {message.role === 'user' ? (
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
+                            <AvatarFallback className="bg-blue-500 text-white text-xs">
+                              {getUserInitials(athleteName)}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                            <Brain className="w-4 h-4" />
+                          </div>
                         )}
+                      </div>
+                      <div className={`p-3 rounded-lg ${
+                        message.role === 'user'
+                          ? 'bg-blue-500 text-white rounded-br-none'
+                          : 'bg-gray-100 text-gray-900 rounded-bl-none'
+                      }`}>
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-xs opacity-70">
+                            {message.timestamp.toLocaleTimeString('el-GR', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                          {message.role === 'assistant' && (
+                            <span className="text-xs opacity-70 ml-2">
+                              RidAI
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                    <Brain className="w-4 h-4" />
-                  </div>
-                  <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Το RID AI σκέφτεται έξυπνα...</span>
+                ))}
+                
+                {isLoading && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                      <Brain className="w-4 h-4" />
+                    </div>
+                    <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Το RidAI σκέφτεται έξυπνα...</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-              
-              <div ref={messagesEndRef} />
-            </div>
-          </ScrollArea>
+                )}
+                
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
 
-          <div className="flex gap-2 p-4 border-t bg-white">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ρώτα τον RID AI Προπονητή για προπόνηση, διατροφή, ανάκαμψη..."
-              className="rounded-none"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
-              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </Button>
+            <div className="flex gap-2 p-4 border-t bg-white">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ρώτα τον RidAI Προπονητή για προπόνηση, διατροφή, ανάκαμψη..."
+                className="rounded-none"
+                disabled={isLoading}
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={!input.trim() || isLoading}
+                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      <ExerciseVideoDialog
+        isOpen={isVideoDialogOpen}
+        onClose={() => setIsVideoDialogOpen(false)}
+        exercise={selectedExercise}
+      />
+    </>
   );
 };
