@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
   
-  const { data: activePrograms, isLoading } = useActivePrograms(userProfile?.id);
+  const { data: activePrograms, isLoading } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   const getTrainingDates = (program: any) => {
@@ -35,7 +36,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     // Φιλτράρισμα των ημερών με βάση το training_frequency
     const trainingDays = allDays.filter((date, index) => {
       const dayOfWeek = date.getDay(); // 0 (Sunday) to 6 (Saturday)
-      return program.training_frequency.includes(dayOfWeek);
+      return program.training_frequency && program.training_frequency.includes(dayOfWeek);
     });
   
     return trainingDays.map(date => format(date, 'yyyy-MM-dd'));
