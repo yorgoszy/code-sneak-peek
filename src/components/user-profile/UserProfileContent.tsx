@@ -5,9 +5,9 @@ import { UserProfileStats } from "./UserProfileStats";
 import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
 import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
-import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
+import { FreeAIChatDialog } from "@/components/ai-chat/FreeAIChatDialog";
 import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -39,8 +39,8 @@ export const UserProfileContent = ({
                 onClick={() => setIsAIChatOpen(true)}
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                AI Προπονητής
+                <Sparkles className="w-4 h-4 mr-2" />
+                FREE AI Προπονητής
               </Button>
             </div>
             <UserProfileHeader user={userProfile} />
@@ -56,8 +56,8 @@ export const UserProfileContent = ({
                 onClick={() => setIsAIChatOpen(true)}
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                AI Προπονητής
+                <Sparkles className="w-4 h-4 mr-2" />
+                FREE AI Προπονητής
               </Button>
             </div>
             <UserProfileDailyProgram userProfile={userProfile} />
@@ -72,8 +72,8 @@ export const UserProfileContent = ({
                 onClick={() => setIsAIChatOpen(true)}
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                AI Προπονητής
+                <Sparkles className="w-4 h-4 mr-2" />
+                FREE AI Προπονητής
               </Button>
             </div>
             <UserProfileTests tests={tests} />
@@ -88,8 +88,8 @@ export const UserProfileContent = ({
                 onClick={() => setIsAIChatOpen(true)}
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                AI Προπονητής
+                <Sparkles className="w-4 h-4 mr-2" />
+                FREE AI Προπονητής
               </Button>
             </div>
             <UserProfilePayments payments={payments} />
@@ -104,7 +104,7 @@ export const UserProfileContent = ({
     <>
       {renderContent()}
       
-      <SmartAIChatDialog
+      <FreeAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
         athleteId={userProfile?.id}
