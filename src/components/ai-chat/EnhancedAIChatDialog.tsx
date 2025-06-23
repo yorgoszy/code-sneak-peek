@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -206,10 +205,7 @@ class SmartLocalAI {
     if (lowerMessage.includes('γεια') || lowerMessage.includes('hello') || lowerMessage.includes('καλησπέρα') || lowerMessage.includes('καλημέρα')) {
       let personalizedGreeting = `Γεια σου ${greeting}! 👋 
 
-Είμαι ο **RidAI Προπονητής** - ένα έξυπνο σύστημα που συνδυάζει:
-🔥 **Gemini AI** (δωρεάν και γρήγορο)
-🚀 **OpenAI GPT** (για πολύπλοκες ερωτήσεις)  
-🧠 **Smart Local AI** (μαθαίνω από τα άλλα δύο)
+Είμαι ο **RidAI Προπονητής** - ένα έξυπνο σύστημα τεχνητής νοημοσύνης.
 
 **Ειδικεύομαι σε:**
 🏋️ Προπόνηση & Ασκήσεις
@@ -425,7 +421,6 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
     try {
       let finalResponse = '';
-      let usedSource = '';
 
       // Βήμα 1: Έλεγχος αν το Smart Local AI γνωρίζει την απάντηση
       const localKnowledge = await smartLocalAI.hasKnowledge(currentInput, athleteId);
@@ -433,10 +428,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
       if (localKnowledge) {
         finalResponse = localKnowledge;
-        usedSource = 'local-learned';
       } else if (basicResponse) {
         finalResponse = basicResponse;
-        usedSource = 'local-basic';
       } else {
         // Βήμα 2: Δοκιμάζουμε πρώτα το Gemini AI (δωρεάν)
         try {
@@ -445,7 +438,6 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           
           if (isGoodResponse(geminiResponse)) {
             finalResponse = geminiResponse;
-            usedSource = 'gemini';
             
             // Το Smart Local AI μαθαίνει από το Gemini
             await smartLocalAI.learnFromResponse(currentInput, geminiResponse, 'gemini', athleteId);
@@ -459,13 +451,11 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           try {
             const openaiResponse = await callOpenAI(currentInput);
             finalResponse = openaiResponse;
-            usedSource = 'openai';
             
             // Το Smart Local AI μαθαίνει από το OpenAI
             await smartLocalAI.learnFromResponse(currentInput, openaiResponse, 'openai', athleteId);
           } catch (openaiError) {
             finalResponse = `❌ **Σφάλμα:**\nΔυστυχώς αντιμετωπίζω τεχνικά προβλήματα με όλα τα AI συστήματα.\n\nΠαρακαλώ δοκιμάστε ξανά σε λίγο.`;
-            usedSource = 'error';
           }
         }
       }
