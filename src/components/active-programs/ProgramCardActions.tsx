@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Edit, CheckCircle, Trash2 } from "lucide-react";
+import { Play, Eye, Edit, CheckCircle, MessageSquare, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
-import { DaySelector } from "./calendar/DaySelector";
+import { SmartAIChatDialog } from "@/components/ai-chat/SmartAIChatDialog";
+import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardActionsProps {
@@ -21,32 +22,33 @@ interface ProgramCardActionsProps {
   };
 }
 
-export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({ 
-  assignment, 
+export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
+  assignment,
   selectedDate,
   onRefresh,
   onDelete,
   userMode = false,
   workoutStats
 }) => {
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [dayDialogOpen, setDayDialogOpen] = useState(false);
-  const [daySelectorOpen, setDaySelectorOpen] = useState(false);
+  const [isProgramViewOpen, setIsProgramViewOpen] = useState(false);
+  const [isDayProgramOpen, setIsDayProgramOpen] = useState(false);
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
-  // Calculate if program is completed
-  const isCompleted = workoutStats && workoutStats.total > 0 ? 
-    (workoutStats.completed / workoutStats.total) >= 1 : false;
-
-  const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
-    setViewDialogOpen(false);
-    setDaySelectorOpen(false);
-    console.log('Starting workout:', weekIndex, dayIndex);
-    // Εδώ θα μπορούσε να ανοίξει το DayProgramDialog για την επιλεγμένη ημέρα
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-[#00ffba] text-black';
+      case 'completed':
+        return 'bg-gray-500 text-white';
+      case 'paused':
+        return 'bg-yellow-500 text-white';
+      default:
+        return 'bg-gray-500 text-white';
+    }
   };
 
-  const handleDaySelected = (weekIndex: number, dayIndex: number) => {
-    setDaySelectorOpen(false);
-    console.log('Day selected:', weekIndex, dayIndex);
+  const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
+    setIsDayProgramOpen(true);
   };
 
   const handleDeleteClick = () => {
@@ -55,97 +57,97 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
     }
   };
 
+  const handleAIChatClick = () => {
+    setIsAIChatOpen(true);
+  };
+
+  // Calculate workout status for selected date
+  const workoutStatus = selectedDate ? (() => {
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    // This would need to be implemented based on your workout completion logic
+    return 'pending'; // or 'completed', 'missed', etc.
+  })() : 'pending';
+
   return (
     <>
       <div className="flex items-center gap-1 flex-shrink-0">
-        {/* Status Badge */}
-        <Badge 
-          variant="outline" 
-          className={`rounded-none text-xs px-1 py-0 ${
-            isCompleted 
-              ? 'bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]' 
-              : 'bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]'
-          }`}
-        >
-          {isCompleted ? 'Completed' : 'Active'}
+        <Badge className={`${getStatusColor(assignment.status)} text-xs rounded-none px-1 py-0.5`}>
+          {assignment.status}
         </Badge>
 
-        {/* Action Buttons */}
-        <div className="flex items-center">
+        <div className="flex gap-0.5">
+          {!userMode && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-gray-100"
+              onClick={handleAIChatClick}
+              title="AI Chat"
+            >
+              <MessageSquare className="h-3 w-3" />
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setViewDialogOpen(true)}
-            className="h-6 w-6 p-0 rounded-none"
+            className="h-6 w-6 p-0 hover:bg-gray-100"
+            onClick={() => setIsProgramViewOpen(true)}
             title="Προβολή Προγράμματος"
           >
-            <Play className="h-3 w-3" />
+            <Eye className="h-3 w-3" />
           </Button>
 
-          {/* Εμφάνιση των υπόλοιπων εικονιδίων μόνο αν δεν είμαστε σε user mode */}
-          {!userMode && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => console.log('Edit clicked')}
-                className="h-6 w-6 p-0 rounded-none"
-                title="Επεξεργασία"
-              >
-                <Edit className="h-3 w-3" />
-              </Button>
+          {selectedDate && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-blue-100"
+              onClick={() => setIsDayProgramOpen(true)}
+              title="Έναρξη Προπόνησης"
+            >
+              <Play className="h-3 w-3 text-blue-600" />
+            </Button>
+          )}
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => console.log('Complete clicked')}
-                className={`h-6 w-6 p-0 rounded-none ${
-                  isCompleted 
-                    ? 'text-[#00ffba] cursor-not-allowed' 
-                    : 'text-gray-400 cursor-not-allowed'
-                }`}
-                title={isCompleted ? "Ολοκληρωμένο" : "Ολοκλήρωση"}
-                disabled={true}
-              >
-                <CheckCircle className="h-3 w-3" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDeleteClick}
-                className="h-6 w-6 p-0 rounded-none text-red-600 hover:text-red-700"
-                title="Διαγραφή"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </>
+          {!userMode && onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-red-100"
+              onClick={handleDeleteClick}
+              title="Διαγραφή"
+            >
+              <Trash2 className="h-3 w-3 text-red-600" />
+            </Button>
           )}
         </div>
       </div>
 
-      {/* Dialogs */}
       <ProgramViewDialog
-        isOpen={viewDialogOpen}
-        onClose={() => setViewDialogOpen(false)}
+        isOpen={isProgramViewOpen}
+        onClose={() => setIsProgramViewOpen(false)}
         assignment={assignment}
         onStartWorkout={handleStartWorkout}
       />
 
-      <DayProgramDialog
-        isOpen={dayDialogOpen}
-        onClose={() => setDayDialogOpen(false)}
-        program={assignment}
-        selectedDate={selectedDate || new Date()}
-        workoutStatus="scheduled"
-        onRefresh={onRefresh}
-      />
+      {selectedDate && (
+        <DayProgramDialog
+          isOpen={isDayProgramOpen}
+          onClose={() => setIsDayProgramOpen(false)}
+          program={assignment}
+          selectedDate={selectedDate}
+          workoutStatus={workoutStatus}
+          onRefresh={onRefresh}
+        />
+      )}
 
-      <DaySelector
-        assignment={assignment}
-        isOpen={daySelectorOpen}
-        onClose={() => setDaySelectorOpen(false)}
-        onSelectDay={handleDaySelected}
+      <SmartAIChatDialog
+        isOpen={isAIChatOpen}
+        onClose={() => setIsAIChatOpen(false)}
+        athleteId={assignment.user_id}
+        athleteName={assignment.app_users?.name}
+        athletePhotoUrl={assignment.app_users?.photo_url}
       />
     </>
   );

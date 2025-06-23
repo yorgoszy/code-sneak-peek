@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Bot, User, Loader2, Zap, Crown } from "lucide-react";
 import { useSmartAIChat } from './hooks/useSmartAIChat';
 import { toast } from "sonner";
@@ -13,13 +14,15 @@ interface SmartAIChatDialogProps {
   onClose: () => void;
   athleteId?: string;
   athleteName?: string;
+  athletePhotoUrl?: string;
 }
 
 export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   isOpen,
   onClose,
   athleteId,
-  athleteName
+  athleteName,
+  athletePhotoUrl
 }) => {
   const [input, setInput] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -56,6 +59,16 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   const handleClearConversation = () => {
     clearConversation();
     toast.success("Η συνομιλία διαγράφηκε επιτυχώς!");
+  };
+
+  const getUserInitials = (name?: string) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   if (!hasActiveSubscription) {
@@ -125,12 +138,19 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
                   className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      message.role === 'user' 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-[#00ffba] text-black'
-                    }`}>
-                      {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                    <div className="flex-shrink-0">
+                      {message.role === 'user' ? (
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
+                          <AvatarFallback className="bg-blue-500 text-white text-xs">
+                            {getUserInitials(athleteName)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                          <Bot className="w-4 h-4" />
+                        </div>
+                      )}
                     </div>
                     <div className={`p-3 rounded-lg ${
                       message.role === 'user'
