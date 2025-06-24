@@ -23,15 +23,15 @@ const Tests = () => {
     return <state.Navigate to="/auth" replace />;
   }
 
-  const selectedAthleteName = state.users.find(u => u.id === state.selectedAthleteId)?.name;
+  const selectedUserName = state.users.find(u => u.id === state.selectedAthleteId)?.name;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar isCollapsed={state.isCollapsed} setIsCollapsed={state.setIsCollapsed} />
       <div className="flex-1 flex flex-col">
         <TestsHeader 
-          selectedAthleteId={state.selectedAthleteId}
-          selectedAthleteName={selectedAthleteName}
+          selectedUserId={state.selectedAthleteId}
+          selectedUserName={selectedUserName}
         />
         <div className="flex-1 p-6">
           <TestsAthleteDateSelector 
