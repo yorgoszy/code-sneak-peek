@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, Package } from "lucide-react";
+import { Plus, Edit2 } from "lucide-react";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface SubscriptionType {
   id: string;
@@ -22,6 +23,7 @@ interface SubscriptionType {
 }
 
 export const SubscriptionTypeManager: React.FC = () => {
+  const { isAdmin, loading: roleLoading } = useRoleCheck();
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,10 +38,18 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [features, setFeatures] = useState('');
 
   useEffect(() => {
-    loadSubscriptionTypes();
-  }, []);
+    if (!roleLoading) {
+      loadSubscriptionTypes();
+    }
+  }, [roleLoading]);
 
   const loadSubscriptionTypes = async () => {
+    if (!isAdmin) {
+      console.log('⚠️ Not an admin, cannot load subscription types');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       console.log('🔄 Loading subscription types...');
@@ -95,6 +105,11 @@ export const SubscriptionTypeManager: React.FC = () => {
   };
 
   const handleSave = async () => {
+    if (!isAdmin) {
+      toast.error('Δεν έχετε δικαιώματα διαχειριστή');
+      return;
+    }
+
     if (!name.trim() || !price || !durationDays) {
       toast.error('Συμπληρώστε όλα τα απαιτούμενα πεδία (Όνομα, Τιμή, Διάρκεια)');
       return;
@@ -180,6 +195,11 @@ export const SubscriptionTypeManager: React.FC = () => {
   };
 
   const toggleActiveStatus = async (type: SubscriptionType) => {
+    if (!isAdmin) {
+      toast.error('Δεν έχετε δικαιώματα διαχειριστή');
+      return;
+    }
+
     try {
       console.log('🔄 Toggling active status for:', type.name, 'Current:', type.is_active);
       
@@ -202,6 +222,31 @@ export const SubscriptionTypeManager: React.FC = () => {
     }
   };
 
+  if (roleLoading) {
+    return (
+      <Card className="rounded-none">
+        <CardContent className="p-6">
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ffba] mx-auto"></div>
+            <p className="mt-2 text-gray-600">Ελέγχουμε τα δικαιώματα...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <Card className="rounded-none">
+        <CardContent className="p-6">
+          <div className="text-center py-8 text-red-600">
+            <p>Δεν έχετε δικαιώματα διαχειριστή για να δείτε αυτή τη σελίδα.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (loading) {
     return (
       <Card className="rounded-none">
@@ -220,8 +265,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Package className="w-5 h-5" />
-            Διαχείριση Τύπων Συνδρομών
+            <span>Διαχείριση Τύπων Συνδρομών</span>
           </div>
           <Button 
             onClick={openCreateDialog}
@@ -236,7 +280,6 @@ export const SubscriptionTypeManager: React.FC = () => {
         <div className="space-y-4">
           {subscriptionTypes.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <Package className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>Δεν υπάρχουν τύποι συνδρομών</p>
               <p className="text-sm">Κάντε κλικ στο κουμπί "Νέος Τύπος" για να δημιουργήσετε έναν</p>
             </div>
