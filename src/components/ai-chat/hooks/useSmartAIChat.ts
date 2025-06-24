@@ -12,11 +12,11 @@ interface Message {
 
 interface UseSmartAIChatProps {
   isOpen: boolean;
-  athleteId?: string;
-  athleteName?: string;
+  userId?: string;
+  userName?: string;
 }
 
-export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAIChatProps) => {
+export const useSmartAIChat = ({ isOpen, userId, userName }: UseSmartAIChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,13 +40,13 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen && athleteId) {
+    if (isOpen && userId) {
       checkSubscriptionStatus();
     }
-  }, [isOpen, athleteId]);
+  }, [isOpen, userId]);
 
   const checkSubscriptionStatus = async () => {
-    if (!athleteId) {
+    if (!userId) {
       console.log('❌ useSmartAIChat: No userId provided');
       setHasActiveSubscription(false);
       setIsCheckingSubscription(false);
@@ -55,13 +55,13 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     
     setIsCheckingSubscription(true);
     try {
-      console.log('🔍 useSmartAIChat: Checking subscription for user:', athleteId);
+      console.log('🔍 useSmartAIChat: Checking subscription for user:', userId);
       
-      // Έλεγχος του subscription_status για τον συγκεκριμένο αθλητή
+      // Έλεγχος του subscription_status για τον συγκεκριμένο χρήστη
       const { data: userProfile, error: profileError } = await supabase
         .from('app_users')
         .select('role, subscription_status')
-        .eq('id', athleteId)  // Ελέγχουμε τον συγκεκριμένο αθλητή
+        .eq('id', userId)  // Ελέγχουμε τον συγκεκριμένο χρήστη
         .single();
 
       if (profileError) {
@@ -82,7 +82,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
         return;
       }
 
-      // Έλεγχος του subscription_status για τον συγκεκριμένο αθλητή
+      // Έλεγχος του subscription_status για τον συγκεκριμένο χρήστη
       const hasSubscription = userProfile?.subscription_status === 'active';
       console.log('🎯 useSmartAIChat: Final subscription decision:', hasSubscription);
       setHasActiveSubscription(hasSubscription);
@@ -99,19 +99,19 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
   };
 
   const loadConversationHistory = async () => {
-    if (!athleteId) {
+    if (!userId) {
       console.log('❌ useSmartAIChat: Cannot load history - no userId');
       return;
     }
     
     setIsLoadingHistory(true);
     try {
-      console.log('📚 useSmartAIChat: Loading conversation history for user:', athleteId);
+      console.log('📚 useSmartAIChat: Loading conversation history for user:', userId);
       
       const { data: history, error } = await supabase
         .from('ai_conversations')
         .select('*')
-        .eq('user_id', athleteId)
+        .eq('user_id', userId)
         .order('created_at', { ascending: true })
         .limit(20);
 
@@ -129,7 +129,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
       } else {
         setMessages([{
           id: 'welcome',
-          content: `Γεια σου ${athleteName}! 👋
+          content: `Γεια σου ${userName}! 👋
 
 Είμαι ο **RID**, ο προσωπικός σου AI προπονητής! 🤖
 
@@ -164,7 +164,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
   };
 
   const sendMessage = async (userMessage: string) => {
-    if (!userMessage.trim() || isLoading || !athleteId) return;
+    if (!userMessage.trim() || isLoading || !userId) return;
 
     // Αυστηρός έλεγχος συνδρομής πριν από κάθε μήνυμα
     if (!hasActiveSubscription) {
@@ -187,12 +187,12 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     setIsLoading(true);
 
     try {
-      console.log('🤖 useSmartAIChat: Calling RID AI for user:', athleteId, 'Message:', userMessage);
+      console.log('🤖 useSmartAIChat: Calling RID AI for user:', userId, 'Message:', userMessage);
       
       const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
         body: {
           message: userMessage,
-          userId: athleteId
+          userId: userId
         }
       });
 
@@ -244,7 +244,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
 
     setMessages([{
       id: 'welcome',
-      content: `Γεια σου ${athleteName}! 👋
+      content: `Γεια σου ${userName}! 👋
 
 Είμαι ο **RID**, ο προσωπικός σου AI προπονητής! 🤖
 

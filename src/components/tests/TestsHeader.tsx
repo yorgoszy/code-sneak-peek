@@ -9,13 +9,13 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 
 interface TestsHeaderProps {
-  selectedAthleteId?: string;
-  selectedAthleteName?: string;
+  selectedUserId?: string;
+  selectedUserName?: string;
 }
 
 export const TestsHeader: React.FC<TestsHeaderProps> = ({ 
-  selectedAthleteId, 
-  selectedAthleteName 
+  selectedUserId, 
+  selectedUserName 
 }) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
@@ -24,17 +24,17 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
   const { isAdmin } = useRoleCheck();
 
   useEffect(() => {
-    if (selectedAthleteId) {
+    if (selectedUserId) {
       checkSubscriptionStatus();
     } else {
       setHasActiveSubscription(false);
       setIsCheckingSubscription(false);
     }
-  }, [selectedAthleteId]);
+  }, [selectedUserId]);
 
   const checkSubscriptionStatus = async () => {
-    if (!selectedAthleteId) {
-      console.log('❌ TestsHeader: No selectedAthleteId found');
+    if (!selectedUserId) {
+      console.log('❌ TestsHeader: No selectedUserId found');
       setHasActiveSubscription(false);
       setIsCheckingSubscription(false);
       return;
@@ -42,13 +42,13 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     
     setIsCheckingSubscription(true);
     try {
-      console.log('🔍 TestsHeader: Checking subscription for user:', selectedAthleteId);
+      console.log('🔍 TestsHeader: Checking subscription for user:', selectedUserId);
       
-      // Έλεγχος ΜΟΝΟ του subscription_status για τον επιλεγμένο αθλητή
+      // Έλεγχος ΜΟΝΟ του subscription_status για τον επιλεγμένο χρήστη
       const { data: userStatus, error: userError } = await supabase
         .from('app_users')
         .select('subscription_status, role')
-        .eq('id', selectedAthleteId)
+        .eq('id', selectedUserId)
         .single();
 
       if (userError) {
@@ -60,7 +60,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
 
       console.log('📊 TestsHeader: User subscription status:', userStatus?.subscription_status);
 
-      // Αν ο επιλεγμένος αθλητής είναι admin, δίνουμε πρόσβαση
+      // Αν ο επιλεγμένος χρήστης είναι admin, δίνουμε πρόσβαση
       if (userStatus?.role === 'admin') {
         console.log('✅ TestsHeader: Selected user is admin - access granted');
         setHasActiveSubscription(true);
@@ -68,7 +68,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
         return;
       }
 
-      // Έλεγχος του subscription_status για τον επιλεγμένο αθλητή
+      // Έλεγχος του subscription_status για τον επιλεγμένο χρήστη
       const hasSubscription = userStatus?.subscription_status === 'active';
       console.log('🎯 TestsHeader: Final subscription decision:', hasSubscription);
       setHasActiveSubscription(hasSubscription);
@@ -84,7 +84,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     console.log('🔄 TestsHeader: AI Chat button clicked. Current state:', {
       isCheckingSubscription,
       hasActiveSubscription,
-      selectedAthleteId,
+      selectedUserId,
       isCurrentUserAdmin: isAdmin()
     });
 
@@ -93,14 +93,14 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
       return;
     }
 
-    if (!selectedAthleteId) {
-      toast.error('Παρακαλώ επιλέξτε έναν αθλητή πρώτα');
+    if (!selectedUserId) {
+      toast.error('Παρακαλώ επιλέξτε έναν χρήστη πρώτα');
       return;
     }
 
     if (!hasActiveSubscription) {
-      console.log('❌ TestsHeader: Access denied - selected athlete has no active subscription');
-      toast.error('Ο επιλεγμένος αθλητής δεν έχει ενεργή συνδρομή για το RID AI');
+      console.log('❌ TestsHeader: Access denied - selected user has no active subscription');
+      toast.error('Ο επιλεγμένος χρήστης δεν έχει ενεργή συνδρομή για το RID AI');
       return;
     }
 
@@ -126,7 +126,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
                   ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
-              disabled={isCheckingSubscription || !hasActiveSubscription || !selectedAthleteId}
+              disabled={isCheckingSubscription || !hasActiveSubscription || !selectedUserId}
             >
               {hasActiveSubscription ? (
                 <Bot className="w-4 h-4" />
@@ -147,8 +147,8 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
       <SmartAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
-        athleteId={selectedAthleteId}
-        athleteName={selectedAthleteName}
+        userId={selectedUserId}
+        userName={selectedUserName}
       />
     </>
   );

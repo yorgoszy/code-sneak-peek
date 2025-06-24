@@ -12,17 +12,17 @@ import { toast } from "sonner";
 interface SmartAIChatDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  athleteId?: string;
-  athleteName?: string;
-  athletePhotoUrl?: string;
+  userId?: string;
+  userName?: string;
+  userPhotoUrl?: string;
 }
 
 export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   isOpen,
   onClose,
-  athleteId,
-  athleteName,
-  athletePhotoUrl
+  userId,
+  userName,
+  userPhotoUrl
 }) => {
   const [input, setInput] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -34,7 +34,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
     isCheckingSubscription,
     sendMessage,
     clearConversation
-  } = useSmartAIChat({ athleteId, athleteName, isOpen });
+  } = useSmartAIChat({ userId, userName, isOpen });
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -159,9 +159,9 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-[#00ffba]" />
               RID AI Προπονητής
-              {athleteName && (
+              {userName && (
                 <span className="text-sm font-normal text-gray-600">
-                  για {athleteName}
+                  για {userName}
                 </span>
               )}
             </div>
@@ -195,9 +195,9 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
                     <div className="flex-shrink-0">
                       {message.role === 'user' ? (
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
+                          <AvatarImage src={userPhotoUrl} alt={userName || 'User'} />
                           <AvatarFallback className="bg-blue-500 text-white text-xs">
-                            {getUserInitials(athleteName)}
+                            {getUserInitials(userName)}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
