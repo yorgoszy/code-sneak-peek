@@ -14,6 +14,7 @@ interface ExerciseRowProps {
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
   onDuplicate: () => void;
+  onExercisesUpdate?: (exercises: Exercise[]) => void;
 }
 
 export const ExerciseRow: React.FC<ExerciseRowProps> = ({
@@ -22,7 +23,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   allBlockExercises,
   onUpdate,
   onRemove,
-  onDuplicate
+  onDuplicate,
+  onExercisesUpdate
 }) => {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   
@@ -61,6 +63,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
         onOpenChange={setShowExerciseDialog}
         exercises={exercises}
         onSelectExercise={handleExerciseSelect}
+        onExercisesUpdate={onExercisesUpdate}
       />
     </>
   );

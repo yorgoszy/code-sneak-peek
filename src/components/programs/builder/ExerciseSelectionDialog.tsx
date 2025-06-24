@@ -15,13 +15,15 @@ interface ExerciseSelectionDialogProps {
   onOpenChange: (open: boolean) => void;
   exercises: Exercise[];
   onSelectExercise: (exerciseId: string) => void;
+  onExercisesUpdate?: (exercises: Exercise[]) => void;
 }
 
 export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = ({
   open,
   onOpenChange,
   exercises,
-  onSelectExercise
+  onSelectExercise,
+  onExercisesUpdate
 }) => {
   const handleClose = () => {
     onOpenChange(false);
@@ -33,6 +35,7 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
         exercises={exercises}
         onSelectExercise={onSelectExercise}
         onClose={handleClose}
+        onExercisesUpdate={onExercisesUpdate}
       />
     </Dialog>
   );

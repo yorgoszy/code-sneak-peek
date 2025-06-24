@@ -21,12 +21,14 @@ interface ExerciseSelectionDialogContentProps {
   exercises: Exercise[];
   onSelectExercise: (exerciseId: string) => void;
   onClose: () => void;
+  onExercisesUpdate?: (exercises: Exercise[]) => void;
 }
 
 export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogContentProps> = ({
   exercises: initialExercises,
   onSelectExercise,
-  onClose
+  onClose,
+  onExercisesUpdate
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -38,6 +40,10 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     (newExercise) => {
       console.log('🎯 Real-time exercise received, adding with categories:', newExercise.name);
       addExerciseWithCategories(newExercise);
+      // Notify parent about the updated exercises list
+      if (onExercisesUpdate) {
+        onExercisesUpdate([...exercisesWithCategories, newExercise]);
+      }
     }
   );
 
@@ -80,9 +86,12 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   };
 
   const handleExerciseAdded = () => {
-    // Just close the add exercise dialog - the real-time subscription will handle the update
+    // Close the add exercise dialog
     setAddExerciseDialogOpen(false);
     console.log('✅ Exercise added successfully - real-time update should show it automatically');
+    
+    // Note: The real-time subscription will handle updating the exercises list
+    // and calling onExercisesUpdate if provided
   };
 
   return (
