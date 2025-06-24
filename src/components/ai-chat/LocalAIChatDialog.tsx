@@ -1,13 +1,14 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Loader2, Download, Database, Dumbbell, Calendar, Target, Activity } from "lucide-react";
+import { Database, Bot } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useExerciseRenderer } from './hooks/useExerciseRenderer';
+import { PredefinedQuestions } from './components/PredefinedQuestions';
+import { WelcomeMessage } from './components/WelcomeMessage';
+import { LocalChatMessages } from './components/LocalChatMessages';
+import { LocalChatInput } from './components/LocalChatInput';
 
 interface Message {
   id: string;
@@ -23,40 +24,6 @@ interface LocalAIChatDialogProps {
   userName?: string;
   userPhotoUrl?: string;
 }
-
-interface PredefinedQuestion {
-  id: string;
-  question: string;
-  icon: React.ElementType;
-  category: string;
-}
-
-const predefinedQuestions: PredefinedQuestion[] = [
-  {
-    id: 'todays-exercises',
-    question: 'Τι ασκήσεις έχω σήμερα;',
-    icon: Dumbbell,
-    category: 'Προπόνηση'
-  },
-  {
-    id: 'weekly-program',
-    question: 'Ποιο είναι το εβδομαδιαίο μου πρόγραμμα;',
-    icon: Calendar,
-    category: 'Προπόνηση'
-  },
-  {
-    id: 'recent-tests',
-    question: 'Ποια είναι τα τελευταία μου αποτελέσματα τεστ;',
-    icon: Activity,
-    category: 'Τεστ'
-  },
-  {
-    id: 'progress-analysis',
-    question: 'Πώς πάει η πρόοδός μου;',
-    icon: Target,
-    category: 'Ανάλυση'
-  }
-];
 
 export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
   isOpen,
@@ -76,16 +43,7 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
     if (isOpen && userId) {
       setMessages([{
         id: 'welcome',
-        content: `Γεια σας! Είμαι ο έξυπνος RID AI βοηθός σας. ${userName ? `Έχω πρόσβαση στα δεδομένα του ${userName}` : 'Έχω πρόσβαση στα δεδομένα σας'} από την πλατφόρμα και μπορώ να δώσω εξατομικευμένες συμβουλές για:
-
-🏋️ Τα προγράμματά σας και τις ασκήσεις σας
-📊 Τα αποτελέσματα των τεστ σας  
-💪 Προσωποποιημένες συμβουλές διατροφής και προπόνησης
-📈 Ανάλυση της προόδου σας
-
-✅ Συλλέγω δεδομένα από την πλατφόρμα και χρησιμοποιώ AI για καλύτερες απαντήσεις!
-
-Επιλέξτε μια από τις παρακάτω ερωτήσεις ή γράψτε τη δική σας:`,
+        content: '',
         role: 'assistant',
         timestamp: new Date()
       }]);
@@ -244,6 +202,10 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
   };
 
   const renderMessageContent = (content: string, role: string) => {
+    if (role === 'assistant' && content === '') {
+      return <WelcomeMessage userName={userName} />;
+    }
+    
     if (role === 'assistant') {
       const renderedContent = renderExercisesInText(content);
       if (Array.isArray(renderedContent)) {
@@ -262,14 +224,6 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
     }
     return <p className="text-sm whitespace-pre-wrap">{content}</p>;
   };
-
-  const groupedQuestions = predefinedQuestions.reduce((acc, question) => {
-    if (!acc[question.category]) {
-      acc[question.category] = [];
-    }
-    acc[question.category].push(question);
-    return acc;
-  }, {} as Record<string, PredefinedQuestion[]>);
 
   return (
     <>
@@ -292,104 +246,27 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
           </DialogHeader>
 
           <div className="flex-1 flex flex-col min-h-0">
-            <ScrollArea className="flex-1 p-4 border rounded-none" ref={scrollAreaRef}>
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        message.role === 'user' 
-                          ? 'bg-blue-500 text-white' 
-                          : 'bg-[#00ffba] text-black'
-                      }`}>
-                        {message.role === 'user' ? <User className="w-4 h-4" /> : <Database className="w-4 h-4" />}
-                      </div>
-                      <div className={`p-3 rounded-lg ${
-                        message.role === 'user'
-                          ? 'bg-blue-500 text-white rounded-br-none'
-                          : 'bg-gray-100 text-gray-900 rounded-bl-none'
-                      }`}>
-                        {renderMessageContent(message.content, message.role)}
-                        <p className="text-xs opacity-70 mt-1">
-                          {message.timestamp.toLocaleTimeString('el-GR', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+            <LocalChatMessages
+              messages={messages}
+              isLoading={isLoading}
+              scrollAreaRef={scrollAreaRef}
+              renderMessageContent={renderMessageContent}
+            />
 
-                {/* Pre-defined Questions */}
-                {showQuestions && messages.length === 1 && (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3">Γρήγορες Ερωτήσεις:</h4>
-                    <div className="space-y-3">
-                      {Object.entries(groupedQuestions).map(([category, questions]) => (
-                        <div key={category}>
-                          <p className="text-xs font-medium text-gray-500 mb-2">{category}</p>
-                          <div className="grid grid-cols-1 gap-2">
-                            {questions.map((q) => (
-                              <Button
-                                key={q.id}
-                                variant="outline"
-                                size="sm"
-                                className="justify-start h-auto p-3 text-left rounded-none hover:bg-[#00ffba]/10 hover:border-[#00ffba]"
-                                onClick={() => handlePredefinedQuestion(q.question)}
-                              >
-                                <q.icon className="w-4 h-4 mr-2 text-[#00ffba]" />
-                                <span className="text-sm">{q.question}</span>
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {isLoading && (
-                  <div className="flex gap-3 justify-start">
-                    <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                      <Database className="w-4 h-4" />
-                    </div>
-                    <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Αναλύω τα δεδομένα σας και σκέφτομαι...</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
+            <PredefinedQuestions
+              onQuestionClick={handlePredefinedQuestion}
+              showQuestions={showQuestions}
+              messagesLength={messages.length}
+            />
 
-            <div className="flex gap-2 p-4 border-t">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={userId ? "Πληκτρολογήστε το μήνυμά σας..." : "Παρακαλώ επιλέξτε χρήστη πρώτα..."}
-                className="rounded-none min-h-[80px] max-h-[120px] resize-none"
-                disabled={isLoading || !userId}
-                rows={3}
-              />
-              <Button
-                onClick={() => sendMessage()}
-                disabled={!input.trim() || isLoading || !userId}
-                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black self-end"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
+            <LocalChatInput
+              input={input}
+              setInput={setInput}
+              isLoading={isLoading}
+              userId={userId}
+              onSend={() => sendMessage()}
+              onKeyPress={handleKeyPress}
+            />
           </div>
         </DialogContent>
       </Dialog>
