@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Loader2, Download, Database } from "lucide-react";
+import { Send, Bot, User, Loader2, Download, Database, Dumbbell, Calendar, Target, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useExerciseRenderer } from './hooks/useExerciseRenderer';
@@ -24,6 +24,40 @@ interface LocalAIChatDialogProps {
   userPhotoUrl?: string;
 }
 
+interface PredefinedQuestion {
+  id: string;
+  question: string;
+  icon: React.ElementType;
+  category: string;
+}
+
+const predefinedQuestions: PredefinedQuestion[] = [
+  {
+    id: 'todays-exercises',
+    question: 'Τι ασκήσεις έχω σήμερα;',
+    icon: Dumbbell,
+    category: 'Προπόνηση'
+  },
+  {
+    id: 'weekly-program',
+    question: 'Ποιο είναι το εβδομαδιαίο μου πρόγραμμα;',
+    icon: Calendar,
+    category: 'Προπόνηση'
+  },
+  {
+    id: 'recent-tests',
+    question: 'Ποια είναι τα τελευταία μου αποτελέσματα τεστ;',
+    icon: Activity,
+    category: 'Τεστ'
+  },
+  {
+    id: 'progress-analysis',
+    question: 'Πώς πάει η πρόοδός μου;',
+    icon: Target,
+    category: 'Ανάλυση'
+  }
+];
+
 export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
   isOpen,
   onClose,
@@ -34,6 +68,7 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showQuestions, setShowQuestions] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { renderExercisesInText, ExerciseVideoDialogComponent } = useExerciseRenderer();
 
@@ -48,10 +83,13 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
 💪 Προσωποποιημένες συμβουλές διατροφής και προπόνησης
 📈 Ανάλυση της προόδου σας
 
-✅ Συλλέγω δεδομένα από την πλατφόρμα και χρησιμοποιώ AI για καλύτερες απαντήσεις!`,
+✅ Συλλέγω δεδομένα από την πλατφόρμα και χρησιμοποιώ AI για καλύτερες απαντήσεις!
+
+Επιλέξτε μια από τις παρακάτω ερωτήσεις ή γράψτε τη δική σας:`,
         role: 'assistant',
         timestamp: new Date()
       }]);
+      setShowQuestions(true);
     }
   }, [isOpen, userId, userName]);
 
@@ -133,19 +171,20 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
     }
   };
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading || !userId) return;
+  const sendMessage = async (messageText?: string) => {
+    const textToSend = messageText || input;
+    if (!textToSend.trim() || isLoading || !userId) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: input,
+      content: textToSend,
       role: 'user',
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
-    const userInput = input;
-    setInput('');
+    if (!messageText) setInput('');
+    setShowQuestions(false);
     setIsLoading(true);
 
     try {
@@ -157,7 +196,7 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
       // Call the smart AI endpoint with user data
       const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
         body: { 
-          message: userInput, 
+          message: textToSend, 
           userId: userId, 
           userName: userName,
           platformData: userData
@@ -193,6 +232,10 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
     }
   };
 
+  const handlePredefinedQuestion = (question: string) => {
+    sendMessage(question);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -219,6 +262,14 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
     }
     return <p className="text-sm whitespace-pre-wrap">{content}</p>;
   };
+
+  const groupedQuestions = predefinedQuestions.reduce((acc, question) => {
+    if (!acc[question.category]) {
+      acc[question.category] = [];
+    }
+    acc[question.category].push(question);
+    return acc;
+  }, {} as Record<string, PredefinedQuestion[]>);
 
   return (
     <>
@@ -272,6 +323,34 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
                     </div>
                   </div>
                 ))}
+
+                {/* Pre-defined Questions */}
+                {showQuestions && messages.length === 1 && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">Γρήγορες Ερωτήσεις:</h4>
+                    <div className="space-y-3">
+                      {Object.entries(groupedQuestions).map(([category, questions]) => (
+                        <div key={category}>
+                          <p className="text-xs font-medium text-gray-500 mb-2">{category}</p>
+                          <div className="grid grid-cols-1 gap-2">
+                            {questions.map((q) => (
+                              <Button
+                                key={q.id}
+                                variant="outline"
+                                size="sm"
+                                className="justify-start h-auto p-3 text-left rounded-none hover:bg-[#00ffba]/10 hover:border-[#00ffba]"
+                                onClick={() => handlePredefinedQuestion(q.question)}
+                              >
+                                <q.icon className="w-4 h-4 mr-2 text-[#00ffba]" />
+                                <span className="text-sm">{q.question}</span>
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {isLoading && (
                   <div className="flex gap-3 justify-start">
@@ -300,7 +379,7 @@ export const LocalAIChatDialog: React.FC<LocalAIChatDialogProps> = ({
                 rows={3}
               />
               <Button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={!input.trim() || isLoading || !userId}
                 className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black self-end"
               >
