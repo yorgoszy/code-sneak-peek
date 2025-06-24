@@ -47,7 +47,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
 
   const checkSubscriptionStatus = async () => {
     if (!athleteId) {
-      console.log('❌ useSmartAIChat: No athleteId provided');
+      console.log('❌ useSmartAIChat: No userId provided');
       setHasActiveSubscription(false);
       setIsCheckingSubscription(false);
       return;
@@ -83,8 +83,8 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
       }
 
       // ΜΟΝΟ αν το subscription_status είναι 'active' συνεχίζουμε
-      if (userProfile?.subscription_status !== 'active') {
-        console.log('❌ useSmartAIChat: User subscription_status is NOT active:', userProfile?.subscription_status);
+      if (userProfile?.subscription_status === 'inactive') {
+        console.log('❌ useSmartAIChat: User subscription_status is inactive:', userProfile?.subscription_status);
         setHasActiveSubscription(false);
         setIsCheckingSubscription(false);
         return;
@@ -120,7 +120,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
 
   const loadConversationHistory = async () => {
     if (!athleteId) {
-      console.log('❌ useSmartAIChat: Cannot load history - no athleteId');
+      console.log('❌ useSmartAIChat: Cannot load history - no userId');
       return;
     }
     
