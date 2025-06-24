@@ -40,7 +40,6 @@ interface UserSubscription {
 
 export const SubscriptionManagement: React.FC = () => {
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
-  const [filteredSubscriptionTypes, setFilteredSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [userSubscriptions, setUserSubscriptions] = useState<UserSubscription[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
@@ -49,25 +48,12 @@ export const SubscriptionManagement: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedSubscriptionType, setSelectedSubscriptionType] = useState('');
   const [notes, setNotes] = useState('');
-  const [subscriptionTypeSearchTerm, setSubscriptionTypeSearchTerm] = useState('');
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [usersTableSearchTerm, setUsersTableSearchTerm] = useState('');
 
   useEffect(() => {
     loadData();
   }, []);
-
-  useEffect(() => {
-    if (subscriptionTypeSearchTerm.trim() === '') {
-      setFilteredSubscriptionTypes(subscriptionTypes);
-    } else {
-      const filtered = subscriptionTypes.filter(type =>
-        type.name.toLowerCase().includes(subscriptionTypeSearchTerm.toLowerCase()) ||
-        (type.description && type.description.toLowerCase().includes(subscriptionTypeSearchTerm.toLowerCase()))
-      );
-      setFilteredSubscriptionTypes(filtered);
-    }
-  }, [subscriptionTypeSearchTerm, subscriptionTypes]);
 
   useEffect(() => {
     if (userSearchTerm.trim() === '') {
@@ -418,29 +404,18 @@ export const SubscriptionManagement: React.FC = () => {
               
               <div>
                 <Label htmlFor="subscriptionType">Τύπος Συνδρομής</Label>
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Αναζήτηση τύπου συνδρομής..."
-                      value={subscriptionTypeSearchTerm}
-                      onChange={(e) => setSubscriptionTypeSearchTerm(e.target.value)}
-                      className="pl-10 rounded-none"
-                    />
-                  </div>
-                  <Select value={selectedSubscriptionType} onValueChange={setSelectedSubscriptionType}>
-                    <SelectTrigger className="rounded-none">
-                      <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredSubscriptionTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.name} - €{type.price} ({type.duration_days} ημέρες)
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select value={selectedSubscriptionType} onValueChange={setSelectedSubscriptionType}>
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subscriptionTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.id}>
+                        {type.name} - €{type.price} ({type.duration_days} ημέρες)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
