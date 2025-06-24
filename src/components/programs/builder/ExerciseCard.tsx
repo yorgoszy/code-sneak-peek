@@ -25,7 +25,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
 
   return (
     <div
-      className="border rounded-none p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+      className="border rounded-none p-3 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors"
       onClick={() => onSelect(exercise.id)}
     >
       <div className="flex items-start justify-between gap-3">
@@ -72,7 +72,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
               </div>
             </div>
           ) : (
-            <div className="w-16 h-12 rounded-none bg-gray-100 flex items-center justify-center">
+            <div className="w-16 h-12 rounded-none bg-gray-200 flex items-center justify-center">
               <span className="text-xs text-gray-400">-</span>
             </div>
           )}
