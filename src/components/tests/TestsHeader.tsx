@@ -21,17 +21,17 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(true);
   const { user } = useAuth();
-  const { userProfile, isAdmin } = useRoleCheck();
+  const { isAdmin } = useRoleCheck();
 
   useEffect(() => {
-    if (user?.id && userProfile?.id) {
+    if (selectedAthleteId) {
       checkSubscriptionStatus();
     }
-  }, [user?.id, userProfile?.id]);
+  }, [selectedAthleteId]);
 
   const checkSubscriptionStatus = async () => {
-    if (!userProfile?.id) {
-      console.log('❌ No userProfile.id found');
+    if (!selectedAthleteId) {
+      console.log('❌ No selectedAthleteId found');
       setHasActiveSubscription(false);
       setIsCheckingSubscription(false);
       return;
@@ -39,7 +39,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     
     setIsCheckingSubscription(true);
     try {
-      console.log('🔍 TestsHeader: Checking subscription for user:', userProfile.id);
+      console.log('🔍 TestsHeader: Checking subscription for athlete:', selectedAthleteId);
       
       // Αν είναι admin, δίνουμε πρόσβαση
       if (isAdmin()) {
@@ -53,7 +53,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
       const { data: userStatus, error: userError } = await supabase
         .from('app_users')
         .select('subscription_status')
-        .eq('id', userProfile.id)
+        .eq('id', selectedAthleteId)
         .single();
 
       if (userError) {
@@ -81,7 +81,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     console.log('🔄 TestsHeader: AI Chat button clicked. Current state:', {
       isCheckingSubscription,
       hasActiveSubscription,
-      userProfileId: userProfile?.id,
+      selectedAthleteId,
       isAdmin: isAdmin()
     });
 
