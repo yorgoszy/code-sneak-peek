@@ -29,24 +29,56 @@ serve(async (req) => {
 
     console.log('🚀 Smart AI Chat request for user:', userId, 'message:', message);
 
-    // Fetch user's exercises for context
-    const { data: exercisesData, error: exercisesError } = await supabase
-      .from('exercises')
+    // Fetch user's exercises from their active programs
+    const { data: userExercisesData, error: userExercisesError } = await supabase
+      .from('program_assignments')
       .select(`
-        id,
-        name,
-        description,
-        video_url,
-        exercise_to_category!inner(
-          exercise_categories(
-            name,
-            type
+        programs!inner(
+          program_weeks(
+            program_days(
+              program_blocks(
+                program_exercises(
+                  exercises(
+                    id,
+                    name,
+                    description,
+                    video_url,
+                    exercise_to_category!inner(
+                      exercise_categories(
+                        name,
+                        type
+                      )
+                    )
+                  )
+                )
+              )
+            )
           )
         )
-      `);
+      `)
+      .eq('user_id', userId)
+      .eq('status', 'active');
 
-    if (exercisesError) {
-      console.error('Error fetching exercises:', exercisesError);
+    if (userExercisesError) {
+      console.error('Error fetching user exercises:', userExercisesError);
+    }
+
+    // Extract unique exercises from user's programs
+    const userExercises = new Map();
+    if (userExercisesData) {
+      userExercisesData.forEach(assignment => {
+        assignment.programs?.program_weeks?.forEach(week => {
+          week.program_days?.forEach(day => {
+            day.program_blocks?.forEach(block => {
+              block.program_exercises?.forEach(pe => {
+                if (pe.exercises) {
+                  userExercises.set(pe.exercises.id, pe.exercises);
+                }
+              });
+            });
+          });
+        });
+      });
     }
 
     // Fetch user's recent programs for context
@@ -78,10 +110,10 @@ serve(async (req) => {
       console.error('Error fetching programs:', programsError);
     }
 
-    // Create context about available exercises with video URLs
+    // Create context about user's exercises with video URLs
     let exerciseContext = '';
-    if (exercisesData && exercisesData.length > 0) {
-      const exercisesList = exercisesData.map(exercise => {
+    if (userExercises.size > 0) {
+      const exercisesList = Array.from(userExercises.values()).map(exercise => {
         const categories = exercise.exercise_to_category?.map((etc: any) => 
           etc.exercise_categories?.name || ''
         ).filter(Boolean).join(', ') || '';
@@ -91,7 +123,7 @@ serve(async (req) => {
         return `- Άσκηση: ${exercise.name}${categories ? ` (${categories})` : ''}${exercise.description ? `: ${exercise.description}` : ''}${videoInfo}`;
       }).join('\n');
       
-      exerciseContext = `\n\nΔιαθέσιμες ασκήσεις στη βάση δεδομένων:\n${exercisesList}`;
+      exerciseContext = `\n\nΟι ασκήσεις που έχεις στα προγράμματά σου:\n${exercisesList}`;
     }
 
     // Create context about user's programs
@@ -102,11 +134,11 @@ serve(async (req) => {
         return `- ${program.name}${program.description ? `: ${program.description}` : ''}`;
       }).join('\n');
       
-      programContext = `\n\nΕνεργά προγράμματα του χρήστη:\n${programsList}`;
+      programContext = `\n\nΤα ενεργά προγράμματά σου:\n${programsList}`;
     }
 
-    // Enhanced system prompt with exercise knowledge
-    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις πρόσβαση στη βάση δεδομένων ασκήσεων και τα προγράμματα του χρήστη.
+    // Enhanced system prompt with user's specific exercises
+    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις πρόσβαση στις ασκήσεις και τα προγράμματα του χρήστη.
 
 Βοηθάς με:
 1. Διατροφικές συμβουλές και σχεδιασμό γευμάτων
@@ -114,27 +146,27 @@ serve(async (req) => {
 3. Αξιολόγηση αποτελεσμάτων τεστ
 4. Προγραμματισμό προπονήσεων
 5. Αποκατάσταση και πρόληψη τραυματισμών
-6. Συμβουλές για συγκεκριμένες ασκήσεις από τη βάση δεδομένων
+6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 
 ${exerciseContext}${programContext}
 
-ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ασκήσεις από τη βάση δεδομένων, γράφε τες ΑΚΡΙΒΩΣ με το format:
+ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ασκήσεις από τις ασκήσεις του χρήστη, γράφε τες ΑΚΡΙΒΩΣ με το format:
 "Άσκηση: [Όνομα Άσκησης]"
 
 Παράδειγμα: "Άσκηση: Squat" ή "Άσκηση: Push Up"
 
 Όταν συζητάς για ασκήσεις:
-- Αναφέρου τις διαθέσιμες ασκήσεις από τη βάση όταν είναι σχετικό
+- Αναφέρου τις ασκήσεις που έχει ο χρήστης στα προγράμματά του
 - Δώσε συγκεκριμένες συμβουλές για τεχνική εκτέλεση
-- Πρότεινε εναλλακτικές ασκήσεις από τη βάση
-- Εξήγησε τα οφέλη κάθε άσκησης
+- Πρότεινε εναλλακτικές από τις ασκήσεις που έχει
+- Εξήγησε τα οφέλη κάθε άσκησης που χρησιμοποιεί
 
 ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 
 Πάντα:
 - Απαντάς στα ελληνικά
 - Δίνεις λεπτομερείς, πρακτικές συμβουλές
-- Αναφέρεις συγκεκριμένες ασκήσεις από τη βάση όταν χρειάζεται
+- Αναφέρεις συγκεκριμένες ασκήσεις από τα προγράμματα του χρήστη όταν χρειάζεται
 - Τονίζεις τη σημασία της επαγγελματικής παρακολούθησης
 - Είσαι φιλικός και υποστηρικτικός`;
 
