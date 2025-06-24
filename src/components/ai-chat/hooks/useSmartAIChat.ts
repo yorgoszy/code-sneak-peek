@@ -46,23 +46,51 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
   }, [isOpen, athleteId]);
 
   const checkSubscriptionStatus = async () => {
-    if (!athleteId) return;
+    if (!athleteId) {
+      setHasActiveSubscription(false);
+      setIsCheckingSubscription(false);
+      return;
+    }
     
     setIsCheckingSubscription(true);
     try {
       console.log('🔍 Checking subscription for user:', athleteId);
       
-      const { data, error } = await supabase.rpc('has_active_subscription', { 
+      // Πρώτα ελέγχουμε αν ο χρήστης είναι admin
+      const { data: userProfile, error: profileError } = await supabase
+        .from('app_users')
+        .select('role, subscription_status')
+        .eq('id', athleteId)
+        .single();
+
+      if (profileError) {
+        console.error('❌ Error fetching user profile:', profileError);
+        setHasActiveSubscription(false);
+        setIsCheckingSubscription(false);
+        return;
+      }
+
+      // Αν είναι admin, δίνουμε πρόσβαση
+      if (userProfile?.role === 'admin') {
+        console.log('✅ Admin user detected - access granted');
+        setHasActiveSubscription(true);
+        setIsCheckingSubscription(false);
+        loadConversationHistory();
+        return;
+      }
+
+      // Ελέγχουμε την συνδρομή με το RPC function
+      const { data: subscriptionStatus, error: subscriptionError } = await supabase.rpc('has_active_subscription', { 
         user_uuid: athleteId 
       });
 
-      if (error) {
-        console.error('❌ Error checking subscription:', error);
+      if (subscriptionError) {
+        console.error('❌ Error checking subscription:', subscriptionError);
         setHasActiveSubscription(false);
       } else {
-        console.log('✅ Subscription status:', data);
-        setHasActiveSubscription(data);
-        if (data) {
+        console.log('✅ Subscription status:', subscriptionStatus);
+        setHasActiveSubscription(subscriptionStatus);
+        if (subscriptionStatus) {
           loadConversationHistory();
         }
       }
@@ -137,7 +165,14 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
   };
 
   const sendMessage = async (userMessage: string) => {
-    if (!userMessage.trim() || isLoading || !athleteId || !hasActiveSubscription) return;
+    if (!userMessage.trim() || isLoading || !athleteId) return;
+
+    // Επανέλεγχος συνδρομής πριν από κάθε μήνυμα
+    if (!hasActiveSubscription) {
+      console.log('❌ No active subscription - blocking message');
+      toast.error('Χρειάζεσαι ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
+      return;
+    }
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -161,6 +196,14 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
 
       if (error) {
         console.error('❌ RID AI Error:', error);
+        
+        // Αν το error είναι για συνδρομή, ενημερώνουμε την κατάσταση
+        if (error.message?.includes('No active subscription') || error.message?.includes('subscription')) {
+          setHasActiveSubscription(false);
+          toast.error('Η συνδρομή σου έχει λήξει. Επικοινώνησε με τον διαχειριστή.');
+          return;
+        }
+        
         throw error;
       }
 
