@@ -66,8 +66,8 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
       console.log('📊 TestsHeader: User subscription status:', userStatus?.subscription_status);
 
       // ΜΟΝΟ αν το subscription_status είναι 'active' επιτρέπουμε πρόσβαση
-      if (userStatus?.subscription_status === 'inactive') {
-        console.log('❌ TestsHeader: User subscription_status is inactive:', userStatus?.subscription_status);
+      if (userStatus?.subscription_status !== 'active') {
+        console.log('❌ TestsHeader: User subscription_status is not active:', userStatus?.subscription_status);
         setHasActiveSubscription(false);
         setIsCheckingSubscription(false);
         return;

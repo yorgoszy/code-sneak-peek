@@ -83,8 +83,8 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
       }
 
       // ΜΟΝΟ αν το subscription_status είναι 'active' συνεχίζουμε
-      if (userProfile?.subscription_status === 'inactive') {
-        console.log('❌ useSmartAIChat: User subscription_status is inactive:', userProfile?.subscription_status);
+      if (userProfile?.subscription_status !== 'active') {
+        console.log('❌ useSmartAIChat: User subscription_status is not active:', userProfile?.subscription_status);
         setHasActiveSubscription(false);
         setIsCheckingSubscription(false);
         return;
