@@ -57,11 +57,11 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     try {
       console.log('🔍 useSmartAIChat: Checking subscription for user:', athleteId);
       
-      // Έλεγχος ΜΟΝΟ του subscription_status στον πίνακα app_users
+      // Έλεγχος του subscription_status για τον συγκεκριμένο αθλητή
       const { data: userProfile, error: profileError } = await supabase
         .from('app_users')
         .select('role, subscription_status')
-        .eq('id', athleteId)
+        .eq('id', athleteId)  // Ελέγχουμε τον συγκεκριμένο αθλητή
         .single();
 
       if (profileError) {
@@ -82,7 +82,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
         return;
       }
 
-      // ΜΟΝΟ έλεγχος του subscription_status
+      // Έλεγχος του subscription_status για τον συγκεκριμένο αθλητή
       const hasSubscription = userProfile?.subscription_status === 'active';
       console.log('🎯 useSmartAIChat: Final subscription decision:', hasSubscription);
       setHasActiveSubscription(hasSubscription);

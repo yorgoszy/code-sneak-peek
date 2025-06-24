@@ -26,12 +26,15 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
   useEffect(() => {
     if (selectedAthleteId) {
       checkSubscriptionStatus();
+    } else {
+      setHasActiveSubscription(false);
+      setIsCheckingSubscription(false);
     }
   }, [selectedAthleteId]);
 
   const checkSubscriptionStatus = async () => {
     if (!selectedAthleteId) {
-      console.log('❌ No selectedUserId found');
+      console.log('❌ TestsHeader: No selectedAthleteId found');
       setHasActiveSubscription(false);
       setIsCheckingSubscription(false);
       return;
@@ -41,18 +44,10 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     try {
       console.log('🔍 TestsHeader: Checking subscription for user:', selectedAthleteId);
       
-      // Αν είναι admin, δίνουμε πρόσβαση
-      if (isAdmin()) {
-        console.log('✅ TestsHeader: Admin user detected - access granted');
-        setHasActiveSubscription(true);
-        setIsCheckingSubscription(false);
-        return;
-      }
-
-      // Έλεγχος ΜΟΝΟ του subscription_status στον πίνακα app_users
+      // Έλεγχος ΜΟΝΟ του subscription_status για τον επιλεγμένο αθλητή
       const { data: userStatus, error: userError } = await supabase
         .from('app_users')
-        .select('subscription_status')
+        .select('subscription_status, role')
         .eq('id', selectedAthleteId)
         .single();
 
@@ -65,7 +60,15 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
 
       console.log('📊 TestsHeader: User subscription status:', userStatus?.subscription_status);
 
-      // ΜΟΝΟ έλεγχος του subscription_status
+      // Αν ο επιλεγμένος αθλητής είναι admin, δίνουμε πρόσβαση
+      if (userStatus?.role === 'admin') {
+        console.log('✅ TestsHeader: Selected user is admin - access granted');
+        setHasActiveSubscription(true);
+        setIsCheckingSubscription(false);
+        return;
+      }
+
+      // Έλεγχος του subscription_status για τον επιλεγμένο αθλητή
       const hasSubscription = userStatus?.subscription_status === 'active';
       console.log('🎯 TestsHeader: Final subscription decision:', hasSubscription);
       setHasActiveSubscription(hasSubscription);
@@ -81,18 +84,23 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     console.log('🔄 TestsHeader: AI Chat button clicked. Current state:', {
       isCheckingSubscription,
       hasActiveSubscription,
-      selectedUserId: selectedAthleteId,
-      isAdmin: isAdmin()
+      selectedAthleteId,
+      isCurrentUserAdmin: isAdmin()
     });
 
     if (isCheckingSubscription) {
-      toast.info('Ελέγχω τη συνδρομή σου...');
+      toast.info('Ελέγχω τη συνδρομή...');
       return;
     }
 
-    if (!hasActiveSubscription && !isAdmin()) {
-      console.log('❌ TestsHeader: Access denied - no active subscription and not admin');
-      toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
+    if (!selectedAthleteId) {
+      toast.error('Παρακαλώ επιλέξτε έναν αθλητή πρώτα');
+      return;
+    }
+
+    if (!hasActiveSubscription) {
+      console.log('❌ TestsHeader: Access denied - selected athlete has no active subscription');
+      toast.error('Ο επιλεγμένος αθλητής δεν έχει ενεργή συνδρομή για το RID AI');
       return;
     }
 
@@ -114,20 +122,20 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
             <Button
               onClick={handleAIChatClick}
               className={`rounded-none flex items-center gap-2 ${
-                hasActiveSubscription || isAdmin()
+                hasActiveSubscription
                   ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
-              disabled={isCheckingSubscription || (!hasActiveSubscription && !isAdmin())}
+              disabled={isCheckingSubscription || !hasActiveSubscription || !selectedAthleteId}
             >
-              {hasActiveSubscription || isAdmin() ? (
+              {hasActiveSubscription ? (
                 <Bot className="w-4 h-4" />
               ) : (
                 <Crown className="w-4 h-4" />
               )}
               {isCheckingSubscription 
                 ? 'Έλεγχος...' 
-                : hasActiveSubscription || isAdmin()
+                : hasActiveSubscription
                   ? 'AI Βοηθός' 
                   : 'AI Βοηθός (Απαιτείται Συνδρομή)'
               }
