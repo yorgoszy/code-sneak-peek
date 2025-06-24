@@ -11,7 +11,7 @@ interface ChatInputProps {
   hasActiveSubscription: boolean;
   onSend: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
-  isMobile: boolean;
+  isMobile?: boolean;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -21,27 +21,27 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   hasActiveSubscription,
   onSend,
   onKeyPress,
-  isMobile
+  isMobile = false
 }) => {
   return (
-    <div className={`flex gap-2 ${isMobile ? 'p-3' : 'p-4'} border-t`}>
+    <div className="flex gap-2 p-4 border-t">
       <Input
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyPress={onKeyPress}
-        placeholder="Πληκτρολογήστε το μήνυμά σας στον RID..."
-        className={`rounded-none ${isMobile ? 'text-sm' : ''}`}
+        placeholder={hasActiveSubscription ? "Πληκτρολογήστε το μήνυμά σας..." : "Απαιτείται συνδρομή..."}
+        className="rounded-none"
         disabled={isLoading || !hasActiveSubscription}
       />
       <Button
         onClick={onSend}
         disabled={!input.trim() || isLoading || !hasActiveSubscription}
-        className={`rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black ${isMobile ? 'px-3' : 'px-4'}`}
+        className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
       >
         {isLoading ? (
-          <Loader2 className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} animate-spin`} />
+          <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
-          <Send className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+          <Send className="w-4 h-4" />
         )}
       </Button>
     </div>

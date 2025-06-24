@@ -13,6 +13,8 @@ interface Message {
 interface ChatContainerProps {
   messages: Message[];
   isLoading: boolean;
+  userName?: string;
+  userPhotoUrl?: string;
   isMobile: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement>;
   input: string;
@@ -25,6 +27,8 @@ interface ChatContainerProps {
 export const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
   isLoading,
+  userName,
+  userPhotoUrl,
   isMobile,
   messagesEndRef,
   input,
@@ -34,10 +38,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onKeyPress
 }) => {
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex-1 flex flex-col min-h-0">
       <ChatMessages
         messages={messages}
         isLoading={isLoading}
+        userName={userName}
+        userPhotoUrl={userPhotoUrl}
         isMobile={isMobile}
         messagesEndRef={messagesEndRef}
       />

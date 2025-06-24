@@ -1,19 +1,29 @@
 
 import React from 'react';
-import { CustomLoading } from "@/components/ui/custom-loading";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Bot, Loader2 } from "lucide-react";
 
 interface LoadingStateProps {
   message: string;
-  isMobile: boolean;
+  isMobile?: boolean;
 }
 
-export const LoadingState: React.FC<LoadingStateProps> = ({ message, isMobile }) => {
+export const LoadingState: React.FC<LoadingStateProps> = ({ message, isMobile = false }) => {
   return (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="flex items-center gap-2 text-gray-600">
-        <CustomLoading size={isMobile ? 'sm' : 'md'} />
-        <span className={`${isMobile ? 'text-sm' : 'text-base'}`}>{message}</span>
+    <>
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Bot className="w-5 h-5 text-[#00ffba]" />
+          RID AI Προπονητής
+        </DialogTitle>
+      </DialogHeader>
+      <div className="text-center py-6">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+        </div>
+        <h3 className="text-lg font-semibold mb-2">Έλεγχος Συνδρομής</h3>
+        <p className="text-gray-600">{message}</p>
       </div>
-    </div>
+    </>
   );
 };

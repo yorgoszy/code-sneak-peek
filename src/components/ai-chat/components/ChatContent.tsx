@@ -13,7 +13,8 @@ interface Message {
 }
 
 interface ChatContentProps {
-  athleteName?: string;
+  userName?: string;
+  userPhotoUrl?: string;
   hasActiveSubscription: boolean;
   isMobile: boolean;
   isCheckingSubscription: boolean;
@@ -25,10 +26,12 @@ interface ChatContentProps {
   setInput: (value: string) => void;
   onSend: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
+  onClearConversation: () => void;
 }
 
 export const ChatContent: React.FC<ChatContentProps> = ({
-  athleteName,
+  userName,
+  userPhotoUrl,
   hasActiveSubscription,
   isMobile,
   isCheckingSubscription,
@@ -39,13 +42,15 @@ export const ChatContent: React.FC<ChatContentProps> = ({
   input,
   setInput,
   onSend,
-  onKeyPress
+  onKeyPress,
+  onClearConversation
 }) => {
   return (
     <>
       <ChatHeader
-        athleteName={athleteName}
+        userName={userName}
         hasActiveSubscription={hasActiveSubscription}
+        onClearConversation={onClearConversation}
         isMobile={isMobile}
       />
 
@@ -65,6 +70,8 @@ export const ChatContent: React.FC<ChatContentProps> = ({
         <ChatContainer
           messages={messages}
           isLoading={isLoading}
+          userName={userName}
+          userPhotoUrl={userPhotoUrl}
           isMobile={isMobile}
           messagesEndRef={messagesEndRef}
           input={input}

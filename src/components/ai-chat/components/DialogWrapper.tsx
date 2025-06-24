@@ -1,24 +1,23 @@
 
 import React from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DialogWrapperProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  className?: string;
 }
 
 export const DialogWrapper: React.FC<DialogWrapperProps> = ({
   isOpen,
   onClose,
-  children
+  children,
+  className = "max-w-2xl max-h-[80vh] rounded-none flex flex-col"
 }) => {
-  const isMobile = useIsMobile();
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`${isMobile ? 'max-w-[95vw] w-[95vw] h-[90vh] m-2' : 'max-w-4xl h-[80vh]'} rounded-none p-0 flex flex-col`}>
+      <DialogContent className={className}>
         {children}
       </DialogContent>
     </Dialog>
