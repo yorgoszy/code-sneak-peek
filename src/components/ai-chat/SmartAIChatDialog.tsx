@@ -43,7 +43,12 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading || !hasActiveSubscription) return;
+    if (!input.trim() || isLoading || !hasActiveSubscription) {
+      if (!hasActiveSubscription) {
+        toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
+      }
+      return;
+    }
 
     const userInput = input;
     setInput('');
@@ -56,14 +61,14 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
       if (hasActiveSubscription) {
         handleSendMessage();
       } else {
-        toast.error('Χρειάζεσαι ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
+        toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
       }
     }
   };
 
   const handleClearConversation = () => {
     if (!hasActiveSubscription) {
-      toast.error('Χρειάζεσαι ενεργή συνδρομή για αυτή την ενέργεια');
+      toast.error('Απαιτείται ενεργή συνδρομή για αυτή την ενέργεια');
       return;
     }
     clearConversation();

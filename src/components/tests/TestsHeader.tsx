@@ -30,30 +30,61 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
   }, [user?.id, userProfile?.id]);
 
   const checkSubscriptionStatus = async () => {
-    if (!userProfile?.id) return;
+    if (!userProfile?.id) {
+      setHasActiveSubscription(false);
+      setIsCheckingSubscription(false);
+      return;
+    }
     
     setIsCheckingSubscription(true);
     try {
+      console.log('🔍 Checking subscription for user:', userProfile.id);
+      
       // Αν είναι admin, δίνουμε πρόσβαση
       if (isAdmin()) {
+        console.log('✅ Admin user detected - access granted');
         setHasActiveSubscription(true);
         setIsCheckingSubscription(false);
         return;
       }
 
-      // Ελέγχουμε τη συνδρομή με το RPC function
-      const { data: subscriptionStatus, error } = await supabase.rpc('has_active_subscription', { 
+      // Έλεγχος αν έχει ενεργή συνδρομή στον πίνακα app_users
+      const { data: userStatus, error: userError } = await supabase
+        .from('app_users')
+        .select('subscription_status')
+        .eq('id', userProfile.id)
+        .single();
+
+      if (userError) {
+        console.error('❌ Error fetching user status:', userError);
+        setHasActiveSubscription(false);
+        setIsCheckingSubscription(false);
+        return;
+      }
+
+      console.log('📊 User subscription status:', userStatus?.subscription_status);
+
+      if (userStatus?.subscription_status !== 'active') {
+        console.log('❌ User does not have active subscription');
+        setHasActiveSubscription(false);
+        setIsCheckingSubscription(false);
+        return;
+      }
+
+      // Διπλός έλεγχος με το RPC function
+      const { data: subscriptionStatus, error: rpcError } = await supabase.rpc('has_active_subscription', { 
         user_uuid: userProfile.id 
       });
 
-      if (error) {
-        console.error('Error checking subscription:', error);
+      if (rpcError) {
+        console.error('❌ Error checking subscription with RPC:', rpcError);
         setHasActiveSubscription(false);
       } else {
+        console.log('✅ Final subscription status:', subscriptionStatus);
         setHasActiveSubscription(subscriptionStatus);
       }
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      console.error('💥 Error checking subscription:', error);
       setHasActiveSubscription(false);
     } finally {
       setIsCheckingSubscription(false);
@@ -67,7 +98,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     }
 
     if (!hasActiveSubscription) {
-      toast.error('Χρειάζεσαι ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
+      toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
       return;
     }
 
@@ -92,14 +123,19 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
                   ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
-              disabled={isCheckingSubscription}
+              disabled={isCheckingSubscription || !hasActiveSubscription}
             >
               {hasActiveSubscription ? (
                 <Bot className="w-4 h-4" />
               ) : (
                 <Crown className="w-4 h-4" />
               )}
-              {isCheckingSubscription ? 'Έλεγχος...' : hasActiveSubscription ? 'AI Βοηθός' : 'AI Βοηθός (Απαιτείται Συνδρομή)'}
+              {isCheckingSubscription 
+                ? 'Έλεγχος...' 
+                : hasActiveSubscription 
+                  ? 'AI Βοηθός' 
+                  : 'AI Βοηθός (Απαιτείται Συνδρομή)'
+              }
             </Button>
           </div>
         </div>

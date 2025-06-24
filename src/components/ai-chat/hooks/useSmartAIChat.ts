@@ -54,7 +54,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     
     setIsCheckingSubscription(true);
     try {
-      console.log('🔍 Checking subscription for user:', athleteId);
+      console.log('🔍 AI Chat: Checking subscription for user:', athleteId);
       
       // Πρώτα ελέγχουμε αν ο χρήστης είναι admin
       const { data: userProfile, error: profileError } = await supabase
@@ -64,15 +64,17 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
         .single();
 
       if (profileError) {
-        console.error('❌ Error fetching user profile:', profileError);
+        console.error('❌ AI Chat: Error fetching user profile:', profileError);
         setHasActiveSubscription(false);
         setIsCheckingSubscription(false);
         return;
       }
 
+      console.log('📊 AI Chat: User profile:', userProfile);
+
       // Αν είναι admin, δίνουμε πρόσβαση
       if (userProfile?.role === 'admin') {
-        console.log('✅ Admin user detected - access granted');
+        console.log('✅ AI Chat: Admin user detected - access granted');
         setHasActiveSubscription(true);
         setIsCheckingSubscription(false);
         loadConversationHistory();
@@ -81,7 +83,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
 
       // Έλεγχος αν έχει ενεργή συνδρομή στον πίνακα app_users
       if (userProfile?.subscription_status !== 'active') {
-        console.log('❌ User subscription_status is not active:', userProfile?.subscription_status);
+        console.log('❌ AI Chat: User subscription_status is not active:', userProfile?.subscription_status);
         setHasActiveSubscription(false);
         setIsCheckingSubscription(false);
         return;
@@ -93,13 +95,14 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
       });
 
       if (subscriptionError) {
-        console.error('❌ Error checking subscription with RPC:', subscriptionError);
+        console.error('❌ AI Chat: Error checking subscription with RPC:', subscriptionError);
         setHasActiveSubscription(false);
       } else {
-        console.log('✅ RPC Subscription status:', subscriptionStatus);
+        console.log('✅ AI Chat: RPC Subscription status:', subscriptionStatus);
         
         // Και οι δύο έλεγχοι πρέπει να επιστρέφουν true
         const finalStatus = subscriptionStatus && userProfile?.subscription_status === 'active';
+        console.log('🎯 AI Chat: Final subscription decision:', finalStatus);
         setHasActiveSubscription(finalStatus);
         
         if (finalStatus) {
@@ -107,7 +110,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
         }
       }
     } catch (error) {
-      console.error('💥 Error checking subscription:', error);
+      console.error('💥 AI Chat: Error checking subscription:', error);
       setHasActiveSubscription(false);
     } finally {
       setIsCheckingSubscription(false);
@@ -115,11 +118,14 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
   };
 
   const loadConversationHistory = async () => {
-    if (!athleteId || !hasActiveSubscription) return;
+    if (!athleteId || !hasActiveSubscription) {
+      console.log('❌ AI Chat: Cannot load history - no athleteId or no active subscription');
+      return;
+    }
     
     setIsLoadingHistory(true);
     try {
-      console.log('📚 Loading conversation history for:', athleteId);
+      console.log('📚 AI Chat: Loading conversation history for:', athleteId);
       
       const { data: history, error } = await supabase
         .from('ai_conversations')
@@ -138,7 +144,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
           timestamp: new Date(msg.created_at)
         }));
         setMessages(formattedMessages);
-        console.log('✅ Loaded', formattedMessages.length, 'messages from history');
+        console.log('✅ AI Chat: Loaded', formattedMessages.length, 'messages from history');
       } else {
         setMessages([{
           id: 'welcome',
@@ -169,7 +175,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
         }]);
       }
     } catch (error) {
-      console.error('❌ Error loading conversation history:', error);
+      console.error('❌ AI Chat: Error loading conversation history:', error);
       toast.error('Σφάλμα κατά τη φόρτωση του ιστορικού');
     } finally {
       setIsLoadingHistory(false);
@@ -181,8 +187,8 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
 
     // Αυστηρός έλεγχος συνδρομής πριν από κάθε μήνυμα
     if (!hasActiveSubscription) {
-      console.log('❌ No active subscription - blocking message');
-      toast.error('Χρειάζεσαι ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
+      console.log('❌ AI Chat: No active subscription - blocking message');
+      toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
       
       // Επανέλεγχος συνδρομής
       await checkSubscriptionStatus();
@@ -200,7 +206,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     setIsLoading(true);
 
     try {
-      console.log('🤖 Calling RID AI for user:', athleteId, 'Message:', userMessage);
+      console.log('🤖 AI Chat: Calling RID AI for user:', athleteId, 'Message:', userMessage);
       
       const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
         body: {
@@ -210,7 +216,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
       });
 
       if (error) {
-        console.error('❌ RID AI Error:', error);
+        console.error('❌ AI Chat: RID AI Error:', error);
         
         // Αν το error είναι για συνδρομή, ενημερώνουμε την κατάσταση
         if (error.message?.includes('No active subscription') || error.message?.includes('subscription')) {
@@ -222,7 +228,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
         throw error;
       }
 
-      console.log('✅ RID AI Response received:', data);
+      console.log('✅ AI Chat: RID AI Response received:', data);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -233,7 +239,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('💥 RID AI Error:', error);
+      console.error('💥 AI Chat: RID AI Error:', error);
       toast.error('Σφάλμα στον RID AI βοηθό');
       
       const errorMessage: Message = {
@@ -251,7 +257,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
 
   const clearConversation = () => {
     if (!hasActiveSubscription) {
-      toast.error('Χρειάζεσαι ενεργή συνδρομή για αυτή την ενέργεια');
+      toast.error('Απαιτείται ενεργή συνδρομή για αυτή την ενέργεια');
       return;
     }
 
@@ -290,7 +296,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
       if (hasActiveSubscription) {
         sendMessage(input);
       } else {
-        toast.error('Χρειάζεσαι ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
+        toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
       }
     }
   };
