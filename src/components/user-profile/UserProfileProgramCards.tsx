@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, CheckCircle, Clock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
@@ -56,7 +57,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     stats: calculateProgramStats(assignment)
   }));
 
-  // Διαχωρισμός προγραμμάτων σε ενεργά και ολοκληρωμένα
+  // Διαχωρισμός προγραμμάτων σε ενεργά και ολοκληρωμένα βάσει progress
   const activeIncompletePrograms = programsWithStats.filter(item => item.stats?.progress < 100);
   const completedPrograms = programsWithStats.filter(item => item.stats?.progress >= 100);
 
@@ -130,19 +131,19 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-8">
-          {/* Αριστερή στήλη - Ενεργά Προγράμματα */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-blue-600" />
-                Ενεργά Προγράμματα
-              </h3>
-              <div className="text-sm text-gray-500">
-                {activeIncompletePrograms.length} προγράμματα
-              </div>
-            </div>
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 rounded-none">
+            <TabsTrigger value="active" className="rounded-none flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Ενεργά Προγράμματα ({activeIncompletePrograms.length})
+            </TabsTrigger>
+            <TabsTrigger value="completed" className="rounded-none flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Ολοκληρωμένα ({completedPrograms.length})
+            </TabsTrigger>
+          </TabsList>
 
+          <TabsContent value="active" className="mt-4">
             {activeIncompletePrograms.length > 0 ? (
               <div className="space-y-4">
                 {activeIncompletePrograms.map((item) => (
@@ -163,20 +164,9 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                 <p className="text-sm">Δεν υπάρχουν ενεργά προγράμματα</p>
               </div>
             )}
-          </div>
+          </TabsContent>
 
-          {/* Δεξιά στήλη - Ολοκληρωμένα Προγράμματα */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-[#00ffba]" />
-                Ολοκληρωμένα Προγράμματα
-              </h3>
-              <div className="text-sm text-gray-500">
-                {completedPrograms.length} προγράμματα
-              </div>
-            </div>
-
+          <TabsContent value="completed" className="mt-4">
             {completedPrograms.length > 0 ? (
               <div className="space-y-4">
                 {completedPrograms.map((item) => (
@@ -197,8 +187,8 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                 <p className="text-sm">Δεν υπάρχουν ολοκληρωμένα προγράμματα</p>
               </div>
             )}
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

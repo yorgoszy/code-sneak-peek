@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "
 import { el } from "date-fns/locale";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 
 interface UserProfileDailyProgramProps {
   userProfile: any;
@@ -18,60 +18,29 @@ interface UserProfileDailyProgramProps {
 export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = ({ userProfile }) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
+  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   
   const { data: activePrograms, isLoading } = useActivePrograms();
-  const { getWorkoutCompletions } = useWorkoutCompletions();
+  const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
 
-  const getTrainingDates = (program: any) => {
-    if (!program || !program.start_date || !program.end_date) {
-      return [];
-    }
-  
-    const startDate = new Date(program.start_date);
-    const endDate = new Date(program.end_date);
-  
-    // Δημιουργία πίνακα με όλες τις ημέρες μεταξύ start_date και end_date
-    const allDays = eachDayOfInterval({ start: startDate, end: endDate });
-  
-    // Φιλτράρισμα των ημερών με βάση το training_frequency
-    const trainingDays = allDays.filter((date, index) => {
-      const dayOfWeek = date.getDay(); // 0 (Sunday) to 6 (Saturday)
-      return program.training_frequency && program.training_frequency.includes(dayOfWeek);
-    });
-  
-    return trainingDays.map(date => format(date, 'yyyy-MM-dd'));
-  };
-  
-  React.useEffect(() => {
-    if (activePrograms) {
-      activePrograms.forEach(program => {
-        program.training_dates = getTrainingDates(program);
-      });
-    }
-  }, [activePrograms]);
-  
+  // Filter programs for the specific user
   const userPrograms = activePrograms?.filter(program => 
     program.user_id === userProfile?.id
   ) || [];
 
-  const [completions, setCompletions] = React.useState<any[]>([]);
-
-  React.useEffect(() => {
-    const fetchCompletions = async () => {
-      if (userPrograms.length === 0) return;
-      
-      try {
-        const allCompletions = await Promise.all(
-          userPrograms.map(program => getWorkoutCompletions(program.id))
-        );
-        setCompletions(allCompletions.flat());
-      } catch (error) {
-        console.error('Error fetching completions:', error);
+  // Fetch workout completions
+  useEffect(() => {
+    const loadCompletions = async () => {
+      if (userPrograms.length > 0) {
+        const allCompletions = await getAllWorkoutCompletions();
+        // Filter completions for this user's assignments
+        const userAssignmentIds = userPrograms.map(p => p.id);
+        const userCompletions = allCompletions.filter(c => userAssignmentIds.includes(c.assignment_id));
+        setWorkoutCompletions(userCompletions);
       }
     };
-
-    fetchCompletions();
-  }, [userPrograms, getWorkoutCompletions]);
+    loadCompletions();
+  }, [userPrograms.length, userProfile.id, getAllWorkoutCompletions]);
 
   const getDayProgram = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -81,14 +50,16 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
       
       const dateIndex = program.training_dates.findIndex(d => d === dateStr);
       if (dateIndex >= 0) {
+        const completion = workoutCompletions.find(c => 
+          c.assignment_id === program.id && 
+          c.scheduled_date === dateStr
+        );
+        
         return {
           program,
           dateIndex,
-          isCompleted: completions.some(c => 
-            c.assignment_id === program.id && 
-            c.scheduled_date === dateStr && 
-            c.status === 'completed'
-          )
+          isCompleted: completion?.status === 'completed',
+          status: completion?.status || 'scheduled'
         };
       }
     }
@@ -107,14 +78,22 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
 
   const selectedProgram = selectedDate ? getDayProgram(selectedDate)?.program : null;
   const workoutStatus = selectedDate && selectedProgram ? 
-    (getDayProgram(selectedDate)?.isCompleted ? 'completed' : 'scheduled') : 
+    (getDayProgram(selectedDate)?.status || 'scheduled') : 
     'no_workout';
 
   const getDateStatus = (date: Date) => {
     const dayProgram = getDayProgram(date);
     if (!dayProgram) return null;
     
-    return dayProgram.isCompleted ? 'completed' : 'scheduled';
+    return dayProgram.status;
+  };
+
+  const handleRefresh = async () => {
+    // Reload completions after workout completion
+    const allCompletions = await getAllWorkoutCompletions();
+    const userAssignmentIds = userPrograms.map(p => p.id);
+    const userCompletions = allCompletions.filter(c => userAssignmentIds.includes(c.assignment_id));
+    setWorkoutCompletions(userCompletions);
   };
 
   if (isLoading) {
@@ -146,12 +125,14 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
                 locale={el}
                 className="rounded-none border"
                 modifiers={{
-                  scheduled: (date) => getDateStatus(date) === 'scheduled',
-                  completed: (date) => getDateStatus(date) === 'completed'
+                  scheduled: (date) => getDateStatus(date) === 'scheduled' || getDateStatus(date) === 'pending',
+                  completed: (date) => getDateStatus(date) === 'completed',
+                  missed: (date) => getDateStatus(date) === 'missed'
                 }}
                 modifiersStyles={{
                   scheduled: { backgroundColor: '#fef3c7', color: '#92400e' },
-                  completed: { backgroundColor: '#d1fae5', color: '#065f46' }
+                  completed: { backgroundColor: '#d1fae5', color: '#065f46' },
+                  missed: { backgroundColor: '#fee2e2', color: '#991b1b' }
                 }}
               />
             </div>
@@ -163,8 +144,17 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
               
               {selectedDate && getDayProgram(selectedDate) ? (
                 <div className="space-y-3">
-                  <Badge variant={getDayProgram(selectedDate)?.isCompleted ? "default" : "secondary"} className="rounded-none">
-                    {getDayProgram(selectedDate)?.isCompleted ? 'Ολοκληρωμένη' : 'Προγραμματισμένη'}
+                  <Badge 
+                    variant={getDayProgram(selectedDate)?.isCompleted ? "default" : "secondary"} 
+                    className={`rounded-none ${
+                      getDayProgram(selectedDate)?.status === 'completed' ? 'bg-[#00ffba] text-black' :
+                      getDayProgram(selectedDate)?.status === 'missed' ? 'bg-red-500 text-white' :
+                      'bg-blue-500 text-white'
+                    }`}
+                  >
+                    {getDayProgram(selectedDate)?.status === 'completed' ? 'Ολοκληρωμένη' :
+                     getDayProgram(selectedDate)?.status === 'missed' ? 'Χαμένη' :
+                     'Προγραμματισμένη'}
                   </Badge>
                   
                   <div className="bg-gray-50 p-4 rounded-none">
@@ -186,41 +176,24 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
               ) : selectedDate ? (
                 <div className="text-center py-8 text-gray-500">
                   <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                  <p>Δεν υπάρχει προγραμματισμένη προπόνηση</p>
+                  <p>Δεν υπάρχει πρόγραμμα για αυτή την ημέρα</p>
                 </div>
-              ) : (
-                <div className="text-center py-8 text-gray-400">
-                  <p>Επιλέξτε μια ημερομηνία για να δείτε τις προπονήσεις</p>
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <DayProgramDialog
-        isOpen={isDayDialogOpen}
-        onClose={() => setIsDayDialogOpen(false)}
-        program={selectedProgram}
-        selectedDate={selectedDate || null}
-        workoutStatus={workoutStatus}
-        onRefresh={() => {
-          // Refresh completions
-          const fetchCompletions = async () => {
-            if (userPrograms.length === 0) return;
-            
-            try {
-              const allCompletions = await Promise.all(
-                userPrograms.map(program => getWorkoutCompletions(program.id))
-              );
-              setCompletions(allCompletions.flat());
-            } catch (error) {
-              console.error('Error fetching completions:', error);
-            }
-          };
-          fetchCompletions();
-        }}
-      />
+      {selectedProgram && selectedDate && (
+        <DayProgramDialog
+          isOpen={isDayDialogOpen}
+          onClose={() => setIsDayDialogOpen(false)}
+          program={selectedProgram}
+          selectedDate={selectedDate}
+          workoutStatus={workoutStatus}
+          onRefresh={handleRefresh}
+        />
+      )}
     </div>
   );
 };

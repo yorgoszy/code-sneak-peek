@@ -89,72 +89,10 @@ export const useWorkoutState = (
         user_id: program.app_users?.id || program.user_id
       });
 
-      // Βρίσκουμε τη σωστή εβδομάδα και ημέρα
-      const trainingDates = program.training_dates || [];
-      const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
+      // Χρησιμοποιούμε το updateWorkoutStatus που είναι πιο αξιόπιστο
+      await updateWorkoutStatus(program.id, selectedDateStr, 'completed', 'green');
       
-      if (dateIndex === -1) {
-        throw new Error('Training date not found in assignment');
-      }
-
-      // Υπολογίζουμε week_number και day_number
-      const programDays = program.programs?.program_weeks?.[0]?.program_days || [];
-      const daysPerWeek = programDays.length;
-      const weekNumber = Math.floor(dateIndex / daysPerWeek) + 1;
-      const dayNumber = (dateIndex % daysPerWeek) + 1;
-      
-      // Δημιουργούμε ή ενημερώνουμε το workout completion record
-      const { data: existingCompletion, error: fetchError } = await supabase
-        .from('workout_completions')
-        .select('*')
-        .eq('assignment_id', program.id)
-        .eq('scheduled_date', selectedDateStr)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error('❌ Error fetching existing completion:', fetchError);
-        throw fetchError;
-      }
-
-      let result;
-      if (existingCompletion) {
-        // Update existing record with GREEN status color for completed workouts
-        const { data, error } = await supabase
-          .from('workout_completions')
-          .update({
-            status: 'completed',
-            status_color: 'green', // ΚΡΙΤΙΚΟ: Ενημέρωση του status_color σε green
-            completed_date: new Date().toISOString().split('T')[0]
-          })
-          .eq('id', existingCompletion.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        result = data;
-      } else {
-        // Create new record with GREEN status color for completed workouts
-        const { data, error } = await supabase
-          .from('workout_completions')
-          .insert({
-            assignment_id: program.id,
-            user_id: program.app_users?.id || program.user_id,
-            program_id: program.programs?.id || program.program_id,
-            week_number: weekNumber,
-            day_number: dayNumber,
-            scheduled_date: selectedDateStr,
-            status: 'completed',
-            status_color: 'green', // ΚΡΙΤΙΚΟ: Νέα εγγραφή με green status_color
-            completed_date: new Date().toISOString().split('T')[0]
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        result = data;
-      }
-      
-      console.log('✅ Workout completion saved successfully with GREEN color for:', program.app_users?.name, result);
+      console.log('✅ Workout completion updated successfully with GREEN color for:', program.app_users?.name);
       
       // Αφαίρεση από τις ενεργές προπονήσεις
       if (workoutId) {
@@ -178,9 +116,9 @@ export const useWorkoutState = (
       
     } catch (error) {
       console.error('❌ Error completing workout:', error);
-      toast.error(`Σφάλμα κατά την ολοκλήρωση της προπόνησης για ${program.app_users?.name}`);
+      toast.error(`Σφάλμα κατά την ολοκλήρωση της προπόνησης για ${program.app_users?.name}: ${(error as Error).message}`);
     }
-  }, [program, selectedDate, currentWorkout, onRefresh, onClose, removeFromActiveWorkouts, workoutId]);
+  }, [program, selectedDate, currentWorkout, onRefresh, onClose, removeFromActiveWorkouts, workoutId, updateWorkoutStatus]);
 
   const handleCancelWorkout = useCallback(() => {
     if (!program || !selectedDate || !workoutId) return;
