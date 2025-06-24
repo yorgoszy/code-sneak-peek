@@ -21,160 +21,115 @@ serve(async (req) => {
   }
 
   try {
-    const { message, userId, userName } = await req.json();
+    const { message, userId, userName, platformData } = await req.json();
 
     if (!userId) {
       throw new Error('User ID is required');
     }
 
     console.log('🚀 Smart AI Chat request for user:', userId, 'message:', message);
+    console.log('📊 Platform data received:', platformData ? 'Yes' : 'No');
 
-    // Fetch user's exercises from their active programs
-    const { data: userExercisesData, error: userExercisesError } = await supabase
-      .from('program_assignments')
-      .select(`
-        programs!inner(
-          program_weeks(
-            program_days(
-              program_blocks(
-                program_exercises(
-                  exercises(
-                    id,
-                    name,
-                    description,
-                    video_url,
-                    exercise_to_category!inner(
-                      exercise_categories(
-                        name,
-                        type
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      `)
-      .eq('user_id', userId)
-      .eq('status', 'active');
-
-    if (userExercisesError) {
-      console.error('Error fetching user exercises:', userExercisesError);
-    }
-
-    // Extract unique exercises from user's programs
-    const userExercises = new Map();
-    if (userExercisesData) {
-      userExercisesData.forEach(assignment => {
-        assignment.programs?.program_weeks?.forEach(week => {
-          week.program_days?.forEach(day => {
-            day.program_blocks?.forEach(block => {
-              block.program_exercises?.forEach(pe => {
-                if (pe.exercises) {
-                  userExercises.set(pe.exercises.id, pe.exercises);
-                }
+    // Create enhanced context with platform data
+    let enhancedContext = '';
+    
+    if (platformData) {
+      // Process programs data
+      if (platformData.programs && platformData.programs.length > 0) {
+        const programsList = platformData.programs.map(assignment => {
+          const program = assignment.programs;
+          let exercisesList = '';
+          
+          if (program?.program_weeks) {
+            const exercises = new Set();
+            program.program_weeks.forEach(week => {
+              week.program_days?.forEach(day => {
+                day.program_blocks?.forEach(block => {
+                  block.program_exercises?.forEach(pe => {
+                    if (pe.exercises) {
+                      exercises.add(`- Άσκηση: ${pe.exercises.name} (${pe.sets} sets x ${pe.reps} reps${pe.kg ? `, ${pe.kg}kg` : ''})`);
+                    }
+                  });
+                });
               });
             });
-          });
-        });
-      });
-    }
-
-    // Fetch user's recent programs for context
-    const { data: programsData, error: programsError } = await supabase
-      .from('program_assignments')
-      .select(`
-        programs!inner(
-          name,
-          description,
-          program_weeks(
-            program_days(
-              program_blocks(
-                program_exercises(
-                  sets,
-                  reps,
-                  kg,
-                  exercises(name)
-                )
-              )
-            )
-          )
-        )
-      `)
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .limit(3);
-
-    if (programsError) {
-      console.error('Error fetching programs:', programsError);
-    }
-
-    // Create context about user's exercises with video URLs
-    let exerciseContext = '';
-    if (userExercises.size > 0) {
-      const exercisesList = Array.from(userExercises.values()).map(exercise => {
-        const categories = exercise.exercise_to_category?.map((etc: any) => 
-          etc.exercise_categories?.name || ''
-        ).filter(Boolean).join(', ') || '';
+            exercisesList = Array.from(exercises).join('\n');
+          }
+          
+          return `📋 Πρόγραμμα: ${program.name}${program.description ? ` - ${program.description}` : ''}\nΑσκήσεις:\n${exercisesList}`;
+        }).join('\n\n');
         
-        const videoInfo = exercise.video_url ? ` (Video: ${exercise.video_url})` : '';
+        enhancedContext += `\n\n🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΤΟΥ ΧΡΗΣΤΗ:\n${programsList}`;
+      }
+
+      // Process test data
+      if (platformData.tests && platformData.tests.length > 0) {
+        const testsList = platformData.tests.map(testSession => {
+          let testDetails = `📅 Ημερομηνία: ${testSession.test_date}`;
+          
+          if (testSession.anthropometric_test_data && testSession.anthropometric_test_data.length > 0) {
+            const anthro = testSession.anthropometric_test_data[0];
+            testDetails += `\n📏 Σωματομετρικά: Ύψος ${anthro.height}cm, Βάρος ${anthro.weight}kg`;
+            if (anthro.body_fat_percentage) testDetails += `, Λίπος ${anthro.body_fat_percentage}%`;
+          }
+          
+          if (testSession.strength_test_data && testSession.strength_test_data.length > 0) {
+            const strengthTests = testSession.strength_test_data.map(st => 
+              `${st.exercises?.name}: ${st.weight_kg}kg${st.velocity_ms ? ` (${st.velocity_ms}m/s)` : ''}`
+            ).join(', ');
+            testDetails += `\n💪 Δύναμη: ${strengthTests}`;
+          }
+          
+          if (testSession.endurance_test_data && testSession.endurance_test_data.length > 0) {
+            const endurance = testSession.endurance_test_data[0];
+            testDetails += `\n🏃 Αντοχή:`;
+            if (endurance.vo2_max) testDetails += ` VO2 Max ${endurance.vo2_max}`;
+            if (endurance.push_ups) testDetails += `, Push-ups ${endurance.push_ups}`;
+          }
+          
+          return testDetails;
+        }).join('\n\n');
         
-        return `- Άσκηση: ${exercise.name}${categories ? ` (${categories})` : ''}${exercise.description ? `: ${exercise.description}` : ''}${videoInfo}`;
-      }).join('\n');
-      
-      exerciseContext = `\n\nΟι ασκήσεις που έχεις στα προγράμματά σου:\n${exercisesList}`;
+        enhancedContext += `\n\n📊 ΠΡΌΣΦΑΤΑ ΑΠΟΤΕΛΕΣΜΑΤΑ ΤΕΣΤ:\n${testsList}`;
+      }
     }
 
-    // Create context about user's programs
-    let programContext = '';
-    if (programsData && programsData.length > 0) {
-      const programsList = programsData.map(assignment => {
-        const program = assignment.programs;
-        return `- ${program.name}${program.description ? `: ${program.description}` : ''}`;
-      }).join('\n');
-      
-      programContext = `\n\nΤα ενεργά προγράμματά σου:\n${programsList}`;
-    }
+    // Enhanced system prompt with real user data
+    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις ΠΛΗΡΗ πρόσβαση στα πραγματικά δεδομένα του χρήστη από την πλατφόρμα.
 
-    // Enhanced system prompt with user's specific exercises
-    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις πρόσβαση στις ασκήσεις και τα προγράμματα του χρήστη.
+${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 
 Βοηθάς με:
-1. Διατροφικές συμβουλές και σχεδιασμό γευμάτων
-2. Ασκησιολογικές συμβουλές και τεχνικές
-3. Αξιολόγηση αποτελεσμάτων τεστ
-4. Προγραμματισμό προπονήσεων
-5. Αποκατάσταση και πρόληψη τραυματισμών
-6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
+1. Διατροφικές συμβουλές βασισμένες στα τεστ του χρήστη
+2. Ασκησιολογικές συμβουλές για τις συγκεκριμένες ασκήσεις του
+3. Ανάλυση αποτελεσμάτων τεστ και προόδου
+4. Προσαρμογή προγραμμάτων προπόνησης
+5. Εξατομικευμένες συμβουλές βάσει των δεδομένων του
 
-${exerciseContext}${programContext}
+${enhancedContext}
 
-ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ασκήσεις από τις ασκήσεις του χρήστη, γράφε τες ΑΚΡΙΒΩΣ με το format:
+ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ασκήσεις από τα προγράμματα του χρήστη, γράφε τις ΑΚΡΙΒΩΣ με το format:
 "Άσκηση: [Όνομα Άσκησης]"
 
 Παράδειγμα: "Άσκηση: Squat" ή "Άσκηση: Push Up"
 
-Όταν συζητάς για ασκήσεις:
-- Αναφέρου τις ασκήσεις που έχει ο χρήστης στα προγράμματά του
-- Δώσε συγκεκριμένες συμβουλές για τεχνική εκτέλεση
-- Πρότεινε εναλλακτικές από τις ασκήσεις που έχει
-- Εξήγησε τα οφέλη κάθε άσκησης που χρησιμοποιεί
-
-${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
+Όταν συζητάς:
+- Αναφέρου συγκεκριμένα στοιχεία από τα δεδομένα του χρήστη
+- Δώσε εξατομικευμένες συμβουλές βάσει των τεστ του
+- Πρότεινε βελτιώσεις στα προγράμματά του
+- Ανάλυσε την πρόοδό του με βάση τα ιστορικά δεδομένα
 
 Πάντα:
 - Απαντάς στα ελληνικά
-- Δίνεις λεπτομερείς, πρακτικές συμβουλές
-- Αναφέρεις συγκεκριμένες ασκήσεις από τα προγράμματα του χρήστη όταν χρειάζεται
-- Τονίζεις τη σημασία της επαγγελματικής παρακολούθησης
+- Δίνεις συγκεκριμένες, εξατομικευμένες συμβουλές
+- Αναφέρεις τα πραγματικά δεδομένα του χρήστη
 - Είσαι φιλικός και υποστηρικτικός`;
 
     // Try Gemini first
     let aiResponse;
     
     if (geminiApiKey) {
-      console.log('🤖 Trying Gemini AI...');
+      console.log('🤖 Trying Gemini AI with enhanced context...');
       try {
         const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
           method: 'POST',
@@ -199,7 +154,7 @@ ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
         if (geminiResponse.ok) {
           const geminiData = await geminiResponse.json();
           aiResponse = geminiData.candidates[0].content.parts[0].text;
-          console.log('✅ Gemini response generated successfully');
+          console.log('✅ Gemini response with platform data generated successfully');
         } else {
           throw new Error('Gemini API error');
         }
@@ -210,7 +165,7 @@ ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 
     // Fallback to OpenAI if Gemini fails or is not available
     if (!aiResponse && openAIApiKey) {
-      console.log('🤖 Using OpenAI as fallback...');
+      console.log('🤖 Using OpenAI with enhanced context as fallback...');
       
       const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -232,7 +187,7 @@ ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
       if (openAIResponse.ok) {
         const openAIData = await openAIResponse.json();
         aiResponse = openAIData.choices[0].message.content;
-        console.log('✅ OpenAI response generated successfully');
+        console.log('✅ OpenAI response with platform data generated successfully');
       } else {
         throw new Error('OpenAI API error');
       }
