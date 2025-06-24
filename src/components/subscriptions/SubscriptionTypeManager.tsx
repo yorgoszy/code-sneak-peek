@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2 } from "lucide-react";
+import { Plus, Edit2, Trash2 } from "lucide-react";
 
 interface SubscriptionType {
   id: string;
@@ -29,6 +29,8 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<SubscriptionType | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [typeToDelete, setTypeToDelete] = useState<SubscriptionType | null>(null);
   
   // Form states
   const [name, setName] = useState('');
@@ -258,6 +260,47 @@ export const SubscriptionTypeManager: React.FC = () => {
     }
   };
 
+  const handleDeleteClick = (type: SubscriptionType) => {
+    console.log('🗑️ Opening delete confirmation for:', type.name);
+    setTypeToDelete(type);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!isAdmin || !typeToDelete) {
+      toast.error('Δεν έχετε δικαιώματα διαχειριστή');
+      return;
+    }
+
+    try {
+      console.log('🗑️ Deleting subscription type:', typeToDelete.name);
+      
+      const { error } = await supabase
+        .from('subscription_types')
+        .delete()
+        .eq('id', typeToDelete.id);
+
+      if (error) {
+        console.error('❌ Error deleting subscription type:', error);
+        throw error;
+      }
+      
+      console.log('✅ Subscription type deleted successfully');
+      toast.success('Ο τύπος συνδρομής διαγράφηκε επιτυχώς!');
+      
+      setTypeToDelete(null);
+      await loadSubscriptionTypes();
+    } catch (error) {
+      console.error('💥 Error deleting subscription type:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή: ' + (error as Error).message);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setTypeToDelete(null);
+    setDeleteConfirmOpen(false);
+  };
+
   if (roleLoading) {
     return (
       <Card className="rounded-none">
@@ -349,6 +392,14 @@ export const SubscriptionTypeManager: React.FC = () => {
                       className="rounded-none"
                     >
                       <Edit2 className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeleteClick(type)}
+                      className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                     <Button
                       size="sm"
@@ -467,6 +518,17 @@ export const SubscriptionTypeManager: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmation Dialog for Delete */}
+      <ConfirmationDialog
+        isOpen={deleteConfirmOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Διαγραφή Τύπου Συνδρομής"
+        description={`Είστε σίγουροι ότι θέλετε να διαγράψετε τον τύπο συνδρομής "${typeToDelete?.name}"; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.`}
+        confirmText="Διαγραφή"
+        cancelText="Ακύρωση"
+      />
     </Card>
   );
 };
