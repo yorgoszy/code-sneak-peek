@@ -84,7 +84,6 @@ export const SubscriptionManagement: React.FC = () => {
       }
       console.log('✅ Subscription types loaded:', types?.length);
       setSubscriptionTypes(types || []);
-      setFilteredSubscriptionTypes(types || []);
 
       // Φόρτωση συνδρομών χρηστών
       const { data: subscriptions, error: subscriptionsError } = await supabase
@@ -377,29 +376,27 @@ export const SubscriptionManagement: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="user">Επιλογή Χρήστη</Label>
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Αναζήτηση χρήστη..."
-                      value={userSearchTerm}
-                      onChange={(e) => setUserSearchTerm(e.target.value)}
-                      className="pl-10 rounded-none"
-                    />
-                  </div>
-                  <Select value={selectedUser} onValueChange={setSelectedUser}>
-                    <SelectTrigger className="rounded-none">
-                      <SelectValue placeholder="Επιλέξτε χρήστη" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name} ({user.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Αναζήτηση και επιλογή χρήστη..."
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                    className="pl-10 rounded-none"
+                  />
                 </div>
+                <Select value={selectedUser} onValueChange={setSelectedUser}>
+                  <SelectTrigger className="rounded-none mt-2">
+                    <SelectValue placeholder="Επιλέξτε χρήστη" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredUsers.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
