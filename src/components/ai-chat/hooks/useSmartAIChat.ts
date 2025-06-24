@@ -57,7 +57,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     try {
       console.log('🔍 useSmartAIChat: Checking subscription for user:', athleteId);
       
-      // Πρώτα ελέγχουμε αν ο χρήστης είναι admin και τη κατάσταση συνδρομής του
+      // Έλεγχος ΜΟΝΟ του subscription_status στον πίνακα app_users
       const { data: userProfile, error: profileError } = await supabase
         .from('app_users')
         .select('role, subscription_status')
@@ -82,33 +82,13 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
         return;
       }
 
-      // ΜΟΝΟ αν το subscription_status είναι 'active' συνεχίζουμε
-      if (userProfile?.subscription_status !== 'active') {
-        console.log('❌ useSmartAIChat: User subscription_status is not active:', userProfile?.subscription_status);
-        setHasActiveSubscription(false);
-        setIsCheckingSubscription(false);
-        return;
-      }
-
-      // Διπλός έλεγχος με το RPC function
-      const { data: subscriptionStatus, error: subscriptionError } = await supabase.rpc('has_active_subscription', { 
-        user_uuid: athleteId 
-      });
-
-      if (subscriptionError) {
-        console.error('❌ useSmartAIChat: Error checking subscription with RPC:', subscriptionError);
-        setHasActiveSubscription(false);
-      } else {
-        console.log('✅ useSmartAIChat: RPC Subscription status:', subscriptionStatus);
-        
-        // Και οι δύο έλεγχοι πρέπει να επιστρέφουν true
-        const finalStatus = subscriptionStatus === true && userProfile?.subscription_status === 'active';
-        console.log('🎯 useSmartAIChat: Final subscription decision:', finalStatus);
-        setHasActiveSubscription(finalStatus);
-        
-        if (finalStatus) {
-          loadConversationHistory();
-        }
+      // ΜΟΝΟ έλεγχος του subscription_status
+      const hasSubscription = userProfile?.subscription_status === 'active';
+      console.log('🎯 useSmartAIChat: Final subscription decision:', hasSubscription);
+      setHasActiveSubscription(hasSubscription);
+      
+      if (hasSubscription) {
+        loadConversationHistory();
       }
     } catch (error) {
       console.error('💥 useSmartAIChat: Error checking subscription:', error);

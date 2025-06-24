@@ -49,7 +49,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
         return;
       }
 
-      // Έλεγχος αν έχει ενεργή συνδρομή στον πίνακα app_users
+      // Έλεγχος ΜΟΝΟ του subscription_status στον πίνακα app_users
       const { data: userStatus, error: userError } = await supabase
         .from('app_users')
         .select('subscription_status')
@@ -65,29 +65,10 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
 
       console.log('📊 TestsHeader: User subscription status:', userStatus?.subscription_status);
 
-      // ΜΟΝΟ αν το subscription_status είναι 'active' επιτρέπουμε πρόσβαση
-      if (userStatus?.subscription_status !== 'active') {
-        console.log('❌ TestsHeader: User subscription_status is not active:', userStatus?.subscription_status);
-        setHasActiveSubscription(false);
-        setIsCheckingSubscription(false);
-        return;
-      }
-
-      // Διπλός έλεγχος με το RPC function
-      const { data: subscriptionStatus, error: rpcError } = await supabase.rpc('has_active_subscription', { 
-        user_uuid: userProfile.id 
-      });
-
-      if (rpcError) {
-        console.error('❌ TestsHeader: Error checking subscription with RPC:', rpcError);
-        setHasActiveSubscription(false);
-      } else {
-        console.log('✅ TestsHeader: RPC subscription status:', subscriptionStatus);
-        // Και τα δύο πρέπει να είναι true για να επιτρέψουμε πρόσβαση
-        const finalStatus = subscriptionStatus === true && userStatus?.subscription_status === 'active';
-        console.log('🎯 TestsHeader: Final subscription decision:', finalStatus);
-        setHasActiveSubscription(finalStatus);
-      }
+      // ΜΟΝΟ έλεγχος του subscription_status
+      const hasSubscription = userStatus?.subscription_status === 'active';
+      console.log('🎯 TestsHeader: Final subscription decision:', hasSubscription);
+      setHasActiveSubscription(hasSubscription);
     } catch (error) {
       console.error('💥 TestsHeader: Error checking subscription:', error);
       setHasActiveSubscription(false);
