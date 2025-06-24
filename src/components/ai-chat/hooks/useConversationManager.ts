@@ -100,5 +100,5 @@ export const useConversationManager = ({
     setMessages([createWelcomeMessage(userName)]);
   };
 
-  return { messages, isLoadingHistory, clearConversation, setMessages };
+  return { messages, isLoadingHistory, setMessages, clearConversation };
 };

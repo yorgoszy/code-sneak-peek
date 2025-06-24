@@ -20,6 +20,7 @@ export interface SubscriptionStatus {
 export interface ConversationState {
   messages: Message[];
   isLoadingHistory: boolean;
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
 export interface MessageHandlers {
