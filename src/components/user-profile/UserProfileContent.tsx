@@ -4,6 +4,7 @@ import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
 import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
 import { UserProfileCalendar } from "./UserProfileCalendar";
+import { UserProfileProgramCards } from "./UserProfileProgramCards";
 import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
 import { TrainingAnalytics } from "./TrainingAnalytics";
@@ -63,7 +64,7 @@ export const UserProfileContent = ({
                 RID AI Προπονητής
               </Button>
             </div>
-            <UserProfileDailyProgram userProfile={userProfile} />
+            <UserProfileProgramCards userProfile={userProfile} />
           </div>
         );
       case "calendar":
