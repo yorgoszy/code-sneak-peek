@@ -39,6 +39,7 @@ serve(async (req) => {
         id,
         name,
         description,
+        video_url,
         exercise_to_category!inner(
           exercise_categories(
             name,
@@ -80,7 +81,7 @@ serve(async (req) => {
       console.error('Error fetching programs:', programsError);
     }
 
-    // Create context about available exercises
+    // Create context about available exercises with video URLs
     let exerciseContext = '';
     if (exercisesData && exercisesData.length > 0) {
       const exercisesList = exercisesData.map(exercise => {
@@ -88,7 +89,9 @@ serve(async (req) => {
           etc.exercise_categories?.name || ''
         ).filter(Boolean).join(', ') || '';
         
-        return `- ${exercise.name}${categories ? ` (${categories})` : ''}${exercise.description ? `: ${exercise.description}` : ''}`;
+        const videoInfo = exercise.video_url ? ` (Video: ${exercise.video_url})` : '';
+        
+        return `- Άσκηση: ${exercise.name}${categories ? ` (${categories})` : ''}${exercise.description ? `: ${exercise.description}` : ''}${videoInfo}`;
       }).join('\n');
       
       exerciseContext = `\n\nΔιαθέσιμες ασκήσεις στη βάση δεδομένων:\n${exercisesList}`;
@@ -117,6 +120,11 @@ serve(async (req) => {
 6. Συμβουλές για συγκεκριμένες ασκήσεις από τη βάση δεδομένων
 
 ${exerciseContext}${programContext}
+
+ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ασκήσεις από τη βάση δεδομένων, γράφε τες ΑΚΡΙΒΩΣ με το format:
+"Άσκηση: [Όνομα Άσκησης]"
+
+Παράδειγμα: "Άσκηση: Squat" ή "Άσκηση: Push Up"
 
 Όταν συζητάς για ασκήσεις:
 - Αναφέρου τις διαθέσιμες ασκήσεις από τη βάση όταν είναι σχετικό

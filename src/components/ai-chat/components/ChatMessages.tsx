@@ -2,6 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, User, Loader2 } from "lucide-react";
+import { useExerciseRenderer } from '../hooks/useExerciseRenderer';
 
 interface Message {
   id: string;
@@ -27,6 +28,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   isMobile = false,
   messagesEndRef
 }) => {
+  const { renderExercisesInText, ExerciseVideoDialogComponent } = useExerciseRenderer();
+
   const getUserInitials = (name?: string) => {
     if (!name) return 'U';
     return name
@@ -37,62 +40,86 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       .slice(0, 2);
   };
 
+  const renderMessageContent = (content: string, role: string) => {
+    if (role === 'assistant') {
+      const renderedContent = renderExercisesInText(content);
+      if (Array.isArray(renderedContent)) {
+        return (
+          <div className="text-sm whitespace-pre-wrap">
+            {renderedContent.map((part, index) => 
+              typeof part === 'string' ? (
+                <span key={index}>{part}</span>
+              ) : (
+                <React.Fragment key={index}>{part}</React.Fragment>
+              )
+            )}
+          </div>
+        );
+      }
+    }
+    return <p className="text-sm whitespace-pre-wrap">{content}</p>;
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto p-4 border rounded-none">
-      <div className="space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div className="flex-shrink-0">
-                {message.role === 'user' ? (
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={userPhotoUrl} alt={userName || 'User'} />
-                    <AvatarFallback className="bg-blue-500 text-white text-xs">
-                      {getUserInitials(userName)}
-                    </AvatarFallback>
-                  </Avatar>
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-                    <Bot className="w-4 h-4" />
-                  </div>
-                )}
-              </div>
-              <div className={`p-3 rounded-lg ${
-                message.role === 'user'
-                  ? 'bg-blue-500 text-white rounded-br-none'
-                  : 'bg-gray-100 text-gray-900 rounded-bl-none'
-              }`}>
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                <p className="text-xs opacity-70 mt-1">
-                  {message.timestamp.toLocaleTimeString('el-GR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-        
-        {isLoading && (
-          <div className="flex gap-3 justify-start">
-            <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
-              <Bot className="w-4 h-4" />
-            </div>
-            <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
-              <div className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">Σκέφτομαι...</span>
+    <>
+      <div className="flex-1 overflow-y-auto p-4 border rounded-none">
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className="flex-shrink-0">
+                  {message.role === 'user' ? (
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={userPhotoUrl} alt={userName || 'User'} />
+                      <AvatarFallback className="bg-blue-500 text-white text-xs">
+                        {getUserInitials(userName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                      <Bot className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
+                <div className={`p-3 rounded-lg ${
+                  message.role === 'user'
+                    ? 'bg-blue-500 text-white rounded-br-none'
+                    : 'bg-gray-100 text-gray-900 rounded-bl-none'
+                }`}>
+                  {renderMessageContent(message.content, message.role)}
+                  <p className="text-xs opacity-70 mt-1">
+                    {message.timestamp.toLocaleTimeString('el-GR', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
+          ))}
+          
+          {isLoading && (
+            <div className="flex gap-3 justify-start">
+              <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                <Bot className="w-4 h-4" />
+              </div>
+              <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Σκέφτομαι...</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
       </div>
-    </div>
+      
+      <ExerciseVideoDialogComponent />
+    </>
   );
 };
