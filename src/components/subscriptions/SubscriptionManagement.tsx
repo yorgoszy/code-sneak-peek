@@ -187,11 +187,25 @@ export const SubscriptionManagement: React.FC = () => {
   const handleUserInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setUserSearchTerm(value);
-    setShowUserDropdown(true);
+    setShowUserDropdown(value.length > 0); // Show only when typing
     
     // Clear selection if user is typing
     if (selectedUser && value !== users.find(u => u.id === selectedUser)?.name + ` (${users.find(u => u.id === selectedUser)?.email})`) {
       setSelectedUser('');
+    }
+  };
+
+  const handleChevronClick = () => {
+    setShowUserDropdown(!showUserDropdown);
+    if (!showUserDropdown) {
+      // Show all users when clicking chevron
+      setFilteredUsers(users);
+    }
+  };
+
+  const handleInputFocus = () => {
+    if (userSearchTerm.length > 0) {
+      setShowUserDropdown(true);
     }
   };
 
@@ -402,10 +416,13 @@ export const SubscriptionManagement: React.FC = () => {
                     placeholder="Πληκτρολογήστε όνομα ή email χρήστη..."
                     value={userSearchTerm}
                     onChange={handleUserInputChange}
-                    onFocus={() => setShowUserDropdown(true)}
+                    onFocus={handleInputFocus}
                     className="pl-10 pr-10 rounded-none"
                   />
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <ChevronDown 
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 cursor-pointer hover:text-gray-600" 
+                    onClick={handleChevronClick}
+                  />
                   
                   {showUserDropdown && filteredUsers.length > 0 && (
                     <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-60 overflow-y-auto">
