@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
 import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
+import { UserProfileCalendar } from "./UserProfileCalendar";
 import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
 import { TrainingAnalytics } from "./TrainingAnalytics";
@@ -63,6 +64,22 @@ export const UserProfileContent = ({
               </Button>
             </div>
             <UserProfileDailyProgram userProfile={userProfile} />
+          </div>
+        );
+      case "calendar":
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Ημερολόγιο</h2>
+              <Button
+                onClick={() => setIsAIChatOpen(true)}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                RID AI Προπονητής
+              </Button>
+            </div>
+            <UserProfileCalendar user={userProfile} />
           </div>
         );
       case "tests":
