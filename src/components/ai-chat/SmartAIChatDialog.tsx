@@ -43,10 +43,14 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading || !hasActiveSubscription) {
-      if (!hasActiveSubscription) {
-        toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
-      }
+    if (!input.trim() || isLoading) {
+      return;
+    }
+
+    // Αυστηρός έλεγχος συνδρομής
+    if (!hasActiveSubscription) {
+      console.log('❌ SmartAIChatDialog: No active subscription - blocking message');
+      toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
       return;
     }
 
@@ -61,6 +65,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
       if (hasActiveSubscription) {
         handleSendMessage();
       } else {
+        console.log('❌ SmartAIChatDialog: Key press blocked - no active subscription');
         toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
       }
     }

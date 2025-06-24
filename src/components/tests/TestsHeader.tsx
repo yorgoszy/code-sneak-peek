@@ -31,6 +31,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
 
   const checkSubscriptionStatus = async () => {
     if (!userProfile?.id) {
+      console.log('❌ No userProfile.id found');
       setHasActiveSubscription(false);
       setIsCheckingSubscription(false);
       return;
@@ -38,11 +39,11 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     
     setIsCheckingSubscription(true);
     try {
-      console.log('🔍 Checking subscription for user:', userProfile.id);
+      console.log('🔍 TestsHeader: Checking subscription for user:', userProfile.id);
       
       // Αν είναι admin, δίνουμε πρόσβαση
       if (isAdmin()) {
-        console.log('✅ Admin user detected - access granted');
+        console.log('✅ TestsHeader: Admin user detected - access granted');
         setHasActiveSubscription(true);
         setIsCheckingSubscription(false);
         return;
@@ -56,16 +57,17 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
         .single();
 
       if (userError) {
-        console.error('❌ Error fetching user status:', userError);
+        console.error('❌ TestsHeader: Error fetching user status:', userError);
         setHasActiveSubscription(false);
         setIsCheckingSubscription(false);
         return;
       }
 
-      console.log('📊 User subscription status:', userStatus?.subscription_status);
+      console.log('📊 TestsHeader: User subscription status:', userStatus?.subscription_status);
 
+      // ΜΟΝΟ αν το subscription_status είναι 'active' επιτρέπουμε πρόσβαση
       if (userStatus?.subscription_status !== 'active') {
-        console.log('❌ User does not have active subscription');
+        console.log('❌ TestsHeader: User subscription_status is NOT active:', userStatus?.subscription_status);
         setHasActiveSubscription(false);
         setIsCheckingSubscription(false);
         return;
@@ -77,14 +79,17 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
       });
 
       if (rpcError) {
-        console.error('❌ Error checking subscription with RPC:', rpcError);
+        console.error('❌ TestsHeader: Error checking subscription with RPC:', rpcError);
         setHasActiveSubscription(false);
       } else {
-        console.log('✅ Final subscription status:', subscriptionStatus);
-        setHasActiveSubscription(subscriptionStatus);
+        console.log('✅ TestsHeader: RPC subscription status:', subscriptionStatus);
+        // Και τα δύο πρέπει να είναι true για να επιτρέψουμε πρόσβαση
+        const finalStatus = subscriptionStatus === true && userStatus?.subscription_status === 'active';
+        console.log('🎯 TestsHeader: Final subscription decision:', finalStatus);
+        setHasActiveSubscription(finalStatus);
       }
     } catch (error) {
-      console.error('💥 Error checking subscription:', error);
+      console.error('💥 TestsHeader: Error checking subscription:', error);
       setHasActiveSubscription(false);
     } finally {
       setIsCheckingSubscription(false);
@@ -92,16 +97,25 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
   };
 
   const handleAIChatClick = () => {
+    console.log('🔄 TestsHeader: AI Chat button clicked. Current state:', {
+      isCheckingSubscription,
+      hasActiveSubscription,
+      userProfileId: userProfile?.id,
+      isAdmin: isAdmin()
+    });
+
     if (isCheckingSubscription) {
       toast.info('Ελέγχω τη συνδρομή σου...');
       return;
     }
 
-    if (!hasActiveSubscription) {
+    if (!hasActiveSubscription && !isAdmin()) {
+      console.log('❌ TestsHeader: Access denied - no active subscription and not admin');
       toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
       return;
     }
 
+    console.log('✅ TestsHeader: Access granted - opening AI chat');
     setIsAIChatOpen(true);
   };
 
@@ -119,20 +133,20 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
             <Button
               onClick={handleAIChatClick}
               className={`rounded-none flex items-center gap-2 ${
-                hasActiveSubscription 
+                hasActiveSubscription || isAdmin()
                   ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
-              disabled={isCheckingSubscription || !hasActiveSubscription}
+              disabled={isCheckingSubscription || (!hasActiveSubscription && !isAdmin())}
             >
-              {hasActiveSubscription ? (
+              {hasActiveSubscription || isAdmin() ? (
                 <Bot className="w-4 h-4" />
               ) : (
                 <Crown className="w-4 h-4" />
               )}
               {isCheckingSubscription 
                 ? 'Έλεγχος...' 
-                : hasActiveSubscription 
+                : hasActiveSubscription || isAdmin()
                   ? 'AI Βοηθός' 
                   : 'AI Βοηθός (Απαιτείται Συνδρομή)'
               }
