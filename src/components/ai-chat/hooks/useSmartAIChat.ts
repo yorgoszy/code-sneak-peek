@@ -106,7 +106,7 @@ export const useSmartAIChat = ({ isOpen, athleteId, athleteName }: UseSmartAICha
     
     setIsLoadingHistory(true);
     try {
-      console.log('📚 useSmartAIChat: Loading conversation history for:', athleteId);
+      console.log('📚 useSmartAIChat: Loading conversation history for user:', athleteId);
       
       const { data: history, error } = await supabase
         .from('ai_conversations')

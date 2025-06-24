@@ -31,7 +31,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
 
   const checkSubscriptionStatus = async () => {
     if (!selectedAthleteId) {
-      console.log('❌ No selectedAthleteId found');
+      console.log('❌ No selectedUserId found');
       setHasActiveSubscription(false);
       setIsCheckingSubscription(false);
       return;
@@ -39,7 +39,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     
     setIsCheckingSubscription(true);
     try {
-      console.log('🔍 TestsHeader: Checking subscription for athlete:', selectedAthleteId);
+      console.log('🔍 TestsHeader: Checking subscription for user:', selectedAthleteId);
       
       // Αν είναι admin, δίνουμε πρόσβαση
       if (isAdmin()) {
@@ -81,7 +81,7 @@ export const TestsHeader: React.FC<TestsHeaderProps> = ({
     console.log('🔄 TestsHeader: AI Chat button clicked. Current state:', {
       isCheckingSubscription,
       hasActiveSubscription,
-      selectedAthleteId,
+      selectedUserId: selectedAthleteId,
       isAdmin: isAdmin()
     });
 
