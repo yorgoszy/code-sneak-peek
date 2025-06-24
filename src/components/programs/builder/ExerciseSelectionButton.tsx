@@ -25,11 +25,11 @@ export const ExerciseSelectionButton: React.FC<ExerciseSelectionButtonProps> = (
   const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
 
   return (
-    <div className="p-2 border-b bg-gray-50 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
+    <div className="p-2 border-b bg-gray-100 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
       <Button
         variant="outline"
         size="sm"
-        className="flex-1 text-sm h-6 justify-start px-2"
+        className="flex-1 text-sm h-6 justify-start px-2 bg-gray-200 hover:bg-gray-300"
         style={{ borderRadius: '0px', fontSize: '12px' }}
         onClick={onSelectExercise}
       >
