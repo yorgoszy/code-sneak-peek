@@ -1,29 +1,40 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-
-interface Message {
-  id: string;
-  content: string;
-  role: 'user' | 'assistant';
-  timestamp: Date;
-}
-
-interface UseSmartAIChatProps {
-  isOpen: boolean;
-  userId?: string;
-  userName?: string;
-}
+import { useSubscriptionChecker } from './useSubscriptionChecker';
+import { useConversationManager } from './useConversationManager';
+import { useMessageSender } from './useMessageSender';
+import type { UseSmartAIChatProps } from './types';
 
 export const useSmartAIChat = ({ isOpen, userId, userName }: UseSmartAIChatProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [isCheckingSubscription, setIsCheckingSubscription] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { hasActiveSubscription, isCheckingSubscription } = useSubscriptionChecker({
+    isOpen,
+    userId
+  });
+
+  const { 
+    messages, 
+    isLoadingHistory, 
+    clearConversation, 
+    setMessages 
+  } = useConversationManager({
+    userId,
+    userName,
+    hasActiveSubscription
+  });
+
+  const { sendMessage: handleSendMessage, isLoading } = useMessageSender({
+    userId,
+    hasActiveSubscription,
+    setMessages,
+    checkSubscriptionStatus: async () => {
+      // This would need to be implemented if we need to re-check subscription
+      // For now, we'll rely on the subscription checker hook
+    }
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ 
@@ -39,236 +50,8 @@ export const useSmartAIChat = ({ isOpen, userId, userName }: UseSmartAIChatProps
     return () => clearTimeout(timer);
   }, [messages]);
 
-  useEffect(() => {
-    if (isOpen && userId) {
-      checkSubscriptionStatus();
-    }
-  }, [isOpen, userId]);
-
-  const checkSubscriptionStatus = async () => {
-    if (!userId) {
-      console.log('❌ useSmartAIChat: No userId provided');
-      setHasActiveSubscription(false);
-      setIsCheckingSubscription(false);
-      return;
-    }
-    
-    setIsCheckingSubscription(true);
-    try {
-      console.log('🔍 useSmartAIChat: Checking subscription for user:', userId);
-      
-      // Έλεγχος του subscription_status για τον συγκεκριμένο χρήστη
-      const { data: userProfile, error: profileError } = await supabase
-        .from('app_users')
-        .select('role, subscription_status')
-        .eq('id', userId)  // Ελέγχουμε τον συγκεκριμένο χρήστη
-        .single();
-
-      if (profileError) {
-        console.error('❌ useSmartAIChat: Error fetching user profile:', profileError);
-        setHasActiveSubscription(false);
-        setIsCheckingSubscription(false);
-        return;
-      }
-
-      console.log('📊 useSmartAIChat: User profile:', userProfile);
-
-      // Αν είναι admin, δίνουμε πρόσβαση
-      if (userProfile?.role === 'admin') {
-        console.log('✅ useSmartAIChat: Admin user detected - access granted');
-        setHasActiveSubscription(true);
-        setIsCheckingSubscription(false);
-        loadConversationHistory();
-        return;
-      }
-
-      // Έλεγχος του subscription_status για τον συγκεκριμένο χρήστη
-      const hasSubscription = userProfile?.subscription_status === 'active';
-      console.log('🎯 useSmartAIChat: Final subscription decision:', hasSubscription);
-      setHasActiveSubscription(hasSubscription);
-      
-      if (hasSubscription) {
-        loadConversationHistory();
-      }
-    } catch (error) {
-      console.error('💥 useSmartAIChat: Error checking subscription:', error);
-      setHasActiveSubscription(false);
-    } finally {
-      setIsCheckingSubscription(false);
-    }
-  };
-
-  const loadConversationHistory = async () => {
-    if (!userId) {
-      console.log('❌ useSmartAIChat: Cannot load history - no userId');
-      return;
-    }
-    
-    setIsLoadingHistory(true);
-    try {
-      console.log('📚 useSmartAIChat: Loading conversation history for user:', userId);
-      
-      const { data: history, error } = await supabase
-        .from('ai_conversations')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true })
-        .limit(20);
-
-      if (error) throw error;
-
-      if (history && history.length > 0) {
-        const formattedMessages: Message[] = history.map((msg: any) => ({
-          id: msg.id,
-          content: msg.content,
-          role: msg.message_type as 'user' | 'assistant',
-          timestamp: new Date(msg.created_at)
-        }));
-        setMessages(formattedMessages);
-        console.log('✅ useSmartAIChat: Loaded', formattedMessages.length, 'messages from history');
-      } else {
-        setMessages([{
-          id: 'welcome',
-          content: `Γεια σου ${userName}! 👋
-
-Είμαι ο **RID**, ο προσωπικός σου AI προπονητής! 🤖
-
-Έχω πρόσβαση στα βασικά σου δεδομένα:
-
-📊 **Σωματομετρικά στοιχεία**
-💪 **Τεστ δύναμης και προόδους** 
-🏃 **Προγράμματα προπονήσεων**
-🍎 **Διατροφικές συμβουλές**
-🎯 **Στόχους και προτιμήσεις**
-
-Μπορώ να:
-• Υπολογίσω τις θερμίδες που έκαψες σήμερα
-• Προτείνω διατροφή βάσει των στόχων σου
-• Αναλύσω την πρόοδό σου στα τεστ
-• Δώσω συμβουλές για την προπόνησή σου
-• Θυμάμαι τις προηγούμενες συζητήσεις μας
-
-**Μαθαίνω από κάθε συνομιλία μας!** 🧠
-
-Τι θα θέλες να μάθεις σήμερα;`,
-          role: 'assistant',
-          timestamp: new Date()
-        }]);
-      }
-    } catch (error) {
-      console.error('❌ useSmartAIChat: Error loading conversation history:', error);
-      toast.error('Σφάλμα κατά τη φόρτωση του ιστορικού');
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  };
-
   const sendMessage = async (userMessage: string) => {
-    if (!userMessage.trim() || isLoading || !userId) return;
-
-    // Αυστηρός έλεγχος συνδρομής πριν από κάθε μήνυμα
-    if (!hasActiveSubscription) {
-      console.log('❌ useSmartAIChat: No active subscription - blocking message');
-      toast.error('Απαιτείται ενεργή συνδρομή για να χρησιμοποιήσεις το RID AI');
-      
-      // Επανέλεγχος συνδρομής
-      await checkSubscriptionStatus();
-      return;
-    }
-
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      content: userMessage,
-      role: 'user',
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    setIsLoading(true);
-
-    try {
-      console.log('🤖 useSmartAIChat: Calling RID AI for user:', userId, 'Message:', userMessage);
-      
-      const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
-        body: {
-          message: userMessage,
-          userId: userId
-        }
-      });
-
-      if (error) {
-        console.error('❌ useSmartAIChat: RID AI Error:', error);
-        
-        // Αν το error είναι για συνδρομή, ενημερώνουμε την κατάσταση
-        if (error.message?.includes('No active subscription') || error.message?.includes('subscription')) {
-          setHasActiveSubscription(false);
-          toast.error('Η συνδρομή σου έχει λήξει. Επικοινώνησε με τον διαχειριστή.');
-          return;
-        }
-        
-        throw error;
-      }
-
-      console.log('✅ useSmartAIChat: RID AI Response received:', data);
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.response,
-        role: 'assistant',
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('💥 useSmartAIChat: RID AI Error:', error);
-      toast.error('Σφάλμα στον RID AI βοηθό');
-      
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: 'Λυπάμαι, αντιμετωπίζω τεχνικά προβλήματα. Παρακαλώ δοκιμάστε ξανά σε λίγο.',
-        role: 'assistant',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const clearConversation = () => {
-    if (!hasActiveSubscription) {
-      toast.error('Απαιτείται ενεργή συνδρομή για αυτή την ενέργεια');
-      return;
-    }
-
-    setMessages([{
-      id: 'welcome',
-      content: `Γεια σου ${userName}! 👋
-
-Είμαι ο **RID**, ο προσωπικός σου AI προπονητής! 🤖
-
-Έχω πρόσβαση στα βασικά σου δεδομένα:
-
-📊 **Σωματομετρικά στοιχεία**
-💪 **Τεστ δύναμης και προόδους** 
-🏃 **Προγράμματα προπονήσεων**
-🍎 **Διατροφικές συμβουλές**
-🎯 **Στόχους και προτιμήσεις**
-
-Μπορώ να:
-• Υπολογίσω τις θερμίδες που έκαψες σήμερα
-• Προτείνω διατροφή βάσει των στόχων σου
-• Αναλύσω την πρόοδό σου στα τεστ
-• Δώσω συμβουλές για την προπόνησή σου
-• Θυμάμαι τις προηγούμενες συζητήσεις μας
-
-**Μαθαίνω από κάθε συνομιλία μας!** 🧠
-
-Τι θα θέλες να μάθεις σήμερα;`,
-      role: 'assistant',
-      timestamp: new Date()
-    }]);
+    await handleSendMessage(userMessage);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
