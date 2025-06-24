@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Edit2 } from "lucide-react";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface SubscriptionType {
   id: string;
@@ -23,7 +22,8 @@ interface SubscriptionType {
 }
 
 export const SubscriptionTypeManager: React.FC = () => {
-  const { isAdmin, loading: roleLoading } = useRoleCheck();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [roleLoading, setRoleLoading] = useState(true);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -38,18 +38,54 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [features, setFeatures] = useState('');
 
   useEffect(() => {
-    if (!roleLoading) {
+    checkUserRole();
+  }, []);
+
+  useEffect(() => {
+    if (!roleLoading && isAdmin) {
       loadSubscriptionTypes();
+    } else if (!roleLoading) {
+      setLoading(false);
     }
-  }, [roleLoading]);
+  }, [roleLoading, isAdmin]);
+
+  const checkUserRole = async () => {
+    try {
+      console.log('🔍 Checking user role...');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log('❌ No authenticated user found');
+        setIsAdmin(false);
+        setRoleLoading(false);
+        return;
+      }
+
+      console.log('👤 Authenticated user:', user.id);
+
+      // Check if user is admin in app_users table
+      const { data: appUser, error } = await supabase
+        .from('app_users')
+        .select('role')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('❌ Error checking user role:', error);
+        setIsAdmin(false);
+      } else {
+        console.log('✅ User role:', appUser?.role);
+        setIsAdmin(appUser?.role === 'admin');
+      }
+    } catch (error) {
+      console.error('💥 Error in checkUserRole:', error);
+      setIsAdmin(false);
+    } finally {
+      setRoleLoading(false);
+    }
+  };
 
   const loadSubscriptionTypes = async () => {
-    if (!isAdmin) {
-      console.log('⚠️ Not an admin, cannot load subscription types');
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     try {
       console.log('🔄 Loading subscription types...');
