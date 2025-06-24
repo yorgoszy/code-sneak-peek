@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2 } from "lucide-react";
+import { Plus, Edit2, Trash2, Search } from "lucide-react";
 
 interface SubscriptionType {
   id: string;
@@ -25,12 +25,14 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [roleLoading, setRoleLoading] = useState(true);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
+  const [filteredSubscriptionTypes, setFilteredSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<SubscriptionType | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [typeToDelete, setTypeToDelete] = useState<SubscriptionType | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Form states
   const [name, setName] = useState('');
@@ -50,6 +52,18 @@ export const SubscriptionTypeManager: React.FC = () => {
       setLoading(false);
     }
   }, [roleLoading, isAdmin]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredSubscriptionTypes(subscriptionTypes);
+    } else {
+      const filtered = subscriptionTypes.filter(type =>
+        type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (type.description && type.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      setFilteredSubscriptionTypes(filtered);
+    }
+  }, [searchTerm, subscriptionTypes]);
 
   const checkUserRole = async () => {
     try {
@@ -103,6 +117,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       
       console.log('✅ Loaded subscription types:', data);
       setSubscriptionTypes(data || []);
+      setFilteredSubscriptionTypes(data || []);
     } catch (error) {
       console.error('💥 Error loading subscription types:', error);
       toast.error('Σφάλμα κατά τη φόρτωση των τύπων συνδρομών');
@@ -356,14 +371,33 @@ export const SubscriptionTypeManager: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Search Bar */}
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Αναζήτηση τύπων συνδρομών..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-none"
+            />
+          </div>
+        </div>
+
         <div className="space-y-4">
-          {subscriptionTypes.length === 0 ? (
+          {filteredSubscriptionTypes.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <p>Δεν υπάρχουν τύποι συνδρομών</p>
-              <p className="text-sm">Κάντε κλικ στο κουμπί "Νέος Τύπος" για να δημιουργήσετε έναν</p>
+              {searchTerm ? (
+                <p>Δεν βρέθηκαν τύποι συνδρομών που να ταιριάζουν με "{searchTerm}"</p>
+              ) : subscriptionTypes.length === 0 ? (
+                <>
+                  <p>Δεν υπάρχουν τύποι συνδρομών</p>
+                  <p className="text-sm">Κάντε κλικ στο κουμπί "Νέος Τύπος" για να δημιουργήσετε έναν</p>
+                </>
+              ) : null}
             </div>
           ) : (
-            subscriptionTypes.map((type) => (
+            filteredSubscriptionTypes.map((type) => (
               <div key={type.id} className="border rounded-none p-4 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
