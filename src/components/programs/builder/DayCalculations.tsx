@@ -2,77 +2,12 @@
 import React from 'react';
 import { Clock, Dumbbell, TrendingUp, Zap } from 'lucide-react';
 import { Exercise, Block } from '../types';
+import { parseRepsToTime, parseTempoToSeconds, parseRestTime, parseNumberWithComma } from '@/utils/timeCalculations';
 
 interface DayCalculationsProps {
   blocks: Block[];
   exercises: Exercise[];
 }
-
-const parseTempoToSeconds = (tempo: string): number => {
-  if (!tempo || tempo.trim() === '') {
-    return 3; // Default tempo
-  }
-  
-  // Split by '.' and sum all numbers
-  const parts = tempo.split('.');
-  let totalSeconds = 0;
-  
-  parts.forEach(part => {
-    if (part === 'x' || part === 'X') {
-      totalSeconds += 0.5;
-    } else {
-      totalSeconds += parseFloat(part) || 0;
-    }
-  });
-  
-  return totalSeconds;
-};
-
-const parseRepsToTotal = (reps: string): number => {
-  if (!reps) return 0;
-  
-  // If no dots, it's a simple number
-  if (!reps.includes('.')) {
-    return parseInt(reps) || 0;
-  }
-  
-  // Split by '.' and sum all numbers
-  const parts = reps.split('.');
-  let totalReps = 0;
-  
-  parts.forEach(part => {
-    totalReps += parseInt(part) || 0;
-  });
-  
-  return totalReps;
-};
-
-const parseRestTime = (rest: string): number => {
-  if (!rest) return 0;
-  
-  // Handle formats like "2'", "1:30", "90s", "2"
-  if (rest.includes(':')) {
-    const [minutes, seconds] = rest.split(':');
-    return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
-  } else if (rest.includes("'")) {
-    return (parseFloat(rest.replace("'", "")) || 0) * 60; // Convert minutes to seconds
-  } else if (rest.includes('s')) {
-    return parseFloat(rest.replace('s', '')) || 0;
-  } else {
-    const minutes = parseFloat(rest) || 0;
-    return minutes * 60; // Convert minutes to seconds
-  }
-};
-
-// Helper function to parse strings with comma as decimal separator
-const parseNumberWithComma = (value: string | number): number => {
-  if (typeof value === 'number') return value;
-  if (!value || value === '') return 0;
-  
-  // Replace comma with dot for proper parsing
-  const normalizedValue = value.toString().replace(',', '.');
-  return parseFloat(normalizedValue) || 0;
-};
 
 export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exercises }) => {
   const calculateDayMetrics = () => {
@@ -86,12 +21,38 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
       block.program_exercises.forEach(exercise => {
         if (exercise.exercise_id) {
           const sets = exercise.sets || 0;
-          const reps = parseRepsToTotal(exercise.reps);
+          const repsData = parseRepsToTime(exercise.reps);
           const kg = parseNumberWithComma(exercise.kg || '0');
 
-          // Volume calculation (sets × reps × kg) in kg
-          const volumeKg = sets * reps * kg;
-          totalVolume += volumeKg;
+          if (repsData.isTime) {
+            // Αν το reps είναι χρόνος, προσθέτουμε τον χρόνο απευθείας
+            // Time calculation for time-based reps: sets × time_per_set + (sets - 1) × rest
+            const workTime = sets * repsData.seconds;
+            const restSeconds = parseRestTime(exercise.rest || '');
+            const totalRestTime = (sets - 1) * restSeconds;
+            totalTimeSeconds += workTime + totalRestTime;
+            
+            // Δεν υπολογίζουμε όγκο για χρονικές ασκήσεις
+          } else {
+            // Κανονική άσκηση με επαναλήψεις
+            const reps = repsData.count;
+            
+            // Volume calculation (sets × reps × kg) in kg
+            const volumeKg = sets * reps * kg;
+            totalVolume += volumeKg;
+
+            // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
+            const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
+            const restSeconds = parseRestTime(exercise.rest || '');
+            
+            // Work time: sets × reps × tempo (in seconds)
+            const workTime = sets * reps * tempoSeconds;
+            
+            // Rest time: (sets - 1) × rest time between sets
+            const totalRestTime = (sets - 1) * restSeconds;
+            
+            totalTimeSeconds += workTime + totalRestTime;
+          }
 
           // Intensity calculation - μέσος όρος όλων των εντάσεων
           const intensity = parseNumberWithComma(exercise.percentage_1rm || '0');
@@ -100,28 +61,16 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
             intensityCount++;
           }
 
-          // Watts calculation - Force × Velocity
+          // Watts calculation - Force × Velocity (μόνο για ασκήσεις με βάρος)
           const velocity = parseNumberWithComma(exercise.velocity_ms || '0');
-          if (kg > 0 && velocity > 0) {
+          if (kg > 0 && velocity > 0 && !repsData.isTime) {
             // Force = mass × acceleration (9.81 m/s²)
             const force = kg * 9.81; // in Newtons
             // Power = Force × Velocity
             const watts = force * velocity;
             // Συνολική ισχύς για όλα τα sets και reps
-            totalWatts += watts * sets * reps;
+            totalWatts += watts * sets * repsData.count;
           }
-
-          // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
-          const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
-          const restSeconds = parseRestTime(exercise.rest || '');
-          
-          // Work time: sets × reps × tempo (in seconds)
-          const workTime = sets * reps * tempoSeconds;
-          
-          // Rest time: (sets - 1) × rest time between sets
-          const totalRestTime = (sets - 1) * restSeconds;
-          
-          totalTimeSeconds += workTime + totalRestTime;
         }
       });
     });

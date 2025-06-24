@@ -1,4 +1,6 @@
 
+import { parseRepsToTime, parseTempoToSeconds, parseRestTime, parseNumberWithComma } from '@/utils/timeCalculations';
+
 export const calculateDayMetrics = (blocks: any[]) => {
   let totalVolume = 0;
   let totalTimeMinutes = 0;
@@ -8,19 +10,31 @@ export const calculateDayMetrics = (blocks: any[]) => {
       if (!exercise.exercise_id) return;
 
       const sets = exercise.sets || 1;
-      const reps = parseRepsToTotal(exercise.reps);
+      const repsData = parseRepsToTime(exercise.reps);
       const kg = parseFloat(exercise.kg) || 0;
       const tempo = parseTempoToSeconds(exercise.tempo);
-      const rest = parseRestToMinutes(exercise.rest);
+      const rest = parseRestTime(exercise.rest) / 60; // Convert to minutes
 
-      // Volume: sets × reps × kg
-      const volume = sets * reps * kg;
-      totalVolume += volume;
+      if (repsData.isTime) {
+        // Time-based exercise
+        const workTime = (sets * repsData.seconds) / 60; // Convert to minutes
+        const restTime = (sets - 1) * rest;
+        totalTimeMinutes += workTime + restTime;
+        
+        // No volume calculation for time-based exercises
+      } else {
+        // Rep-based exercise
+        const reps = repsData.count;
+        
+        // Volume: sets × reps × kg
+        const volume = sets * reps * kg;
+        totalVolume += volume;
 
-      // Time: [(sets × reps) × tempo] + (sets - 1) × rest
-      const workTime = (sets * reps * tempo) / 60; // Convert to minutes
-      const restTime = (sets - 1) * rest;
-      totalTimeMinutes += workTime + restTime;
+        // Time: [(sets × reps) × tempo] + (sets - 1) × rest
+        const workTime = (sets * reps * tempo) / 60; // Convert to minutes
+        const restTime = (sets - 1) * rest;
+        totalTimeMinutes += workTime + restTime;
+      }
     });
   });
 
@@ -30,53 +44,10 @@ export const calculateDayMetrics = (blocks: any[]) => {
   };
 };
 
-export const parseRepsToTotal = (reps: string): number => {
-  if (!reps) return 0;
-  
-  if (!reps.includes('.')) {
-    return parseInt(reps) || 0;
-  }
-  
-  const parts = reps.split('.');
-  let totalReps = 0;
-  
-  parts.forEach(part => {
-    totalReps += parseInt(part) || 0;
-  });
-  
-  return totalReps;
-};
-
-export const parseTempoToSeconds = (tempo: string): number => {
-  if (!tempo || tempo.trim() === '') {
-    return 3;
-  }
-  
-  const parts = tempo.split('.');
-  let totalSeconds = 0;
-  
-  parts.forEach(part => {
-    if (part === 'x' || part === 'X') {
-      totalSeconds += 0.5;
-    } else {
-      totalSeconds += parseFloat(part) || 0;
-    }
-  });
-  
-  return totalSeconds;
-};
+// Re-export the utility functions for backward compatibility
+export { parseRepsToTime as parseRepsToTotal } from '@/utils/timeCalculations';
+export { parseTempoToSeconds } from '@/utils/timeCalculations';
 
 export const parseRestToMinutes = (rest: string): number => {
-  if (!rest) return 0;
-  
-  if (rest.includes(':')) {
-    const [minutes, seconds] = rest.split(':');
-    return (parseInt(minutes) || 0) + (parseInt(seconds) || 0) / 60;
-  } else if (rest.includes("'")) {
-    return parseFloat(rest.replace("'", "")) || 0;
-  } else if (rest.includes('s')) {
-    return (parseFloat(rest.replace('s', '')) || 0) / 60;
-  } else {
-    return parseFloat(rest) || 0;
-  }
+  return parseRestTime(rest) / 60; // Convert seconds to minutes
 };
