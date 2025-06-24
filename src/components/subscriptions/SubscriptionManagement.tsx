@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search } from "lucide-react";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown } from "lucide-react";
 
 interface SubscriptionType {
   id: string;
@@ -50,6 +50,7 @@ export const SubscriptionManagement: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [usersTableSearchTerm, setUsersTableSearchTerm] = useState('');
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -167,11 +168,30 @@ export const SubscriptionManagement: React.FC = () => {
       setSelectedUser('');
       setSelectedSubscriptionType('');
       setNotes('');
+      setUserSearchTerm('');
+      setShowUserDropdown(false);
       await loadData();
 
     } catch (error) {
       console.error('Error creating subscription:', error);
       toast.error('Σφάλμα κατά τη δημιουργία της συνδρομής');
+    }
+  };
+
+  const handleUserSelect = (user: any) => {
+    setSelectedUser(user.id);
+    setUserSearchTerm(`${user.name} (${user.email})`);
+    setShowUserDropdown(false);
+  };
+
+  const handleUserInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUserSearchTerm(value);
+    setShowUserDropdown(true);
+    
+    // Clear selection if user is typing
+    if (selectedUser && value !== users.find(u => u.id === selectedUser)?.name + ` (${users.find(u => u.id === selectedUser)?.email})`) {
+      setSelectedUser('');
     }
   };
 
@@ -375,28 +395,38 @@ export const SubscriptionManagement: React.FC = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="user">Επιλογή Χρήστη</Label>
+                <Label htmlFor="user">Αναζήτηση και Επιλογή Χρήστη</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Αναζήτηση και επιλογή χρήστη..."
+                    placeholder="Πληκτρολογήστε όνομα ή email χρήστη..."
                     value={userSearchTerm}
-                    onChange={(e) => setUserSearchTerm(e.target.value)}
-                    className="pl-10 rounded-none"
+                    onChange={handleUserInputChange}
+                    onFocus={() => setShowUserDropdown(true)}
+                    className="pl-10 pr-10 rounded-none"
                   />
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  
+                  {showUserDropdown && filteredUsers.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-60 overflow-y-auto">
+                      {filteredUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => handleUserSelect(user)}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <Select value={selectedUser} onValueChange={setSelectedUser}>
-                  <SelectTrigger className="rounded-none mt-2">
-                    <SelectValue placeholder="Επιλέξτε χρήστη" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredUsers.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {selectedUser && (
+                  <div className="mt-1 text-sm text-green-600">
+                    ✓ Επιλέχθηκε: {users.find(u => u.id === selectedUser)?.name}
+                  </div>
+                )}
               </div>
               
               <div>
