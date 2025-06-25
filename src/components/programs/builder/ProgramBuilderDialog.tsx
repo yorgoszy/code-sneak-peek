@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
 import { User, Exercise, Program } from '../types';
 import { ProgramBuilderDialogContent } from './ProgramBuilderDialogContent';
-import { ProgramAssignmentDialog } from './ProgramAssignmentDialog';
 import { useProgramBuilderState } from './hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from './hooks/useProgramBuilderActions';
 import { useProgramBuilderDialogLogic } from './hooks/useProgramBuilderDialogLogic';
@@ -35,14 +34,10 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises);
   
   const {
-    assignmentDialogOpen,
-    setAssignmentDialogOpen,
     handleClose,
     handleSave,
-    handleOpenAssignments,
     handleAssign,
-    availableUsers,
-    editingAssignment: editingAssignmentData
+    availableUsers
   } = useProgramBuilderDialogLogic({
     users,
     exercises,
@@ -91,50 +86,39 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   };
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={handleClose}>
-        <ProgramBuilderDialogContent
-          program={program}
-          users={users}
-          exercises={exercises}
-          onNameChange={(name) => updateProgram({ name })}
-          onDescriptionChange={(description) => updateProgram({ description })}
-          onAthleteChange={handleAthleteChange}
-          onAddWeek={actions.addWeek}
-          onRemoveWeek={actions.removeWeek}
-          onDuplicateWeek={actions.duplicateWeek}
-          onUpdateWeekName={actions.updateWeekName}
-          onAddDay={actions.addDay}
-          onRemoveDay={actions.removeDay}
-          onDuplicateDay={actions.duplicateDay}
-          onUpdateDayName={actions.updateDayName}
-          onAddBlock={actions.addBlock}
-          onRemoveBlock={actions.removeBlock}
-          onDuplicateBlock={actions.duplicateBlock}
-          onUpdateBlockName={actions.updateBlockName}
-          onAddExercise={actions.addExercise}
-          onRemoveExercise={actions.removeExercise}
-          onUpdateExercise={actions.updateExercise}
-          onDuplicateExercise={actions.duplicateExercise}
-          onReorderWeeks={actions.reorderWeeks}
-          onReorderDays={actions.reorderDays}
-          onReorderBlocks={actions.reorderBlocks}
-          onReorderExercises={actions.reorderExercises}
-          onSave={handleSave}
-          onAssignments={handleOpenAssignments}
-          onTrainingDatesChange={handleTrainingDatesChange}
-          getTotalTrainingDays={getTotalTrainingDays}
-        />
-      </Dialog>
-
-      <ProgramAssignmentDialog
-        isOpen={assignmentDialogOpen}
-        onClose={() => setAssignmentDialogOpen(false)}
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <ProgramBuilderDialogContent
         program={program}
-        users={availableUsers}
-        onAssign={handleAssign}
-        editingAssignment={editingAssignmentData}
+        users={users}
+        exercises={exercises}
+        onNameChange={(name) => updateProgram({ name })}
+        onDescriptionChange={(description) => updateProgram({ description })}
+        onAthleteChange={handleAthleteChange}
+        onAddWeek={actions.addWeek}
+        onRemoveWeek={actions.removeWeek}
+        onDuplicateWeek={actions.duplicateWeek}
+        onUpdateWeekName={actions.updateWeekName}
+        onAddDay={actions.addDay}
+        onRemoveDay={actions.removeDay}
+        onDuplicateDay={actions.duplicateDay}
+        onUpdateDayName={actions.updateDayName}
+        onAddBlock={actions.addBlock}
+        onRemoveBlock={actions.removeBlock}
+        onDuplicateBlock={actions.duplicateBlock}
+        onUpdateBlockName={actions.updateBlockName}
+        onAddExercise={actions.addExercise}
+        onRemoveExercise={actions.removeExercise}
+        onUpdateExercise={actions.updateExercise}
+        onDuplicateExercise={actions.duplicateExercise}
+        onReorderWeeks={actions.reorderWeeks}
+        onReorderDays={actions.reorderDays}
+        onReorderBlocks={actions.reorderBlocks}
+        onReorderExercises={actions.reorderExercises}
+        onSave={handleSave}
+        onAssignments={handleAssign}
+        onTrainingDatesChange={handleTrainingDatesChange}
+        getTotalTrainingDays={getTotalTrainingDays}
       />
-    </>
+    </Dialog>
   );
 };
