@@ -57,11 +57,13 @@ export const TrainingDateCalendar: React.FC<TrainingDateCalendarProps> = ({
       }}
       modifiers={{
         selected: isDateSelected,
-        today: isToday
+        today: isToday,
+        selectedToday: (date) => isDateSelected(date) && isToday(date)
       }}
       modifiersClassNames={{
         selected: "bg-[#00ffba] text-black hover:bg-[#00ffba]/90",
-        today: "bg-gray-300 text-black border-2 border-gray-500"
+        today: "bg-gray-200 text-black",
+        selectedToday: "bg-[#00cc94] text-black hover:bg-[#00cc94]/90"
       }}
     />
   );
