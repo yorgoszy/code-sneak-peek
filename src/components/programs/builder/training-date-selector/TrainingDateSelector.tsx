@@ -5,29 +5,17 @@ import { CalendarIcon } from "lucide-react";
 import { TrainingDateSelectorProps } from './types';
 import { useTrainingDateLogic } from './useTrainingDateLogic';
 import { TrainingDateCalendar } from './TrainingDateCalendar';
-import { ProgramRequirements } from './ProgramRequirements';
 import { SelectionProgress } from './SelectionProgress';
 
 export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   selectedDates,
   onDatesChange,
-  programWeeks = 0
+  programWeeks = 0,
+  weekStructure
 }) => {
-  // Get the actual program structure from the parent component
-  // For now, we'll create a mock structure - this should be passed as props
-  const getWeekStructure = () => {
-    // This is a placeholder - in reality, this should come from the program data
-    // You'll need to pass the actual weeks structure as a prop
-    return [
-      { weekNumber: 1, daysInWeek: 1 },
-      { weekNumber: 2, daysInWeek: 2 },
-      { weekNumber: 3, daysInWeek: 2 },
-      { weekNumber: 4, daysInWeek: 2 }
-    ];
-  };
-
-  const weekStructure = getWeekStructure();
-  const totalRequiredDays = weekStructure.reduce((total, week) => total + week.daysInWeek, 0);
+  // Use actual week structure or calculate from program weeks
+  const actualWeekStructure = weekStructure || [];
+  const totalRequiredDays = actualWeekStructure.reduce((total, week) => total + week.daysInWeek, 0);
 
   const {
     calendarDate,
@@ -42,10 +30,10 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
     selectedDates,
     onDatesChange,
     totalRequiredDays,
-    weekStructure
+    weekStructure: actualWeekStructure
   });
 
-  console.log('🗓️ [TrainingDateSelector] Week structure:', weekStructure);
+  console.log('🗓️ [TrainingDateSelector] Week structure:', actualWeekStructure);
   console.log('🗓️ [TrainingDateSelector] Total required days:', totalRequiredDays);
   console.log('🗓️ [TrainingDateSelector] Current selectedDates:', selectedDates);
 
@@ -75,19 +63,21 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
           {/* Program Info and Progress */}
           <div className="space-y-4">
             {/* Week Structure Display */}
-            <div className="bg-blue-50 border border-blue-200 rounded-none p-4">
-              <h4 className="font-medium text-blue-800 mb-2">Δομή Εβδομάδων</h4>
-              <div className="space-y-1 text-sm">
-                {weekStructure.map((week, index) => (
-                  <p key={index}>
-                    <strong>Εβδομάδα {week.weekNumber}:</strong> {week.daysInWeek} {week.daysInWeek === 1 ? 'ημέρα' : 'ημέρες'}
+            {actualWeekStructure.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-none p-4">
+                <h4 className="font-medium text-blue-800 mb-2">Δομή Εβδομάδων</h4>
+                <div className="space-y-1 text-sm">
+                  {actualWeekStructure.map((week, index) => (
+                    <p key={index}>
+                      <strong>Εβδομάδα {week.weekNumber}:</strong> {week.daysInWeek} {week.daysInWeek === 1 ? 'ημέρα' : 'ημέρες'}
+                    </p>
+                  ))}
+                  <p className="text-lg font-bold text-blue-700 mt-2">
+                    Σύνολο: {totalRequiredDays} ημέρες προπόνησης
                   </p>
-                ))}
-                <p className="text-lg font-bold text-blue-700 mt-2">
-                  Σύνολο: {totalRequiredDays} ημέρες προπόνησης
-                </p>
+                </div>
               </div>
-            </div>
+            )}
 
             <SelectionProgress
               selectedDatesLength={selectedDates.length}

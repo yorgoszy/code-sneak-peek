@@ -1,42 +1,51 @@
 
 import React from 'react';
-import { TrainingDateSelector } from './TrainingDateSelector';
+import { TrainingDateSelector } from './training-date-selector';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
+
+interface WeekStructure {
+  weekNumber: number;
+  daysInWeek: number;
+}
 
 interface CalendarSectionProps {
   program: ProgramStructure;
   totalDays: number;
+  weekStructure?: WeekStructure[];
   onTrainingDatesChange: (dates: Date[]) => void;
 }
 
 export const CalendarSection: React.FC<CalendarSectionProps> = ({
   program,
   totalDays,
+  weekStructure = [],
   onTrainingDatesChange
 }) => {
-  if (totalDays === 0) {
-    return null;
-  }
-
-  // Μετατροπή των training_dates από Date[] σε string[]
-  const selectedDatesAsStrings = (program.training_dates || []).map(date => {
-    if (typeof date === 'string') {
-      return date;
+  // Convert string dates to Date objects for the selector
+  const selectedDates = (program.training_dates || []).map(dateStr => {
+    if (typeof dateStr === 'string') {
+      return dateStr;
     }
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+    // If it's already a Date object, convert to string
+    return dateStr instanceof Date ? dateStr.toISOString().split('T')[0] : dateStr;
   });
 
   const handleDatesChange = (dates: string[]) => {
-    // Μετατροπή από string[] σε Date[]
-    const datesAsObjects = dates.map(dateString => new Date(dateString + 'T12:00:00'));
-    onTrainingDatesChange(datesAsObjects);
+    // Convert string dates back to Date objects
+    const dateObjects = dates.map(dateStr => new Date(dateStr + 'T00:00:00'));
+    onTrainingDatesChange(dateObjects);
   };
+
+  console.log('📅 [CalendarSection] Week structure received:', weekStructure);
+  console.log('📅 [CalendarSection] Total days:', totalDays);
+  console.log('📅 [CalendarSection] Selected dates:', selectedDates);
 
   return (
     <TrainingDateSelector
-      selectedDates={selectedDatesAsStrings}
+      selectedDates={selectedDates}
       onDatesChange={handleDatesChange}
       programWeeks={program.weeks?.length || 0}
+      weekStructure={weekStructure}
     />
   );
 };

@@ -22,6 +22,40 @@ export const useTrainingDateLogic = ({
 }: UseTrainingDateLogicProps) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
 
+  // Helper function to determine which program week a date belongs to based on chronological order
+  const getWeekForDateIndex = (dateIndex: number): WeekStructure | null => {
+    let currentIndex = 0;
+    for (const week of weekStructure) {
+      if (dateIndex < currentIndex + week.daysInWeek) {
+        return week;
+      }
+      currentIndex += week.daysInWeek;
+    }
+    return null;
+  };
+
+  // Helper function to count selected dates in a specific program week
+  const getSelectedDatesInWeek = (weekNumber: number): number => {
+    const sortedDates = [...selectedDates].sort();
+    let count = 0;
+    let currentIndex = 0;
+    
+    for (const week of weekStructure) {
+      if (week.weekNumber === weekNumber) {
+        // Count how many dates are selected in this week's range
+        for (let i = 0; i < week.daysInWeek; i++) {
+          if (currentIndex + i < sortedDates.length) {
+            count++;
+          }
+        }
+        break;
+      }
+      currentIndex += week.daysInWeek;
+    }
+    
+    return count;
+  };
+
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) {
       console.log('🗓️ [TrainingDateSelector] No date selected');
@@ -41,59 +75,53 @@ export const useTrainingDateLogic = ({
       console.log('🗓️ [TrainingDateSelector] Removing date, new array:', newDates);
       onDatesChange(newDates);
     } else {
-      // Check if we can add the date based on week structure
-      if (canAddDateToWeek(dateString)) {
+      // Check if we can add the date
+      if (canAddDate(dateString)) {
         const newDates = [...selectedDates, dateString].sort();
         console.log('🗓️ [TrainingDateSelector] Adding date, new array:', newDates);
         onDatesChange(newDates);
       } else {
-        console.log('🗓️ [TrainingDateSelector] Cannot add date - week limit reached');
+        console.log('🗓️ [TrainingDateSelector] Cannot add date - limit reached');
       }
     }
   };
 
-  const canAddDateToWeek = (newDateString: string) => {
-    // If we haven't reached the total limit, check week-specific limits
+  const canAddDate = (newDateString: string): boolean => {
+    // Check total limit first
     if (selectedDates.length >= totalRequiredDays) {
+      console.log('🗓️ [TrainingDateSelector] Total limit reached');
       return false;
     }
 
-    // Calculate which week this date would belong to
-    const sortedDates = [...selectedDates, newDateString].sort();
-    const newDateIndex = sortedDates.indexOf(newDateString);
-    
-    // Determine which week this date belongs to based on its position
-    let currentWeekIndex = 0;
-    let daysCountedSoFar = 0;
-    
-    for (let i = 0; i < weekStructure.length; i++) {
-      if (newDateIndex < daysCountedSoFar + weekStructure[i].daysInWeek) {
-        currentWeekIndex = i;
-        break;
-      }
-      daysCountedSoFar += weekStructure[i].daysInWeek;
+    // If no week structure, allow selection up to total limit
+    if (weekStructure.length === 0) {
+      return true;
     }
 
-    // Count how many dates are already selected for this week
-    const weekStartIndex = daysCountedSoFar;
-    const weekEndIndex = weekStartIndex + weekStructure[currentWeekIndex].daysInWeek;
+    // Create a temporary sorted array with the new date
+    const tempDates = [...selectedDates, newDateString].sort();
+    const newDateIndex = tempDates.indexOf(newDateString);
     
-    // Count existing selections in this week range (excluding the new date)
-    const existingDatesInWeek = selectedDates.filter((_, index) => {
-      const sortedIndex = [...selectedDates].sort().indexOf(selectedDates[index]);
-      return sortedIndex >= weekStartIndex && sortedIndex < weekEndIndex;
-    }).length;
+    // Determine which program week this date would belong to
+    const targetWeek = getWeekForDateIndex(newDateIndex);
+    
+    if (!targetWeek) {
+      console.log('🗓️ [TrainingDateSelector] No target week found for index:', newDateIndex);
+      return false;
+    }
 
+    // Count how many dates are already selected for this program week
+    const currentCount = getSelectedDatesInWeek(targetWeek.weekNumber);
+    
     console.log('🗓️ [TrainingDateSelector] Week analysis:', {
       newDateIndex,
-      currentWeekIndex,
-      weekStartIndex,
-      weekEndIndex,
-      existingDatesInWeek,
-      allowedDaysInWeek: weekStructure[currentWeekIndex].daysInWeek
+      targetWeek: targetWeek.weekNumber,
+      currentCount,
+      allowedDays: targetWeek.daysInWeek,
+      canAdd: currentCount < targetWeek.daysInWeek
     });
 
-    return existingDatesInWeek < weekStructure[currentWeekIndex].daysInWeek;
+    return currentCount < targetWeek.daysInWeek;
   };
 
   const removeDate = (dateToRemove: string, event?: React.MouseEvent) => {
@@ -115,11 +143,6 @@ export const useTrainingDateLogic = ({
     const cleanDate = createDateFromCalendar(date);
     const dateString = formatDateToLocalString(cleanDate);
     const isSelected = selectedDates.includes(dateString);
-    
-    console.log('🗓️ [TrainingDateSelector] Checking if date is selected:', {
-      dateString: dateString,
-      isSelected: isSelected
-    });
     
     return isSelected;
   };
@@ -144,7 +167,7 @@ export const useTrainingDateLogic = ({
     const cleanDate = createDateFromCalendar(date);
     const dateString = formatDateToLocalString(cleanDate);
     
-    return !canAddDateToWeek(dateString);
+    return !canAddDate(dateString);
   };
 
   return {

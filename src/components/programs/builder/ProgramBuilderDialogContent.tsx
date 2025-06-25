@@ -78,6 +78,18 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   const totalDays = getTotalTrainingDays ? getTotalTrainingDays() : 0;
   const { handleAssignment } = useAssignmentHandler({ program, getTotalTrainingDays });
 
+  // Create week structure from actual program data
+  const weekStructure = React.useMemo(() => {
+    if (!program.weeks || program.weeks.length === 0) return [];
+    
+    return program.weeks.map((week, index) => ({
+      weekNumber: week.week_number || index + 1,
+      daysInWeek: week.program_days?.length || 0
+    }));
+  }, [program.weeks]);
+
+  console.log('🏗️ [ProgramBuilderDialogContent] Week structure calculated:', weekStructure);
+
   return (
     <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0">
       <DialogHeader className="flex-shrink-0 p-6 border-b">
@@ -128,6 +140,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             <CalendarSection
               program={program}
               totalDays={totalDays}
+              weekStructure={weekStructure}
               onTrainingDatesChange={onTrainingDatesChange}
             />
           )}
