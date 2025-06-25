@@ -53,8 +53,13 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
       ? selectedUserIds.filter(id => id !== userId)
       : [...selectedUserIds, userId];
     
-    console.log('✅ ProgramBasicInfo - Updating selectedUserIds:', newSelectedIds);
+    console.log('✅ ProgramBasicInfo - Updating selectedUserIds from:', selectedUserIds, 'to:', newSelectedIds);
     onMultipleAthleteChange(newSelectedIds);
+    
+    // Close popover after adding a user
+    if (!selectedUserIds.includes(userId)) {
+      setUserListOpen(false);
+    }
   };
 
   const handleClearAll = () => {
@@ -64,7 +69,11 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
     }
   };
 
-  const handleUserClick = (userId: string) => {
+  const handleUserClick = (userId: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     console.log('👆 ProgramBasicInfo - User clicked:', userId);
     handleUserToggle(userId);
   };
@@ -116,8 +125,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                   }
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-2 rounded-none" align="start">
-                <div className="max-h-48 overflow-y-auto">
+              <PopoverContent className="w-80 p-2 rounded-none max-h-64" align="start">
+                <div className="max-h-60 overflow-y-auto">
                   {availableUsers.length === 0 ? (
                     <div className="p-4 text-center text-sm text-gray-500">
                       Όλοι οι χρήστες έχουν επιλεγεί
@@ -125,10 +134,9 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                   ) : (
                     <div className="space-y-1">
                       {availableUsers.map(user => (
-                        <Button
+                        <div
                           key={user.id}
-                          variant="ghost"
-                          className="w-full justify-start p-3 h-auto cursor-pointer hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
+                          className="w-full p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer"
                           onClick={() => handleUserClick(user.id)}
                         >
                           <div className="flex items-center justify-between w-full">
@@ -141,7 +149,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                             </div>
                             <Plus className="w-4 h-4 text-[#00ffba]" />
                           </div>
-                        </Button>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -171,8 +179,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                 {selectedUsers.map(user => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between bg-[#00ffba]/10 border border-[#00ffba]/20 p-3 rounded hover:bg-[#00ffba]/20 transition-colors cursor-pointer"
-                    onClick={() => handleUserClick(user.id)}
+                    className="flex items-center justify-between bg-[#00ffba]/10 border border-[#00ffba]/20 p-3 rounded hover:bg-[#00ffba]/20 transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-[#00ffba]" />
@@ -189,10 +196,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleUserClick(user.id);
-                      }}
+                      onClick={(e) => handleUserClick(user.id, e)}
                       className="rounded-none p-1 h-auto text-gray-500 hover:text-red-600 hover:bg-red-50"
                       title="Αφαίρεση από την επιλογή"
                     >
