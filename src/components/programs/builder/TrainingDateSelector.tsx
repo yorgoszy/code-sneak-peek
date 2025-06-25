@@ -35,7 +35,7 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
     console.log('🗓️ [TrainingDateSelector] Formatted date string:', dateString);
     
     if (selectedDates.includes(dateString)) {
-      // Remove date if already selected
+      // Remove date if already selected (αποεπιλογή)
       const newDates = selectedDates.filter(d => d !== dateString);
       console.log('🗓️ [TrainingDateSelector] Removing date, new array:', newDates);
       onDatesChange(newDates);
@@ -72,6 +72,13 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
     return isSelected;
   };
 
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
+  };
+
   console.log('🗓️ [TrainingDateSelector] Current selectedDates:', selectedDates);
 
   return (
@@ -94,16 +101,18 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
               className="rounded-none border"
               weekStartsOn={1}
               modifiers={{
-                selected: isDateSelected
+                selected: isDateSelected,
+                today: isToday
               }}
               modifiersClassNames={{
-                selected: "bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
+                selected: "bg-[#00ffba] text-black hover:bg-[#00ffba]/90",
+                today: "bg-[#00cc94] text-black font-bold border-2 border-[#00ffba]"
               }}
             />
           </div>
 
-          {/* Selected Dates */}
-          <div>
+          {/* Selected Dates - Hidden as requested by user */}
+          <div style={{ display: 'none' }}>
             <div className="flex justify-between items-center mb-3">
               <h4 className="font-medium">
                 Επιλεγμένες Ημερομηνίες ({selectedDates.length})
@@ -147,6 +156,12 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
               )}
             </div>
           </div>
+        </div>
+        
+        {/* Summary info */}
+        <div className="text-sm text-gray-600 bg-blue-50 p-3 border border-blue-200 rounded-none">
+          <p>Επιλεγμένες ημερομηνίες: {selectedDates.length}</p>
+          <p className="text-xs mt-1">💡 Κάντε κλικ σε μια ημερομηνία για επιλογή ή αποεπιλογή</p>
         </div>
       </CardContent>
     </Card>
