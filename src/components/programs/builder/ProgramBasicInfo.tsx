@@ -37,11 +37,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   isMultipleMode = false,
   onToggleMode
 }) => {
-  const athleteUsers = users.filter(user => 
-    user.role === 'athlete' || 
-    user.role === 'user' || 
-    !user.role
-  );
+  // Φιλτράρουμε όλους τους χρήστες από το app_users table
+  const allUsers = users;
 
   const handleUserToggle = (userId: string) => {
     if (!onMultipleAthleteChange) return;
@@ -56,6 +53,13 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   const handleClearAll = () => {
     if (onMultipleAthleteChange) {
       onMultipleAthleteChange([]);
+    }
+  };
+
+  const handleModeToggle = (isMultiple: boolean) => {
+    console.log('🔄 Toggling assignment mode:', isMultiple);
+    if (onToggleMode) {
+      onToggleMode(isMultiple);
     }
   };
 
@@ -94,35 +98,37 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             <Label>Τύπος Ανάθεσης</Label>
             <div className="flex gap-2">
               <Button
+                type="button"
                 variant={!isMultipleMode ? "default" : "outline"}
-                onClick={() => onToggleMode(false)}
+                onClick={() => handleModeToggle(false)}
                 className="flex items-center gap-2 rounded-none"
               >
                 <User className="w-4 h-4" />
-                Ένας Αθλητής
+                Ένας Χρήστης
               </Button>
               <Button
+                type="button"
                 variant={isMultipleMode ? "default" : "outline"}
-                onClick={() => onToggleMode(true)}
+                onClick={() => handleModeToggle(true)}
                 className="flex items-center gap-2 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
               >
                 <Users className="w-4 h-4" />
-                Πολλαπλοί Αθλητές
+                Πολλαπλοί Χρήστες
               </Button>
             </div>
           </div>
         )}
 
-        {/* Single Athlete Selection */}
+        {/* Single User Selection */}
         {!isMultipleMode && onAthleteChange && (
           <div className="space-y-2">
-            <Label>Αθλητής</Label>
+            <Label>Χρήστης</Label>
             <Select value={selectedUserId || ""} onValueChange={onAthleteChange}>
               <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Επιλέξτε αθλητή" />
+                <SelectValue placeholder="Επιλέξτε χρήστη" />
               </SelectTrigger>
               <SelectContent className="rounded-none">
-                {athleteUsers.map((user) => (
+                {allUsers.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
                     {user.name}
                   </SelectItem>
@@ -132,10 +138,10 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
           </div>
         )}
 
-        {/* Multiple Athletes Selection */}
+        {/* Multiple Users Selection */}
         {isMultipleMode && onMultipleAthleteChange && (
           <MultipleAthleteSelection
-            users={athleteUsers}
+            users={allUsers}
             selectedUserIds={selectedUserIds}
             onUserToggle={handleUserToggle}
             onClearAll={handleClearAll}

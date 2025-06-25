@@ -68,6 +68,8 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onReorderBlocks,
   onReorderExercises
 }) => {
+  console.log('🔄 ProgramBuilder render - isMultipleMode:', program.is_multiple_assignment);
+  
   return (
     <div className="space-y-6">
       <ProgramBasicInfo

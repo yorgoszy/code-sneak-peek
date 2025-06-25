@@ -36,7 +36,7 @@ export const MultipleAthleteSelection: React.FC<MultipleAthleteSelectionProps> =
     <div className="space-y-4">
       {/* Add User Button */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Επιλογή Αθλητών</label>
+        <label className="text-sm font-medium">Επιλογή Χρηστών</label>
         <Popover open={userListOpen} onOpenChange={setUserListOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -46,8 +46,8 @@ export const MultipleAthleteSelection: React.FC<MultipleAthleteSelectionProps> =
             >
               <Plus className="mr-2 h-4 w-4" />
               {availableUsers.length === 0 
-                ? "Όλοι οι αθλητές έχουν επιλεγεί" 
-                : "Προσθήκη αθλητή..."
+                ? "Όλοι οι χρήστες έχουν επιλεγεί" 
+                : "Προσθήκη χρήστη..."
               }
             </Button>
           </PopoverTrigger>
@@ -55,7 +55,7 @@ export const MultipleAthleteSelection: React.FC<MultipleAthleteSelectionProps> =
             <div className="max-h-48 overflow-y-auto">
               {availableUsers.length === 0 ? (
                 <div className="p-4 text-center text-sm text-gray-500">
-                  Όλοι οι αθλητές έχουν επιλεγεί
+                  Όλοι οι χρήστες έχουν επιλεγεί
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -89,7 +89,7 @@ export const MultipleAthleteSelection: React.FC<MultipleAthleteSelectionProps> =
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">
-              Επιλεγμένοι Αθλητές ({selectedUsers.length})
+              Επιλεγμένοι Χρήστες ({selectedUsers.length})
             </span>
             <Button
               variant="outline"
