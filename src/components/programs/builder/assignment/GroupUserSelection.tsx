@@ -108,9 +108,11 @@ export const GroupUserSelection: React.FC<GroupUserSelectionProps> = ({
                   <div>
                     <p className="font-medium">{selectedUser.name}</p>
                     <p className="text-sm text-gray-600">{selectedUser.email}</p>
-                    <Badge variant="outline" className="mt-1">
-                      {selectedUser.role}
-                    </Badge>
+                    {selectedUser.role && (
+                      <Badge variant="outline" className="mt-1">
+                        {selectedUser.role}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>

@@ -30,7 +30,11 @@ export const useProgramBuilderDialogLogic = ({
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
 
   const availableUsers = useMemo(() => {
-    return users.filter(user => user.role === 'athlete' || user.role === 'user');
+    return users.filter(user => 
+      user.role === 'athlete' || 
+      user.role === 'user' || 
+      !user.role  // Include users without role defined
+    );
   }, [users]);
 
   const handleClose = () => {
