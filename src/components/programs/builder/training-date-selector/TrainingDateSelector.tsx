@@ -11,18 +11,17 @@ import { SelectionProgress } from './SelectionProgress';
 export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   selectedDates,
   onDatesChange,
-  programWeeks = 0,
-  weekStructure = [] // Προσθήκη του weekStructure
+  programWeeks = 0
 }) => {
-  // Υπολογισμός συνολικών ημερών από τη δομή των εβδομάδων
-  const totalRequiredDays = weekStructure.reduce((total, week) => {
-    return total + (week.program_days?.length || 0);
-  }, 0);
+  // Calculate days per week from the first week structure if available
+  const getDaysPerWeek = () => {
+    // This should come from the program structure, but for now we'll use a default
+    // You might need to pass this as a prop from the parent component
+    return 2; // Default to 2 days per week
+  };
 
-  // Υπολογισμός μέσων ημερών ανά εβδομάδα για εμφάνιση
-  const averageDaysPerWeek = weekStructure.length > 0 
-    ? Math.round(totalRequiredDays / weekStructure.length * 10) / 10 
-    : 0;
+  const daysPerWeek = getDaysPerWeek();
+  const totalRequiredDays = programWeeks * daysPerWeek;
 
   const {
     calendarDate,
@@ -32,22 +31,14 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
     clearAllDates,
     isDateSelected,
     isToday,
-    isDateDisabled,
-    getCurrentWeekInfo
+    isDateDisabled
   } = useTrainingDateLogic({
     selectedDates,
     onDatesChange,
-    totalRequiredDays,
-    weekStructure
+    totalRequiredDays
   });
 
-  // Πληροφορίες τρέχουσας εβδομάδας
-  const weekInfo = getCurrentWeekInfo();
-
-  console.log('🗓️ [TrainingDateSelector] Week structure:', weekStructure);
-  console.log('🗓️ [TrainingDateSelector] Total required days:', totalRequiredDays);
   console.log('🗓️ [TrainingDateSelector] Current selectedDates:', selectedDates);
-  console.log('🗓️ [TrainingDateSelector] Current week info:', weekInfo);
 
   return (
     <Card className="rounded-none">
@@ -58,18 +49,6 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* ΝΕΑ ΠΡΟΣΘΗΚΗ: Εμφάνιση πληροφοριών τρέχουσας εβδομάδας */}
-        {weekStructure.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-none p-3">
-            <h4 className="font-medium text-yellow-800 mb-1">Τρέχουσα Εβδομάδα</h4>
-            <div className="text-sm text-yellow-700">
-              <p><strong>Εβδομάδα {weekInfo.currentWeekIndex + 1}</strong></p>
-              <p>Επιτρεπόμενες ημέρες: {weekInfo.allowedDaysInCurrentWeek}</p>
-              <p>Επιλεγμένες μέχρι στιγμής: {selectedDates.length - (weekInfo.completedWeeks > 0 ? weekStructure.slice(0, weekInfo.completedWeeks).reduce((sum, w) => sum + (w.program_days?.length || 0), 0) : 0)}</p>
-            </div>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Calendar */}
           <div>
@@ -87,10 +66,9 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
           {/* Program Info and Progress */}
           <div className="space-y-4">
             <ProgramRequirements
-              programWeeks={weekStructure.length}
-              daysPerWeek={averageDaysPerWeek}
+              programWeeks={programWeeks}
+              daysPerWeek={daysPerWeek}
               totalRequiredDays={totalRequiredDays}
-              weekStructure={weekStructure}
             />
 
             <SelectionProgress
