@@ -5,17 +5,23 @@ import { CalendarIcon } from "lucide-react";
 import { TrainingDateSelectorProps } from './types';
 import { useTrainingDateLogic } from './useTrainingDateLogic';
 import { TrainingDateCalendar } from './TrainingDateCalendar';
+import { ProgramRequirements } from './ProgramRequirements';
 import { SelectionProgress } from './SelectionProgress';
 
 export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   selectedDates,
   onDatesChange,
-  programWeeks = 0,
-  weekStructure
+  programWeeks = 0
 }) => {
-  // Use actual week structure or calculate from program weeks
-  const actualWeekStructure = weekStructure || [];
-  const totalRequiredDays = actualWeekStructure.reduce((total, week) => total + week.daysInWeek, 0);
+  // Calculate days per week from the first week structure if available
+  const getDaysPerWeek = () => {
+    // This should come from the program structure, but for now we'll use a default
+    // You might need to pass this as a prop from the parent component
+    return 2; // Default to 2 days per week
+  };
+
+  const daysPerWeek = getDaysPerWeek();
+  const totalRequiredDays = programWeeks * daysPerWeek;
 
   const {
     calendarDate,
@@ -29,12 +35,9 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   } = useTrainingDateLogic({
     selectedDates,
     onDatesChange,
-    totalRequiredDays,
-    weekStructure: actualWeekStructure
+    totalRequiredDays
   });
 
-  console.log('🗓️ [TrainingDateSelector] Week structure:', actualWeekStructure);
-  console.log('🗓️ [TrainingDateSelector] Total required days:', totalRequiredDays);
   console.log('🗓️ [TrainingDateSelector] Current selectedDates:', selectedDates);
 
   return (
@@ -62,22 +65,11 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
 
           {/* Program Info and Progress */}
           <div className="space-y-4">
-            {/* Week Structure Display */}
-            {actualWeekStructure.length > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-none p-4">
-                <h4 className="font-medium text-blue-800 mb-2">Δομή Εβδομάδων</h4>
-                <div className="space-y-1 text-sm">
-                  {actualWeekStructure.map((week, index) => (
-                    <p key={index}>
-                      <strong>Εβδομάδα {week.weekNumber}:</strong> {week.daysInWeek} {week.daysInWeek === 1 ? 'ημέρα' : 'ημέρες'}
-                    </p>
-                  ))}
-                  <p className="text-lg font-bold text-blue-700 mt-2">
-                    Σύνολο: {totalRequiredDays} ημέρες προπόνησης
-                  </p>
-                </div>
-              </div>
-            )}
+            <ProgramRequirements
+              programWeeks={programWeeks}
+              daysPerWeek={daysPerWeek}
+              totalRequiredDays={totalRequiredDays}
+            />
 
             <SelectionProgress
               selectedDatesLength={selectedDates.length}

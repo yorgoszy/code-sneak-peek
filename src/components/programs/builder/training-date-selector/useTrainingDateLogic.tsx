@@ -2,162 +2,62 @@
 import { useState } from 'react';
 import { formatDateToLocalString, createDateFromCalendar } from '@/utils/dateUtils';
 
-interface WeekStructure {
-  weekNumber: number;
-  daysInWeek: number;
-}
-
 interface UseTrainingDateLogicProps {
   selectedDates: string[];
   onDatesChange: (dates: string[]) => void;
   totalRequiredDays: number;
-  weekStructure: WeekStructure[];
 }
 
 export const useTrainingDateLogic = ({
   selectedDates,
   onDatesChange,
-  totalRequiredDays,
-  weekStructure
+  totalRequiredDays
 }: UseTrainingDateLogicProps) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) {
-      console.log('🗓️ [useTrainingDateLogic] No date provided');
+      console.log('🗓️ [TrainingDateSelector] No date selected');
       return;
     }
     
-    console.log('🗓️ [useTrainingDateLogic] Raw selected date:', date);
-    console.log('🗓️ [useTrainingDateLogic] Date details:', {
-      year: date.getFullYear(),
-      month: date.getMonth(),
-      day: date.getDate(),
-      toString: date.toString(),
-      toISOString: date.toISOString()
-    });
+    console.log('🗓️ [TrainingDateSelector] Date selected:', date);
     
-    // Δημιουργούμε καθαρή ημερομηνία χωρίς ώρα
     const cleanDate = createDateFromCalendar(date);
-    console.log('🗓️ [useTrainingDateLogic] Clean date after createDateFromCalendar:', cleanDate);
-    
     const dateString = formatDateToLocalString(cleanDate);
-    console.log('🗓️ [useTrainingDateLogic] Formatted date string:', dateString);
     
-    console.log('🗓️ [useTrainingDateLogic] Current selectedDates:', selectedDates);
+    console.log('🗓️ [TrainingDateSelector] Formatted date string:', dateString);
     
     if (selectedDates.includes(dateString)) {
-      // Αφαίρεση ημερομηνίας
+      // Remove date if already selected (αποεπιλογή)
       const newDates = selectedDates.filter(d => d !== dateString);
-      console.log('🗓️ [useTrainingDateLogic] Removing date. New dates:', newDates);
+      console.log('🗓️ [TrainingDateSelector] Removing date, new array:', newDates);
       onDatesChange(newDates);
     } else {
-      // Έλεγχος αν μπορούμε να προσθέσουμε την ημερομηνία
-      const canAdd = canAddDate(dateString);
-      console.log('🗓️ [useTrainingDateLogic] Can add date?', canAdd);
-      
-      if (canAdd) {
+      // Check if we can add more dates
+      if (selectedDates.length < totalRequiredDays) {
+        // Add date if not selected and within limits
         const newDates = [...selectedDates, dateString].sort();
-        console.log('🗓️ [useTrainingDateLogic] Adding date. New dates:', newDates);
+        console.log('🗓️ [TrainingDateSelector] Adding date, new array:', newDates);
         onDatesChange(newDates);
       } else {
-        console.log('🗓️ [useTrainingDateLogic] Cannot add date - limit reached for this week');
+        console.log('🗓️ [TrainingDateSelector] Cannot add more dates - limit reached');
       }
     }
-  };
-
-  const canAddDate = (newDateString: string): boolean => {
-    console.log('🗓️ [canAddDate] Checking if can add date:', newDateString);
-    console.log('🗓️ [canAddDate] Current selectedDates:', selectedDates);
-    console.log('🗓️ [canAddDate] Week structure:', weekStructure);
-    
-    // Έλεγχος συνολικού ορίου πρώτα
-    if (selectedDates.length >= totalRequiredDays) {
-      console.log('🗓️ [canAddDate] Total limit reached:', selectedDates.length, '>=', totalRequiredDays);
-      return false;
-    }
-
-    // Αν δεν έχουμε δομή εβδομάδων, επιτρέπουμε επιλογή μέχρι το συνολικό όριο
-    if (weekStructure.length === 0) {
-      console.log('🗓️ [canAddDate] No week structure, allowing selection');
-      return true;
-    }
-
-    // Δημιουργούμε προσωρινό ταξινομημένο array με τη νέα ημερομηνία
-    const tempDates = [...selectedDates, newDateString].sort();
-    console.log('🗓️ [canAddDate] Temp dates array (sorted):', tempDates);
-    
-    const newDateIndex = tempDates.indexOf(newDateString);
-    console.log('🗓️ [canAddDate] New date index in sorted array:', newDateIndex);
-    
-    // Βρίσκουμε σε ποια εβδομάδα του προγράμματος ανήκει αυτή η ημερομηνία
-    const targetWeek = getWeekForDateIndex(newDateIndex);
-    console.log('🗓️ [canAddDate] Target week for index', newDateIndex, ':', targetWeek);
-    
-    if (!targetWeek) {
-      console.log('🗓️ [canAddDate] No target week found');
-      return false;
-    }
-
-    // Μετράμε πόσες ημερομηνίες είναι ήδη επιλεγμένες για αυτή την εβδομάδα του προγράμματος
-    const currentCountInWeek = getSelectedDatesInWeek(targetWeek.weekNumber);
-    console.log('🗓️ [canAddDate] Current selected dates in week', targetWeek.weekNumber, ':', currentCountInWeek);
-    console.log('🗓️ [canAddDate] Max allowed in this week:', targetWeek.daysInWeek);
-    
-    const canAddToWeek = currentCountInWeek < targetWeek.daysInWeek;
-    console.log('🗓️ [canAddDate] Can add to week?', canAddToWeek);
-    
-    return canAddToWeek;
-  };
-
-  // Βοηθητική συνάρτηση για να βρούμε σε ποια εβδομάδα του προγράμματος ανήκει μια ημερομηνία
-  const getWeekForDateIndex = (dateIndex: number): WeekStructure | null => {
-    let currentIndex = 0;
-    for (const week of weekStructure) {
-      if (dateIndex < currentIndex + week.daysInWeek) {
-        return week;
-      }
-      currentIndex += week.daysInWeek;
-    }
-    return null;
-  };
-
-  // Βοηθητική συνάρτηση για να μετρήσουμε τις επιλεγμένες ημερομηνίες σε μια συγκεκριμένη εβδομάδα
-  const getSelectedDatesInWeek = (weekNumber: number): number => {
-    const sortedDates = [...selectedDates].sort();
-    let count = 0;
-    let currentIndex = 0;
-    
-    for (const week of weekStructure) {
-      if (week.weekNumber === weekNumber) {
-        // Μετράμε πόσες ημερομηνίες είναι επιλεγμένες στο εύρος αυτής της εβδομάδας
-        for (let i = 0; i < week.daysInWeek; i++) {
-          if (currentIndex + i < sortedDates.length) {
-            count++;
-          }
-        }
-        break;
-      }
-      currentIndex += week.daysInWeek;
-    }
-    
-    return count;
   };
 
   const removeDate = (dateToRemove: string, event?: React.MouseEvent) => {
     if (event) {
       event.stopPropagation();
     }
-    console.log('🗓️ [removeDate] Removing date:', dateToRemove);
-    console.log('🗓️ [removeDate] Current selectedDates:', selectedDates);
-    
+    console.log('🗓️ [TrainingDateSelector] Removing date:', dateToRemove);
     const newDates = selectedDates.filter(d => d !== dateToRemove);
-    console.log('🗓️ [removeDate] New dates after removal:', newDates);
+    console.log('🗓️ [TrainingDateSelector] After removal:', newDates);
     onDatesChange(newDates);
   };
 
   const clearAllDates = () => {
-    console.log('🗓️ [clearAllDates] Clearing all dates');
+    console.log('🗓️ [TrainingDateSelector] Clearing all dates');
     onDatesChange([]);
   };
 
@@ -166,10 +66,10 @@ export const useTrainingDateLogic = ({
     const dateString = formatDateToLocalString(cleanDate);
     const isSelected = selectedDates.includes(dateString);
     
-    // Logging μόνο για debugging
-    if (isSelected) {
-      console.log('🗓️ [isDateSelected] Date is selected:', dateString);
-    }
+    console.log('🗓️ [TrainingDateSelector] Checking if date is selected:', {
+      dateString: dateString,
+      isSelected: isSelected
+    });
     
     return isSelected;
   };
@@ -182,19 +82,16 @@ export const useTrainingDateLogic = ({
   };
 
   const isDateDisabled = (date: Date) => {
-    // Απενεργοποίηση παλιών ημερομηνιών
+    // Disable past dates
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) return true;
 
-    // Αν η ημερομηνία είναι ήδη επιλεγμένη, επιτρέπουμε την (για αποεπιλογή)
+    // If date is already selected, allow it (for deselection)
     if (isDateSelected(date)) return false;
 
-    // Έλεγχος αν μπορούμε να προσθέσουμε αυτή την ημερομηνία βάσει της δομής εβδομάδων
-    const cleanDate = createDateFromCalendar(date);
-    const dateString = formatDateToLocalString(cleanDate);
-    
-    return !canAddDate(dateString);
+    // If we've reached the limit, disable all unselected dates
+    return selectedDates.length >= totalRequiredDays;
   };
 
   return {
