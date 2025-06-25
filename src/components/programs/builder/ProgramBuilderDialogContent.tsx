@@ -89,16 +89,18 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
       return result;
     }
     
+    // Explicit type check for string
     if (typeof date === 'string') {
       // Αν είναι ήδη string, ελέγχουμε αν έχει timestamp και το αφαιρούμε
-      const cleanDate = date.includes('T') ? date.split('T')[0] : date;
+      const stringDate = date as string;
+      const cleanDate = stringDate.includes('T') ? stringDate.split('T')[0] : stringDate;
       console.log('🗓️ [ProgramBuilderDialogContent] String date cleaned:', cleanDate);
       return cleanDate;
     }
     
     console.log('🗓️ [ProgramBuilderDialogContent] Unknown date format:', date);
     return '';
-  }).filter(Boolean);
+  }).filter(dateStr => dateStr !== '');
 
   console.log('🗓️ [ProgramBuilderDialogContent] Final selectedDatesAsStrings:', selectedDatesAsStrings);
 
