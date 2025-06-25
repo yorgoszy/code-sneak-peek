@@ -11,17 +11,18 @@ import { SelectionProgress } from './SelectionProgress';
 export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   selectedDates,
   onDatesChange,
-  programWeeks = 0
+  programWeeks = 0,
+  weekStructure = [] // Προσθήκη του weekStructure
 }) => {
-  // Calculate days per week from the first week structure if available
-  const getDaysPerWeek = () => {
-    // This should come from the program structure, but for now we'll use a default
-    // You might need to pass this as a prop from the parent component
-    return 2; // Default to 2 days per week
-  };
+  // Υπολογισμός συνολικών ημερών από τη δομή των εβδομάδων
+  const totalRequiredDays = weekStructure.reduce((total, week) => {
+    return total + (week.program_days?.length || 0);
+  }, 0);
 
-  const daysPerWeek = getDaysPerWeek();
-  const totalRequiredDays = programWeeks * daysPerWeek;
+  // Υπολογισμός μέσων ημερών ανά εβδομάδα για εμφάνιση
+  const averageDaysPerWeek = weekStructure.length > 0 
+    ? Math.round(totalRequiredDays / weekStructure.length * 10) / 10 
+    : 0;
 
   const {
     calendarDate,
@@ -35,9 +36,12 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   } = useTrainingDateLogic({
     selectedDates,
     onDatesChange,
-    totalRequiredDays
+    totalRequiredDays,
+    weekStructure
   });
 
+  console.log('🗓️ [TrainingDateSelector] Week structure:', weekStructure);
+  console.log('🗓️ [TrainingDateSelector] Total required days:', totalRequiredDays);
   console.log('🗓️ [TrainingDateSelector] Current selectedDates:', selectedDates);
 
   return (
@@ -66,9 +70,10 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
           {/* Program Info and Progress */}
           <div className="space-y-4">
             <ProgramRequirements
-              programWeeks={programWeeks}
-              daysPerWeek={daysPerWeek}
+              programWeeks={weekStructure.length}
+              daysPerWeek={averageDaysPerWeek}
               totalRequiredDays={totalRequiredDays}
+              weekStructure={weekStructure}
             />
 
             <SelectionProgress

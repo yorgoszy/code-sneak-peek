@@ -1,17 +1,13 @@
 
 import { useState } from 'react';
 import { formatDateToLocalString, createDateFromCalendar } from '@/utils/dateUtils';
-
-interface UseTrainingDateLogicProps {
-  selectedDates: string[];
-  onDatesChange: (dates: string[]) => void;
-  totalRequiredDays: number;
-}
+import { UseTrainingDateLogicProps } from './types';
 
 export const useTrainingDateLogic = ({
   selectedDates,
   onDatesChange,
-  totalRequiredDays
+  totalRequiredDays,
+  weekStructure = []
 }: UseTrainingDateLogicProps) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
 
@@ -34,14 +30,14 @@ export const useTrainingDateLogic = ({
       console.log('🗓️ [TrainingDateSelector] Removing date, new array:', newDates);
       onDatesChange(newDates);
     } else {
-      // Check if we can add more dates
+      // Check if we can add more dates based on actual total required days
       if (selectedDates.length < totalRequiredDays) {
         // Add date if not selected and within limits
         const newDates = [...selectedDates, dateString].sort();
         console.log('🗓️ [TrainingDateSelector] Adding date, new array:', newDates);
         onDatesChange(newDates);
       } else {
-        console.log('🗓️ [TrainingDateSelector] Cannot add more dates - limit reached');
+        console.log('🗓️ [TrainingDateSelector] Cannot add more dates - limit reached. Required:', totalRequiredDays, 'Selected:', selectedDates.length);
       }
     }
   };
@@ -66,11 +62,6 @@ export const useTrainingDateLogic = ({
     const dateString = formatDateToLocalString(cleanDate);
     const isSelected = selectedDates.includes(dateString);
     
-    console.log('🗓️ [TrainingDateSelector] Checking if date is selected:', {
-      dateString: dateString,
-      isSelected: isSelected
-    });
-    
     return isSelected;
   };
 
@@ -90,7 +81,7 @@ export const useTrainingDateLogic = ({
     // If date is already selected, allow it (for deselection)
     if (isDateSelected(date)) return false;
 
-    // If we've reached the limit, disable all unselected dates
+    // If we've reached the limit based on actual program structure, disable all unselected dates
     return selectedDates.length >= totalRequiredDays;
   };
 

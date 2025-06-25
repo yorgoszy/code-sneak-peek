@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ProgramBasicInfo } from './ProgramBasicInfo';
-import { TrainingWeeks } from './TrainingWeeks';
-import { CalendarSection } from './CalendarSection';
-import { ActionButtons } from './ActionButtons';
-import { useAssignmentHandler } from './AssignmentHandler';
-import type { User, Exercise } from '../types';
-import type { ProgramStructure } from './hooks/useProgramBuilderState';
+import { Separator } from "@/components/ui/separator";
+import { Save, Users } from "lucide-react";
+import { User, Exercise } from '../types';
+import { ProgramBuilder } from './ProgramBuilder';
+import { TrainingDateSelector } from './TrainingDateSelector';
+import { ProgramStructure } from './hooks/useProgramBuilderState';
 
 interface ProgramBuilderDialogContentProps {
   program: ProgramStructure;
@@ -39,8 +39,8 @@ interface ProgramBuilderDialogContentProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onSave: () => void;
   onAssignments: () => void;
-  onTrainingDatesChange?: (dates: Date[]) => void;
-  getTotalTrainingDays?: () => number;
+  onTrainingDatesChange: (dates: Date[]) => void;
+  getTotalTrainingDays: () => number;
 }
 
 export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentProps> = ({
@@ -75,33 +75,52 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onTrainingDatesChange,
   getTotalTrainingDays
 }) => {
-  const totalDays = getTotalTrainingDays ? getTotalTrainingDays() : 0;
-  const { handleAssignment } = useAssignmentHandler({ program, getTotalTrainingDays });
+  // Convert training_dates from Date[] to string[] for the TrainingDateSelector
+  const selectedDatesAsStrings = program.training_dates?.map(date => {
+    if (date instanceof Date) {
+      return date.toISOString().split('T')[0];
+    }
+    return typeof date === 'string' ? date : '';
+  }).filter(Boolean) || [];
+
+  const handleDatesChange = (dates: string[]) => {
+    console.log('🗓️ [ProgramBuilderDialogContent] Converting string dates to Date objects:', dates);
+    const dateObjects = dates.map(dateStr => new Date(dateStr + 'T00:00:00'));
+    console.log('🗓️ [ProgramBuilderDialogContent] Converted dates:', dateObjects);
+    onTrainingDatesChange(dateObjects);
+  };
 
   return (
-    <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0">
-      <DialogHeader className="flex-shrink-0 p-6 border-b">
-        <DialogTitle>
-          {program.id ? 'Επεξεργασία Προγράμματος' : 'Δημιουργία Νέου Προγράμματος'}
+    <DialogContent className="max-w-7xl max-h-[90vh] rounded-none">
+      <DialogHeader>
+        <DialogTitle className="flex items-center justify-between">
+          <span>{program.name || 'Νέο Πρόγραμμα'}</span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={onAssignments}
+              className="rounded-none"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Αναθέσεις
+            </Button>
+            <Button onClick={onSave} className="rounded-none">
+              <Save className="w-4 h-4 mr-2" />
+              Αποθήκευση
+            </Button>
+          </div>
         </DialogTitle>
       </DialogHeader>
-      
-      <ScrollArea className="flex-1 h-full">
-        <div className="space-y-6 p-6">
-          <ProgramBasicInfo
-            name={program.name}
-            description={program.description || ''}
-            selectedUserId={program.user_id}
+
+      <ScrollArea className="h-[calc(90vh-120px)] pr-6">
+        <div className="space-y-6">
+          <ProgramBuilder
+            program={program}
             users={users}
+            exercises={exercises}
             onNameChange={onNameChange}
             onDescriptionChange={onDescriptionChange}
             onAthleteChange={onAthleteChange}
-          />
-
-          <TrainingWeeks
-            weeks={program.weeks || []}
-            exercises={exercises}
-            selectedUserId={program.user_id}
             onAddWeek={onAddWeek}
             onRemoveWeek={onRemoveWeek}
             onDuplicateWeek={onDuplicateWeek}
@@ -124,22 +143,16 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onReorderExercises={onReorderExercises}
           />
 
-          {onTrainingDatesChange && (
-            <CalendarSection
-              program={program}
-              totalDays={totalDays}
-              onTrainingDatesChange={onTrainingDatesChange}
-            />
-          )}
+          <Separator />
+
+          <TrainingDateSelector
+            selectedDates={selectedDatesAsStrings}
+            onDatesChange={handleDatesChange}
+            programWeeks={program.weeks?.length || 0}
+            weekStructure={program.weeks || []}
+          />
         </div>
       </ScrollArea>
-
-      <ActionButtons
-        program={program}
-        totalDays={totalDays}
-        onSave={onSave}
-        onAssignment={handleAssignment}
-      />
     </DialogContent>
   );
 };
