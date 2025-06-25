@@ -76,9 +76,9 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
     });
 
     return {
-      volume: Math.round(totalVolume / 1000), // Convert kg to tons
+      volume: (totalVolume / 1000).toFixed(2), // Convert kg to tons with 2 decimal places
       intensity: intensityCount > 0 ? Math.round(totalIntensitySum / intensityCount) : 0, // Μέσος όρος
-      watts: Math.round(totalWatts / 1000), // Convert watts to kilowatts
+      watts: (totalWatts / 1000).toFixed(1), // Convert watts to kilowatts with 1 decimal place
       time: Math.round(totalTimeSeconds / 60), // Convert to minutes
       exerciseCount: blocks.reduce((total, block) => 
         total + (block.program_exercises?.filter(ex => ex.exercise_id).length || 0), 0)
@@ -96,7 +96,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
             <TrendingUp className="w-3 h-3 text-blue-600" />
             <span className="text-gray-600">Όγκος</span>
           </div>
-          <div className="font-semibold text-blue-700">{volume.toLocaleString()}tn</div>
+          <div className="font-semibold text-blue-700">{volume}tn</div>
         </div>
         
         <div className="text-center">

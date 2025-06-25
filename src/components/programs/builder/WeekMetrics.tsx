@@ -9,9 +9,9 @@ interface WeekMetricsProps {
 }
 
 interface WeekStats {
-  volume: number;
+  volume: string;
   intensity: number;
-  watts: number;
+  watts: string;
   time: number;
 }
 
@@ -121,16 +121,18 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
   });
 
   return {
-    volume: Math.round(totalVolume / 1000), // Convert kg to tons
+    volume: (totalVolume / 1000).toFixed(2), // Convert kg to tons with 2 decimal places
     intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
-    watts: Math.round(totalWatts / 1000), // Convert watts to kilowatts
+    watts: (totalWatts / 1000).toFixed(1), // Convert watts to kilowatts with 1 decimal place
     time: Math.round(totalTimeSeconds / 60) // Convert to minutes
   };
 };
 
-const calculatePercentageChange = (current: number, previous: number): number => {
-  if (previous === 0) return 0;
-  return Math.round(((current - previous) / previous) * 100);
+const calculatePercentageChange = (current: string, previous: string): number => {
+  const currentNum = parseFloat(current);
+  const previousNum = parseFloat(previous);
+  if (previousNum === 0) return 0;
+  return Math.round(((currentNum - previousNum) / previousNum) * 100);
 };
 
 const PercentageIndicator: React.FC<{ percentage: number }> = ({ percentage }) => {
@@ -164,7 +166,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
     <div className="text-xs space-y-1 mt-1 px-2 py-1 bg-gray-50 rounded">
       <div className="grid grid-cols-4 gap-2">
         <div className="text-center">
-          <div className="font-semibold text-blue-700">{currentStats.volume.toLocaleString()}tn</div>
+          <div className="font-semibold text-blue-700">{currentStats.volume}tn</div>
           {previousStats && (
             <PercentageIndicator 
               percentage={calculatePercentageChange(currentStats.volume, previousStats.volume)} 
@@ -176,7 +178,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
           <div className="font-semibold text-green-700">{currentStats.intensity}%</div>
           {previousStats && (
             <PercentageIndicator 
-              percentage={calculatePercentageChange(currentStats.intensity, previousStats.intensity)} 
+              percentage={calculatePercentageChange(currentStats.intensity.toString(), previousStats.intensity.toString())} 
             />
           )}
         </div>
@@ -194,7 +196,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
           <div className="font-semibold text-red-700">{currentStats.time}λ</div>
           {previousStats && (
             <PercentageIndicator 
-              percentage={calculatePercentageChange(currentStats.time, previousStats.time)} 
+              percentage={calculatePercentageChange(currentStats.time.toString(), previousStats.time.toString())} 
             />
           )}
         </div>
