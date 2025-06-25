@@ -82,6 +82,13 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     });
   };
 
+  const handleGroupChange = (groupId: string) => {
+    console.log('🔄 ProgramBuilderDialog - handleGroupChange called with:', groupId);
+    updateProgram({ 
+      selected_group_id: groupId
+    });
+  };
+
   const handleToggleAssignmentMode = (isMultiple: boolean) => {
     actions.handleToggleAssignmentMode(isMultiple);
   };
@@ -96,6 +103,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onDescriptionChange={(description) => updateProgram({ description })}
         onAthleteChange={handleAthleteChange}
         onMultipleAthleteChange={handleMultipleAthleteChange}
+        onGroupChange={handleGroupChange}
         onToggleAssignmentMode={handleToggleAssignmentMode}
         onAddWeek={actions.addWeek}
         onRemoveWeek={actions.removeWeek}

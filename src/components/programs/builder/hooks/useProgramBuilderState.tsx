@@ -1,32 +1,12 @@
 
 import { useState, useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import type { User, Exercise } from '../../types';
 
-export interface Exercise {
-  id: string;
-  exercise_id: string;
-  sets: number;
-  reps: string;
-  kg: string;
-  percentage_1rm?: number;
-  velocity_ms?: number;
-  tempo: string;
-  rest: string;
-  notes: string;
-  exercise_order: number;
-  exercises?: {
-    id: string;
-    name: string;
-    description?: string;
-    video_url?: string;
-  };
-}
-
-export interface Block {
+export interface Week {
   id: string;
   name: string;
-  block_order: number;
-  program_exercises: Exercise[];
+  week_number: number;
+  program_days: Day[];
 }
 
 export interface Day {
@@ -37,34 +17,53 @@ export interface Day {
   program_blocks: Block[];
 }
 
-export interface Week {
+export interface Block {
   id: string;
   name: string;
-  week_number: number;
-  program_days: Day[];
+  block_order: number;
+  program_exercises: ProgramExercise[];
+}
+
+export interface ProgramExercise {
+  id: string;
+  exercise_id: string;
+  exercise_order: number;
+  sets: number;
+  reps: string;
+  kg: string;
+  tempo: string;
+  rest: string;
+  notes?: string;
+  exercises?: Exercise;
 }
 
 export interface ProgramStructure {
   id?: string;
   name: string;
   description: string;
-  user_id?: string;
-  user_ids?: string[]; // Νέο πεδίο για πολλαπλούς χρήστες
-  is_multiple_assignment?: boolean; // Flag για πολλαπλή ανάθεση
+  user_id: string;
+  user_ids: string[];
+  selected_group_id?: string;
+  is_multiple_assignment: boolean;
+  training_dates: Date[];
   weeks: Week[];
-  training_dates?: (Date | string)[];
 }
 
-export const useProgramBuilderState = (availableExercises: any[]) => {
+export const useProgramBuilderState = (exercises: Exercise[]) => {
   const [program, setProgram] = useState<ProgramStructure>({
     name: '',
     description: '',
     user_id: '',
     user_ids: [],
-    is_multiple_assignment: false,
-    weeks: [],
-    training_dates: []
+    selected_group_id: '',
+    is_multiple_assignment: true,
+    training_dates: [],
+    weeks: []
   });
+
+  const generateId = useCallback(() => {
+    return Math.random().toString(36).substr(2, 9);
+  }, []);
 
   const updateProgram = useCallback((updates: Partial<ProgramStructure>) => {
     setProgram(prev => ({ ...prev, ...updates }));
@@ -76,16 +75,15 @@ export const useProgramBuilderState = (availableExercises: any[]) => {
       description: '',
       user_id: '',
       user_ids: [],
-      is_multiple_assignment: false,
-      weeks: [],
-      training_dates: []
+      selected_group_id: '',
+      is_multiple_assignment: true,
+      training_dates: [],
+      weeks: []
     });
   }, []);
 
-  const generateId = useCallback(() => uuidv4(), []);
-
   const loadProgramFromData = useCallback((programData: any) => {
-    console.log('Loading program data:', programData);
+    console.log('🔄 Loading program data:', programData);
     
     const loadedProgram: ProgramStructure = {
       id: programData.id,
@@ -93,42 +91,44 @@ export const useProgramBuilderState = (availableExercises: any[]) => {
       description: programData.description || '',
       user_id: programData.user_id || '',
       user_ids: programData.user_ids || [],
-      is_multiple_assignment: programData.is_multiple_assignment || false,
+      selected_group_id: programData.selected_group_id || '',
+      is_multiple_assignment: programData.is_multiple_assignment || true,
+      training_dates: programData.training_dates?.map((date: string) => new Date(date)) || [],
       weeks: programData.program_weeks?.map((week: any) => ({
-        id: week.id || generateId(),
-        name: week.name || `Εβδομάδα ${week.week_number}`,
+        id: week.id,
+        name: week.name,
         week_number: week.week_number,
         program_days: week.program_days?.map((day: any) => ({
-          id: day.id || generateId(),
-          name: day.name || `Ημέρα ${day.day_number}`,
+          id: day.id,
+          name: day.name,
           day_number: day.day_number,
           estimated_duration_minutes: day.estimated_duration_minutes,
           program_blocks: day.program_blocks?.map((block: any) => ({
-            id: block.id || generateId(),
-            name: block.name || 'Block',
+            id: block.id,
+            name: block.name,
             block_order: block.block_order,
-            program_exercises: block.program_exercises?.map((exercise: any) => ({
-              id: exercise.id || generateId(),
-              exercise_id: exercise.exercise_id,
-              sets: exercise.sets || 1,
-              reps: exercise.reps || '',
-              kg: exercise.kg || '',
-              percentage_1rm: exercise.percentage_1rm,
-              velocity_ms: exercise.velocity_ms,
-              tempo: exercise.tempo || '',
-              rest: exercise.rest || '',
-              notes: exercise.notes || '',
-              exercise_order: exercise.exercise_order || 1,
-              exercises: exercise.exercises
-            })) || []
+            program_exercises: block.program_exercises?.map((pe: any) => {
+              const exercise = exercises.find(ex => ex.id === pe.exercise_id);
+              return {
+                id: pe.id,
+                exercise_id: pe.exercise_id,
+                exercise_order: pe.exercise_order,
+                sets: pe.sets,
+                reps: pe.reps || '',
+                kg: pe.kg || '',
+                tempo: pe.tempo || '',
+                rest: pe.rest || '',
+                notes: pe.notes || '',
+                exercises: exercise
+              };
+            }) || []
           })) || []
         })) || []
-      })) || [],
-      training_dates: programData.training_dates || []
+      })) || []
     };
 
     setProgram(loadedProgram);
-  }, [generateId]);
+  }, [exercises]);
 
   const getTotalTrainingDays = useCallback(() => {
     return program.weeks.reduce((total, week) => {

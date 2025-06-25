@@ -17,6 +17,7 @@ interface ProgramBuilderDialogContentProps {
   onDescriptionChange: (description: string) => void;
   onAthleteChange: (user_id: string) => void;
   onMultipleAthleteChange: (userIds: string[]) => void;
+  onGroupChange: (groupId: string) => void;
   onToggleAssignmentMode: (isMultiple: boolean) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
@@ -52,6 +53,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onDescriptionChange,
   onAthleteChange,
   onMultipleAthleteChange,
+  onGroupChange,
   onToggleAssignmentMode,
   onAddWeek,
   onRemoveWeek,
@@ -119,6 +121,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onDescriptionChange={onDescriptionChange}
             onAthleteChange={onAthleteChange}
             onMultipleAthleteChange={onMultipleAthleteChange}
+            onGroupChange={onGroupChange}
             onToggleAssignmentMode={onToggleAssignmentMode}
             onAddWeek={onAddWeek}
             onRemoveWeek={onRemoveWeek}
