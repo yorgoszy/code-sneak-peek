@@ -27,7 +27,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
 
     let totalDaysBeforeWeek = 0;
     const weekStructure = program.weeks.map((week, index) => {
-      const daysInWeek = week.days?.length || 0;
+      const daysInWeek = week.program_days?.length || 0;
       const structure = {
         weekNumber: week.week_number || index + 1,
         daysInWeek,
