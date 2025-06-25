@@ -1,15 +1,14 @@
 
 import React from 'react';
 import { TabsList } from "@/components/ui/tabs";
-import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { SortableWeekTab } from './SortableWeekTab';
 import { Week } from '../types';
+import { SortableWeekTab } from './SortableWeekTab';
 
 interface WeekTabsHeaderProps {
   weeks: Week[];
   editingWeekId: string | null;
   editingWeekName: string;
-  activeWeek: string;
+  activeWeek: string | null;
   onWeekNameDoubleClick: (week: Week) => void;
   onWeekNameSave: () => void;
   onWeekNameKeyPress: (e: React.KeyboardEvent) => void;
@@ -31,14 +30,15 @@ export const WeekTabsHeader: React.FC<WeekTabsHeaderProps> = ({
   onRemoveWeek
 }) => {
   return (
-    <div className="w-full overflow-x-auto">
-      <TabsList className="inline-flex h-auto items-start justify-start rounded-none bg-muted p-1 text-muted-foreground min-w-full">
-        <SortableContext items={weeks.map(w => w.id)} strategy={horizontalListSortingStrategy}>
-          {weeks.map((week, index) => (
+    <div className="mb-6 overflow-x-auto">
+      <TabsList className="h-auto p-2 bg-transparent gap-2 flex-nowrap w-max min-w-full">
+        {weeks.map((week, index) => {
+          const previousWeek = index > 0 ? weeks[index - 1] : undefined;
+          return (
             <SortableWeekTab
               key={week.id}
               week={week}
-              previousWeek={index > 0 ? weeks[index - 1] : undefined}
+              previousWeek={previousWeek}
               isActive={activeWeek === week.id}
               editingWeekId={editingWeekId}
               editingWeekName={editingWeekName}
@@ -49,8 +49,8 @@ export const WeekTabsHeader: React.FC<WeekTabsHeaderProps> = ({
               onDuplicateWeek={onDuplicateWeek}
               onRemoveWeek={onRemoveWeek}
             />
-          ))}
-        </SortableContext>
+          );
+        })}
       </TabsList>
     </div>
   );

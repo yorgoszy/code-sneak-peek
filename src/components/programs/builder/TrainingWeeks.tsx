@@ -8,6 +8,8 @@ import { Exercise, Week } from '../types';
 import { WeekTabsHeader } from './WeekTabsHeader';
 import { WeekTabsContent } from './WeekTabsContent';
 import { useWeekEditingState } from './hooks/useWeekEditingState';
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 
 interface TrainingWeeksProps {
   weeks: Week[];
@@ -77,12 +79,17 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
     }
   }, [weeks, activeWeek, setActiveWeek]);
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over.id) {
-      const oldIndex = weeks.findIndex(week => week.id === active.id);
-      const newIndex = weeks.findIndex(week => week.id === over.id);
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = weeks.findIndex(week => week.id === active.id);
+    const newIndex = weeks.findIndex(week => week.id === over.id);
+    
+    if (oldIndex !== -1 && newIndex !== -1) {
       onReorderWeeks(oldIndex, newIndex);
     }
   };
@@ -100,41 +107,45 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
       </CardHeader>
       <CardContent>
         {weeks.length > 0 ? (
-          <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
-            <WeekTabsHeader
-              weeks={weeks}
-              editingWeekId={editingWeekId}
-              editingWeekName={editingWeekName}
-              activeWeek={activeWeek}
-              onWeekNameDoubleClick={handleWeekNameDoubleClick}
-              onWeekNameSave={handleWeekNameSave}
-              onWeekNameKeyPress={handleWeekNameKeyPress}
-              setEditingWeekName={setEditingWeekName}
-              onDuplicateWeek={onDuplicateWeek}
-              onRemoveWeek={onRemoveWeek}
-            />
-            
-            <WeekTabsContent
-              weeks={weeks}
-              exercises={exercises}
-              onAddDay={onAddDay}
-              onRemoveWeek={onRemoveWeek}
-              onAddBlock={onAddBlock}
-              onRemoveDay={onRemoveDay}
-              onDuplicateDay={onDuplicateDay}
-              onUpdateDayName={onUpdateDayName}
-              onAddExercise={onAddExercise}
-              onRemoveBlock={onRemoveBlock}
-              onDuplicateBlock={onDuplicateBlock}
-              onUpdateBlockName={onUpdateBlockName}
-              onUpdateExercise={onUpdateExercise}
-              onRemoveExercise={onRemoveExercise}
-              onDuplicateExercise={onDuplicateExercise}
-              onReorderDays={onReorderDays}
-              onReorderBlocks={onReorderBlocks}
-              onReorderExercises={onReorderExercises}
-            />
-          </Tabs>
+          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
+              <SortableContext items={weeks.map(week => week.id)} strategy={horizontalListSortingStrategy}>
+                <WeekTabsHeader
+                  weeks={weeks}
+                  editingWeekId={editingWeekId}
+                  editingWeekName={editingWeekName}
+                  activeWeek={activeWeek}
+                  onWeekNameDoubleClick={handleWeekNameDoubleClick}
+                  onWeekNameSave={handleWeekNameSave}
+                  onWeekNameKeyPress={handleWeekNameKeyPress}
+                  setEditingWeekName={setEditingWeekName}
+                  onDuplicateWeek={onDuplicateWeek}
+                  onRemoveWeek={onRemoveWeek}
+                />
+              </SortableContext>
+              
+              <WeekTabsContent
+                weeks={weeks}
+                exercises={exercises}
+                onAddDay={onAddDay}
+                onRemoveWeek={onRemoveWeek}
+                onAddBlock={onAddBlock}
+                onRemoveDay={onRemoveDay}
+                onDuplicateDay={onDuplicateDay}
+                onUpdateDayName={onUpdateDayName}
+                onAddExercise={onAddExercise}
+                onRemoveBlock={onRemoveBlock}
+                onDuplicateBlock={onDuplicateBlock}
+                onUpdateBlockName={onUpdateBlockName}
+                onUpdateExercise={onUpdateExercise}
+                onRemoveExercise={onRemoveExercise}
+                onDuplicateExercise={onDuplicateExercise}
+                onReorderDays={onReorderDays}
+                onReorderBlocks={onReorderBlocks}
+                onReorderExercises={onReorderExercises}
+              />
+            </Tabs>
+          </DndContext>
         ) : (
           <div className="text-center py-8 text-gray-500">
             Προσθέστε μια εβδομάδα για να ξεκινήσετε
