@@ -3,6 +3,7 @@ import React from 'react';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { CalendarDisplay } from './calendar/CalendarDisplay';
 import { SelectionProgress } from './calendar/SelectionProgress';
+import { ProgramRequirements } from './calendar/ProgramRequirements';
 import { useCalendarLogic } from './calendar/hooks/useCalendarLogic';
 
 interface CalendarSectionProps {
@@ -17,6 +18,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   onTrainingDatesChange
 }) => {
   const {
+    weekStructure,
     selectedDatesAsStrings,
     currentWeekInfo,
     handleDateSelect,
@@ -44,7 +46,12 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
           />
         </div>
         
-        <div className="w-80">
+        <div className="w-80 space-y-4">
+          <ProgramRequirements
+            weekStructure={weekStructure}
+            totalDays={totalDays}
+          />
+          
           <SelectionProgress
             selectedCount={selectedDatesAsStrings.length}
             totalDays={totalDays}
