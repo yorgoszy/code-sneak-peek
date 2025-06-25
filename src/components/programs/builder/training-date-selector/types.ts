@@ -23,7 +23,3 @@ export interface SelectionProgressProps {
   totalRequiredDays: number;
   onClearAll: () => void;
 }
-
-export interface InstructionsProps {
-  totalRequiredDays: number;
-}

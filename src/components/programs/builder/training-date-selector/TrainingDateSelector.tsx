@@ -7,7 +7,6 @@ import { useTrainingDateLogic } from './useTrainingDateLogic';
 import { TrainingDateCalendar } from './TrainingDateCalendar';
 import { ProgramRequirements } from './ProgramRequirements';
 import { SelectionProgress } from './SelectionProgress';
-import { Instructions } from './Instructions';
 
 export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   selectedDates,
@@ -79,9 +78,6 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
             />
           </div>
         </div>
-        
-        {/* Instructions */}
-        <Instructions totalRequiredDays={totalRequiredDays} />
       </CardContent>
     </Card>
   );
