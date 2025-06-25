@@ -117,8 +117,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onNameChange={onNameChange}
             onDescriptionChange={onDescriptionChange}
             onAthleteChange={onAthleteChange}
-            onMultipleAthleteChange={handleMultipleAthleteChange}
-            onToggleAssignmentMode={handleToggleAssignmentMode}
+            onMultipleAthleteChange={(userIds) => console.log('Multiple athletes selected:', userIds)}
+            onToggleAssignmentMode={(isMultiple) => console.log('Toggle assignment mode:', isMultiple)}
             onAddWeek={onAddWeek}
             onRemoveWeek={onRemoveWeek}
             onDuplicateWeek={onDuplicateWeek}

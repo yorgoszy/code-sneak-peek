@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { TrainingDateSelector } from './TrainingDateSelector';
+import { DateSelectionCard } from './DateSelectionCard';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 
 interface CalendarSectionProps {
@@ -18,32 +18,18 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     return null;
   }
 
-  // Create week structure from program weeks
-  const createWeekStructure = () => {
-    if (!program.weeks || program.weeks.length === 0) {
-      console.log('🗓️ [CalendarSection] No weeks found in program');
-      return [];
-    }
-
-    let totalDaysBeforeWeek = 0;
-    const weekStructure = program.weeks.map((week, index) => {
-      const daysInWeek = week.program_days?.length || 0;
-      const structure = {
-        weekNumber: week.week_number || index + 1,
-        daysInWeek,
-        totalDaysBeforeWeek
-      };
-      totalDaysBeforeWeek += daysInWeek;
-      return structure;
-    });
-
-    console.log('🗓️ [CalendarSection] Created week structure:', weekStructure);
-    return weekStructure;
+  // Calculate days per week from the program structure
+  const calculateDaysPerWeek = () => {
+    if (!program.weeks || program.weeks.length === 0) return 2;
+    
+    const totalDaysInProgram = program.weeks.reduce((sum, week) => sum + (week.program_days?.length || 0), 0);
+    return Math.round(totalDaysInProgram / program.weeks.length);
   };
 
-  const weekStructure = createWeekStructure();
+  const daysPerWeek = calculateDaysPerWeek();
+  const totalWeeks = program.weeks?.length || 0;
 
-  // Μετατροπή των training_dates από Date[] σε string[]
+  // Convert training_dates from Date[] to string[]
   const selectedDatesAsStrings = (program.training_dates || []).map(date => {
     if (typeof date === 'string') {
       return date;
@@ -51,19 +37,59 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     return date.toISOString().split('T')[0]; // YYYY-MM-DD format
   });
 
-  const handleDatesChange = (dates: string[]) => {
-    console.log('🗓️ [CalendarSection] Dates changed:', dates);
-    // Μετατροπή από string[] σε Date[]
-    const datesAsObjects = dates.map(dateString => new Date(dateString + 'T12:00:00'));
-    onTrainingDatesChange(datesAsObjects);
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    const dateString = date.toISOString().split('T')[0];
+    const currentDates = selectedDatesAsStrings.slice();
+    
+    if (currentDates.includes(dateString)) {
+      // Remove date if already selected
+      const newDates = currentDates.filter(d => d !== dateString);
+      const datesAsObjects = newDates.map(dateStr => new Date(dateStr + 'T12:00:00'));
+      onTrainingDatesChange(datesAsObjects);
+    } else if (currentDates.length < totalDays) {
+      // Add date if under limit
+      const newDates = [...currentDates, dateString].sort();
+      const datesAsObjects = newDates.map(dateStr => new Date(dateStr + 'T12:00:00'));
+      onTrainingDatesChange(datesAsObjects);
+    }
+  };
+
+  const handleClearAllDates = () => {
+    onTrainingDatesChange([]);
+  };
+
+  const isDateSelected = (date: Date) => {
+    const dateString = date.toISOString().split('T')[0];
+    return selectedDatesAsStrings.includes(dateString);
+  };
+
+  const isDateDisabled = (date: Date) => {
+    // Disable past dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) return true;
+
+    // If date is already selected, allow it (for deselection)
+    if (isDateSelected(date)) return false;
+
+    // Don't allow more selections if we've reached the limit
+    return selectedDatesAsStrings.length >= totalDays;
   };
 
   return (
-    <TrainingDateSelector
+    <DateSelectionCard
       selectedDates={selectedDatesAsStrings}
-      onDatesChange={handleDatesChange}
-      programWeeks={program.weeks?.length || 0}
-      weekStructure={weekStructure}
+      daysPerWeek={daysPerWeek}
+      totalWeeks={totalWeeks}
+      totalRequiredSessions={totalDays}
+      onDateSelect={handleDateSelect}
+      onClearAllDates={handleClearAllDates}
+      isDateSelected={isDateSelected}
+      isDateDisabled={isDateDisabled}
+      completedDates={[]}
+      editMode={false}
     />
   );
 };
