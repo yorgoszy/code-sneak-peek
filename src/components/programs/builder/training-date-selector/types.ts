@@ -52,3 +52,10 @@ export interface UseTrainingDateLogicProps {
     }>;
   }>;
 }
+
+export interface CalendarDayContentProps {
+  date: Date;
+  isSelected: boolean;
+  isToday: boolean;
+  onRemoveDate: (dateString: string, event?: React.MouseEvent) => void;
+}
