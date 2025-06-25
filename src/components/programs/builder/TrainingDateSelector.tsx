@@ -62,7 +62,10 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
     }
   };
 
-  const removeDate = (dateToRemove: string) => {
+  const removeDate = (dateToRemove: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
     console.log('🗓️ [TrainingDateSelector] Removing date:', dateToRemove);
     const newDates = selectedDates.filter(d => d !== dateToRemove);
     console.log('🗓️ [TrainingDateSelector] After removal:', newDates);
@@ -107,6 +110,34 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
     return selectedDates.length >= totalRequiredDays;
   };
 
+  // Custom day content to add X button for selected dates
+  const renderDayContent = (date: Date) => {
+    const isSelected = isDateSelected(date);
+    const isTodayDate = isToday(date);
+    
+    return (
+      <div className="relative w-full h-full flex items-center justify-center">
+        <span className={isTodayDate ? "font-bold" : ""}>{date.getDate()}</span>
+        {isSelected && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute -top-1 -right-1 h-4 w-4 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const cleanDate = createDateFromCalendar(date);
+              const dateString = formatDateToLocalString(cleanDate);
+              removeDate(dateString, e);
+            }}
+          >
+            <X className="h-2 w-2" />
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   console.log('🗓️ [TrainingDateSelector] Current selectedDates:', selectedDates);
 
   return (
@@ -129,18 +160,21 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
               className="rounded-none border"
               weekStartsOn={1}
               disabled={isDateDisabled}
+              components={{
+                DayContent: ({ date }) => renderDayContent(date)
+              }}
               modifiers={{
                 selected: isDateSelected,
                 today: isToday
               }}
               modifiersClassNames={{
                 selected: "bg-[#00ffba] text-black hover:bg-[#00ffba]/90",
-                today: "bg-[#00cc94] text-black font-bold border-2 border-[#00ffba]"
+                today: "bg-gray-300 text-black border-2 border-gray-500"
               }}
             />
           </div>
 
-          {/* Requirements Display */}
+          {/* Program Info and Progress */}
           <div className="space-y-4">
             <div className="bg-blue-50 border border-blue-200 rounded-none p-4">
               <h4 className="font-medium text-blue-800 mb-2">Απαιτήσεις Προγράμματος</h4>
@@ -161,53 +195,24 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
                 <div className="w-full bg-gray-200 rounded-none h-2">
                   <div 
                     className="bg-[#00ffba] h-2 rounded-none transition-all duration-300" 
-                    style={{ width: `${(selectedDates.length / totalRequiredDays) * 100}%` }}
+                    style={{ width: `${totalRequiredDays > 0 ? (selectedDates.length / totalRequiredDays) * 100 : 0}%` }}
                   ></div>
                 </div>
-                {selectedDates.length === totalRequiredDays && (
+                {selectedDates.length === totalRequiredDays && totalRequiredDays > 0 && (
                   <p className="text-green-700 font-medium">✓ Όλες οι ημερομηνίες επιλέχθηκαν!</p>
                 )}
-              </div>
-            </div>
-
-            {selectedDates.length > 0 && (
-              <div className="bg-gray-50 border border-gray-200 rounded-none p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-medium text-gray-800">
-                    Επιλεγμένες Ημερομηνίες ({selectedDates.length})
-                  </h4>
+                {selectedDates.length > 0 && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={clearAllDates}
-                    className="rounded-none"
+                    className="rounded-none mt-2"
                   >
-                    Καθαρισμός
+                    Καθαρισμός Όλων
                   </Button>
-                </div>
-                
-                <div className="max-h-40 overflow-y-auto space-y-1">
-                  {selectedDates.map(dateString => (
-                    <div
-                      key={dateString}
-                      className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-none text-sm"
-                    >
-                      <span>
-                        {format(parseDateFromString(dateString), 'dd/MM/yyyy - EEEE', { locale: el })}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeDate(dateString)}
-                        className="h-6 w-6 p-0 hover:bg-red-100 rounded-none"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
         
@@ -216,9 +221,9 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
           <p className="font-medium">Οδηγίες:</p>
           <ul className="mt-1 space-y-1 text-xs">
             <li>💡 Κάντε κλικ σε μια ημερομηνία για επιλογή</li>
-            <li>💡 Κάντε κλικ σε επιλεγμένη ημερομηνία για αποεπιλογή</li>
+            <li>💡 Κάντε κλικ στο "X" για αποεπιλογή επιλεγμένης ημερομηνίας</li>
             <li>⚠️ Μπορείτε να επιλέξετε μέχρι {totalRequiredDays} ημερομηνίες συνολικά</li>
-            <li>📅 Η σημερινή ημερομηνία εμφανίζεται με σκούρο πράσινο χρώμα</li>
+            <li>📅 Η σημερινή ημερομηνία εμφανίζεται με γκρι χρώμα</li>
           </ul>
         </div>
       </CardContent>
