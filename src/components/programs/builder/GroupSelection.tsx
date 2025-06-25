@@ -246,7 +246,7 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
                 Η ομάδα δεν έχει μέλη
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto">
+              <div className="space-y-2 max-h-60 overflow-y-auto">
                 {groupMembers.map(member => (
                   <div
                     key={member.id}
