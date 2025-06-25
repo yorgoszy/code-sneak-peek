@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Users, Group, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,6 +19,7 @@ interface GroupMember {
   name: string;
   email: string;
   role?: string;
+  photo_url?: string;
 }
 
 interface GroupSelectionProps {
@@ -33,6 +35,7 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
 }) => {
   const [groups, setGroups] = useState<GroupType[]>([]);
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+  const [allGroupsMembers, setAllGroupsMembers] = useState<{[key: string]: GroupMember[]}>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -73,11 +76,52 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
       })) || [];
 
       setGroups(groupsWithMemberCount);
+      
+      // Fetch members for all groups for preview
+      await fetchAllGroupsMembers(groupsWithMemberCount);
     } catch (error) {
       console.error('Error fetching groups:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAllGroupsMembers = async (groupsList: GroupType[]) => {
+    const membersMap: {[key: string]: GroupMember[]} = {};
+    
+    for (const group of groupsList) {
+      try {
+        const { data: membersData, error } = await supabase
+          .from('group_members')
+          .select(`
+            user_id,
+            app_users!inner(
+              id,
+              name,
+              email,
+              role,
+              photo_url
+            )
+          `)
+          .eq('group_id', group.id)
+          .limit(3); // Only fetch first 3 for preview
+
+        if (!error && membersData) {
+          const members = membersData.map(member => ({
+            id: member.app_users.id,
+            name: member.app_users.name,
+            email: member.app_users.email,
+            role: member.app_users.role,
+            photo_url: member.app_users.photo_url
+          }));
+          membersMap[group.id] = members;
+        }
+      } catch (error) {
+        console.error(`Error fetching members for group ${group.id}:`, error);
+      }
+    }
+    
+    setAllGroupsMembers(membersMap);
   };
 
   const fetchGroupMembers = async (groupId: string) => {
@@ -90,7 +134,8 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
             id,
             name,
             email,
-            role
+            role,
+            photo_url
           )
         `)
         .eq('group_id', groupId);
@@ -104,7 +149,8 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
         id: member.app_users.id,
         name: member.app_users.name,
         email: member.app_users.email,
-        role: member.app_users.role
+        role: member.app_users.role,
+        photo_url: member.app_users.photo_url
       })) || [];
 
       setGroupMembers(members);
@@ -120,89 +166,134 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
     onGroupChange(groupId);
   };
 
+  const getUserInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   const selectedGroup = groups.find(group => group.id === selectedGroupId);
 
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
-          <Group className="w-4 h-4" />
-          Επιλογή Ομάδας
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Select value={selectedGroupId} onValueChange={handleGroupChange} disabled={loading}>
-            <SelectTrigger className="rounded-none">
-              <SelectValue placeholder="Επιλέξτε ομάδα..." />
-            </SelectTrigger>
-            <SelectContent>
-              {groups.map((group) => (
-                <SelectItem key={group.id} value={group.id}>
-                  <div className="flex items-center gap-2">
-                    <Group className="w-4 h-4" />
-                    <span>{group.name}</span>
-                    {group.member_count && (
-                      <Badge variant="outline" className="text-xs rounded-none">
-                        {group.member_count} μέλη
-                      </Badge>
-                    )}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {selectedGroup && (
-            <div className="mt-3 p-3 bg-[#00ffba]/10 border border-[#00ffba]/20 rounded">
-              <div className="flex items-center gap-2 mb-2">
-                <Group className="w-5 h-5 text-[#00ffba]" />
-                <div>
-                  <p className="font-medium text-sm">{selectedGroup.name}</p>
-                  {selectedGroup.description && (
-                    <p className="text-xs text-gray-600">{selectedGroup.description}</p>
-                  )}
-                </div>
-              </div>
-              
-              {/* Show group members */}
-              {groupMembers.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-xs font-medium text-gray-700 mb-2">
-                    Μέλη ομάδας ({groupMembers.length}):
-                  </p>
-                  <div className="space-y-1 max-h-32 overflow-y-auto">
-                    {groupMembers.map(member => (
-                      <div
-                        key={member.id}
-                        className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200"
-                      >
-                        <User className="w-3 h-3 text-gray-500" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">{member.name}</p>
-                          <p className="text-xs text-gray-500 truncate">{member.email}</p>
-                        </div>
-                        {member.role && (
-                          <Badge variant="outline" className="text-xs rounded-none h-4 px-1">
-                            {member.role}
+    <div className="flex gap-4">
+      {/* Group Selection Box - 30% width */}
+      <div className="w-[30%]">
+        <Card className="rounded-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Group className="w-4 h-4" />
+              Επιλογή Ομάδας
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Select value={selectedGroupId} onValueChange={handleGroupChange} disabled={loading}>
+                <SelectTrigger className="rounded-none">
+                  <SelectValue placeholder="Επιλέξτε ομάδα..." />
+                </SelectTrigger>
+                <SelectContent className="rounded-none">
+                  {groups.map((group) => (
+                    <SelectItem key={group.id} value={group.id} className="rounded-none">
+                      <div className="w-full">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Group className="w-4 h-4" />
+                          <span className="font-medium">{group.name}</span>
+                          <Badge variant="outline" className="text-xs rounded-none">
+                            {group.member_count} μέλη
                           </Badge>
+                        </div>
+                        
+                        {/* Preview of group members */}
+                        {allGroupsMembers[group.id] && allGroupsMembers[group.id].length > 0 && (
+                          <div className="mt-2 pl-6">
+                            <p className="text-xs text-gray-500 mb-1">Μέλη:</p>
+                            <div className="space-y-1">
+                              {allGroupsMembers[group.id].slice(0, 3).map(member => (
+                                <div key={member.id} className="flex items-center gap-1 text-xs">
+                                  <Avatar className="w-4 h-4">
+                                    <AvatarImage src={member.photo_url} alt={member.name} />
+                                    <AvatarFallback className="text-xs text-[10px]">
+                                      {getUserInitials(member.name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="truncate max-w-[120px]">{member.name}</span>
+                                </div>
+                              ))}
+                              {group.member_count && group.member_count > 3 && (
+                                <div className="text-xs text-gray-400">
+                                  +{group.member_count - 3} ακόμη...
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
-                    ))}
-                  </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {selectedGroup && (
+                <div className="text-sm text-gray-600 bg-blue-50 p-3 border border-blue-200 rounded">
+                  <Users className="w-4 h-4 inline mr-2" />
+                  Θα δημιουργηθούν {selectedGroup.member_count} ατομικές αναθέσεις για όλα τα μέλη της ομάδας.
                 </div>
               )}
             </div>
-          )}
+          </CardContent>
+        </Card>
+      </div>
 
-          {selectedGroup && (
-            <div className="text-sm text-gray-600 bg-blue-50 p-3 border border-blue-200 rounded">
-              <Users className="w-4 h-4 inline mr-2" />
-              Θα δημιουργηθούν {selectedGroup.member_count} ατομικές αναθέσεις για όλα τα μέλη της ομάδας.
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+      {/* Selected Group Members Display - 70% width */}
+      <div className="w-[70%]">
+        <Card className="rounded-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Users className="w-4 h-4" />
+              {selectedGroup ? `Μέλη Ομάδας: ${selectedGroup.name}` : 'Μέλη Ομάδας'}
+              {selectedGroup && (
+                <Badge variant="outline" className="rounded-none">
+                  {groupMembers.length} μέλη
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!selectedGroup ? (
+              <div className="text-center text-sm text-gray-500 py-4">
+                Επιλέξτε μια ομάδα για να δείτε τα μέλη της
+              </div>
+            ) : groupMembers.length === 0 ? (
+              <div className="text-center text-sm text-gray-500 py-4">
+                Η ομάδα δεν έχει μέλη
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {groupMembers.map(member => (
+                  <div
+                    key={member.id}
+                    className="flex items-center gap-3 bg-[#00ffba]/10 border border-[#00ffba]/20 p-3 rounded hover:bg-[#00ffba]/20 transition-colors"
+                  >
+                    <Avatar className="w-8 h-8 flex-shrink-0">
+                      <AvatarImage src={member.photo_url} alt={member.name} />
+                      <AvatarFallback className="text-sm">
+                        {getUserInitials(member.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{member.name}</p>
+                      <p className="text-xs text-gray-600 truncate">{member.email}</p>
+                    </div>
+                    {member.role && (
+                      <Badge variant="outline" className="text-xs rounded-none">
+                        {member.role}
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
