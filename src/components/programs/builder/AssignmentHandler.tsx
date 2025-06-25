@@ -74,13 +74,14 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
       const savedProgram = await programService.saveProgram(program);
       console.log('✅ Πρόγραμμα αποθηκεύτηκε:', savedProgram);
 
-      // ΔΙΟΡΘΩΣΗ: 2. Μετατροπή ημερομηνιών σε strings χρησιμοποιώντας την καινούρια utility
-      const trainingDatesStrings = (program.training_dates || []).map(date => {
+      // ΔΙΟΡΘΩΣΗ: 2. Μετατροπή ημερομηνιών σε strings με σωστή χρήση type annotation
+      const trainingDatesStrings = (program.training_dates || []).map((date: Date | string) => {
         if (date instanceof Date) {
           return formatDateForStorage(date);
         }
         // Αν είναι ήδη string, αφαιρούμε το timestamp αν υπάρχει
-        return date.includes('T') ? date.split('T')[0] : date;
+        const dateStr = date as string;
+        return dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
       });
 
       console.log('📅 Formatted training dates:', trainingDatesStrings);

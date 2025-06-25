@@ -22,12 +22,13 @@ export const useCalendarLogic = (
 
   const weekStructure = useMemo(() => getWeekDaysStructure(), [program.weeks]);
 
-  // ΔΙΟΡΘΩΣΗ: Convert training_dates χρησιμοποιώντας τις νέες utility functions
+  // ΔΙΟΡΘΩΣΗ: Convert training_dates χρησιμοποιώντας τις νέες utility functions με σωστό type annotation
   const selectedDatesAsStrings = useMemo(() => {
-    return (program.training_dates || []).map(date => {
+    return (program.training_dates || []).map((date: Date | string) => {
       if (typeof date === 'string') {
         // Αν έχει timestamp, αφαιρούμε το
-        return date.includes('T') ? date.split('T')[0] : date;
+        const dateStr = date as string;
+        return dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
       }
       // Χρησιμοποιούμε τη νέα function για σωστή μετατροπή
       return formatDateForStorage(date);
