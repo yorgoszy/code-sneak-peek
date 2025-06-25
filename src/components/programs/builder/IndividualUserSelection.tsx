@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { User, Users, X, Plus } from "lucide-react";
 import type { User as UserType } from '../types';
 
@@ -20,27 +21,9 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
   onMultipleAthleteChange
 }) => {
   const [userListOpen, setUserListOpen] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const selectedUsers = users.filter(user => selectedUserIds.includes(user.id));
   const availableUsers = users.filter(user => !selectedUserIds.includes(user.id));
-
-  // Add wheel event listener for scrolling
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      scrollContainer.scrollTop += e.deltaY;
-    };
-
-    scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
-    
-    return () => {
-      scrollContainer.removeEventListener('wheel', handleWheel);
-    };
-  }, [userListOpen]);
 
   const handleUserToggle = (userId: string) => {
     console.log('🔄 IndividualUserSelection - handleUserToggle called with userId:', userId);
@@ -116,44 +99,42 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80 p-0 rounded-none" align="start">
-                  <div 
-                    ref={scrollContainerRef}
-                    className="max-h-60 overflow-y-auto p-2"
-                    style={{ scrollBehavior: 'smooth' }}
-                  >
-                    {availableUsers.length === 0 ? (
-                      <div className="p-4 text-center text-sm text-gray-500">
-                        Όλοι οι χρήστες έχουν επιλεγεί
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        {availableUsers.map(user => (
-                          <div
-                            key={user.id}
-                            className="w-full p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer select-none"
-                            onClick={(e) => handleUserClick(user.id, e)}
-                            onMouseDown={(e) => e.preventDefault()}
-                          >
-                            <div className="flex items-center justify-between w-full">
-                              <div className="flex items-center gap-2">
-                                <Avatar className="w-6 h-6">
-                                  <AvatarImage src={user.photo_url} alt={user.name} />
-                                  <AvatarFallback className="text-xs">
-                                    {getUserInitials(user.name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="text-left">
-                                  <p className="font-medium text-sm">{user.name}</p>
-                                  <p className="text-xs text-gray-600">{user.email}</p>
+                  <ScrollArea className="max-h-60">
+                    <div className="p-2">
+                      {availableUsers.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-gray-500">
+                          Όλοι οι χρήστες έχουν επιλεγεί
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          {availableUsers.map(user => (
+                            <div
+                              key={user.id}
+                              className="w-full p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer select-none"
+                              onClick={(e) => handleUserClick(user.id, e)}
+                              onMouseDown={(e) => e.preventDefault()}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="w-6 h-6">
+                                    <AvatarImage src={user.photo_url} alt={user.name} />
+                                    <AvatarFallback className="text-xs">
+                                      {getUserInitials(user.name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="text-left">
+                                    <p className="font-medium text-sm">{user.name}</p>
+                                    <p className="text-xs text-gray-600">{user.email}</p>
+                                  </div>
                                 </div>
+                                <Plus className="w-4 h-4 text-[#00ffba]" />
                               </div>
-                              <Plus className="w-4 h-4 text-[#00ffba]" />
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
                 </PopoverContent>
               </Popover>
             </div>
