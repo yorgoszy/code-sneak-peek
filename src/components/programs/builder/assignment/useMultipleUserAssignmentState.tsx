@@ -45,15 +45,11 @@ export const useMultipleUserAssignmentState = ({
     setSelectedUserIds([]);
   };
 
-  // Handle date selection - convert Date to string and set time to noon
+  // Handle date selection - convert Date to string
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    // Set the time to 12:00 PM (noon) to avoid timezone issues
-    const adjustedDate = new Date(date);
-    adjustedDate.setHours(12, 0, 0, 0);
-    
-    const dateStr = format(adjustedDate, 'yyyy-MM-dd');
+    const dateStr = format(date, 'yyyy-MM-dd');
     setSelectedDates(prev => {
       if (prev.includes(dateStr)) {
         return prev.filter(d => d !== dateStr);
@@ -74,17 +70,13 @@ export const useMultipleUserAssignmentState = ({
 
   // Check if date is selected - convert Date to string for comparison
   const isDateSelected = (date: Date) => {
-    const adjustedDate = new Date(date);
-    adjustedDate.setHours(12, 0, 0, 0);
-    const dateStr = format(adjustedDate, 'yyyy-MM-dd');
+    const dateStr = format(date, 'yyyy-MM-dd');
     return selectedDates.includes(dateStr);
   };
 
   // Check if date should be disabled - convert Date to string for comparison
   const isDateDisabled = (date: Date) => {
-    const adjustedDate = new Date(date);
-    adjustedDate.setHours(12, 0, 0, 0);
-    const dateStr = format(adjustedDate, 'yyyy-MM-dd');
+    const dateStr = format(date, 'yyyy-MM-dd');
     return !selectedDates.includes(dateStr) && selectedDates.length >= totalRequiredSessions;
   };
 
