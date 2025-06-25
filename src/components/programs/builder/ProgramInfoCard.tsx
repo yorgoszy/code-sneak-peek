@@ -74,11 +74,11 @@ export const ProgramInfoCard: React.FC<ProgramInfoCardProps> = ({
                   ) : (
                     <Users className="w-4 h-4" />
                   )}
-                  {multipleUsers ? 'Πολλαπλοί Αθλητές' : assignmentType === 'individual' ? 'Αθλητής' : 'Ομάδα'}
+                  {multipleUsers ? 'Πολλαπλοί Χρήστες' : assignmentType === 'individual' ? 'Χρήστης' : 'Ομάδα'}
                 </h4>
                 
                 {multipleUsers ? (
-                  <p className="text-sm text-gray-600">{selectedUsersCount} επιλεγμένοι αθλητές</p>
+                  <p className="text-sm text-gray-600">{selectedUsersCount} επιλεγμένοι χρήστες</p>
                 ) : selectedUser ? (
                   <>
                     <p className="text-sm text-gray-600">{selectedUser.name}</p>
