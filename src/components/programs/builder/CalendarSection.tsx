@@ -2,6 +2,7 @@
 import React from 'react';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { CalendarDisplay } from './calendar/CalendarDisplay';
+import { SelectionProgress } from './calendar/SelectionProgress';
 import { useCalendarLogic } from './calendar/hooks/useCalendarLogic';
 
 interface CalendarSectionProps {
@@ -29,7 +30,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
       <CalendarDisplay
         selectedDatesAsStrings={selectedDatesAsStrings}
         totalDays={totalDays}
@@ -38,6 +39,11 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
         onClearAllDates={handleClearAllDates}
         isDateSelected={isDateSelected}
         isDateDisabled={isDateDisabled}
+      />
+      
+      <SelectionProgress
+        selectedCount={selectedDatesAsStrings.length}
+        totalDays={totalDays}
       />
     </div>
   );
