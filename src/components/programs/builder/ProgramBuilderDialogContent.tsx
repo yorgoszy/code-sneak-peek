@@ -83,6 +83,10 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
     console.log('🔄 Toggle assignment mode:', isMultiple);
   };
 
+  const canAssign = program.user_ids && program.user_ids.length > 0 && 
+                   program.training_dates && program.training_dates.length > 0 &&
+                   program.name?.trim();
+
   return (
     <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none">
       <DialogHeader className="flex-shrink-0 p-6 border-b">
@@ -99,10 +103,12 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             <Button
               variant="outline"
               onClick={onAssignments}
+              disabled={!canAssign}
               className="rounded-none"
+              title={!canAssign ? "Επιλέξτε χρήστες και ημερομηνίες προπόνησης" : ""}
             >
               <Users className="w-4 h-4 mr-2" />
-              Αναθέσεις
+              Ανάθεση
             </Button>
           </div>
         </DialogTitle>

@@ -1,10 +1,8 @@
-
 import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import type { User, Exercise } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
 import { assignmentService } from '../services/assignmentService';
-import { groupAssignmentService } from '../services/groupAssignmentService';
 
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
@@ -27,8 +25,6 @@ export const useProgramBuilderDialogLogic = ({
   isOpen,
   program
 }: UseProgramBuilderDialogLogicProps) => {
-  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
-
   const availableUsers = useMemo(() => {
     return users.filter(user => 
       user.role === 'athlete' || 
@@ -54,61 +50,69 @@ export const useProgramBuilderDialogLogic = ({
       console.log('✅ Program saved:', savedProgram);
       
       toast.success('Το πρόγραμμα αποθηκεύτηκε επιτυχώς!');
-      handleClose();
+      
+      // Don't close dialog, keep it open for assignments
     } catch (error) {
       console.error('❌ Error saving program:', error);
       toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
     }
   };
 
-  const handleOpenAssignments = () => {
-    if (!program.name?.trim()) {
-      toast.error('Πρώτα αποθηκεύστε το πρόγραμμα');
-      return;
-    }
-    setAssignmentDialogOpen(true);
-  };
-
-  const handleAssign = async (
-    userId: string, 
-    trainingDates: string[], 
-    assignmentType: 'individual' | 'group' = 'individual',
-    groupId?: string
-  ) => {
+  const handleAssign = async () => {
     try {
-      console.log('🎯 Starting assignment process:', { assignmentType, userId, groupId, trainingDates });
+      console.log('🎯 Starting assignment process:', { program, user_ids: program.user_ids });
 
+      if (!program.name?.trim()) {
+        toast.error('Πρώτα αποθηκεύστε το πρόγραμμα');
+        return;
+      }
+
+      if (!program.user_ids || program.user_ids.length === 0) {
+        toast.error('Παρακαλώ επιλέξτε τουλάχιστον έναν χρήστη');
+        return;
+      }
+
+      if (!program.training_dates || program.training_dates.length === 0) {
+        toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης');
+        return;
+      }
+
+      // Ensure program is saved first
+      let programToAssign = program;
       if (!program.id) {
-        // Save program first if it doesn't have an ID
         const savedProgram = await onCreateProgram(program);
         if (!savedProgram || !savedProgram.id) {
           throw new Error('Αποτυχία αποθήκευσης προγράμματος');
         }
-        program.id = savedProgram.id;
+        programToAssign = { ...program, id: savedProgram.id };
       }
 
-      if (assignmentType === 'group' && groupId) {
-        console.log('👥 Creating group assignment');
-        const result = await groupAssignmentService.assignProgramToGroup(
-          groupId,
-          program,
-          trainingDates
-        );
+      // Convert Date objects to strings
+      const trainingDates = program.training_dates.map(date => {
+        if (date instanceof Date) {
+          return date.toISOString().split('T')[0];
+        }
+        return typeof date === 'string' ? date : String(date);
+      });
+
+      console.log('🎯 Creating assignments for users:', program.user_ids);
+      console.log('🎯 Training dates:', trainingDates);
+
+      // Create assignments for each selected user
+      for (const userId of program.user_ids) {
+        console.log(`📝 Creating assignment for user: ${userId}`);
         
-        toast.success(`Το πρόγραμμα ανατέθηκε επιτυχώς στην ομάδα! Δημιουργήθηκαν ${result.totalMembers} ατομικές αναθέσεις.`);
-      } else {
-        console.log('👤 Creating individual assignment');
         const assignmentData = {
-          program,
+          program: programToAssign,
           userId,
           trainingDates
         };
 
         await assignmentService.saveAssignment(assignmentData);
-        toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς!');
+        console.log(`✅ Assignment created for user: ${userId}`);
       }
 
-      setAssignmentDialogOpen(false);
+      toast.success(`Το πρόγραμμα ανατέθηκε επιτυχώς σε ${program.user_ids.length} χρήστες!`);
       handleClose();
 
       // Redirect to active programs
@@ -123,13 +127,9 @@ export const useProgramBuilderDialogLogic = ({
   };
 
   return {
-    assignmentDialogOpen,
-    setAssignmentDialogOpen,
     handleClose,
     handleSave,
-    handleOpenAssignments,
     handleAssign,
-    availableUsers,
-    editingAssignment: editingAssignment
+    availableUsers
   };
 };
