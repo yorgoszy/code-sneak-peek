@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { User, Users, X, Plus } from "lucide-react";
 import type { User as UserType } from '../types';
 
@@ -98,8 +97,8 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
                     }
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-0 rounded-none" align="start">
-                  <ScrollArea className="max-h-60">
+                <PopoverContent className="w-80 p-0 rounded-none z-50 bg-white shadow-lg border" align="start">
+                  <div className="max-h-60 overflow-y-auto">
                     <div className="p-2">
                       {availableUsers.length === 0 ? (
                         <div className="p-4 text-center text-sm text-gray-500">
@@ -134,7 +133,7 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
                         </div>
                       )}
                     </div>
-                  </ScrollArea>
+                  </div>
                 </PopoverContent>
               </Popover>
             </div>
