@@ -34,22 +34,17 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
             <CalendarIcon className="w-5 h-5" />
             Επιλογή Ημερομηνιών Προπόνησης
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">
-              {selectedDatesAsStrings.length}/{totalDays} προπονήσεις
-            </span>
-            {selectedDatesAsStrings.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onClearAllDates}
-                className="rounded-none"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Καθαρισμός
-              </Button>
-            )}
-          </div>
+          {selectedDatesAsStrings.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClearAllDates}
+              className="rounded-none"
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              Καθαρισμός
+            </Button>
+          )}
         </CardTitle>
       </CardHeader>
       
