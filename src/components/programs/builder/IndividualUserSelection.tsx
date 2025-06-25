@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User, Users, X, Plus } from "lucide-react";
 import type { User as UserType } from '../types';
 
@@ -83,6 +84,10 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
     handleUserToggle(userId);
   };
 
+  const getUserInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   return (
     <div className="flex gap-4">
       {/* User Selection Box - 30% width */}
@@ -131,7 +136,12 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
                           >
                             <div className="flex items-center justify-between w-full">
                               <div className="flex items-center gap-2">
-                                <User className="w-4 h-4" />
+                                <Avatar className="w-6 h-6">
+                                  <AvatarImage src={user.photo_url} alt={user.name} />
+                                  <AvatarFallback className="text-xs">
+                                    {getUserInitials(user.name)}
+                                  </AvatarFallback>
+                                </Avatar>
                                 <div className="text-left">
                                   <p className="font-medium text-sm">{user.name}</p>
                                   <p className="text-xs text-gray-600">{user.email}</p>
@@ -185,14 +195,19 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
                 Δεν έχουν επιλεγεί χρήστες
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {selectedUsers.map(user => (
                   <div
                     key={user.id}
                     className="flex items-center justify-between bg-[#00ffba]/10 border border-[#00ffba]/20 p-2 rounded hover:bg-[#00ffba]/20 transition-colors"
                   >
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <User className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
+                      <Avatar className="w-6 h-6 flex-shrink-0">
+                        <AvatarImage src={user.photo_url} alt={user.name} />
+                        <AvatarFallback className="text-xs">
+                          {getUserInitials(user.name)}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-xs truncate">{user.name}</p>
                         <p className="text-xs text-gray-600 truncate">{user.email}</p>
