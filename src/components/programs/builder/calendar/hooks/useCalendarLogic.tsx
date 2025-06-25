@@ -106,11 +106,9 @@ export const useCalendarLogic = (
   };
 
   const isDateDisabled = (date: Date) => {
-    // Disable past dates
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (date < today) return true;
-
+    // Αφαίρεση του περιορισμού για παλιές ημερομηνίες
+    // Επιτρέπουμε όλες τις ημερομηνίες
+    
     // If date is already selected, allow it (for deselection)
     if (isDateSelected(date)) return false;
 
