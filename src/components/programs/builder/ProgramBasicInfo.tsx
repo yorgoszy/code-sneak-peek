@@ -43,28 +43,29 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   const availableUsers = users.filter(user => !selectedUserIds.includes(user.id));
 
   const handleUserToggle = (userId: string) => {
-    if (!onMultipleAthleteChange) return;
+    console.log('🔄 ProgramBasicInfo - handleUserToggle called with userId:', userId);
+    if (!onMultipleAthleteChange) {
+      console.log('❌ ProgramBasicInfo - onMultipleAthleteChange not available');
+      return;
+    }
     
     const newSelectedIds = selectedUserIds.includes(userId)
       ? selectedUserIds.filter(id => id !== userId)
       : [...selectedUserIds, userId];
     
+    console.log('✅ ProgramBasicInfo - Updating selectedUserIds:', newSelectedIds);
     onMultipleAthleteChange(newSelectedIds);
   };
 
   const handleClearAll = () => {
+    console.log('🧹 ProgramBasicInfo - Clearing all selected users');
     if (onMultipleAthleteChange) {
       onMultipleAthleteChange([]);
     }
   };
 
-  const handleUserAdd = (userId: string) => {
-    handleUserToggle(userId);
-  };
-
-  const handleUserClick = (userId: string, event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const handleUserClick = (userId: string) => {
+    console.log('👆 ProgramBasicInfo - User clicked:', userId);
     handleUserToggle(userId);
   };
 
@@ -124,22 +125,23 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                   ) : (
                     <div className="space-y-1">
                       {availableUsers.map(user => (
-                        <div
+                        <Button
                           key={user.id}
-                          className="cursor-pointer p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
-                          onClick={(e) => handleUserClick(user.id, e)}
+                          variant="ghost"
+                          className="w-full justify-start p-3 h-auto cursor-pointer hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
+                          onClick={() => handleUserClick(user.id)}
                         >
                           <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-2">
                               <User className="w-4 h-4" />
-                              <div>
+                              <div className="text-left">
                                 <p className="font-medium text-sm">{user.name}</p>
                                 <p className="text-xs text-gray-600">{user.email}</p>
                               </div>
                             </div>
                             <Plus className="w-4 h-4 text-[#00ffba]" />
                           </div>
-                        </div>
+                        </Button>
                       ))}
                     </div>
                   )}
@@ -169,7 +171,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                 {selectedUsers.map(user => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between bg-[#00ffba]/10 border border-[#00ffba]/20 p-3 rounded hover:bg-[#00ffba]/20 transition-colors"
+                    className="flex items-center justify-between bg-[#00ffba]/10 border border-[#00ffba]/20 p-3 rounded hover:bg-[#00ffba]/20 transition-colors cursor-pointer"
+                    onClick={() => handleUserClick(user.id)}
                   >
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-[#00ffba]" />
@@ -187,9 +190,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
-                        e.preventDefault();
                         e.stopPropagation();
-                        handleUserToggle(user.id);
+                        handleUserClick(user.id);
                       }}
                       className="rounded-none p-1 h-auto text-gray-500 hover:text-red-600 hover:bg-red-50"
                       title="Αφαίρεση από την επιλογή"
