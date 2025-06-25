@@ -1,12 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { CalendarDisplay } from './calendar/CalendarDisplay';
-import { WeekProgressDisplay } from './calendar/WeekProgressDisplay';
-import { ProgramRequirements } from './calendar/ProgramRequirements';
-import { SelectedDatesDisplay } from './calendar/SelectedDatesDisplay';
-import { SelectionProgress } from './calendar/SelectionProgress';
 import { useCalendarLogic } from './calendar/hooks/useCalendarLogic';
 
 interface CalendarSectionProps {
@@ -21,10 +16,8 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   onTrainingDatesChange
 }) => {
   const {
-    weekStructure,
     selectedDatesAsStrings,
     currentWeekInfo,
-    weekProgress,
     handleDateSelect,
     handleClearAllDates,
     isDateSelected,
@@ -36,8 +29,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Left side - Calendar */}
+    <div className="w-full">
       <CalendarDisplay
         selectedDatesAsStrings={selectedDatesAsStrings}
         totalDays={totalDays}
@@ -47,34 +39,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
         isDateSelected={isDateSelected}
         isDateDisabled={isDateDisabled}
       />
-
-      {/* Right side - Program Details */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Απαιτήσεις Προγράμματος</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Program Stats */}
-            <ProgramRequirements
-              weekStructure={weekStructure}
-              totalDays={totalDays}
-            />
-
-            {/* Progress per week */}
-            <WeekProgressDisplay weekProgress={weekProgress} />
-
-            {/* Selected dates list */}
-            <SelectedDatesDisplay selectedDatesAsStrings={selectedDatesAsStrings} />
-
-            {/* Selection Progress */}
-            <SelectionProgress
-              selectedCount={selectedDatesAsStrings.length}
-              totalDays={totalDays}
-            />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
