@@ -8,7 +8,7 @@ import { User, Exercise } from '../types';
 import { ProgramBuilder } from './ProgramBuilder';
 import { CalendarSection } from './CalendarSection';
 import { ProgramStructure } from './hooks/useProgramBuilderState';
-import { AssignmentHandler } from './AssignmentHandler';
+import { useAssignmentHandler } from './AssignmentHandler';
 
 interface ProgramBuilderDialogContentProps {
   program: ProgramStructure;
@@ -75,7 +75,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onTrainingDatesChange,
   getTotalTrainingDays
 }) => {
-  const { handleAssignment } = AssignmentHandler({ program, getTotalTrainingDays });
+  const { handleAssignment } = useAssignmentHandler({ program, getTotalTrainingDays });
 
   const handleMultipleAthleteChange = (userIds: string[]) => {
     // Ενημερώνουμε το program state με τους επιλεγμένους χρήστες
