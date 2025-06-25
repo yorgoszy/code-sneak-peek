@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Trash2 } from "lucide-react";
-import { parseISO } from "date-fns";
+import { parseISO, addMonths, subMonths } from "date-fns";
 import { el } from "date-fns/locale";
 
 interface CalendarDisplayProps {
@@ -26,6 +26,33 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   isDateSelected,
   isDateDisabled
 }) => {
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const [currentMonth, setCurrentMonth] = React.useState(new Date());
+
+  useEffect(() => {
+    const calendarElement = calendarRef.current;
+    if (!calendarElement) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (e.deltaY > 0) {
+        // Scroll down = next month
+        setCurrentMonth(prev => addMonths(prev, 1));
+      } else {
+        // Scroll up = previous month
+        setCurrentMonth(prev => subMonths(prev, 1));
+      }
+    };
+
+    calendarElement.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      calendarElement.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
   return (
     <Card className="rounded-none">
       <CardHeader>
@@ -50,23 +77,27 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
       
       <CardContent>
         <div className="flex justify-center">
-          <Calendar
-            mode="multiple"
-            selected={selectedDatesAsStrings.map(date => parseISO(date))}
-            onDayClick={onDateSelect}
-            disabled={isDateDisabled}
-            className="rounded-none border"
-            locale={el}
-            modifiers={{
-              selected: (date) => isDateSelected(date)
-            }}
-            modifiersStyles={{
-              selected: {
-                backgroundColor: '#00ffba',
-                color: '#000000'
-              }
-            }}
-          />
+          <div ref={calendarRef} className="cursor-pointer">
+            <Calendar
+              mode="multiple"
+              selected={selectedDatesAsStrings.map(date => parseISO(date))}
+              onDayClick={onDateSelect}
+              disabled={isDateDisabled}
+              className="rounded-none border"
+              locale={el}
+              month={currentMonth}
+              onMonthChange={setCurrentMonth}
+              modifiers={{
+                selected: (date) => isDateSelected(date)
+              }}
+              modifiersStyles={{
+                selected: {
+                  backgroundColor: '#00ffba',
+                  color: '#000000'
+                }
+              }}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
