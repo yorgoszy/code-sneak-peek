@@ -995,6 +995,45 @@ export type Database = {
           },
         ]
       }
+      group_assignment_users: {
+        Row: {
+          created_at: string | null
+          group_assignment_id: string
+          id: string
+          individual_assignment_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          group_assignment_id: string
+          id?: string
+          individual_assignment_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          group_assignment_id?: string
+          id?: string
+          individual_assignment_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_assignment_users_group_assignment_id_fkey"
+            columns: ["group_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "program_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_assignment_users_individual_assignment_id_fkey"
+            columns: ["individual_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "program_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_members: {
         Row: {
           added_at: string | null
@@ -1447,6 +1486,7 @@ export type Database = {
           end_date: string | null
           group_id: string | null
           id: string
+          is_group_assignment: boolean | null
           notes: string | null
           program_id: string | null
           progress: number | null
@@ -1463,6 +1503,7 @@ export type Database = {
           end_date?: string | null
           group_id?: string | null
           id?: string
+          is_group_assignment?: boolean | null
           notes?: string | null
           program_id?: string | null
           progress?: number | null
@@ -1479,6 +1520,7 @@ export type Database = {
           end_date?: string | null
           group_id?: string | null
           id?: string
+          is_group_assignment?: boolean | null
           notes?: string | null
           program_id?: string | null
           progress?: number | null

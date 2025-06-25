@@ -7,17 +7,17 @@ import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { ProgramInfoCard } from './ProgramInfoCard';
 import { DateSelectionCard } from './DateSelectionCard';
 import { AssignmentDialogActions } from './AssignmentDialogActions';
-import { UserSelection } from './assignment/UserSelection';
+import { GroupUserSelection } from './assignment/GroupUserSelection';
 import { ReassignmentOption } from './assignment/ReassignmentOption';
 import { SelectedDatesDisplay } from './assignment/SelectedDatesDisplay';
-import { useAssignmentDialogState } from './assignment/useAssignmentDialogState';
+import { useGroupAssignmentDialogState } from './assignment/useGroupAssignmentDialogState';
 
 interface ProgramAssignmentDialogProps {
   isOpen: boolean;
   onClose: () => void;
   program: ProgramStructure;
   users: UserType[];
-  onAssign: (userId: string, trainingDates: string[]) => void;
+  onAssign: (userId: string, trainingDates: string[], assignmentType?: 'individual' | 'group', groupId?: string) => void;
   editingAssignment?: {
     user_id: string;
     training_dates: string[];
@@ -36,20 +36,27 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   const {
     selectedDates,
     selectedUserId,
+    selectedGroupId,
+    assignmentType,
     isReassignment,
+    groups,
+    loadingGroups,
     selectedUser,
+    selectedGroup,
     completedDates,
     totalRequiredSessions,
     totalWeeks,
     daysPerWeek,
     setSelectedUserId,
+    setSelectedGroupId,
+    setAssignmentType,
     removeSelectedDate,
     handleDateSelect,
     clearAllDates,
     handleReassignmentToggle,
     isDateSelected,
     isDateDisabled
-  } = useAssignmentDialogState({
+  } = useGroupAssignmentDialogState({
     isOpen,
     program,
     users,
@@ -57,13 +64,20 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
   });
 
   const handleAssign = () => {
-    if (selectedUserId && selectedDates.length === totalRequiredSessions) {
-      onAssign(selectedUserId, selectedDates);
+    if (assignmentType === 'individual' && selectedUserId && selectedDates.length === totalRequiredSessions) {
+      onAssign(selectedUserId, selectedDates, 'individual');
+      onClose();
+    } else if (assignmentType === 'group' && selectedGroupId && selectedDates.length === totalRequiredSessions) {
+      onAssign('', selectedDates, 'group', selectedGroupId);
       onClose();
     }
   };
 
-  const canAssign = selectedUserId && selectedDates.length === totalRequiredSessions;
+  const canAssign = assignmentType === 'individual' 
+    ? selectedUserId && selectedDates.length === totalRequiredSessions
+    : selectedGroupId && selectedDates.length === totalRequiredSessions;
+
+  const currentTarget = assignmentType === 'individual' ? selectedUser : selectedGroup;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -76,11 +90,17 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
         </DialogHeader>
 
         <div className="flex-1 overflow-auto space-y-6 p-6">
-          <UserSelection
+          <GroupUserSelection
             users={users}
+            groups={groups}
             selectedUserId={selectedUserId}
+            selectedGroupId={selectedGroupId}
+            assignmentType={assignmentType}
             onUserChange={setSelectedUserId}
+            onGroupChange={setSelectedGroupId}
+            onAssignmentTypeChange={setAssignmentType}
             selectedUser={selectedUser}
+            selectedGroup={selectedGroup}
           />
 
           <ReassignmentOption
@@ -100,10 +120,11 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
 
           <ProgramInfoCard
             program={program}
-            selectedUser={selectedUser}
+            selectedUser={currentTarget}
             totalWeeks={totalWeeks}
             daysPerWeek={daysPerWeek}
             totalRequiredSessions={totalRequiredSessions}
+            assignmentType={assignmentType}
           />
 
           <DateSelectionCard
@@ -126,6 +147,8 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
           canAssign={canAssign}
           editMode={!!editingAssignment}
           isReassignment={isReassignment}
+          assignmentType={assignmentType}
+          targetName={assignmentType === 'individual' ? selectedUser?.name : selectedGroup?.name}
         />
       </DialogContent>
     </Dialog>

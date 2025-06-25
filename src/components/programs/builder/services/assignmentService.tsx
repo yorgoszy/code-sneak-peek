@@ -60,6 +60,7 @@ export const assignmentService = {
         training_dates: formattedTrainingDates,
         status: 'active',
         assignment_type: 'individual',
+        is_group_assignment: false,
         start_date: startDate,
         end_date: endDate,
         created_at: new Date().toISOString(),
