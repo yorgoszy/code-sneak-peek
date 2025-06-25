@@ -1,5 +1,6 @@
 
 import { toast } from "sonner";
+import { formatDateForStorage } from '@/utils/dateUtils';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { programService } from './services/programService';
 import { assignmentService } from './services/assignmentService';
@@ -73,12 +74,13 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
       const savedProgram = await programService.saveProgram(program);
       console.log('✅ Πρόγραμμα αποθηκεύτηκε:', savedProgram);
 
-      // 2. Μετατροπή ημερομηνιών σε strings
+      // ΔΙΟΡΘΩΣΗ: 2. Μετατροπή ημερομηνιών σε strings χρησιμοποιώντας την καινούρια utility
       const trainingDatesStrings = (program.training_dates || []).map(date => {
         if (date instanceof Date) {
-          return date.toISOString().split('T')[0];
+          return formatDateForStorage(date);
         }
-        return date;
+        // Αν είναι ήδη string, αφαιρούμε το timestamp αν υπάρχει
+        return date.includes('T') ? date.split('T')[0] : date;
       });
 
       console.log('📅 Formatted training dates:', trainingDatesStrings);

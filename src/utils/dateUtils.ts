@@ -148,3 +148,19 @@ export const createDateFromCalendar = (date: Date): Date => {
 
   return cleanDate;
 };
+
+// ΔΙΟΡΘΩΣΗ: Νέες συναρτήσεις για καλύτερη διαχείριση ημερομηνιών
+export const formatDateForStorage = (date: Date): string => {
+  // Χρησιμοποιούμε την τοπική ημερομηνία χωρίς timezone conversion
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+};
+
+export const createDateForDisplay = (dateString: string): Date => {
+  // Δημιουργούμε ημερομηνία στο μεσημέρι για να αποφύγουμε timezone issues
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day, 12, 0, 0);
+};

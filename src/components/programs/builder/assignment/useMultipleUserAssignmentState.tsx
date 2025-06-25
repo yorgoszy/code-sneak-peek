@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateForStorage, createDateForDisplay } from '@/utils/dateUtils';
 import type { User as UserType } from '../../types';
 import type { ProgramStructure } from '../hooks/useProgramBuilderState';
 
@@ -45,15 +46,18 @@ export const useMultipleUserAssignmentState = ({
     setSelectedUserIds([]);
   };
 
-  // Handle date selection - convert Date to string and set time to noon
+  // ΔΙΟΡΘΩΣΗ: Handle date selection - convert Date to string using proper utilities
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    // Set the time to 12:00 PM (noon) to avoid timezone issues
-    const adjustedDate = new Date(date);
-    adjustedDate.setHours(12, 0, 0, 0);
+    // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τη νέα utility function για σωστή μετατροπή
+    const dateStr = formatDateForStorage(date);
     
-    const dateStr = format(adjustedDate, 'yyyy-MM-dd');
+    console.log('📅 Multiple user date selection:', {
+      originalDate: date,
+      formattedDateStr: dateStr
+    });
+    
     setSelectedDates(prev => {
       if (prev.includes(dateStr)) {
         return prev.filter(d => d !== dateStr);
@@ -72,19 +76,15 @@ export const useMultipleUserAssignmentState = ({
     setSelectedDates([]);
   };
 
-  // Check if date is selected - convert Date to string for comparison
+  // ΔΙΟΡΘΩΣΗ: Check if date is selected using proper comparison
   const isDateSelected = (date: Date) => {
-    const adjustedDate = new Date(date);
-    adjustedDate.setHours(12, 0, 0, 0);
-    const dateStr = format(adjustedDate, 'yyyy-MM-dd');
+    const dateStr = formatDateForStorage(date);
     return selectedDates.includes(dateStr);
   };
 
-  // Check if date should be disabled - convert Date to string for comparison
+  // ΔΙΟΡΘΩΣΗ: Check if date should be disabled using proper comparison
   const isDateDisabled = (date: Date) => {
-    const adjustedDate = new Date(date);
-    adjustedDate.setHours(12, 0, 0, 0);
-    const dateStr = format(adjustedDate, 'yyyy-MM-dd');
+    const dateStr = formatDateForStorage(date);
     return !selectedDates.includes(dateStr) && selectedDates.length >= totalRequiredSessions;
   };
 

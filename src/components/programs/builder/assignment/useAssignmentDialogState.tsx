@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { format, addDays, parseISO } from 'date-fns';
+import { formatDateForStorage, createDateForDisplay } from '@/utils/dateUtils';
 import type { User as UserType } from '../../types';
 import type { ProgramStructure } from '../hooks/useProgramBuilderState';
 
@@ -24,14 +25,9 @@ export const useAssignmentDialogState = ({
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isReassignment, setIsReassignment] = useState(false);
 
-  // Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone issues
+  // ΔΙΟΡΘΩΣΗ: Helper function για σωστή μετατροπή ημερομηνιών χωρίς timezone issues
   const formatDateToString = (date: Date): string => {
-    // Χρησιμοποιούμε την τοπική ημερομηνία του χρήστη
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
+    return formatDateForStorage(date);
   };
 
   // Reset state when dialog opens/closes

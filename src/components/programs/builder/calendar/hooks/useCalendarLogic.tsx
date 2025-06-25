@@ -1,6 +1,7 @@
 
 import { useState, useMemo } from 'react';
 import { startOfWeek, format } from "date-fns";
+import { formatDateForStorage, createDateForDisplay } from '@/utils/dateUtils';
 import type { ProgramStructure } from '../../hooks/useProgramBuilderState';
 
 export const useCalendarLogic = (
@@ -21,19 +22,21 @@ export const useCalendarLogic = (
 
   const weekStructure = useMemo(() => getWeekDaysStructure(), [program.weeks]);
 
-  // Convert training_dates from Date[] to string[]
+  // ΔΙΟΡΘΩΣΗ: Convert training_dates χρησιμοποιώντας τις νέες utility functions
   const selectedDatesAsStrings = useMemo(() => {
     return (program.training_dates || []).map(date => {
       if (typeof date === 'string') {
-        return date;
+        // Αν έχει timestamp, αφαιρούμε το
+        return date.includes('T') ? date.split('T')[0] : date;
       }
-      return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      // Χρησιμοποιούμε τη νέα function για σωστή μετατροπή
+      return formatDateForStorage(date);
     });
   }, [program.training_dates]);
 
   // Ομαδοποίηση των επιλεγμένων ημερομηνιών ανά πραγματικές εβδομάδες ημερολογίου
   const getSelectedDatesPerCalendarWeek = () => {
-    const selectedDates = selectedDatesAsStrings.map(dateStr => new Date(dateStr + 'T12:00:00'));
+    const selectedDates = selectedDatesAsStrings.map(dateStr => createDateForDisplay(dateStr));
     const weekCounts: { [key: string]: number } = {};
     
     selectedDates.forEach(date => {
@@ -48,7 +51,7 @@ export const useCalendarLogic = (
 
   // Εύρεση της επόμενης εβδομάδας που χρειάζεται συμπλήρωση
   const getCurrentWeekBeingFilled = () => {
-    const selectedDates = selectedDatesAsStrings.map(dateStr => new Date(dateStr + 'T12:00:00'));
+    const selectedDates = selectedDatesAsStrings.map(dateStr => createDateForDisplay(dateStr));
     
     // Βρίσκουμε σε ποια εβδομάδα προγράμματος είμαστε
     let totalDaysAssigned = 0;
@@ -80,18 +83,25 @@ export const useCalendarLogic = (
   const handleDateSelect = (date: Date | undefined) => {
     if (!date || !currentWeekInfo) return;
     
-    const dateString = date.toISOString().split('T')[0];
+    // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τη νέα function για σωστή μετατροπή
+    const dateString = formatDateForStorage(date);
     const currentDates = selectedDatesAsStrings.slice();
+    
+    console.log('📅 Date selection debug:', {
+      originalDate: date,
+      dateString: dateString,
+      currentDates: currentDates
+    });
     
     if (currentDates.includes(dateString)) {
       // Remove date if already selected
       const newDates = currentDates.filter(d => d !== dateString);
-      const datesAsObjects = newDates.map(dateStr => new Date(dateStr + 'T12:00:00'));
+      const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
       onTrainingDatesChange(datesAsObjects);
     } else if (currentWeekInfo.remainingForThisWeek > 0) {
       // Add date if there's still room in the current program week
       const newDates = [...currentDates, dateString].sort();
-      const datesAsObjects = newDates.map(dateStr => new Date(dateStr + 'T12:00:00'));
+      const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
       onTrainingDatesChange(datesAsObjects);
     }
   };
@@ -101,7 +111,7 @@ export const useCalendarLogic = (
   };
 
   const isDateSelected = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = formatDateForStorage(date);
     return selectedDatesAsStrings.includes(dateString);
   };
 
@@ -120,7 +130,7 @@ export const useCalendarLogic = (
   };
 
   const getWeekProgress = () => {
-    const selectedDates = selectedDatesAsStrings.map(dateStr => new Date(dateStr + 'T12:00:00'));
+    const selectedDates = selectedDatesAsStrings.map(dateStr => createDateForDisplay(dateStr));
     
     let totalDaysAssigned = 0;
     return weekStructure.map((week) => {
