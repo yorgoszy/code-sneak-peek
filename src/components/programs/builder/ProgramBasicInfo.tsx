@@ -39,8 +39,6 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
 }) => {
   const [userListOpen, setUserListOpen] = useState(false);
   
-  // Φιλτράρουμε όλους τους χρήστες από το app_users table
-  const allUsers = users;
   const selectedUsers = users.filter(user => selectedUserIds.includes(user.id));
   const availableUsers = users.filter(user => !selectedUserIds.includes(user.id));
 
@@ -62,7 +60,12 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
 
   const handleUserAdd = (userId: string) => {
     handleUserToggle(userId);
-    // Κρατάμε το popover ανοιχτό για πολλαπλές επιλογές
+  };
+
+  const handleUserClick = (userId: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    handleUserToggle(userId);
   };
 
   return (
@@ -124,7 +127,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                         <div
                           key={user.id}
                           className="cursor-pointer p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
-                          onClick={() => handleUserAdd(user.id)}
+                          onClick={(e) => handleUserClick(user.id, e)}
                         >
                           <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-2">
@@ -183,7 +186,11 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleUserToggle(user.id)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleUserToggle(user.id);
+                      }}
                       className="rounded-none p-1 h-auto text-gray-500 hover:text-red-600 hover:bg-red-50"
                       title="Αφαίρεση από την επιλογή"
                     >
