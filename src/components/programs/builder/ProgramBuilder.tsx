@@ -12,6 +12,8 @@ interface ProgramBuilderProps {
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
   onAthleteChange: (user_id: string) => void;
+  onMultipleAthleteChange: (userIds: string[]) => void;
+  onToggleAssignmentMode: (isMultiple: boolean) => void;
   onStartDateChange?: (date: Date | undefined) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
@@ -42,6 +44,8 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onNameChange,
   onDescriptionChange,
   onAthleteChange,
+  onMultipleAthleteChange,
+  onToggleAssignmentMode,
   onStartDateChange,
   onAddWeek,
   onRemoveWeek,
@@ -70,10 +74,14 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         name={program.name}
         description={program.description}
         selectedUserId={program.user_id}
+        selectedUserIds={program.user_ids || []}
         users={users}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
         onAthleteChange={onAthleteChange}
+        onMultipleAthleteChange={onMultipleAthleteChange}
+        isMultipleMode={program.is_multiple_assignment || false}
+        onToggleMode={onToggleAssignmentMode}
       />
       
       <TrainingWeeks

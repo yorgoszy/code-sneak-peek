@@ -23,10 +23,19 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
         return;
       }
       
-      if (!program.user_id) {
-        console.error('❌ Λείπει η επιλογή αθλητή');
-        toast.error('Η επιλογή αθλητή είναι υποχρεωτική');
-        return;
+      // Έλεγχος χρηστών ανάλογα με τον τύπο ανάθεσης
+      if (program.is_multiple_assignment) {
+        if (!program.user_ids || program.user_ids.length === 0) {
+          console.error('❌ Λείπει η επιλογή αθλητών');
+          toast.error('Η επιλογή αθλητών είναι υποχρεωτική');
+          return;
+        }
+      } else {
+        if (!program.user_id) {
+          console.error('❌ Λείπει η επιλογή αθλητή');
+          toast.error('Η επιλογή αθλητή είναι υποχρεωτική');
+          return;
+        }
       }
 
       if (!program.weeks || program.weeks.length === 0) {
@@ -74,36 +83,75 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
 
       console.log('📅 Formatted training dates:', trainingDatesStrings);
 
-      // 3. Δημιουργία ανάθεσης
-      const assignmentData = {
-        program: {
-          ...savedProgram,
-          weeks: program.weeks
-        },
-        userId: program.user_id,
-        trainingDates: trainingDatesStrings
-      };
-      
-      console.log('📋 Assignment data:', assignmentData);
-      toast.info('Δημιουργία ανάθεσης...');
+      // 3. Δημιουργία αναθέσεων
+      if (program.is_multiple_assignment && program.user_ids) {
+        // Πολλαπλή ανάθεση
+        console.log('👥 Δημιουργία πολλαπλών αναθέσεων...');
+        toast.info(`Δημιουργία αναθέσεων για ${program.user_ids.length} αθλητές...`);
+        
+        const assignments = [];
+        for (const userId of program.user_ids) {
+          const assignmentData = {
+            program: {
+              ...savedProgram,
+              weeks: program.weeks
+            },
+            userId: userId,
+            trainingDates: trainingDatesStrings
+          };
+          
+          console.log('📋 Creating assignment for user:', userId);
+          const assignment = await assignmentService.saveAssignment(assignmentData);
+          assignments.push(assignment);
 
-      const assignment = await assignmentService.saveAssignment(assignmentData);
-      console.log('✅ Ανάθεση δημιουργήθηκε:', assignment);
+          // Δημιουργία workout completions για κάθε χρήστη
+          if (assignment && assignment.length > 0) {
+            console.log('📊 Δημιουργία workout completions για χρήστη:', userId);
+            await workoutCompletionService.createWorkoutCompletions(
+              assignment[0],
+              savedProgram,
+              userId,
+              trainingDatesStrings,
+              program
+            );
+          }
+        }
 
-      // 4. Δημιουργία workout completions
-      if (assignment && assignment.length > 0) {
-        console.log('📊 Δημιουργία workout completions...');
-        await workoutCompletionService.createWorkoutCompletions(
-          assignment[0],
-          savedProgram,
-          program.user_id,
-          trainingDatesStrings,
-          program
-        );
+        console.log('🎉 Πολλαπλή ανάθεση ολοκληρώθηκε επιτυχώς');
+        toast.success(`Το πρόγραμμα ανατέθηκε επιτυχώς σε ${program.user_ids.length} αθλητές!`);
+      } else {
+        // Μονή ανάθεση
+        console.log('👤 Δημιουργία ατομικής ανάθεσης...');
+        const assignmentData = {
+          program: {
+            ...savedProgram,
+            weeks: program.weeks
+          },
+          userId: program.user_id!,
+          trainingDates: trainingDatesStrings
+        };
+        
+        console.log('📋 Assignment data:', assignmentData);
+        toast.info('Δημιουργία ανάθεσης...');
+
+        const assignment = await assignmentService.saveAssignment(assignmentData);
+        console.log('✅ Ανάθεση δημιουργήθηκε:', assignment);
+
+        // Δημιουργία workout completions
+        if (assignment && assignment.length > 0) {
+          console.log('📊 Δημιουργία workout completions...');
+          await workoutCompletionService.createWorkoutCompletions(
+            assignment[0],
+            savedProgram,
+            program.user_id!,
+            trainingDatesStrings,
+            program
+          );
+        }
+
+        console.log('🎉 Ανάθεση ολοκληρώθηκε επιτυχώς');
+        toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς!');
       }
-
-      console.log('🎉 Ανάθεση ολοκληρώθηκε επιτυχώς');
-      toast.success('Το πρόγραμμα ανατέθηκε επιτυχώς!');
 
       // 5. Redirect
       setTimeout(() => {

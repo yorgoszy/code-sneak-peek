@@ -70,6 +70,26 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     updateProgram({ training_dates: dates });
   };
 
+  const handleAthleteChange = (userId: string) => {
+    updateProgram({ 
+      user_id: userId,
+      is_multiple_assignment: false,
+      user_ids: []
+    });
+  };
+
+  const handleMultipleAthleteChange = (userIds: string[]) => {
+    updateProgram({ 
+      user_ids: userIds,
+      is_multiple_assignment: true,
+      user_id: ''
+    });
+  };
+
+  const handleToggleAssignmentMode = (isMultiple: boolean) => {
+    actions.handleToggleAssignmentMode(isMultiple);
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -79,7 +99,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
           exercises={exercises}
           onNameChange={(name) => updateProgram({ name })}
           onDescriptionChange={(description) => updateProgram({ description })}
-          onAthleteChange={(user_id) => updateProgram({ user_id })}
+          onAthleteChange={handleAthleteChange}
           onAddWeek={actions.addWeek}
           onRemoveWeek={actions.removeWeek}
           onDuplicateWeek={actions.duplicateWeek}

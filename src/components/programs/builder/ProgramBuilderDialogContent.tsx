@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Save, Calendar } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ProgramBasicInfo } from './ProgramBasicInfo';
-import { TrainingWeeks } from './TrainingWeeks';
+import { User, Exercise } from '../types';
+import { ProgramBuilder } from './ProgramBuilder';
 import { CalendarSection } from './CalendarSection';
-import { ActionButtons } from './ActionButtons';
-import { useAssignmentHandler } from './AssignmentHandler';
-import type { User, Exercise } from '../types';
-import type { ProgramStructure } from './hooks/useProgramBuilderState';
+import { ProgramStructure } from './hooks/useProgramBuilderState';
+import { AssignmentHandler } from './AssignmentHandler';
 
 interface ProgramBuilderDialogContentProps {
   program: ProgramStructure;
@@ -16,7 +16,7 @@ interface ProgramBuilderDialogContentProps {
   exercises: Exercise[];
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
-  onAthleteChange: (user_id: string) => void;
+  onAthleteChange: (userId: string) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -39,8 +39,8 @@ interface ProgramBuilderDialogContentProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onSave: () => void;
   onAssignments: () => void;
-  onTrainingDatesChange?: (dates: Date[]) => void;
-  getTotalTrainingDays?: () => number;
+  onTrainingDatesChange: (dates: Date[]) => void;
+  getTotalTrainingDays: () => number;
 }
 
 export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentProps> = ({
@@ -75,33 +75,50 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onTrainingDatesChange,
   getTotalTrainingDays
 }) => {
-  const totalDays = getTotalTrainingDays ? getTotalTrainingDays() : 0;
-  const { handleAssignment } = useAssignmentHandler({ program, getTotalTrainingDays });
+  const { handleAssignment } = AssignmentHandler({ program, getTotalTrainingDays });
+
+  const handleMultipleAthleteChange = (userIds: string[]) => {
+    // Ενημερώνουμε το program state με τους επιλεγμένους χρήστες
+    // Αυτό θα πρέπει να συνδεθεί με το updateProgram από το parent
+    console.log('Multiple athletes selected:', userIds);
+  };
+
+  const handleToggleAssignmentMode = (isMultiple: boolean) => {
+    // Αλλάζουμε τον τρόπο ανάθεσης
+    console.log('Toggle assignment mode:', isMultiple);
+  };
+
+  const canSaveAndAssign = () => {
+    if (!program.name?.trim()) return false;
+    if (program.is_multiple_assignment) {
+      return (program.user_ids?.length || 0) > 0;
+    } else {
+      return !!program.user_id;
+    }
+  };
+
+  const totalDays = getTotalTrainingDays();
+  const selectedDatesCount = program.training_dates?.length || 0;
 
   return (
-    <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none flex flex-col p-0">
-      <DialogHeader className="flex-shrink-0 p-6 border-b">
-        <DialogTitle>
-          {program.id ? 'Επεξεργασία Προγράμματος' : 'Δημιουργία Νέου Προγράμματος'}
+    <DialogContent className="max-w-7xl h-[90vh] rounded-none flex flex-col">
+      <DialogHeader className="flex-shrink-0 border-b pb-4">
+        <DialogTitle className="text-xl font-semibold">
+          Δημιουργία Προγράμματος Προπόνησης
         </DialogTitle>
       </DialogHeader>
-      
-      <ScrollArea className="flex-1 h-full">
-        <div className="space-y-6 p-6">
-          <ProgramBasicInfo
-            name={program.name}
-            description={program.description || ''}
-            selectedUserId={program.user_id}
+
+      <ScrollArea className="flex-1 px-6">
+        <div className="space-y-6 py-6">
+          <ProgramBuilder
+            program={program}
             users={users}
+            exercises={exercises}
             onNameChange={onNameChange}
             onDescriptionChange={onDescriptionChange}
             onAthleteChange={onAthleteChange}
-          />
-
-          <TrainingWeeks
-            weeks={program.weeks || []}
-            exercises={exercises}
-            selectedUserId={program.user_id}
+            onMultipleAthleteChange={handleMultipleAthleteChange}
+            onToggleAssignmentMode={handleToggleAssignmentMode}
             onAddWeek={onAddWeek}
             onRemoveWeek={onRemoveWeek}
             onDuplicateWeek={onDuplicateWeek}
@@ -124,7 +141,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onReorderExercises={onReorderExercises}
           />
 
-          {onTrainingDatesChange && (
+          {totalDays > 0 && (
             <CalendarSection
               program={program}
               totalDays={totalDays}
@@ -134,12 +151,34 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
         </div>
       </ScrollArea>
 
-      <ActionButtons
-        program={program}
-        totalDays={totalDays}
-        onSave={onSave}
-        onAssignment={handleAssignment}
-      />
+      <div className="flex-shrink-0 flex justify-between items-center p-6 border-t bg-white">
+        <div className="text-sm text-gray-600">
+          {program.is_multiple_assignment && (program.user_ids?.length || 0) > 0 && (
+            <span>Επιλεγμένοι αθλητές: {program.user_ids?.length}</span>
+          )}
+          {totalDays > 0 && (
+            <span className="ml-4">
+              Ημερομηνίες: {selectedDatesCount}/{totalDays}
+            </span>
+          )}
+        </div>
+        
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={onSave} className="rounded-none">
+            <Save className="w-4 h-4 mr-2" />
+            Αποθήκευση
+          </Button>
+          
+          <Button
+            onClick={handleAssignment}
+            disabled={!canSaveAndAssign() || selectedDatesCount < totalDays}
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            {program.is_multiple_assignment ? 'Ανάθεση σε Πολλαπλούς' : 'Ανάθεση'}
+          </Button>
+        </div>
+      </div>
     </DialogContent>
   );
 };

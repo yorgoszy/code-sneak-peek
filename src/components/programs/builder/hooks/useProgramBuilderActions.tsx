@@ -17,6 +17,8 @@ export const useProgramBuilderActions = (
     const preservedUpdates = {
       ...updates,
       user_id: program.user_id, // Διατήρηση του επιλεγμένου χρήστη
+      user_ids: program.user_ids, // Διατήρηση των επιλεγμένων χρηστών
+      is_multiple_assignment: program.is_multiple_assignment, // Διατήρηση της λειτουργίας πολλαπλής ανάθεσης
       name: program.name, // Διατήρηση του ονόματος
       description: program.description, // Διατήρηση της περιγραφής
       training_dates: program.training_dates // Διατήρηση των επιλεγμένων ημερομηνιών
@@ -30,11 +32,37 @@ export const useProgramBuilderActions = (
   const exerciseActions = useExerciseActions(program, updateProgramWithPreservation, generateId, exercises);
   const reorderActions = useReorderActions(program, updateProgramWithPreservation);
 
+  // Νέες λειτουργίες για πολλαπλούς χρήστες
+  const handleMultipleAthleteChange = (userIds: string[]) => {
+    updateProgram({ 
+      user_ids: userIds,
+      is_multiple_assignment: true
+    });
+  };
+
+  const handleToggleAssignmentMode = (isMultiple: boolean) => {
+    if (isMultiple) {
+      updateProgram({ 
+        is_multiple_assignment: true,
+        user_id: '', // Καθαρίζουμε την ατομική επιλογή
+        user_ids: program.user_ids || []
+      });
+    } else {
+      updateProgram({ 
+        is_multiple_assignment: false,
+        user_ids: [], // Καθαρίζουμε την πολλαπλή επιλογή
+        user_id: program.user_id || ''
+      });
+    }
+  };
+
   return {
     ...weekActions,
     ...dayActions,
     ...blockActions,
     ...exerciseActions,
-    ...reorderActions
+    ...reorderActions,
+    handleMultipleAthleteChange,
+    handleToggleAssignmentMode
   };
 };
