@@ -1,8 +1,15 @@
 
+export interface WeekStructure {
+  weekNumber: number;
+  daysInWeek: number;
+  totalDaysBeforeWeek: number;
+}
+
 export interface TrainingDateSelectorProps {
   selectedDates: string[];
   onDatesChange: (dates: string[]) => void;
   programWeeks?: number;
+  weekStructure?: WeekStructure[];
 }
 
 export interface CalendarDayContentProps {
@@ -16,6 +23,7 @@ export interface ProgramRequirementsProps {
   programWeeks: number;
   daysPerWeek: number;
   totalRequiredDays: number;
+  weekStructure?: WeekStructure[];
 }
 
 export interface SelectionProgressProps {

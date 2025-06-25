@@ -1,19 +1,72 @@
 
 import { useState } from 'react';
 import { formatDateToLocalString, createDateFromCalendar } from '@/utils/dateUtils';
+import type { WeekStructure } from './types';
 
 interface UseTrainingDateLogicProps {
   selectedDates: string[];
   onDatesChange: (dates: string[]) => void;
   totalRequiredDays: number;
+  weekStructure?: WeekStructure[];
 }
 
 export const useTrainingDateLogic = ({
   selectedDates,
   onDatesChange,
-  totalRequiredDays
+  totalRequiredDays,
+  weekStructure = []
 }: UseTrainingDateLogicProps) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+
+  // Helper function to determine which week a selected date index belongs to
+  const getWeekForDateIndex = (dateIndex: number) => {
+    if (weekStructure.length === 0) return null;
+
+    let currentIndex = 0;
+    for (let i = 0; i < weekStructure.length; i++) {
+      const week = weekStructure[i];
+      if (dateIndex >= currentIndex && dateIndex < currentIndex + week.daysInWeek) {
+        return {
+          weekIndex: i,
+          weekStructure: week,
+          positionInWeek: dateIndex - currentIndex
+        };
+      }
+      currentIndex += week.daysInWeek;
+    }
+    return null;
+  };
+
+  // Check if we can add more dates to a specific week
+  const canAddToWeek = (newDateIndex: number) => {
+    if (weekStructure.length === 0) {
+      return selectedDates.length < totalRequiredDays;
+    }
+
+    const weekInfo = getWeekForDateIndex(newDateIndex);
+    if (!weekInfo) return false;
+
+    // Count how many dates are already selected for this week
+    let selectedInThisWeek = 0;
+    const weekStartIndex = weekInfo.weekStructure.totalDaysBeforeWeek;
+    const weekEndIndex = weekStartIndex + weekInfo.weekStructure.daysInWeek - 1;
+
+    for (let i = 0; i < selectedDates.length; i++) {
+      const currentWeekInfo = getWeekForDateIndex(i);
+      if (currentWeekInfo && currentWeekInfo.weekIndex === weekInfo.weekIndex) {
+        selectedInThisWeek++;
+      }
+    }
+
+    console.log('🗓️ [useTrainingDateLogic] Week capacity check:', {
+      weekNumber: weekInfo.weekStructure.weekNumber,
+      selectedInThisWeek,
+      maxForWeek: weekInfo.weekStructure.daysInWeek,
+      canAdd: selectedInThisWeek < weekInfo.weekStructure.daysInWeek
+    });
+
+    return selectedInThisWeek < weekInfo.weekStructure.daysInWeek;
+  };
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) {
@@ -34,14 +87,15 @@ export const useTrainingDateLogic = ({
       console.log('🗓️ [TrainingDateSelector] Removing date, new array:', newDates);
       onDatesChange(newDates);
     } else {
-      // Check if we can add more dates
-      if (selectedDates.length < totalRequiredDays) {
-        // Add date if not selected and within limits
+      // Check if we can add more dates based on week structure
+      const newDateIndex = selectedDates.length; // This would be the index of the new date
+      
+      if (canAddToWeek(newDateIndex)) {
         const newDates = [...selectedDates, dateString].sort();
         console.log('🗓️ [TrainingDateSelector] Adding date, new array:', newDates);
         onDatesChange(newDates);
       } else {
-        console.log('🗓️ [TrainingDateSelector] Cannot add more dates - limit reached');
+        console.log('🗓️ [TrainingDateSelector] Cannot add more dates - week limit reached');
       }
     }
   };
@@ -66,11 +120,6 @@ export const useTrainingDateLogic = ({
     const dateString = formatDateToLocalString(cleanDate);
     const isSelected = selectedDates.includes(dateString);
     
-    console.log('🗓️ [TrainingDateSelector] Checking if date is selected:', {
-      dateString: dateString,
-      isSelected: isSelected
-    });
-    
     return isSelected;
   };
 
@@ -90,8 +139,14 @@ export const useTrainingDateLogic = ({
     // If date is already selected, allow it (for deselection)
     if (isDateSelected(date)) return false;
 
-    // If we've reached the limit, disable all unselected dates
-    return selectedDates.length >= totalRequiredDays;
+    // Check based on week structure
+    if (weekStructure.length === 0) {
+      return selectedDates.length >= totalRequiredDays;
+    }
+
+    // For week structure, check if the current "chronological week" can accept more dates
+    const newDateIndex = selectedDates.length;
+    return !canAddToWeek(newDateIndex);
   };
 
   return {

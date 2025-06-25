@@ -11,17 +11,39 @@ import { SelectionProgress } from './SelectionProgress';
 export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   selectedDates,
   onDatesChange,
-  programWeeks = 0
+  programWeeks = 0,
+  weekStructure = []
 }) => {
-  // Calculate days per week from the first week structure if available
-  const getDaysPerWeek = () => {
-    // This should come from the program structure, but for now we'll use a default
-    // You might need to pass this as a prop from the parent component
-    return 2; // Default to 2 days per week
+  console.log('🗓️ [TrainingDateSelector] weekStructure received:', weekStructure);
+
+  // Calculate actual days per week from week structure
+  const getActualDaysPerWeek = () => {
+    if (weekStructure.length === 0) {
+      console.log('🗓️ [TrainingDateSelector] No week structure, using default 2 days');
+      return 2;
+    }
+    
+    // Calculate average days per week from the actual structure
+    const totalDays = weekStructure.reduce((sum, week) => sum + week.daysInWeek, 0);
+    const avgDaysPerWeek = Math.round(totalDays / weekStructure.length);
+    
+    console.log('🗓️ [TrainingDateSelector] Calculated days per week:', {
+      totalDays,
+      weeks: weekStructure.length,
+      avgDaysPerWeek
+    });
+    
+    return avgDaysPerWeek;
   };
 
-  const daysPerWeek = getDaysPerWeek();
-  const totalRequiredDays = programWeeks * daysPerWeek;
+  const daysPerWeek = getActualDaysPerWeek();
+  const totalRequiredDays = weekStructure.reduce((sum, week) => sum + week.daysInWeek, 0);
+
+  console.log('🗓️ [TrainingDateSelector] Final calculations:', {
+    daysPerWeek,
+    totalRequiredDays,
+    programWeeks
+  });
 
   const {
     calendarDate,
@@ -35,10 +57,9 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
   } = useTrainingDateLogic({
     selectedDates,
     onDatesChange,
-    totalRequiredDays
+    totalRequiredDays,
+    weekStructure
   });
-
-  console.log('🗓️ [TrainingDateSelector] Current selectedDates:', selectedDates);
 
   return (
     <Card className="rounded-none">
@@ -69,6 +90,7 @@ export const TrainingDateSelector: React.FC<TrainingDateSelectorProps> = ({
               programWeeks={programWeeks}
               daysPerWeek={daysPerWeek}
               totalRequiredDays={totalRequiredDays}
+              weekStructure={weekStructure}
             />
 
             <SelectionProgress
