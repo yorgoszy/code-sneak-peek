@@ -2,7 +2,6 @@
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Save, Users } from "lucide-react";
 import { User, Exercise } from '../types';
@@ -113,48 +112,46 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="p-6 space-y-6">
-              <ProgramBuilder
-                program={program}
-                users={users}
-                exercises={exercises}
-                onNameChange={onNameChange}
-                onDescriptionChange={onDescriptionChange}
-                onAthleteChange={onAthleteChange}
-                onAddWeek={onAddWeek}
-                onRemoveWeek={onRemoveWeek}
-                onDuplicateWeek={onDuplicateWeek}
-                onUpdateWeekName={onUpdateWeekName}
-                onAddDay={onAddDay}
-                onRemoveDay={onRemoveDay}
-                onDuplicateDay={onDuplicateDay}
-                onUpdateDayName={onUpdateDayName}
-                onAddBlock={onAddBlock}
-                onRemoveBlock={onRemoveBlock}
-                onDuplicateBlock={onDuplicateBlock}
-                onUpdateBlockName={onUpdateBlockName}
-                onAddExercise={onAddExercise}
-                onRemoveExercise={onRemoveExercise}
-                onUpdateExercise={onUpdateExercise}
-                onDuplicateExercise={onDuplicateExercise}
-                onReorderWeeks={onReorderWeeks}
-                onReorderDays={onReorderDays}
-                onReorderBlocks={onReorderBlocks}
-                onReorderExercises={onReorderExercises}
-              />
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6">
+            <ProgramBuilder
+              program={program}
+              users={users}
+              exercises={exercises}
+              onNameChange={onNameChange}
+              onDescriptionChange={onDescriptionChange}
+              onAthleteChange={onAthleteChange}
+              onAddWeek={onAddWeek}
+              onRemoveWeek={onRemoveWeek}
+              onDuplicateWeek={onDuplicateWeek}
+              onUpdateWeekName={onUpdateWeekName}
+              onAddDay={onAddDay}
+              onRemoveDay={onRemoveDay}
+              onDuplicateDay={onDuplicateDay}
+              onUpdateDayName={onUpdateDayName}
+              onAddBlock={onAddBlock}
+              onRemoveBlock={onRemoveBlock}
+              onDuplicateBlock={onDuplicateBlock}
+              onUpdateBlockName={onUpdateBlockName}
+              onAddExercise={onAddExercise}
+              onRemoveExercise={onRemoveExercise}
+              onUpdateExercise={onUpdateExercise}
+              onDuplicateExercise={onDuplicateExercise}
+              onReorderWeeks={onReorderWeeks}
+              onReorderDays={onReorderDays}
+              onReorderBlocks={onReorderBlocks}
+              onReorderExercises={onReorderExercises}
+            />
 
-              <Separator />
+            <Separator />
 
-              <TrainingDateSelector
-                selectedDates={selectedDatesAsStrings}
-                onDatesChange={handleDatesChange}
-                programWeeks={program.weeks?.length || 0}
-                weekStructure={program.weeks || []}
-              />
-            </div>
-          </ScrollArea>
+            <TrainingDateSelector
+              selectedDates={selectedDatesAsStrings}
+              onDatesChange={handleDatesChange}
+              programWeeks={program.weeks?.length || 0}
+              weekStructure={program.weeks || []}
+            />
+          </div>
         </div>
       </div>
     </DialogContent>
