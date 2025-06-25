@@ -18,7 +18,7 @@ export const assignmentService = {
         throw new Error('Λείπουν οι ημερομηνίες προπόνησης');
       }
 
-      // Διασφαλίζουμε ότι οι ημερομηνίες είναι σε σωστό format
+      // Διασφαλίζουμε ότι οι ημερομηνίες είναι σε σωστό format και ώρα 12:00 PM
       let formattedTrainingDates: string[] = [];
       
       if (assignmentData.trainingDates && Array.isArray(assignmentData.trainingDates)) {
@@ -27,17 +27,23 @@ export const assignmentService = {
         formattedTrainingDates = assignmentData.trainingDates.map((date: Date | string, index: number) => {
           console.log(`💾 [AssignmentService] Processing date ${index}:`, date);
           
+          let dateStr: string;
+          
           if (typeof date === 'string') {
             if (date.includes('T')) {
-              const dateOnly = date.split('T')[0];
-              console.log(`💾 [AssignmentService] String with timestamp converted: ${date} → ${dateOnly}`);
-              return dateOnly;
+              dateStr = date.split('T')[0];
+            } else {
+              dateStr = date;
             }
-            return date;
+          } else {
+            // For Date objects, use noon time to avoid timezone issues
+            const localDate = new Date(date);
+            localDate.setHours(12, 0, 0, 0); // Set to 12:00 PM local time
+            dateStr = localDate.toISOString().split('T')[0];
           }
-          const formatted = formatDateToLocalString(date);
-          console.log(`💾 [AssignmentService] Date object converted: ${date} → ${formatted}`);
-          return formatted;
+          
+          console.log(`💾 [AssignmentService] Date converted: ${date} → ${dateStr}`);
+          return dateStr;
         });
       }
 

@@ -84,8 +84,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   };
 
   return (
-    <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full rounded-none">
-      <DialogHeader className="flex-shrink-0">
+    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none">
+      <DialogHeader className="flex-shrink-0 p-6 border-b">
         <DialogTitle className="flex items-center justify-between">
           <span>Δημιουργία Προγράμματος Προπόνησης</span>
           <div className="flex items-center gap-2">
@@ -108,8 +108,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
         </DialogTitle>
       </DialogHeader>
 
-      <ScrollArea className="flex-1 w-full">
-        <div className="space-y-6 p-1">
+      <ScrollArea className="flex-1 w-full h-full">
+        <div className="space-y-6 p-6">
           <ProgramBuilder
             program={program}
             users={users}
