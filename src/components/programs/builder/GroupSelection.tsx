@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -173,8 +174,8 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
 
   return (
     <div className="flex gap-4">
-      {/* Group Selection Box - 70% width */}
-      <div className="w-[70%]">
+      {/* Group Selection Box - 35% width */}
+      <div className="w-[35%]">
         <Card className="rounded-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
@@ -241,8 +242,8 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
         </Card>
       </div>
 
-      {/* Selected Group Members Display - 30% width */}
-      <div className="w-[30%]">
+      {/* Selected Group Members Display - 65% width */}
+      <div className="w-[65%]">
         <Card className="rounded-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
