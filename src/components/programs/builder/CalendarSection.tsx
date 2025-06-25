@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
-import { format, parseISO, startOfWeek, endOfWeek, addWeeks, startOfDay } from "date-fns";
+import { format, parseISO, startOfWeek, endOfWeek, addWeeks, startOfDay, getWeek, getYear, isSameWeek } from "date-fns";
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 
 interface CalendarSectionProps {
@@ -34,7 +34,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   };
 
   const weekStructure = getWeekDaysStructure();
-  const totalWeeks = weekStructure.length;
 
   // Convert training_dates from Date[] to string[]
   const selectedDatesAsStrings = (program.training_dates || []).map(date => {
@@ -44,21 +43,39 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     return date.toISOString().split('T')[0]; // YYYY-MM-DD format
   });
 
-  // Υπολογισμός της τρέχουσας εβδομάδας που συμπληρώνεται
-  const getCurrentWeekBeingFilled = () => {
-    let totalAssignedDays = 0;
+  // Υπολογισμός του αριθμού των επιλεγμένων ημερομηνιών ανά εβδομάδα προγράμματος
+  const getSelectedDatesPerProgramWeek = () => {
+    const selectedDates = selectedDatesAsStrings.map(dateStr => new Date(dateStr + 'T12:00:00'));
+    const weekCounts: { [key: number]: number } = {};
     
-    for (let i = 0; i < weekStructure.length; i++) {
-      const weekDays = weekStructure[i].daysCount;
-      if (totalAssignedDays + weekDays > selectedDatesAsStrings.length) {
+    // Ομαδοποίηση των επιλεγμένων ημερομηνιών ανά εβδομάδα προγράμματος
+    selectedDates.forEach((date, index) => {
+      // Υπολογισμός σε ποια εβδομάδα του προγράμματος ανήκει αυτή η ημερομηνία
+      const programWeekIndex = Math.floor(index / (weekStructure[0]?.daysCount || 1));
+      const programWeek = weekStructure[programWeekIndex];
+      
+      if (programWeek) {
+        weekCounts[programWeek.weekNumber] = (weekCounts[programWeek.weekNumber] || 0) + 1;
+      }
+    });
+    
+    return weekCounts;
+  };
+
+  // Εύρεση της επόμενης εβδομάδας που χρειάζεται συμπλήρωση
+  const getCurrentWeekBeingFilled = () => {
+    const weekCounts = getSelectedDatesPerProgramWeek();
+    
+    for (const week of weekStructure) {
+      const selectedForWeek = weekCounts[week.weekNumber] || 0;
+      if (selectedForWeek < week.daysCount) {
         return {
-          weekIndex: i,
-          weekStructure: weekStructure[i],
-          alreadySelected: selectedDatesAsStrings.length - totalAssignedDays,
-          remainingForThisWeek: weekDays - (selectedDatesAsStrings.length - totalAssignedDays)
+          weekNumber: week.weekNumber,
+          weekStructure: week,
+          alreadySelected: selectedForWeek,
+          remainingForThisWeek: week.daysCount - selectedForWeek
         };
       }
-      totalAssignedDays += weekDays;
     }
     
     return null; // Όλες οι εβδομάδες έχουν ολοκληρωθεί
@@ -111,28 +128,15 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   };
 
   const getWeekProgress = () => {
-    const progress: Array<{weekIndex: number, weekName: string, selected: number, required: number, completed: boolean}> = [];
+    const weekCounts = getSelectedDatesPerProgramWeek();
     
-    let totalAssignedDays = 0;
-    
-    weekStructure.forEach((week, index) => {
-      const selectedForThisWeek = Math.min(
-        Math.max(0, selectedDatesAsStrings.length - totalAssignedDays),
-        week.daysCount
-      );
-      
-      progress.push({
-        weekIndex: index + 1,
-        weekName: week.name,
-        selected: selectedForThisWeek,
-        required: week.daysCount,
-        completed: selectedForThisWeek >= week.daysCount
-      });
-      
-      totalAssignedDays += week.daysCount;
-    });
-
-    return progress;
+    return weekStructure.map((week) => ({
+      weekIndex: week.weekNumber,
+      weekName: week.name,
+      selected: weekCounts[week.weekNumber] || 0,
+      required: week.daysCount,
+      completed: (weekCounts[week.weekNumber] || 0) >= week.daysCount
+    }));
   };
 
   const weekProgress = getWeekProgress();
@@ -217,7 +221,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
           <div className="space-y-4">
             {/* Program Stats */}
             <div className="bg-gray-50 p-4 rounded-none">
-              <h4 className="font-semibold text-gray-900 mb-3">Εβδομάδες: {totalWeeks}</h4>
+              <h4 className="font-semibold text-gray-900 mb-3">Εβδομάδες: {weekStructure.length}</h4>
               <div className="space-y-2">
                 {weekStructure.map((week, index) => (
                   <div key={index} className="text-sm">
