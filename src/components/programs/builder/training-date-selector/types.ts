@@ -57,5 +57,5 @@ export interface CalendarDayContentProps {
   date: Date;
   isSelected: boolean;
   isToday: boolean;
-  onRemoveDate: (dateString: string, event?: React.MouseEvent) => void;
+  onRemoveDate: (date: Date, event: React.MouseEvent) => void;
 }

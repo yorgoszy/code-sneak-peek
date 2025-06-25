@@ -75,84 +75,125 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onTrainingDatesChange,
   getTotalTrainingDays
 }) => {
-  // Convert training_dates from Date[] to string[] for the TrainingDateSelector
+  // ΔΙΟΡΘΩΣΗ: Βελτιωμένη μετατροπή training_dates από Date[] σε string[]
   const selectedDatesAsStrings = program.training_dates?.map(date => {
+    console.log('🗓️ [ProgramBuilderDialogContent] Processing training date:', date, typeof date);
+    
     if (date instanceof Date) {
-      return date.toISOString().split('T')[0];
+      // Χρησιμοποιούμε την τοπική ημερομηνία χωρίς timezone conversion
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const result = `${year}-${month}-${day}`;
+      console.log('🗓️ [ProgramBuilderDialogContent] Date object converted:', result);
+      return result;
     }
-    return typeof date === 'string' ? date : '';
+    
+    if (typeof date === 'string') {
+      // Αν είναι ήδη string, ελέγχουμε αν έχει timestamp και το αφαιρούμε
+      const cleanDate = date.includes('T') ? date.split('T')[0] : date;
+      console.log('🗓️ [ProgramBuilderDialogContent] String date cleaned:', cleanDate);
+      return cleanDate;
+    }
+    
+    console.log('🗓️ [ProgramBuilderDialogContent] Unknown date format:', date);
+    return '';
   }).filter(Boolean) || [];
 
+  console.log('🗓️ [ProgramBuilderDialogContent] Final selectedDatesAsStrings:', selectedDatesAsStrings);
+
   const handleDatesChange = (dates: string[]) => {
-    console.log('🗓️ [ProgramBuilderDialogContent] Converting string dates to Date objects:', dates);
-    const dateObjects = dates.map(dateStr => new Date(dateStr + 'T00:00:00'));
-    console.log('🗓️ [ProgramBuilderDialogContent] Converted dates:', dateObjects);
+    console.log('🗓️ [ProgramBuilderDialogContent] Received dates from selector:', dates);
+    
+    // ΔΙΟΡΘΩΣΗ: Δημιουργούμε Date objects με τοπική ώρα στο μεσημέρι για consistency
+    const dateObjects = dates.map(dateStr => {
+      console.log('🗓️ [ProgramBuilderDialogContent] Converting string to Date:', dateStr);
+      
+      // Διασπάμε το string και δημιουργούμε Date με τοπική ώρα
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, day, 12, 0, 0); // 12:00 PM local time
+      
+      console.log('🗓️ [ProgramBuilderDialogContent] Created Date object:', {
+        input: dateStr,
+        output: dateObj,
+        components: { year, month: month - 1, day },
+        verification: `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`
+      });
+      
+      return dateObj;
+    });
+    
+    console.log('🗓️ [ProgramBuilderDialogContent] Final date objects:', dateObjects);
     onTrainingDatesChange(dateObjects);
   };
 
   return (
-    <DialogContent className="max-w-7xl max-h-[90vh] rounded-none">
-      <DialogHeader>
-        <DialogTitle className="flex items-center justify-between">
-          <span>{program.name || 'Νέο Πρόγραμμα'}</span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={onAssignments}
-              className="rounded-none"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              Αναθέσεις
-            </Button>
-            <Button onClick={onSave} className="rounded-none">
-              <Save className="w-4 h-4 mr-2" />
-              Αποθήκευση
-            </Button>
-          </div>
-        </DialogTitle>
-      </DialogHeader>
+    <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none p-0">
+      <div className="flex flex-col h-full">
+        <DialogHeader className="px-6 py-4 border-b">
+          <DialogTitle className="flex items-center justify-between">
+            <span>{program.name || 'Νέο Πρόγραμμα'}</span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={onAssignments}
+                className="rounded-none"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Αναθέσεις
+              </Button>
+              <Button onClick={onSave} className="rounded-none">
+                <Save className="w-4 h-4 mr-2" />
+                Αποθήκευση
+              </Button>
+            </div>
+          </DialogTitle>
+        </DialogHeader>
 
-      <ScrollArea className="h-[calc(90vh-120px)] pr-6">
-        <div className="space-y-6">
-          <ProgramBuilder
-            program={program}
-            users={users}
-            exercises={exercises}
-            onNameChange={onNameChange}
-            onDescriptionChange={onDescriptionChange}
-            onAthleteChange={onAthleteChange}
-            onAddWeek={onAddWeek}
-            onRemoveWeek={onRemoveWeek}
-            onDuplicateWeek={onDuplicateWeek}
-            onUpdateWeekName={onUpdateWeekName}
-            onAddDay={onAddDay}
-            onRemoveDay={onRemoveDay}
-            onDuplicateDay={onDuplicateDay}
-            onUpdateDayName={onUpdateDayName}
-            onAddBlock={onAddBlock}
-            onRemoveBlock={onRemoveBlock}
-            onDuplicateBlock={onDuplicateBlock}
-            onUpdateBlockName={onUpdateBlockName}
-            onAddExercise={onAddExercise}
-            onRemoveExercise={onRemoveExercise}
-            onUpdateExercise={onUpdateExercise}
-            onDuplicateExercise={onDuplicateExercise}
-            onReorderWeeks={onReorderWeeks}
-            onReorderDays={onReorderDays}
-            onReorderBlocks={onReorderBlocks}
-            onReorderExercises={onReorderExercises}
-          />
+        <div className="flex-1 overflow-y-auto">
+          <ScrollArea className="h-full px-6 py-4">
+            <div className="space-y-6">
+              <ProgramBuilder
+                program={program}
+                users={users}
+                exercises={exercises}
+                onNameChange={onNameChange}
+                onDescriptionChange={onDescriptionChange}
+                onAthleteChange={onAthleteChange}
+                onAddWeek={onAddWeek}
+                onRemoveWeek={onRemoveWeek}
+                onDuplicateWeek={onDuplicateWeek}
+                onUpdateWeekName={onUpdateWeekName}
+                onAddDay={onAddDay}
+                onRemoveDay={onRemoveDay}
+                onDuplicateDay={onDuplicateDay}
+                onUpdateDayName={onUpdateDayName}
+                onAddBlock={onAddBlock}
+                onRemoveBlock={onRemoveBlock}
+                onDuplicateBlock={onDuplicateBlock}
+                onUpdateBlockName={onUpdateBlockName}
+                onAddExercise={onAddExercise}
+                onRemoveExercise={onRemoveExercise}
+                onUpdateExercise={onUpdateExercise}
+                onDuplicateExercise={onDuplicateExercise}
+                onReorderWeeks={onReorderWeeks}
+                onReorderDays={onReorderDays}
+                onReorderBlocks={onReorderBlocks}
+                onReorderExercises={onReorderExercises}
+              />
 
-          <Separator />
+              <Separator />
 
-          <TrainingDateSelector
-            selectedDates={selectedDatesAsStrings}
-            onDatesChange={handleDatesChange}
-            programWeeks={program.weeks?.length || 0}
-            weekStructure={program.weeks || []}
-          />
+              <TrainingDateSelector
+                selectedDates={selectedDatesAsStrings}
+                onDatesChange={handleDatesChange}
+                programWeeks={program.weeks?.length || 0}
+                weekStructure={program.weeks || []}
+              />
+            </div>
+          </ScrollArea>
         </div>
-      </ScrollArea>
+      </div>
     </DialogContent>
   );
 };

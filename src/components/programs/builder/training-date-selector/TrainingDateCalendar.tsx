@@ -2,7 +2,6 @@
 import React from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarDayContent } from './CalendarDayContent';
-import { formatDateToLocalString, createDateFromCalendar } from '@/utils/dateUtils';
 
 interface TrainingDateCalendarProps {
   calendarDate: Date;
@@ -23,15 +22,39 @@ export const TrainingDateCalendar: React.FC<TrainingDateCalendarProps> = ({
   isToday,
   onRemoveDate
 }) => {
+  // ΔΙΟΡΘΩΣΗ: Βελτιωμένη συνάρτηση για τη διαχείριση της αφαίρεσης ημερομηνίας
+  const handleRemoveDate = (date: Date, event: React.MouseEvent) => {
+    console.log('🗓️ [TrainingDateCalendar] handleRemoveDate called:', {
+      date: date,
+      dateDebug: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+    });
+    
+    // Δημιουργούμε καθαρή ημερομηνία και τη μετατρέπουμε σε string
+    const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+    const year = cleanDate.getFullYear();
+    const month = String(cleanDate.getMonth() + 1).padStart(2, '0');
+    const day = String(cleanDate.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+    
+    console.log('🗓️ [TrainingDateCalendar] Formatted date for removal:', {
+      original: date,
+      clean: cleanDate,
+      formatted: formattedDate
+    });
+    
+    onRemoveDate(formattedDate, event);
+  };
+
   const renderDayContent = (date: Date) => {
     const isSelected = isDateSelected(date);
     const isTodayDate = isToday(date);
     
-    const handleRemoveDate = (dateString: string, event: React.MouseEvent) => {
-      const cleanDate = createDateFromCalendar(date);
-      const formattedDate = formatDateToLocalString(cleanDate);
-      onRemoveDate(formattedDate, event);
-    };
+    console.log('🗓️ [TrainingDateCalendar] renderDayContent:', {
+      date: date,
+      dateDebug: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
+      isSelected: isSelected,
+      isToday: isTodayDate
+    });
     
     return (
       <CalendarDayContent
@@ -43,13 +66,22 @@ export const TrainingDateCalendar: React.FC<TrainingDateCalendarProps> = ({
     );
   };
 
+  // ΔΙΟΡΘΩΣΗ: Προσθήκη logging για debugging
+  const handleDateSelect = (date: Date | undefined) => {
+    console.log('🗓️ [TrainingDateCalendar] Date selected in calendar:', {
+      date: date,
+      dateDebug: date ? `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}` : 'undefined'
+    });
+    onDateSelect(date);
+  };
+
   return (
     <Calendar
       mode="single"
       selected={undefined}
-      onSelect={onDateSelect}
+      onSelect={handleDateSelect}
       onMonthChange={onCalendarDateChange}
-      className="rounded-none border"
+      className="rounded-none border pointer-events-auto"
       weekStartsOn={1}
       disabled={isDateDisabled}
       components={{
