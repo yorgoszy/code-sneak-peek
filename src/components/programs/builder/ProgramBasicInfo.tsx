@@ -192,8 +192,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
           {/* Individual User Selection */}
           {assignmentMode === 'individual' && (
             <div className="flex gap-4">
-              {/* User Selection Box - 60% width */}
-              <div className="w-[60%]">
+              {/* User Selection Box - 30% width */}
+              <div className="w-[30%]">
                 <Card className="rounded-none">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm">
@@ -265,8 +265,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                 </Card>
               </div>
 
-              {/* Selected Users Display - 40% width */}
-              <div className="w-[40%]">
+              {/* Selected Users Display - 70% width */}
+              <div className="w-[70%]">
                 <Card className="rounded-none">
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between text-sm">
@@ -292,7 +292,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                         Δεν έχουν επιλεγεί χρήστες
                       </div>
                     ) : (
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                      <div className="grid grid-cols-2 gap-2">
                         {selectedUsers.map(user => (
                           <div
                             key={user.id}
@@ -329,13 +329,15 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             </div>
           )}
 
-          {/* Group Selection */}
+          {/* Group Selection - 30% width */}
           {assignmentMode === 'group' && onGroupChange && (
-            <GroupSelection
-              selectedGroupId={selectedGroupId}
-              onGroupChange={onGroupChange}
-              onGroupMembersLoad={handleGroupMembersLoad}
-            />
+            <div className="w-[30%]">
+              <GroupSelection
+                selectedGroupId={selectedGroupId}
+                onGroupChange={onGroupChange}
+                onGroupMembersLoad={handleGroupMembersLoad}
+              />
+            </div>
           )}
         </div>
       </CardContent>
