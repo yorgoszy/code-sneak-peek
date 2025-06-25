@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,12 +38,33 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   onToggleMode
 }) => {
   const [userListOpen, setUserListOpen] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const selectedUsers = users.filter(user => selectedUserIds.includes(user.id));
   const availableUsers = users.filter(user => !selectedUserIds.includes(user.id));
 
+  // Add wheel event listener for scrolling
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      scrollContainer.scrollTop += e.deltaY;
+    };
+
+    scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      scrollContainer.removeEventListener('wheel', handleWheel);
+    };
+  }, [userListOpen]);
+
   const handleUserToggle = (userId: string) => {
     console.log('🔄 ProgramBasicInfo - handleUserToggle called with userId:', userId);
+    console.log('🔄 ProgramBasicInfo - Current selectedUserIds:', selectedUserIds);
+    console.log('🔄 ProgramBasicInfo - onMultipleAthleteChange function available:', !!onMultipleAthleteChange);
+    
     if (!onMultipleAthleteChange) {
       console.log('❌ ProgramBasicInfo - onMultipleAthleteChange not available');
       return;
@@ -56,7 +77,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
     console.log('✅ ProgramBasicInfo - Updating selectedUserIds from:', selectedUserIds, 'to:', newSelectedIds);
     onMultipleAthleteChange(newSelectedIds);
     
-    // Close popover after adding a user
+    // Close popover after adding a user (but not when removing)
     if (!selectedUserIds.includes(userId)) {
       setUserListOpen(false);
     }
@@ -69,12 +90,17 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
     }
   };
 
-  const handleUserClick = (userId: string, event?: React.MouseEvent) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+  const handleUserClick = (userId: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     console.log('👆 ProgramBasicInfo - User clicked:', userId);
+    handleUserToggle(userId);
+  };
+
+  const handleRemoveUser = (userId: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log('🗑️ ProgramBasicInfo - Removing user:', userId);
     handleUserToggle(userId);
   };
 
@@ -125,8 +151,12 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                   }
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-2 rounded-none max-h-64" align="start">
-                <div className="max-h-60 overflow-y-auto">
+              <PopoverContent className="w-80 p-0 rounded-none" align="start">
+                <div 
+                  ref={scrollContainerRef}
+                  className="max-h-60 overflow-y-auto p-2"
+                  style={{ scrollBehavior: 'smooth' }}
+                >
                   {availableUsers.length === 0 ? (
                     <div className="p-4 text-center text-sm text-gray-500">
                       Όλοι οι χρήστες έχουν επιλεγεί
@@ -136,8 +166,9 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                       {availableUsers.map(user => (
                         <div
                           key={user.id}
-                          className="w-full p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer"
-                          onClick={() => handleUserClick(user.id)}
+                          className="w-full p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer select-none"
+                          onClick={(e) => handleUserClick(user.id, e)}
+                          onMouseDown={(e) => e.preventDefault()}
                         >
                           <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-2">
@@ -196,7 +227,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => handleUserClick(user.id, e)}
+                      onClick={(e) => handleRemoveUser(user.id, e)}
                       className="rounded-none p-1 h-auto text-gray-500 hover:text-red-600 hover:bg-red-50"
                       title="Αφαίρεση από την επιλογή"
                     >
