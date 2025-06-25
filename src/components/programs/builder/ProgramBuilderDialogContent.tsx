@@ -2,6 +2,7 @@
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Save, Users } from "lucide-react";
 import { User, Exercise } from '../types';
@@ -90,70 +91,68 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   };
 
   return (
-    <DialogContent className="w-screen h-screen max-w-none max-h-none rounded-none p-0 m-0">
-      <div className="flex flex-col h-full">
-        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
-          <DialogTitle className="flex items-center justify-between">
-            <span>{program.name || 'Νέο Πρόγραμμα'}</span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={onAssignments}
-                className="rounded-none"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Αναθέσεις
-              </Button>
-              <Button onClick={onSave} className="rounded-none">
-                <Save className="w-4 h-4 mr-2" />
-                Αποθήκευση
-              </Button>
-            </div>
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6">
-            <ProgramBuilder
-              program={program}
-              users={users}
-              exercises={exercises}
-              onNameChange={onNameChange}
-              onDescriptionChange={onDescriptionChange}
-              onAthleteChange={onAthleteChange}
-              onAddWeek={onAddWeek}
-              onRemoveWeek={onRemoveWeek}
-              onDuplicateWeek={onDuplicateWeek}
-              onUpdateWeekName={onUpdateWeekName}
-              onAddDay={onAddDay}
-              onRemoveDay={onRemoveDay}
-              onDuplicateDay={onDuplicateDay}
-              onUpdateDayName={onUpdateDayName}
-              onAddBlock={onAddBlock}
-              onRemoveBlock={onRemoveBlock}
-              onDuplicateBlock={onDuplicateBlock}
-              onUpdateBlockName={onUpdateBlockName}
-              onAddExercise={onAddExercise}
-              onRemoveExercise={onRemoveExercise}
-              onUpdateExercise={onUpdateExercise}
-              onDuplicateExercise={onDuplicateExercise}
-              onReorderWeeks={onReorderWeeks}
-              onReorderDays={onReorderDays}
-              onReorderBlocks={onReorderBlocks}
-              onReorderExercises={onReorderExercises}
-            />
-
-            <Separator />
-
-            <TrainingDateSelector
-              selectedDates={selectedDatesAsStrings}
-              onDatesChange={handleDatesChange}
-              programWeeks={program.weeks?.length || 0}
-              weekStructure={program.weeks || []}
-            />
+    <DialogContent className="max-w-7xl max-h-[90vh] rounded-none">
+      <DialogHeader>
+        <DialogTitle className="flex items-center justify-between">
+          <span>{program.name || 'Νέο Πρόγραμμα'}</span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={onAssignments}
+              className="rounded-none"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Αναθέσεις
+            </Button>
+            <Button onClick={onSave} className="rounded-none">
+              <Save className="w-4 h-4 mr-2" />
+              Αποθήκευση
+            </Button>
           </div>
+        </DialogTitle>
+      </DialogHeader>
+
+      <ScrollArea className="h-[calc(90vh-120px)] pr-6">
+        <div className="space-y-6">
+          <ProgramBuilder
+            program={program}
+            users={users}
+            exercises={exercises}
+            onNameChange={onNameChange}
+            onDescriptionChange={onDescriptionChange}
+            onAthleteChange={onAthleteChange}
+            onAddWeek={onAddWeek}
+            onRemoveWeek={onRemoveWeek}
+            onDuplicateWeek={onDuplicateWeek}
+            onUpdateWeekName={onUpdateWeekName}
+            onAddDay={onAddDay}
+            onRemoveDay={onRemoveDay}
+            onDuplicateDay={onDuplicateDay}
+            onUpdateDayName={onUpdateDayName}
+            onAddBlock={onAddBlock}
+            onRemoveBlock={onRemoveBlock}
+            onDuplicateBlock={onDuplicateBlock}
+            onUpdateBlockName={onUpdateBlockName}
+            onAddExercise={onAddExercise}
+            onRemoveExercise={onRemoveExercise}
+            onUpdateExercise={onUpdateExercise}
+            onDuplicateExercise={onDuplicateExercise}
+            onReorderWeeks={onReorderWeeks}
+            onReorderDays={onReorderDays}
+            onReorderBlocks={onReorderBlocks}
+            onReorderExercises={onReorderExercises}
+          />
+
+          <Separator />
+
+          <TrainingDateSelector
+            selectedDates={selectedDatesAsStrings}
+            onDatesChange={handleDatesChange}
+            programWeeks={program.weeks?.length || 0}
+            weekStructure={program.weeks || []}
+          />
         </div>
-      </div>
+      </ScrollArea>
     </DialogContent>
   );
 };
