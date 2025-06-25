@@ -30,21 +30,27 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   }
 
   return (
-    <div className="w-full space-y-4">
-      <CalendarDisplay
-        selectedDatesAsStrings={selectedDatesAsStrings}
-        totalDays={totalDays}
-        currentWeekInfo={currentWeekInfo}
-        onDateSelect={handleDateSelect}
-        onClearAllDates={handleClearAllDates}
-        isDateSelected={isDateSelected}
-        isDateDisabled={isDateDisabled}
-      />
-      
-      <SelectionProgress
-        selectedCount={selectedDatesAsStrings.length}
-        totalDays={totalDays}
-      />
+    <div className="w-full">
+      <div className="flex gap-6">
+        <div className="flex-1">
+          <CalendarDisplay
+            selectedDatesAsStrings={selectedDatesAsStrings}
+            totalDays={totalDays}
+            currentWeekInfo={currentWeekInfo}
+            onDateSelect={handleDateSelect}
+            onClearAllDates={handleClearAllDates}
+            isDateSelected={isDateSelected}
+            isDateDisabled={isDateDisabled}
+          />
+        </div>
+        
+        <div className="w-80">
+          <SelectionProgress
+            selectedCount={selectedDatesAsStrings.length}
+            totalDays={totalDays}
+          />
+        </div>
+      </div>
     </div>
   );
 };
