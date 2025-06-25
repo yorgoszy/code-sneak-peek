@@ -130,9 +130,9 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   };
 
   return (
-    <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] rounded-none p-0">
+    <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] rounded-none p-0 overflow-hidden">
       <div className="flex flex-col h-full">
-        <DialogHeader className="px-6 py-4 border-b">
+        <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
           <DialogTitle className="flex items-center justify-between">
             <span>{program.name || 'Νέο Πρόγραμμα'}</span>
             <div className="flex gap-2">
@@ -152,9 +152,9 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
-          <ScrollArea className="h-full px-6 py-4">
-            <div className="space-y-6">
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="px-6 py-4 space-y-6">
               <ProgramBuilder
                 program={program}
                 users={users}
