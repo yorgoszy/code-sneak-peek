@@ -40,6 +40,77 @@ export const useTrainingDateLogic = ({
     return result;
   };
 
+  // ΝΕΑ ΛΟΓΙΚΗ: Υπολογισμός της τρέχουσας εβδομάδας και των επιτρεπόμενων ημερών
+  const getCurrentWeekInfo = () => {
+    if (weekStructure.length === 0) {
+      return { currentWeekIndex: 0, allowedDaysInCurrentWeek: totalRequiredDays, completedWeeks: 0 };
+    }
+
+    let totalSelectedDays = 0;
+    let currentWeekIndex = 0;
+    let completedWeeks = 0;
+
+    for (let i = 0; i < weekStructure.length; i++) {
+      const weekDays = weekStructure[i].program_days?.length || 0;
+      
+      if (totalSelectedDays + weekDays <= selectedDates.length) {
+        // Αυτή η εβδομάδα έχει ολοκληρωθεί
+        totalSelectedDays += weekDays;
+        completedWeeks++;
+        currentWeekIndex = i + 1;
+      } else {
+        // Αυτή είναι η τρέχουσα εβδομάδα που επεξεργαζόμαστε
+        currentWeekIndex = i;
+        break;
+      }
+    }
+
+    const allowedDaysInCurrentWeek = currentWeekIndex < weekStructure.length 
+      ? weekStructure[currentWeekIndex].program_days?.length || 0 
+      : 0;
+
+    console.log('🗓️ [useTrainingDateLogic] getCurrentWeekInfo:', {
+      selectedDatesLength: selectedDates.length,
+      currentWeekIndex,
+      allowedDaysInCurrentWeek,
+      completedWeeks,
+      weekStructure: weekStructure.map(w => ({ 
+        weekNumber: w.week_number, 
+        days: w.program_days?.length || 0 
+      }))
+    });
+
+    return { currentWeekIndex, allowedDaysInCurrentWeek, completedWeeks };
+  };
+
+  // ΝΕΑ ΛΟΓΙΚΗ: Έλεγχος αν μπορούμε να προσθέσουμε άλλη ημερομηνία
+  const canAddMoreDates = () => {
+    if (weekStructure.length === 0) {
+      return selectedDates.length < totalRequiredDays;
+    }
+
+    const { currentWeekIndex, allowedDaysInCurrentWeek, completedWeeks } = getCurrentWeekInfo();
+    
+    // Υπολογίζουμε πόσες ημερομηνίες έχουμε επιλέξει για την τρέχουσα εβδομάδα
+    let daysInPreviousWeeks = 0;
+    for (let i = 0; i < currentWeekIndex; i++) {
+      daysInPreviousWeeks += weekStructure[i].program_days?.length || 0;
+    }
+    
+    const daysSelectedInCurrentWeek = selectedDates.length - daysInPreviousWeeks;
+    
+    console.log('🗓️ [useTrainingDateLogic] canAddMoreDates check:', {
+      currentWeekIndex,
+      allowedDaysInCurrentWeek,
+      daysSelectedInCurrentWeek,
+      daysInPreviousWeeks,
+      totalSelected: selectedDates.length,
+      canAdd: daysSelectedInCurrentWeek < allowedDaysInCurrentWeek
+    });
+
+    return daysSelectedInCurrentWeek < allowedDaysInCurrentWeek;
+  };
+
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) {
       console.log('🗓️ [useTrainingDateLogic] No date selected');
@@ -72,15 +143,17 @@ export const useTrainingDateLogic = ({
       console.log('🗓️ [useTrainingDateLogic] Removing date:', { dateString, newDates });
       onDatesChange(newDates);
     } else {
-      // Check if we can add more dates based on actual total required days
-      if (selectedDates.length < totalRequiredDays) {
+      // ΝΕΑ ΛΟΓΙΚΗ: Έλεγχος αν μπορούμε να προσθέσουμε την ημερομηνία
+      if (canAddMoreDates()) {
         // Add date if not selected and within limits
         const newDates = [...selectedDates, dateString].sort();
         console.log('🗓️ [useTrainingDateLogic] Adding date:', { dateString, newDates });
         onDatesChange(newDates);
       } else {
-        console.log('🗓️ [useTrainingDateLogic] Cannot add more dates - limit reached:', {
-          required: totalRequiredDays,
+        const { currentWeekIndex, allowedDaysInCurrentWeek } = getCurrentWeekInfo();
+        console.log('🗓️ [useTrainingDateLogic] Cannot add more dates for current week:', {
+          currentWeekIndex: currentWeekIndex + 1,
+          allowedDaysInCurrentWeek,
           selected: selectedDates.length
         });
       }
@@ -136,8 +209,8 @@ export const useTrainingDateLogic = ({
     // If date is already selected, allow it (for deselection)
     if (isDateSelected(date)) return false;
 
-    // If we've reached the limit based on actual program structure, disable all unselected dates
-    return selectedDates.length >= totalRequiredDays;
+    // ΝΕΑ ΛΟΓΙΚΗ: Αν δεν μπορούμε να προσθέσουμε άλλες ημερομηνίες, disable όλες τις μη επιλεγμένες
+    return !canAddMoreDates();
   };
 
   return {
@@ -148,6 +221,7 @@ export const useTrainingDateLogic = ({
     clearAllDates,
     isDateSelected,
     isToday,
-    isDateDisabled
+    isDateDisabled,
+    getCurrentWeekInfo
   };
 };
