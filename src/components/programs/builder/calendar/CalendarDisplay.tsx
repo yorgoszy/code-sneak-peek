@@ -54,44 +54,24 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
       </CardHeader>
       
       <CardContent>
-        <div className="space-y-4">
-          {currentWeekInfo ? (
-            <div className="text-sm text-gray-600">
-              <p className="font-medium text-blue-700">
-                Συμπληρώνετε: {currentWeekInfo.weekStructure.name}
-              </p>
-              <p>
-                Επιλέξτε {currentWeekInfo.remainingForThisWeek} από {currentWeekInfo.weekStructure.daysCount} ημερομηνίες
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                ✅ Έχετε επιλέξει {currentWeekInfo.alreadySelected} ημερομηνίες για αυτή την εβδομάδα
-              </p>
-            </div>
-          ) : (
-            <div className="text-sm text-green-600 font-medium">
-              🎉 Όλες οι εβδομάδες έχουν ολοκληρωθεί!
-            </div>
-          )}
-          
-          <div className="flex justify-center">
-            <Calendar
-              mode="multiple"
-              selected={selectedDatesAsStrings.map(date => parseISO(date))}
-              onDayClick={onDateSelect}
-              disabled={isDateDisabled}
-              className="rounded-none border"
-              locale={el}
-              modifiers={{
-                selected: (date) => isDateSelected(date)
-              }}
-              modifiersStyles={{
-                selected: {
-                  backgroundColor: '#00ffba',
-                  color: '#000000'
-                }
-              }}
-            />
-          </div>
+        <div className="flex justify-center">
+          <Calendar
+            mode="multiple"
+            selected={selectedDatesAsStrings.map(date => parseISO(date))}
+            onDayClick={onDateSelect}
+            disabled={isDateDisabled}
+            className="rounded-none border"
+            locale={el}
+            modifiers={{
+              selected: (date) => isDateSelected(date)
+            }}
+            modifiersStyles={{
+              selected: {
+                backgroundColor: '#00ffba',
+                color: '#000000'
+              }
+            }}
+          />
         </div>
       </CardContent>
     </Card>
