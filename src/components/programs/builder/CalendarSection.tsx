@@ -3,7 +3,6 @@ import React from 'react';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { CalendarDisplay } from './calendar/CalendarDisplay';
 import { SelectionProgress } from './calendar/SelectionProgress';
-import { ProgramRequirements } from './calendar/ProgramRequirements';
 import { WeekProgressDisplay } from './calendar/WeekProgressDisplay';
 import { useCalendarLogic } from './calendar/hooks/useCalendarLogic';
 
@@ -49,11 +48,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
         </div>
         
         <div className="w-80 space-y-4">
-          <ProgramRequirements
-            weekStructure={weekStructure}
-            totalDays={totalDays}
-          />
-          
           <WeekProgressDisplay
             weekProgress={weekProgress}
           />
