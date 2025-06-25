@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, User, X } from "lucide-react";
-import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 import type { User as UserType } from '../../types';
 
 interface MultipleUserSelectionProps {
@@ -30,12 +30,9 @@ export const MultipleUserSelection: React.FC<MultipleUserSelectionProps> = ({
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleUserSelect = (userId: string, event: any) => {
-    // Σταματάμε το event από το να φτάσει στο CommandItem
-    event.preventDefault();
-    event.stopPropagation();
+  const handleUserSelect = (userId: string) => {
     onUserToggle(userId);
-    setSearchTerm('');
+    // Δεν κλείνουμε το popover για να επιτρέπουμε πολλαπλές επιλογές
   };
 
   return (
@@ -61,46 +58,48 @@ export const MultipleUserSelection: React.FC<MultipleUserSelectionProps> = ({
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full p-0 rounded-none" align="start">
-              <Command>
-                <CommandInput 
-                  placeholder="Αναζήτηση χρηστών..." 
+              <div className="p-3 border-b">
+                <Input
+                  placeholder="Αναζήτηση χρηστών..."
                   value={searchTerm}
-                  onValueChange={setSearchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="rounded-none"
                 />
-                <CommandList className="max-h-48">
-                  <CommandEmpty>Δεν βρέθηκε χρήστης</CommandEmpty>
-                  {filteredUsers.map(user => (
-                    <CommandItem
-                      key={user.id}
-                      className={`cursor-pointer p-3 hover:bg-gray-100 ${
-                        selectedUserIds.includes(user.id) ? 'bg-[#00ffba]/20 border-l-4 border-[#00ffba]' : ''
-                      }`}
-                      onSelect={(value) => {
-                        // Δεν χρησιμοποιούμε το onSelect του CommandItem
-                        // γιατί αυτό κλείνει το popover αυτόματα
-                      }}
-                    >
-                      <div 
-                        className="flex items-center justify-between w-full"
-                        onClick={(e) => handleUserSelect(user.id, e)}
+              </div>
+              <div className="max-h-48 overflow-y-auto">
+                {filteredUsers.length === 0 ? (
+                  <div className="p-6 text-center text-sm text-gray-500">
+                    Δεν βρέθηκε χρήστης
+                  </div>
+                ) : (
+                  <div className="p-1">
+                    {filteredUsers.map(user => (
+                      <div
+                        key={user.id}
+                        className={`cursor-pointer p-3 rounded hover:bg-gray-100 transition-colors ${
+                          selectedUserIds.includes(user.id) ? 'bg-[#00ffba]/20 border-l-4 border-[#00ffba]' : ''
+                        }`}
+                        onClick={() => handleUserSelect(user.id)}
                       >
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4" />
-                          <div>
-                            <p className="font-medium text-sm">{user.name}</p>
-                            <p className="text-xs text-gray-600">{user.email}</p>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4" />
+                            <div>
+                              <p className="font-medium text-sm">{user.name}</p>
+                              <p className="text-xs text-gray-600">{user.email}</p>
+                            </div>
                           </div>
+                          {selectedUserIds.includes(user.id) ? (
+                            <span className="text-[#00ffba] font-bold text-lg">✓</span>
+                          ) : (
+                            <span className="text-gray-400 font-bold text-lg">+</span>
+                          )}
                         </div>
-                        {selectedUserIds.includes(user.id) ? (
-                          <span className="text-[#00ffba] font-bold text-lg">✓</span>
-                        ) : (
-                          <span className="text-gray-400 font-bold text-lg">+</span>
-                        )}
                       </div>
-                    </CommandItem>
-                  ))}
-                </CommandList>
-              </Command>
+                    ))}
+                  </div>
+                )}
+              </div>
             </PopoverContent>
           </Popover>
         </div>
