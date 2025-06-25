@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
+import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
 import type { User as UserType } from '../../types';
 import type { ProgramStructure } from '../hooks/useProgramBuilderState';
@@ -44,8 +45,11 @@ export const useMultipleUserAssignmentState = ({
     setSelectedUserIds([]);
   };
 
-  // Handle date selection
-  const handleDateSelect = (dateStr: string) => {
+  // Handle date selection - convert Date to string
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    const dateStr = format(date, 'yyyy-MM-dd');
     setSelectedDates(prev => {
       if (prev.includes(dateStr)) {
         return prev.filter(d => d !== dateStr);
@@ -64,11 +68,15 @@ export const useMultipleUserAssignmentState = ({
     setSelectedDates([]);
   };
 
-  const isDateSelected = (dateStr: string) => {
+  // Check if date is selected - convert Date to string for comparison
+  const isDateSelected = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
     return selectedDates.includes(dateStr);
   };
 
-  const isDateDisabled = (dateStr: string) => {
+  // Check if date should be disabled - convert Date to string for comparison
+  const isDateDisabled = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
     return !selectedDates.includes(dateStr) && selectedDates.length >= totalRequiredSessions;
   };
 
