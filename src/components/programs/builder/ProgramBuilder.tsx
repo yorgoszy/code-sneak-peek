@@ -70,6 +70,13 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
 }) => {
   console.log('🔄 ProgramBuilder render - user_ids:', program.user_ids);
   
+  // Filter users to only include athletes/users
+  const availableUsers = users.filter(user => 
+    user.role === 'athlete' || 
+    user.role === 'user' || 
+    !user.role  // Include users without role defined
+  );
+  
   return (
     <div className="space-y-6">
       <ProgramBasicInfo
@@ -77,7 +84,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         description={program.description}
         selectedUserId={program.user_id}
         selectedUserIds={program.user_ids || []}
-        users={users}
+        users={availableUsers}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
         onAthleteChange={onAthleteChange}

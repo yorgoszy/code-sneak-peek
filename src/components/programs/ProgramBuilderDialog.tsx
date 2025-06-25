@@ -74,6 +74,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   };
 
   const handleMultipleAthleteChange = (userIds: string[]) => {
+    console.log('🔄 ProgramBuilderDialog - handleMultipleAthleteChange called with:', userIds);
     updateProgram({ 
       user_ids: userIds,
       is_multiple_assignment: true,
@@ -94,6 +95,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onNameChange={(name) => updateProgram({ name })}
         onDescriptionChange={(description) => updateProgram({ description })}
         onAthleteChange={handleAthleteChange}
+        onMultipleAthleteChange={handleMultipleAthleteChange}
+        onToggleAssignmentMode={handleToggleAssignmentMode}
         onAddWeek={actions.addWeek}
         onRemoveWeek={actions.removeWeek}
         onDuplicateWeek={actions.duplicateWeek}

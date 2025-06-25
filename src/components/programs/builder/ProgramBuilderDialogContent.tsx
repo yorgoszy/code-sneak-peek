@@ -16,6 +16,8 @@ interface ProgramBuilderDialogContentProps {
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
   onAthleteChange: (user_id: string) => void;
+  onMultipleAthleteChange: (userIds: string[]) => void;
+  onToggleAssignmentMode: (isMultiple: boolean) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
@@ -49,6 +51,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onNameChange,
   onDescriptionChange,
   onAthleteChange,
+  onMultipleAthleteChange,
+  onToggleAssignmentMode,
   onAddWeek,
   onRemoveWeek,
   onDuplicateWeek,
@@ -74,15 +78,6 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onTrainingDatesChange,
   getTotalTrainingDays
 }) => {
-  const handleMultipleAthleteChange = (userIds: string[]) => {
-    // Ενημερώνουμε το program με τα νέα user_ids
-    console.log('🔄 Updating program with user_ids:', userIds);
-  };
-
-  const handleToggleAssignmentMode = (isMultiple: boolean) => {
-    console.log('🔄 Toggle assignment mode:', isMultiple);
-  };
-
   const canAssign = program.user_ids && program.user_ids.length > 0 && 
                    program.training_dates && program.training_dates.length > 0 &&
                    program.name?.trim();
@@ -123,8 +118,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onNameChange={onNameChange}
             onDescriptionChange={onDescriptionChange}
             onAthleteChange={onAthleteChange}
-            onMultipleAthleteChange={handleMultipleAthleteChange}
-            onToggleAssignmentMode={handleToggleAssignmentMode}
+            onMultipleAthleteChange={onMultipleAthleteChange}
+            onToggleAssignmentMode={onToggleAssignmentMode}
             onAddWeek={onAddWeek}
             onRemoveWeek={onRemoveWeek}
             onDuplicateWeek={onDuplicateWeek}
