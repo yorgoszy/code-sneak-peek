@@ -90,12 +90,14 @@ export const TrainingDateCalendar: React.FC<TrainingDateCalendarProps> = ({
       modifiers={{
         selected: isDateSelected,
         today: isToday,
-        selectedToday: (date) => isDateSelected(date) && isToday(date)
+        selectedToday: (date) => isDateSelected(date) && isToday(date),
+        disabled: isDateDisabled
       }}
       modifiersClassNames={{
         selected: "bg-[#00ffba] text-black hover:bg-[#00ffba]/90",
         today: "bg-gray-200 text-black",
-        selectedToday: "bg-[#00cc94] text-black hover:bg-[#00cc94]/90"
+        selectedToday: "bg-[#00cc94] text-black hover:bg-[#00cc94]/90",
+        disabled: "text-gray-300 opacity-50 cursor-not-allowed"
       }}
     />
   );

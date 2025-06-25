@@ -40,6 +40,78 @@ export const useTrainingDateLogic = ({
     return result;
   };
 
+  // ΝΕΑ ΛΟΓΙΚΗ: Υπολογισμός εβδομάδας για συγκεκριμένη ημερομηνία
+  const getWeekForDate = (date: Date) => {
+    if (weekStructure.length === 0) return 0;
+    
+    // Ταξινομούμε τις επιλεγμένες ημερομηνίες
+    const sortedDates = [...selectedDates].sort();
+    
+    // Βρίσκουμε τη θέση της ημερομηνίας αν ήταν επιλεγμένη
+    const dateString = dateToString(createCleanDate(date));
+    let datePosition = sortedDates.indexOf(dateString);
+    
+    // Αν δεν είναι επιλεγμένη, υπολογίζουμε τη θέση της βάσει χρονολογικής σειράς
+    if (datePosition === -1) {
+      datePosition = sortedDates.filter(d => d < dateString).length;
+    }
+    
+    // Υπολογίζουμε σε ποια εβδομάδα ανήκει
+    let totalDaysBeforeCurrentWeek = 0;
+    for (let i = 0; i < weekStructure.length; i++) {
+      const weekDays = weekStructure[i].program_days?.length || 0;
+      if (datePosition < totalDaysBeforeCurrentWeek + weekDays) {
+        return i;
+      }
+      totalDaysBeforeCurrentWeek += weekDays;
+    }
+    
+    return weekStructure.length - 1; // Τελευταία εβδομάδα αν περάσαμε όλες
+  };
+
+  // ΝΕΑ ΛΟΓΙΚΗ: Έλεγχος αν μπορούμε να προσθέσουμε ημερομηνία σε συγκεκριμένη εβδομάδα
+  const canSelectDateInWeek = (date: Date) => {
+    if (weekStructure.length === 0) {
+      return selectedDates.length < totalRequiredDays;
+    }
+
+    const dateString = dateToString(createCleanDate(date));
+    
+    // Αν η ημερομηνία είναι ήδη επιλεγμένη, επιτρέπουμε την αποεπιλογή
+    if (selectedDates.includes(dateString)) {
+      return true;
+    }
+
+    // Υπολογίζουμε σε ποια εβδομάδα θα ανήκει αυτή η ημερομηνία
+    const targetWeek = getWeekForDate(date);
+    if (targetWeek >= weekStructure.length) return false;
+
+    const targetWeekStructure = weekStructure[targetWeek];
+    const allowedDaysInWeek = targetWeekStructure.program_days?.length || 0;
+
+    // Υπολογίζουμε πόσες ημερομηνίες έχουμε ήδη επιλέξει για αυτή την εβδομάδα
+    let daysInPreviousWeeks = 0;
+    for (let i = 0; i < targetWeek; i++) {
+      daysInPreviousWeeks += weekStructure[i].program_days?.length || 0;
+    }
+
+    const daysInTargetWeekEnd = daysInPreviousWeeks + allowedDaysInWeek;
+    const selectedDatesInTargetWeek = selectedDates
+      .slice(daysInPreviousWeeks, Math.min(selectedDates.length, daysInTargetWeekEnd))
+      .length;
+
+    console.log('🗓️ [useTrainingDateLogic] canSelectDateInWeek:', {
+      date: dateString,
+      targetWeek,
+      allowedDaysInWeek,
+      selectedDatesInTargetWeek,
+      daysInPreviousWeeks,
+      canSelect: selectedDatesInTargetWeek < allowedDaysInWeek
+    });
+
+    return selectedDatesInTargetWeek < allowedDaysInWeek;
+  };
+
   // ΝΕΑ ΛΟΓΙΚΗ: Υπολογισμός της τρέχουσας εβδομάδας και των επιτρεπόμενων ημερών
   const getCurrentWeekInfo = () => {
     if (weekStructure.length === 0) {
@@ -83,34 +155,6 @@ export const useTrainingDateLogic = ({
     return { currentWeekIndex, allowedDaysInCurrentWeek, completedWeeks };
   };
 
-  // ΝΕΑ ΛΟΓΙΚΗ: Έλεγχος αν μπορούμε να προσθέσουμε άλλη ημερομηνία
-  const canAddMoreDates = () => {
-    if (weekStructure.length === 0) {
-      return selectedDates.length < totalRequiredDays;
-    }
-
-    const { currentWeekIndex, allowedDaysInCurrentWeek, completedWeeks } = getCurrentWeekInfo();
-    
-    // Υπολογίζουμε πόσες ημερομηνίες έχουμε επιλέξει για την τρέχουσα εβδομάδα
-    let daysInPreviousWeeks = 0;
-    for (let i = 0; i < currentWeekIndex; i++) {
-      daysInPreviousWeeks += weekStructure[i].program_days?.length || 0;
-    }
-    
-    const daysSelectedInCurrentWeek = selectedDates.length - daysInPreviousWeeks;
-    
-    console.log('🗓️ [useTrainingDateLogic] canAddMoreDates check:', {
-      currentWeekIndex,
-      allowedDaysInCurrentWeek,
-      daysSelectedInCurrentWeek,
-      daysInPreviousWeeks,
-      totalSelected: selectedDates.length,
-      canAdd: daysSelectedInCurrentWeek < allowedDaysInCurrentWeek
-    });
-
-    return daysSelectedInCurrentWeek < allowedDaysInCurrentWeek;
-  };
-
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) {
       console.log('🗓️ [useTrainingDateLogic] No date selected');
@@ -144,18 +188,13 @@ export const useTrainingDateLogic = ({
       onDatesChange(newDates);
     } else {
       // ΝΕΑ ΛΟΓΙΚΗ: Έλεγχος αν μπορούμε να προσθέσουμε την ημερομηνία
-      if (canAddMoreDates()) {
+      if (canSelectDateInWeek(date)) {
         // Add date if not selected and within limits
         const newDates = [...selectedDates, dateString].sort();
         console.log('🗓️ [useTrainingDateLogic] Adding date:', { dateString, newDates });
         onDatesChange(newDates);
       } else {
-        const { currentWeekIndex, allowedDaysInCurrentWeek } = getCurrentWeekInfo();
-        console.log('🗓️ [useTrainingDateLogic] Cannot add more dates for current week:', {
-          currentWeekIndex: currentWeekIndex + 1,
-          allowedDaysInCurrentWeek,
-          selected: selectedDates.length
-        });
+        console.log('🗓️ [useTrainingDateLogic] Cannot add date - week is full or exceeds limits');
       }
     }
   };
@@ -209,8 +248,8 @@ export const useTrainingDateLogic = ({
     // If date is already selected, allow it (for deselection)
     if (isDateSelected(date)) return false;
 
-    // ΝΕΑ ΛΟΓΙΚΗ: Αν δεν μπορούμε να προσθέσουμε άλλες ημερομηνίες, disable όλες τις μη επιλεγμένες
-    return !canAddMoreDates();
+    // ΝΕΑ ΛΟΓΙΚΗ: Χρήση της νέας συνάρτησης ελέγχου
+    return !canSelectDateInWeek(date);
   };
 
   return {
