@@ -189,100 +189,122 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Individual User Selection */}
-            {assignmentMode === 'individual' && (
-              <Card className="rounded-none">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-sm">
-                    <User className="w-4 h-4" />
-                    Επιλογή Χρηστών
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Popover open={userListOpen} onOpenChange={setUserListOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start text-left font-normal rounded-none"
-                          disabled={availableUsers.length === 0}
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          {availableUsers.length === 0 
-                            ? "Όλοι οι χρήστες έχουν επιλεγεί" 
-                            : "Προσθήκη χρήστη..."
-                          }
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80 p-0 rounded-none" align="start">
-                        <div 
-                          ref={scrollContainerRef}
-                          className="max-h-60 overflow-y-auto p-2"
-                          style={{ scrollBehavior: 'smooth' }}
-                        >
-                          {availableUsers.length === 0 ? (
-                            <div className="p-4 text-center text-sm text-gray-500">
-                              Όλοι οι χρήστες έχουν επιλεγεί
-                            </div>
-                          ) : (
-                            <div className="space-y-1">
-                              {availableUsers.map(user => (
-                                <div
-                                  key={user.id}
-                                  className="w-full p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer select-none"
-                                  onClick={(e) => handleUserClick(user.id, e)}
-                                  onMouseDown={(e) => e.preventDefault()}
-                                >
-                                  <div className="flex items-center justify-between w-full">
-                                    <div className="flex items-center gap-2">
-                                      <User className="w-4 h-4" />
-                                      <div className="text-left">
-                                        <p className="font-medium text-sm">{user.name}</p>
-                                        <p className="text-xs text-gray-600">{user.email}</p>
-                                      </div>
-                                    </div>
-                                    <Plus className="w-4 h-4 text-[#00ffba]" />
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  {/* Selected Users Display */}
-                  {selectedUsers.length > 0 && (
+          {/* Individual User Selection */}
+          {assignmentMode === 'individual' && (
+            <div className="flex gap-4">
+              {/* User Selection Box - 60% width */}
+              <div className="w-[60%]">
+                <Card className="rounded-none">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <User className="w-4 h-4" />
+                      Επιλογή Χρηστών
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">
-                          Επιλεγμένοι Χρήστες ({selectedUsers.length})
-                        </span>
+                      <Popover open={userListOpen} onOpenChange={setUserListOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal rounded-none"
+                            disabled={availableUsers.length === 0}
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            {availableUsers.length === 0 
+                              ? "Όλοι οι χρήστες έχουν επιλεγεί" 
+                              : "Προσθήκη χρήστη..."
+                            }
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-0 rounded-none" align="start">
+                          <div 
+                            ref={scrollContainerRef}
+                            className="max-h-60 overflow-y-auto p-2"
+                            style={{ scrollBehavior: 'smooth' }}
+                          >
+                            {availableUsers.length === 0 ? (
+                              <div className="p-4 text-center text-sm text-gray-500">
+                                Όλοι οι χρήστες έχουν επιλεγεί
+                              </div>
+                            ) : (
+                              <div className="space-y-1">
+                                {availableUsers.map(user => (
+                                  <div
+                                    key={user.id}
+                                    className="w-full p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer select-none"
+                                    onClick={(e) => handleUserClick(user.id, e)}
+                                    onMouseDown={(e) => e.preventDefault()}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <div className="flex items-center gap-2">
+                                        <User className="w-4 h-4" />
+                                        <div className="text-left">
+                                          <p className="font-medium text-sm">{user.name}</p>
+                                          <p className="text-xs text-gray-600">{user.email}</p>
+                                        </div>
+                                      </div>
+                                      <Plus className="w-4 h-4 text-[#00ffba]" />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    {selectedUsers.length > 0 && (
+                      <div className="text-sm text-gray-600 bg-blue-50 p-3 border border-blue-200 rounded">
+                        <Users className="w-4 h-4 inline mr-2" />
+                        Θα δημιουργηθούν {selectedUsers.length} ατομικές αναθέσεις με τις ίδιες ημερομηνίες προπόνησης.
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Selected Users Display - 40% width */}
+              <div className="w-[40%]">
+                <Card className="rounded-none">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between text-sm">
+                      <span className="flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        Επιλεγμένοι ({selectedUsers.length})
+                      </span>
+                      {selectedUsers.length > 0 && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={handleClearAll}
-                          className="rounded-none text-xs"
+                          className="rounded-none text-xs h-6 px-2"
                         >
-                          Καθαρισμός Όλων
+                          Καθαρισμός
                         </Button>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedUsers.length === 0 ? (
+                      <div className="text-center text-sm text-gray-500 py-4">
+                        Δεν έχουν επιλεγεί χρήστες
                       </div>
-                      
-                      <div className="grid gap-2 max-h-40 overflow-y-auto">
+                    ) : (
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
                         {selectedUsers.map(user => (
                           <div
                             key={user.id}
-                            className="flex items-center justify-between bg-[#00ffba]/10 border border-[#00ffba]/20 p-3 rounded hover:bg-[#00ffba]/20 transition-colors"
+                            className="flex items-center justify-between bg-[#00ffba]/10 border border-[#00ffba]/20 p-2 rounded hover:bg-[#00ffba]/20 transition-colors"
                           >
-                            <div className="flex items-center gap-2">
-                              <User className="w-4 h-4 text-[#00ffba]" />
-                              <div>
-                                <p className="font-medium text-sm">{user.name}</p>
-                                <p className="text-xs text-gray-600">{user.email}</p>
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <User className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-xs truncate">{user.name}</p>
+                                <p className="text-xs text-gray-600 truncate">{user.email}</p>
                                 {user.role && (
-                                  <Badge variant="outline" className="mt-1 text-xs rounded-none">
+                                  <Badge variant="outline" className="mt-1 text-xs rounded-none h-4 px-1">
                                     {user.role}
                                   </Badge>
                                 )}
@@ -292,36 +314,29 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                               variant="ghost"
                               size="sm"
                               onClick={(e) => handleRemoveUser(user.id, e)}
-                              className="rounded-none p-1 h-auto text-gray-500 hover:text-red-600 hover:bg-red-50"
+                              className="rounded-none p-1 h-auto text-gray-500 hover:text-red-600 hover:bg-red-50 flex-shrink-0"
                               title="Αφαίρεση από την επιλογή"
                             >
-                              <X className="w-4 h-4" />
+                              <X className="w-3 h-3" />
                             </Button>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
 
-                  {selectedUsers.length > 0 && (
-                    <div className="text-sm text-gray-600 bg-blue-50 p-3 border border-blue-200 rounded">
-                      <Users className="w-4 h-4 inline mr-2" />
-                      Θα δημιουργηθούν {selectedUsers.length} ατομικές αναθέσεις με τις ίδιες ημερομηνίες προπόνησης.
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Group Selection */}
-            {assignmentMode === 'group' && onGroupChange && (
-              <GroupSelection
-                selectedGroupId={selectedGroupId}
-                onGroupChange={onGroupChange}
-                onGroupMembersLoad={handleGroupMembersLoad}
-              />
-            )}
-          </div>
+          {/* Group Selection */}
+          {assignmentMode === 'group' && onGroupChange && (
+            <GroupSelection
+              selectedGroupId={selectedGroupId}
+              onGroupChange={onGroupChange}
+              onGroupMembersLoad={handleGroupMembersLoad}
+            />
+          )}
         </div>
       </CardContent>
     </Card>
