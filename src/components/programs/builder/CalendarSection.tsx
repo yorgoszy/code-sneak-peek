@@ -4,6 +4,7 @@ import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { CalendarDisplay } from './calendar/CalendarDisplay';
 import { SelectionProgress } from './calendar/SelectionProgress';
 import { ProgramRequirements } from './calendar/ProgramRequirements';
+import { WeekProgressDisplay } from './calendar/WeekProgressDisplay';
 import { useCalendarLogic } from './calendar/hooks/useCalendarLogic';
 
 interface CalendarSectionProps {
@@ -21,6 +22,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     weekStructure,
     selectedDatesAsStrings,
     currentWeekInfo,
+    weekProgress,
     handleDateSelect,
     handleClearAllDates,
     isDateSelected,
@@ -50,6 +52,10 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
           <ProgramRequirements
             weekStructure={weekStructure}
             totalDays={totalDays}
+          />
+          
+          <WeekProgressDisplay
+            weekProgress={weekProgress}
           />
           
           <SelectionProgress
