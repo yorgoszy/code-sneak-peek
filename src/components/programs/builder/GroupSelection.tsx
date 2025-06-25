@@ -173,8 +173,8 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
 
   return (
     <div className="flex gap-4">
-      {/* Group Selection Box - 35% width */}
-      <div className="w-[35%]">
+      {/* Group Selection Box - 70% width */}
+      <div className="w-[70%]">
         <Card className="rounded-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
@@ -241,8 +241,8 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
         </Card>
       </div>
 
-      {/* Selected Group Members Display - 65% width */}
-      <div className="w-[65%]">
+      {/* Selected Group Members Display - 30% width */}
+      <div className="w-[30%]">
         <Card className="rounded-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
