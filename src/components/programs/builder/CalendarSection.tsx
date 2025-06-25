@@ -21,24 +21,36 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   weekStructure = [],
   onTrainingDatesChange
 }) => {
-  // Convert string dates to Date objects for the selector
-  const selectedDates = (program.training_dates || []).map(dateStr => {
-    if (typeof dateStr === 'string') {
-      return dateStr;
+  // Convert Date objects to string dates for the selector
+  const selectedDates = (program.training_dates || []).map(date => {
+    if (typeof date === 'string') {
+      console.log('📅 [CalendarSection] Already string date:', date);
+      return date;
     }
-    // If it's already a Date object, convert to string
-    return dateStr instanceof Date ? dateStr.toISOString().split('T')[0] : dateStr;
+    // If it's a Date object, convert to string
+    const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
+    console.log('📅 [CalendarSection] Converted Date to string:', date, '->', dateStr);
+    return dateStr;
   });
 
   const handleDatesChange = (dates: string[]) => {
+    console.log('📅 [CalendarSection] handleDatesChange called with:', dates);
+    
     // Convert string dates back to Date objects
-    const dateObjects = dates.map(dateStr => new Date(dateStr + 'T00:00:00'));
+    const dateObjects = dates.map(dateStr => {
+      const dateObj = new Date(dateStr + 'T00:00:00');
+      console.log('📅 [CalendarSection] Converting string to Date:', dateStr, '->', dateObj);
+      return dateObj;
+    });
+    
+    console.log('📅 [CalendarSection] Final date objects:', dateObjects);
     onTrainingDatesChange(dateObjects);
   };
 
   console.log('📅 [CalendarSection] Week structure received:', weekStructure);
   console.log('📅 [CalendarSection] Total days:', totalDays);
-  console.log('📅 [CalendarSection] Selected dates:', selectedDates);
+  console.log('📅 [CalendarSection] Selected dates (strings):', selectedDates);
+  console.log('📅 [CalendarSection] Program training_dates:', program.training_dates);
 
   return (
     <TrainingDateSelector
