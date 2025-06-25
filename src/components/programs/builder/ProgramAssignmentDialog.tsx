@@ -136,7 +136,7 @@ export const ProgramAssignmentDialog: React.FC<ProgramAssignmentDialogProps> = (
           targetName={
             selectedUsers.length === 1
               ? selectedUsers[0].name
-              : `${selectedUsers.length} αθλητές`
+              : `${selectedUsers.length} χρήστες`
           }
         />
       </DialogContent>
