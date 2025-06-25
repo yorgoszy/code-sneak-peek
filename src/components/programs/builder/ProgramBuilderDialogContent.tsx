@@ -76,7 +76,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   getTotalTrainingDays
 }) => {
   // ΔΙΟΡΘΩΣΗ: Βελτιωμένη μετατροπή training_dates από Date[] σε string[]
-  const selectedDatesAsStrings = program.training_dates?.map(date => {
+  const selectedDatesAsStrings = (program.training_dates || []).map(date => {
     console.log('🗓️ [ProgramBuilderDialogContent] Processing training date:', date, typeof date);
     
     if (date instanceof Date) {
@@ -98,7 +98,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
     
     console.log('🗓️ [ProgramBuilderDialogContent] Unknown date format:', date);
     return '';
-  }).filter(Boolean) || [];
+  }).filter(Boolean);
 
   console.log('🗓️ [ProgramBuilderDialogContent] Final selectedDatesAsStrings:', selectedDatesAsStrings);
 
