@@ -1,8 +1,14 @@
 
+export interface WeekStructure {
+  weekNumber: number;
+  daysInWeek: number;
+}
+
 export interface TrainingDateSelectorProps {
   selectedDates: string[];
   onDatesChange: (dates: string[]) => void;
   programWeeks?: number;
+  weekStructure?: WeekStructure[];
 }
 
 export interface CalendarDayContentProps {
