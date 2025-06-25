@@ -3,9 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, User, X } from "lucide-react";
+import { Users, User, X, Plus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
 import type { User as UserType } from '../../types';
 
 interface MultipleUserSelectionProps {
@@ -21,18 +20,14 @@ export const MultipleUserSelection: React.FC<MultipleUserSelectionProps> = ({
   onUserToggle,
   onClearAll
 }) => {
-  const [searchOpen, setSearchOpen] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState('');
+  const [userListOpen, setUserListOpen] = React.useState(false);
 
   const selectedUsers = users.filter(user => selectedUserIds.includes(user.id));
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const availableUsers = users.filter(user => !selectedUserIds.includes(user.id));
 
-  const handleUserSelect = (userId: string) => {
+  const handleUserAdd = (userId: string) => {
     onUserToggle(userId);
-    // Δεν κλείνουμε το popover για να επιτρέπουμε πολλαπλές επιλογές
+    // Κρατάμε το popover ανοιχτό για πολλαπλές επιλογές
   };
 
   return (
@@ -44,42 +39,36 @@ export const MultipleUserSelection: React.FC<MultipleUserSelectionProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* User Search/Add */}
+        {/* Add User Button */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Προσθήκη/Αφαίρεση Χρηστών</label>
-          <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+          <label className="text-sm font-medium">Προσθήκη Χρηστών</label>
+          <Popover open={userListOpen} onOpenChange={setUserListOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className="w-full justify-start text-left font-normal rounded-none"
+                disabled={availableUsers.length === 0}
               >
-                <Users className="mr-2 h-4 w-4" />
-                Κλικ για επιλογή χρηστών...
+                <Plus className="mr-2 h-4 w-4" />
+                {availableUsers.length === 0 
+                  ? "Όλοι οι χρήστες έχουν επιλεγεί" 
+                  : "Προσθήκη χρήστη..."
+                }
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0 rounded-none" align="start">
-              <div className="p-3 border-b">
-                <Input
-                  placeholder="Αναζήτηση χρηστών..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="rounded-none"
-                />
-              </div>
+            <PopoverContent className="w-full p-2 rounded-none" align="start">
               <div className="max-h-48 overflow-y-auto">
-                {filteredUsers.length === 0 ? (
-                  <div className="p-6 text-center text-sm text-gray-500">
-                    Δεν βρέθηκε χρήστης
+                {availableUsers.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-gray-500">
+                    Όλοι οι χρήστες έχουν επιλεγεί
                   </div>
                 ) : (
-                  <div className="p-1">
-                    {filteredUsers.map(user => (
+                  <div className="space-y-1">
+                    {availableUsers.map(user => (
                       <div
                         key={user.id}
-                        className={`cursor-pointer p-3 rounded hover:bg-gray-100 transition-colors ${
-                          selectedUserIds.includes(user.id) ? 'bg-[#00ffba]/20 border-l-4 border-[#00ffba]' : ''
-                        }`}
-                        onClick={() => handleUserSelect(user.id)}
+                        className="cursor-pointer p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
+                        onClick={() => handleUserAdd(user.id)}
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-2">
@@ -89,11 +78,7 @@ export const MultipleUserSelection: React.FC<MultipleUserSelectionProps> = ({
                               <p className="text-xs text-gray-600">{user.email}</p>
                             </div>
                           </div>
-                          {selectedUserIds.includes(user.id) ? (
-                            <span className="text-[#00ffba] font-bold text-lg">✓</span>
-                          ) : (
-                            <span className="text-gray-400 font-bold text-lg">+</span>
-                          )}
+                          <Plus className="w-4 h-4 text-[#00ffba]" />
                         </div>
                       </div>
                     ))}
@@ -133,7 +118,7 @@ export const MultipleUserSelection: React.FC<MultipleUserSelectionProps> = ({
                       <p className="font-medium text-sm">{user.name}</p>
                       <p className="text-xs text-gray-600">{user.email}</p>
                       {user.role && (
-                        <Badge variant="outline" className="mt-1 text-xs">
+                        <Badge variant="outline" className="mt-1 text-xs rounded-none">
                           {user.role}
                         </Badge>
                       )}
