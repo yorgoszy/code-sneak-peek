@@ -34,7 +34,6 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
   onGroupMembersLoad
 }) => {
   const [groups, setGroups] = useState<GroupType[]>([]);
-  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [allGroupsMembers, setAllGroupsMembers] = useState<{[key: string]: GroupMember[]}>({});
   const [loading, setLoading] = useState(false);
 
@@ -45,8 +44,6 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
   useEffect(() => {
     if (selectedGroupId) {
       fetchGroupMembers(selectedGroupId);
-    } else {
-      setGroupMembers([]);
     }
   }, [selectedGroupId]);
 
@@ -153,8 +150,6 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
         photo_url: member.app_users.photo_url
       })) || [];
 
-      setGroupMembers(members);
-      
       const userIds = members.map(member => member.id);
       onGroupMembersLoad(userIds);
     } catch (error) {
@@ -173,127 +168,71 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
   const selectedGroup = groups.find(group => group.id === selectedGroupId);
 
   return (
-    <div className="flex gap-4">
-      {/* Group Selection Box - 35% width */}
-      <div className="w-[35%]">
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Group className="w-4 h-4" />
-              Επιλογή Ομάδας
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Select value={selectedGroupId} onValueChange={handleGroupChange} disabled={loading}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε ομάδα..." />
-                </SelectTrigger>
-                <SelectContent className="rounded-none">
-                  {groups.map((group) => (
-                    <SelectItem key={group.id} value={group.id} className="rounded-none">
-                      <div className="w-full">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Group className="w-4 h-4" />
-                          <span className="font-medium">{group.name}</span>
-                          <Badge variant="outline" className="text-xs rounded-none">
-                            {group.member_count} μέλη
-                          </Badge>
-                        </div>
-                        
-                        {/* Preview of group members */}
-                        {allGroupsMembers[group.id] && allGroupsMembers[group.id].length > 0 && (
-                          <div className="mt-2 pl-6">
-                            <p className="text-xs text-gray-500 mb-1">Μέλη:</p>
-                            <div className="space-y-1">
-                              {allGroupsMembers[group.id].slice(0, 3).map(member => (
-                                <div key={member.id} className="flex items-center gap-1 text-xs">
-                                  <Avatar className="w-4 h-4">
-                                    <AvatarImage src={member.photo_url} alt={member.name} />
-                                    <AvatarFallback className="text-xs text-[10px]">
-                                      {getUserInitials(member.name)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span className="truncate max-w-[120px]">{member.name}</span>
-                                </div>
-                              ))}
-                              {group.member_count && group.member_count > 3 && (
-                                <div className="text-xs text-gray-400">
-                                  +{group.member_count - 3} ακόμη...
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
+    <div className="w-full">
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Group className="w-4 h-4" />
+            Επιλογή Ομάδας
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Select value={selectedGroupId} onValueChange={handleGroupChange} disabled={loading}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε ομάδα..." />
+              </SelectTrigger>
+              <SelectContent className="rounded-none">
+                {groups.map((group) => (
+                  <SelectItem key={group.id} value={group.id} className="rounded-none">
+                    <div className="w-full">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Group className="w-4 h-4" />
+                        <span className="font-medium">{group.name}</span>
+                        <Badge variant="outline" className="text-xs rounded-none">
+                          {group.member_count} μέλη
+                        </Badge>
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {selectedGroup && (
-                <div className="text-sm text-gray-600 bg-blue-50 p-3 border border-blue-200 rounded">
-                  <Users className="w-4 h-4 inline mr-2" />
-                  Θα δημιουργηθούν {selectedGroup.member_count} ατομικές αναθέσεις για όλα τα μέλη της ομάδας.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Selected Group Members Display - 65% width */}
-      <div className="w-[65%]">
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Users className="w-4 h-4" />
-              {selectedGroup ? `Μέλη Ομάδας: ${selectedGroup.name}` : 'Μέλη Ομάδας'}
-              {selectedGroup && (
-                <Badge variant="outline" className="rounded-none">
-                  {groupMembers.length} μέλη
-                </Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {!selectedGroup ? (
-              <div className="text-center text-sm text-gray-500 py-4">
-                Επιλέξτε μια ομάδα για να δείτε τα μέλη της
-              </div>
-            ) : groupMembers.length === 0 ? (
-              <div className="text-center text-sm text-gray-500 py-4">
-                Η ομάδα δεν έχει μέλη
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {groupMembers.map(member => (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-3 bg-[#00ffba]/10 border border-[#00ffba]/20 p-3 rounded hover:bg-[#00ffba]/20 transition-colors"
-                  >
-                    <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarImage src={member.photo_url} alt={member.name} />
-                      <AvatarFallback className="text-sm">
-                        {getUserInitials(member.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{member.name}</p>
-                      <p className="text-xs text-gray-600 truncate">{member.email}</p>
+                      
+                      {/* Preview of group members */}
+                      {allGroupsMembers[group.id] && allGroupsMembers[group.id].length > 0 && (
+                        <div className="mt-2 pl-6">
+                          <p className="text-xs text-gray-500 mb-1">Μέλη:</p>
+                          <div className="space-y-1">
+                            {allGroupsMembers[group.id].slice(0, 3).map(member => (
+                              <div key={member.id} className="flex items-center gap-1 text-xs">
+                                <Avatar className="w-4 h-4">
+                                  <AvatarImage src={member.photo_url} alt={member.name} />
+                                  <AvatarFallback className="text-xs text-[10px]">
+                                    {getUserInitials(member.name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="truncate max-w-[120px]">{member.name}</span>
+                              </div>
+                            ))}
+                            {group.member_count && group.member_count > 3 && (
+                              <div className="text-xs text-gray-400">
+                                +{group.member_count - 3} ακόμη...
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    {member.role && (
-                      <Badge variant="outline" className="text-xs rounded-none">
-                        {member.role}
-                      </Badge>
-                    )}
-                  </div>
+                  </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+
+            {selectedGroup && (
+              <div className="text-sm text-gray-600 bg-blue-50 p-3 border border-blue-200 rounded">
+                <Users className="w-4 h-4 inline mr-2" />
+                Θα δημιουργηθούν {selectedGroup.member_count} ατομικές αναθέσεις για όλα τα μέλη της ομάδας.
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
