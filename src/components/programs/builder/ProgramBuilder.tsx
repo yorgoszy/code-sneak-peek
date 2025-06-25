@@ -68,7 +68,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onReorderBlocks,
   onReorderExercises
 }) => {
-  console.log('🔄 ProgramBuilder render - isMultipleMode:', program.is_multiple_assignment);
+  console.log('🔄 ProgramBuilder render - user_ids:', program.user_ids);
   
   return (
     <div className="space-y-6">
@@ -82,7 +82,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onDescriptionChange={onDescriptionChange}
         onAthleteChange={onAthleteChange}
         onMultipleAthleteChange={onMultipleAthleteChange}
-        isMultipleMode={program.is_multiple_assignment || false}
+        isMultipleMode={true}
         onToggleMode={onToggleAssignmentMode}
       />
       
