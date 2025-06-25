@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
 import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
@@ -8,6 +9,7 @@ import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -32,6 +34,21 @@ const ActivePrograms = () => {
     getWorkout,
     formatTime
   } = useMultipleWorkouts();
+
+  // Check for missed workouts on component mount
+  useEffect(() => {
+    const checkMissedWorkouts = async () => {
+      try {
+        console.log('🔄 Checking for missed workouts on page load...');
+        await workoutStatusService.markMissedWorkoutsForPastDates();
+        console.log('✅ Missed workouts check completed');
+      } catch (error) {
+        console.error('❌ Error checking missed workouts:', error);
+      }
+    };
+
+    checkMissedWorkouts();
+  }, []);
 
   // Timer για ενημέρωση του elapsed time για όλες τις ενεργές προπονήσεις
   useEffect(() => {
@@ -180,6 +197,13 @@ const ActivePrograms = () => {
   // ΚΡΙΤΙΚΟ: Enhanced refresh για ΑΜΕΣΗ ανανέωση
   const handleCalendarRefresh = useCallback(async () => {
     console.log('🔄 ActivePrograms: CRITICAL CALENDAR REFRESH');
+    
+    // Έλεγχος για χαμένες προπονήσεις πριν το refresh
+    try {
+      await workoutStatusService.markMissedWorkoutsForPastDates();
+    } catch (error) {
+      console.error('❌ Error checking missed workouts during refresh:', error);
+    }
     
     // ΑΜΕΣΗ ανανέωση με unique timestamp
     const newKey = Date.now() + Math.random();

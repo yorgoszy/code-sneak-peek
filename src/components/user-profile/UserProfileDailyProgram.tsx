@@ -10,6 +10,7 @@ import { el } from "date-fns/locale";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
+import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 
 interface UserProfileDailyProgramProps {
   userProfile: any;
@@ -28,10 +29,19 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     program.user_id === userProfile?.id
   ) || [];
 
-  // Fetch workout completions
+  // Fetch workout completions and check for missed workouts
   useEffect(() => {
     const loadCompletions = async () => {
       if (userPrograms.length > 0) {
+        // Πρώτα ελέγχουμε για χαμένες προπονήσεις
+        try {
+          await workoutStatusService.markMissedWorkoutsForPastDates();
+          console.log('✅ Missed workouts check completed for user:', userProfile?.name);
+        } catch (error) {
+          console.error('❌ Error checking missed workouts for user:', error);
+        }
+
+        // Μετά φορτώνουμε τα completions
         const allCompletions = await getAllWorkoutCompletions();
         // Filter completions for this user's assignments
         const userAssignmentIds = userPrograms.map(p => p.id);
@@ -96,6 +106,24 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     setWorkoutCompletions(userCompletions);
   };
 
+  // Calculate monthly stats
+  const calculateMonthlyStats = () => {
+    const currentMonth = new Date();
+    const monthStr = format(currentMonth, 'yyyy-MM');
+    
+    const monthlyCompletions = workoutCompletions.filter(c => 
+      c.scheduled_date && c.scheduled_date.startsWith(monthStr)
+    );
+
+    const completed = monthlyCompletions.filter(c => c.status === 'completed').length;
+    const missed = monthlyCompletions.filter(c => c.status === 'missed').length;
+    const total = monthlyCompletions.length;
+
+    return { completed, missed, total };
+  };
+
+  const monthlyStats = calculateMonthlyStats();
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -108,6 +136,32 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
 
   return (
     <div className="space-y-6">
+      {/* Monthly Stats Card */}
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Dumbbell className="h-5 w-5" />
+            Στατιστικά Μήνα - {userProfile?.name}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-[#00ffba]">{monthlyStats.completed}</div>
+              <div className="text-sm text-gray-600">Ολοκληρωμένες</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-red-500">{monthlyStats.missed}</div>
+              <div className="text-sm text-gray-600">Χαμένες</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-500">{monthlyStats.total}</div>
+              <div className="text-sm text-gray-600">Συνολικές</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="rounded-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
