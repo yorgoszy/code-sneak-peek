@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { Dialog } from "@/components/ui/dialog";
-import { User, Exercise, Program } from './types';
+import { User, Exercise, Program } from '../types';
 import { ProgramBuilderDialogContent } from './ProgramBuilderDialogContent';
 import { ProgramAssignmentDialog } from './ProgramAssignmentDialog';
 import { useProgramBuilderState } from './hooks/useProgramBuilderState';
