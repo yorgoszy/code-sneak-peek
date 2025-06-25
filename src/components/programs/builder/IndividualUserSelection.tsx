@@ -3,9 +3,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User, Users, X, Plus } from "lucide-react";
+import { User, Users, X } from "lucide-react";
+import { UserSelectionPopover } from './UserSelectionPopover';
 import type { User as UserType } from '../types';
 
 interface IndividualUserSelectionProps {
@@ -19,8 +19,6 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
   users,
   onMultipleAthleteChange
 }) => {
-  const [userListOpen, setUserListOpen] = useState(false);
-  
   const selectedUsers = users.filter(user => selectedUserIds.includes(user.id));
   const availableUsers = users.filter(user => !selectedUserIds.includes(user.id));
 
@@ -38,11 +36,6 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
     
     console.log('✅ IndividualUserSelection - Updating selectedUserIds from:', selectedUserIds, 'to:', newSelectedIds);
     onMultipleAthleteChange(newSelectedIds);
-    
-    // Close popover after adding a user (but not when removing)
-    if (!selectedUserIds.includes(userId)) {
-      setUserListOpen(false);
-    }
   };
 
   const handleClearAll = () => {
@@ -50,13 +43,6 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
     if (onMultipleAthleteChange) {
       onMultipleAthleteChange([]);
     }
-  };
-
-  const handleUserClick = (userId: string, event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    console.log('👆 IndividualUserSelection - User clicked:', userId);
-    handleUserToggle(userId);
   };
 
   const handleRemoveUser = (userId: string, event: React.MouseEvent) => {
@@ -83,59 +69,12 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Popover open={userListOpen} onOpenChange={setUserListOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal rounded-none"
-                    disabled={availableUsers.length === 0}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    {availableUsers.length === 0 
-                      ? "Όλοι οι χρήστες έχουν επιλεγεί" 
-                      : "Προσθήκη χρήστη..."
-                    }
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 p-0 rounded-none z-50 bg-white shadow-lg border" align="start">
-                  <div className="max-h-60 overflow-y-auto">
-                    <div className="p-2">
-                      {availableUsers.length === 0 ? (
-                        <div className="p-4 text-center text-sm text-gray-500">
-                          Όλοι οι χρήστες έχουν επιλεγεί
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          {availableUsers.map(user => (
-                            <div
-                              key={user.id}
-                              className="w-full p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer select-none"
-                              onClick={(e) => handleUserClick(user.id, e)}
-                              onMouseDown={(e) => e.preventDefault()}
-                            >
-                              <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="w-6 h-6">
-                                    <AvatarImage src={user.photo_url} alt={user.name} />
-                                    <AvatarFallback className="text-xs">
-                                      {getUserInitials(user.name)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="text-left">
-                                    <p className="font-medium text-sm">{user.name}</p>
-                                    <p className="text-xs text-gray-600">{user.email}</p>
-                                  </div>
-                                </div>
-                                <Plus className="w-4 h-4 text-[#00ffba]" />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <UserSelectionPopover
+                availableUsers={availableUsers}
+                selectedUserIds={selectedUserIds}
+                onUserToggle={handleUserToggle}
+                disabled={availableUsers.length === 0}
+              />
             </div>
 
             {selectedUsers.length > 0 && (
