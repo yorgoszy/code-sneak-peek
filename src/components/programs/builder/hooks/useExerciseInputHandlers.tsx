@@ -8,14 +8,16 @@ interface UseExerciseInputHandlersProps {
 
 export const useExerciseInputHandlers = ({ onUpdate, latest1RM }: UseExerciseInputHandlersProps) => {
   const parseNumberWithComma = (value: string): number => {
-    return parseFloat(value.replace(',', '.')) || 0;
+    const cleanValue = value.replace(',', '.');
+    const parsed = parseFloat(cleanValue);
+    return isNaN(parsed) ? 0 : parsed;
   };
 
   const handleVelocityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     // Replace period with comma for Greek decimal format
     value = value.replace('.', ',');
-    onUpdate('velocity_ms', value);
+    onUpdate('velocity_ms', parseNumberWithComma(value));
   };
 
   const handleKgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +40,7 @@ export const useExerciseInputHandlers = ({ onUpdate, latest1RM }: UseExerciseInp
       const calculatedKg = (latest1RM * percentage) / 100;
       // Στρογγυλοποίηση στα 2.5kg (συνηθισμένο στη βαρυατλητική)
       const roundedKg = Math.round(calculatedKg / 2.5) * 2.5;
+      console.log(`💪 Auto-calculating kg: ${percentage}% of ${latest1RM}kg = ${roundedKg}kg`);
       onUpdate('kg', roundedKg.toString().replace('.', ','));
     }
   };

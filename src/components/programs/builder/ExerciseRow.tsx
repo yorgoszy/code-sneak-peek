@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Exercise, ProgramExercise } from '../types';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { ExerciseSelectionButton } from './ExerciseSelectionButton';
@@ -33,6 +33,13 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   
   // Ανάκτηση του τελευταίου 1RM για αυτόν τον ασκούμενο και άσκηση
   const { latest1RM, isLoading } = useLatest1RM(selectedUserId, exercise.exercise_id);
+  
+  // Debug logging
+  useEffect(() => {
+    if (selectedUserId && exercise.exercise_id) {
+      console.log('🔍 ExerciseRow - User:', selectedUserId, 'Exercise:', exercise.exercise_id, '1RM:', latest1RM);
+    }
+  }, [selectedUserId, exercise.exercise_id, latest1RM]);
   
   const { handleVelocityChange, handleKgChange, handlePercentageChange } = useExerciseInputHandlers({ 
     onUpdate,
