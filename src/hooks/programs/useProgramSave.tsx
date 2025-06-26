@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -97,7 +98,8 @@ export const useProgramSave = () => {
               .eq('program_id', programData.id);
           }
 
-          // Διαγραφή υπάρχουσας δομής πριν την αναδημιουργία
+          // ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Πάντα διαγράφουμε την υπάρχουσα δομή για να αποφύγουμε παλιά δεδομένα
+          console.log('🗑️ [useProgramSave] Force deleting existing structure for program update');
           await deleteExistingStructure(programData.id);
         } else {
           // Το πρόγραμμα δεν υπάρχει, δημιουργούμε νέο
@@ -171,80 +173,119 @@ export const useProgramSave = () => {
 
   const deleteExistingStructure = async (programId: string) => {
     try {
-      console.log('🗑️ [useProgramSave] Deleting existing program structure for:', programId);
+      console.log('🗑️ [useProgramSave] Starting comprehensive deletion of existing program structure for:', programId);
 
-      // Διαγραφή με τη σωστή σειρά και σωστό τρόπο
-      
-      // 1. Βρίσκουμε όλα τα weeks του προγράμματος
-      const { data: weeks } = await supabase
-        .from('program_weeks')
-        .select('id')
-        .eq('program_id', programId);
-
-      if (weeks && weeks.length > 0) {
-        const weekIds = weeks.map(w => w.id);
-        console.log('🗑️ [useProgramSave] Found weeks to delete:', weekIds);
-
-        // 2. Βρίσκουμε όλες τις days των weeks
-        const { data: days } = await supabase
-          .from('program_days')
-          .select('id')
-          .in('week_id', weekIds);
-
-        if (days && days.length > 0) {
-          const dayIds = days.map(d => d.id);
-          console.log('🗑️ [useProgramSave] Found days to delete:', dayIds);
-
-          // 3. Βρίσκουμε όλα τα blocks των days
-          const { data: blocks } = await supabase
+      // ΒΗΜΑ 1: Διαγραφή όλων των program_exercises
+      console.log('🗑️ [useProgramSave] Step 1: Deleting all program_exercises');
+      const { error: exercisesError } = await supabase
+        .from('program_exercises')
+        .delete()
+        .in('block_id', 
+          supabase
             .from('program_blocks')
             .select('id')
-            .in('day_id', dayIds);
+            .in('day_id', 
+              supabase
+                .from('program_days')
+                .select('id')
+                .in('week_id', 
+                  supabase
+                    .from('program_weeks')
+                    .select('id')
+                    .eq('program_id', programId)
+                )
+            )
+        );
 
-          if (blocks && blocks.length > 0) {
-            const blockIds = blocks.map(b => b.id);
-            console.log('🗑️ [useProgramSave] Found blocks to delete:', blockIds);
-
-            // 4. Διαγράφουμε exercises πρώτα
-            const { error: exercisesError } = await supabase
-              .from('program_exercises')
-              .delete()
-              .in('block_id', blockIds);
-            
-            if (exercisesError) {
-              console.error('❌ [useProgramSave] Error deleting exercises:', exercisesError);
-            } else {
-              console.log('✅ [useProgramSave] Exercises deleted successfully');
-            }
-          }
-
-          // 5. Διαγράφουμε blocks
-          const { error: blocksError } = await supabase
-            .from('program_blocks')
-            .delete()
-            .in('day_id', dayIds);
-          
-          if (blocksError) {
-            console.error('❌ [useProgramSave] Error deleting blocks:', blocksError);
-          } else {
-            console.log('✅ [useProgramSave] Blocks deleted successfully');
-          }
-        }
-
-        // 6. Διαγράφουμε days
-        const { error: daysError } = await supabase
-          .from('program_days')
-          .delete()
-          .in('week_id', weekIds);
+      if (exercisesError) {
+        console.log('⚠️ [useProgramSave] Could not delete exercises with subquery, trying direct approach');
         
-        if (daysError) {
-          console.error('❌ [useProgramSave] Error deleting days:', daysError);
-        } else {
-          console.log('✅ [useProgramSave] Days deleted successfully');
+        // Εναλλακτική προσέγγιση: Βρίσκουμε και διαγράφουμε σταδιακά
+        const { data: weeks } = await supabase
+          .from('program_weeks')
+          .select('id')
+          .eq('program_id', programId);
+
+        if (weeks && weeks.length > 0) {
+          const weekIds = weeks.map(w => w.id);
+          
+          const { data: days } = await supabase
+            .from('program_days')
+            .select('id')
+            .in('week_id', weekIds);
+
+          if (days && days.length > 0) {
+            const dayIds = days.map(d => d.id);
+            
+            const { data: blocks } = await supabase
+              .from('program_blocks')
+              .select('id')
+              .in('day_id', dayIds);
+
+            if (blocks && blocks.length > 0) {
+              const blockIds = blocks.map(b => b.id);
+              
+              // Διαγραφή exercises
+              await supabase
+                .from('program_exercises')
+                .delete()
+                .in('block_id', blockIds);
+              
+              console.log('✅ [useProgramSave] Program exercises deleted');
+            }
+            
+            // Διαγραφή blocks
+            await supabase
+              .from('program_blocks')
+              .delete()
+              .in('day_id', dayIds);
+            
+            console.log('✅ [useProgramSave] Program blocks deleted');
+          }
+          
+          // Διαγραφή days
+          await supabase
+            .from('program_days')
+            .delete()
+            .in('week_id', weekIds);
+          
+          console.log('✅ [useProgramSave] Program days deleted');
         }
+      } else {
+        console.log('✅ [useProgramSave] Program exercises deleted with subquery');
       }
 
-      // 7. Διαγράφουμε weeks
+      // ΒΗΜΑ 2: Διαγραφή program_blocks
+      console.log('🗑️ [useProgramSave] Step 2: Deleting program_blocks');
+      await supabase
+        .from('program_blocks')
+        .delete()
+        .in('day_id', 
+          supabase
+            .from('program_days')
+            .select('id')
+            .in('week_id', 
+              supabase
+                .from('program_weeks')
+                .select('id')
+                .eq('program_id', programId)
+            )
+        );
+
+      // ΒΗΜΑ 3: Διαγραφή program_days
+      console.log('🗑️ [useProgramSave] Step 3: Deleting program_days');
+      await supabase
+        .from('program_days')
+        .delete()
+        .in('week_id', 
+          supabase
+            .from('program_weeks')
+            .select('id')
+            .eq('program_id', programId)
+        );
+
+      // ΒΗΜΑ 4: Διαγραφή program_weeks
+      console.log('🗑️ [useProgramSave] Step 4: Deleting program_weeks');
       const { error: weeksError } = await supabase
         .from('program_weeks')
         .delete()
@@ -253,10 +294,10 @@ export const useProgramSave = () => {
       if (weeksError) {
         console.error('❌ [useProgramSave] Error deleting weeks:', weeksError);
       } else {
-        console.log('✅ [useProgramSave] Weeks deleted successfully');
+        console.log('✅ [useProgramSave] Program weeks deleted successfully');
       }
 
-      console.log('✅ [useProgramSave] Existing structure deleted');
+      console.log('✅ [useProgramSave] Complete structure deletion finished successfully');
     } catch (error) {
       console.error('❌ [useProgramSave] Error deleting existing structure:', error);
       // Δεν πετάμε error εδώ για να μη σταματήσει η διαδικασία
