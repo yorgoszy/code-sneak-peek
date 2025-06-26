@@ -175,126 +175,71 @@ export const useProgramSave = () => {
     try {
       console.log('🗑️ [useProgramSave] Starting comprehensive deletion of existing program structure for:', programId);
 
-      // ΒΗΜΑ 1: Διαγραφή όλων των program_exercises
-      console.log('🗑️ [useProgramSave] Step 1: Deleting all program_exercises');
-      const { error: exercisesError } = await supabase
-        .from('program_exercises')
-        .delete()
-        .in('block_id', 
-          supabase
+      // Βρίσκουμε τα IDs με σταδιακό τρόπο για να αποφύγουμε subquery errors
+      
+      // ΒΗΜΑ 1: Βρίσκουμε week IDs
+      const { data: weeks } = await supabase
+        .from('program_weeks')
+        .select('id')
+        .eq('program_id', programId);
+
+      if (weeks && weeks.length > 0) {
+        const weekIds = weeks.map(w => w.id);
+        console.log('🗑️ [useProgramSave] Found week IDs:', weekIds);
+
+        // ΒΗΜΑ 2: Βρίσκουμε day IDs
+        const { data: days } = await supabase
+          .from('program_days')
+          .select('id')
+          .in('week_id', weekIds);
+
+        if (days && days.length > 0) {
+          const dayIds = days.map(d => d.id);
+          console.log('🗑️ [useProgramSave] Found day IDs:', dayIds);
+
+          // ΒΗΜΑ 3: Βρίσκουμε block IDs
+          const { data: blocks } = await supabase
             .from('program_blocks')
             .select('id')
-            .in('day_id', 
-              supabase
-                .from('program_days')
-                .select('id')
-                .in('week_id', 
-                  supabase
-                    .from('program_weeks')
-                    .select('id')
-                    .eq('program_id', programId)
-                )
-            )
-        );
+            .in('day_id', dayIds);
 
-      if (exercisesError) {
-        console.log('⚠️ [useProgramSave] Could not delete exercises with subquery, trying direct approach');
-        
-        // Εναλλακτική προσέγγιση: Βρίσκουμε και διαγράφουμε σταδιακά
-        const { data: weeks } = await supabase
-          .from('program_weeks')
-          .select('id')
-          .eq('program_id', programId);
+          if (blocks && blocks.length > 0) {
+            const blockIds = blocks.map(b => b.id);
+            console.log('🗑️ [useProgramSave] Found block IDs:', blockIds);
 
-        if (weeks && weeks.length > 0) {
-          const weekIds = weeks.map(w => w.id);
-          
-          const { data: days } = await supabase
-            .from('program_days')
-            .select('id')
-            .in('week_id', weekIds);
-
-          if (days && days.length > 0) {
-            const dayIds = days.map(d => d.id);
-            
-            const { data: blocks } = await supabase
-              .from('program_blocks')
-              .select('id')
-              .in('day_id', dayIds);
-
-            if (blocks && blocks.length > 0) {
-              const blockIds = blocks.map(b => b.id);
-              
-              // Διαγραφή exercises
-              await supabase
-                .from('program_exercises')
-                .delete()
-                .in('block_id', blockIds);
-              
-              console.log('✅ [useProgramSave] Program exercises deleted');
-            }
-            
-            // Διαγραφή blocks
+            // ΒΗΜΑ 4: Διαγράφουμε exercises
             await supabase
-              .from('program_blocks')
+              .from('program_exercises')
               .delete()
-              .in('day_id', dayIds);
+              .in('block_id', blockIds);
             
-            console.log('✅ [useProgramSave] Program blocks deleted');
+            console.log('✅ [useProgramSave] Program exercises deleted');
           }
-          
-          // Διαγραφή days
+
+          // ΒΗΜΑ 5: Διαγράφουμε blocks
           await supabase
-            .from('program_days')
+            .from('program_blocks')
             .delete()
-            .in('week_id', weekIds);
+            .in('day_id', dayIds);
           
-          console.log('✅ [useProgramSave] Program days deleted');
+          console.log('✅ [useProgramSave] Program blocks deleted');
         }
-      } else {
-        console.log('✅ [useProgramSave] Program exercises deleted with subquery');
-      }
 
-      // ΒΗΜΑ 2: Διαγραφή program_blocks
-      console.log('🗑️ [useProgramSave] Step 2: Deleting program_blocks');
-      await supabase
-        .from('program_blocks')
-        .delete()
-        .in('day_id', 
-          supabase
-            .from('program_days')
-            .select('id')
-            .in('week_id', 
-              supabase
-                .from('program_weeks')
-                .select('id')
-                .eq('program_id', programId)
-            )
-        );
+        // ΒΗΜΑ 6: Διαγράφουμε days
+        await supabase
+          .from('program_days')
+          .delete()
+          .in('week_id', weekIds);
+        
+        console.log('✅ [useProgramSave] Program days deleted');
 
-      // ΒΗΜΑ 3: Διαγραφή program_days
-      console.log('🗑️ [useProgramSave] Step 3: Deleting program_days');
-      await supabase
-        .from('program_days')
-        .delete()
-        .in('week_id', 
-          supabase
-            .from('program_weeks')
-            .select('id')
-            .eq('program_id', programId)
-        );
-
-      // ΒΗΜΑ 4: Διαγραφή program_weeks
-      console.log('🗑️ [useProgramSave] Step 4: Deleting program_weeks');
-      const { error: weeksError } = await supabase
-        .from('program_weeks')
-        .delete()
-        .eq('program_id', programId);
-      
-      if (weeksError) {
-        console.error('❌ [useProgramSave] Error deleting weeks:', weeksError);
-      } else {
-        console.log('✅ [useProgramSave] Program weeks deleted successfully');
+        // ΒΗΜΑ 7: Διαγράφουμε weeks
+        await supabase
+          .from('program_weeks')
+          .delete()
+          .in('id', weekIds);
+        
+        console.log('✅ [useProgramSave] Program weeks deleted');
       }
 
       console.log('✅ [useProgramSave] Complete structure deletion finished successfully');
