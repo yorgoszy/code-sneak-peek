@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Input } from "@/components/ui/input";
 import { ProgramExercise } from '../types';
 
@@ -22,15 +22,6 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   onKgChange,
   onPercentageChange
 }) => {
-  // Αυτόματο γέμισμα του percentage_1rm όταν υπάρχει 1RM
-  useEffect(() => {
-    if (latest1RM && !exercise.percentage_1rm) {
-      console.log('🔄 Auto-filling percentage_1rm with 100% for 1RM:', latest1RM);
-      onUpdate('percentage_1rm', '100');
-      onUpdate('kg', latest1RM.toString().replace('.', ','));
-    }
-  }, [latest1RM, exercise.percentage_1rm, onUpdate]);
-
   return (
     <div className="flex p-2 gap-2 w-full" style={{ minHeight: '28px' }}>
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
@@ -68,17 +59,12 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
         />
       </div>
       
-      <div className="flex flex-col items-center" style={{ width: '70px' }}>
+      <div className="flex flex-col items-center" style={{ width: '60px' }}>
         <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
           %1RM
           {latest1RM && (
-            <div style={{ fontSize: '8px', color: '#00ffba', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '8px', color: '#00ffba' }}>
               1RM: {latest1RM}kg
-            </div>
-          )}
-          {isLoading1RM && (
-            <div style={{ fontSize: '8px', color: '#666' }}>
-              Loading...
             </div>
           )}
         </label>
@@ -92,11 +78,9 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
             borderRadius: '0px', 
             fontSize: '12px', 
             height: '22px', 
-            padding: '0 4px',
-            backgroundColor: latest1RM ? '#f0fff4' : 'white',
-            border: latest1RM ? '1px solid #00ffba' : '1px solid #d1d5db'
+            padding: '0 4px'
           }}
-          placeholder={latest1RM ? '100' : ''}
+          placeholder=""
           title={latest1RM ? `1RM διαθέσιμο: ${latest1RM}kg` : 'Δεν υπάρχει 1RM για αυτή την άσκηση'}
         />
       </div>
@@ -113,8 +97,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
             borderRadius: '0px', 
             fontSize: '12px', 
             height: '22px', 
-            padding: '0 4px',
-            backgroundColor: latest1RM ? '#f0fff4' : 'white'
+            padding: '0 4px'
           }}
           placeholder=""
         />

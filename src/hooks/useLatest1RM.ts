@@ -15,8 +15,6 @@ export const useLatest1RM = (userId: string, exerciseId: string) => {
 
       setIsLoading(true);
       try {
-        console.log('🔍 Fetching 1RM for user:', userId, 'exercise:', exerciseId);
-        
         // Βρίσκουμε το πιο πρόσφατο 1RM για αυτόν τον ασκούμενο και άσκηση
         const { data, error } = await supabase
           .from('strength_test_attempts')
@@ -32,23 +30,19 @@ export const useLatest1RM = (userId: string, exerciseId: string) => {
           .eq('is_1rm', true)
           .order('strength_test_sessions(test_date)', { ascending: false })
           .order('weight_kg', { ascending: false })
-          .limit(1);
+          .limit(1)
+          .single();
 
-        console.log('📊 1RM query result:', { data, error });
-
-        if (error) {
-          console.error('❌ Error fetching 1RM:', error);
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching 1RM:', error);
           setLatest1RM(null);
-        } else if (data && data.length > 0) {
-          const rm = data[0].weight_kg;
-          console.log('✅ Found 1RM:', rm, 'kg');
-          setLatest1RM(rm);
+        } else if (data) {
+          setLatest1RM(data.weight_kg);
         } else {
-          console.log('ℹ️ No 1RM found for this user/exercise combination');
           setLatest1RM(null);
         }
       } catch (error) {
-        console.error('❌ Error fetching 1RM:', error);
+        console.error('Error fetching 1RM:', error);
         setLatest1RM(null);
       } finally {
         setIsLoading(false);
