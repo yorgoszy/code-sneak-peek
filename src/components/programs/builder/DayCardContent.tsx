@@ -16,12 +16,14 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Exercise, Day } from '../types';
+import { Exercise, Block } from '../types';
 import { SortableBlock } from './SortableBlock';
 import { DayCalculations } from './DayCalculations';
 
 interface DayCardContentProps {
-  day: Day;
+  day: {
+    program_blocks: Block[];
+  };
   exercises: Exercise[];
   selectedUserId?: string;
   onAddBlock: () => void;
@@ -83,7 +85,6 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
               key={block.id}
               block={block}
               exercises={exercises}
-              selectedUserId={selectedUserId}
               onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
               onRemoveBlock={() => onRemoveBlock(block.id)}
               onDuplicateBlock={() => onDuplicateBlock(block.id)}
