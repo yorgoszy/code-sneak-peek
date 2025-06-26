@@ -85,8 +85,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
                    program.name?.trim();
 
   return (
-    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none flex flex-col">
-      <DialogHeader className="flex-shrink-0 p-6 border-b bg-white z-10">
+    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none">
+      <DialogHeader className="flex-shrink-0 p-6 border-b">
         <DialogTitle className="flex items-center justify-between">
           <span>Δημιουργία Προγράμματος Προπόνησης</span>
           <div className="flex items-center gap-2">
@@ -111,51 +111,49 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
         </DialogTitle>
       </DialogHeader>
 
-      <div className="flex-1 min-h-0">
-        <ScrollArea className="h-full w-full">
-          <div className="space-y-6 p-6">
-            <ProgramBuilder
-              program={program}
-              users={users}
-              exercises={exercises}
-              onNameChange={onNameChange}
-              onDescriptionChange={onDescriptionChange}
-              onAthleteChange={onAthleteChange}
-              onMultipleAthleteChange={onMultipleAthleteChange}
-              onGroupChange={onGroupChange}
-              onToggleAssignmentMode={onToggleAssignmentMode}
-              onAddWeek={onAddWeek}
-              onRemoveWeek={onRemoveWeek}
-              onDuplicateWeek={onDuplicateWeek}
-              onUpdateWeekName={onUpdateWeekName}
-              onAddDay={onAddDay}
-              onRemoveDay={onRemoveDay}
-              onDuplicateDay={onDuplicateDay}
-              onUpdateDayName={onUpdateDayName}
-              onAddBlock={onAddBlock}
-              onRemoveBlock={onRemoveBlock}
-              onDuplicateBlock={onDuplicateBlock}
-              onUpdateBlockName={onUpdateBlockName}
-              onAddExercise={onAddExercise}
-              onRemoveExercise={onRemoveExercise}
-              onUpdateExercise={onUpdateExercise}
-              onDuplicateExercise={onDuplicateExercise}
-              onReorderWeeks={onReorderWeeks}
-              onReorderDays={onReorderDays}
-              onReorderBlocks={onReorderBlocks}
-              onReorderExercises={onReorderExercises}
-            />
+      <ScrollArea className="flex-1 w-full h-full">
+        <div className="space-y-6 p-6">
+          <ProgramBuilder
+            program={program}
+            users={users}
+            exercises={exercises}
+            onNameChange={onNameChange}
+            onDescriptionChange={onDescriptionChange}
+            onAthleteChange={onAthleteChange}
+            onMultipleAthleteChange={onMultipleAthleteChange}
+            onGroupChange={onGroupChange}
+            onToggleAssignmentMode={onToggleAssignmentMode}
+            onAddWeek={onAddWeek}
+            onRemoveWeek={onRemoveWeek}
+            onDuplicateWeek={onDuplicateWeek}
+            onUpdateWeekName={onUpdateWeekName}
+            onAddDay={onAddDay}
+            onRemoveDay={onRemoveDay}
+            onDuplicateDay={onDuplicateDay}
+            onUpdateDayName={onUpdateDayName}
+            onAddBlock={onAddBlock}
+            onRemoveBlock={onRemoveBlock}
+            onDuplicateBlock={onDuplicateBlock}
+            onUpdateBlockName={onUpdateBlockName}
+            onAddExercise={onAddExercise}
+            onRemoveExercise={onRemoveExercise}
+            onUpdateExercise={onUpdateExercise}
+            onDuplicateExercise={onDuplicateExercise}
+            onReorderWeeks={onReorderWeeks}
+            onReorderDays={onReorderDays}
+            onReorderBlocks={onReorderBlocks}
+            onReorderExercises={onReorderExercises}
+          />
 
-            {getTotalTrainingDays() > 0 && (
-              <CalendarSection
-                program={program}
-                totalDays={getTotalTrainingDays()}
-                onTrainingDatesChange={onTrainingDatesChange}
-              />
-            )}
-          </div>
-        </ScrollArea>
-      </div>
+          {getTotalTrainingDays() > 0 && (
+            <CalendarSection
+              program={program}
+              totalDays={getTotalTrainingDays()}
+              onTrainingDatesChange={onTrainingDatesChange}
+            />
+          )}
+        </div>
+      </ScrollArea>
     </DialogContent>
   );
 };

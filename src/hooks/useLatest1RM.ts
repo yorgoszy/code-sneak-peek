@@ -18,20 +18,19 @@ export const useLatest1RM = (userId: string, exerciseId: string) => {
         console.log('🔍 Fetching 1RM for user:', userId, 'exercise:', exerciseId);
         
         // Βρίσκουμε το πιο πρόσφατο 1RM για αυτόν τον ασκούμενο και άσκηση
-        // Χρησιμοποιούμε τα νέα tables: strength_test_data + test_sessions
         const { data, error } = await supabase
-          .from('strength_test_data')
+          .from('strength_test_attempts')
           .select(`
             weight_kg,
-            test_sessions!inner(
+            strength_test_sessions!inner(
               user_id,
               test_date
             )
           `)
           .eq('exercise_id', exerciseId)
-          .eq('test_sessions.user_id', userId)
+          .eq('strength_test_sessions.user_id', userId)
           .eq('is_1rm', true)
-          .order('test_sessions(test_date)', { ascending: false })
+          .order('strength_test_sessions(test_date)', { ascending: false })
           .order('weight_kg', { ascending: false })
           .limit(1);
 
