@@ -9,7 +9,6 @@ import { Exercise, Block } from '../types';
 interface SortableBlockProps {
   block: Block;
   exercises: Exercise[];
-  selectedUserId?: string;
   onAddExercise: (exerciseId: string) => void;
   onRemoveBlock: () => void;
   onDuplicateBlock: () => void;

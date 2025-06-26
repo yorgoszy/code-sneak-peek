@@ -4,13 +4,13 @@ import { CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
-import { Block } from '../types';
 
 interface BlockCardHeaderProps {
-  block: Block;
+  blockName: string;
   isOpen: boolean;
   isEditing: boolean;
   editingName: string;
+  exercisesCount: number;
   onNameDoubleClick: () => void;
   onEditingNameChange: (value: string) => void;
   onNameSave: () => void;
@@ -18,14 +18,14 @@ interface BlockCardHeaderProps {
   onAddExercise: () => void;
   onDuplicateBlock: () => void;
   onRemoveBlock: () => void;
-  onUpdateBlockName: (name: string) => void;
 }
 
 export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
-  block,
+  blockName,
   isOpen,
   isEditing,
   editingName,
+  exercisesCount,
   onNameDoubleClick,
   onEditingNameChange,
   onNameSave,
@@ -34,8 +34,6 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onDuplicateBlock,
   onRemoveBlock
 }) => {
-  const exercisesCount = block.program_exercises?.length || 0;
-
   return (
     <CardHeader className="pb-2">
       <div className="flex justify-between items-center">
@@ -58,7 +56,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
               />
             ) : (
               <>
-                {block.name}
+                {blockName}
                 {!isOpen && exercisesCount > 0 && (
                   <span className="text-xs bg-gray-500 px-2 py-1 rounded-full text-white">
                     {exercisesCount}
