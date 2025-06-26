@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToLocalString } from '@/utils/dateUtils';
 
@@ -225,13 +226,21 @@ export const assignmentService = {
                 console.log('✅ Block created:', blockData.id);
 
                 if (block.program_exercises && block.program_exercises.length > 0) {
-                  for (const exercise of block.program_exercises) {
+                  // ΚΡΙΤΙΚΟ: Ταξινομούμε τις ασκήσεις με βάση το exercise_order πριν τις αποθηκεύσουμε
+                  const sortedExercises = [...block.program_exercises].sort((a, b) => 
+                    (a.exercise_order || 0) - (b.exercise_order || 0)
+                  );
+                  
+                  console.log('💪 Sorted exercises for block:', block.name, 
+                    sortedExercises.map(e => ({ name: e.exercises?.name, order: e.exercise_order })));
+
+                  for (const exercise of sortedExercises) {
                     if (!exercise.exercise_id) {
                       console.log('⚠️ Skipping exercise without exercise_id');
                       continue;
                     }
 
-                    console.log('💪 Creating exercise:', exercise.exercises?.name || 'Unknown');
+                    console.log('💪 Creating exercise:', exercise.exercises?.name || 'Unknown', 'with order:', exercise.exercise_order);
 
                     const { error: exerciseError } = await supabase
                       .from('program_exercises')
@@ -246,7 +255,7 @@ export const assignmentService = {
                         tempo: exercise.tempo || '',
                         rest: exercise.rest || '',
                         notes: exercise.notes || '',
-                        exercise_order: exercise.exercise_order || 1
+                        exercise_order: exercise.exercise_order || 1 // ΚΡΙΤΙΚΟ: Διατηρούμε τη σειρά
                       }]);
 
                     if (exerciseError) {
@@ -254,7 +263,7 @@ export const assignmentService = {
                       throw new Error(`Σφάλμα δημιουργίας άσκησης: ${exerciseError.message}`);
                     }
 
-                    console.log('✅ Exercise created successfully');
+                    console.log('✅ Exercise created successfully with order:', exercise.exercise_order);
                   }
                 }
               }
