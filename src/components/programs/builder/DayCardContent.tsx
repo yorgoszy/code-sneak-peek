@@ -16,19 +16,18 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Exercise, Day } from '../types';
+import { Exercise, Block } from '../types';
 import { SortableBlock } from './SortableBlock';
 import { DayCalculations } from './DayCalculations';
 
 interface DayCardContentProps {
-  day: Day;
+  blocks: Block[];
   exercises: Exercise[];
   selectedUserId?: string;
-  onAddBlock: () => void;
+  onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
   onUpdateBlockName: (blockId: string, name: string) => void;
-  onAddExercise: (blockId: string, exerciseId: string) => void;
   onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (blockId: string, exerciseId: string) => void;
   onDuplicateExercise: (blockId: string, exerciseId: string) => void;
@@ -37,14 +36,13 @@ interface DayCardContentProps {
 }
 
 export const DayCardContent: React.FC<DayCardContentProps> = ({
-  day,
+  blocks,
   exercises,
   selectedUserId,
-  onAddBlock,
+  onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
   onUpdateBlockName,
-  onAddExercise,
   onUpdateExercise,
   onRemoveExercise,
   onDuplicateExercise,
@@ -61,8 +59,8 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (active.id !== over?.id) {
-      const oldIndex = day.program_blocks.findIndex(block => block.id === active.id);
-      const newIndex = day.program_blocks.findIndex(block => block.id === over?.id);
+      const oldIndex = blocks.findIndex(block => block.id === active.id);
+      const newIndex = blocks.findIndex(block => block.id === over?.id);
       onReorderBlocks(oldIndex, newIndex);
     }
   };
@@ -75,10 +73,10 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
         onDragEnd={handleDragEnd}
       >
         <SortableContext 
-          items={day.program_blocks.map(block => block.id)}
+          items={blocks.map(block => block.id)}
           strategy={verticalListSortingStrategy}
         >
-          {day.program_blocks.map((block) => (
+          {blocks.map((block) => (
             <SortableBlock
               key={block.id}
               block={block}
@@ -97,7 +95,7 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
         </SortableContext>
       </DndContext>
 
-      <DayCalculations blocks={day.program_blocks} exercises={exercises} />
+      <DayCalculations blocks={blocks} exercises={exercises} />
     </CardContent>
   );
 };
