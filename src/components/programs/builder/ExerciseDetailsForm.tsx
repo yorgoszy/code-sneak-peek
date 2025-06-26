@@ -5,8 +5,6 @@ import { ProgramExercise } from '../types';
 
 interface ExerciseDetailsFormProps {
   exercise: ProgramExercise;
-  latest1RM?: number | null;
-  isLoading1RM?: boolean;
   onUpdate: (field: string, value: any) => void;
   onVelocityChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onKgChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -15,8 +13,6 @@ interface ExerciseDetailsFormProps {
 
 export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   exercise,
-  latest1RM,
-  isLoading1RM,
   onUpdate,
   onVelocityChange,
   onKgChange,
@@ -60,14 +56,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
-          %1RM
-          {latest1RM && (
-            <div style={{ fontSize: '8px', color: '#00ffba' }}>
-              1RM: {latest1RM}kg
-            </div>
-          )}
-        </label>
+        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>%1RM</label>
         <Input
           type="text"
           inputMode="decimal"
@@ -81,7 +70,6 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
             padding: '0 4px'
           }}
           placeholder=""
-          title={latest1RM ? `1RM διαθέσιμο: ${latest1RM}kg` : 'Δεν υπάρχει 1RM για αυτή την άσκηση'}
         />
       </div>
       

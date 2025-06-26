@@ -72,11 +72,6 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
 }) => {
   console.log('🔄 ProgramBuilder render - user_ids:', program.user_ids);
   
-  // Βρίσκουμε τον επιλεγμένο χρήστη για το 1RM lookup
-  const selectedUserId = program.is_multiple_assignment 
-    ? (program.user_ids && program.user_ids.length === 1 ? program.user_ids[0] : '')
-    : program.user_id || '';
-  
   return (
     <div className="space-y-6">
       <ProgramBasicInfo
@@ -98,7 +93,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
       <TrainingWeeks
         weeks={program.weeks}
         exercises={exercises}
-        selectedUserId={selectedUserId}
+        selectedUserId={program.user_id}
         onAddWeek={onAddWeek}
         onRemoveWeek={onRemoveWeek}
         onDuplicateWeek={onDuplicateWeek}

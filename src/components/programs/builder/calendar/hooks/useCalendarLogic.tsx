@@ -82,7 +82,7 @@ export const useCalendarLogic = (
   const currentWeekInfo = useMemo(() => getCurrentWeekBeingFilled(), [selectedDatesAsStrings, weekStructure]);
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
+    if (!date || !currentWeekInfo) return;
     
     // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τη νέα function για σωστή μετατροπή
     const dateString = formatDateForStorage(date);
@@ -91,24 +91,19 @@ export const useCalendarLogic = (
     console.log('📅 Date selection debug:', {
       originalDate: date,
       dateString: dateString,
-      currentDates: currentDates,
-      isAlreadySelected: currentDates.includes(dateString)
+      currentDates: currentDates
     });
     
     if (currentDates.includes(dateString)) {
-      // Αφαίρεση ημερομηνίας αν είναι ήδη επιλεγμένη
-      console.log('🗑️ Αφαίρεση επιλεγμένης ημερομηνίας:', dateString);
+      // Remove date if already selected
       const newDates = currentDates.filter(d => d !== dateString);
       const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
       onTrainingDatesChange(datesAsObjects);
-    } else if (!currentWeekInfo || currentWeekInfo.remainingForThisWeek > 0) {
-      // Προσθήκη ημερομηνίας αν υπάρχει χώρος στην τρέχουσα εβδομάδα προγράμματος
-      console.log('➕ Προσθήκη νέας ημερομηνίας:', dateString);
+    } else if (currentWeekInfo.remainingForThisWeek > 0) {
+      // Add date if there's still room in the current program week
       const newDates = [...currentDates, dateString].sort();
       const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
       onTrainingDatesChange(datesAsObjects);
-    } else {
-      console.log('⚠️ Δεν επιτρέπεται η προσθήκη - εβδομάδα γεμάτη');
     }
   };
 
@@ -122,13 +117,16 @@ export const useCalendarLogic = (
   };
 
   const isDateDisabled = (date: Date) => {
-    // Αν η ημερομηνία είναι ήδη επιλεγμένη, επιτρέπουμε την (για αποεπιλογή)
+    // Αφαίρεση του περιορισμού για παλιές ημερομηνίες
+    // Επιτρέπουμε όλες τις ημερομηνίες
+    
+    // If date is already selected, allow it (for deselection)
     if (isDateSelected(date)) return false;
 
-    // Αν δεν υπάρχει τρέχουσα εβδομάδα προς συμπλήρωση, απενεργοποιούμε όλες τις ημερομηνίες
+    // If no current week is being filled, disable all dates
     if (!currentWeekInfo) return true;
 
-    // Δεν επιτρέπουμε περισσότερες επιλογές αν η τρέχουσα εβδομάδα προγράμματος είναι γεμάτη
+    // Don't allow more selections if current program week is full
     return currentWeekInfo.remainingForThisWeek <= 0;
   };
 

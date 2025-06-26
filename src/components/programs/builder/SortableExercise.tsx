@@ -10,7 +10,6 @@ interface SortableExerciseProps {
   exercise: ProgramExercise;
   exercises: Exercise[];
   allBlockExercises: ProgramExercise[];
-  selectedUserId?: string;
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
   onDuplicate: () => void;

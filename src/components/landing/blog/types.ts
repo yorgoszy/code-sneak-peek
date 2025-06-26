@@ -3,11 +3,9 @@ export interface Article {
   id: number;
   title: string;
   excerpt: string;
-  imageUrl: string;
+  image: string;
+  date: string;
   content: string;
-  readTime: string;
-  author: string;
-  publishedAt: string;
 }
 
 export interface BlogSectionProps {

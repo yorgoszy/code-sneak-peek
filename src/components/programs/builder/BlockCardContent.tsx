@@ -1,32 +1,15 @@
 
 import React from 'react';
 import { CardContent } from "@/components/ui/card";
-import { 
-  DndContext, 
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { Exercise, Block } from '../types';
+import { CollapsibleContent } from "@/components/ui/collapsible";
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableExercise } from './SortableExercise';
-import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
+import { Exercise, ProgramExercise } from '../types';
 
 interface BlockCardContentProps {
-  block: Block;
-  exercises: Exercise[];
-  selectedUserId?: string;
-  showExerciseDialog: boolean;
-  onCloseExerciseDialog: () => void;
-  onAddExercise: (exerciseId: string) => void;
+  exercises: ProgramExercise[];
+  availableExercises: Exercise[];
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onDuplicateExercise: (exerciseId: string) => void;
@@ -34,72 +17,44 @@ interface BlockCardContentProps {
 }
 
 export const BlockCardContent: React.FC<BlockCardContentProps> = ({
-  block,
   exercises,
-  selectedUserId,
-  showExerciseDialog,
-  onCloseExerciseDialog,
-  onAddExercise,
+  availableExercises,
   onUpdateExercise,
   onRemoveExercise,
   onDuplicateExercise,
   onReorderExercises
 }) => {
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = (event: any) => {
     const { active, over } = event;
-    if (active.id !== over?.id) {
-      const oldIndex = block.program_exercises.findIndex(ex => ex.id === active.id);
-      const newIndex = block.program_exercises.findIndex(ex => ex.id === over?.id);
+
+    if (active.id !== over.id) {
+      const oldIndex = exercises.findIndex(exercise => exercise.id === active.id);
+      const newIndex = exercises.findIndex(exercise => exercise.id === over.id);
       onReorderExercises(oldIndex, newIndex);
     }
   };
 
-  const handleExerciseSelect = (exerciseId: string) => {
-    onAddExercise(exerciseId);
-    onCloseExerciseDialog();
-  };
-
   return (
-    <>
-      <CardContent className="p-0">
-        <DndContext 
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext 
-            items={block.program_exercises.map(ex => ex.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {block.program_exercises.map((exercise) => (
-              <SortableExercise
-                key={exercise.id}
-                exercise={exercise}
-                exercises={exercises}
-                allBlockExercises={block.program_exercises}
-                selectedUserId={selectedUserId}
-                onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
-                onRemove={() => onRemoveExercise(exercise.id)}
-                onDuplicate={() => onDuplicateExercise(exercise.id)}
-              />
-            ))}
+    <CollapsibleContent>
+      <CardContent className="p-0 m-0">
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
+            <div className="w-full h-full">
+              {exercises.map((exercise) => (
+                <SortableExercise
+                  key={exercise.id}
+                  exercise={exercise}
+                  exercises={availableExercises}
+                  allBlockExercises={exercises}
+                  onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
+                  onRemove={() => onRemoveExercise(exercise.id)}
+                  onDuplicate={() => onDuplicateExercise(exercise.id)}
+                />
+              ))}
+            </div>
           </SortableContext>
         </DndContext>
       </CardContent>
-
-      <ExerciseSelectionDialog
-        open={showExerciseDialog}
-        onOpenChange={onCloseExerciseDialog}
-        exercises={exercises}
-        onSelectExercise={handleExerciseSelect}
-      />
-    </>
+    </CollapsibleContent>
   );
 };
