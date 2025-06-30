@@ -151,6 +151,50 @@ export const assignmentService = {
         }
       } else {
         console.log('✅ [AssignmentService] Program structure exists:', existingWeeks.length, 'weeks');
+        
+        // 🚨 ΚΡΙΤΙΚΟΣ ΕΛΕΓΧΟΣ: Έλεγχος σειράς ασκήσεων στη βάση
+        console.log('🚨 [ASSIGNMENT CHECK] Verifying exercise order in database:');
+        existingWeeks.forEach((week, wIndex) => {
+          console.log(`🚨 [ASSIGNMENT] Week ${wIndex + 1}: ${week.name}`);
+          week.program_days?.forEach((day, dIndex) => {
+            console.log(`🚨 [ASSIGNMENT] Day ${dIndex + 1}: ${day.name}`);
+            day.program_blocks?.forEach((block, bIndex) => {
+              console.log(`🚨 [ASSIGNMENT] Block ${bIndex + 1}: ${block.name} - ${block.program_exercises?.length || 0} exercises`);
+              const exercises = block.program_exercises || [];
+              
+              // Έλεγχος αν οι ασκήσεις είναι σε σωστή σειρά στη βάση
+              console.log(`🚨 [ASSIGNMENT] Current order in database:`);
+              exercises.forEach((ex, eIndex) => {
+                console.log(`🚨 [ASSIGNMENT]   ${eIndex + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
+              });
+              
+              // Ταξινόμηση με βάση το exercise_order
+              const sortedExercises = [...exercises].sort((a, b) => {
+                const orderA = Number(a.exercise_order) || 0;
+                const orderB = Number(b.exercise_order) || 0;
+                return orderA - orderB;
+              });
+              
+              console.log(`🚨 [ASSIGNMENT] Should be in this order:`);
+              sortedExercises.forEach((ex, eIndex) => {
+                console.log(`🚨 [ASSIGNMENT]   ${eIndex + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
+              });
+              
+              // Έλεγχος αν η σειρά είναι λάθος
+              const isOrderWrong = exercises.some((ex, index) => {
+                const sortedEx = sortedExercises[index];
+                return ex.id !== sortedEx.id;
+              });
+              
+              if (isOrderWrong) {
+                console.error(`🚨 [ASSIGNMENT ERROR] Exercise order is WRONG in block: ${block.name}`);
+                console.error(`🚨 [ASSIGNMENT ERROR] Database has wrong order, but we won't fix it here to avoid infinite loops`);
+              } else {
+                console.log(`✅ [ASSIGNMENT OK] Exercise order is correct in block: ${block.name}`);
+              }
+            });
+          });
+        });
       }
     } catch (error) {
       console.error('❌ [AssignmentService] Error in ensureProgramStructureExists:', error);
@@ -226,34 +270,22 @@ export const assignmentService = {
                 console.log('✅ Block created:', blockData.id);
 
                 if (block.program_exercises && block.program_exercises.length > 0) {
-                  // 🔍 ΕΚΤΕΝΗΣ ΑΝΑΛΥΣΗ ΤΩΝ ΑΣΚΗΣΕΩΝ
-                  console.log('🔍 [EXERCISE ANALYSIS] Block:', block.name, 'has', block.program_exercises.length, 'exercises');
-                  
-                  // Ελέγχουμε κάθε άσκηση για διαφορές
-                  block.program_exercises.forEach((exercise, index) => {
-                    console.log(`🔍 [EXERCISE ${index + 1}] Original data:`, {
-                      name: exercise.exercises?.name,
-                      exercise_id: exercise.exercise_id,
-                      exercise_order: exercise.exercise_order,
-                      created_at: exercise.exercises?.created_at,
-                      updated_at: exercise.exercises?.updated_at,
-                      has_video: !!exercise.exercises?.video_url,
-                      video_url_length: exercise.exercises?.video_url?.length || 0,
-                      description_length: exercise.exercises?.description?.length || 0
-                    });
+                  // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινομούμε τις ασκήσεις ΜΟΝΟ με βάση το exercise_order
+                  console.log('🚨 [ASSIGNMENT CREATE] Before sorting exercises in block:', block.name);
+                  block.program_exercises.forEach((ex, index) => {
+                    console.log(`🚨 [ASSIGNMENT CREATE]   ${index + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
                   });
 
-                  // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινομούμε τις ασκήσεις ΜΟΝΟ με βάση το exercise_order
                   const sortedExercises = [...block.program_exercises].sort((a, b) => {
                     const orderA = Number(a.exercise_order) || 0;
                     const orderB = Number(b.exercise_order) || 0;
-                    console.log(`🔍 [FIXED SORT] Comparing exercise orders: ${orderA} vs ${orderB} for ${a.exercises?.name} vs ${b.exercises?.name}`);
+                    console.log(`🚨 [ASSIGNMENT CREATE] Sorting: ${orderA} vs ${orderB} for ${a.exercises?.name} vs ${b.exercises?.name}`);
                     return orderA - orderB;
                   });
                   
-                  console.log('💪 [FIXED ORDER] Correctly sorted exercises for block:', block.name);
-                  sortedExercises.forEach((exercise, index) => {
-                    console.log(`   ${index + 1}. ${exercise.exercises?.name} (order: ${exercise.exercise_order})`);
+                  console.log('🚨 [ASSIGNMENT CREATE] After sorting exercises:');
+                  sortedExercises.forEach((ex, index) => {
+                    console.log(`🚨 [ASSIGNMENT CREATE]   ${index + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
                   });
 
                   for (const exercise of sortedExercises) {
@@ -277,6 +309,12 @@ export const assignmentService = {
                       notes: exercise.notes || '',
                       exercise_order: exercise.exercise_order || 1 // ΚΡΙΤΙΚΟ: Διατηρούμε τη σειρά
                     };
+
+                    console.log('🚨 [ASSIGNMENT CREATE] Final insert data:', {
+                      exercise_name: exercise.exercises?.name,
+                      exercise_order: insertData.exercise_order,
+                      block_name: block.name
+                    });
 
                     const { error: exerciseError } = await supabase
                       .from('program_exercises')
