@@ -29,17 +29,11 @@ export const useWeekActions = (
 
     console.log('🚨 [DUPLICATE WEEK] Original week structure before duplication:', weekToDuplicate);
 
-    // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε το existing program state
-    // και κάνουμε update μέσω του updateProgram για reactive state
-    const newWeekId = generateId();
-    const newWeekName = `${weekToDuplicate.name} (Αντίγραφο)`;
-    const newWeekNumber = (program.weeks?.length || 0) + 1;
-
-    // Δημιουργούμε το νέο week structure
+    // Δημιουργούμε το νέο week structure με fresh IDs
     const newWeekData = {
-      id: newWeekId,
-      name: newWeekName,
-      week_number: newWeekNumber,
+      id: generateId(),
+      name: `${weekToDuplicate.name} (Αντίγραφο)`,
+      week_number: (program.weeks?.length || 0) + 1,
       program_days: weekToDuplicate.program_days.map(day => {
         console.log(`🚨 [DUPLICATE WEEK] Processing day: ${day.name}`);
         
@@ -72,14 +66,14 @@ export const useWeekActions = (
                 const newExercise = {
                   id: generateId(),
                   exercise_id: exercise.exercise_id,
-                  exercise_order: exercise.exercise_order, // 🚨 ΚΡΙΤΙΚΟ: Διατηρούμε το αρχικό exercise_order
+                  exercise_order: exercise.exercise_order,
                   sets: exercise.sets,
                   reps: exercise.reps,
                   kg: exercise.kg,
                   tempo: exercise.tempo,
                   rest: exercise.rest,
                   notes: exercise.notes || '',
-                  exercises: exercise.exercises // Διατηρούμε την αναφορά στην άσκηση
+                  exercises: exercise.exercises
                 };
                 
                 console.log(`🚨 [DUPLICATE WEEK] Duplicated exercise: ${exercise.exercises?.name} with order: ${newExercise.exercise_order}`);
@@ -93,24 +87,17 @@ export const useWeekActions = (
 
     console.log('🚨 [DUPLICATE WEEK] New week structure after duplication:', newWeekData);
 
-    // Έλεγχος ότι η σειρά διατηρήθηκε
-    newWeekData.program_days.forEach((day, dayIndex) => {
-      console.log(`🚨 [DUPLICATE WEEK FINAL CHECK] Day ${dayIndex + 1}: ${day.name}`);
-      day.program_blocks.forEach((block, blockIndex) => {
-        console.log(`🚨 [DUPLICATE WEEK FINAL CHECK] Block ${blockIndex + 1}: ${block.name}`);
-        const exercises = block.program_exercises || [];
-        console.log(`🚨 [DUPLICATE WEEK FINAL CHECK] Final exercise order in duplicated block:`);
-        exercises.forEach((ex, exIndex) => {
-          console.log(`🚨 [DUPLICATE WEEK FINAL CHECK]   ${exIndex + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
-        });
-      });
-    });
-
-    // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε το updateProgram για να διατηρήσουμε το reactive state
-    const updatedWeeks = [...(program.weeks || []), newWeekData];
+    // ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τα τρέχοντα weeks από το program state
+    // και τα ενημερώνουμε άμεσα χωρίς να περιμένουμε το async update
+    const currentWeeks = program.weeks || [];
+    const updatedWeeks = [...currentWeeks, newWeekData];
+    
+    console.log('🚨 [DUPLICATE WEEK] Updating program with weeks count:', updatedWeeks.length);
+    
+    // Άμεση ενημέρωση του state
     updateProgram({ weeks: updatedWeeks });
 
-    console.log('🚨 [DUPLICATE WEEK] Week added to program via updateProgram - changes will be reactive');
+    console.log('🚨 [DUPLICATE WEEK] Week duplication completed successfully');
   };
 
   const updateWeekName = (weekId: string, name: string) => {

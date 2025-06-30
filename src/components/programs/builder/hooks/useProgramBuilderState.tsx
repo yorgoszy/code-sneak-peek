@@ -66,7 +66,12 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   }, []);
 
   const updateProgram = useCallback((updates: Partial<ProgramStructure>) => {
-    setProgram(prev => ({ ...prev, ...updates }));
+    console.log('🔄 [useProgramBuilderState] Updating program with:', updates);
+    setProgram(prev => {
+      const newProgram = { ...prev, ...updates };
+      console.log('🔄 [useProgramBuilderState] New program state:', newProgram);
+      return newProgram;
+    });
   }, []);
 
   const resetProgram = useCallback(() => {
