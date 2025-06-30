@@ -45,7 +45,6 @@ export const useExerciseCompletion = () => {
 
   const getRemainingText = useCallback((exerciseId: string) => {
     const currentState = getExerciseState(exerciseId);
-    // We can't calculate remaining without knowing total sets, so just show completion status
     return currentState.completedSets > 0 ? ' ✅' : '';
   }, [getExerciseState]);
 

@@ -6,6 +6,7 @@ import { CheckCircle, Video } from 'lucide-react';
 
 interface ExerciseHeaderProps {
   exercise: any;
+  exerciseNumber: number;
   isComplete: boolean;
   remainingText: string;
   workoutInProgress: boolean;
@@ -15,6 +16,7 @@ interface ExerciseHeaderProps {
 
 export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
   exercise,
+  exerciseNumber,
   isComplete,
   remainingText,
   workoutInProgress,
@@ -26,7 +28,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="text-sm font-medium text-gray-900">
-            {exercise.exercises?.name || 'Unknown Exercise'}
+            {exerciseNumber}. {exercise.exercises?.name || 'Unknown Exercise'}
           </div>
           {isComplete && <CheckCircle className="w-4 h-4 text-green-600" />}
           {exercise.exercises?.video_url && (
