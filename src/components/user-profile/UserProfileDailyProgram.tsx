@@ -52,6 +52,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     loadCompletions();
   }, [userPrograms.length, userProfile.id, getAllWorkoutCompletions]);
 
+  // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Σωστός υπολογισμός προγράμματος ημέρας
   const getDayProgram = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     
@@ -59,7 +60,29 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
       if (!program.training_dates) continue;
       
       const dateIndex = program.training_dates.findIndex(d => d === dateStr);
-      if (dateIndex >= 0) {
+      if (dateIndex === -1) continue;
+
+      const weeks = program.programs?.program_weeks || [];
+      if (weeks.length === 0) continue;
+
+      // Υπολογίζουμε σε ποια εβδομάδα και ημέρα βρισκόμαστε
+      let totalDaysProcessed = 0;
+      let targetDay = null;
+
+      for (const week of weeks) {
+        const daysInWeek = week.program_days?.length || 0;
+        
+        if (dateIndex >= totalDaysProcessed && dateIndex < totalDaysProcessed + daysInWeek) {
+          // Βρήκαμε την εβδομάδα
+          const dayIndexInWeek = dateIndex - totalDaysProcessed;
+          targetDay = week.program_days?.[dayIndexInWeek] || null;
+          break;
+        }
+        
+        totalDaysProcessed += daysInWeek;
+      }
+
+      if (targetDay) {
         const completion = workoutCompletions.find(c => 
           c.assignment_id === program.id && 
           c.scheduled_date === dateStr
@@ -68,6 +91,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
         return {
           program,
           dateIndex,
+          targetDay,
           isCompleted: completion?.status === 'completed',
           status: completion?.status || 'scheduled'
         };
