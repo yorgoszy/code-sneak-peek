@@ -36,9 +36,10 @@ interface Block {
 interface ExerciseBlockProps {
   blocks: Block[];
   viewOnly?: boolean;
+  editMode?: boolean;
 }
 
-export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly = false }) => {
+export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly = false, editMode = false }) => {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const { completeSet, getRemainingText, isExerciseComplete } = useExerciseCompletion();
@@ -46,6 +47,7 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
   console.log('🎯 ExerciseBlock render:', {
     blockCount: blocks?.length || 0,
     viewOnly: viewOnly,
+    editMode: editMode,
     blockNames: blocks?.map(b => b.name) || []
   });
 
@@ -53,16 +55,17 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
     console.log('🎯 ExerciseBlock handleExerciseClick:', {
       exerciseName: exercise.exercises?.name,
       viewOnly: viewOnly,
+      editMode: editMode,
       target: (event.target as HTMLElement).className
     });
     
-    // Αν είναι μόνο για προβολή, δεν κάνουμε τίποτα άλλο
-    if (viewOnly) {
-      console.log('👁️ View only mode, skipping exercise completion');
+    // Αν είναι μόνο για προβολή ή σε edit mode, δεν κάνουμε τίποτα άλλο
+    if (viewOnly || editMode) {
+      console.log('👁️ View only or edit mode, skipping exercise completion');
       return;
     }
 
-    // Αν δεν είναι view-only, ολοκληρώνουμε ένα σετ
+    // Αν δεν είναι view-only ούτε edit mode, ολοκληρώνουμε ένα σετ
     console.log('✅ Completing set for exercise:', exercise.id);
     completeSet(exercise.id, exercise.sets);
   };
