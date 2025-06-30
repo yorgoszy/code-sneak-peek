@@ -86,20 +86,21 @@ export const useProgramStructure = () => {
             continue;
           }
 
-          // 🚨 ΚΡΙΤΙΚΟΣ ΕΛΕΓΧΟΣ: Ταξινόμηση ασκήσεων πριν την αποθήκευση
-          console.log('🚨 [CRITICAL STRUCTURE] Original exercises order in block:', block.name);
+          // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινόμηση μόνο με βάση το exercise_order
+          console.log('🚨 [CRITICAL FIX] Original exercises order in block:', block.name);
           block.program_exercises.forEach((ex, index) => {
             console.log(`🚨   ${index + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
           });
 
+          // ΣΩΣΤΗ ταξινόμηση ΜΟΝΟ με βάση το exercise_order
           const sortedExercises = [...block.program_exercises].sort((a, b) => {
-            const orderA = a.exercise_order || 0;
-            const orderB = b.exercise_order || 0;
-            console.log(`🚨 [SORTING] Comparing ${a.exercises?.name} (${orderA}) vs ${b.exercises?.name} (${orderB})`);
+            const orderA = Number(a.exercise_order) || 0;
+            const orderB = Number(b.exercise_order) || 0;
+            console.log(`🚨 [FIXED SORTING] Comparing exercise orders: ${orderA} vs ${orderB}`);
             return orderA - orderB;
           });
 
-          console.log('🚨 [CRITICAL STRUCTURE] Sorted exercises order:');
+          console.log('🚨 [FIXED] Correctly sorted exercises order:');
           sortedExercises.forEach((ex, index) => {
             console.log(`🚨   ${index + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
           });
@@ -126,7 +127,7 @@ export const useProgramStructure = () => {
               exercise_order: exercise.exercise_order || 1 // 🚨 ΚΡΙΤΙΚΟ: Διατηρούμε τη σειρά
             };
 
-            console.log('🚨 [CRITICAL STRUCTURE] Insert data for exercise:', exercise.exercises?.name, insertData);
+            console.log('🚨 [FIXED] Insert data for exercise:', exercise.exercises?.name, insertData);
 
             const { error: exerciseError } = await supabase
               .from('program_exercises')

@@ -243,44 +243,23 @@ export const assignmentService = {
                     });
                   });
 
-                  // ΚΡΙΤΙΚΟ: Ταξινομούμε τις ασκήσεις με βάση το exercise_order πριν τις αποθηκεύσουμε
+                  // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινομούμε τις ασκήσεις ΜΟΝΟ με βάση το exercise_order
                   const sortedExercises = [...block.program_exercises].sort((a, b) => {
-                    const orderA = a.exercise_order || 0;
-                    const orderB = b.exercise_order || 0;
-                    console.log(`🔍 [SORT] Comparing ${a.exercises?.name} (order: ${orderA}) vs ${b.exercises?.name} (order: ${orderB})`);
+                    const orderA = Number(a.exercise_order) || 0;
+                    const orderB = Number(b.exercise_order) || 0;
+                    console.log(`🔍 [FIXED SORT] Comparing exercise orders: ${orderA} vs ${orderB} for ${a.exercises?.name} vs ${b.exercises?.name}`);
                     return orderA - orderB;
                   });
                   
-                  console.log('💪 [FINAL ORDER] Sorted exercises for block:', block.name);
+                  console.log('💪 [FIXED ORDER] Correctly sorted exercises for block:', block.name);
                   sortedExercises.forEach((exercise, index) => {
-                    console.log(`   ${index + 1}. ${exercise.exercises?.name} (original order: ${exercise.exercise_order})`);
+                    console.log(`   ${index + 1}. ${exercise.exercises?.name} (order: ${exercise.exercise_order})`);
                   });
 
                   for (const exercise of sortedExercises) {
                     if (!exercise.exercise_id) {
                       console.log('⚠️ Skipping exercise without exercise_id');
                       continue;
-                    }
-
-                    // 🔍 ΕΙΔΙΚΟΣ ΕΛΕΓΧΟΣ ΓΙΑ ΠΡΟΒΛΗΜΑΤΙΚΕΣ ΑΣΚΗΣΕΙΣ
-                    const exerciseName = exercise.exercises?.name?.toLowerCase() || '';
-                    const isProblematicExercise = exerciseName.includes('upright') || 
-                                                 exerciseName.includes('row') ||
-                                                 exerciseName.includes('db');
-                    
-                    if (isProblematicExercise) {
-                      console.log('🚨 [PROBLEMATIC EXERCISE DETECTED]:', {
-                        name: exercise.exercises?.name,
-                        exercise_id: exercise.exercise_id,
-                        original_order: exercise.exercise_order,
-                        sets: exercise.sets,
-                        reps: exercise.reps,
-                        blockId: blockData.id,
-                        blockName: block.name,
-                        exercise_created_at: exercise.exercises?.created_at,
-                        exercise_updated_at: exercise.exercises?.updated_at,
-                        full_exercise_data: exercise.exercises
-                      });
                     }
 
                     console.log('💪 Creating exercise:', exercise.exercises?.name || 'Unknown', 'with order:', exercise.exercise_order);
@@ -299,24 +278,13 @@ export const assignmentService = {
                       exercise_order: exercise.exercise_order || 1 // ΚΡΙΤΙΚΟ: Διατηρούμε τη σειρά
                     };
 
-                    if (isProblematicExercise) {
-                      console.log('🚨 [PROBLEMATIC EXERCISE] INSERT DATA:', insertData);
-                    }
-
                     const { error: exerciseError } = await supabase
                       .from('program_exercises')
                       .insert([insertData]);
 
                     if (exerciseError) {
                       console.error('❌ Error creating exercise:', exerciseError);
-                      if (isProblematicExercise) {
-                        console.error('🚨 [PROBLEMATIC EXERCISE] ERROR:', exerciseError);
-                      }
                       throw new Error(`Σφάλμα δημιουργίας άσκησης: ${exerciseError.message}`);
-                    }
-
-                    if (isProblematicExercise) {
-                      console.log('🚨 [PROBLEMATIC EXERCISE] CREATED SUCCESSFULLY with order:', exercise.exercise_order);
                     }
 
                     console.log('✅ Exercise created successfully with order:', exercise.exercise_order);
