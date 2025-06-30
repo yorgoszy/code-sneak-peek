@@ -3,15 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const useProgramStructure = () => {
   const createProgramStructure = async (programId: string, programData: any) => {
-    console.log('🏗️ Creating program structure for:', programId, programData);
+    console.log('🏗️ [useProgramStructure] Creating program structure for:', programId, programData);
     
     if (!programData.weeks || programData.weeks.length === 0) {
-      console.log('No weeks to create');
+      console.log('⚠️ [useProgramStructure] No weeks to create');
       return;
     }
     
     for (const week of programData.weeks) {
-      console.log('📅 Creating week:', week.name, 'with', week.program_days?.length || 0, 'days');
+      console.log('📅 [useProgramStructure] Creating week:', week.name, 'with', week.program_days?.length || 0, 'days');
       
       const { data: weekData, error: weekError } = await supabase
         .from('program_weeks')
@@ -24,19 +24,19 @@ export const useProgramStructure = () => {
         .single();
 
       if (weekError) {
-        console.error('❌ Error creating week:', weekError);
+        console.error('❌ [useProgramStructure] Error creating week:', weekError);
         throw weekError;
       }
 
-      console.log('✅ Week created:', weekData.id);
+      console.log('✅ [useProgramStructure] Week created:', weekData.id);
 
       if (!week.program_days || week.program_days.length === 0) {
-        console.log('No days to create for week:', week.name);
+        console.log('⚠️ [useProgramStructure] No days to create for week:', week.name);
         continue;
       }
 
       for (const day of week.program_days) {
-        console.log('📋 Creating day:', day.name, 'with', day.program_blocks?.length || 0, 'blocks');
+        console.log('📋 [useProgramStructure] Creating day:', day.name, 'with', day.program_blocks?.length || 0, 'blocks');
         
         const { data: dayData, error: dayError } = await supabase
           .from('program_days')
@@ -50,19 +50,19 @@ export const useProgramStructure = () => {
           .single();
 
         if (dayError) {
-          console.error('❌ Error creating day:', dayError);
+          console.error('❌ [useProgramStructure] Error creating day:', dayError);
           throw dayError;
         }
 
-        console.log('✅ Day created:', dayData.id);
+        console.log('✅ [useProgramStructure] Day created:', dayData.id);
 
         if (!day.program_blocks || day.program_blocks.length === 0) {
-          console.log('No blocks to create for day:', day.name);
+          console.log('⚠️ [useProgramStructure] No blocks to create for day:', day.name);
           continue;
         }
 
         for (const block of day.program_blocks) {
-          console.log('🧱 Creating block:', block.name, 'with', block.program_exercises?.length || 0, 'exercises');
+          console.log('🧱 [useProgramStructure] Creating block:', block.name, 'with', block.program_exercises?.length || 0, 'exercises');
           
           const { data: blockData, error: blockError } = await supabase
             .from('program_blocks')
@@ -75,61 +75,75 @@ export const useProgramStructure = () => {
             .single();
 
           if (blockError) {
-            console.error('❌ Error creating block:', blockError);
+            console.error('❌ [useProgramStructure] Error creating block:', blockError);
             throw blockError;
           }
 
-          console.log('✅ Block created:', blockData.id);
+          console.log('✅ [useProgramStructure] Block created:', blockData.id);
 
           if (!block.program_exercises || block.program_exercises.length === 0) {
-            console.log('No exercises to create for block:', block.name);
+            console.log('⚠️ [useProgramStructure] No exercises to create for block:', block.name);
             continue;
           }
 
-          for (const exercise of block.program_exercises) {
+          // 🚨 ΚΡΙΤΙΚΟΣ ΕΛΕΓΧΟΣ: Ταξινόμηση ασκήσεων πριν την αποθήκευση
+          console.log('🚨 [CRITICAL STRUCTURE] Original exercises order in block:', block.name);
+          block.program_exercises.forEach((ex, index) => {
+            console.log(`🚨   ${index + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
+          });
+
+          const sortedExercises = [...block.program_exercises].sort((a, b) => {
+            const orderA = a.exercise_order || 0;
+            const orderB = b.exercise_order || 0;
+            console.log(`🚨 [SORTING] Comparing ${a.exercises?.name} (${orderA}) vs ${b.exercises?.name} (${orderB})`);
+            return orderA - orderB;
+          });
+
+          console.log('🚨 [CRITICAL STRUCTURE] Sorted exercises order:');
+          sortedExercises.forEach((ex, index) => {
+            console.log(`🚨   ${index + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
+          });
+
+          for (const exercise of sortedExercises) {
             if (!exercise.exercise_id) {
-              console.log('Skipping exercise without exercise_id');
+              console.log('⚠️ [useProgramStructure] Skipping exercise without exercise_id');
               continue;
             }
 
-            console.log('💪 Creating exercise:', exercise.exercises?.name || 'Unknown', 'with params:', {
-              sets: exercise.sets,
-              reps: exercise.reps,
-              kg: exercise.kg,
-              percentage_1rm: exercise.percentage_1rm,
-              velocity_ms: exercise.velocity_ms,
-              tempo: exercise.tempo,
-              rest: exercise.rest
-            });
+            console.log('💪 [useProgramStructure] Creating exercise:', exercise.exercises?.name || 'Unknown', 'with order:', exercise.exercise_order);
+
+            const insertData = {
+              block_id: blockData.id,
+              exercise_id: exercise.exercise_id,
+              sets: exercise.sets || 1,
+              reps: exercise.reps || '',
+              kg: exercise.kg || '',
+              percentage_1rm: exercise.percentage_1rm ? parseFloat(exercise.percentage_1rm.toString()) : null,
+              velocity_ms: exercise.velocity_ms ? parseFloat(exercise.velocity_ms.toString()) : null,
+              tempo: exercise.tempo || '',
+              rest: exercise.rest || '',
+              notes: exercise.notes || '',
+              exercise_order: exercise.exercise_order || 1 // 🚨 ΚΡΙΤΙΚΟ: Διατηρούμε τη σειρά
+            };
+
+            console.log('🚨 [CRITICAL STRUCTURE] Insert data for exercise:', exercise.exercises?.name, insertData);
 
             const { error: exerciseError } = await supabase
               .from('program_exercises')
-              .insert([{
-                block_id: blockData.id,
-                exercise_id: exercise.exercise_id,
-                sets: exercise.sets || 1,
-                reps: exercise.reps || '',
-                kg: exercise.kg || '',
-                percentage_1rm: exercise.percentage_1rm ? parseFloat(exercise.percentage_1rm.toString()) : null,
-                velocity_ms: exercise.velocity_ms ? parseFloat(exercise.velocity_ms.toString()) : null,
-                tempo: exercise.tempo || '',
-                rest: exercise.rest || '',
-                notes: exercise.notes || '',
-                exercise_order: exercise.exercise_order || 1
-              }]);
+              .insert([insertData]);
 
             if (exerciseError) {
-              console.error('❌ Error creating exercise:', exerciseError);
+              console.error('❌ [useProgramStructure] Error creating exercise:', exerciseError);
               throw exerciseError;
             }
 
-            console.log('✅ Exercise created successfully');
+            console.log('✅ [useProgramStructure] Exercise created successfully with order:', exercise.exercise_order);
           }
         }
       }
     }
     
-    console.log('🎉 Program structure creation completed successfully');
+    console.log('🎉 [useProgramStructure] Program structure creation completed successfully');
   };
 
   return {

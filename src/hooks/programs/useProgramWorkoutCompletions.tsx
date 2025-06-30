@@ -10,13 +10,36 @@ export const useProgramWorkoutCompletions = () => {
     trainingDates: string[],
     programStructure: any
   ) => {
-    console.log('📅 Creating workout completions for:', {
+    console.log('📅 [useProgramWorkoutCompletions] Creating workout completions for:', {
       assignmentId,
       userId,
       programId,
       trainingDates: trainingDates.length,
       programStructure
     });
+
+    // 🔍 ΕΚΤΕΝΗΣ ΑΝΑΛΥΣΗ ΔΟΜΗΣ ΠΡΟΓΡΑΜΜΑΤΟΣ
+    console.log('🔍 [useProgramWorkoutCompletions] Detailed program structure:');
+    if (programStructure.weeks) {
+      programStructure.weeks.forEach((week, wIndex) => {
+        console.log(`🔍  Week ${wIndex + 1}: ${week.name || `Week ${week.week_number}`}`);
+        if (week.days) {
+          week.days.forEach((day, dIndex) => {
+            console.log(`🔍    Day ${dIndex + 1}: ${day.name || `Day ${day.day_number}`}`);
+            if (day.blocks && day.blocks.length > 0) {
+              day.blocks.forEach((block, bIndex) => {
+                console.log(`🔍      Block ${bIndex + 1}: ${block.name}`);
+                if (block.exercises && block.exercises.length > 0) {
+                  block.exercises.forEach((ex, eIndex) => {
+                    console.log(`🔍        Exercise ${eIndex + 1}: ${ex.name} (order: ${ex.exercise_order || 'no order'})`);
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    }
 
     try {
       const completions = [];
@@ -52,7 +75,7 @@ export const useProgramWorkoutCompletions = () => {
         }
       }
 
-      console.log('💾 Inserting workout completions as pending:', completions);
+      console.log('💾 [useProgramWorkoutCompletions] Inserting workout completions as pending:', completions);
 
       if (completions.length > 0) {
         const { data, error } = await supabase
@@ -61,17 +84,17 @@ export const useProgramWorkoutCompletions = () => {
           .select();
 
         if (error) {
-          console.error('❌ Error creating workout completions:', error);
+          console.error('❌ [useProgramWorkoutCompletions] Error creating workout completions:', error);
           throw error;
         }
 
-        console.log('✅ Workout completions created successfully as pending:', data);
+        console.log('✅ [useProgramWorkoutCompletions] Workout completions created successfully as pending:', data);
         return data;
       }
 
       return [];
     } catch (error) {
-      console.error('❌ Error in createWorkoutCompletions:', error);
+      console.error('❌ [useProgramWorkoutCompletions] Error in createWorkoutCompletions:', error);
       throw error;
     }
   };

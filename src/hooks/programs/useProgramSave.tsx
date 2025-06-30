@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -17,6 +18,29 @@ export const useProgramSave = () => {
         weeksSource: programData.weeks ? 'weeks' : programData.program_weeks ? 'program_weeks' : 'none'
       });
 
+      // 🔍 ΑΝΑΛΥΣΗ ΑΣΚΗΣΕΩΝ ΠΡΙΝ ΤΗΝ ΑΠΟΘΗΚΕΥΣΗ
+      const weeks = programData.weeks || programData.program_weeks || [];
+      console.log('🔍 [SAVE ANALYSIS] Program structure before save:');
+      weeks.forEach((week, weekIndex) => {
+        console.log(`🔍 [SAVE] Week ${weekIndex + 1}: ${week.name}`);
+        week.program_days?.forEach((day, dayIndex) => {
+          console.log(`🔍 [SAVE] Day ${dayIndex + 1}: ${day.name}`);
+          day.program_blocks?.forEach((block, blockIndex) => {
+            console.log(`🔍 [SAVE] Block ${blockIndex + 1}: ${block.name} - ${block.program_exercises?.length || 0} exercises`);
+            block.program_exercises?.forEach((ex, exIndex) => {
+              console.log(`🔍 [SAVE] Exercise ${exIndex + 1}: ${ex.exercises?.name} (order: ${ex.exercise_order})`);
+              console.log(`🔍 [SAVE] Exercise details:`, {
+                id: ex.id,
+                exercise_id: ex.exercise_id,
+                exercise_order: ex.exercise_order,
+                created_at: ex.exercises?.created_at,
+                updated_at: ex.exercises?.updated_at
+              });
+            });
+          });
+        });
+      });
+
       // Διασφαλίζουμε ότι έχουμε training_dates
       let trainingDatesArray = [];
       if (programData.training_dates && Array.isArray(programData.training_dates)) {
@@ -31,7 +55,6 @@ export const useProgramSave = () => {
         });
       } else {
         // Προσπαθούμε να δημιουργήσουμε dates από τη δομή εβδομάδων
-        const weeks = programData.weeks || programData.program_weeks || [];
         if (weeks.length > 0) {
           const totalDays = weeks.reduce((total, week) => total + (week.program_days?.length || 0), 0);
           const today = new Date();
@@ -129,20 +152,28 @@ export const useProgramSave = () => {
       console.log('✅ [useProgramSave] Program saved:', savedProgram);
 
       // ΚΡΙΤΙΚΟ: Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises)
-      const weeks = programData.weeks || programData.program_weeks || [];
       if (weeks && weeks.length > 0) {
         console.log('🏗️ [useProgramSave] Creating program structure with weeks:', weeks.length);
         
-        // Βεβαιωνόμαστε ότι τα δεδομένα είναι σωστά πριν περάσουν στο createProgramStructure
-        console.log('🏗️ [useProgramSave] Structure data being passed:', {
-          weeks: weeks.map(w => ({
-            id: w.id,
-            name: w.name,
-            daysCount: w.program_days?.length,
-            totalExercises: w.program_days?.reduce((total, d) => 
-              total + (d.program_blocks?.reduce((blockTotal, b) => 
-                blockTotal + (b.program_exercises?.length || 0), 0) || 0), 0)
-          }))
+        // 🚨 ΚΡΙΤΙΚΟΣ ΕΛΕΓΧΟΣ: Εμφάνιση της δομής που περνάμε στο createProgramStructure
+        console.log('🚨 [CRITICAL] Data being passed to createProgramStructure:');
+        weeks.forEach((week, wIndex) => {
+          console.log(`🚨  Week ${wIndex}: ${week.name}`);
+          week.program_days?.forEach((day, dIndex) => {
+            console.log(`🚨    Day ${dIndex}: ${day.name}`);
+            day.program_blocks?.forEach((block, bIndex) => {
+              console.log(`🚨      Block ${bIndex}: ${block.name}`);
+              const sortedExercises = [...(block.program_exercises || [])].sort((a, b) => {
+                const orderA = a.exercise_order || 0;
+                const orderB = b.exercise_order || 0;
+                return orderA - orderB;
+              });
+              console.log(`🚨      Exercises in order before passing:`);
+              sortedExercises.forEach((ex, eIndex) => {
+                console.log(`🚨        ${eIndex + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
+              });
+            });
+          });
         });
         
         // Χρησιμοποιούμε τη μέθοδο createProgramStructure

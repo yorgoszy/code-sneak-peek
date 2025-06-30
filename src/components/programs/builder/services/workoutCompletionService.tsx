@@ -10,6 +10,27 @@ export const workoutCompletionService = {
     trainingDatesStrings: string[],
     program: ProgramStructure
   ) {
+    console.log('📅 [workoutCompletionService] Creating workout completions with program structure:', {
+      programWeeks: program.weeks?.length,
+      trainingDates: trainingDatesStrings.length,
+      userId
+    });
+
+    // 🔍 ΑΝΑΛΥΣΗ ΔΟΜΗΣ ΠΡΟΓΡΑΜΜΑΤΟΣ
+    console.log('🔍 [workoutCompletionService] Program structure analysis:');
+    program.weeks?.forEach((week, wIndex) => {
+      console.log(`🔍  Week ${wIndex + 1}: ${week.name} - ${week.program_days?.length || 0} days`);
+      week.program_days?.forEach((day, dIndex) => {
+        console.log(`🔍    Day ${dIndex + 1}: ${day.name} - ${day.program_blocks?.length || 0} blocks`);
+        day.program_blocks?.forEach((block, bIndex) => {
+          console.log(`🔍      Block ${bIndex + 1}: ${block.name} - ${block.program_exercises?.length || 0} exercises`);
+          block.program_exercises?.forEach((ex, eIndex) => {
+            console.log(`🔍        Exercise ${eIndex + 1}: ${ex.exercises?.name} (order: ${ex.exercise_order})`);
+          });
+        });
+      });
+    });
+
     const totalDaysInProgram = program.weeks?.reduce((total, week) => total + (week.program_days?.length || 0), 0) || 1;
     
     const workoutCompletions = trainingDatesStrings.map((date, index) => {
@@ -34,10 +55,10 @@ export const workoutCompletionService = {
       .insert(workoutCompletions);
 
     if (completionsError) {
-      console.error('❌ Σφάλμα δημιουργίας workout completions:', completionsError);
+      console.error('❌ [workoutCompletionService] Σφάλμα δημιουργίας workout completions:', completionsError);
       throw new Error('Σφάλμα κατά τη δημιουργία των προπονήσεων');
     }
 
-    console.log('✅ Workout completions created as pending:', workoutCompletions.length);
+    console.log('✅ [workoutCompletionService] Workout completions created as pending:', workoutCompletions.length);
   }
 };
