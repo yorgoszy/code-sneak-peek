@@ -134,7 +134,7 @@ export const useWorkoutState = (
     toast.info(`Προπόνηση ακυρώθηκε για ${program.app_users?.name}`);
   }, [program, selectedDate, workoutId, removeFromActiveWorkouts]);
 
-  // Exercise completion functions - ίδιες όπως πριν
+  // Exercise completion functions - FIXED signatures to match component expectations
   const exerciseCompletion = {
     completeSet: (exerciseId: string, totalSets: number) => {
       setExerciseCompletions(prev => {
@@ -145,10 +145,10 @@ export const useWorkoutState = (
       });
     },
 
-    getRemainingText: (exerciseId: string, totalSets: number) => {
+    // FIXED: Changed signature to match component expectations - only exerciseId parameter
+    getRemainingText: (exerciseId: string) => {
       const completed = exerciseCompletions[exerciseId] || 0;
-      const remaining = totalSets - completed;
-      return remaining > 0 ? `${remaining} sets remaining` : 'Complete!';
+      return completed > 0 ? ' ✅' : '';
     },
 
     isExerciseComplete: (exerciseId: string, totalSets: number) => {
@@ -198,14 +198,14 @@ export const useWorkoutState = (
       });
     },
 
-    updateVelocity: (exerciseId: string, velocity: number) => {
-      const velocityStr = velocity.toString();
+    // FIXED: Changed signature to accept string parameter to match component expectations
+    updateVelocity: (exerciseId: string, velocity: string) => {
       setExerciseData(prev => ({
         ...prev,
-        [exerciseId]: { ...prev[exerciseId], velocity: velocityStr }
+        [exerciseId]: { ...prev[exerciseId], velocity }
       }));
       if (program && selectedDate) {
-        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { velocity: velocityStr });
+        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { velocity });
       }
     },
 
@@ -219,14 +219,14 @@ export const useWorkoutState = (
       });
     },
 
-    updateReps: (exerciseId: string, reps: number) => {
-      const repsStr = reps.toString();
+    // FIXED: Changed signature to accept string parameter to match component expectations
+    updateReps: (exerciseId: string, reps: string) => {
       setExerciseData(prev => ({
         ...prev,
-        [exerciseId]: { ...prev[exerciseId], reps: repsStr }
+        [exerciseId]: { ...prev[exerciseId], reps }
       }));
       if (program && selectedDate) {
-        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { reps: repsStr });
+        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { reps });
       }
     },
 
