@@ -226,31 +226,35 @@ export const assignmentService = {
                 console.log('✅ Block created:', blockData.id);
 
                 if (block.program_exercises && block.program_exercises.length > 0) {
-                  // ΚΡΙΤΙΚΟ: Ταξινομούμε τις ασκήσεις με βάση το exercise_order πριν τις αποθηκεύσουμε
-                  const sortedExercises = [...block.program_exercises].sort((a, b) => 
-                    (a.exercise_order || 0) - (b.exercise_order || 0)
-                  );
+                  // 🔍 ΕΚΤΕΝΗΣ ΑΝΑΛΥΣΗ ΤΩΝ ΑΣΚΗΣΕΩΝ
+                  console.log('🔍 [EXERCISE ANALYSIS] Block:', block.name, 'has', block.program_exercises.length, 'exercises');
                   
-                  console.log('💪 Sorted exercises for block:', block.name, 
-                    sortedExercises.map(e => ({ name: e.exercises?.name, order: e.exercise_order })));
-
-                  // ΕΙΔΙΚΟΣ ΕΛΕΓΧΟΣ ΓΙΑ UPRIGHT ROW DB
-                  const uprightRowExercise = sortedExercises.find(e => 
-                    e.exercises?.name?.toLowerCase().includes('upright') && 
-                    e.exercises?.name?.toLowerCase().includes('row')
-                  );
-                  
-                  if (uprightRowExercise) {
-                    console.log('🔍 UPRIGHT ROW DETECTION:', {
-                      name: uprightRowExercise.exercises?.name,
-                      originalOrder: uprightRowExercise.exercise_order,
-                      blockName: block.name,
-                      allExercisesInBlock: sortedExercises.map(e => ({
-                        name: e.exercises?.name,
-                        order: e.exercise_order
-                      }))
+                  // Ελέγχουμε κάθε άσκηση για διαφορές
+                  block.program_exercises.forEach((exercise, index) => {
+                    console.log(`🔍 [EXERCISE ${index + 1}] Original data:`, {
+                      name: exercise.exercises?.name,
+                      exercise_id: exercise.exercise_id,
+                      exercise_order: exercise.exercise_order,
+                      created_at: exercise.exercises?.created_at,
+                      updated_at: exercise.exercises?.updated_at,
+                      has_video: !!exercise.exercises?.video_url,
+                      video_url_length: exercise.exercises?.video_url?.length || 0,
+                      description_length: exercise.exercises?.description?.length || 0
                     });
-                  }
+                  });
+
+                  // ΚΡΙΤΙΚΟ: Ταξινομούμε τις ασκήσεις με βάση το exercise_order πριν τις αποθηκεύσουμε
+                  const sortedExercises = [...block.program_exercises].sort((a, b) => {
+                    const orderA = a.exercise_order || 0;
+                    const orderB = b.exercise_order || 0;
+                    console.log(`🔍 [SORT] Comparing ${a.exercises?.name} (order: ${orderA}) vs ${b.exercises?.name} (order: ${orderB})`);
+                    return orderA - orderB;
+                  });
+                  
+                  console.log('💪 [FINAL ORDER] Sorted exercises for block:', block.name);
+                  sortedExercises.forEach((exercise, index) => {
+                    console.log(`   ${index + 1}. ${exercise.exercises?.name} (original order: ${exercise.exercise_order})`);
+                  });
 
                   for (const exercise of sortedExercises) {
                     if (!exercise.exercise_id) {
@@ -258,19 +262,24 @@ export const assignmentService = {
                       continue;
                     }
 
-                    // ΕΙΔΙΚΟΣ ΕΛΕΓΧΟΣ ΓΙΑ UPRIGHT ROW DB
-                    const isUprightRow = exercise.exercises?.name?.toLowerCase().includes('upright') && 
-                                        exercise.exercises?.name?.toLowerCase().includes('row');
+                    // 🔍 ΕΙΔΙΚΟΣ ΕΛΕΓΧΟΣ ΓΙΑ ΠΡΟΒΛΗΜΑΤΙΚΕΣ ΑΣΚΗΣΕΙΣ
+                    const exerciseName = exercise.exercises?.name?.toLowerCase() || '';
+                    const isProblematicExercise = exerciseName.includes('upright') || 
+                                                 exerciseName.includes('row') ||
+                                                 exerciseName.includes('db');
                     
-                    if (isUprightRow) {
-                      console.log('🚨 PROCESSING UPRIGHT ROW:', {
-                        exerciseName: exercise.exercises?.name,
-                        exerciseId: exercise.exercise_id,
-                        originalOrder: exercise.exercise_order,
+                    if (isProblematicExercise) {
+                      console.log('🚨 [PROBLEMATIC EXERCISE DETECTED]:', {
+                        name: exercise.exercises?.name,
+                        exercise_id: exercise.exercise_id,
+                        original_order: exercise.exercise_order,
                         sets: exercise.sets,
                         reps: exercise.reps,
                         blockId: blockData.id,
-                        blockName: block.name
+                        blockName: block.name,
+                        exercise_created_at: exercise.exercises?.created_at,
+                        exercise_updated_at: exercise.exercises?.updated_at,
+                        full_exercise_data: exercise.exercises
                       });
                     }
 
@@ -290,8 +299,8 @@ export const assignmentService = {
                       exercise_order: exercise.exercise_order || 1 // ΚΡΙΤΙΚΟ: Διατηρούμε τη σειρά
                     };
 
-                    if (isUprightRow) {
-                      console.log('🚨 UPRIGHT ROW INSERT DATA:', insertData);
+                    if (isProblematicExercise) {
+                      console.log('🚨 [PROBLEMATIC EXERCISE] INSERT DATA:', insertData);
                     }
 
                     const { error: exerciseError } = await supabase
@@ -300,14 +309,14 @@ export const assignmentService = {
 
                     if (exerciseError) {
                       console.error('❌ Error creating exercise:', exerciseError);
-                      if (isUprightRow) {
-                        console.error('🚨 UPRIGHT ROW ERROR:', exerciseError);
+                      if (isProblematicExercise) {
+                        console.error('🚨 [PROBLEMATIC EXERCISE] ERROR:', exerciseError);
                       }
                       throw new Error(`Σφάλμα δημιουργίας άσκησης: ${exerciseError.message}`);
                     }
 
-                    if (isUprightRow) {
-                      console.log('🚨 UPRIGHT ROW CREATED SUCCESSFULLY with order:', exercise.exercise_order);
+                    if (isProblematicExercise) {
+                      console.log('🚨 [PROBLEMATIC EXERCISE] CREATED SUCCESSFULLY with order:', exercise.exercise_order);
                     }
 
                     console.log('✅ Exercise created successfully with order:', exercise.exercise_order);
