@@ -8,9 +8,10 @@ import { isValidVideoUrl } from '@/utils/videoUtils';
 
 interface ExerciseItemProps {
   exercise: any;
+  exerciseNumber: number;
   workoutInProgress: boolean;
-  isComplete: boolean;
-  remainingText: string;
+  getRemainingText: (exerciseId: string) => string;
+  isExerciseComplete: (exerciseId: string, totalSets: number) => boolean;
   onExerciseClick: (exercise: any, event: React.MouseEvent) => void;
   onSetClick: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
   onVideoClick: (exercise: any) => void;
@@ -19,20 +20,20 @@ interface ExerciseItemProps {
   clearNotes: (exerciseId: string) => void;
   updateKg: (exerciseId: string, kg: string) => void;
   clearKg: (exerciseId: string) => void;
-  updateVelocity: (exerciseId: string, velocity: number) => void;
+  updateVelocity: (exerciseId: string, velocity: string) => void;
   clearVelocity: (exerciseId: string) => void;
-  updateReps: (exerciseId: string, reps: number) => void;
+  updateReps: (exerciseId: string, reps: string) => void;
   clearReps: (exerciseId: string) => void;
   selectedDate?: Date;
   program?: any;
-  getRemainingText: (exerciseId: string, totalSets: number) => string;
 }
 
 export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   exercise,
+  exerciseNumber,
   workoutInProgress,
-  isComplete,
-  remainingText,
+  getRemainingText,
+  isExerciseComplete,
   onExerciseClick,
   onSetClick,
   onVideoClick,
@@ -43,14 +44,12 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   updateNotes,
   clearNotes,
   selectedDate,
-  program,
-  getRemainingText
+  program
 }) => {
   const handleClick = (event: React.MouseEvent) => {
     console.log('🖱️ ExerciseItem click detected for:', exercise.exercises?.name);
     console.log('🏃 Workout status:', workoutInProgress);
     
-    // Πάντα καλούμε το onExerciseClick που θα αποφασίσει τι να κάνει
     onExerciseClick(exercise, event);
   };
 
@@ -58,7 +57,6 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     event.stopPropagation();
     console.log('🎬 Direct video click detected for:', exercise.exercises?.name);
     
-    // Έλεγχος αν υπάρχει έγκυρο video URL
     if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
       onVideoClick(exercise);
     } else {
@@ -73,6 +71,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     }
   };
 
+  const isComplete = isExerciseComplete(exercise.id, exercise.sets);
+  const remainingText = getRemainingText(exercise.id);
+
   return (
     <div 
       className={`border border-gray-200 rounded-none transition-colors ${
@@ -82,6 +83,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     >
       <ExerciseHeader
         exercise={exercise}
+        exerciseNumber={exerciseNumber}
         isComplete={isComplete}
         remainingText={remainingText}
         workoutInProgress={workoutInProgress}
@@ -95,7 +97,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           onVideoClick={onVideoClick}
           onSetClick={handleSetsAreaClick}
           workoutInProgress={workoutInProgress}
-          getRemainingText={getRemainingText}
+          getRemainingText={(exerciseId) => getRemainingText(exerciseId)}
         />
 
         <ExerciseActualValues
@@ -109,7 +111,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           selectedDate={selectedDate}
           program={program}
           onSetClick={onSetClick}
-          getRemainingText={getRemainingText}
+          getRemainingText={(exerciseId) => getRemainingText(exerciseId)}
         />
 
         <ExerciseNotes

@@ -3,8 +3,8 @@ import { useState, useCallback } from 'react';
 
 interface ExerciseAdjustments {
   kg?: string;
-  velocity?: number;
-  reps?: number;
+  velocity?: string;
+  reps?: string;
 }
 
 interface ExerciseState {
@@ -43,11 +43,10 @@ export const useExerciseCompletion = () => {
     console.log(`✅ Set completed for exercise ${exerciseId}: ${newCompletedSets}/${totalSets}`);
   }, [getExerciseState, updateExerciseState]);
 
-  const getRemainingText = useCallback((exerciseId: string, totalSets: number) => {
+  const getRemainingText = useCallback((exerciseId: string) => {
     const currentState = getExerciseState(exerciseId);
-    const remaining = totalSets - currentState.completedSets;
-    if (remaining <= 0) return ' ✅';
-    return ` (${remaining} left)`;
+    // We can't calculate remaining without knowing total sets, so just show completion status
+    return currentState.completedSets > 0 ? ' ✅' : '';
   }, [getExerciseState]);
 
   const isExerciseComplete = useCallback((exerciseId: string, totalSets: number) => {
@@ -87,7 +86,7 @@ export const useExerciseCompletion = () => {
     });
   }, [getExerciseState, updateExerciseState]);
 
-  const updateVelocity = useCallback((exerciseId: string, velocity: number) => {
+  const updateVelocity = useCallback((exerciseId: string, velocity: string) => {
     console.log(`🏃 Updating velocity for ${exerciseId}:`, velocity);
     const currentState = getExerciseState(exerciseId);
     updateExerciseState(exerciseId, {
@@ -104,7 +103,7 @@ export const useExerciseCompletion = () => {
     });
   }, [getExerciseState, updateExerciseState]);
 
-  const updateReps = useCallback((exerciseId: string, reps: number) => {
+  const updateReps = useCallback((exerciseId: string, reps: string) => {
     console.log(`🔢 Updating reps for ${exerciseId}:`, reps);
     const currentState = getExerciseState(exerciseId);
     updateExerciseState(exerciseId, {
