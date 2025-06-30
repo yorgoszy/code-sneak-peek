@@ -19,6 +19,14 @@ interface ExerciseActualValuesProps {
   getRemainingText: (exerciseId: string) => string;
 }
 
+interface WorkoutData {
+  exerciseId: string;
+  kg?: string;
+  reps?: string;
+  velocity?: string;
+  notes?: string;
+}
+
 export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   exercise,
   workoutInProgress,
@@ -30,10 +38,10 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   onSetClick,
   getRemainingText
 }) => {
-  // Get saved data from localStorage with proper fallbacks
-  const savedData = selectedDate && program ? 
+  // Get saved data from localStorage with proper typing
+  const savedData: WorkoutData = selectedDate && program ? 
     getWorkoutData(selectedDate, program.programs?.id || program.id, exercise.id) : 
-    {};
+    { exerciseId: exercise.id };
 
   const handleRepsChange = (value: string) => {
     updateReps(exercise.id, value);
@@ -65,7 +73,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
         <Input
           type="text"
           placeholder={exercise.reps?.toString() || ''}
-          value={savedData?.reps || ''}
+          value={savedData.reps || ''}
           onChange={(e) => handleRepsChange(e.target.value)}
           className="h-8 text-xs rounded-none"
         />
@@ -76,7 +84,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
         <Input
           type="text"
           placeholder={exercise.kg?.toString() || ''}
-          value={savedData?.kg || ''}
+          value={savedData.kg || ''}
           onChange={(e) => handleKgChange(e.target.value)}
           className="h-8 text-xs rounded-none"
         />
@@ -87,7 +95,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
         <Input
           type="text"
           placeholder={exercise.velocity_ms?.toString() || ''}
-          value={savedData?.velocity || ''}
+          value={savedData.velocity || ''}
           onChange={(e) => handleVelocityChange(e.target.value)}
           className="h-8 text-xs rounded-none"
         />
