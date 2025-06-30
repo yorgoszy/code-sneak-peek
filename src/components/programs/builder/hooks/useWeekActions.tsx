@@ -29,9 +29,9 @@ export const useWeekActions = (
 
     console.log('🚨 [DUPLICATE WEEK] Original week structure before duplication:', weekToDuplicate);
 
-    // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Διατήρηση της σειράς ασκήσεων κατά την αντιγραφή
+    // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Χειροκίνητη δημιουργία αντιγράφου χωρίς JSON.parse
+    // για να διατηρήσουμε τη σύνδεση με το reactive state
     const newWeek = {
-      ...JSON.parse(JSON.stringify(weekToDuplicate)),
       id: generateId(),
       name: `${weekToDuplicate.name} (Αντίγραφο)`,
       week_number: (program.weeks?.length || 0) + 1,
@@ -39,8 +39,10 @@ export const useWeekActions = (
         console.log(`🚨 [DUPLICATE WEEK] Processing day: ${day.name}`);
         
         return {
-          ...day,
           id: generateId(),
+          name: day.name,
+          day_number: day.day_number,
+          estimated_duration_minutes: day.estimated_duration_minutes,
           program_blocks: day.program_blocks.map(block => {
             console.log(`🚨 [DUPLICATE WEEK] Processing block: ${block.name} with ${block.program_exercises?.length || 0} exercises`);
             
@@ -58,14 +60,21 @@ export const useWeekActions = (
             });
 
             return {
-              ...block,
               id: generateId(),
-              program_exercises: sortedExercises.map((exercise, index) => {
+              name: block.name,
+              block_order: block.block_order,
+              program_exercises: sortedExercises.map((exercise) => {
                 const newExercise = {
-                  ...exercise,
                   id: generateId(),
-                  // 🚨 ΚΡΙΤΙΚΟ: Διατηρούμε το αρχικό exercise_order
-                  exercise_order: exercise.exercise_order
+                  exercise_id: exercise.exercise_id,
+                  exercise_order: exercise.exercise_order, // 🚨 ΚΡΙΤΙΚΟ: Διατηρούμε το αρχικό exercise_order
+                  sets: exercise.sets,
+                  reps: exercise.reps,
+                  kg: exercise.kg,
+                  tempo: exercise.tempo,
+                  rest: exercise.rest,
+                  notes: exercise.notes || '',
+                  exercises: exercise.exercises // Διατηρούμε την αναφορά στην άσκηση
                 };
                 
                 console.log(`🚨 [DUPLICATE WEEK] Duplicated exercise: ${exercise.exercises?.name} with order: ${newExercise.exercise_order}`);
