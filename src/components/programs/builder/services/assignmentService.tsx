@@ -234,33 +234,80 @@ export const assignmentService = {
                   console.log('💪 Sorted exercises for block:', block.name, 
                     sortedExercises.map(e => ({ name: e.exercises?.name, order: e.exercise_order })));
 
+                  // ΕΙΔΙΚΟΣ ΕΛΕΓΧΟΣ ΓΙΑ UPRIGHT ROW DB
+                  const uprightRowExercise = sortedExercises.find(e => 
+                    e.exercises?.name?.toLowerCase().includes('upright') && 
+                    e.exercises?.name?.toLowerCase().includes('row')
+                  );
+                  
+                  if (uprightRowExercise) {
+                    console.log('🔍 UPRIGHT ROW DETECTION:', {
+                      name: uprightRowExercise.exercises?.name,
+                      originalOrder: uprightRowExercise.exercise_order,
+                      blockName: block.name,
+                      allExercisesInBlock: sortedExercises.map(e => ({
+                        name: e.exercises?.name,
+                        order: e.exercise_order
+                      }))
+                    });
+                  }
+
                   for (const exercise of sortedExercises) {
                     if (!exercise.exercise_id) {
                       console.log('⚠️ Skipping exercise without exercise_id');
                       continue;
                     }
 
+                    // ΕΙΔΙΚΟΣ ΕΛΕΓΧΟΣ ΓΙΑ UPRIGHT ROW DB
+                    const isUprightRow = exercise.exercises?.name?.toLowerCase().includes('upright') && 
+                                        exercise.exercises?.name?.toLowerCase().includes('row');
+                    
+                    if (isUprightRow) {
+                      console.log('🚨 PROCESSING UPRIGHT ROW:', {
+                        exerciseName: exercise.exercises?.name,
+                        exerciseId: exercise.exercise_id,
+                        originalOrder: exercise.exercise_order,
+                        sets: exercise.sets,
+                        reps: exercise.reps,
+                        blockId: blockData.id,
+                        blockName: block.name
+                      });
+                    }
+
                     console.log('💪 Creating exercise:', exercise.exercises?.name || 'Unknown', 'with order:', exercise.exercise_order);
+
+                    const insertData = {
+                      block_id: blockData.id,
+                      exercise_id: exercise.exercise_id,
+                      sets: exercise.sets || 1,
+                      reps: exercise.reps || '',
+                      kg: exercise.kg || '',
+                      percentage_1rm: exercise.percentage_1rm ? parseFloat(exercise.percentage_1rm.toString()) : null,
+                      velocity_ms: exercise.velocity_ms ? parseFloat(exercise.velocity_ms.toString()) : null,
+                      tempo: exercise.tempo || '',
+                      rest: exercise.rest || '',
+                      notes: exercise.notes || '',
+                      exercise_order: exercise.exercise_order || 1 // ΚΡΙΤΙΚΟ: Διατηρούμε τη σειρά
+                    };
+
+                    if (isUprightRow) {
+                      console.log('🚨 UPRIGHT ROW INSERT DATA:', insertData);
+                    }
 
                     const { error: exerciseError } = await supabase
                       .from('program_exercises')
-                      .insert([{
-                        block_id: blockData.id,
-                        exercise_id: exercise.exercise_id,
-                        sets: exercise.sets || 1,
-                        reps: exercise.reps || '',
-                        kg: exercise.kg || '',
-                        percentage_1rm: exercise.percentage_1rm ? parseFloat(exercise.percentage_1rm.toString()) : null,
-                        velocity_ms: exercise.velocity_ms ? parseFloat(exercise.velocity_ms.toString()) : null,
-                        tempo: exercise.tempo || '',
-                        rest: exercise.rest || '',
-                        notes: exercise.notes || '',
-                        exercise_order: exercise.exercise_order || 1 // ΚΡΙΤΙΚΟ: Διατηρούμε τη σειρά
-                      }]);
+                      .insert([insertData]);
 
                     if (exerciseError) {
                       console.error('❌ Error creating exercise:', exerciseError);
+                      if (isUprightRow) {
+                        console.error('🚨 UPRIGHT ROW ERROR:', exerciseError);
+                      }
                       throw new Error(`Σφάλμα δημιουργίας άσκησης: ${exerciseError.message}`);
+                    }
+
+                    if (isUprightRow) {
+                      console.log('🚨 UPRIGHT ROW CREATED SUCCESSFULLY with order:', exercise.exercise_order);
                     }
 
                     console.log('✅ Exercise created successfully with order:', exercise.exercise_order);
