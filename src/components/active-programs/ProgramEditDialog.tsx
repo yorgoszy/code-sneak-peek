@@ -27,7 +27,7 @@ export const ProgramEditDialog: React.FC<ProgramEditDialogProps> = ({
 }) => {
   const [programData, setProgramData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const { data: exercises = [] } = useExercises();
+  const { exercises = [] } = useExercises();
 
   useEffect(() => {
     if (isOpen && assignment) {
