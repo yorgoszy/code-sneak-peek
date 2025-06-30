@@ -2,13 +2,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
+import { Play, Eye, Edit, CheckCircle, Sparkles, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
-import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { useExercises } from "@/hooks/useExercises";
-import { usePrograms } from "@/hooks/usePrograms";
+import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -35,10 +32,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 }) => {
   const [isProgramViewOpen, setIsProgramViewOpen] = useState(false);
   const [isDayProgramOpen, setIsDayProgramOpen] = useState(false);
-  const [isProgramBuilderOpen, setIsProgramBuilderOpen] = useState(false);
-  const { isAdmin } = useRoleCheck();
-  const { exercises = [] } = useExercises();
-  const { saveProgram } = usePrograms();
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -63,21 +57,8 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
     }
   };
 
-  const handleEditClick = () => {
-    setIsProgramBuilderOpen(true);
-  };
-
-  const handleProgramUpdate = async (programData: any) => {
-    try {
-      await saveProgram(programData);
-      if (onRefresh) {
-        onRefresh();
-      }
-      return { id: assignment.program_id };
-    } catch (error) {
-      console.error('Error updating program:', error);
-      throw error;
-    }
+  const handleAIChatClick = () => {
+    setIsAIChatOpen(true);
   };
 
   // Calculate workout status for selected date
@@ -95,15 +76,15 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         </Badge>
 
         <div className="flex gap-0.5">
-          {!userMode && isAdmin() && (
+          {!userMode && (
             <Button
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0 hover:bg-gray-100"
-              onClick={handleEditClick}
-              title="Επεξεργασία Προγράμματος"
+              onClick={handleAIChatClick}
+              title="Enhanced AI Chat"
             >
-              <Edit className="h-3 w-3" />
+              <Sparkles className="h-3 w-3" />
             </Button>
           )}
 
@@ -161,13 +142,12 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         />
       )}
 
-      <ProgramBuilderDialog
-        users={[]} // Passing empty array since we don't need users for editing
-        exercises={exercises}
-        onCreateProgram={handleProgramUpdate}
-        editingProgram={assignment.programs}
-        isOpen={isProgramBuilderOpen}
-        onOpenChange={() => setIsProgramBuilderOpen(false)}
+      <EnhancedAIChatDialog
+        isOpen={isAIChatOpen}
+        onClose={() => setIsAIChatOpen(false)}
+        athleteId={assignment.user_id}
+        athleteName={assignment.app_users?.name}
+        athletePhotoUrl={assignment.app_users?.photo_url}
       />
     </>
   );
