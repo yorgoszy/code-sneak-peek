@@ -1,12 +1,11 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExerciseItem } from './ExerciseItem';
 
 interface ProgramBlocksProps {
   blocks: any[];
   workoutInProgress: boolean;
-  getRemainingText: (exerciseId: string, totalSets: number) => string;
+  getRemainingText: (exerciseId: string) => string;
   isExerciseComplete: (exerciseId: string, totalSets: number) => boolean;
   onExerciseClick: (exercise: any, event: React.MouseEvent) => void;
   onSetClick: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
@@ -16,12 +15,12 @@ interface ProgramBlocksProps {
   clearNotes: (exerciseId: string) => void;
   updateKg: (exerciseId: string, kg: string) => void;
   clearKg: (exerciseId: string) => void;
-  updateVelocity: (exerciseId: string, velocity: number) => void;
+  updateVelocity: (exerciseId: string, velocity: string) => void;
   clearVelocity: (exerciseId: string) => void;
-  updateReps: (exerciseId: string, reps: number) => void;
+  updateReps: (exerciseId: string, reps: string) => void;
   clearReps: (exerciseId: string) => void;
-  selectedDate?: Date;
-  program?: any;
+  selectedDate: Date;
+  program: any;
 }
 
 export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
@@ -46,77 +45,52 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
 }) => {
   if (!blocks || blocks.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-none p-6 text-center text-gray-500">
+      <div className="text-center py-4 text-gray-500">
         Δεν υπάρχουν blocks για αυτή την ημέρα
       </div>
     );
   }
 
-  // Αν έχουμε μόνο ένα block, το εμφανίζουμε απλά χωρίς tabs
-  if (blocks.length === 1) {
-    const block = blocks[0];
-    return (
-      <div className="bg-gray-50 rounded-none border border-gray-200 p-3">
-        <h5 className="text-sm font-semibold text-gray-800 mb-2">
-          {block.name}
-        </h5>
-        
-        <div className="space-y-2">
-          {block.program_exercises?.map((exercise: any) => (
-            <ExerciseItem
-              key={exercise.id}
-              exercise={exercise}
-              workoutInProgress={workoutInProgress}
-              isComplete={isExerciseComplete(exercise.id, exercise.sets)}
-              remainingText={getRemainingText(exercise.id, exercise.sets)}
-              onExerciseClick={onExerciseClick}
-              onSetClick={onSetClick}
-              onVideoClick={onVideoClick}
-              getNotes={getNotes}
-              updateNotes={updateNotes}
-              clearNotes={clearNotes}
-              updateKg={updateKg}
-              clearKg={clearKg}
-              updateVelocity={updateVelocity}
-              clearVelocity={clearVelocity}
-              updateReps={updateReps}
-              clearReps={clearReps}
-              selectedDate={selectedDate}
-              program={program}
-              getRemainingText={getRemainingText}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινόμηση blocks με βάση block_order
+  const sortedBlocks = [...blocks].sort((a, b) => {
+    const orderA = Number(a.block_order) || 0;
+    const orderB = Number(b.block_order) || 0;
+    return orderA - orderB;
+  });
 
-  // Αν έχουμε πολλά blocks, τα εμφανίζουμε ως tabs
+  console.log('🔧 ProgramBlocks: Rendering blocks with correct order:', 
+    sortedBlocks.map(b => ({ name: b.name, order: b.block_order }))
+  );
+
   return (
-    <Tabs defaultValue={blocks[0]?.id} className="w-full">
-      <TabsList className="grid w-full rounded-none" style={{gridTemplateColumns: `repeat(${blocks.length}, 1fr)`}}>
-        {blocks.map((block) => (
-          <TabsTrigger 
-            key={block.id} 
-            value={block.id}
-            className="rounded-none text-sm"
-          >
-            {block.name}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-      
-      {blocks.map((block) => (
-        <TabsContent key={block.id} value={block.id} className="mt-3">
-          <div className="bg-gray-50 rounded-none border border-gray-200 p-3">
-            <div className="space-y-2">
-              {block.program_exercises?.map((exercise: any) => (
+    <div className="space-y-4">
+      {sortedBlocks.map((block, blockIndex) => {
+        // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινόμηση ασκήσεων με βάση exercise_order
+        const sortedExercises = [...(block.program_exercises || [])].sort((a, b) => {
+          const orderA = Number(a.exercise_order) || 0;
+          const orderB = Number(b.exercise_order) || 0;
+          console.log(`🔧 ProgramBlocks: Sorting exercises: ${a.exercises?.name} (${orderA}) vs ${b.exercises?.name} (${orderB})`);
+          return orderA - orderB;
+        });
+
+        console.log(`🔧 ProgramBlocks: Block "${block.name}" final exercise order:`, 
+          sortedExercises.map((ex, idx) => `${idx + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`)
+        );
+
+        return (
+          <div key={block.id} className="bg-white border border-gray-200 rounded-none">
+            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h4 className="font-medium text-gray-900">{block.name}</h4>
+            </div>
+            <div className="p-4 space-y-3">
+              {sortedExercises.map((exercise, exerciseIndex) => (
                 <ExerciseItem
                   key={exercise.id}
                   exercise={exercise}
+                  exerciseNumber={exerciseIndex + 1}
                   workoutInProgress={workoutInProgress}
-                  isComplete={isExerciseComplete(exercise.id, exercise.sets)}
-                  remainingText={getRemainingText(exercise.id, exercise.sets)}
+                  getRemainingText={getRemainingText}
+                  isExerciseComplete={isExerciseComplete}
                   onExerciseClick={onExerciseClick}
                   onSetClick={onSetClick}
                   onVideoClick={onVideoClick}
@@ -131,13 +105,12 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                   clearReps={clearReps}
                   selectedDate={selectedDate}
                   program={program}
-                  getRemainingText={getRemainingText}
                 />
               ))}
             </div>
           </div>
-        </TabsContent>
-      ))}
-    </Tabs>
+        );
+      })}
+    </div>
   );
 };
