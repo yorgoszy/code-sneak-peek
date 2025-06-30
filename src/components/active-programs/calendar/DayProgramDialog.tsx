@@ -67,55 +67,53 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     }
   };
 
-  // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Σωστός υπολογισμός εβδομάδας και ημέρας
+  // ΚΥΡΙΑ ΔΙΟΡΘΩΣΗ: Απλή λογική εύρεσης προγράμματος ημέρας
   const getDayProgram = () => {
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
     const trainingDates = program.training_dates || [];
     const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
     
+    console.log('🔍 DayProgram search:', {
+      selectedDateStr,
+      dateIndex,
+      trainingDatesLength: trainingDates.length
+    });
+    
     if (dateIndex === -1) {
-      console.log('❌ Date not found in training dates:', selectedDateStr);
+      console.log('❌ Date not found in training dates');
       return null;
     }
 
     const weeks = program.programs?.program_weeks || [];
     if (weeks.length === 0) {
-      console.log('❌ No weeks found in program');
+      console.log('❌ No weeks found');
       return null;
     }
 
-    // Υπολογίζουμε σε ποια εβδομάδα και ημέρα βρισκόμαστε
-    let totalDaysProcessed = 0;
-    let targetWeek = null;
-    let targetDay = null;
+    // Βρίσκουμε τη συνολική ημέρα στο πρόγραμμα
+    let dayProgram = null;
+    let currentDayCount = 0;
 
     for (const week of weeks) {
       const daysInWeek = week.program_days?.length || 0;
       
-      if (dateIndex >= totalDaysProcessed && dateIndex < totalDaysProcessed + daysInWeek) {
-        // Βρήκαμε την εβδομάδα
-        targetWeek = week;
-        const dayIndexInWeek = dateIndex - totalDaysProcessed;
-        targetDay = week.program_days?.[dayIndexInWeek] || null;
+      if (dateIndex >= currentDayCount && dateIndex < currentDayCount + daysInWeek) {
+        const dayIndexInWeek = dateIndex - currentDayCount;
+        dayProgram = week.program_days?.[dayIndexInWeek] || null;
+        
+        console.log('✅ Found program:', {
+          weekName: week.name,
+          dayName: dayProgram?.name,
+          dayIndexInWeek,
+          currentDayCount
+        });
         break;
       }
       
-      totalDaysProcessed += daysInWeek;
+      currentDayCount += daysInWeek;
     }
 
-    if (!targetWeek || !targetDay) {
-      console.log('❌ Could not find target week/day for dateIndex:', dateIndex);
-      return null;
-    }
-
-    console.log('🎯 Found target program:', {
-      dateIndex,
-      weekName: targetWeek.name,
-      dayName: targetDay.name,
-      totalDaysProcessed
-    });
-
-    return targetDay;
+    return dayProgram;
   };
 
   const dayProgram = getDayProgram();
