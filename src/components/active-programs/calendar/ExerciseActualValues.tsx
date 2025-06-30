@@ -1,20 +1,22 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Input } from "@/components/ui/input";
-import { getWorkoutData, saveWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
+import { getWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 
 interface ExerciseActualValuesProps {
   exercise: any;
   workoutInProgress: boolean;
-  updateReps: (exerciseId: string, reps: number) => void;
+  updateReps: (exerciseId: string, reps: string) => void;
   updateKg: (exerciseId: string, kg: string) => void;
-  updateVelocity: (exerciseId: string, velocity: number) => void;
+  updateVelocity: (exerciseId: string, velocity: string) => void;
   getNotes: (exerciseId: string) => string;
   updateNotes: (exerciseId: string, notes: string) => void;
   selectedDate?: Date;
   program?: any;
-  onSetClick?: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
-  getRemainingText?: (exerciseId: string, totalSets: number) => string;
+  onSetClick: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
+  getRemainingText: (exerciseId: string) => string;
 }
 
 export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
@@ -23,154 +25,84 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
   updateReps,
   updateKg,
   updateVelocity,
-  getNotes,
-  updateNotes,
   selectedDate,
   program,
   onSetClick,
   getRemainingText
 }) => {
-  const [actualKg, setActualKg] = useState('');
-  const [actualReps, setActualReps] = useState('');
-  const [actualVelocity, setActualVelocity] = useState('');
-  const [calculatedPercentage, setCalculatedPercentage] = useState('');
-  
-  // Load data from previous week
-  useEffect(() => {
-    if (selectedDate && program) {
-      const data = getWorkoutData(selectedDate, program.id, exercise.id);
-      if (data.kg) setActualKg(data.kg);
-      if (data.reps) setActualReps(data.reps);
-      if (data.velocity) setActualVelocity(data.velocity);
-    }
-  }, [selectedDate, program, exercise.id]);
-
-  // Calculate percentage when actual kg changes
-  useEffect(() => {
-    if (actualKg && exercise.kg) {
-      const plannedKg = parseFloat(exercise.kg);
-      const actualKgNum = parseFloat(actualKg);
-      const plannedPercentage = exercise.percentage_1rm || 0;
-      
-      if (plannedKg > 0 && actualKgNum > 0 && plannedPercentage > 0) {
-        const newPercentage = (actualKgNum / plannedKg) * plannedPercentage;
-        setCalculatedPercentage(Math.round(newPercentage).toString());
-      } else {
-        setCalculatedPercentage('');
-      }
-    } else {
-      setCalculatedPercentage('');
-    }
-  }, [actualKg, exercise.kg, exercise.percentage_1rm]);
-
-  const handleKgChange = (value: string) => {
-    setActualKg(value);
-    if (workoutInProgress) {
-      updateKg(exercise.id, value);
-    }
-    
-    if (selectedDate && program) {
-      saveWorkoutData(selectedDate, program.id, exercise.id, { kg: value });
-    }
-  };
+  // Get saved data from localStorage
+  const savedData = selectedDate && program ? 
+    getWorkoutData(selectedDate, program.programs?.id || program.id, exercise.id) : 
+    {};
 
   const handleRepsChange = (value: string) => {
-    setActualReps(value);
-    if (workoutInProgress) {
-      updateReps(exercise.id, parseInt(value) || 0);
-    }
-    
-    if (selectedDate && program) {
-      saveWorkoutData(selectedDate, program.id, exercise.id, { reps: value });
-    }
+    updateReps(exercise.id, value);
+  };
+
+  const handleKgChange = (value: string) => {
+    updateKg(exercise.id, value);
   };
 
   const handleVelocityChange = (value: string) => {
-    setActualVelocity(value);
-    if (workoutInProgress) {
-      updateVelocity(exercise.id, parseFloat(value) || 0);
-    }
-    
-    if (selectedDate && program) {
-      saveWorkoutData(selectedDate, program.id, exercise.id, { velocity: value });
-    }
+    updateVelocity(exercise.id, value);
   };
 
   const handleSetClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    if (onSetClick) {
+    if (workoutInProgress) {
       onSetClick(exercise.id, exercise.sets, event);
     }
   };
 
-  const remainingText = getRemainingText ? getRemainingText(exercise.id, exercise.sets) : '';
-  
-  // Extract only the number from the remaining text
-  const remainingNumber = remainingText.match(/\d+/)?.[0] || '';
-  
-  // Check if exercise is complete (when remaining text contains checkmark or remaining is 0)
-  const isComplete = remainingText.includes('✅') || remainingNumber === '0';
+  if (!workoutInProgress) {
+    return null;
+  }
 
   return (
-    <div className="grid grid-cols-7 gap-0 text-[10px]">
-      <div className="text-center">
-        {workoutInProgress && onSetClick ? (
-          <button
-            onClick={handleSetClick}
-            className="w-full h-6 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-[9px] font-medium cursor-pointer transition-colors px-0 flex items-center justify-center"
-          >
-            {isComplete ? '0' : remainingNumber}
-          </button>
-        ) : (
-          <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] h-6 flex items-center justify-center">-</div>
-        )}
-      </div>
-      <div className="text-center">
+    <div className="mt-3 grid grid-cols-3 gap-2">
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Actual Reps</label>
         <Input
-          type="number"
-          value={actualReps}
+          type="text"
+          placeholder={exercise.reps?.toString() || ''}
+          value={savedData.reps || ''}
           onChange={(e) => handleRepsChange(e.target.value)}
-          className="h-6 text-[9px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
-          placeholder={exercise.reps || ''}
-          disabled={!workoutInProgress}
+          className="h-8 text-xs rounded-none"
         />
       </div>
-      <div className="text-center">
-        {calculatedPercentage ? (
-          <div className="bg-red-50 px-0 py-0.5 rounded-none text-[9px] text-red-600 font-medium h-6 flex items-center justify-center">
-            {calculatedPercentage}%
-          </div>
-        ) : (
-          <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] h-6 flex items-center justify-center">-</div>
-        )}
-      </div>
-      <div className="text-center">
+      
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Actual Weight (kg)</label>
         <Input
-          type="number"
-          step="0.5"
-          value={actualKg}
+          type="text"
+          placeholder={exercise.kg?.toString() || ''}
+          value={savedData.kg || ''}
           onChange={(e) => handleKgChange(e.target.value)}
-          className="h-6 text-[9px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
-          placeholder={exercise.kg || ''}
-          disabled={!workoutInProgress}
+          className="h-8 text-xs rounded-none"
         />
       </div>
-      <div className="text-center">
+      
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">Velocity (m/s)</label>
         <Input
-          type="number"
-          step="0.01"
-          value={actualVelocity}
+          type="text"
+          placeholder={exercise.velocity_ms?.toString() || ''}
+          value={savedData.velocity || ''}
           onChange={(e) => handleVelocityChange(e.target.value)}
-          className="h-6 text-[9px] rounded-none text-center p-0 px-0 text-red-600 font-medium no-spinners border-0"
-          placeholder={exercise.velocity_ms || ''}
-          disabled={!workoutInProgress}
+          className="h-8 text-xs rounded-none"
         />
       </div>
-      <div className="text-center flex items-stretch h-full">
-        <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] flex-1 h-6 flex items-center justify-center">-</div>
-      </div>
-      <div className="text-center flex items-stretch h-full">
-        <div className="bg-gray-200 px-0 py-0.5 rounded-none text-[9px] flex-1 h-6 flex items-center justify-center">-</div>
+
+      <div className="col-span-3 mt-2">
+        <Button
+          onClick={handleSetClick}
+          variant="outline"
+          size="sm"
+          className="w-full h-8 text-xs rounded-none"
+          disabled={!workoutInProgress}
+        >
+          Complete Set {getRemainingText(exercise.id)}
+        </Button>
       </div>
     </div>
   );
