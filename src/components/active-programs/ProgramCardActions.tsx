@@ -2,10 +2,9 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Eye, Edit, CheckCircle, Sparkles, Trash2 } from "lucide-react";
+import { Play, Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
-import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -32,7 +31,6 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 }) => {
   const [isProgramViewOpen, setIsProgramViewOpen] = useState(false);
   const [isDayProgramOpen, setIsDayProgramOpen] = useState(false);
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -57,10 +55,6 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
     }
   };
 
-  const handleAIChatClick = () => {
-    setIsAIChatOpen(true);
-  };
-
   // Calculate workout status for selected date
   const workoutStatus = selectedDate ? (() => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -81,10 +75,10 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0 hover:bg-gray-100"
-              onClick={handleAIChatClick}
-              title="Enhanced AI Chat"
+              onClick={() => setIsProgramViewOpen(true)}
+              title="Επεξεργασία Προγράμματος"
             >
-              <Sparkles className="h-3 w-3" />
+              <Edit className="h-3 w-3" />
             </Button>
           )}
 
@@ -129,6 +123,8 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         onClose={() => setIsProgramViewOpen(false)}
         assignment={assignment}
         onStartWorkout={handleStartWorkout}
+        editMode={!userMode}
+        onRefresh={onRefresh}
       />
 
       {selectedDate && (
@@ -141,14 +137,6 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
           onRefresh={onRefresh}
         />
       )}
-
-      <EnhancedAIChatDialog
-        isOpen={isAIChatOpen}
-        onClose={() => setIsAIChatOpen(false)}
-        athleteId={assignment.user_id}
-        athleteName={assignment.app_users?.name}
-        athletePhotoUrl={assignment.app_users?.photo_url}
-      />
     </>
   );
 };
