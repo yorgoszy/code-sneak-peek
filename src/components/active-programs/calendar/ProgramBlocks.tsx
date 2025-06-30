@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExerciseItem } from './ExerciseItem';
 
 interface ProgramBlocksProps {
@@ -51,7 +52,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
     );
   }
 
-  // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινόμηση blocks με βάση block_order
+  // Ταξινόμηση blocks με βάση block_order
   const sortedBlocks = [...blocks].sort((a, b) => {
     const orderA = Number(a.block_order) || 0;
     const orderB = Number(b.block_order) || 0;
@@ -62,10 +63,65 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
     sortedBlocks.map(b => ({ name: b.name, order: b.block_order }))
   );
 
+  // Αν έχουμε μόνο ένα block, εμφανίζουμε χωρίς tabs
+  if (sortedBlocks.length === 1) {
+    const block = sortedBlocks[0];
+    
+    // Ταξινόμηση ασκήσεων με βάση exercise_order
+    const sortedExercises = [...(block.program_exercises || [])].sort((a, b) => {
+      const orderA = Number(a.exercise_order) || 0;
+      const orderB = Number(b.exercise_order) || 0;
+      return orderA - orderB;
+    });
+
+    return (
+      <div className="bg-white border border-gray-200 rounded-none">
+        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+          <h4 className="font-medium text-gray-900">{block.name}</h4>
+        </div>
+        <div className="p-4 space-y-3">
+          {sortedExercises.map((exercise, exerciseIndex) => (
+            <ExerciseItem
+              key={exercise.id}
+              exercise={exercise}
+              exerciseNumber={exerciseIndex + 1}
+              workoutInProgress={workoutInProgress}
+              getRemainingText={getRemainingText}
+              isExerciseComplete={isExerciseComplete}
+              onExerciseClick={onExerciseClick}
+              onSetClick={onSetClick}
+              onVideoClick={onVideoClick}
+              getNotes={getNotes}
+              updateNotes={updateNotes}
+              clearNotes={clearNotes}
+              updateKg={updateKg}
+              clearKg={clearKg}
+              updateVelocity={updateVelocity}
+              clearVelocity={clearVelocity}
+              updateReps={updateReps}
+              clearReps={clearReps}
+              selectedDate={selectedDate}
+              program={program}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Αν έχουμε πολλαπλά blocks, εμφανίζουμε με tabs
   return (
-    <div className="space-y-4">
-      {sortedBlocks.map((block, blockIndex) => {
-        // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινόμηση ασκήσεων με βάση exercise_order
+    <Tabs defaultValue={sortedBlocks[0]?.id} className="w-full">
+      <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${sortedBlocks.length}, 1fr)` }}>
+        {sortedBlocks.map((block) => (
+          <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
+            {block.name}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      
+      {sortedBlocks.map((block) => {
+        // Ταξινόμηση ασκήσεων με βάση exercise_order για κάθε block
         const sortedExercises = [...(block.program_exercises || [])].sort((a, b) => {
           const orderA = Number(a.exercise_order) || 0;
           const orderB = Number(b.exercise_order) || 0;
@@ -78,39 +134,41 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
         );
 
         return (
-          <div key={block.id} className="bg-white border border-gray-200 rounded-none">
-            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-              <h4 className="font-medium text-gray-900">{block.name}</h4>
+          <TabsContent key={block.id} value={block.id} className="mt-2">
+            <div className="bg-white border border-gray-200 rounded-none">
+              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                <h4 className="font-medium text-gray-900">{block.name}</h4>
+              </div>
+              <div className="p-4 space-y-3">
+                {sortedExercises.map((exercise, exerciseIndex) => (
+                  <ExerciseItem
+                    key={exercise.id}
+                    exercise={exercise}
+                    exerciseNumber={exerciseIndex + 1}
+                    workoutInProgress={workoutInProgress}
+                    getRemainingText={getRemainingText}
+                    isExerciseComplete={isExerciseComplete}
+                    onExerciseClick={onExerciseClick}
+                    onSetClick={onSetClick}
+                    onVideoClick={onVideoClick}
+                    getNotes={getNotes}
+                    updateNotes={updateNotes}
+                    clearNotes={clearNotes}
+                    updateKg={updateKg}
+                    clearKg={clearKg}
+                    updateVelocity={updateVelocity}
+                    clearVelocity={clearVelocity}
+                    updateReps={updateReps}
+                    clearReps={clearReps}
+                    selectedDate={selectedDate}
+                    program={program}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="p-4 space-y-3">
-              {sortedExercises.map((exercise, exerciseIndex) => (
-                <ExerciseItem
-                  key={exercise.id}
-                  exercise={exercise}
-                  exerciseNumber={exerciseIndex + 1}
-                  workoutInProgress={workoutInProgress}
-                  getRemainingText={getRemainingText}
-                  isExerciseComplete={isExerciseComplete}
-                  onExerciseClick={onExerciseClick}
-                  onSetClick={onSetClick}
-                  onVideoClick={onVideoClick}
-                  getNotes={getNotes}
-                  updateNotes={updateNotes}
-                  clearNotes={clearNotes}
-                  updateKg={updateKg}
-                  clearKg={clearKg}
-                  updateVelocity={updateVelocity}
-                  clearVelocity={clearVelocity}
-                  updateReps={updateReps}
-                  clearReps={clearReps}
-                  selectedDate={selectedDate}
-                  program={program}
-                />
-              ))}
-            </div>
-          </div>
+          </TabsContent>
         );
       })}
-    </div>
+    </Tabs>
   );
 };
