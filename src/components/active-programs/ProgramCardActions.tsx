@@ -5,8 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Play, Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
-import { ProgramEditDialog } from "./ProgramEditDialog";
+import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useUsers } from "@/hooks/useUsers";
+import { useExercises } from "@/hooks/useExercises";
+import { usePrograms } from "@/hooks/usePrograms";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -33,8 +36,11 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 }) => {
   const [isProgramViewOpen, setIsProgramViewOpen] = useState(false);
   const [isDayProgramOpen, setIsDayProgramOpen] = useState(false);
-  const [isProgramEditOpen, setIsProgramEditOpen] = useState(false);
+  const [isProgramBuilderOpen, setIsProgramBuilderOpen] = useState(false);
   const { isAdmin } = useRoleCheck();
+  const { data: users = [] } = useUsers();
+  const { exercises = [] } = useExercises();
+  const { updateProgram } = usePrograms();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -60,7 +66,20 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   };
 
   const handleEditClick = () => {
-    setIsProgramEditOpen(true);
+    setIsProgramBuilderOpen(true);
+  };
+
+  const handleProgramUpdate = async (programData: any) => {
+    try {
+      await updateProgram(assignment.program_id, programData);
+      if (onRefresh) {
+        onRefresh();
+      }
+      return { id: assignment.program_id };
+    } catch (error) {
+      console.error('Error updating program:', error);
+      throw error;
+    }
   };
 
   // Calculate workout status for selected date
@@ -144,11 +163,13 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         />
       )}
 
-      <ProgramEditDialog
-        isOpen={isProgramEditOpen}
-        onClose={() => setIsProgramEditOpen(false)}
-        assignment={assignment}
-        onRefresh={onRefresh}
+      <ProgramBuilderDialog
+        users={users}
+        exercises={exercises}
+        onCreateProgram={handleProgramUpdate}
+        editingProgram={assignment.programs}
+        isOpen={isProgramBuilderOpen}
+        onOpenChange={() => setIsProgramBuilderOpen(false)}
       />
     </>
   );
