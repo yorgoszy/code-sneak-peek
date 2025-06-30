@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Eye, Edit, CheckCircle, Sparkles, Trash2 } from "lucide-react";
+import { Play, Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
-import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
+import { ProgramEditDialog } from "./ProgramEditDialog";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { format } from "date-fns";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -32,7 +33,8 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 }) => {
   const [isProgramViewOpen, setIsProgramViewOpen] = useState(false);
   const [isDayProgramOpen, setIsDayProgramOpen] = useState(false);
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [isProgramEditOpen, setIsProgramEditOpen] = useState(false);
+  const { isAdmin } = useRoleCheck();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -57,8 +59,8 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
     }
   };
 
-  const handleAIChatClick = () => {
-    setIsAIChatOpen(true);
+  const handleEditClick = () => {
+    setIsProgramEditOpen(true);
   };
 
   // Calculate workout status for selected date
@@ -76,15 +78,15 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         </Badge>
 
         <div className="flex gap-0.5">
-          {!userMode && (
+          {!userMode && isAdmin() && (
             <Button
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0 hover:bg-gray-100"
-              onClick={handleAIChatClick}
-              title="Enhanced AI Chat"
+              onClick={handleEditClick}
+              title="Επεξεργασία Προγράμματος"
             >
-              <Sparkles className="h-3 w-3" />
+              <Edit className="h-3 w-3" />
             </Button>
           )}
 
@@ -142,12 +144,11 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         />
       )}
 
-      <EnhancedAIChatDialog
-        isOpen={isAIChatOpen}
-        onClose={() => setIsAIChatOpen(false)}
-        athleteId={assignment.user_id}
-        athleteName={assignment.app_users?.name}
-        athletePhotoUrl={assignment.app_users?.photo_url}
+      <ProgramEditDialog
+        isOpen={isProgramEditOpen}
+        onClose={() => setIsProgramEditOpen(false)}
+        assignment={assignment}
+        onRefresh={onRefresh}
       />
     </>
   );
