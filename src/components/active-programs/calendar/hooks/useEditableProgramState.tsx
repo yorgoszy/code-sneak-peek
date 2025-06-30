@@ -1,0 +1,83 @@
+
+import { useState, useEffect } from 'react';
+import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
+import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+
+export const useEditableProgramState = (
+  isOpen: boolean,
+  assignment: EnrichedAssignment | null
+) => {
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
+  const [completions, setCompletions] = useState<any[]>([]);
+  const [dayProgramOpen, setDayProgramOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<any>(null);
+  const [selectedWeek, setSelectedWeek] = useState<any>(null);
+  const [programData, setProgramData] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const { getWorkoutCompletions } = useWorkoutCompletions();
+
+  useEffect(() => {
+    if (isOpen && assignment?.id) {
+      fetchCompletions();
+      setProgramData(assignment.programs);
+    }
+  }, [isOpen, assignment?.id]);
+
+  const fetchCompletions = async () => {
+    if (!assignment?.id) return;
+    try {
+      const data = await getWorkoutCompletions(assignment.id);
+      setCompletions(data);
+    } catch (error) {
+      console.error('Error fetching completions:', error);
+    }
+  };
+
+  const isWorkoutCompleted = (weekNumber: number, dayNumber: number) => {
+    if (!assignment?.training_dates) return false;
+    
+    const program = assignment.programs;
+    if (!program?.program_weeks?.[0]?.program_days) return false;
+    
+    const daysPerWeek = program.program_weeks[0].program_days.length;
+    const totalDayIndex = ((weekNumber - 1) * daysPerWeek) + (dayNumber - 1);
+    
+    if (totalDayIndex >= assignment.training_dates.length) return false;
+    
+    const dateStr = assignment.training_dates[totalDayIndex];
+    
+    return completions.some(c => 
+      c.scheduled_date === dateStr && 
+      c.status === 'completed'
+    );
+  };
+
+  const isWeekCompleted = (weekNumber: number, totalDaysInWeek: number) => {
+    let completedDays = 0;
+    for (let dayNumber = 1; dayNumber <= totalDaysInWeek; dayNumber++) {
+      if (isWorkoutCompleted(weekNumber, dayNumber)) {
+        completedDays++;
+      }
+    }
+    return completedDays === totalDaysInWeek;
+  };
+
+  return {
+    selectedWeekIndex,
+    setSelectedWeekIndex,
+    completions,
+    dayProgramOpen,
+    setDayProgramOpen,
+    selectedDay,
+    setSelectedDay,
+    selectedWeek,
+    setSelectedWeek,
+    programData,
+    setProgramData,
+    isEditing,
+    setIsEditing,
+    fetchCompletions,
+    isWorkoutCompleted,
+    isWeekCompleted
+  };
+};
