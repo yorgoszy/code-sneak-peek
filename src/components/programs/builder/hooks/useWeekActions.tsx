@@ -29,12 +29,17 @@ export const useWeekActions = (
 
     console.log('🚨 [DUPLICATE WEEK] Original week structure before duplication:', weekToDuplicate);
 
-    // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Χειροκίνητη δημιουργία αντιγράφου χωρίς JSON.parse
-    // για να διατηρήσουμε τη σύνδεση με το reactive state
-    const newWeek = {
-      id: generateId(),
-      name: `${weekToDuplicate.name} (Αντίγραφο)`,
-      week_number: (program.weeks?.length || 0) + 1,
+    // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε το existing program state
+    // και κάνουμε update μέσω του updateProgram για reactive state
+    const newWeekId = generateId();
+    const newWeekName = `${weekToDuplicate.name} (Αντίγραφο)`;
+    const newWeekNumber = (program.weeks?.length || 0) + 1;
+
+    // Δημιουργούμε το νέο week structure
+    const newWeekData = {
+      id: newWeekId,
+      name: newWeekName,
+      week_number: newWeekNumber,
       program_days: weekToDuplicate.program_days.map(day => {
         console.log(`🚨 [DUPLICATE WEEK] Processing day: ${day.name}`);
         
@@ -86,10 +91,10 @@ export const useWeekActions = (
       })
     };
 
-    console.log('🚨 [DUPLICATE WEEK] New week structure after duplication:', newWeek);
+    console.log('🚨 [DUPLICATE WEEK] New week structure after duplication:', newWeekData);
 
     // Έλεγχος ότι η σειρά διατηρήθηκε
-    newWeek.program_days.forEach((day, dayIndex) => {
+    newWeekData.program_days.forEach((day, dayIndex) => {
       console.log(`🚨 [DUPLICATE WEEK FINAL CHECK] Day ${dayIndex + 1}: ${day.name}`);
       day.program_blocks.forEach((block, blockIndex) => {
         console.log(`🚨 [DUPLICATE WEEK FINAL CHECK] Block ${blockIndex + 1}: ${block.name}`);
@@ -101,8 +106,11 @@ export const useWeekActions = (
       });
     });
 
-    const updatedWeeks = [...(program.weeks || []), newWeek];
+    // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε το updateProgram για να διατηρήσουμε το reactive state
+    const updatedWeeks = [...(program.weeks || []), newWeekData];
     updateProgram({ weeks: updatedWeeks });
+
+    console.log('🚨 [DUPLICATE WEEK] Week added to program via updateProgram - changes will be reactive');
   };
 
   const updateWeekName = (weekId: string, name: string) => {
