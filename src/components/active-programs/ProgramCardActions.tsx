@@ -7,7 +7,6 @@ import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
 import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { useUsers } from "@/hooks/useUsers";
 import { useExercises } from "@/hooks/useExercises";
 import { usePrograms } from "@/hooks/usePrograms";
 import { format } from "date-fns";
@@ -38,9 +37,8 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   const [isDayProgramOpen, setIsDayProgramOpen] = useState(false);
   const [isProgramBuilderOpen, setIsProgramBuilderOpen] = useState(false);
   const { isAdmin } = useRoleCheck();
-  const { data: users = [] } = useUsers();
   const { exercises = [] } = useExercises();
-  const { updateProgram } = usePrograms();
+  const { saveProgram } = usePrograms();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -71,7 +69,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 
   const handleProgramUpdate = async (programData: any) => {
     try {
-      await updateProgram(assignment.program_id, programData);
+      await saveProgram(programData);
       if (onRefresh) {
         onRefresh();
       }
@@ -164,7 +162,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
       )}
 
       <ProgramBuilderDialog
-        users={users}
+        users={[]} // Passing empty array since we don't need users for editing
         exercises={exercises}
         onCreateProgram={handleProgramUpdate}
         editingProgram={assignment.programs}
