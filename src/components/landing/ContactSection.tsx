@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { trackContactForm } from "@/components/analytics/AnalyticsEvents";
 
-export const ContactSection = () => {
+const ContactSection = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -173,3 +173,5 @@ export const ContactSection = () => {
     </section>
   );
 };
+
+export default ContactSection;
