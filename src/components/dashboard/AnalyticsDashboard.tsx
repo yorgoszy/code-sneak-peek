@@ -217,3 +217,6 @@ export const AnalyticsDashboard: React.FC = () => {
     </div>
   );
 };
+
+// Default export
+export default AnalyticsDashboard;
