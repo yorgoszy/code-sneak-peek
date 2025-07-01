@@ -40,24 +40,29 @@ export const SortableDay: React.FC<SortableDayProps> = ({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={`${isDragging ? 'opacity-50' : ''}`}>
+    <div ref={setNodeRef} style={style} className={`${isDragging ? 'opacity-50' : ''} flex-1`}>
       <TabsTrigger 
         value={dayIndex.toString()} 
-        className="rounded-none text-xs flex items-center gap-1 relative"
+        className={`
+          rounded-none flex items-center gap-1 relative w-full
+          ${isEditing ? 'h-6 text-xs px-1' : 'text-xs'}
+        `}
         onDoubleClick={onDoubleClick}
       >
         {isEditing && (
           <div
             {...attributes}
             {...listeners}
-            className="absolute left-1 cursor-move"
+            className="absolute left-0.5 cursor-move z-10"
           >
-            <GripVertical className="w-3 h-3 text-gray-400" />
+            <GripVertical className="w-2 h-2 text-gray-400" />
           </div>
         )}
-        <div className={`flex items-center gap-1 ${isEditing ? 'ml-4' : ''}`}>
-          {isDayCompleted && <CheckCircle className="w-3 h-3 text-[#00ffba]" />}
-          {day.name || `Ημέρα ${day.day_number}`}
+        <div className={`flex items-center gap-0.5 ${isEditing ? 'ml-3 text-xs' : ''} truncate`}>
+          {isDayCompleted && <CheckCircle className="w-2 h-2 text-[#00ffba] flex-shrink-0" />}
+          <span className="truncate text-xs">
+            {day.name || `Ημέρα ${day.day_number}`}
+          </span>
         </div>
       </TabsTrigger>
     </div>

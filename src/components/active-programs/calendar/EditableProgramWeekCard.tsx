@@ -71,7 +71,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
                 items={(week.program_days || []).map((day: any) => day.id)} 
                 strategy={horizontalListSortingStrategy}
               >
-                <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${week.program_days?.length || 1}, 1fr)` }}>
+                <TabsList className="flex w-full rounded-none gap-0 h-6 p-0">
                   {week.program_days?.map((day: any, dayIndex: number) => {
                     const isDayCompleted = isWorkoutCompleted(week.week_number, day.day_number);
                     
