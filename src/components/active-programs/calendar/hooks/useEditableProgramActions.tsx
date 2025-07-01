@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -279,12 +278,54 @@ export const useEditableProgramActions = (
     }
   };
 
+  const reorderDays = async (weekId: string, oldIndex: number, newIndex: number, setProgramData: (data: any) => void) => {
+    try {
+      console.log('🔄 Αναδιάταξη ημερών...');
+      
+      // Ενημέρωση του local state
+      const updatedProgram = { ...programData };
+      const week = updatedProgram.program_weeks?.find((w: any) => w.id === weekId);
+      
+      if (week && week.program_days) {
+        const days = [...week.program_days];
+        const [movedDay] = days.splice(oldIndex, 1);
+        days.splice(newIndex, 0, movedDay);
+        
+        // Ενημέρωση day_number για κάθε ημέρα
+        days.forEach((day: any, index: number) => {
+          day.day_number = index + 1;
+        });
+        
+        week.program_days = days;
+        setProgramData(updatedProgram);
+        
+        // Ενημέρωση στη βάση δεδομένων
+        for (const day of days) {
+          await supabase
+            .from('program_days')
+            .update({
+              day_number: day.day_number,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', day.id);
+        }
+        
+        console.log('✅ Ημέρες αναδιατάχθηκαν επιτυχώς');
+      }
+      
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την αναδιάταξη ημερών:', error);
+      toast.error('Σφάλμα κατά την αναδιάταξη ημερών');
+    }
+  };
+
   return {
     saveChanges,
     addNewBlock,
     removeBlock,
     addExercise,
     removeExercise,
-    updateExercise
+    updateExercise,
+    reorderDays
   };
 };
