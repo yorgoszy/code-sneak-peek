@@ -1,27 +1,27 @@
 
-import { useState, useEffect } from 'react';
-import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
+import React, { useState, useEffect } from 'react';
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
-export const useEditableProgramState = (
-  isOpen: boolean,
-  assignment: EnrichedAssignment | null
-) => {
+export const useEditableProgramState = (isOpen: boolean, assignment: EnrichedAssignment | null) => {
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [completions, setCompletions] = useState<any[]>([]);
   const [dayProgramOpen, setDayProgramOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<any>(null);
   const [selectedWeek, setSelectedWeek] = useState<any>(null);
   const [programData, setProgramData] = useState<any>(null);
+  const [originalProgramData, setOriginalProgramData] = useState<any>(null); // Backup για ακύρωση
   const [isEditing, setIsEditing] = useState(false);
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   useEffect(() => {
-    if (isOpen && assignment?.id) {
+    if (isOpen && assignment?.programs) {
+      const programDataCopy = JSON.parse(JSON.stringify(assignment.programs));
+      setProgramData(programDataCopy);
+      setOriginalProgramData(JSON.parse(JSON.stringify(programDataCopy))); // Backup
       fetchCompletions();
-      setProgramData(assignment.programs);
     }
-  }, [isOpen, assignment?.id]);
+  }, [isOpen, assignment]);
 
   const fetchCompletions = async () => {
     if (!assignment?.id) return;
@@ -62,6 +62,18 @@ export const useEditableProgramState = (
     return completedDays === totalDaysInWeek;
   };
 
+  const resetToOriginal = () => {
+    if (originalProgramData) {
+      setProgramData(JSON.parse(JSON.stringify(originalProgramData)));
+    }
+  };
+
+  const updateOriginalData = () => {
+    if (programData) {
+      setOriginalProgramData(JSON.parse(JSON.stringify(programData)));
+    }
+  };
+
   return {
     selectedWeekIndex,
     setSelectedWeekIndex,
@@ -74,10 +86,13 @@ export const useEditableProgramState = (
     setSelectedWeek,
     programData,
     setProgramData,
+    originalProgramData,
     isEditing,
     setIsEditing,
     fetchCompletions,
     isWorkoutCompleted,
-    isWeekCompleted
+    isWeekCompleted,
+    resetToOriginal,
+    updateOriginalData
   };
 };

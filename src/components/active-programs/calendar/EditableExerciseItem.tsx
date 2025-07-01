@@ -59,55 +59,60 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
         </Button>
       </div>
       
-      <div className="grid grid-cols-6 gap-1 text-xs">
+      <div className="grid grid-cols-6 gap-2 text-xs">
         <div>
-          <label className="block text-gray-600 mb-1">Sets</label>
+          <label className="block text-gray-600 mb-1 text-xs">Sets</label>
           <Input
             value={exercise.sets || ''}
             onChange={(e) => onUpdate('sets', parseInt(e.target.value) || 0)}
-            className="h-6 text-xs rounded-none"
+            className="h-8 text-sm rounded-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            style={{ appearance: 'textfield' }}
             type="number"
+            min="0"
           />
         </div>
         <div>
-          <label className="block text-gray-600 mb-1">Reps</label>
+          <label className="block text-gray-600 mb-1 text-xs">Reps</label>
           <Input
             value={exercise.reps || ''}
             onChange={(e) => onUpdate('reps', e.target.value)}
-            className="h-6 text-xs rounded-none"
+            className="h-8 text-sm rounded-none"
           />
         </div>
         <div>
-          <label className="block text-gray-600 mb-1">Kg</label>
+          <label className="block text-gray-600 mb-1 text-xs">Kg</label>
           <Input
             value={exercise.kg || ''}
             onChange={(e) => onUpdate('kg', e.target.value)}
-            className="h-6 text-xs rounded-none"
+            className="h-8 text-sm rounded-none"
           />
         </div>
         <div>
-          <label className="block text-gray-600 mb-1">%1RM</label>
+          <label className="block text-gray-600 mb-1 text-xs">%1RM</label>
           <Input
             value={exercise.percentage_1rm || ''}
             onChange={(e) => onUpdate('percentage_1rm', parseInt(e.target.value) || 0)}
-            className="h-6 text-xs rounded-none"
+            className="h-8 text-sm rounded-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            style={{ appearance: 'textfield' }}
             type="number"
+            min="0"
+            max="100"
           />
         </div>
         <div>
-          <label className="block text-gray-600 mb-1">Tempo</label>
+          <label className="block text-gray-600 mb-1 text-xs">Tempo</label>
           <Input
             value={exercise.tempo || ''}
             onChange={(e) => onUpdate('tempo', e.target.value)}
-            className="h-6 text-xs rounded-none"
+            className="h-8 text-sm rounded-none"
           />
         </div>
         <div>
-          <label className="block text-gray-600 mb-1">Rest</label>
+          <label className="block text-gray-600 mb-1 text-xs">Rest</label>
           <Input
             value={exercise.rest || ''}
             onChange={(e) => onUpdate('rest', e.target.value)}
-            className="h-6 text-xs rounded-none"
+            className="h-8 text-sm rounded-none"
           />
         </div>
       </div>
@@ -118,7 +123,7 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
           <Input
             value={exercise.notes || ''}
             onChange={(e) => onUpdate('notes', e.target.value)}
-            className="h-6 text-xs rounded-none"
+            className="h-8 text-sm rounded-none"
           />
         </div>
       )}

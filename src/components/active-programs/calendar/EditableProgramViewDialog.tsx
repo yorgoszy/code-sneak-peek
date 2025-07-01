@@ -38,11 +38,14 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     setSelectedWeek,
     programData,
     setProgramData,
+    originalProgramData,
     isEditing,
     setIsEditing,
     fetchCompletions,
     isWorkoutCompleted,
-    isWeekCompleted
+    isWeekCompleted,
+    resetToOriginal,
+    updateOriginalData
   } = useEditableProgramState(isOpen, assignment);
 
   const { 
@@ -94,6 +97,12 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
 
   const handleSaveChanges = async () => {
     await saveChanges();
+    updateOriginalData(); // Ενημέρωση του backup μετά την επιτυχή αποθήκευση
+    setIsEditing(false);
+  };
+
+  const handleCancelEditing = () => {
+    resetToOriginal(); // Επαναφορά στα αρχικά δεδομένα
     setIsEditing(false);
   };
 
@@ -137,6 +146,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
             isEditing={isEditing}
             onToggleEditing={() => setIsEditing(!isEditing)}
             onSaveChanges={handleSaveChanges}
+            onCancelEditing={handleCancelEditing}
           />
           <div className="text-center py-8 text-gray-500">
             Δεν υπάρχουν εβδομάδες στο πρόγραμμα
@@ -157,6 +167,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
             isEditing={isEditing}
             onToggleEditing={() => setIsEditing(!isEditing)}
             onSaveChanges={handleSaveChanges}
+            onCancelEditing={handleCancelEditing}
           />
 
           {/* Scrollable Content */}
