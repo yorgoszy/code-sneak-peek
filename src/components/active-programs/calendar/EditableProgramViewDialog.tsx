@@ -54,7 +54,8 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     removeBlock, 
     addExercise, 
     removeExercise, 
-    updateExercise 
+    updateExercise,
+    reorderDays 
   } = useEditableProgramActions(
     programData,
     assignment,
@@ -131,6 +132,11 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     updateExercise(exerciseId, field, value, setProgramData);
   };
 
+  const handleReorderDays = (weekId: string, oldIndex: number, newIndex: number) => {
+    if (!editMode || !isEditing) return;
+    reorderDays(weekId, oldIndex, newIndex, setProgramData);
+  };
+
   if (!assignment || !programData) return null;
 
   const weeks = programData.program_weeks || [];
@@ -190,6 +196,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     onRemoveBlock={handleRemoveBlock}
                     onRemoveExercise={handleRemoveExercise}
                     onUpdateExercise={handleUpdateExercise}
+                    onReorderDays={handleReorderDays}
                   />
                 ))}
               </div>
