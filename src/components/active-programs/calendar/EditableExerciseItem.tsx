@@ -59,7 +59,7 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
         </Button>
       </div>
       
-      <div className="flex gap-0" style={{ fontSize: '10px' }}>
+      <div className="grid grid-cols-6 gap-0" style={{ fontSize: '10px' }}>
         <div className="flex-1">
           <label className="block text-gray-600 mb-1" style={{ fontSize: '9px' }}>Sets</label>
           <Input
