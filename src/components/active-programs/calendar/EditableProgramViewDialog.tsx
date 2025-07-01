@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DayProgramDialog } from './DayProgramDialog';
@@ -131,6 +130,22 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     updateExercise(exerciseId, field, value, setProgramData);
   };
 
+  const handleReorderDays = (weekId: string, oldIndex: number, newIndex: number) => {
+    if (!editMode || !isEditing) return;
+    
+    setProgramData((prevData: any) => {
+      const newData = { ...prevData };
+      const week = newData.program_weeks.find((w: any) => w.id === weekId);
+      if (week && week.program_days) {
+        const reorderedDays = [...week.program_days];
+        const [movedDay] = reorderedDays.splice(oldIndex, 1);
+        reorderedDays.splice(newIndex, 0, movedDay);
+        week.program_days = reorderedDays;
+      }
+      return newData;
+    });
+  };
+
   if (!assignment || !programData) return null;
 
   const weeks = programData.program_weeks || [];
@@ -190,6 +205,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     onRemoveBlock={handleRemoveBlock}
                     onRemoveExercise={handleRemoveExercise}
                     onUpdateExercise={handleUpdateExercise}
+                    onReorderDays={handleReorderDays}
                   />
                 ))}
               </div>
