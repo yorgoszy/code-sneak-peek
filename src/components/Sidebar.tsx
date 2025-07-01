@@ -1,4 +1,3 @@
-
 import { 
   Home, 
   Users, 
@@ -12,7 +11,8 @@ import {
   UsersIcon,
   Mail,
   ArrowLeft,
-  Crown
+  Crown,
+  TrendingUp
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -95,6 +95,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: TrendingUp,
+      label: "Analytics",
+      path: "/dashboard/analytics",
+      badge: "NEW"
+    },
+    {
       icon: Mail,
       label: "Webmail",
       path: "https://webmail.hyperkids.gr/",
@@ -147,7 +153,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
               {(!isCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
             </div>
             {(!isCollapsed || isMobile) && item.badge && (
-              <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full flex-shrink-0">
+              <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                item.badge === 'NEW' 
+                  ? 'bg-[#00ffba] text-black' 
+                  : 'bg-gray-200 text-gray-700'
+              }`}>
                 {item.badge}
               </span>
             )}
