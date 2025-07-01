@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -168,9 +167,7 @@ const Index = () => {
         translations={correctedTranslations}
       />
 
-      <ContactSection 
-        translations={correctedTranslations}
-      />
+      <ContactSection />
 
       <Footer 
         translations={correctedTranslations}
