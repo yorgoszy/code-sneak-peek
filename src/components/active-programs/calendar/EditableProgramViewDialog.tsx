@@ -45,7 +45,14 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     isWeekCompleted
   } = useEditableProgramState(isOpen, assignment);
 
-  const { saveChanges, addNewBlock } = useEditableProgramActions(
+  const { 
+    saveChanges, 
+    addNewBlock, 
+    removeBlock, 
+    addExercise, 
+    removeExercise, 
+    updateExercise 
+  } = useEditableProgramActions(
     programData,
     assignment,
     onRefresh
@@ -93,6 +100,26 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   const handleAddNewBlock = (dayId: string) => {
     if (!editMode) return;
     addNewBlock(dayId, setProgramData);
+  };
+
+  const handleRemoveBlock = (blockId: string) => {
+    if (!editMode) return;
+    removeBlock(blockId, setProgramData);
+  };
+
+  const handleAddExercise = (blockId: string, exerciseId: string) => {
+    if (!editMode) return;
+    addExercise(blockId, exerciseId, setProgramData);
+  };
+
+  const handleRemoveExercise = (exerciseId: string) => {
+    if (!editMode) return;
+    removeExercise(exerciseId, setProgramData);
+  };
+
+  const handleUpdateExercise = (exerciseId: string, field: string, value: any) => {
+    if (!editMode) return;
+    updateExercise(exerciseId, field, value, setProgramData);
   };
 
   if (!assignment || !programData) return null;
@@ -148,6 +175,10 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     isWorkoutCompleted={isWorkoutCompleted}
                     onDayDoubleClick={handleDayDoubleClick}
                     onAddNewBlock={handleAddNewBlock}
+                    onAddExercise={handleAddExercise}
+                    onRemoveBlock={handleRemoveBlock}
+                    onRemoveExercise={handleRemoveExercise}
+                    onUpdateExercise={handleUpdateExercise}
                   />
                 ))}
               </div>

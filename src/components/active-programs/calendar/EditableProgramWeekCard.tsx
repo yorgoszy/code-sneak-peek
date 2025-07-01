@@ -13,6 +13,10 @@ interface EditableProgramWeekCardProps {
   isWorkoutCompleted: (weekNumber: number, dayNumber: number) => boolean;
   onDayDoubleClick: (week: any, day: any, event: React.MouseEvent) => void;
   onAddNewBlock: (dayId: string) => void;
+  onAddExercise: (blockId: string, exerciseId: string) => void;
+  onRemoveBlock: (blockId: string) => void;
+  onRemoveExercise: (exerciseId: string) => void;
+  onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
 }
 
 export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = ({
@@ -23,7 +27,11 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
   isWeekCompleted,
   isWorkoutCompleted,
   onDayDoubleClick,
-  onAddNewBlock
+  onAddNewBlock,
+  onAddExercise,
+  onRemoveBlock,
+  onRemoveExercise,
+  onUpdateExercise
 }) => {
   const isCompleted = isWeekCompleted(week.week_number, week.program_days?.length || 0);
 
@@ -66,6 +74,10 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
               isEditing={isEditing}
               isWorkoutCompleted={isWorkoutCompleted}
               onAddNewBlock={onAddNewBlock}
+              onAddExercise={onAddExercise}
+              onRemoveBlock={onRemoveBlock}
+              onRemoveExercise={onRemoveExercise}
+              onUpdateExercise={onUpdateExercise}
             />
           ))}
         </Tabs>

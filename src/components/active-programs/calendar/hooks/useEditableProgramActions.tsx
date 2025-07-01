@@ -139,8 +139,152 @@ export const useEditableProgramActions = (
     }
   };
 
+  const removeBlock = async (blockId: string, setProgramData: (data: any) => void) => {
+    try {
+      const { error } = await supabase
+        .from('program_blocks')
+        .delete()
+        .eq('id', blockId);
+
+      if (error) throw error;
+
+      // Ενημέρωση του local state
+      const updatedProgram = { ...programData };
+      for (const week of updatedProgram.program_weeks || []) {
+        for (const day of week.program_days || []) {
+          day.program_blocks = day.program_blocks?.filter((block: any) => block.id !== blockId) || [];
+        }
+      }
+      setProgramData(updatedProgram);
+
+      toast.success('Το block διαγράφηκε!');
+      
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά τη διαγραφή block:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή block');
+    }
+  };
+
+  const addExercise = async (blockId: string, exerciseId: string, setProgramData: (data: any) => void) => {
+    try {
+      const { data, error } = await supabase
+        .from('program_exercises')
+        .insert({
+          block_id: blockId,
+          exercise_id: exerciseId,
+          sets: 1,
+          reps: '8-12',
+          kg: '',
+          percentage_1rm: 0,
+          tempo: '',
+          rest: '60',
+          notes: '',
+          exercise_order: 1
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Fetch exercise details
+      const { data: exerciseData, error: exerciseError } = await supabase
+        .from('exercises')
+        .select('*')
+        .eq('id', exerciseId)
+        .single();
+
+      if (exerciseError) throw exerciseError;
+
+      // Ενημέρωση του local state
+      const updatedProgram = { ...programData };
+      for (const week of updatedProgram.program_weeks || []) {
+        for (const day of week.program_days || []) {
+          const block = day.program_blocks?.find((b: any) => b.id === blockId);
+          if (block) {
+            if (!block.program_exercises) block.program_exercises = [];
+            block.program_exercises.push({
+              ...data,
+              exercises: exerciseData
+            });
+          }
+        }
+      }
+      setProgramData(updatedProgram);
+
+      toast.success('Άσκηση προστέθηκε!');
+      
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την προσθήκη άσκησης:', error);
+      toast.error('Σφάλμα κατά την προσθήκη άσκησης');
+    }
+  };
+
+  const removeExercise = async (exerciseId: string, setProgramData: (data: any) => void) => {
+    try {
+      const { error } = await supabase
+        .from('program_exercises')
+        .delete()
+        .eq('id', exerciseId);
+
+      if (error) throw error;
+
+      // Ενημέρωση του local state
+      const updatedProgram = { ...programData };
+      for (const week of updatedProgram.program_weeks || []) {
+        for (const day of week.program_days || []) {
+          for (const block of day.program_blocks || []) {
+            block.program_exercises = block.program_exercises?.filter((ex: any) => ex.id !== exerciseId) || [];
+          }
+        }
+      }
+      setProgramData(updatedProgram);
+
+      toast.success('Άσκηση διαγράφηκε!');
+      
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά τη διαγραφή άσκησης:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή άσκησης');
+    }
+  };
+
+  const updateExercise = async (exerciseId: string, field: string, value: any, setProgramData: (data: any) => void) => {
+    try {
+      const { error } = await supabase
+        .from('program_exercises')
+        .update({
+          [field]: value,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', exerciseId);
+
+      if (error) throw error;
+
+      // Ενημέρωση του local state
+      const updatedProgram = { ...programData };
+      for (const week of updatedProgram.program_weeks || []) {
+        for (const day of week.program_days || []) {
+          for (const block of day.program_blocks || []) {
+            const exercise = block.program_exercises?.find((ex: any) => ex.id === exerciseId);
+            if (exercise) {
+              exercise[field] = value;
+            }
+          }
+        }
+      }
+      setProgramData(updatedProgram);
+
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την ενημέρωση άσκησης:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση άσκησης');
+    }
+  };
+
   return {
     saveChanges,
-    addNewBlock
+    addNewBlock,
+    removeBlock,
+    addExercise,
+    removeExercise,
+    updateExercise
   };
 };
