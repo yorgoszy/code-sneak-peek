@@ -223,52 +223,6 @@ export const AnalyticsDashboard: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Setup Instructions */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Οδηγίες Εγκατάστασης</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-none">
-              <h4 className="font-semibold text-blue-900">1. Google Analytics 4</h4>
-              <p className="text-sm text-blue-800 mt-1">
-                Δημιούργησε λογαριασμό στο Google Analytics και αντικατάστησε το 'G-XXXXXXXXXX' 
-                στο αρχείο AnalyticsProvider.tsx με το δικό σου Measurement ID.
-              </p>
-            </div>
-            
-            <div className="p-4 bg-purple-50 border border-purple-200 rounded-none">
-              <h4 className="font-semibold text-purple-900">2. Facebook Pixel</h4>
-              <p className="text-sm text-purple-800 mt-1">
-                Δημιούργησε Facebook Pixel από το Business Manager και αντικατάστησε το ID 
-                στο αρχείο AnalyticsProvider.tsx.
-              </p>
-            </div>
-            
-            <div className="p-4 bg-orange-50 border border-orange-200 rounded-none">
-              <h4 className="font-semibold text-orange-900">3. Hotjar & Microsoft Clarity</h4>
-              <p className="text-sm text-orange-800 mt-1">
-                Εγγραφή στις υπηρεσίες και αντικατάσταση των αντίστοιχων ID στον κώδικα.
-              </p>
-            </div>
-          </div>
-          
-          <div className="p-4 bg-green-50 border border-green-200 rounded-none">
-            <h4 className="font-semibold text-green-900">💡 Τι θα μπορείς να παρακολουθείς:</h4>
-            <ul className="text-sm text-green-800 mt-2 space-y-1">
-              <li>• Αριθμός επισκεπτών και προβολές σελίδων</li>
-              <li>• Συμπεριφορά χρηστών (ποιες σελίδες επισκέπτονται, πόσο χρόνο περνούν)</li>
-              <li>• Πηγές κίνησης (Google, Facebook, άμεση κίνηση)</li>
-              <li>• Συσκευές που χρησιμοποιούν (κινητό, desktop)</li>
-              <li>• Heatmaps για να δεις που κάνουν κλικ οι χρήστες</li>
-              <li>• Αναζητήσεις στο site σου</li>
-              <li>• Conversions (εγγραφές, επικοινωνία)</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
