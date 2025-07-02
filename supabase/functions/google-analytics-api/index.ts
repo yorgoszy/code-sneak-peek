@@ -42,19 +42,31 @@ serve(async (req) => {
     console.log('Property ID received:', propertyId);
     console.log('API Key received:', apiKey ? 'Present' : 'Missing');
     
-    // Mock δεδομένα που μοιάζουν με πραγματικά Google Analytics data
+    // Δημιουργία πιο σταθερών demo δεδομένων
+    // Χρησιμοποιούμε το propertyId για seed για συνοχή
+    const seed = propertyId ? propertyId.charCodeAt(propertyId.length - 1) : 1;
+    const baseUsers = 1250 + (seed * 10);
+    const baseSessions = baseUsers * 1.6;
+    const basePageviews = baseSessions * 2.8;
+    
+    // Προσθέτουμε μικρή τυχαιότητα (±10%) για φυσικότητα
+    const randomVariation = (base: number) => {
+      const variation = (Math.random() - 0.5) * 0.2; // ±10%
+      return Math.floor(base * (1 + variation));
+    };
+    
     const mockData = {
-      users: Math.floor(Math.random() * 5000) + 1000,
-      sessions: Math.floor(Math.random() * 8000) + 2000,
-      pageviews: Math.floor(Math.random() * 15000) + 5000,
-      avgSessionDuration: formatDuration(Math.floor(Math.random() * 300) + 60),
-      bounceRate: `${(Math.random() * 30 + 20).toFixed(1)}%`,
+      users: randomVariation(baseUsers),
+      sessions: randomVariation(baseSessions),
+      pageviews: randomVariation(basePageviews),
+      avgSessionDuration: formatDuration(180 + (seed * 5)),
+      bounceRate: `${(42.5 + (seed % 10)).toFixed(1)}%`,
       topPages: [
-        { page: '/', views: Math.floor(Math.random() * 1000) + 500 },
-        { page: '/dashboard', views: Math.floor(Math.random() * 800) + 300 },
-        { page: '/programs', views: Math.floor(Math.random() * 600) + 200 },
-        { page: '/exercises', views: Math.floor(Math.random() * 400) + 150 },
-        { page: '/results', views: Math.floor(Math.random() * 300) + 100 }
+        { page: '/', views: 650 + (seed * 20) },
+        { page: '/dashboard', views: 420 + (seed * 15) },
+        { page: '/programs', views: 380 + (seed * 12) },
+        { page: '/exercises', views: 290 + (seed * 8) },
+        { page: '/results', views: 180 + (seed * 5) }
       ]
     };
 
