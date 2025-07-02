@@ -37,41 +37,84 @@ serve(async (req) => {
       )
     }
 
-    // Για demo σκοπούς, επιστρέφουμε mock data
-    // Στην πραγματικότητα το Google Analytics Data API χρειάζεται OAuth2 authentication
-    console.log('Property ID received:', propertyId);
-    console.log('API Key received:', apiKey ? 'Present' : 'Missing');
+    // Google Analytics Reporting API v4 endpoint
+    const analyticsUrl = `https://analyticsreporting.googleapis.com/v4/reports:batchGet?key=${apiKey}`;
     
-    // Δημιουργία πιο σταθερών demo δεδομένων
-    // Χρησιμοποιούμε το propertyId για seed για συνοχή
-    const seed = propertyId ? propertyId.charCodeAt(propertyId.length - 1) : 1;
-    const baseUsers = 1250 + (seed * 10);
-    const baseSessions = baseUsers * 1.6;
-    const basePageviews = baseSessions * 2.8;
+    // Μετατρέπουμε το G-XXXXXXXXX σε view ID (αφαιρούμε το G- prefix)
+    const viewId = propertyId.replace('G-', '');
     
-    // Προσθέτουμε μικρή τυχαιότητα (±10%) για φυσικότητα
-    const randomVariation = (base: number) => {
-      const variation = (Math.random() - 0.5) * 0.2; // ±10%
-      return Math.floor(base * (1 + variation));
-    };
-    
-    const mockData = {
-      users: randomVariation(baseUsers),
-      sessions: randomVariation(baseSessions),
-      pageviews: randomVariation(basePageviews),
-      avgSessionDuration: formatDuration(180 + (seed * 5)),
-      bounceRate: `${(42.5 + (seed % 10)).toFixed(1)}%`,
-      topPages: [
-        { page: '/', views: 650 + (seed * 20) },
-        { page: '/dashboard', views: 420 + (seed * 15) },
-        { page: '/programs', views: 380 + (seed * 12) },
-        { page: '/exercises', views: 290 + (seed * 8) },
-        { page: '/results', views: 180 + (seed * 5) }
+    const requestBody = {
+      reportRequests: [
+        {
+          viewId: viewId,
+          dateRanges: [
+            {
+              startDate: '7daysAgo',
+              endDate: 'today'
+            }
+          ],
+          metrics: [
+            { expression: 'ga:users' },
+            { expression: 'ga:sessions' },
+            { expression: 'ga:pageviews' },
+            { expression: 'ga:avgSessionDuration' },
+            { expression: 'ga:bounceRate' }
+          ],
+          dimensions: [
+            { name: 'ga:pagePath' }
+          ],
+          orderBys: [
+            {
+              fieldName: 'ga:pageviews',
+              sortOrder: 'DESCENDING'
+            }
+          ],
+          pageSize: 10
+        }
       ]
     };
 
+    const response = await fetch(analyticsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Google Analytics API error:', errorText);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch analytics data', details: errorText }),
+        { 
+          status: response.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const data = await response.json();
+    console.log('Google Analytics response:', JSON.stringify(data, null, 2));
+    
+    // Transform the data to match our expected format
+    const report = data.reports?.[0];
+    const rows = report?.data?.rows || [];
+    
+    const transformedData = {
+      users: parseInt(report?.data?.totals?.[0]?.values?.[0] || '0'),
+      sessions: parseInt(report?.data?.totals?.[0]?.values?.[1] || '0'),
+      pageviews: parseInt(report?.data?.totals?.[0]?.values?.[2] || '0'),
+      avgSessionDuration: formatDuration(parseFloat(report?.data?.totals?.[0]?.values?.[3] || '0')),
+      bounceRate: `${parseFloat(report?.data?.totals?.[0]?.values?.[4] || '0').toFixed(1)}%`,
+      topPages: rows.slice(0, 5).map((row: any) => ({
+        page: row.dimensions[0],
+        views: parseInt(row.metrics[0].values[2])
+      }))
+    };
+
     return new Response(
-      JSON.stringify(mockData),
+      JSON.stringify(transformedData),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
