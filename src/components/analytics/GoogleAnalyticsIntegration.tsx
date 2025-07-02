@@ -17,26 +17,24 @@ interface AnalyticsData {
 }
 
 export const GoogleAnalyticsIntegration: React.FC = () => {
-  const [apiKey, setApiKey] = useState(localStorage.getItem('ga_api_key') || '');
   const [propertyId, setPropertyId] = useState(localStorage.getItem('ga_property_id') || '');
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    if (apiKey && propertyId) {
+    if (propertyId) {
       setConnected(true);
       fetchAnalyticsData();
     }
   }, []);
 
   const handleConnect = () => {
-    if (!apiKey || !propertyId) {
-      toast.error('Παρακαλώ εισάγετε και τα δύο στοιχεία');
+    if (!propertyId) {
+      toast.error('Παρακαλώ εισάγετε το Property ID');
       return;
     }
 
-    localStorage.setItem('ga_api_key', apiKey);
     localStorage.setItem('ga_property_id', propertyId);
     setConnected(true);
     fetchAnalyticsData();
@@ -67,9 +65,7 @@ export const GoogleAnalyticsIntegration: React.FC = () => {
   };
 
   const handleDisconnect = () => {
-    localStorage.removeItem('ga_api_key');
     localStorage.removeItem('ga_property_id');
-    setApiKey('');
     setPropertyId('');
     setConnected(false);
     setData(null);
@@ -87,16 +83,6 @@ export const GoogleAnalyticsIntegration: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">API Key</label>
-            <Input
-              type="password"
-              placeholder="Εισάγετε το Google Analytics API Key"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="rounded-none"
-            />
-          </div>
-          <div>
             <label className="block text-sm font-medium mb-2">Property ID</label>
             <Input
               placeholder="GA4 Property ID (π.χ. 123456789)"
@@ -111,9 +97,9 @@ export const GoogleAnalyticsIntegration: React.FC = () => {
           >
             Σύνδεση με Google Analytics
           </Button>
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-none">
-            <p className="text-sm text-blue-800">
-              Για να συνδεθείτε, χρειάζεστε έναν Google Analytics API key και το Property ID από το GA4 dashboard σας.
+          <div className="p-3 bg-green-50 border border-green-200 rounded-none">
+            <p className="text-sm text-green-800">
+              ✅ Χρησιμοποιούμε Service Account authentication. Χρειάζεστε μόνο το GA4 Property ID από το Analytics dashboard σας.
             </p>
           </div>
         </CardContent>
