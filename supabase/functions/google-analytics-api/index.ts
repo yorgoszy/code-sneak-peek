@@ -25,6 +25,20 @@ serve(async (req) => {
       )
     }
 
+    // Check if it's a Measurement ID (starts with G-) instead of Property ID
+    if (propertyId.startsWith('G-')) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Χρειάζεστε το numeric Property ID, όχι το Measurement ID', 
+          details: `Το "${propertyId}" είναι Measurement ID. Χρειάζεστε το numeric Property ID από το Google Analytics > Admin > Property Settings > Property Details.`
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
 
     // Get Google Service Account JSON from Supabase secrets
     const serviceAccountJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON')
