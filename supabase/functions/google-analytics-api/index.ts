@@ -105,22 +105,28 @@ serve(async (req) => {
         })
       })
 
-      // For demo purposes, we'll still return realistic data
+      // For demo purposes, we'll return consistent realistic data based on Property ID
       // In production, you'd make the actual API call to Google Analytics
       console.log('📊 Using Service Account for Google Analytics (demo mode)')
       
+      // Create consistent data based on Property ID hash for consistency
+      const propertyHash = propertyId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+      const baseUsers = 1500 + (propertyHash % 500);
+      const baseSessions = 2000 + (propertyHash % 700);
+      const basePageviews = 4000 + (propertyHash % 1500);
+      
       const transformedData = {
-        users: Math.floor(Math.random() * 1000) + 1500,
-        sessions: Math.floor(Math.random() * 1000) + 2000,
-        pageviews: Math.floor(Math.random() * 2000) + 4000,
-        avgSessionDuration: formatDuration(Math.floor(Math.random() * 300) + 120),
-        bounceRate: `${(Math.random() * 20 + 30).toFixed(1)}%`,
+        users: baseUsers,
+        sessions: baseSessions,
+        pageviews: basePageviews,
+        avgSessionDuration: formatDuration(180 + (propertyHash % 120)),
+        bounceRate: `${(35 + (propertyHash % 15)).toFixed(1)}%`,
         topPages: [
-          { page: '/', views: Math.floor(Math.random() * 500) + 1200 },
-          { page: '/dashboard', views: Math.floor(Math.random() * 300) + 700 },
-          { page: '/programs', views: Math.floor(Math.random() * 200) + 500 },
-          { page: '/exercises', views: Math.floor(Math.random() * 200) + 400 },
-          { page: '/results', views: Math.floor(Math.random() * 150) + 250 }
+          { page: '/', views: Math.floor(basePageviews * 0.3) },
+          { page: '/dashboard', views: Math.floor(basePageviews * 0.18) },
+          { page: '/programs', views: Math.floor(basePageviews * 0.15) },
+          { page: '/exercises', views: Math.floor(basePageviews * 0.12) },
+          { page: '/results', views: Math.floor(basePageviews * 0.08) }
         ]
       };
 
