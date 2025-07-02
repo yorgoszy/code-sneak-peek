@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Eye, 
   Users, 
@@ -14,6 +15,8 @@ import {
   Monitor,
   ExternalLink
 } from "lucide-react";
+import { GoogleAnalyticsIntegration } from "@/components/analytics/GoogleAnalyticsIntegration";
+import { FacebookPixelIntegration } from "@/components/analytics/FacebookPixelIntegration";
 
 interface AnalyticsData {
   visitors: number;
@@ -130,44 +133,96 @@ export const AnalyticsDashboard: React.FC = () => {
         })}
       </div>
 
-      {/* Analytics Tools */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Εργαλεία Analytics</CardTitle>
-          <p className="text-sm text-gray-600">
-            Παρακολούθηση επισκεπτών και συμπεριφοράς για στοχευμένες καμπάνιες
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {analyticsTools.map((tool, index) => {
-              const IconComponent = tool.icon;
-              return (
-                <div key={index} className="p-4 border border-gray-200 rounded-none hover:shadow-md transition-shadow">
-                  <div className="flex items-start space-x-3">
-                    <div className={`p-2 rounded-none ${tool.color} text-white`}>
-                      <IconComponent className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{tool.name}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{tool.description}</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-3 rounded-none"
-                        onClick={() => window.open(tool.url, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Άνοιγμα
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Analytics Integrations */}
+      <Tabs defaultValue="google-analytics" className="w-full">
+        <TabsList className="grid w-full grid-cols-5 rounded-none">
+          <TabsTrigger value="google-analytics" className="rounded-none">Google Analytics</TabsTrigger>
+          <TabsTrigger value="facebook-pixel" className="rounded-none">Facebook Pixel</TabsTrigger>
+          <TabsTrigger value="hotjar" className="rounded-none">Hotjar</TabsTrigger>
+          <TabsTrigger value="clarity" className="rounded-none">Microsoft Clarity</TabsTrigger>
+          <TabsTrigger value="search-console" className="rounded-none">Search Console</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="google-analytics" className="mt-6">
+          <GoogleAnalyticsIntegration />
+        </TabsContent>
+        
+        <TabsContent value="facebook-pixel" className="mt-6">
+          <FacebookPixelIntegration />
+        </TabsContent>
+        
+        <TabsContent value="hotjar" className="mt-6">
+          <Card className="rounded-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MousePointer className="h-5 w-5 text-orange-500" />
+                Hotjar Integration
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">Hotjar integration θα προστεθεί σύντομα</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.open('https://www.hotjar.com', '_blank')}
+                  className="rounded-none"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Επίσκεψη Hotjar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="clarity" className="mt-6">
+          <Card className="rounded-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Monitor className="h-5 w-5 text-purple-500" />
+                Microsoft Clarity Integration
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">Microsoft Clarity integration θα προστεθεί σύντομα</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.open('https://clarity.microsoft.com', '_blank')}
+                  className="rounded-none"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Επίσκεψη Microsoft Clarity
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="search-console" className="mt-6">
+          <Card className="rounded-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-green-500" />
+                Google Search Console Integration
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">Google Search Console integration θα προστεθεί σύντομα</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.open('https://search.google.com/search-console', '_blank')}
+                  className="rounded-none"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Επίσκεψη Search Console
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Setup Instructions */}
       <Card className="rounded-none">
