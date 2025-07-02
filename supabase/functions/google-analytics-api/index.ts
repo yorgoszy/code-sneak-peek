@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { create, verify, getNumericDate } from "https://deno.land/x/djwt@v2.8/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,44 +25,15 @@ serve(async (req) => {
       )
     }
 
-    // Get Google Analytics API key from Supabase secrets
-    const apiKey = Deno.env.get('GOOGLE_ANALYTICS_API_KEY')
-    
-    if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: 'Google Analytics API key not configured' }),
-        { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
 
     // Get Google Service Account JSON from Supabase secrets
     const serviceAccountJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON')
     
     if (!serviceAccountJson) {
-      console.log('⚠️ Service Account JSON not configured, using demo data');
-      // Fallback to demo data
-      const transformedData = {
-        users: 1847,
-        sessions: 2314,
-        pageviews: 5692,
-        avgSessionDuration: formatDuration(187), // 3:07
-        bounceRate: "38.7%",
-        topPages: [
-          { page: '/', views: 1420 },
-          { page: '/dashboard', views: 847 },
-          { page: '/programs', views: 623 },
-          { page: '/exercises', views: 456 },
-          { page: '/results', views: 289 }
-        ]
-      };
-      
       return new Response(
-        JSON.stringify(transformedData),
+        JSON.stringify({ error: 'Google Service Account JSON not configured' }),
         { 
-          status: 200,
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -72,14 +44,32 @@ serve(async (req) => {
       const serviceAccount = JSON.parse(serviceAccountJson)
       console.log('✅ Service Account loaded successfully')
 
-      // Create JWT token for Google Analytics Data API
-      const now = Math.floor(Date.now() / 1000)
-      const exp = now + 3600 // 1 hour expiration
+      // Import private key for JWT signing
+      const privateKeyPem = serviceAccount.private_key
       
-      const header = {
-        alg: 'RS256',
-        typ: 'JWT'
-      }
+      // Convert PEM to proper format for Web Crypto API
+      const pemHeader = "-----BEGIN PRIVATE KEY-----"
+      const pemFooter = "-----END PRIVATE KEY-----"
+      const pemContents = privateKeyPem.replace(pemHeader, "").replace(pemFooter, "").replace(/\s/g, "")
+      
+      // Decode base64 to ArrayBuffer
+      const binaryDer = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0))
+      
+      // Import the private key for signing
+      const cryptoKey = await crypto.subtle.importKey(
+        'pkcs8',
+        binaryDer,
+        {
+          name: 'RSASSA-PKCS1-v1_5',
+          hash: 'SHA-256',
+        },
+        false,
+        ['sign']
+      )
+
+      // Create JWT payload
+      const now = getNumericDate(new Date())
+      const exp = getNumericDate(new Date(Date.now() + 3600 * 1000)) // 1 hour
       
       const payload = {
         iss: serviceAccount.client_email,
@@ -88,12 +78,11 @@ serve(async (req) => {
         exp: exp,
         iat: now
       }
-      
-      // Create JWT (simplified version - in production you'd use a proper JWT library)
-      const headerBase64 = btoa(JSON.stringify(header))
-      const payloadBase64 = btoa(JSON.stringify(payload))
-      
-      // For now, we'll use the Google Auth API directly
+
+      // Create and sign JWT
+      const jwt = await create({ alg: "RS256", typ: "JWT" }, payload, cryptoKey)
+
+      // Get access token from Google
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: {
@@ -101,34 +90,89 @@ serve(async (req) => {
         },
         body: new URLSearchParams({
           grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-          assertion: `${headerBase64}.${payloadBase64}.signature` // Simplified for demo
+          assertion: jwt
         })
       })
 
-      // For demo purposes, we'll return consistent realistic data based on Property ID
-      // In production, you'd make the actual API call to Google Analytics
-      console.log('📊 Using Service Account for Google Analytics (demo mode)')
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text()
+        console.error('❌ Token exchange failed:', errorText)
+        throw new Error(`Token exchange failed: ${errorText}`)
+      }
+
+      const tokenData = await tokenResponse.json()
+      const accessToken = tokenData.access_token
+
+      console.log('✅ Access token obtained successfully')
+
+      // Make request to Google Analytics Data API
+      const analyticsUrl = `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`
       
-      // Create consistent data based on Property ID hash for consistency
-      const propertyHash = propertyId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-      const baseUsers = 1500 + (propertyHash % 500);
-      const baseSessions = 2000 + (propertyHash % 700);
-      const basePageviews = 4000 + (propertyHash % 1500);
-      
+      const requestBody = {
+        dateRanges: [
+          {
+            startDate: '7daysAgo',
+            endDate: 'today'
+          }
+        ],
+        metrics: [
+          { name: 'activeUsers' },
+          { name: 'sessions' },
+          { name: 'screenPageViews' },
+          { name: 'averageSessionDuration' },
+          { name: 'bounceRate' }
+        ],
+        dimensions: [
+          { name: 'pagePath' }
+        ],
+        orderBys: [
+          {
+            metric: {
+              metricName: 'screenPageViews'
+            },
+            desc: true
+          }
+        ],
+        limit: 10
+      }
+
+      console.log('📊 Making request to Google Analytics Data API...')
+
+      const analyticsResponse = await fetch(analyticsUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      })
+
+      if (!analyticsResponse.ok) {
+        const errorText = await analyticsResponse.text()
+        console.error('❌ Analytics API error:', errorText)
+        throw new Error(`Analytics API error: ${errorText}`)
+      }
+
+      const analyticsData = await analyticsResponse.json()
+      console.log('✅ Real Analytics data received successfully')
+
+      // Transform the data to match our expected format
+      const rows = analyticsData.rows || []
+      const totals = analyticsData.totals?.[0]?.metricValues || []
+
       const transformedData = {
-        users: baseUsers,
-        sessions: baseSessions,
-        pageviews: basePageviews,
-        avgSessionDuration: formatDuration(180 + (propertyHash % 120)),
-        bounceRate: `${(35 + (propertyHash % 15)).toFixed(1)}%`,
-        topPages: [
-          { page: '/', views: Math.floor(basePageviews * 0.3) },
-          { page: '/dashboard', views: Math.floor(basePageviews * 0.18) },
-          { page: '/programs', views: Math.floor(basePageviews * 0.15) },
-          { page: '/exercises', views: Math.floor(basePageviews * 0.12) },
-          { page: '/results', views: Math.floor(basePageviews * 0.08) }
-        ]
-      };
+        users: parseInt(totals[0]?.value || '0'),
+        sessions: parseInt(totals[1]?.value || '0'),
+        pageviews: parseInt(totals[2]?.value || '0'),
+        avgSessionDuration: formatDuration(parseFloat(totals[3]?.value || '0')),
+        bounceRate: `${(parseFloat(totals[4]?.value || '0') * 100).toFixed(1)}%`,
+        topPages: rows.slice(0, 5).map((row: any) => ({
+          page: row.dimensionValues?.[0]?.value || 'Unknown',
+          views: parseInt(row.metricValues?.[2]?.value || '0')
+        }))
+      }
+
+      console.log('📈 Transformed analytics data:', transformedData)
 
       return new Response(
         JSON.stringify(transformedData),
@@ -138,41 +182,20 @@ serve(async (req) => {
         }
       )
 
-    } catch (parseError) {
-      console.error('❌ Error parsing Service Account JSON:', parseError)
+    } catch (error) {
+      console.error('❌ Error processing Google Analytics request:', error)
       
-      // Fallback to demo data
-      const transformedData = {
-        users: 1847,
-        sessions: 2314,
-        pageviews: 5692,
-        avgSessionDuration: formatDuration(187),
-        bounceRate: "38.7%",
-        topPages: [
-          { page: '/', views: 1420 },
-          { page: '/dashboard', views: 847 },
-          { page: '/programs', views: 623 },
-          { page: '/exercises', views: 456 },
-          { page: '/results', views: 289 }
-        ]
-      };
-
       return new Response(
-        JSON.stringify(transformedData),
+        JSON.stringify({ 
+          error: 'Failed to fetch Google Analytics data', 
+          details: error.message 
+        }),
         { 
-          status: 200,
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
-
-    return new Response(
-      JSON.stringify(transformedData),
-      { 
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    )
 
   } catch (error) {
     console.error('Error in google-analytics-api function:', error)
