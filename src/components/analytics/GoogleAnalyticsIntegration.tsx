@@ -45,25 +45,27 @@ export const GoogleAnalyticsIntegration: React.FC = () => {
   const fetchAnalyticsData = async () => {
     setLoading(true);
     try {
-      // Προσομοίωση API call - εδώ θα κάνουμε το πραγματικό API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Μοκ δεδομένα για demo
-      setData({
-        sessions: 1247,
-        users: 891,
-        pageviews: 3456,
-        avgSessionDuration: '2:34',
-        bounceRate: '42.3%',
-        topPages: [
-          { page: '/', views: 892 },
-          { page: '/programs', views: 456 },
-          { page: '/about', views: 234 },
-          { page: '/contact', views: 123 }
-        ]
+      const response = await fetch('/api/google-analytics-api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          propertyId: propertyId
+        })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch analytics data');
+      }
+
+      const analyticsData = await response.json();
+      setData(analyticsData);
+      toast.success('Δεδομένα Google Analytics ενημερώθηκαν!');
     } catch (error) {
-      toast.error('Σφάλμα στη λήψη δεδομένων από Google Analytics');
+      console.error('Analytics fetch error:', error);
+      toast.error(`Σφάλμα στη λήψη δεδομένων από Google Analytics: ${error.message}`);
     } finally {
       setLoading(false);
     }
