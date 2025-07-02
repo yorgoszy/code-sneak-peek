@@ -17,7 +17,7 @@ interface AnalyticsData {
 }
 
 export const GoogleAnalyticsIntegration: React.FC = () => {
-  const [propertyId, setPropertyId] = useState(localStorage.getItem('ga_property_id') || '');
+  const [propertyId, setPropertyId] = useState(localStorage.getItem('ga_property_id') || '495397770');
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
