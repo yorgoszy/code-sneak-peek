@@ -163,8 +163,23 @@ serve(async (req) => {
 
       if (!analyticsResponse.ok) {
         const errorText = await analyticsResponse.text()
-        console.error('❌ Analytics API error:', errorText)
-        throw new Error(`Analytics API error: ${errorText}`)
+        console.error('❌ Analytics API error:', analyticsResponse.status, analyticsResponse.statusText, errorText)
+        
+        let errorMessage = `Analytics API error (${analyticsResponse.status}): ${analyticsResponse.statusText}`
+        
+        try {
+          const errorJson = JSON.parse(errorText)
+          if (errorJson.error?.message) {
+            errorMessage = errorJson.error.message
+          }
+        } catch (e) {
+          // If not JSON, use the raw error text
+          if (errorText) {
+            errorMessage += ` - ${errorText}`
+          }
+        }
+        
+        throw new Error(errorMessage)
       }
 
       const analyticsData = await analyticsResponse.json()
