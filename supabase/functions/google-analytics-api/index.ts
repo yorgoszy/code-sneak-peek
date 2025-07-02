@@ -37,50 +37,49 @@ serve(async (req) => {
       )
     }
 
-    // Google Analytics Reporting API v4 endpoint
-    const analyticsUrl = `https://analyticsreporting.googleapis.com/v4/reports:batchGet?key=${apiKey}`;
-    
-    // Μετατρέπουμε το G-XXXXXXXXX σε view ID (αφαιρούμε το G- prefix)
-    const viewId = propertyId.replace('G-', '');
+    // Google Analytics Data API v1 endpoint για GA4
+    const analyticsUrl = `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`;
     
     const requestBody = {
-      reportRequests: [
+      dateRanges: [
         {
-          viewId: viewId,
-          dateRanges: [
-            {
-              startDate: '7daysAgo',
-              endDate: 'today'
-            }
-          ],
-          metrics: [
-            { expression: 'ga:users' },
-            { expression: 'ga:sessions' },
-            { expression: 'ga:pageviews' },
-            { expression: 'ga:avgSessionDuration' },
-            { expression: 'ga:bounceRate' }
-          ],
-          dimensions: [
-            { name: 'ga:pagePath' }
-          ],
-          orderBys: [
-            {
-              fieldName: 'ga:pageviews',
-              sortOrder: 'DESCENDING'
-            }
-          ],
-          pageSize: 10
+          startDate: '7daysAgo',
+          endDate: 'today'
         }
-      ]
+      ],
+      metrics: [
+        { name: 'activeUsers' },
+        { name: 'sessions' },
+        { name: 'screenPageViews' },
+        { name: 'averageSessionDuration' },
+        { name: 'bounceRate' }
+      ],
+      dimensions: [
+        { name: 'pagePath' }
+      ],
+      orderBys: [
+        {
+          metric: {
+            metricName: 'screenPageViews'
+          },
+          desc: true
+        }
+      ],
+      limit: 10
     };
+
+    console.log('Calling GA4 API with:', { propertyId, apiKey: apiKey ? 'Present' : 'Missing' });
 
     const response = await fetch(analyticsUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-goog-api-key': apiKey,
       },
       body: JSON.stringify(requestBody)
     });
+
+    console.log('GA4 API Response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -95,22 +94,19 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Google Analytics response:', JSON.stringify(data, null, 2));
+    console.log('GA4 API Response data:', JSON.stringify(data, null, 2));
     
     // Transform the data to match our expected format
-    const report = data.reports?.[0];
-    const rows = report?.data?.rows || [];
-    
     const transformedData = {
-      users: parseInt(report?.data?.totals?.[0]?.values?.[0] || '0'),
-      sessions: parseInt(report?.data?.totals?.[0]?.values?.[1] || '0'),
-      pageviews: parseInt(report?.data?.totals?.[0]?.values?.[2] || '0'),
-      avgSessionDuration: formatDuration(parseFloat(report?.data?.totals?.[0]?.values?.[3] || '0')),
-      bounceRate: `${parseFloat(report?.data?.totals?.[0]?.values?.[4] || '0').toFixed(1)}%`,
-      topPages: rows.slice(0, 5).map((row: any) => ({
-        page: row.dimensions[0],
-        views: parseInt(row.metrics[0].values[2])
-      }))
+      users: parseInt(data.rows?.[0]?.metricValues?.[0]?.value || '0'),
+      sessions: parseInt(data.rows?.[0]?.metricValues?.[1]?.value || '0'),
+      pageviews: parseInt(data.rows?.[0]?.metricValues?.[2]?.value || '0'),
+      avgSessionDuration: formatDuration(parseFloat(data.rows?.[0]?.metricValues?.[3]?.value || '0')),
+      bounceRate: `${(parseFloat(data.rows?.[0]?.metricValues?.[4]?.value || '0') * 100).toFixed(1)}%`,
+      topPages: data.rows?.slice(0, 5).map((row: any) => ({
+        page: row.dimensionValues[0].value,
+        views: parseInt(row.metricValues[2].value)
+      })) || []
     };
 
     return new Response(
