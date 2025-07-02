@@ -64,8 +64,8 @@ serve(async (req) => {
     const response = await fetch(analyticsUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
+        'X-goog-api-key': apiKey,
       },
       body: JSON.stringify(requestBody)
     })
