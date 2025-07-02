@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Users, Eye, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AnalyticsData {
   sessions: number;
@@ -45,22 +46,16 @@ export const GoogleAnalyticsIntegration: React.FC = () => {
   const fetchAnalyticsData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/google-analytics-api', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data: analyticsData, error } = await supabase.functions.invoke('google-analytics-api', {
+        body: {
           propertyId: propertyId
-        })
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch analytics data');
+      if (error) {
+        throw new Error(error.message || 'Failed to fetch analytics data');
       }
 
-      const analyticsData = await response.json();
       setData(analyticsData);
       toast.success('Δεδομένα Google Analytics ενημερώθηκαν!');
     } catch (error) {
