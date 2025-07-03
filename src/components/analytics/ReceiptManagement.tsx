@@ -103,6 +103,7 @@ export const ReceiptManagement: React.FC = () => {
   const loadReceipts = async () => {
     setLoading(true);
     try {
+      console.log('🔄 Φόρτωση αποδείξεων...');
       // Φόρτωση αποδείξεων από τις συνδρομές
       const { data: subscriptions, error } = await supabase
         .from('user_subscriptions')
@@ -113,7 +114,12 @@ export const ReceiptManagement: React.FC = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error loading subscriptions:', error);
+        throw error;
+      }
+      
+      console.log('📋 Loaded subscriptions:', subscriptions?.length || 0, subscriptions);
 
       // Μετατροπή συνδρομών σε αποδείξεις
       const receiptData: ReceiptData[] = (subscriptions || []).map((sub, index) => {
