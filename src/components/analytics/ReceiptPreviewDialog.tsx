@@ -132,8 +132,15 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
 
         <div id="receipt-content" className="bg-white p-6 mx-auto max-w-4xl border border-gray-200 text-sm">
           {/* Header with logo and business details */}
-          <div className="flex items-start justify-between border-b-2 border-[#00ffba] pb-4 mb-6">
-            <div className="flex-1">
+          <div className="border-b-2 border-[#00ffba] pb-4 mb-6">
+            <div className="text-center mb-4">
+              <div className="w-32 h-16 mx-auto mb-2">
+                <img 
+                  src="/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" 
+                  alt="HYPERKIDS Logo" 
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
               <div className="text-sm text-gray-700 space-y-1">
                 <p><strong>ΖΥΓΟΥΡΗΣ ΓΕΩΡΓΙΟΣ ΛΑΖΑΡΟΣ</strong></p>
                 <p>ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
@@ -141,13 +148,6 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                 <p>ΤΗΛ: 2310 529104</p>
                 <p>www.hyperkids.gr | info@hyperkids.gr</p>
               </div>
-            </div>
-            <div className="w-32 h-16 flex items-center justify-center">
-              <img 
-                src="/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" 
-                alt="HYPERKIDS Logo" 
-                className="max-w-full max-h-full object-contain"
-              />
             </div>
           </div>
 
