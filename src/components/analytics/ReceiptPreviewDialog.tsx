@@ -232,22 +232,10 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
             </div>
           </div>
 
-          {/* Status */}
-          <div className="mt-6 text-center">
-            <Badge className={`${getStatusColor(receipt.myDataStatus)} mb-2`}>
-              MyData: {getStatusText(receipt.myDataStatus)}
-            </Badge>
-            {receipt.myDataId && (
-              <p className="text-xs text-gray-500">MyData ID: {receipt.myDataId}</p>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="text-center mt-8 pt-6 border-t border-gray-200 text-xs text-gray-500">
+          <div className="text-center mt-6 pt-4 border-t border-gray-200 text-xs text-gray-500">
             <p><strong>HYPERKIDS</strong> - Γυμναστήριο</p>
             <p>Τηλ: +30 2310 529104 | Email: info@hyperkids.gr</p>
             <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
-            <p className="mt-2"><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά και θα αποσταλεί στο MyData της AADE</em></p>
           </div>
         </div>
       </DialogContent>
