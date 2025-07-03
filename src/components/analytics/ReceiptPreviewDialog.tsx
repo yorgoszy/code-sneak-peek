@@ -130,7 +130,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           </div>
         </DialogHeader>
 
-        <div id="receipt-content" className="bg-white p-6 mx-auto max-w-4xl border border-gray-200">
+        <div id="receipt-content" className="bg-white p-6 mx-auto max-w-4xl border border-gray-200 text-sm">
           {/* Header with logo and business details */}
           <div className="flex items-start justify-between border-b-2 border-[#00ffba] pb-4 mb-6">
             <div className="flex-1">
@@ -162,7 +162,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                 <span className="text-gray-600">{receipt.receiptNumber}</span>
               </div>
               <div>
-                <span className="font-semibold text-gray-900">Ημερομηνία Έκδοσης: </span>
+                <span className="font-semibold text-gray-900">Έκδοση: </span>
                 <span className="text-gray-600">{format(new Date(receipt.date), 'dd/MM/yyyy')}</span>
               </div>
             </div>
@@ -180,13 +180,13 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
               <div className="flex justify-between py-2 border-b border-gray-200">
                 {receipt.startDate && (
                   <div>
-                    <span className="font-semibold text-gray-900">Ημερομηνία Έναρξης: </span>
+                    <span className="font-semibold text-gray-900">Έναρξης: </span>
                     <span className="text-gray-600">{format(new Date(receipt.startDate), 'dd/MM/yyyy')}</span>
                   </div>
                 )}
                 {receipt.endDate && (
                   <div>
-                    <span className="font-semibold text-gray-900">Ημερομηνία Λήξης: </span>
+                    <span className="font-semibold text-gray-900">Λήξης: </span>
                     <span className="text-gray-600">{format(new Date(receipt.endDate), 'dd/MM/yyyy')}</span>
                   </div>
                 )}
