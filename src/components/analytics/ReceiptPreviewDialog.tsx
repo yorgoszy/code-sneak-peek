@@ -138,8 +138,8 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
               <div className="text-sm text-gray-700 space-y-1">
                 <p><strong>ΖΥΓΟΥΡΗΣ ΓΕΩΡΓΙΟΣ ΛΑΖΑΡΟΣ</strong></p>
                 <p>ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
-                <p>ΑΦΜ: 128159969 | ΔΟΥ: ΧΑΡΙΛΑΟΥ</p>
-                <p>ΤΗΛ: 2110529104</p>
+                <p>ΑΦΜ: 128109909 | ΔΟΥ: Ε΄ ΘΕΣΣΑΛΟΝΙΚΗΣ</p>
+                <p>ΤΗΛ: 2310529104</p>
                 <p>www.hyperkids.gr | info@hyperkids.gr</p>
               </div>
             </div>
