@@ -57,27 +57,94 @@ export const workoutStatusService = {
     
     console.log('🔄 Checking for missed workouts before:', today);
     
-    const { data, error } = await supabase
-      .from('workout_completions')
-      .update({ 
-        status: 'missed',
-        status_color: 'red'
-      })
-      .lt('scheduled_date', today)
-      .eq('status', 'pending')
-      .select();
+    try {
+      // 1. Βρες όλες τις ενεργές αναθέσεις
+      const { data: assignments, error: assignmentsError } = await supabase
+        .from('program_assignments')
+        .select('id, user_id, program_id, training_dates')
+        .eq('status', 'active');
 
-    if (error) {
-      console.error('❌ Error marking past workouts as missed:', error);
+      if (assignmentsError) {
+        console.error('❌ Error fetching assignments:', assignmentsError);
+        throw assignmentsError;
+      }
+
+      if (!assignments || assignments.length === 0) {
+        console.log('ℹ️ No active assignments found');
+        return [];
+      }
+
+      console.log(`📊 Found ${assignments.length} active assignments`);
+
+      // 2. Για κάθε ανάθεση, ελέγξε για χαμένες προπονήσεις
+      const missedWorkouts = [];
+      
+      for (const assignment of assignments) {
+        if (!assignment.training_dates || !Array.isArray(assignment.training_dates)) {
+          continue;
+        }
+
+        // Βρες προπονήσεις στο παρελθόν που δεν έχουν completion
+        const pastDates = assignment.training_dates.filter(date => date < today);
+        
+        for (const date of pastDates) {
+          // Ελέγξε αν υπάρχει ήδη completion για αυτή την ημερομηνία
+          const { data: existingCompletion } = await supabase
+            .from('workout_completions')
+            .select('id')
+            .eq('assignment_id', assignment.id)
+            .eq('scheduled_date', date)
+            .single();
+
+          if (!existingCompletion) {
+            // Υπολόγισε week_number και day_number από τη θέση στο array
+            const dateIndex = assignment.training_dates.indexOf(date);
+            
+            // Θεωρούμε ότι κάθε εβδομάδα έχει 7 ημέρες (ή λιγότερες)
+            // Αλλά επειδή δεν γνωρίζουμε την ακριβή δομή, θέτουμε απλές τιμές
+            const weekNumber = Math.floor(dateIndex / 7) + 1;
+            const dayNumber = (dateIndex % 7) + 1;
+
+            missedWorkouts.push({
+              assignment_id: assignment.id,
+              user_id: assignment.user_id,
+              program_id: assignment.program_id,
+              scheduled_date: date,
+              week_number: weekNumber,
+              day_number: dayNumber,
+              status: 'missed',
+              status_color: 'red',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          }
+        }
+      }
+
+      if (missedWorkouts.length === 0) {
+        console.log('ℹ️ No missed workouts found to create');
+        return [];
+      }
+
+      console.log(`🔄 Creating ${missedWorkouts.length} missed workout records`);
+
+      // 3. Εισαγωγή των χαμένων προπονήσεων
+      const { data, error } = await supabase
+        .from('workout_completions')
+        .insert(missedWorkouts)
+        .select();
+
+      if (error) {
+        console.error('❌ Error creating missed workout records:', error);
+        throw error;
+      }
+
+      console.log(`✅ Created ${data?.length || 0} missed workout records`);
+      return data || [];
+
+    } catch (error) {
+      console.error('❌ Unexpected error in markMissedWorkoutsForPastDates:', error);
       throw error;
     }
-
-    if (data && data.length > 0) {
-      console.log(`✅ Marked ${data.length} past workouts as missed:`, data);
-    } else {
-      console.log('ℹ️ No past pending workouts found to mark as missed');
-    }
-
-    return data || [];
   }
 };
