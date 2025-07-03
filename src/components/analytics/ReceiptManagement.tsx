@@ -361,7 +361,16 @@ export const ReceiptManagement: React.FC = () => {
                 <h4 className="font-semibold">Στοιχεία Απόδειξης</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Σειρά Απόδειξης *</label>
+                    <label className="block text-sm font-medium mb-2">Αριθμός Απόδειξης *</label>
+                    <Input
+                      value={newReceipt.receiptNumber}
+                      onChange={(e) => setNewReceipt(prev => ({ ...prev, receiptNumber: e.target.value }))}
+                      className="rounded-none"
+                      placeholder="π.χ. ΑΠΥ-0001"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">ΣΕΙΡΑ: ΑΠΥ/ΤΠΥ *</label>
                     <Select value={receiptSeries} onValueChange={(value: 'ΑΠΥ' | 'ΤΠΥ') => setReceiptSeries(value)}>
                       <SelectTrigger className="rounded-none">
                         <SelectValue />
@@ -373,7 +382,7 @@ export const ReceiptManagement: React.FC = () => {
                     </Select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Ημερομηνία Έκδοσης *</label>
+                    <label className="block text-sm font-medium mb-2">Έκδοση *</label>
                     <Input
                       type="date"
                       value={issueDate}
@@ -386,7 +395,7 @@ export const ReceiptManagement: React.FC = () => {
                 <h4 className="font-semibold">Στοιχεία Πελάτη</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Όνομα Πελάτη *</label>
+                    <label className="block text-sm font-medium mb-2">Πελάτης *</label>
                     <Input
                       value={newReceipt.customerName}
                       onChange={(e) => setNewReceipt(prev => ({ ...prev, customerName: e.target.value }))}
@@ -403,7 +412,28 @@ export const ReceiptManagement: React.FC = () => {
                   </div>
                 </div>
 
-                <h4 className="font-semibold">Στοιχεία Απόδειξης</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Έναρξης</label>
+                    <Input
+                      type="date"
+                      value={newReceipt.startDate}
+                      onChange={(e) => setNewReceipt(prev => ({ ...prev, startDate: e.target.value }))}
+                      className="rounded-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Λήξης</label>
+                    <Input
+                      type="date"
+                      value={newReceipt.endDate}
+                      onChange={(e) => setNewReceipt(prev => ({ ...prev, endDate: e.target.value }))}
+                      className="rounded-none"
+                    />
+                  </div>
+                </div>
+
+                <h4 className="font-semibold">ΤΥΠΟΣ Συνδρομής</h4>
                 {newReceipt.items?.map((item, index) => (
                   <div key={item.id} className="border border-gray-200 p-4 rounded-none">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -420,7 +450,25 @@ export const ReceiptManagement: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Τιμή (€)</label>
+                        <label className="block text-sm font-medium mb-2">Ποσότητα</label>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const updatedItems = [...(newReceipt.items || [])];
+                            const quantity = parseInt(e.target.value) || 1;
+                            updatedItems[index] = { 
+                              ...item, 
+                              quantity,
+                              total: item.unitPrice * quantity * (1 + item.vatRate / 100)
+                            };
+                            setNewReceipt(prev => ({ ...prev, items: updatedItems }));
+                          }}
+                          className="rounded-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Τιμή μονάδας (€)</label>
                         <Input
                           type="number"
                           step="0.01"
@@ -468,12 +516,24 @@ export const ReceiptManagement: React.FC = () => {
                   </div>
                 ))}
 
-                <div className="flex justify-between items-center pt-4 border-t">
-                  <div className="text-right">
-                    <p>Υποσύνολο: €{newReceipt.items?.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0).toFixed(2)}</p>
-                    <p>ΦΠΑ: €{newReceipt.items?.reduce((sum, item) => sum + (item.unitPrice * item.quantity * item.vatRate / 100), 0).toFixed(2)}</p>
-                    <p className="font-bold text-lg">Σύνολο: €{newReceipt.items?.reduce((sum, item) => sum + item.total, 0).toFixed(2)}</p>
+                <div className="bg-gray-50 p-4 border-l-4 border-[#00ffba] space-y-2">
+                  <div className="flex justify-between">
+                    <span className="font-medium">Αξία Συνδρομής:</span>
+                    <span>€{newReceipt.items?.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0).toFixed(2)}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">ΦΠΑ:</span>
+                    <span>€{newReceipt.items?.reduce((sum, item) => sum + (item.unitPrice * item.quantity * item.vatRate / 100), 0).toFixed(2)}</span>
+                  </div>
+                  <div className="border-t-2 border-[#00ffba] pt-2">
+                    <div className="flex justify-between text-xl font-bold text-[#00ffba]">
+                      <span>Σύνολο:</span>
+                      <span>€{newReceipt.items?.reduce((sum, item) => sum + item.total, 0).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
                   <Button
                     onClick={generateReceipt}
                     disabled={loading}
