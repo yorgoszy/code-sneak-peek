@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown } from "lucide-react";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt } from "lucide-react";
 
 interface SubscriptionType {
   id: string;
@@ -127,6 +127,15 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
+  const generateInvoiceNumber = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const timestamp = Date.now().toString().slice(-4);
+    return `SUB-${year}${month}${day}-${timestamp}`;
+  };
+
   const createSubscription = async () => {
     if (!selectedUser || !selectedSubscriptionType) {
       toast.error('Επιλέξτε χρήστη και τύπο συνδρομής');
@@ -135,7 +144,9 @@ export const SubscriptionManagement: React.FC = () => {
 
     try {
       const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
-      if (!subscriptionType) return;
+      const selectedUserData = users.find(u => u.id === selectedUser);
+      
+      if (!subscriptionType || !selectedUserData) return;
 
       const startDate = new Date();
       const endDate = new Date();
@@ -163,7 +174,38 @@ export const SubscriptionManagement: React.FC = () => {
 
       if (userError) throw userError;
 
-      toast.success('Η συνδρομή δημιουργήθηκε επιτυχώς!');
+      // Αποστολή απόδειξης με email
+      try {
+        const invoiceNumber = generateInvoiceNumber();
+        
+        const receiptData = {
+          userName: selectedUserData.name,
+          userEmail: selectedUserData.email,
+          subscriptionType: subscriptionType.name,
+          price: subscriptionType.price,
+          startDate: startDate.toISOString().split('T')[0],
+          endDate: endDate.toISOString().split('T')[0],
+          invoiceNumber: invoiceNumber
+        };
+
+        console.log('📧 Αποστολή απόδειξης...', receiptData);
+
+        const emailResponse = await supabase.functions.invoke('send-subscription-receipt', {
+          body: receiptData
+        });
+
+        if (emailResponse.error) {
+          console.error('❌ Σφάλμα αποστολής email:', emailResponse.error);
+          toast.error('Η συνδρομή δημιουργήθηκε αλλά η απόδειξη δεν στάλθηκε');
+        } else {
+          console.log('✅ Email στάλθηκε επιτυχώς');
+          toast.success('Η συνδρομή δημιουργήθηκε και η απόδειξη στάλθηκε επιτυχώς!');
+        }
+      } catch (emailError) {
+        console.error('❌ Σφάλμα email service:', emailError);
+        toast.error('Η συνδρομή δημιουργήθηκε αλλά η απόδειξη δεν στάλθηκε');
+      }
+
       setIsDialogOpen(false);
       setSelectedUser('');
       setSelectedSubscriptionType('');
@@ -395,7 +437,7 @@ export const SubscriptionManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Διαχείριση Συνδρομών RID AI</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Διαχείριση Συνδρομών</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
