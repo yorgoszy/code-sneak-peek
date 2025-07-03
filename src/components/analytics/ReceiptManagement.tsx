@@ -78,9 +78,11 @@ export const ReceiptManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Φόρτωση αποδείξεων πάντα, ανεξάρτητα από το MyData connection
+    loadReceipts();
+    
     if (settings.userId && settings.subscriptionKey) {
       setSettings(prev => ({ ...prev, connected: true }));
-      loadReceipts();
     }
   }, []);
 
