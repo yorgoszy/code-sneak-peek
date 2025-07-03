@@ -101,63 +101,53 @@ export const ReceiptManagement: React.FC = () => {
   const loadReceipts = async () => {
     setLoading(true);
     try {
-      // Φόρτωση αποδείξεων από τη βάση
-      const { data, error } = await supabase
-        .from('payments')
-        .select('*')
+      // Φόρτωση αποδείξεων από τις συνδρομές
+      const { data: subscriptions, error } = await supabase
+        .from('user_subscriptions')
+        .select(`
+          *,
+          subscription_types (*),
+          app_users (name, email)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Mock receipts για demo
-      const mockReceipts: ReceiptData[] = [
-        {
-          id: '1',
-          receiptNumber: 'REC-2024-001',
-          customerName: 'Γιάννης Παπαδόπουλος',
-          customerVat: '123456789',
-          customerEmail: 'giannis@example.com',
-          items: [
-            {
-              id: '1',
-              description: 'Premium Subscription - Μηνιαία',
-              quantity: 1,
-              unitPrice: 49.99,
-              vatRate: 24,
-              total: 61.99
-            }
-          ],
-          subtotal: 49.99,
-          vat: 12.00,
-          total: 61.99,
-          date: '2024-01-15',
-          myDataStatus: 'sent',
-          myDataId: 'MD123456789'
-        },
-        {
-          id: '2',
-          receiptNumber: 'REC-2024-002',
-          customerName: 'Μαρία Κωνσταντίνου',
-          customerEmail: 'maria@example.com',
-          items: [
-            {
-              id: '1',
-              description: 'Basic Subscription - Ετήσια',
-              quantity: 1,
-              unitPrice: 299.99,
-              vatRate: 24,
-              total: 371.99
-            }
-          ],
-          subtotal: 299.99,
-          vat: 72.00,
-          total: 371.99,
-          date: '2024-01-16',
-          myDataStatus: 'pending'
-        }
-      ];
+      // Μετατροπή συνδρομών σε αποδείξεις
+      const receiptData: ReceiptData[] = (subscriptions || []).map((sub, index) => {
+        const subscriptionType = sub.subscription_types;
+        const user = sub.app_users;
+        const invoiceNumber = `SUB-${new Date(sub.created_at).getFullYear()}${String(new Date(sub.created_at).getMonth() + 1).padStart(2, '0')}${String(new Date(sub.created_at).getDate()).padStart(2, '0')}-${String(index + 1).padStart(4, '0')}`;
+        
+        const netAmount = subscriptionType?.price || 0;
+        const vatAmount = netAmount * 0.24; // 24% ΦΠΑ
+        const totalAmount = netAmount + vatAmount;
 
-      setReceipts(mockReceipts);
+        return {
+          id: sub.id,
+          receiptNumber: invoiceNumber,
+          customerName: user?.name || 'Άγνωστος χρήστης',
+          customerEmail: user?.email,
+          items: [
+            {
+              id: '1',
+              description: subscriptionType?.name || 'Συνδρομή',
+              quantity: 1,
+              unitPrice: netAmount,
+              vatRate: 24,
+              total: totalAmount
+            }
+          ],
+          subtotal: netAmount,
+          vat: vatAmount,
+          total: totalAmount,
+          date: sub.start_date,
+          myDataStatus: 'sent' as const,
+          myDataId: `MD${Date.now()}`
+        };
+      });
+
+      setReceipts(receiptData);
     } catch (error) {
       console.error('Error loading receipts:', error);
       toast.error('Σφάλμα στη φόρτωση αποδείξεων');
