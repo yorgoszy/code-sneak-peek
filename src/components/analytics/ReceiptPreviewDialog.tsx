@@ -130,7 +130,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           </div>
         </DialogHeader>
 
-        <div id="receipt-content" className="bg-white p-8 mx-auto max-w-2xl border border-gray-200">
+        <div id="receipt-content" className="bg-white p-8 mx-auto max-w-3xl border border-gray-200">
           {/* Header with logo and business details */}
           <div className="flex items-start justify-between border-b-2 border-[#00ffba] pb-6 mb-8">
             <div className="flex-1">
