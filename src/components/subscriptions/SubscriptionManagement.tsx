@@ -545,7 +545,7 @@ export const SubscriptionManagement: React.FC = () => {
               </div>
 
               {selectedSubscriptionType && (
-                <div className="space-y-2">
+                  <div className="space-y-2">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">Ποσότητα</label>
@@ -559,7 +559,11 @@ export const SubscriptionManagement: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium mb-2">Τιμή μονάδας (€)</label>
                       <Input
-                        value={subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price.toFixed(2) || '0.00'}
+                        value={(() => {
+                          const totalPrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
+                          const netPrice = totalPrice / 1.13; // Αποφορολόγηση από 13% ΦΠΑ
+                          return netPrice.toFixed(2);
+                        })()}
                         disabled
                         className="rounded-none bg-gray-50"
                       />
@@ -577,16 +581,25 @@ export const SubscriptionManagement: React.FC = () => {
                   <div className="bg-gray-50 p-4 border-l-4 border-[#00ffba] space-y-2">
                     <div className="flex justify-between">
                       <span className="font-medium">Αξία Συνδρομής:</span>
-                      <span>€{(subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0).toFixed(2)}</span>
+                      <span>€{(() => {
+                        const totalPrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
+                        const netPrice = totalPrice / 1.13;
+                        return netPrice.toFixed(2);
+                      })()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium">ΦΠΑ:</span>
-                      <span>€{((subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * 0.13).toFixed(2)}</span>
+                      <span>€{(() => {
+                        const totalPrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
+                        const netPrice = totalPrice / 1.13;
+                        const vatAmount = totalPrice - netPrice;
+                        return vatAmount.toFixed(2);
+                      })()}</span>
                     </div>
                     <div className="border-t-2 border-[#00ffba] pt-2">
                       <div className="flex justify-between text-xl font-bold text-[#00ffba]">
                         <span>Σύνολο:</span>
-                        <span>€{((subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * 1.13).toFixed(2)}</span>
+                        <span>€{(subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
