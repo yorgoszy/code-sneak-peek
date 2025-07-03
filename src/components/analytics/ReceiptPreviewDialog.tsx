@@ -47,203 +47,76 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
   const downloadPDF = async () => {
     if (!receipt) return;
 
+    const element = document.getElementById('receipt-content');
+    if (!element) return;
+
     try {
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      
-      // Αρχική θέση Y
-      let yPos = 20;
-      
-      // Logo - προσθέτουμε την εικόνα
-      try {
-        const logoImg = new Image();
-        logoImg.crossOrigin = 'anonymous';
-        logoImg.src = '/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png';
-        
-        await new Promise((resolve, reject) => {
-          logoImg.onload = () => resolve(logoImg);
-          logoImg.onerror = () => resolve(null);
+      // Περιμένουμε να φορτώσουν όλες οι εικόνες
+      const images = element.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.onload = resolve;
+          img.onerror = resolve;
+          setTimeout(resolve, 1000); // fallback timeout
         });
-        
-        if (logoImg.complete) {
-          const logoWidth = 30;
-          const logoHeight = 15;
-          pdf.addImage(logoImg, 'PNG', 20, yPos, logoWidth, logoHeight);
+      }));
+
+      // Βελτιωμένες ρυθμίσεις html2canvas για ακριβή αντιγραφή
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        ignoreElements: () => false,
+        removeContainer: false,
+        foreignObjectRendering: false,
+        imageTimeout: 5000,
+        onclone: (clonedDoc, clonedElement) => {
+          // Εξασφαλίζουμε ότι το cloned element έχει τα ίδια styles
+          const originalElement = document.getElementById('receipt-content');
+          if (originalElement && clonedElement) {
+            clonedElement.style.cssText = originalElement.style.cssText;
+            clonedElement.style.display = 'block';
+            clonedElement.style.visibility = 'visible';
+            clonedElement.style.opacity = '1';
+            clonedElement.style.transform = 'none';
+            clonedElement.style.position = 'static';
+            
+            // Αντιγραφή όλων των inline styles από το original
+            const allElements = originalElement.querySelectorAll('*');
+            const clonedElements = clonedElement.querySelectorAll('*');
+            
+            allElements.forEach((el, index) => {
+              if (clonedElements[index]) {
+                (clonedElements[index] as HTMLElement).style.cssText = (el as HTMLElement).style.cssText;
+              }
+            });
+          }
         }
-      } catch (error) {
-        console.log('Logo not loaded, continuing without it');
-      }
-      
-      yPos += 20;
-      
-      // Στοιχεία επιχείρησης
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('ΖΥΓΟΥΡΗΣ ΓΕΩΡΓΙΟΣ ΛΑΖΑΡΟΣ', 20, yPos);
-      yPos += 6;
-      
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.text('ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627', 20, yPos);
-      yPos += 5;
-      pdf.text('ΑΦΜ: 128109909 | ΔΟΥ: Ε΄ ΘΕΣΣΑΛΟΝΙΚΗΣ', 20, yPos);
-      yPos += 5;
-      pdf.text('ΤΗΛ: 2310 529104', 20, yPos);
-      yPos += 5;
-      pdf.text('www.hyperkids.gr | info@hyperkids.gr', 20, yPos);
-      yPos += 15;
-      
-      // Γραμμή διαχωρισμού
-      pdf.setDrawColor(0, 255, 186);
-      pdf.setLineWidth(2);
-      pdf.line(20, yPos, pageWidth - 20, yPos);
-      yPos += 10;
-      
-      // Τίτλος απόδειξης
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(0, 255, 186);
-      const titleWidth = pdf.getTextWidth('ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ');
-      pdf.text('ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ', (pageWidth - titleWidth) / 2, yPos);
-      yPos += 15;
-      
-      // Επαναφορά χρώματος κειμένου
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(10);
-      
-      // Στοιχεία απόδειξης
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Αριθμός Απόδειξης:', 20, yPos);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(receipt.receiptNumber, 70, yPos);
-      
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Έκδοση:', 130, yPos);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(format(new Date(receipt.date), 'dd/MM/yyyy'), 150, yPos);
-      yPos += 8;
-      
-      // Γραμμή
-      pdf.setDrawColor(200, 200, 200);
-      pdf.setLineWidth(0.5);
-      pdf.line(20, yPos, pageWidth - 20, yPos);
-      yPos += 8;
-      
-      // Πελάτης
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Πελάτης:', 20, yPos);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(receipt.customerName, 70, yPos);
-      yPos += 8;
-      
-      // ΑΦΜ αν υπάρχει
-      if (receipt.customerVat) {
-        pdf.line(20, yPos, pageWidth - 20, yPos);
-        yPos += 8;
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('ΑΦΜ:', 20, yPos);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(receipt.customerVat, 70, yPos);
-        yPos += 8;
-      }
-      
-      // Ημερομηνίες έναρξης και λήξης
-      if (receipt.startDate || receipt.endDate) {
-        pdf.line(20, yPos, pageWidth - 20, yPos);
-        yPos += 8;
-        
-        if (receipt.startDate) {
-          pdf.setFont('helvetica', 'bold');
-          pdf.text('Έναρξης:', 20, yPos);
-          pdf.setFont('helvetica', 'normal');
-          pdf.text(format(new Date(receipt.startDate), 'dd/MM/yyyy'), 50, yPos);
-        }
-        
-        if (receipt.endDate) {
-          pdf.setFont('helvetica', 'bold');
-          pdf.text('Λήξης:', 100, yPos);
-          pdf.setFont('helvetica', 'normal');
-          pdf.text(format(new Date(receipt.endDate), 'dd/MM/yyyy'), 125, yPos);
-        }
-        yPos += 8;
-      }
-      
-      yPos += 10;
-      
-      // Στοιχεία συνδρομής
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Στοιχεία Συνδρομής', 20, yPos);
-      yPos += 10;
-      
-      // Items
-      receipt.items.forEach((item) => {
-        pdf.setDrawColor(200, 200, 200);
-        pdf.rect(20, yPos - 5, pageWidth - 40, 20);
-        
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(item.description, 25, yPos);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(`Ποσότητα: ${item.quantity}`, pageWidth - 60, yPos);
-        yPos += 6;
-        
-        pdf.text(`Τιμή μονάδας: €${item.unitPrice.toFixed(2)}`, 25, yPos);
-        pdf.text(`ΦΠΑ: ${item.vatRate}%`, pageWidth - 60, yPos);
-        yPos += 15;
       });
       
-      yPos += 5;
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const pdf = new jsPDF('p', 'mm', 'a4');
       
-      // Σύνολα
-      pdf.setFillColor(245, 245, 245);
-      pdf.rect(20, yPos - 5, pageWidth - 40, 35, 'F');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      // Αξία συνδρομής
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Αξία Συνδρομής:', 25, yPos);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`€${receipt.subtotal.toFixed(2)}`, pageWidth - 50, yPos);
-      yPos += 8;
+      // Υπολογισμός μεγέθους για να χωρέσει ακριβώς όπως στην προβολή
+      const imgWidth = pdfWidth - 10; // 5mm margin
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      // ΦΠΑ
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('ΦΠΑ (13%):', 25, yPos);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`€${receipt.vat.toFixed(2)}`, pageWidth - 50, yPos);
-      yPos += 10;
-      
-      // Γραμμή διαχωρισμού
-      pdf.setDrawColor(0, 255, 186);
-      pdf.setLineWidth(2);
-      pdf.line(25, yPos, pageWidth - 25, yPos);
-      yPos += 8;
-      
-      // Σύνολο
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(0, 255, 186);
-      pdf.text('Σύνολο:', 25, yPos);
-      pdf.text(`€${receipt.total.toFixed(2)}`, pageWidth - 60, yPos);
-      
-      // Footer
-      yPos = pageHeight - 30;
-      pdf.setFontSize(8);
-      pdf.setTextColor(100, 100, 100);
-      pdf.setFont('helvetica', 'bold');
-      const footerText1 = 'HYPERKIDS - Γυμναστήριο';
-      const footerWidth1 = pdf.getTextWidth(footerText1);
-      pdf.text(footerText1, (pageWidth - footerWidth1) / 2, yPos);
-      yPos += 4;
-      
-      pdf.setFont('helvetica', 'normal');
-      const footerText2 = 'Τηλ: +30 2310 529104 | Email: info@hyperkids.gr';
-      const footerWidth2 = pdf.getTextWidth(footerText2);
-      pdf.text(footerText2, (pageWidth - footerWidth2) / 2, yPos);
-      yPos += 4;
-      
-      const footerText3 = 'Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627';
-      const footerWidth3 = pdf.getTextWidth(footerText3);
-      pdf.text(footerText3, (pageWidth - footerWidth3) / 2, yPos);
+      if (imgHeight <= pdfHeight - 10) {
+        // Χωράει σε μία σελίδα
+        pdf.addImage(imgData, 'PNG', 5, 5, imgWidth, imgHeight);
+      } else {
+        // Κλιμάκωση για να χωρέσει
+        const scaledHeight = pdfHeight - 10;
+        const scaledWidth = (canvas.width * scaledHeight) / canvas.height;
+        const x = (pdfWidth - scaledWidth) / 2;
+        pdf.addImage(imgData, 'PNG', x, 5, scaledWidth, scaledHeight);
+      }
       
       pdf.save(`${receipt.receiptNumber}.pdf`);
     } catch (error) {
