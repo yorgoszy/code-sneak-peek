@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { GoogleAnalyticsIntegration } from "@/components/analytics/GoogleAnalyticsIntegration";
 import { FacebookPixelIntegration } from "@/components/analytics/FacebookPixelIntegration";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AnalyticsData {
   visitors: number;
@@ -38,6 +39,36 @@ export const AnalyticsDashboard: React.FC = () => {
     deviceTypes: [],
     trafficSources: []
   });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchClarityAnalytics();
+  }, []);
+
+  const fetchClarityAnalytics = async () => {
+    setLoading(true);
+    try {
+      const response = await supabase.functions.invoke('microsoft-clarity-api', {
+        body: {
+          projectId: 's8pez1q43c',
+          dateRange: {
+            start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days ago
+            end: new Date().toISOString().split('T')[0] // today
+          }
+        }
+      });
+
+      if (response.data?.success) {
+        setAnalyticsData(response.data.data);
+      } else {
+        console.error('Failed to fetch analytics:', response.error);
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const analyticsTools = [
     {
