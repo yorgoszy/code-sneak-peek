@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ReceiptPreviewDialog } from "./ReceiptPreviewDialog";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface ReceiptData {
   id: string;
@@ -76,6 +79,8 @@ export const ReceiptManagement: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
 
   useEffect(() => {
     // Φόρτωση αποδείξεων πάντα, ανεξάρτητα από το MyData connection
@@ -487,12 +492,107 @@ export const ReceiptManagement: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-2 mt-3">
-                        <Button variant="outline" size="sm" className="rounded-none">
+                       <div className="flex gap-2 mt-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="rounded-none"
+                          onClick={() => {
+                            setSelectedReceipt(receipt);
+                            setPreviewDialogOpen(true);
+                          }}
+                        >
                           <Eye className="h-4 w-4 mr-1" />
                           Προβολή
                         </Button>
-                        <Button variant="outline" size="sm" className="rounded-none">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="rounded-none"
+                          onClick={async () => {
+                            // Create temporary element for PDF generation
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = `
+                              <div style="padding: 32px; max-width: 600px; margin: 0 auto; background: white; font-family: Arial, sans-serif;">
+                                <div style="text-align: center; border-bottom: 2px solid #00ffba; padding-bottom: 24px; margin-bottom: 32px;">
+                                  <div style="font-size: 28px; font-weight: bold; color: #333; margin-bottom: 8px;">HYPERKIDS</div>
+                                  <p style="color: #666;">Προπονητικό Κέντρο Αθλητικής Επίδοσης</p>
+                                </div>
+                                <h2 style="font-size: 24px; color: #00ffba; text-align: center; margin-bottom: 32px;">ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ</h2>
+                                <div style="margin-bottom: 32px;">
+                                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                                    <span style="font-weight: bold;">Αριθμός Απόδειξης:</span>
+                                    <span>${receipt.receiptNumber}</span>
+                                  </div>
+                                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                                    <span style="font-weight: bold;">Ημερομηνία:</span>
+                                    <span>${receipt.date}</span>
+                                  </div>
+                                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                                    <span style="font-weight: bold;">Πελάτης:</span>
+                                    <span>${receipt.customerName}</span>
+                                  </div>
+                                </div>
+                                <div style="margin-bottom: 32px;">
+                                  <h3 style="font-weight: bold; margin-bottom: 16px;">Στοιχεία Συνδρομής</h3>
+                                  ${receipt.items.map(item => `
+                                    <div style="border: 1px solid #ddd; padding: 16px; margin-bottom: 16px;">
+                                      <div style="font-weight: bold; margin-bottom: 8px;">${item.description}</div>
+                                      <div style="display: flex; justify-content: space-between;">
+                                        <span>Τιμή: €${item.unitPrice.toFixed(2)}</span>
+                                        <span>ΦΠΑ: ${item.vatRate}%</span>
+                                      </div>
+                                    </div>
+                                  `).join('')}
+                                </div>
+                                <div style="background: #f8f9fa; padding: 24px; border-left: 4px solid #00ffba;">
+                                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-weight: bold;">Υποσύνολο:</span>
+                                    <span>€${receipt.subtotal.toFixed(2)}</span>
+                                  </div>
+                                  <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                                    <span style="font-weight: bold;">ΦΠΑ (24%):</span>
+                                    <span>€${receipt.vat.toFixed(2)}</span>
+                                  </div>
+                                  <div style="border-top: 2px solid #00ffba; padding-top: 16px;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                      <span style="font-size: 24px; font-weight: bold; color: #00ffba;">Σύνολο:</span>
+                                      <span style="font-size: 24px; font-weight: bold; color: #00ffba;">€${receipt.total.toFixed(2)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+                                  <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
+                                  <p>Τηλ: +30 210 1234567 | Email: info@hyperkids.gr</p>
+                                </div>
+                              </div>
+                            `;
+                            
+                            document.body.appendChild(tempDiv);
+                            
+                            try {
+                              const canvas = await html2canvas(tempDiv, {
+                                scale: 2,
+                                useCORS: true,
+                                allowTaint: true
+                              });
+                              
+                              const imgData = canvas.toDataURL('image/png');
+                              const pdf = new jsPDF('p', 'mm', 'a4');
+                              
+                              const imgWidth = 210;
+                              const pageHeight = 295;
+                              const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                              
+                              pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                              pdf.save(`${receipt.receiptNumber}.pdf`);
+                            } catch (error) {
+                              console.error('Error generating PDF:', error);
+                            } finally {
+                              document.body.removeChild(tempDiv);
+                            }
+                          }}
+                        >
                           <Download className="h-4 w-4 mr-1" />
                           PDF
                         </Button>
@@ -609,6 +709,12 @@ export const ReceiptManagement: React.FC = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      <ReceiptPreviewDialog
+        isOpen={previewDialogOpen}
+        onClose={() => setPreviewDialogOpen(false)}
+        receipt={selectedReceipt}
+      />
     </div>
   );
 };
