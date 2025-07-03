@@ -451,7 +451,7 @@ export const SubscriptionManagement: React.FC = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="user">Αναζήτηση και Επιλογή Χρήστη</Label>
+                <label className="block text-sm font-medium mb-2">Πελάτης *</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
@@ -489,7 +489,7 @@ export const SubscriptionManagement: React.FC = () => {
               </div>
               
               <div>
-                <Label htmlFor="subscriptionType">Τύπος Συνδρομής</Label>
+                <label className="block text-sm font-medium mb-2">ΤΥΠΟΣ Συνδρομής *</label>
                 <Select value={selectedSubscriptionType} onValueChange={setSelectedSubscriptionType}>
                   <SelectTrigger className="rounded-none">
                     <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
