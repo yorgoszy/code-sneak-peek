@@ -450,6 +450,8 @@ export const SubscriptionManagement: React.FC = () => {
               <DialogTitle>Δημιουργία Νέας Συνδρομής</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              <h4 className="font-semibold">Στοιχεία Συνδρομής</h4>
+              
               <div>
                 <label className="block text-sm font-medium mb-2">Πελάτης *</label>
                 <div className="relative">
@@ -487,9 +489,34 @@ export const SubscriptionManagement: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Έναρξης</label>
+                  <Input
+                    type="date"
+                    value={new Date().toISOString().split('T')[0]}
+                    disabled
+                    className="rounded-none bg-gray-50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Λήξης</label>
+                  <Input
+                    type="date"
+                    value={selectedSubscriptionType ? 
+                      new Date(Date.now() + (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.duration_days || 0) * 24 * 60 * 60 * 1000).toISOString().split('T')[0] 
+                      : ''
+                    }
+                    disabled
+                    className="rounded-none bg-gray-50"
+                  />
+                </div>
+              </div>
               
+              <h4 className="font-semibold">ΤΥΠΟΣ Συνδρομής</h4>
               <div>
-                <label className="block text-sm font-medium mb-2">ΤΥΠΟΣ Συνδρομής *</label>
+                <label className="block text-sm font-medium mb-2">Περιγραφή *</label>
                 <Select value={selectedSubscriptionType} onValueChange={setSelectedSubscriptionType}>
                   <SelectTrigger className="rounded-none">
                     <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
@@ -504,10 +531,58 @@ export const SubscriptionManagement: React.FC = () => {
                 </Select>
               </div>
 
+              {selectedSubscriptionType && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ποσότητα</label>
+                      <Input
+                        type="number"
+                        value="1"
+                        disabled
+                        className="rounded-none bg-gray-50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Τιμή μονάδας (€)</label>
+                      <Input
+                        value={subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price.toFixed(2) || '0.00'}
+                        disabled
+                        className="rounded-none bg-gray-50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">ΦΠΑ (%)</label>
+                      <Input
+                        value="13"
+                        disabled
+                        className="rounded-none bg-gray-50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 border-l-4 border-[#00ffba] space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Αξία Συνδρομής:</span>
+                      <span>€{(subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">ΦΠΑ:</span>
+                      <span>€{((subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * 0.13).toFixed(2)}</span>
+                    </div>
+                    <div className="border-t-2 border-[#00ffba] pt-2">
+                      <div className="flex justify-between text-xl font-bold text-[#00ffba]">
+                        <span>Σύνολο:</span>
+                        <span>€{((subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * 1.13).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div>
-                <Label htmlFor="notes">Σημειώσεις</Label>
+                <label className="block text-sm font-medium mb-2">Σημειώσεις</label>
                 <Textarea
-                  id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Προσθέστε σημειώσεις..."
@@ -515,8 +590,9 @@ export const SubscriptionManagement: React.FC = () => {
                 />
               </div>
 
-              <Button onClick={createSubscription} className="w-full rounded-none">
-                Δημιουργία Συνδρομής
+              <Button onClick={createSubscription} className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
+                <Receipt className="h-4 w-4 mr-2" />
+                Έκδοση & Αποστολή Συνδρομής
               </Button>
             </div>
           </DialogContent>
