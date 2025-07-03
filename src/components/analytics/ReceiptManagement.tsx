@@ -314,72 +314,6 @@ export const ReceiptManagement: React.FC = () => {
     }
   };
 
-  if (!settings.connected) {
-    return (
-      <div className="space-y-6">
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Receipt className="h-5 w-5 text-[#00ffba]" />
-              Σύνδεση με MyData AADE
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">User ID (ΑΦΜ)</label>
-                <Input
-                  placeholder="Εισάγετε το ΑΦΜ σας"
-                  value={settings.userId}
-                  onChange={(e) => setSettings(prev => ({ ...prev, userId: e.target.value }))}
-                  className="rounded-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Subscription Key</label>
-                <Input
-                  type="password"
-                  placeholder="Εισάγετε το Subscription Key"
-                  value={settings.subscriptionKey}
-                  onChange={(e) => setSettings(prev => ({ ...prev, subscriptionKey: e.target.value }))}
-                  className="rounded-none"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Περιβάλλον</label>
-              <Select value={settings.environment} onValueChange={(value: 'sandbox' | 'production') => 
-                setSettings(prev => ({ ...prev, environment: value }))
-              }>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sandbox">Sandbox (Δοκιμαστικό)</SelectItem>
-                  <SelectItem value="production">Production (Παραγωγή)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button 
-              onClick={handleConnect}
-              className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              Σύνδεση με MyData
-            </Button>
-
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-none">
-              <p className="text-sm text-blue-800">
-                ℹ️ Χρειάζεστε έγκυρο ΑΦΜ και Subscription Key από το MyData portal της AADE για να στέλνετε παραστατικά.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <Card className="rounded-none">
@@ -387,25 +321,27 @@ export const ReceiptManagement: React.FC = () => {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-[#00ffba]" />
-              Διαχείριση Αποδείξεων MyData
-              <Badge className="bg-green-100 text-green-800">Συνδεδεμένο</Badge>
+              Διαχείριση Αποδείξεων
+              {settings.connected && <Badge className="bg-green-100 text-green-800">MyData Συνδεδεμένο</Badge>}
             </CardTitle>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setSettings(prev => ({ ...prev, connected: false }))}
-              className="rounded-none"
-            >
-              Αποσύνδεση
-            </Button>
+            {settings.connected && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setSettings(prev => ({ ...prev, connected: false }))}
+                className="rounded-none"
+              >
+                Αποσύνδεση MyData
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="new" className="w-full">
+          <Tabs defaultValue="history" className="w-full">
             <TabsList className="grid w-full grid-cols-3 rounded-none">
+              <TabsTrigger value="history" className="rounded-none">Ιστορικό Αποδείξεων</TabsTrigger>
               <TabsTrigger value="new" className="rounded-none">Νέα Απόδειξη</TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none">Ιστορικό</TabsTrigger>
-              <TabsTrigger value="settings" className="rounded-none">Ρυθμίσεις</TabsTrigger>
+              <TabsTrigger value="mydata" className="rounded-none">MyData Ρυθμίσεις</TabsTrigger>
             </TabsList>
             
             <TabsContent value="new" className="mt-6">
@@ -578,39 +514,96 @@ export const ReceiptManagement: React.FC = () => {
               </div>
             </TabsContent>
             
-            <TabsContent value="settings" className="mt-6">
+            <TabsContent value="mydata" className="mt-6">
               <div className="space-y-4">
-                <h4 className="font-semibold">Ρυθμίσεις MyData</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">User ID (ΑΦΜ)</label>
-                    <Input value={settings.userId} disabled className="rounded-none bg-gray-50" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Περιβάλλον</label>
-                    <Badge className={settings.environment === 'production' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
-                      {settings.environment === 'production' ? 'Παραγωγή' : 'Δοκιμαστικό'}
-                    </Badge>
-                  </div>
-                </div>
+                <h4 className="font-semibold">Ρυθμίσεις MyData AADE</h4>
                 
-                <div className="bg-gray-50 p-4 rounded-none">
-                  <h5 className="font-medium mb-2">Στατιστικά</h5>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-2xl font-bold text-[#00ffba]">{receipts.length}</p>
-                      <p className="text-sm text-gray-600">Συνολικές Αποδείξεις</p>
+                {!settings.connected ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">User ID (ΑΦΜ)</label>
+                        <Input
+                          placeholder="Εισάγετε το ΑΦΜ σας"
+                          value={settings.userId}
+                          onChange={(e) => setSettings(prev => ({ ...prev, userId: e.target.value }))}
+                          className="rounded-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Subscription Key</label>
+                        <Input
+                          type="password"
+                          placeholder="Εισάγετε το Subscription Key"
+                          value={settings.subscriptionKey}
+                          onChange={(e) => setSettings(prev => ({ ...prev, subscriptionKey: e.target.value }))}
+                          className="rounded-none"
+                        />
+                      </div>
                     </div>
+                    
                     <div>
-                      <p className="text-2xl font-bold text-green-600">{receipts.filter(r => r.myDataStatus === 'sent').length}</p>
-                      <p className="text-sm text-gray-600">Εσταλμένες</p>
+                      <label className="block text-sm font-medium mb-2">Περιβάλλον</label>
+                      <Select value={settings.environment} onValueChange={(value: 'sandbox' | 'production') => 
+                        setSettings(prev => ({ ...prev, environment: value }))
+                      }>
+                        <SelectTrigger className="rounded-none">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sandbox">Sandbox (Δοκιμαστικό)</SelectItem>
+                          <SelectItem value="production">Production (Παραγωγή)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-yellow-600">{receipts.filter(r => r.myDataStatus === 'pending').length}</p>
-                      <p className="text-sm text-gray-600">Εκκρεμείς</p>
+
+                    <Button 
+                      onClick={handleConnect}
+                      className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                    >
+                      Σύνδεση με MyData
+                    </Button>
+
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-none">
+                      <p className="text-sm text-blue-800">
+                        ℹ️ Χρειάζεστε έγκυρο ΑΦΜ και Subscription Key από το MyData portal της AADE για να στέλνετε παραστατικά.
+                      </p>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">User ID (ΑΦΜ)</label>
+                        <Input value={settings.userId} disabled className="rounded-none bg-gray-50" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Περιβάλλον</label>
+                        <Badge className={settings.environment === 'production' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
+                          {settings.environment === 'production' ? 'Παραγωγή' : 'Δοκιμαστικό'}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 p-4 rounded-none">
+                      <h5 className="font-medium mb-2">Στατιστικά</h5>
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                          <p className="text-2xl font-bold text-[#00ffba]">{receipts.length}</p>
+                          <p className="text-sm text-gray-600">Συνολικές Αποδείξεις</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-green-600">{receipts.filter(r => r.myDataStatus === 'sent').length}</p>
+                          <p className="text-sm text-gray-600">Εσταλμένες</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-yellow-600">{receipts.filter(r => r.myDataStatus === 'pending').length}</p>
+                          <p className="text-sm text-gray-600">Εκκρεμείς</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
