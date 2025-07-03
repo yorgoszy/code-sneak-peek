@@ -244,9 +244,9 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
 
           {/* Footer */}
           <div className="text-center mt-8 pt-6 border-t border-gray-200 text-xs text-gray-500">
-            <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
-            <p>Τηλ: +30 210 1234567 | Email: info@hyperkids.gr</p>
-            <p>Διεύθυνση: Αθήνα, Ελλάδα</p>
+            <p><strong>HYPERKIDS</strong> - Γυμναστήριο</p>
+            <p>Τηλ: +30 2310 529104 | Email: info@hyperkids.gr</p>
+            <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
             <p className="mt-2"><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά και θα αποσταλεί στο MyData της AADE</em></p>
           </div>
         </div>
