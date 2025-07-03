@@ -51,30 +51,43 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
     if (!element) return;
 
     try {
+      // Προσωρινά αλλάζουμε το background color για καλύτερη απόδοση στο PDF
+      const originalBg = element.style.backgroundColor;
+      element.style.backgroundColor = 'white';
+      
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 3, // Αυξημένη ανάλυση για καλύτερη ποιότητα
         useCORS: true,
-        allowTaint: true
+        allowTaint: true,
+        backgroundColor: 'white',
+        logging: false,
+        removeContainer: true,
+        imageTimeout: 0,
+        foreignObjectRendering: true
       });
       
-      const imgData = canvas.toDataURL('image/png');
+      // Επαναφορά του αρχικού background
+      element.style.backgroundColor = originalBg;
+      
+      const imgData = canvas.toDataURL('image/png', 1.0); // Μέγιστη ποιότητα
       const pdf = new jsPDF('p', 'mm', 'a4');
       
-      const imgWidth = 210;
-      const pageHeight = 295;
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth - 20; // 10mm περιθώριο από κάθε πλευρά
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
       
-      let position = 0;
+      let y = 10; // 10mm από την κορυφή
       
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      // Αν η εικόνα χωράει στη σελίδα
+      if (imgHeight <= pdfHeight - 20) {
+        pdf.addImage(imgData, 'PNG', 10, y, imgWidth, imgHeight);
+      } else {
+        // Αν η εικόνα δεν χωράει, την κλιμακώνουμε για να χωρέσει
+        const scaledHeight = pdfHeight - 20;
+        const scaledWidth = (canvas.width * scaledHeight) / canvas.height;
+        const x = (pdfWidth - scaledWidth) / 2; // Κεντραρισμένη
+        pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
       }
       
       pdf.save(`${receipt.receiptNumber}.pdf`);
