@@ -18,6 +18,8 @@ interface ReceiptData {
   vat: number;
   total: number;
   date: string;
+  startDate?: string;
+  endDate?: string;
   myDataStatus: 'pending' | 'sent' | 'error';
   myDataId?: string;
 }
@@ -129,10 +131,25 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
         </DialogHeader>
 
         <div id="receipt-content" className="bg-white p-8 mx-auto max-w-2xl border border-gray-200">
-          {/* Header */}
-          <div className="text-center border-b-2 border-[#00ffba] pb-6 mb-8">
-            <div className="text-3xl font-bold text-gray-900 mb-2">HYPERKIDS</div>
-            <p className="text-gray-600">Προπονητικό Κέντρο Αθλητικής Επίδοσης</p>
+          {/* Header with logo and business details */}
+          <div className="flex items-start justify-between border-b-2 border-[#00ffba] pb-6 mb-8">
+            <div className="flex-1">
+              <div className="text-4xl font-bold text-gray-900 mb-4">HYPERKIDS</div>
+              <div className="text-sm text-gray-700 space-y-1">
+                <p><strong>ΖΥΓΟΥΡΗΣ ΓΕΩΡΓΙΟΣ ΛΑΖΑΡΟΣ</strong></p>
+                <p>ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
+                <p>ΑΦΜ: 128159969 | ΔΟΥ: ΧΑΡΙΛΑΟΥ</p>
+                <p>ΤΗΛ: 2110529104</p>
+                <p>www.hyperkids.gr | info@hyperkids.gr</p>
+              </div>
+            </div>
+            <div className="w-32 h-16 flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" 
+                alt="HYPERKIDS Logo" 
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
           </div>
 
           {/* Receipt Title */}
@@ -164,6 +181,18 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                 <span className="text-gray-600">{receipt.customerVat}</span>
               </div>
             )}
+            {receipt.startDate && (
+              <div className="flex justify-between py-2 border-b border-gray-200">
+                <span className="font-semibold text-gray-900">Ημερομηνία Έναρξης:</span>
+                <span className="text-gray-600">{format(new Date(receipt.startDate), 'dd/MM/yyyy')}</span>
+              </div>
+            )}
+            {receipt.endDate && (
+              <div className="flex justify-between py-2 border-b border-gray-200">
+                <span className="font-semibold text-gray-900">Ημερομηνία Λήξης:</span>
+                <span className="text-gray-600">{format(new Date(receipt.endDate), 'dd/MM/yyyy')}</span>
+              </div>
+            )}
           </div>
 
           {/* Items */}
@@ -191,7 +220,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                 <span className="text-gray-600">€{receipt.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="font-semibold text-gray-900">ΦΠΑ (24%):</span>
+                <span className="font-semibold text-gray-900">ΦΠΑ (13%):</span>
                 <span className="text-gray-600">€{receipt.vat.toFixed(2)}</span>
               </div>
               <div className="border-t-2 border-[#00ffba] pt-2 mt-4">

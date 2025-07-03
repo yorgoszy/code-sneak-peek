@@ -35,6 +35,8 @@ interface ReceiptData {
   vat: number;
   total: number;
   date: string;
+  startDate?: string;
+  endDate?: string;
   myDataStatus: 'pending' | 'sent' | 'error';
   myDataId?: string;
 }
@@ -73,10 +75,13 @@ export const ReceiptManagement: React.FC = () => {
       description: 'Premium Subscription',
       quantity: 1,
       unitPrice: 49.99,
-      vatRate: 24,
-      total: 61.99
+      vatRate: 13,
+      total: 56.49
     }]
   });
+
+  const [receiptSeries, setReceiptSeries] = useState<'ΑΠΥ' | 'ΤΠΥ'>('ΑΠΥ');
+  const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
 
   const [loading, setLoading] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
@@ -133,12 +138,12 @@ export const ReceiptManagement: React.FC = () => {
         const invoiceNumber = `SUB-${new Date(sub.created_at).getFullYear()}${String(new Date(sub.created_at).getMonth() + 1).padStart(2, '0')}${String(new Date(sub.created_at).getDate()).padStart(2, '0')}-${String(index + 1).padStart(4, '0')}`;
         
         const netAmount = subscriptionType?.price || 0;
-        const vatAmount = netAmount * 0.24; // 24% ΦΠΑ
+        const vatAmount = netAmount * 0.13; // 13% ΦΠΑ για γυμναστήριο
         const totalAmount = netAmount + vatAmount;
 
         return {
           id: sub.id,
-          receiptNumber: invoiceNumber,
+          receiptNumber: `ΑΠΥ-${String(index + 1).padStart(4, '0')}`,
           customerName: user?.name || 'Άγνωστος χρήστης',
           customerEmail: user?.email,
           items: [
@@ -147,7 +152,7 @@ export const ReceiptManagement: React.FC = () => {
               description: subscriptionType?.name || 'Συνδρομή',
               quantity: 1,
               unitPrice: netAmount,
-              vatRate: 24,
+              vatRate: 13,
               total: totalAmount
             }
           ],
@@ -155,6 +160,8 @@ export const ReceiptManagement: React.FC = () => {
           vat: vatAmount,
           total: totalAmount,
           date: sub.start_date,
+          startDate: sub.start_date,
+          endDate: sub.end_date,
           myDataStatus: 'sent' as const,
           myDataId: `MD${Date.now()}`
         };
@@ -177,7 +184,7 @@ export const ReceiptManagement: React.FC = () => {
 
     setLoading(true);
     try {
-      const receiptNumber = `REC-${new Date().getFullYear()}-${String(receipts.length + 1).padStart(3, '0')}`;
+      const receiptNumber = `${receiptSeries}-${String(receipts.length + 1).padStart(4, '0')}`;
       
       const subtotal = newReceipt.items?.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0) || 0;
       const vat = newReceipt.items?.reduce((sum, item) => sum + (item.unitPrice * item.quantity * item.vatRate / 100), 0) || 0;
@@ -193,7 +200,7 @@ export const ReceiptManagement: React.FC = () => {
         subtotal,
         vat,
         total,
-        date: new Date().toISOString().split('T')[0],
+        date: issueDate,
         myDataStatus: 'pending'
       };
 
@@ -221,8 +228,8 @@ export const ReceiptManagement: React.FC = () => {
           description: 'Premium Subscription',
           quantity: 1,
           unitPrice: 49.99,
-          vatRate: 24,
-          total: 61.99
+          vatRate: 13,
+          total: 56.49
         }]
       });
 
@@ -351,8 +358,33 @@ export const ReceiptManagement: React.FC = () => {
             
             <TabsContent value="new" className="mt-6">
               <div className="space-y-4">
-                <h4 className="font-semibold">Στοιχεία Πελάτη</h4>
+                <h4 className="font-semibold">Στοιχεία Απόδειξης</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Σειρά Απόδειξης *</label>
+                    <Select value={receiptSeries} onValueChange={(value: 'ΑΠΥ' | 'ΤΠΥ') => setReceiptSeries(value)}>
+                      <SelectTrigger className="rounded-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ΑΠΥ">ΑΠΥ - Απόδειξη Παροχής Υπηρεσιών</SelectItem>
+                        <SelectItem value="ΤΠΥ">ΤΠΥ - Τιμολόγιο Παροχής Υπηρεσιών</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Ημερομηνία Έκδοσης *</label>
+                    <Input
+                      type="date"
+                      value={issueDate}
+                      onChange={(e) => setIssueDate(e.target.value)}
+                      className="rounded-none"
+                    />
+                  </div>
+                </div>
+
+                <h4 className="font-semibold">Στοιχεία Πελάτη</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Όνομα Πελάτη *</label>
                     <Input
@@ -366,15 +398,6 @@ export const ReceiptManagement: React.FC = () => {
                     <Input
                       value={newReceipt.customerVat}
                       onChange={(e) => setNewReceipt(prev => ({ ...prev, customerVat: e.target.value }))}
-                      className="rounded-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Email (προαιρετικό)</label>
-                    <Input
-                      type="email"
-                      value={newReceipt.customerEmail}
-                      onChange={(e) => setNewReceipt(prev => ({ ...prev, customerEmail: e.target.value }))}
                       className="rounded-none"
                     />
                   </div>
@@ -550,10 +573,10 @@ export const ReceiptManagement: React.FC = () => {
                                     <span style="font-weight: bold;">Υποσύνολο:</span>
                                     <span>€${receipt.subtotal.toFixed(2)}</span>
                                   </div>
-                                  <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
-                                    <span style="font-weight: bold;">ΦΠΑ (24%):</span>
-                                    <span>€${receipt.vat.toFixed(2)}</span>
-                                  </div>
+                                   <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                                     <span style="font-weight: bold;">ΦΠΑ (13%):</span>
+                                     <span>€${receipt.vat.toFixed(2)}</span>
+                                   </div>
                                   <div style="border-top: 2px solid #00ffba; padding-top: 16px;">
                                     <div style="display: flex; justify-content: space-between;">
                                       <span style="font-size: 24px; font-weight: bold; color: #00ffba;">Σύνολο:</span>
