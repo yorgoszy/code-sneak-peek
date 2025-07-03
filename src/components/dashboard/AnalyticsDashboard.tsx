@@ -30,45 +30,7 @@ interface AnalyticsData {
 }
 
 export const AnalyticsDashboard: React.FC = () => {
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
-    visitors: 0,
-    pageViews: 0,
-    avgSessionDuration: '0:00',
-    bounceRate: '0%',
-    topPages: [],
-    deviceTypes: [],
-    trafficSources: []
-  });
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    fetchClarityAnalytics();
-  }, []);
-
-  const fetchClarityAnalytics = async () => {
-    setLoading(true);
-    try {
-      const response = await supabase.functions.invoke('microsoft-clarity-api', {
-        body: {
-          projectId: 's8pez1q43c',
-          dateRange: {
-            start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days ago
-            end: new Date().toISOString().split('T')[0] // today
-          }
-        }
-      });
-
-      if (response.data?.success) {
-        setAnalyticsData(response.data.data);
-      } else {
-        console.error('Failed to fetch analytics:', response.error);
-      }
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Δεν εμφανίζουμε mock data - μόνο πραγματικά δεδομένα
 
   const analyticsTools = [
     {
@@ -108,32 +70,6 @@ export const AnalyticsDashboard: React.FC = () => {
     }
   ];
 
-  const quickStats = [
-    { 
-      title: 'Επισκέπτες Σήμερα', 
-      value: analyticsData.visitors, 
-      icon: Users, 
-      color: 'text-blue-600' 
-    },
-    { 
-      title: 'Προβολές Σελίδων', 
-      value: analyticsData.pageViews, 
-      icon: Eye, 
-      color: 'text-green-600' 
-    },
-    { 
-      title: 'Μέση Διάρκεια', 
-      value: analyticsData.avgSessionDuration, 
-      icon: Clock, 
-      color: 'text-orange-600' 
-    },
-    { 
-      title: 'Bounce Rate', 
-      value: analyticsData.bounceRate, 
-      icon: TrendingUp, 
-      color: 'text-purple-600' 
-    }
-  ];
 
   return (
     <div className="space-y-6">
@@ -144,25 +80,35 @@ export const AnalyticsDashboard: React.FC = () => {
         </Badge>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {quickStats.map((stat, index) => {
-          const IconComponent = stat.icon;
-          return (
-            <Card key={index} className="rounded-none">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">{stat.title}</p>
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                  </div>
-                  <IconComponent className={`h-8 w-8 ${stat.color}`} />
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Message για πραγματικά δεδομένα */}
+      <Card className="rounded-none">
+        <CardContent className="p-6">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Πραγματικά Analytics Δεδομένα</h3>
+            <p className="text-gray-600 mb-4">
+              Για να δεις πραγματικά analytics δεδομένα, χρησιμοποίησε τα παρακάτω εργαλεία:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                onClick={() => window.open('https://analytics.google.com', '_blank')}
+                className="rounded-none"
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Google Analytics
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.open('https://clarity.microsoft.com', '_blank')}
+                className="rounded-none"
+              >
+                <Monitor className="h-4 w-4 mr-2" />
+                Microsoft Clarity Dashboard
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Analytics Integrations */}
       <Tabs defaultValue="google-analytics" className="w-full">
