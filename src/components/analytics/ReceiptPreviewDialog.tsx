@@ -162,12 +162,12 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
               <span className="text-gray-600">{receipt.receiptNumber}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-200">
-              <span className="font-semibold text-gray-900">Ημερομηνία Έκδοσης:</span>
-              <span className="text-gray-600">{format(new Date(receipt.date), 'dd/MM/yyyy')}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-gray-200">
               <span className="font-semibold text-gray-900">Πελάτης:</span>
               <span className="text-gray-600">{receipt.customerName}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b border-gray-200">
+              <span className="font-semibold text-gray-900">Ημερομηνία Έκδοσης:</span>
+              <span className="text-gray-600">{format(new Date(receipt.date), 'dd/MM/yyyy')}</span>
             </div>
             {receipt.customerVat && (
               <div className="flex justify-between py-2 border-b border-gray-200">
