@@ -169,12 +169,6 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
               <span className="font-semibold text-gray-900">Πελάτης:</span>
               <span className="text-gray-600">{receipt.customerName}</span>
             </div>
-            {receipt.customerEmail && (
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-semibold text-gray-900">Email:</span>
-                <span className="text-gray-600">{receipt.customerEmail}</span>
-              </div>
-            )}
             {receipt.customerVat && (
               <div className="flex justify-between py-2 border-b border-gray-200">
                 <span className="font-semibold text-gray-900">ΑΦΜ:</span>
