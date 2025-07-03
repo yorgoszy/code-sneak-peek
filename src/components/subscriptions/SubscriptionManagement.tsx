@@ -51,6 +51,8 @@ export const SubscriptionManagement: React.FC = () => {
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [usersTableSearchTerm, setUsersTableSearchTerm] = useState('');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     loadData();
@@ -148,9 +150,9 @@ export const SubscriptionManagement: React.FC = () => {
       
       if (!subscriptionType || !selectedUserData) return;
 
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setDate(startDate.getDate() + subscriptionType.duration_days);
+      const subscriptionStartDate = new Date(startDate);
+      const endDate = new Date(subscriptionStartDate);
+      endDate.setDate(subscriptionStartDate.getDate() + subscriptionType.duration_days);
 
       // Δημιουργία νέας συνδρομής
       const { error: subscriptionError } = await supabase
@@ -158,7 +160,7 @@ export const SubscriptionManagement: React.FC = () => {
         .insert({
           user_id: selectedUser,
           subscription_type_id: selectedSubscriptionType,
-          start_date: startDate.toISOString().split('T')[0],
+          start_date: startDate,
           end_date: endDate.toISOString().split('T')[0],
           status: 'active',
           notes: notes
@@ -183,7 +185,7 @@ export const SubscriptionManagement: React.FC = () => {
           userEmail: selectedUserData.email,
           subscriptionType: subscriptionType.name,
           price: subscriptionType.price,
-          startDate: startDate.toISOString().split('T')[0],
+          startDate: startDate,
           endDate: endDate.toISOString().split('T')[0],
           invoiceNumber: invoiceNumber
         };
@@ -212,6 +214,8 @@ export const SubscriptionManagement: React.FC = () => {
       setNotes('');
       setUserSearchTerm('');
       setShowUserDropdown(false);
+      setStartDate(new Date().toISOString().split('T')[0]);
+      setIssueDate(new Date().toISOString().split('T')[0]);
       await loadData();
 
     } catch (error) {
@@ -490,14 +494,23 @@ export const SubscriptionManagement: React.FC = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Έναρξης</label>
+                  <label className="block text-sm font-medium mb-2">Έκδοση *</label>
                   <Input
                     type="date"
-                    value={new Date().toISOString().split('T')[0]}
-                    disabled
-                    className="rounded-none bg-gray-50"
+                    value={issueDate}
+                    onChange={(e) => setIssueDate(e.target.value)}
+                    className="rounded-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Έναρξης *</label>
+                  <Input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="rounded-none"
                   />
                 </div>
                 <div>
@@ -505,7 +518,7 @@ export const SubscriptionManagement: React.FC = () => {
                   <Input
                     type="date"
                     value={selectedSubscriptionType ? 
-                      new Date(Date.now() + (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.duration_days || 0) * 24 * 60 * 60 * 1000).toISOString().split('T')[0] 
+                      new Date(new Date(startDate).getTime() + (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.duration_days || 0) * 24 * 60 * 60 * 1000).toISOString().split('T')[0] 
                       : ''
                     }
                     disabled
