@@ -51,43 +51,59 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
     if (!element) return;
 
     try {
-      // Προσωρινά αλλάζουμε το background color για καλύτερη απόδοση στο PDF
-      const originalBg = element.style.backgroundColor;
-      element.style.backgroundColor = 'white';
+      // Περιμένουμε λίγο για να φορτώσουν όλα τα στοιχεία
+      await new Promise(resolve => setTimeout(resolve, 500));
       
+      // Εξασφαλίζουμε ότι όλες οι εικόνες έχουν φορτώσει
+      const images = element.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      }));
+
       const canvas = await html2canvas(element, {
-        scale: 3, // Αυξημένη ανάλυση για καλύτερη ποιότητα
+        scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: 'white',
+        backgroundColor: '#ffffff',
         logging: false,
-        removeContainer: true,
-        imageTimeout: 0,
-        foreignObjectRendering: true
+        scrollX: 0,
+        scrollY: 0,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        onclone: (clonedDoc) => {
+          // Εξασφαλίζουμε ότι όλα τα styles θα εφαρμοστούν στο cloned document
+          const clonedElement = clonedDoc.getElementById('receipt-content');
+          if (clonedElement) {
+            clonedElement.style.transform = 'none';
+            clonedElement.style.width = element.scrollWidth + 'px';
+            clonedElement.style.height = element.scrollHeight + 'px';
+          }
+        }
       });
       
-      // Επαναφορά του αρχικού background
-      element.style.backgroundColor = originalBg;
-      
-      const imgData = canvas.toDataURL('image/png', 1.0); // Μέγιστη ποιότητα
+      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth - 20; // 10mm περιθώριο από κάθε πλευρά
+      
+      // Υπολογίζουμε το σωστό μέγεθος για να χωρέσει στη σελίδα
+      const imgWidth = pdfWidth - 20; // 10mm margin από κάθε πλευρά
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      let y = 10; // 10mm από την κορυφή
-      
-      // Αν η εικόνα χωράει στη σελίδα
       if (imgHeight <= pdfHeight - 20) {
-        pdf.addImage(imgData, 'PNG', 10, y, imgWidth, imgHeight);
+        // Αν χωράει σε μία σελίδα
+        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
       } else {
-        // Αν η εικόνα δεν χωράει, την κλιμακώνουμε για να χωρέσει
+        // Αν χρειάζεται κλιμάκωση
         const scaledHeight = pdfHeight - 20;
         const scaledWidth = (canvas.width * scaledHeight) / canvas.height;
-        const x = (pdfWidth - scaledWidth) / 2; // Κεντραρισμένη
-        pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
+        const x = (pdfWidth - scaledWidth) / 2;
+        pdf.addImage(imgData, 'PNG', x, 10, scaledWidth, scaledHeight);
       }
       
       pdf.save(`${receipt.receiptNumber}.pdf`);
