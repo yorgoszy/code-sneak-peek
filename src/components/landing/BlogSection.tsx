@@ -45,7 +45,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           </p>
         </div>
 
-        <div className="relative">
+        <div className="relative mb-8">
           <Carousel
             setApi={setApi}
             opts={{
