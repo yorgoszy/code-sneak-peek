@@ -279,6 +279,7 @@ export const ReceiptManagement: React.FC = () => {
     setLoading(true);
     console.log('⏳ Loading started...');
     try {
+      // Αυτόματη αρίθμηση αποδείξεων
       const receiptNumber = `${receiptSeries}-${String(receipts.length + 1).padStart(4, '0')}`;
       
       const subtotal = newReceipt.items?.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0) || 0;
@@ -468,14 +469,13 @@ export const ReceiptManagement: React.FC = () => {
             <TabsContent value="new" className="mt-6">
               <div className="space-y-4">
                 <h4 className="font-semibold">Στοιχεία Απόδειξης</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Αριθμός Απόδειξης *</label>
+                    <label className="block text-sm font-medium mb-2">Αριθμός Απόδειξης (Αυτόματος)</label>
                     <Input
-                      value={newReceipt.receiptNumber}
-                      onChange={(e) => setNewReceipt(prev => ({ ...prev, receiptNumber: e.target.value }))}
-                      className="rounded-none"
-                      placeholder="π.χ. ΑΠΥ-0001"
+                      value={`${receiptSeries}-${String(receipts.length + 1).padStart(4, '0')}`}
+                      disabled
+                      className="rounded-none bg-gray-50"
                     />
                   </div>
                   <div>
