@@ -57,7 +57,8 @@ const Index = () => {
     { name: correctedTranslations.programs, href: "#programs" },
     { name: correctedTranslations.about, href: "#about" },
     { name: correctedTranslations.blog, href: "#blog" },
-    { name: correctedTranslations.results, href: "#results" }
+    { name: correctedTranslations.results, href: "#results" },
+    { name: "Επικοινωνία", href: "#footer" }
   ];
 
   const programs = [
@@ -181,7 +182,7 @@ const Index = () => {
         </div>
       </section>
 
-      <Footer
+      <Footer 
         translations={correctedTranslations}
       />
     </div>
