@@ -9,7 +9,7 @@ import AboutSection from "@/components/landing/AboutSection";
 import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
 import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
-import ContactSection from "@/components/landing/ContactSection";
+
 import Footer from "@/components/landing/Footer";
 
 const Index = () => {
@@ -57,8 +57,7 @@ const Index = () => {
     { name: correctedTranslations.programs, href: "#programs" },
     { name: correctedTranslations.about, href: "#about" },
     { name: correctedTranslations.blog, href: "#blog" },
-    { name: correctedTranslations.results, href: "#results" },
-    { name: correctedTranslations.contact, href: "#contact" }
+    { name: correctedTranslations.results, href: "#results" }
   ];
 
   const programs = [
@@ -167,9 +166,7 @@ const Index = () => {
         translations={correctedTranslations}
       />
 
-      <ContactSection />
-
-      <Footer 
+      <Footer
         translations={correctedTranslations}
       />
     </div>
