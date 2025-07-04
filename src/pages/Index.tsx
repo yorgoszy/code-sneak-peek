@@ -170,7 +170,7 @@ const Index = () => {
       <section className="py-20 bg-[#00ffba]">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-black mb-6">
-            Το ταξίδι σας προς την κορυφή ξεκινάει εδώ
+            Είσαι έτοιμος;
           </h2>
           <p className="text-xl text-black max-w-3xl mx-auto mb-8">
             Το ταξίδι σας προς την κορυφή ξεκινάει σήμερα. Μαζί θα φτάσουμε στους στόχους σας.
