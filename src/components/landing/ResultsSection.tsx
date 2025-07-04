@@ -18,33 +18,29 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
         <div className="max-w-sm mx-auto">
           <article className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
             <img 
-              src="/lovable-uploads/730bb59d-9d4e-4475-84d4-52655d9c11a0.png" 
+              src="/lovable-uploads/c5d227a2-165a-4a56-b58c-b21e219312bd.png" 
               alt="Θωμάς Γιαταγανάς στο WMC"
               className="w-full h-48 object-cover"
             />
             
             <div className="p-6 flex flex-col flex-grow">
-              <div className="text-sm text-[#00ffba] mb-2">15 Ιαν 2025</div>
+              <div className="text-sm text-[#00ffba] mb-2">29 Ιουν 2025</div>
               
               <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
                 Σημαντική εμφάνιση του αθλητή Θωμά Γιαταγανά στο WMC
               </h3>
               
-              <p className="text-gray-600 mb-4 line-clamp-3 flex-grow">
+              <p className="text-gray-600 mb-4 flex-grow">
                 Παρά την ήττα, κλέψαμε τις εντυπώσεις απέναντι στον πρωταθλητή Ελλάδος. 
                 Η προπόνηση και η αφοσίωση φάνηκαν σε κάθε χτύπημα. Υπερήφανοι για την απόδοση 
                 του αθλητή μας που έδειξε χαρακτήρα και τεχνική στο ρινγκ.
               </p>
               
-              <div className="flex flex-wrap gap-1 mb-4">
+              <div className="flex flex-wrap gap-1">
                 <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full">#WMC</span>
                 <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full">#MuayThai</span>
                 <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full">#HyperKids</span>
               </div>
-              
-              <button className="text-[#00ffba] hover:text-[#00cc96] font-semibold transition-colors mt-auto text-left">
-                Διαβάστε περισσότερα →
-              </button>
             </div>
           </article>
         </div>
