@@ -177,12 +177,17 @@ export const ReceiptManagement: React.FC = () => {
   };
 
   const generateReceipt = async () => {
+    console.log('🔄 Έναρξη δημιουργίας απόδειξης...');
+    console.log('📋 Στοιχεία απόδειξης:', newReceipt);
+    
     if (!newReceipt.customerName || !newReceipt.items?.length) {
+      console.log('❌ Λείπουν απαραίτητα στοιχεία');
       toast.error('Παρακαλώ συμπληρώστε τα απαραίτητα στοιχεία');
       return;
     }
 
     setLoading(true);
+    console.log('⏳ Loading started...');
     try {
       const receiptNumber = `${receiptSeries}-${String(receipts.length + 1).padStart(4, '0')}`;
       
@@ -243,8 +248,13 @@ export const ReceiptManagement: React.FC = () => {
   };
 
   const sendToMyData = async (receipt: ReceiptData) => {
+    console.log('🚀 Έναρξη αποστολής στο MyData...');
+    console.log('🔧 Settings:', settings);
+    console.log('📄 Receipt data:', receipt);
+    
     try {
       // Προσομοίωση κλήσης MyData API
+      console.log('📡 Καλώ το edge function mydata-send-receipt...');
       const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
         body: {
           userId: settings.userId,
@@ -262,7 +272,7 @@ export const ReceiptManagement: React.FC = () => {
             },
             invoiceHeader: {
               series: "A",
-              aa: receipt.receiptNumber.split('-')[2],
+              aa: receipt.receiptNumber.split('-')[1] || '1', // Fix: χρησιμοποιούμε τον δεύτερο αριθμό μετά το -
               issueDate: receipt.date,
               invoiceType: "2.1", // Τιμολόγιο Πώλησης
               currency: "EUR"
@@ -287,18 +297,25 @@ export const ReceiptManagement: React.FC = () => {
         }
       });
 
-      if (error) throw error;
+      console.log('📨 Edge function response:', { data, error });
+
+      if (error) {
+        console.error('❌ Edge function error:', error);
+        throw error;
+      }
+
+      console.log('✅ MyData response successful:', data);
 
       // Update receipt status
       setReceipts(prev => prev.map(r => 
         r.id === receipt.id 
-          ? { ...r, myDataStatus: 'sent', myDataId: data.myDataId }
+          ? { ...r, myDataStatus: 'sent', myDataId: data?.myDataId || 'demo-id' }
           : r
       ));
 
       return data;
     } catch (error) {
-      console.error('MyData send error:', error);
+      console.error('❌ MyData send error:', error);
       setReceipts(prev => prev.map(r => 
         r.id === receipt.id 
           ? { ...r, myDataStatus: 'error' }
