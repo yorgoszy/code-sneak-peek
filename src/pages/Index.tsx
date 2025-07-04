@@ -173,7 +173,7 @@ const Index = () => {
             Είσαι έτοιμος;
           </h2>
           <p className="text-xl text-black max-w-3xl mx-auto mb-8">
-            Το ταξίδι σας προς την κορυφή ξεκινάει σήμερα. Μαζί θα φτάσουμε στους στόχους σας.
+            Το ταξίδι προς την κορυφή ξεκινάει εδώ.
           </p>
           <button className="bg-black text-[#00ffba] px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors">
             Ξεκινήστε τώρα
