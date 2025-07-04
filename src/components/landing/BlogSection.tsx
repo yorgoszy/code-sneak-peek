@@ -68,7 +68,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
               {currentArticles.map((article) => (
                 <CarouselItem 
                   key={article.id} 
-                  className={`pl-4 -mt-2 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
+                  className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
                 >
                   <ArticleCard
                     article={article}
