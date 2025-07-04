@@ -20,7 +20,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
             <img 
               src="/lovable-uploads/c5d227a2-165a-4a56-b58c-b21e219312bd.png" 
               alt="Θωμάς Γιαταγανάς στο WMC"
-              className="w-full h-48 object-cover mt-7"
+              className="w-full h-48 object-cover -mt-2"
             />
             
             <div className="p-6 flex flex-col flex-grow">
