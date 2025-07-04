@@ -279,8 +279,10 @@ export const ReceiptManagement: React.FC = () => {
     setLoading(true);
     console.log('⏳ Loading started...');
     try {
-      // Αυτόματη αρίθμηση αποδείξεων
-      const receiptNumber = `${receiptSeries}-${String(receipts.length + 1).padStart(4, '0')}`;
+      // Ξεχωριστή αρίθμηση για ΑΠΥ και ΤΠΥ
+      const samSeriesReceipts = receipts.filter(r => r.receiptNumber.startsWith(receiptSeries));
+      const nextNumber = samSeriesReceipts.length + 1;
+      const receiptNumber = `${receiptSeries}-${String(nextNumber).padStart(4, '0')}`;
       
       const subtotal = newReceipt.items?.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0) || 0;
       const vat = newReceipt.items?.reduce((sum, item) => sum + (item.unitPrice * item.quantity * item.vatRate / 100), 0) || 0;
@@ -473,7 +475,7 @@ export const ReceiptManagement: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium mb-2">Αριθμός Απόδειξης (Αυτόματος)</label>
                     <Input
-                      value={`${receiptSeries}-${String(receipts.length + 1).padStart(4, '0')}`}
+                      value={`${receiptSeries}-${String(receipts.filter(r => r.receiptNumber.startsWith(receiptSeries)).length + 1).padStart(4, '0')}`}
                       disabled
                       className="rounded-none bg-gray-50"
                     />
