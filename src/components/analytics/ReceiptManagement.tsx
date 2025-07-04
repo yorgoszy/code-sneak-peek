@@ -24,6 +24,18 @@ import { ReceiptPreviewDialog } from "./ReceiptPreviewDialog";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+interface AppUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface SubscriptionType {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface ReceiptData {
   id: string;
   receiptNumber: string;
@@ -66,6 +78,11 @@ export const ReceiptManagement: React.FC = () => {
   });
 
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
+  const [selectedUser, setSelectedUser] = useState<string>('');
+  const [selectedSubscriptionType, setSelectedSubscriptionType] = useState<string>('');
+  
   const [newReceipt, setNewReceipt] = useState<Partial<ReceiptData>>({
     customerName: '',
     customerVat: '',
@@ -90,6 +107,8 @@ export const ReceiptManagement: React.FC = () => {
   useEffect(() => {
     // Φόρτωση αποδείξεων πάντα, ανεξάρτητα από το MyData connection
     loadReceipts();
+    loadUsers();
+    loadSubscriptionTypes();
     
     if (settings.userId && settings.subscriptionKey) {
       setSettings(prev => ({ ...prev, connected: true }));
@@ -176,6 +195,77 @@ export const ReceiptManagement: React.FC = () => {
     }
   };
 
+  const loadUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email')
+        .order('name');
+
+      if (error) {
+        console.error('❌ Error loading users:', error);
+        return;
+      }
+
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
+  const loadSubscriptionTypes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_types')
+        .select('id, name, price')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) {
+        console.error('❌ Error loading subscription types:', error);
+        return;
+      }
+
+      setSubscriptionTypes(data || []);
+    } catch (error) {
+      console.error('Error loading subscription types:', error);
+    }
+  };
+
+  const handleUserSelect = (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (user) {
+      setSelectedUser(userId);
+      setNewReceipt(prev => ({
+        ...prev,
+        customerName: user.name,
+        customerEmail: user.email
+      }));
+    }
+  };
+
+  const handleSubscriptionTypeSelect = (typeId: string) => {
+    const subType = subscriptionTypes.find(st => st.id === typeId);
+    if (subType) {
+      setSelectedSubscriptionType(typeId);
+      const updatedItems = [...(newReceipt.items || [])];
+      if (updatedItems.length > 0) {
+        // Η τιμή που θα βάλει ο χρήστης θα είναι η τελική (με ΦΠΑ)
+        const finalPrice = subType.price;
+        const vatRate = updatedItems[0].vatRate || 13;
+        const netPrice = finalPrice / (1 + vatRate / 100); // Αφαιρούμε ΦΠΑ για να βρούμε καθαρό
+        
+        updatedItems[0] = {
+          ...updatedItems[0],
+          description: subType.name,
+          unitPrice: netPrice,
+          total: finalPrice
+        };
+        setNewReceipt(prev => ({ ...prev, items: updatedItems }));
+      }
+    }
+  };
+
   const generateReceipt = async () => {
     console.log('🔄 Έναρξη δημιουργίας απόδειξης...');
     console.log('📋 Στοιχεία απόδειξης:', newReceipt);
@@ -224,6 +314,8 @@ export const ReceiptManagement: React.FC = () => {
       await sendToMyData(receipt);
       
       // Reset form
+      setSelectedUser('');
+      setSelectedSubscriptionType('');
       setNewReceipt({
         customerName: '',
         customerVat: '',
@@ -413,11 +505,18 @@ export const ReceiptManagement: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Πελάτης *</label>
-                    <Input
-                      value={newReceipt.customerName}
-                      onChange={(e) => setNewReceipt(prev => ({ ...prev, customerName: e.target.value }))}
-                      className="rounded-none"
-                    />
+                    <Select value={selectedUser} onValueChange={handleUserSelect}>
+                      <SelectTrigger className="rounded-none">
+                        <SelectValue placeholder="Επιλέξτε πελάτη..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map(user => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name} ({user.email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">ΑΦΜ (προαιρετικό)</label>
@@ -455,16 +554,22 @@ export const ReceiptManagement: React.FC = () => {
                   <div key={item.id} className="border border-gray-200 p-4 rounded-none">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-2">Περιγραφή</label>
-                        <Input
-                          value={item.description}
-                          onChange={(e) => {
-                            const updatedItems = [...(newReceipt.items || [])];
-                            updatedItems[index] = { ...item, description: e.target.value };
-                            setNewReceipt(prev => ({ ...prev, items: updatedItems }));
-                          }}
-                          className="rounded-none"
-                        />
+                        <label className="block text-sm font-medium mb-2">Τύπος Συνδρομής *</label>
+                        <Select 
+                          value={selectedSubscriptionType} 
+                          onValueChange={handleSubscriptionTypeSelect}
+                        >
+                          <SelectTrigger className="rounded-none">
+                            <SelectValue placeholder="Επιλέξτε τύπο συνδρομής..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {subscriptionTypes.map(type => (
+                              <SelectItem key={type.id} value={type.id}>
+                                {type.name} - €{type.price.toFixed(2)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Ποσότητα</label>
@@ -474,10 +579,15 @@ export const ReceiptManagement: React.FC = () => {
                           onChange={(e) => {
                             const updatedItems = [...(newReceipt.items || [])];
                             const quantity = parseInt(e.target.value) || 1;
+                            const finalPrice = item.total / (updatedItems[index]?.quantity || 1); // τιμή ανα τεμάχιο με ΦΠΑ
+                            const totalPrice = finalPrice * quantity;
+                            const netPrice = totalPrice / (1 + item.vatRate / 100);
+                            
                             updatedItems[index] = { 
                               ...item, 
                               quantity,
-                              total: item.unitPrice * quantity * (1 + item.vatRate / 100)
+                              unitPrice: netPrice / quantity, // καθαρή τιμή ανά τεμάχιο
+                              total: totalPrice
                             };
                             setNewReceipt(prev => ({ ...prev, items: updatedItems }));
                           }}
@@ -485,22 +595,26 @@ export const ReceiptManagement: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Τιμή μονάδας (€)</label>
+                        <label className="block text-sm font-medium mb-2">Τελική Τιμή (€) *</label>
                         <Input
                           type="number"
                           step="0.01"
-                          value={item.unitPrice}
+                          value={(item.total / item.quantity).toFixed(2)}
                           onChange={(e) => {
                             const updatedItems = [...(newReceipt.items || [])];
-                            const unitPrice = parseFloat(e.target.value) || 0;
+                            const finalPricePerUnit = parseFloat(e.target.value) || 0;
+                            const totalFinalPrice = finalPricePerUnit * item.quantity;
+                            const netPrice = totalFinalPrice / (1 + item.vatRate / 100);
+                            
                             updatedItems[index] = { 
                               ...item, 
-                              unitPrice,
-                              total: unitPrice * item.quantity * (1 + item.vatRate / 100)
+                              unitPrice: netPrice / item.quantity,
+                              total: totalFinalPrice
                             };
                             setNewReceipt(prev => ({ ...prev, items: updatedItems }));
                           }}
                           className="rounded-none"
+                          placeholder="Τελική αξία με ΦΠΑ"
                         />
                       </div>
                       <div>
@@ -508,10 +622,14 @@ export const ReceiptManagement: React.FC = () => {
                         <Select value={item.vatRate.toString()} onValueChange={(value) => {
                           const updatedItems = [...(newReceipt.items || [])];
                           const vatRate = parseInt(value);
+                          const currentFinalPrice = item.total;
+                          const newNetPrice = currentFinalPrice / (1 + vatRate / 100);
+                          
                           updatedItems[index] = { 
                             ...item, 
                             vatRate,
-                            total: item.unitPrice * item.quantity * (1 + vatRate / 100)
+                            unitPrice: newNetPrice / item.quantity,
+                            total: currentFinalPrice // διατηρούμε την τελική τιμή
                           };
                           setNewReceipt(prev => ({ ...prev, items: updatedItems }));
                         }}>
@@ -527,8 +645,19 @@ export const ReceiptManagement: React.FC = () => {
                         </Select>
                       </div>
                     </div>
-                    <div className="mt-2 text-right">
-                      <span className="font-semibold">Σύνολο: €{item.total.toFixed(2)}</span>
+                    <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                      <div className="text-center">
+                        <span className="text-gray-600">Καθαρή Αξία:</span>
+                        <p className="font-semibold">€{(item.unitPrice * item.quantity).toFixed(2)}</p>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-gray-600">ΦΠΑ ({item.vatRate}%):</span>
+                        <p className="font-semibold">€{(item.unitPrice * item.quantity * item.vatRate / 100).toFixed(2)}</p>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-gray-600">Τελική Αξία:</span>
+                        <p className="font-bold text-[#00ffba]">€{item.total.toFixed(2)}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
