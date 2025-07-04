@@ -15,46 +15,38 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
           </h2>
         </div>
         
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-none shadow-lg overflow-hidden border border-gray-200">
-            <div className="aspect-video overflow-hidden">
-              <img 
-                src="/lovable-uploads/730bb59d-9d4e-4475-84d4-52655d9c11a0.png" 
-                alt="Θωμάς Γιαταγανάς στο WMC"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-              />
-            </div>
+        <div className="max-w-sm mx-auto">
+          <article className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
+            <img 
+              src="/lovable-uploads/730bb59d-9d4e-4475-84d4-52655d9c11a0.png" 
+              alt="Θωμάς Γιαταγανάς στο WMC"
+              className="w-full h-48 object-cover"
+            />
             
-            <div className="p-8">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-sm text-[#00ffba] font-medium">15 Ιαν 2025</span>
-                <span className="text-gray-300">•</span>
-                <span className="text-sm text-gray-600">Muay Thai</span>
-              </div>
+            <div className="p-6 flex flex-col flex-grow">
+              <div className="text-sm text-[#00ffba] mb-2">15 Ιαν 2025</div>
               
-              <h3 className="text-2xl font-bold text-black mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+              <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
                 Σημαντική εμφάνιση του αθλητή Θωμά Γιαταγανά στο WMC
               </h3>
               
-              <p className="text-gray-700 leading-relaxed mb-6">
+              <p className="text-gray-600 mb-4 line-clamp-3 flex-grow">
                 Παρά την ήττα, κλέψαμε τις εντυπώσεις απέναντι στον πρωταθλητή Ελλάδος. 
                 Η προπόνηση και η αφοσίωση φάνηκαν σε κάθε χτύπημα. Υπερήφανοι για την απόδοση 
                 του αθλητή μας που έδειξε χαρακτήρα και τεχνική στο ρινγκ.
               </p>
               
-              <div className="flex flex-wrap gap-2 mb-6">
-                <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 text-sm rounded-full">#WMC</span>
-                <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 text-sm rounded-full">#MuayThai</span>
-                <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 text-sm rounded-full">#HyperKids</span>
-                <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 text-sm rounded-full">#ProudCoach</span>
+              <div className="flex flex-wrap gap-1 mb-4">
+                <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full">#WMC</span>
+                <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full">#MuayThai</span>
+                <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full">#HyperKids</span>
               </div>
               
-              <div className="flex items-center text-[#00ffba] font-medium hover:underline cursor-pointer">
-                <span>Διαβάστε περισσότερα</span>
-                <span className="ml-2">→</span>
-              </div>
+              <button className="text-[#00ffba] hover:text-[#00cc96] font-semibold transition-colors mt-auto text-left">
+                Διαβάστε περισσότερα →
+              </button>
             </div>
-          </div>
+          </article>
         </div>
       </div>
     </section>
