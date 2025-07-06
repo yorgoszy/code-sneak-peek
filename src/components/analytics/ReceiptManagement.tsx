@@ -314,7 +314,13 @@ export const ReceiptManagement: React.FC = () => {
       setReceipts(prev => [receipt, ...prev]);
       
       // Αυτόματη αποστολή στο MyData
-      await sendToMyData(receipt);
+      try {
+        await sendToMyData(receipt);
+        toast.success('Απόδειξη δημιουργήθηκε και στάλθηκε στο MyData!');
+      } catch (mydataError) {
+        console.error('MyData send error:', mydataError);
+        toast.warning('Απόδειξη δημιουργήθηκε αλλά δεν στάλθηκε στο MyData. Δοκιμάστε ξανά.');
+      }
       
       // Reset form
       setSelectedUser('');
@@ -333,7 +339,6 @@ export const ReceiptManagement: React.FC = () => {
         }]
       });
 
-      toast.success('Απόδειξη δημιουργήθηκε και στάλθηκε στο MyData!');
     } catch (error) {
       console.error('Error generating receipt:', error);
       toast.error('Σφάλμα στη δημιουργία απόδειξης');
@@ -347,8 +352,16 @@ export const ReceiptManagement: React.FC = () => {
     console.log('🔧 Settings:', settings);
     console.log('📄 Receipt data:', receipt);
     
+    if (!settings.connected) {
+      throw new Error('Δεν είστε συνδεδεμένοι στο MyData');
+    }
+    
     try {
-      // Προσομοίωση κλήσης MyData API
+      // Fix: Χρησιμοποιούμε το σωστό format για τον αριθμό απόδειξης
+      const receiptNumberParts = receipt.receiptNumber.split('-');
+      const series = receiptNumberParts[0] || 'A';
+      const sequentialNumber = receiptNumberParts[1] || '1';
+      
       console.log('📡 Καλώ το edge function mydata-send-receipt...');
       const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
         body: {
@@ -357,7 +370,7 @@ export const ReceiptManagement: React.FC = () => {
           environment: settings.environment,
           receipt: {
             issuer: {
-              vatNumber: "999999999", // Το δικό σας ΑΦΜ
+              vatNumber: settings.userId, // Χρησιμοποιούμε το userId ως ΑΦΜ
               country: "GR",
               branch: 0
             },
@@ -366,16 +379,16 @@ export const ReceiptManagement: React.FC = () => {
               country: "GR"
             },
             invoiceHeader: {
-              series: "A",
-              aa: receipt.receiptNumber.split('-')[1] || '1', // Fix: χρησιμοποιούμε τον δεύτερο αριθμό μετά το -
+              series: series,
+              aa: sequentialNumber, // Fix: Χρησιμοποιούμε τον σωστό αριθμό
               issueDate: receipt.date,
-              invoiceType: "2.1", // Τιμολόγιο Πώλησης
+              invoiceType: receiptSeries === 'ΑΠΥ' ? "2.1" : "1.1", // ΑΠΥ ή ΤΠΥ
               currency: "EUR"
             },
-            invoiceDetails: receipt.items.map(item => ({
-              lineNumber: 1,
+            invoiceDetails: receipt.items.map((item, index) => ({
+              lineNumber: index + 1,
               netValue: item.unitPrice * item.quantity,
-              vatCategory: 1, // 24%
+              vatCategory: item.vatRate === 13 ? 7 : (item.vatRate === 24 ? 1 : 8), // VAT category mapping
               vatAmount: (item.unitPrice * item.quantity * item.vatRate / 100)
             })),
             invoiceSummary: {
@@ -397,6 +410,11 @@ export const ReceiptManagement: React.FC = () => {
       if (error) {
         console.error('❌ Edge function error:', error);
         throw error;
+      }
+
+      if (!data?.success) {
+        console.error('❌ MyData API error:', data?.error || 'Unknown error');
+        throw new Error(data?.error || 'Σφάλμα στην αποστολή στο MyData');
       }
 
       console.log('✅ MyData response successful:', data);
