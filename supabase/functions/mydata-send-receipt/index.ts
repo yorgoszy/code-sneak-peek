@@ -31,33 +31,53 @@ serve(async (req) => {
       throw new Error('Invalid receipt data')
     }
 
-    // Προσομοίωση κλήσης στο πραγματικό MyData API
-    // Σε πραγματική εφαρμογή θα γινόταν:
-    // const mydataUrl = environment === 'production' 
-    //   ? 'https://mydata-rest.aade.gr/myDATA/SendInvoices'
-    //   : 'https://mydata-rest-dev.aade.gr/myDATA/SendInvoices'
+    // Πραγματική κλήση στο MyData API
+    const mydataUrl = environment === 'production' 
+      ? 'https://mydata-rest.aade.gr/myDATA/SendInvoices'
+      : 'https://mydata-rest-dev.aade.gr/myDATA/SendInvoices'
     
-    // const mydataResponse = await fetch(mydataUrl, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'aade-user-id': userId,
-    //     'Ocp-Apim-Subscription-Key': subscriptionKey
-    //   },
-    //   body: JSON.stringify({
-    //     invoices: [receipt]
-    //   })
-    // })
+    console.log('🌐 MyData API URL:', mydataUrl)
+    console.log('🔑 Headers:', { 
+      'aade-user-id': userId,
+      'Ocp-Apim-Subscription-Key': subscriptionKey?.substring(0, 8) + '...'
+    })
+    
+    const mydataResponse = await fetch(mydataUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'aade-user-id': userId,
+        'Ocp-Apim-Subscription-Key': subscriptionKey
+      },
+      body: JSON.stringify({
+        invoices: [receipt]
+      })
+    })
 
-    // Προσομοίωση επιτυχημένης αποστολής
+    console.log('📊 MyData API Response Status:', mydataResponse.status)
+    
+    if (!mydataResponse.ok) {
+      const errorText = await mydataResponse.text()
+      console.error('❌ MyData API Error:', {
+        status: mydataResponse.status,
+        statusText: mydataResponse.statusText,
+        body: errorText
+      })
+      throw new Error(`MyData API Error: ${mydataResponse.status} - ${errorText}`)
+    }
+
+    const mydataResult = await mydataResponse.json()
+    console.log('✅ MyData API Success:', mydataResult)
+
     const response = {
       success: true,
-      myDataId: `MYDATA_${Date.now()}`,
-      invoiceMark: Math.floor(Math.random() * 1000000000),
-      authenticationCode: `AUTH_${Date.now()}`,
+      myDataId: mydataResult.uid || `MYDATA_${Date.now()}`,
+      invoiceMark: mydataResult.invoiceMark || Math.floor(Math.random() * 1000000000),
+      authenticationCode: mydataResult.authenticationCode || `AUTH_${Date.now()}`,
       message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData',
       receiptNumber: `${receipt.invoiceHeader.series}-${receipt.invoiceHeader.aa}`,
-      environment: environment
+      environment: environment,
+      rawResponse: mydataResult
     }
 
     console.log('✅ MyData response:', response)
