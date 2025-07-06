@@ -424,7 +424,8 @@ export const ReceiptManagement: React.FC = () => {
 
       if (!data?.success) {
         console.error('❌ MyData API error:', data?.error || 'Unknown error');
-        throw new Error(data?.error || 'Σφάλμα στην αποστολή στο MyData');
+        const errorMsg = data?.error || 'Σφάλμα στην αποστολή στο MyData';
+        throw new Error(errorMsg);
       }
 
       console.log('✅ MyData response successful:', data);

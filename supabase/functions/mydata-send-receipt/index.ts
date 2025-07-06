@@ -108,7 +108,24 @@ serve(async (req) => {
       
     } catch (fetchError) {
       console.error('❌ Network/Fetch Error:', fetchError)
-      throw new Error(`Σφάλμα δικτύου: ${fetchError.message}. Ελέγξτε τη σύνδεσή σας και τα στοιχεία MyData.`)
+      // Επιστρέφουμε error response αντί να κάνουμε throw
+      const errorResponse = {
+        success: false,
+        error: `Σφάλμα δικτύου: ${fetchError.message}. Ελέγξτε τη σύνδεσή σας και τα στοιχεία MyData.`,
+        details: fetchError.stack,
+        timestamp: new Date().toISOString()
+      }
+      
+      return new Response(
+        JSON.stringify(errorResponse),
+        { 
+          status: 500,
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      )
     }
 
   } catch (error) {
@@ -117,7 +134,8 @@ serve(async (req) => {
     const errorResponse = {
       success: false,
       error: error.message,
-      details: error.stack
+      details: error.stack,
+      timestamp: new Date().toISOString()
     }
     
     return new Response(
