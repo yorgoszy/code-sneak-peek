@@ -65,7 +65,7 @@ interface ReceiptItem {
 interface MyDataSettings {
   userId: string;
   subscriptionKey: string;
-  environment: 'sandbox' | 'production';
+  environment: 'production'; // ΜΟΝΟ ΠΑΡΑΓΩΓΗ
   connected: boolean;
 }
 
@@ -73,7 +73,7 @@ export const ReceiptManagement: React.FC = () => {
   const [settings, setSettings] = useState<MyDataSettings>({
     userId: localStorage.getItem('mydata_user_id') || '',
     subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
-    environment: 'sandbox',
+    environment: 'production', // ΜΟΝΟ ΠΑΡΑΓΩΓΗ
     connected: false
   });
 
@@ -821,18 +821,12 @@ export const ReceiptManagement: React.FC = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium mb-2">Περιβάλλον</label>
-                      <Select value={settings.environment} onValueChange={(value: 'sandbox' | 'production') => 
-                        setSettings(prev => ({ ...prev, environment: value }))
-                      }>
-                        <SelectTrigger className="rounded-none">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sandbox">Sandbox (Δοκιμαστικό)</SelectItem>
-                          <SelectItem value="production">Production (Παραγωγή)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <label className="block text-sm font-medium mb-2">Περιβάλλον - ΜΟΝΟ ΠΑΡΑΓΩΓΗ</label>
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-none">
+                        <Badge className="bg-red-100 text-red-800">
+                          Production (Παραγωγή) - ΜΟΝΟ
+                        </Badge>
+                      </div>
                     </div>
 
                     <Button 
