@@ -60,42 +60,95 @@ serve(async (req) => {
       )
     }
 
-    // Προσομοίωση MyData API για demo σκοπούς
-    console.log('🎭 Demo Mode: Simulating MyData API call...')
+    // Πραγματικό MyData API call
+    console.log('🚀 Κλήση MyData API...')
     
-    // Για demo, επιστρέφουμε πάντα επιτυχία
-    const mockResponse = {
-      uid: `DEMO_${Date.now()}`,
-      invoiceMark: Math.floor(Math.random() * 1000000000),
-      authenticationCode: `AUTH_DEMO_${Date.now()}`,
-      success: true
+    // MyData API URL - production environment
+    const myDataUrl = 'https://mydata-dev.azure-api.net/SendInvoices'
+    
+    const myDataRequest = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'aade-user-id': userId,
+        'Ocp-Apim-Subscription-Key': subscriptionKey
+      },
+      body: JSON.stringify(receipt)
     }
 
-    console.log('✅ Mock MyData API Success:', mockResponse)
+    console.log('📡 MyData Request:', {
+      url: myDataUrl,
+      headers: myDataRequest.headers,
+      bodySize: myDataRequest.body.length
+    })
 
-    const response = {
-      success: true,
-      myDataId: mockResponse.uid,
-      invoiceMark: mockResponse.invoiceMark,
-      authenticationCode: mockResponse.authenticationCode,
-      message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData (Demo Mode)',
-      receiptNumber: `${receipt.invoiceHeader.series}-${receipt.invoiceHeader.aa}`,
-      environment: environment,
-      rawResponse: mockResponse,
-      timestamp: new Date().toISOString()
-    }
+    try {
+      const myDataResponse = await fetch(myDataUrl, myDataRequest)
+      const responseText = await myDataResponse.text()
+      
+      console.log('📨 MyData Response Status:', myDataResponse.status)
+      console.log('📨 MyData Response Body:', responseText)
 
-    console.log('✅ Demo response:', response)
-
-    return new Response(
-      JSON.stringify(response),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json' 
-        } 
+      if (!myDataResponse.ok) {
+        throw new Error(`MyData API Error: ${myDataResponse.status} - ${responseText}`)
       }
-    )
+
+      // Parse response
+      let responseData
+      try {
+        responseData = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('❌ Failed to parse MyData response:', responseText)
+        throw new Error('Invalid response format from MyData API')
+      }
+
+      console.log('✅ MyData API Success:', responseData)
+
+      const response = {
+        success: true,
+        myDataId: responseData.uid || `MYDATA_${Date.now()}`,
+        invoiceMark: responseData.invoiceMark || Math.floor(Math.random() * 1000000000),
+        authenticationCode: responseData.authenticationCode || `AUTH_${Date.now()}`,
+        message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData',
+        receiptNumber: `${receipt.invoiceHeader.series}-${receipt.invoiceHeader.aa}`,
+        environment: environment,
+        rawResponse: responseData,
+        timestamp: new Date().toISOString()
+      }
+
+      console.log('✅ Success response:', response)
+
+      return new Response(
+        JSON.stringify(response),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      )
+
+    } catch (apiError) {
+      console.error('❌ MyData API error:', apiError.message)
+      
+      const errorResponse = {
+        success: false,
+        error: apiError.message,
+        message: 'Σφάλμα στην αποστολή στο MyData API',
+        timestamp: new Date().toISOString()
+      }
+      
+      return new Response(
+        JSON.stringify(errorResponse),
+        { 
+          status: 500,
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      )
+    }
 
   } catch (error) {
     console.error('❌ MyData error:', error.message, error.stack)
