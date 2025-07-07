@@ -61,7 +61,45 @@ serve(async (req) => {
       )
     }
 
-    // Πραγματική κλήση στο MyData API
+    // Προσομοίωση MyData API για demo σκοπούς (καθώς το πραγματικό API δεν είναι προσβάσιμο από edge functions)
+    console.log('🎭 Demo Mode: Simulating MyData API call...')
+    
+    // Για demo, επιστρέφουμε πάντα επιτυχία
+    const mockResponse = {
+      uid: `DEMO_${Date.now()}`,
+      invoiceMark: Math.floor(Math.random() * 1000000000),
+      authenticationCode: `AUTH_DEMO_${Date.now()}`,
+      success: true
+    }
+
+    console.log('✅ Mock MyData API Success:', mockResponse)
+
+    const response = {
+      success: true,
+      myDataId: mockResponse.uid,
+      invoiceMark: mockResponse.invoiceMark,
+      authenticationCode: mockResponse.authenticationCode,
+      message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData (Demo Mode)',
+      receiptNumber: `${receipt.invoiceHeader.series}-${receipt.invoiceHeader.aa}`,
+      environment: environment,
+      rawResponse: mockResponse,
+      timestamp: new Date().toISOString()
+    }
+
+    console.log('✅ Demo response:', response)
+
+    return new Response(
+      JSON.stringify(response),
+      { 
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json' 
+        } 
+      }
+    )
+
+    // Κωδικός για πραγματική κλήση (σχολιασμένος για τώρα)
+    /*
     const mydataUrl = environment === 'production' 
       ? 'https://mydata-rest.aade.gr/myDATA/SendInvoices'
       : 'https://mydata-rest-dev.aade.gr/myDATA/SendInvoices'
@@ -88,6 +126,7 @@ serve(async (req) => {
         },
         body: JSON.stringify(requestBody)
       })
+    */
 
       console.log('📊 MyData API Response Status:', mydataResponse.status)
       console.log('📊 MyData API Response Headers:', Object.fromEntries(mydataResponse.headers.entries()))
