@@ -24,11 +24,41 @@ serve(async (req) => {
 
     // Validation
     if (!userId || !subscriptionKey) {
-      throw new Error('Missing required parameters: userId or subscriptionKey')
+      const errorResponse = {
+        success: false,
+        error: 'Missing required parameters: userId or subscriptionKey',
+        timestamp: new Date().toISOString()
+      }
+      console.error('❌ Validation error:', errorResponse.error)
+      return new Response(
+        JSON.stringify(errorResponse),
+        { 
+          status: 400,
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      )
     }
 
     if (!receipt || !receipt.invoiceHeader) {
-      throw new Error('Invalid receipt data')
+      const errorResponse = {
+        success: false,
+        error: 'Invalid receipt data',
+        timestamp: new Date().toISOString()
+      }
+      console.error('❌ Validation error:', errorResponse.error)
+      return new Response(
+        JSON.stringify(errorResponse),
+        { 
+          status: 400,
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      )
     }
 
     // Πραγματική κλήση στο MyData API
@@ -70,14 +100,34 @@ serve(async (req) => {
           body: errorText
         })
         
+        let errorMsg = ''
         // Αν είναι authentication error, δίνουμε σαφές μήνυμα
         if (mydataResponse.status === 401) {
-          throw new Error(`MyData Authentication Error: Ελέγξτε το ΑΦΜ και το Subscription Key`)
+          errorMsg = `MyData Authentication Error: Ελέγξτε το ΑΦΜ και το Subscription Key`
         } else if (mydataResponse.status === 400) {
-          throw new Error(`MyData Validation Error: ${errorText}`)
+          errorMsg = `MyData Validation Error: ${errorText}`
         } else {
-          throw new Error(`MyData API Error: ${mydataResponse.status} - ${errorText}`)
+          errorMsg = `MyData API Error: ${mydataResponse.status} - ${errorText}`
         }
+        
+        const errorResponse = {
+          success: false,
+          error: errorMsg,
+          status: mydataResponse.status,
+          details: errorText,
+          timestamp: new Date().toISOString()
+        }
+        
+        return new Response(
+          JSON.stringify(errorResponse),
+          { 
+            status: 200, // Επιστρέφουμε 200 αλλά με success: false
+            headers: { 
+              ...corsHeaders,
+              'Content-Type': 'application/json' 
+            } 
+          }
+        )
       }
 
       const mydataResult = await mydataResponse.json()
@@ -91,7 +141,8 @@ serve(async (req) => {
         message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData',
         receiptNumber: `${receipt.invoiceHeader.series}-${receipt.invoiceHeader.aa}`,
         environment: environment,
-        rawResponse: mydataResult
+        rawResponse: mydataResult,
+        timestamp: new Date().toISOString()
       }
 
       console.log('✅ MyData response:', response)
@@ -108,7 +159,6 @@ serve(async (req) => {
       
     } catch (fetchError) {
       console.error('❌ Network/Fetch Error:', fetchError)
-      // Επιστρέφουμε error response αντί να κάνουμε throw
       const errorResponse = {
         success: false,
         error: `Σφάλμα δικτύου: ${fetchError.message}. Ελέγξτε τη σύνδεσή σας και τα στοιχεία MyData.`,
@@ -119,7 +169,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify(errorResponse),
         { 
-          status: 500,
+          status: 200, // Επιστρέφουμε 200 αλλά με success: false
           headers: { 
             ...corsHeaders,
             'Content-Type': 'application/json' 
