@@ -302,22 +302,31 @@ export const ReceiptManagement: React.FC = () => {
         myDataStatus: 'pending'
       };
 
-      // Παίρνουμε το τρέχον user ID
+      // Παίρνουμε το σωστό app_users.id από το auth.uid()
       const { data: { user } } = await supabase.auth.getUser();
-      const currentUserId = user?.id;
+      if (user?.id) {
+        // Βρίσκουμε το app_users.id που αντιστοιχεί στο auth_user_id
+        const { data: appUser } = await supabase
+          .from('app_users')
+          .select('id')
+          .eq('auth_user_id', user.id)
+          .single();
 
-      if (currentUserId) {
-        // Αποθήκευση στη βάση
-        const { error: paymentError } = await supabase.from('payments').insert({
-          user_id: currentUserId,
-          amount: total,
-          payment_method: 'Subscription',
-          transaction_id: receiptNumber,
-          status: 'completed'
-        });
+        if (appUser?.id) {
+          // Αποθήκευση στη βάση με το σωστό app_users.id
+          const { error: paymentError } = await supabase.from('payments').insert({
+            user_id: appUser.id,
+            amount: total,
+            payment_method: 'Subscription',
+            transaction_id: receiptNumber,
+            status: 'completed'
+          });
 
-        if (paymentError) {
-          console.error('Payment insert error:', paymentError);
+          if (paymentError) {
+            console.error('Payment insert error:', paymentError);
+          } else {
+            console.log('✅ Payment saved successfully!');
+          }
         }
       }
 
