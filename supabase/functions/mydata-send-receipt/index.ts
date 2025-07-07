@@ -60,11 +60,11 @@ serve(async (req) => {
       )
     }
 
-    // Πραγματικό MyData API call
-    console.log('🚀 Κλήση MyData API...')
+    // Production MyData API - ΜΟΝΟ ΠΑΡΑΓΩΓΗ
+    console.log('🚀 Κλήση Production MyData API...')
     
-    // MyData API URL - production environment
-    const myDataUrl = 'https://mydata-dev.azure-api.net/SendInvoices'
+    // MyData API URL - ΠΑΡΑΓΩΓΗ ΜΟΝΟ
+    const myDataUrl = 'https://mydata.aade.gr/myDATA/SendInvoices'
     
     const myDataRequest = {
       method: 'POST',
