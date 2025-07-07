@@ -41,7 +41,7 @@ serve(async (req) => {
       )
     }
 
-    if (!receipt || !receipt.invoiceHeader) {
+    if (!receipt) {
       const errorResponse = {
         success: false,
         error: 'Invalid receipt data',
@@ -110,7 +110,7 @@ serve(async (req) => {
         invoiceMark: responseData.invoiceMark || Math.floor(Math.random() * 1000000000),
         authenticationCode: responseData.authenticationCode || `AUTH_${Date.now()}`,
         message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData',
-        receiptNumber: `${receipt.invoiceHeader.series}-${receipt.invoiceHeader.aa}`,
+        receiptNumber: receipt.receiptNumber || 'N/A',
         environment: environment,
         rawResponse: responseData,
         timestamp: new Date().toISOString()
