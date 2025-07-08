@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
+import { ProgramDetailsDialog } from './ProgramDetailsDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Carousel,
   CarouselContent,
@@ -10,9 +10,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
-import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
-import { ProgramPricingCard } from './program-details/ProgramPricingCard';
 
 interface Program {
   id: string;
@@ -28,8 +25,8 @@ interface ProgramsSectionProps {
 }
 
 const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translations }) => {
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [api, setApi] = useState<any>();
-  const [activeTab, setActiveTab] = useState("details");
   const isMobile = useIsMobile();
 
   // Auto-rotate carousel on mobile
@@ -42,51 +39,6 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
 
     return () => clearInterval(interval);
   }, [api, isMobile]);
-
-  // Δεδομένα για τα tabs
-  const getTabData = () => {
-    return {
-      benefits: [
-        "Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού",
-        "Εκμάθηση ρυθμού και χρονισμού στα πρότυπα κίνησης", 
-        "Οικοδόμηση συνεργασίας και ομαδικότητας",
-        "Καθιέρωση καλών προτύπων συμπεριφοράς και πειθαρχίας"
-      ],
-      weeklySchedule: [
-        { ageGroup: "Ηλικίες 4-6", day: "Τετάρτη", time: "17:15 - 18:00" },
-        { ageGroup: "Ηλικίες 6-8", day: "Τετάρτη", time: "18:15 - 19:00" }
-      ],
-      pricing: [
-        {
-          title: "Μηνιαίο",
-          price: "€70",
-          period: "/μήνα",
-          sessions: "4 συνεδρίες το μήνα",
-          features: [
-            "Εξατομικευμένη προπόνηση",
-            "Παρακολούθηση προόδου", 
-            "Ευέλικτος προγραμματισμός"
-          ]
-        },
-        {
-          title: "Τριμηνιαίο",
-          price: "€180",
-          period: "/τρίμηνο",
-          sessions: "12 συνεδρίες (3 μήνες)",
-          savings: "Εξοικονομήστε €30",
-          popular: true,
-          features: [
-            "Εξατομικευμένη προπόνηση",
-            "Παρακολούθηση προόδου",
-            "Ευέλικτος προγραμματισμός",
-            "Προτεραιότητα κράτησης"
-          ]
-        }
-      ]
-    };
-  };
-
-  const tabData = getTabData();
 
   return (
     <>
@@ -101,31 +53,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             </p>
           </div>
 
-          {/* Tabs Navigation */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-12">
-            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 bg-gray-800 rounded-none">
-              <TabsTrigger 
-                value="details" 
-                className="rounded-none text-white data-[state=active]:bg-[#00ffba] data-[state=active]:text-black"
-              >
-                01. Λεπτομέρειες Προγράμματος
-              </TabsTrigger>
-              <TabsTrigger 
-                value="benefits" 
-                className="rounded-none text-white data-[state=active]:bg-[#00ffba] data-[state=active]:text-black"
-              >
-                02. Οφέλη Προγράμματος
-              </TabsTrigger>
-              <TabsTrigger 
-                value="schedule" 
-                className="rounded-none text-white data-[state=active]:bg-[#00ffba] data-[state=active]:text-black"
-              >
-                03. Εβδομαδιαίο Πρόγραμμα
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="details" className="mt-8">
-              <div className="relative">
+          <div className="relative">
             {/* Header with navigation */}
             <div className="flex justify-between items-center mb-8">
               <div className="text-left">
@@ -176,7 +104,8 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
                   >
                     <div 
-                      className="bg-white rounded-lg overflow-hidden shadow-lg h-[450px] flex flex-col"
+                      className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group h-[450px] flex flex-col"
+                      onClick={() => setSelectedProgram(program)}
                     >
                       <div className="relative h-48 overflow-hidden flex-shrink-0">
                         <img 
@@ -198,10 +127,13 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                         <p className="text-gray-600 text-sm leading-relaxed flex-1 overflow-hidden">
                           {program.description}
                         </p>
-                        <div className="mt-4">
+                        <div className="mt-4 flex items-center justify-between">
                           <span className="text-[#00ffba] font-semibold text-sm">
-                            Διαθέσιμο Πρόγραμμα
+                            {translations.learnMore}
                           </span>
+                          <div className="absolute bottom-6 right-6 w-6 h-6 rounded-full bg-[#00ffba] flex items-center justify-center">
+                            <span className="text-black text-xs font-bold">→</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -209,32 +141,15 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                 ))}
               </CarouselContent>
             </Carousel>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="benefits" className="mt-8">
-              <div className="max-w-4xl mx-auto">
-                <ProgramBenefitsSection benefits={tabData.benefits} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="schedule" className="mt-8">
-              <div className="max-w-4xl mx-auto">
-                <ProgramScheduleSection 
-                  weeklySchedule={tabData.weeklySchedule}
-                  scheduleNote="Οι συνεδρίες προγραμματίζονται για να εξασφαλιστεί η καλύτερη δυνατή πρόοδος. Επικοινωνήστε μαζί μας για εγγραφή."
-                  shouldShow={true}
-                />
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {tabData.pricing.map((plan, index) => (
-                    <ProgramPricingCard key={index} plan={plan} />
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
+          </div>
         </div>
       </section>
+
+      <ProgramDetailsDialog
+        program={selectedProgram}
+        isOpen={!!selectedProgram}
+        onClose={() => setSelectedProgram(null)}
+      />
     </>
   );
 };
