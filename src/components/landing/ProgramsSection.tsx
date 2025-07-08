@@ -99,7 +99,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
               {programs.map((program) => (
                 <CarouselItem 
                   key={program.id} 
-                  className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/2'}`}
+                  className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
                 >
                   <ProgramCard program={program} />
                 </CarouselItem>

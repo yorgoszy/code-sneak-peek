@@ -107,7 +107,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   const programData = getProgramData();
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-auto flex flex-col">
+    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[450px] flex flex-col">
       {/* Header Image */}
       <div className="relative h-48 overflow-hidden flex-shrink-0">
         <img 
@@ -124,17 +124,17 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       </div>
 
       {/* Program Title */}
-      <div className="p-6 pb-4">
-        <h3 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Robert, sans-serif' }}>
+      <div className="p-4 pb-2">
+        <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-2" style={{ fontFamily: 'Robert, sans-serif' }}>
           {program.title}
         </h3>
-        <p className="text-gray-600 text-sm leading-relaxed">
+        <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
           {program.description}
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="px-6 pb-6 flex-1">
+      <div className="px-4 pb-4 flex-1 overflow-hidden">
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full grid-cols-3 rounded-none bg-gray-100">
             <TabsTrigger value="details" className="rounded-none text-xs">
@@ -148,11 +148,11 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="mt-4">
-            <div className="space-y-3">
-              <div className="bg-gray-50 p-4 rounded-none">
-                <h4 className="font-semibold text-gray-900 mb-3">Στοιχεία Προγράμματος</h4>
-                <div className="space-y-2 text-sm">
+          <TabsContent value="details" className="mt-2 h-[120px] overflow-y-auto">
+            <div className="space-y-2">
+              <div className="bg-gray-50 p-2 rounded-none">
+                <h4 className="font-semibold text-gray-900 mb-2 text-sm">Στοιχεία Προγράμματος</h4>
+                <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Ηλικίες:</span>
                     <span className="text-gray-900 font-medium">{programData.ages}</span>
@@ -171,39 +171,33 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                   </div>
                 </div>
               </div>
-              <div className="text-gray-600 text-sm leading-relaxed">
-                {programData.description}
-              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="benefits" className="mt-4">
-            <div className="space-y-3">
-              <h4 className="font-semibold text-gray-900">Οφέλη Προγράμματος</h4>
-              <div className="grid grid-cols-1 gap-3">
+          <TabsContent value="benefits" className="mt-2 h-[120px] overflow-y-auto">
+            <div className="space-y-2">
+              <h4 className="font-semibold text-gray-900 text-sm">Οφέλη Προγράμματος</h4>
+              <div className="grid grid-cols-1 gap-2">
                 {programData.benefits.map((benefit, index) => (
-                  <div key={index} className="bg-gray-50 p-3 rounded-none border-l-4 border-[#00ffba]">
-                    <div className="text-gray-900 text-sm leading-relaxed">{benefit}</div>
+                  <div key={index} className="bg-gray-50 p-2 rounded-none border-l-2 border-[#00ffba]">
+                    <div className="text-gray-900 text-xs leading-relaxed">{benefit}</div>
                   </div>
                 ))}
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="schedule" className="mt-4">
-            <div className="space-y-3">
-              <h4 className="font-semibold text-gray-900">Εβδομαδιαίο Πρόγραμμα</h4>
-              <div className="space-y-3">
+          <TabsContent value="schedule" className="mt-2 h-[120px] overflow-y-auto">
+            <div className="space-y-2">
+              <h4 className="font-semibold text-gray-900 text-sm">Εβδομαδιαίο Πρόγραμμα</h4>
+              <div className="space-y-2">
                 {programData.weeklySchedule.map((schedule, index) => (
-                  <div key={index} className="bg-gray-50 p-3 rounded-none">
-                    <div className="text-gray-900 font-medium text-sm mb-1">{schedule.ageGroup}</div>
-                    <div className="text-gray-600 text-sm mb-1">{schedule.day}</div>
-                    <div className="text-[#00ffba] font-bold text-sm">{schedule.time}</div>
+                  <div key={index} className="bg-gray-50 p-2 rounded-none">
+                    <div className="text-gray-900 font-medium text-xs mb-1">{schedule.ageGroup}</div>
+                    <div className="text-gray-600 text-xs mb-1">{schedule.day}</div>
+                    <div className="text-[#00ffba] font-bold text-xs">{schedule.time}</div>
                   </div>
                 ))}
-              </div>
-              <div className="text-gray-600 text-xs mt-3 p-3 bg-gray-50 rounded-none border border-gray-200">
-                <strong>Σημείωση:</strong> {programData.scheduleNote}
               </div>
             </div>
           </TabsContent>
