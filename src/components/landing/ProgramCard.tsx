@@ -24,6 +24,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "45 λεπτά",
         frequency: "1 φορά την εβδομάδα",
         schedule: "Τετάρτη",
+        monthlyPrice: "40€",
         benefits: [
           "Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού",
           "Εκμάθηση ρυθμού και χρονισμού στα πρότυπα κίνησης",
@@ -45,6 +46,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "60 λεπτά",
         frequency: "2 φορές την εβδομάδα",
         schedule: "Τρίτη & Πέμπτη",
+        monthlyPrice: "60€",
         benefits: [
           "Βελτιωμένη αθλητική απόδοση",
           "Ενισχυμένη αποτελεσματικότητα κίνησης",
@@ -68,6 +70,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "60 λεπτά",
         frequency: "3 φορές την εβδομάδα",
         schedule: "Δευτέρα, Τετάρτη, Παρασκευή",
+        monthlyPrice: "80€",
         benefits: [
           "Αυξημένη δύναμη και ισχύς",
           "Βελτιωμένη σύσταση σώματος",
@@ -90,6 +93,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "90 λεπτά",
         frequency: "5 φορές την εβδομάδα",
         schedule: "Καθημερινά",
+        monthlyPrice: "100€",
         benefits: [
           "Αυξημένη αυτοπεποίθηση",
           "Βελτιωμένη καρδιαγγειακή υγεία",
@@ -110,6 +114,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "60 λεπτά",
         frequency: "Προσαρμοζόμενη",
         schedule: "Με ραντεβού",
+        monthlyPrice: "150€",
         benefits: [
           "Εξατομικευμένο πρόγραμμα",
           "Εκτεταμένα τεστ στάσης και κίνησης",
@@ -130,6 +135,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "60 λεπτά",
         frequency: "Προσαρμοζόμενη",
         schedule: "Με ραντεβού",
+        monthlyPrice: "200€",
         benefits: [
           "Τεστ δύναμης και αντοχής",
           "Ανατροφοδότηση παρακολούθηση",
@@ -150,6 +156,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "Προσαρμοζόμενη",
         frequency: "Απομακρυσμένη υποστήριξη",
         schedule: "Στον χώρο σου",
+        monthlyPrice: "80€",
         benefits: [
           "Βασισμένο στις προσωπικές σου ανάγκες και δυνατότητες",
           "Το κάνεις στον χώρο σου",
@@ -170,6 +177,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "Προσαρμοζόμενη",
         frequency: "Απομακρυσμένη υποστήριξη",
         schedule: "Στον χώρο σου",
+        monthlyPrice: "40€",
         benefits: [
           "Γρήγορο",
           "Το παίρνεις σπίτι σου και το κάνεις όπου βρίσκεσαι",
@@ -207,7 +215,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   const programData = getProgramData();
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[580px] flex flex-col">
+    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[560px] flex flex-col">
       {/* Header Image */}
       <div className="relative h-48 overflow-hidden flex-shrink-0">
         <img 
@@ -225,9 +233,14 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
 
       {/* Program Title */}
       <div className="p-4 pb-2">
-        <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-2" style={{ fontFamily: 'Robert, sans-serif' }}>
-          {program.title}
-        </h3>
+        <div className="flex justify-between items-start mb-1">
+          <h3 className="text-lg font-bold text-gray-900 flex-1" style={{ fontFamily: 'Robert, sans-serif' }}>
+            {program.title}
+          </h3>
+          <span className="text-lg font-bold text-[#00ffba] ml-2 flex-shrink-0">
+            {programData.monthlyPrice}
+          </span>
+        </div>
         <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
           {program.description}
         </p>
