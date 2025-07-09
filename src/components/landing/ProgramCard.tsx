@@ -24,7 +24,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "45 λεπτά",
         frequency: "1 φορά την εβδομάδα",
         schedule: "Τετάρτη",
-        monthlyPrice: "40€",
+        monthlyPrice: "50€",
         benefits: [
           "Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού",
           "Εκμάθηση ρυθμού και χρονισμού στα πρότυπα κίνησης",
@@ -46,7 +46,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "60 λεπτά",
         frequency: "2 φορές την εβδομάδα",
         schedule: "Τρίτη & Πέμπτη",
-        monthlyPrice: "60€",
+        monthlyPrice: "70€",
         benefits: [
           "Βελτιωμένη αθλητική απόδοση",
           "Ενισχυμένη αποτελεσματικότητα κίνησης",
@@ -70,7 +70,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "60 λεπτά",
         frequency: "3 φορές την εβδομάδα",
         schedule: "Δευτέρα, Τετάρτη, Παρασκευή",
-        monthlyPrice: "80€",
+        monthlyPrice: "90€",
         benefits: [
           "Αυξημένη δύναμη και ισχύς",
           "Βελτιωμένη σύσταση σώματος",
@@ -87,13 +87,34 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       };
     }
 
+    if (program.id === "04") {
+      return {
+        ages: "18+ ετών",
+        duration: "60 λεπτά",
+        frequency: "3-5 φορές την εβδομάδα",
+        schedule: "Καθημερινά",
+        monthlyPrice: "120€",
+        benefits: [
+          "Βελτιωμένη καρδιαγγειακή υγεία",
+          "Ενισχυμένη μυϊκή δύναμη και αντοχή",
+          "Καλύτερη σύσταση σώματος",
+          "Αυξημένη ενέργεια και ζωτικότητα"
+        ],
+        weeklySchedule: [
+          { ageGroup: "Φυσική Κατάσταση", day: "Καθημερινά", time: "Πρωί & Απόγευμα" }
+        ],
+        scheduleNote: "Ευέλικτος προγραμματισμός διαθέσιμος για να προσαρμοστεί στις ανάγκες σας. Επικοινωνήστε μαζί μας για εγγραφή και οποιεσδήποτε ερωτήσεις προγραμματισμού.",
+        description: "Το πρόγραμμα Φυσική Κατάσταση είναι σχεδιασμένο να παρέχει μια ολοκληρωμένη εμπειρία προπόνησης για βελτίωση της συνολικής φυσικής κατάστασης."
+      };
+    }
+
     if (program.id === "05") {
       return {
         ages: "16+ ετών",
         duration: "90 λεπτά",
         frequency: "5 φορές την εβδομάδα",
         schedule: "Καθημερινά",
-        monthlyPrice: "100€",
+        monthlyPrice: "70€",
         benefits: [
           "Αυξημένη αυτοπεποίθηση",
           "Βελτιωμένη καρδιαγγειακή υγεία",
@@ -114,7 +135,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "60 λεπτά",
         frequency: "Προσαρμοζόμενη",
         schedule: "Με ραντεβού",
-        monthlyPrice: "150€",
+        monthlyPrice: "30€",
         benefits: [
           "Εξατομικευμένο πρόγραμμα",
           "Εκτεταμένα τεστ στάσης και κίνησης",
@@ -135,7 +156,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "60 λεπτά",
         frequency: "Προσαρμοζόμενη",
         schedule: "Με ραντεβού",
-        monthlyPrice: "200€",
+        monthlyPrice: "120€",
         benefits: [
           "Τεστ δύναμης και αντοχής",
           "Ανατροφοδότηση παρακολούθηση",
@@ -177,7 +198,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         duration: "Προσαρμοζόμενη",
         frequency: "Απομακρυσμένη υποστήριξη",
         schedule: "Στον χώρο σου",
-        monthlyPrice: "40€",
+        monthlyPrice: "50€",
         benefits: [
           "Γρήγορο",
           "Το παίρνεις σπίτι σου και το κάνεις όπου βρίσκεσαι",
