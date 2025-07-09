@@ -107,7 +107,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   const programData = getProgramData();
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[450px] flex flex-col">
+    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[500px] flex flex-col">
       {/* Header Image */}
       <div className="relative h-48 overflow-hidden flex-shrink-0">
         <img 
@@ -136,66 +136,75 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       {/* Tabs */}
       <div className="px-4 pb-4 flex-1 overflow-hidden">
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 rounded-none bg-gray-100">
-            <TabsTrigger value="details" className="rounded-none text-xs">
+          <TabsList className="grid w-full grid-cols-3 rounded-none bg-transparent border-b border-gray-200">
+            <TabsTrigger 
+              value="details" 
+              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50"
+            >
               Λεπτομέρειες
             </TabsTrigger>
-            <TabsTrigger value="benefits" className="rounded-none text-xs">
+            <TabsTrigger 
+              value="benefits" 
+              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50"
+            >
               Οφέλη
             </TabsTrigger>
-            <TabsTrigger value="schedule" className="rounded-none text-xs">
+            <TabsTrigger 
+              value="schedule" 
+              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50"
+            >
               Εβδομαδιαίο Πρόγραμμα
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="mt-2 h-[120px] overflow-y-auto">
-            <div className="space-y-2">
-              <div className="bg-gray-50 p-2 rounded-none">
-                <h4 className="font-semibold text-gray-900 mb-2 text-sm">Στοιχεία Προγράμματος</h4>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Ηλικίες:</span>
-                    <span className="text-gray-900 font-medium">{programData.ages}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Διάρκεια:</span>
-                    <span className="text-gray-900 font-medium">{programData.duration}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Συχνότητα:</span>
-                    <span className="text-gray-900 font-medium">{programData.frequency}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Ημέρες:</span>
-                    <span className="text-gray-900 font-medium">{programData.schedule}</span>
-                  </div>
+          <TabsContent value="details" className="mt-4 h-[140px]">
+            <div className="bg-gray-50 p-3 rounded-none h-full">
+              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Στοιχεία Προγράμματος</h4>
+              <div className="grid grid-cols-2 gap-y-2 text-xs">
+                <div>
+                  <span className="text-gray-600">Ηλικίες:</span>
+                  <span className="text-gray-900 font-medium ml-2">{programData.ages}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Διάρκεια:</span>
+                  <span className="text-gray-900 font-medium ml-2">{programData.duration}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Συχνότητα:</span>
+                  <span className="text-gray-900 font-medium ml-2">{programData.frequency}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Ημέρες:</span>
+                  <span className="text-gray-900 font-medium ml-2">{programData.schedule}</span>
                 </div>
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="benefits" className="mt-2 h-[120px] overflow-y-auto">
-            <div className="space-y-2">
-              <h4 className="font-semibold text-gray-900 text-sm">Οφέλη Προγράμματος</h4>
-              <div className="grid grid-cols-1 gap-2">
+          <TabsContent value="benefits" className="mt-4 h-[140px]">
+            <div className="h-full">
+              <h4 className="font-semibold text-gray-900 text-sm mb-2">Οφέλη Προγράμματος</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 {programData.benefits.map((benefit, index) => (
                   <div key={index} className="bg-gray-50 p-2 rounded-none border-l-2 border-[#00ffba]">
-                    <div className="text-gray-900 text-xs leading-relaxed">{benefit}</div>
+                    <div className="text-gray-900 leading-relaxed">{benefit}</div>
                   </div>
                 ))}
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="schedule" className="mt-2 h-[120px] overflow-y-auto">
-            <div className="space-y-2">
-              <h4 className="font-semibold text-gray-900 text-sm">Εβδομαδιαίο Πρόγραμμα</h4>
-              <div className="space-y-2">
+          <TabsContent value="schedule" className="mt-4 h-[140px]">
+            <div className="h-full">
+              <h4 className="font-semibold text-gray-900 text-sm mb-2">Εβδομαδιαίο Πρόγραμμα</h4>
+              <div className="space-y-2 text-xs">
                 {programData.weeklySchedule.map((schedule, index) => (
-                  <div key={index} className="bg-gray-50 p-2 rounded-none">
-                    <div className="text-gray-900 font-medium text-xs mb-1">{schedule.ageGroup}</div>
-                    <div className="text-gray-600 text-xs mb-1">{schedule.day}</div>
-                    <div className="text-[#00ffba] font-bold text-xs">{schedule.time}</div>
+                  <div key={index} className="bg-gray-50 p-2 rounded-none flex justify-between items-center">
+                    <div>
+                      <span className="text-gray-900 font-medium">{schedule.ageGroup}</span>
+                      <span className="text-gray-600 ml-2">{schedule.day}</span>
+                    </div>
+                    <div className="text-[#00ffba] font-bold">{schedule.time}</div>
                   </div>
                 ))}
               </div>
