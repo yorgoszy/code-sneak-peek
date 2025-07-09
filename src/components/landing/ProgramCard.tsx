@@ -174,7 +174,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
     if (program.id === "08") {
       return {
         ages: "16+ ετών",
-        duration: "Προσαρμοζόμενη",
+        duration: "7 εβδομάδες",
         frequency: "Απομακρυσμένη υποστήριξη",
         schedule: "Στον χώρο σου",
         monthlyPrice: "80€",
@@ -195,7 +195,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
     if (program.id === "09") {
       return {
         ages: "16+ ετών",
-        duration: "Προσαρμοζόμενη",
+        duration: "7 εβδομάδες",
         frequency: "Απομακρυσμένη υποστήριξη",
         schedule: "Στον χώρο σου",
         monthlyPrice: "50€",
