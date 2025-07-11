@@ -2513,7 +2513,10 @@ export type Database = {
           created_at: string
           end_date: string
           id: string
+          is_paused: boolean | null
           notes: string | null
+          paused_at: string | null
+          paused_days_remaining: number | null
           payment_id: string | null
           start_date: string
           status: string
@@ -2526,7 +2529,10 @@ export type Database = {
           created_at?: string
           end_date: string
           id?: string
+          is_paused?: boolean | null
           notes?: string | null
+          paused_at?: string | null
+          paused_days_remaining?: number | null
           payment_id?: string | null
           start_date?: string
           status?: string
@@ -2539,7 +2545,10 @@ export type Database = {
           created_at?: string
           end_date?: string
           id?: string
+          is_paused?: boolean | null
           notes?: string | null
+          paused_at?: string | null
+          paused_days_remaining?: number | null
           payment_id?: string | null
           start_date?: string
           status?: string
@@ -2701,6 +2710,18 @@ export type Database = {
           _role: Database["public"]["Enums"]["user_role"]
         }
         Returns: boolean
+      }
+      pause_subscription: {
+        Args: { subscription_id: string }
+        Returns: undefined
+      }
+      renew_subscription: {
+        Args: { original_subscription_id: string }
+        Returns: string
+      }
+      resume_subscription: {
+        Args: { subscription_id: string }
+        Returns: undefined
       }
     }
     Enums: {

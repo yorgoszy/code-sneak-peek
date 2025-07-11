@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt } from "lucide-react";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw } from "lucide-react";
 
 interface SubscriptionType {
   id: string;
@@ -29,6 +29,9 @@ interface UserSubscription {
   status: string;
   notes: string;
   created_at: string;
+  is_paused: boolean;
+  paused_at: string | null;
+  paused_days_remaining: number | null;
   subscription_types: SubscriptionType;
   app_users: {
     name: string;
@@ -255,91 +258,57 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const activateUserSubscription = async (userId: string) => {
+  const pauseSubscription = async (subscriptionId: string) => {
     try {
-      console.log('🔄 Ενεργοποίηση συνδρομής για χρήστη:', userId);
-      
-      // Βρες την πιο πρόσφατη συνδρομή του χρήστη
-      const userSubscription = userSubscriptions
-        .filter(sub => sub.user_id === userId)
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+      setLoading(true);
+      const { error } = await supabase.rpc('pause_subscription', {
+        subscription_id: subscriptionId
+      });
 
-      console.log('📋 User subscription found:', userSubscription?.id);
+      if (error) throw error;
 
-      // Πρώτα ενημέρωσε τη συνδρομή σε active (αν υπάρχει)
-      if (userSubscription) {
-        const { error: subscriptionError } = await supabase
-          .from('user_subscriptions')
-          .update({ status: 'active' })
-          .eq('id', userSubscription.id);
-
-        if (subscriptionError) {
-          console.error('❌ Subscription update error:', subscriptionError);
-          throw subscriptionError;
-        }
-        console.log('✅ Subscription updated to active');
-      }
-
-      // Στη συνέχεια ενημέρωσε ΜΟΝΟ το subscription_status του χρήστη σε active
-      const { error: userError } = await supabase
-        .from('app_users')
-        .update({ subscription_status: 'active' })
-        .eq('id', userId);
-
-      if (userError) {
-        console.error('❌ User update error:', userError);
-        throw userError;
-      }
-      console.log('✅ User subscription_status updated to active');
-
-      toast.success('Η συνδρομή ενεργοποιήθηκε επιτυχώς!');
-      
-      // Άμεση ανανέωση των δεδομένων
+      toast.success('Η συνδρομή τέθηκε σε παύση επιτυχώς');
       await loadData();
-
-    } catch (error) {
-      console.error('❌ Error activating subscription:', error);
-      toast.error('Σφάλμα κατά την ενεργοποίηση της συνδρομής');
+    } catch (error: any) {
+      toast.error('Σφάλμα κατά την παύση: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deactivateUserSubscription = async (userId: string) => {
+  const resumeSubscription = async (subscriptionId: string) => {
     try {
-      console.log('🔄 Απενεργοποίηση συνδρομής για χρήστη:', userId);
-      
-      // Απενεργοποίηση όλων των ενεργών συνδρομών του χρήστη
-      const { error: subscriptionError } = await supabase
-        .from('user_subscriptions')
-        .update({ status: 'cancelled' })
-        .eq('user_id', userId)
-        .eq('status', 'active');
+      setLoading(true);
+      const { error } = await supabase.rpc('resume_subscription', {
+        subscription_id: subscriptionId
+      });
 
-      if (subscriptionError) {
-        console.error('❌ Subscription deactivation error:', subscriptionError);
-        throw subscriptionError;
-      }
-      console.log('✅ Subscriptions deactivated');
+      if (error) throw error;
 
-      // Ενημέρωση ΜΟΝΟ του subscription_status του χρήστη σε inactive
-      const { error: userError } = await supabase
-        .from('app_users')
-        .update({ subscription_status: 'inactive' })
-        .eq('id', userId);
-
-      if (userError) {
-        console.error('❌ User deactivation error:', userError);
-        throw userError;
-      }
-      console.log('✅ User subscription_status updated to inactive');
-
-      toast.success('Η συνδρομή απενεργοποιήθηκε επιτυχώς!');
-      
-      // Άμεση ανανέωση των δεδομένων
+      toast.success('Η συνδρομή συνεχίστηκε επιτυχώς');
       await loadData();
+    } catch (error: any) {
+      toast.error('Σφάλμα κατά τη συνέχιση: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    } catch (error) {
-      console.error('❌ Error deactivating subscription:', error);
-      toast.error('Σφάλμα κατά την απενεργοποίηση της συνδρομής');
+  const renewSubscription = async (subscriptionId: string) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.rpc('renew_subscription', {
+        original_subscription_id: subscriptionId
+      });
+
+      if (error) throw error;
+
+      toast.success('Η συνδρομή ανανεώθηκε επιτυχώς');
+      await loadData();
+    } catch (error: any) {
+      toast.error('Σφάλμα κατά την ανανέωση: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -416,11 +385,23 @@ export const SubscriptionManagement: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
+      case 'paused': return 'bg-orange-100 text-orange-800';
       case 'expired': return 'bg-red-100 text-red-800';
       case 'cancelled': return 'bg-gray-100 text-gray-800';
       case 'inactive': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getSubscriptionStatus = (user: any, activeSubscription: any) => {
+    if (!activeSubscription) return 'inactive';
+    if (activeSubscription.is_paused) return 'paused';
+    
+    const today = new Date();
+    const endDate = new Date(activeSubscription.end_date);
+    
+    if (endDate < today) return 'expired';
+    return 'active';
   };
 
   // Filter users for table display and sort by subscription priority
@@ -433,18 +414,34 @@ export const SubscriptionManagement: React.FC = () => {
     const aActiveSubscription = userSubscriptions.find(s => s.user_id === a.id && s.status === 'active');
     const bActiveSubscription = userSubscriptions.find(s => s.user_id === b.id && s.status === 'active');
 
-    // Priority 1: Users with active subscriptions come first
-    if (aActiveSubscription && !bActiveSubscription) return -1;
-    if (!aActiveSubscription && bActiveSubscription) return 1;
+    const aStatus = getSubscriptionStatus(a, aActiveSubscription);
+    const bStatus = getSubscriptionStatus(b, bActiveSubscription);
 
-    // Priority 2: Among active subscriptions, sort by end date (earliest first)
-    if (aActiveSubscription && bActiveSubscription) {
-      const aEndDate = new Date(aActiveSubscription.end_date);
-      const bEndDate = new Date(bActiveSubscription.end_date);
-      return aEndDate.getTime() - bEndDate.getTime();
+    // Priority order: active -> paused -> expired/inactive
+    const statusPriority: Record<string, number> = {
+      'active': 1,
+      'paused': 2,
+      'expired': 3,
+      'inactive': 4
+    };
+
+    const aPriority = statusPriority[aStatus] || 4;
+    const bPriority = statusPriority[bStatus] || 4;
+
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
     }
 
-    // Priority 3: Users without active subscriptions sorted by name
+    // Among same status level, sort by end date (earliest first) for active/paused
+    if ((aStatus === 'active' || aStatus === 'paused') && (bStatus === 'active' || bStatus === 'paused')) {
+      if (aActiveSubscription && bActiveSubscription) {
+        const aEndDate = new Date(aActiveSubscription.end_date);
+        const bEndDate = new Date(bActiveSubscription.end_date);
+        return aEndDate.getTime() - bEndDate.getTime();
+      }
+    }
+
+    // Fallback: sort by name
     return a.name.localeCompare(b.name);
   });
 
@@ -770,48 +767,90 @@ export const SubscriptionManagement: React.FC = () => {
                           <span className="text-gray-400">Χωρίς συνδρομή</span>
                         )}
                       </td>
-                      <td className="p-2">
-                        <Badge className={`rounded-none ${getStatusColor(user.subscription_status)}`}>
-                          {user.subscription_status}
-                        </Badge>
-                      </td>
-                      <td className="p-2">
-                        {activeSubscription ? (
-                          <span className="text-sm">
-                            {new Date(activeSubscription.end_date).toLocaleDateString('el-GR')}
-                          </span>
-                        ) : latestSubscription ? (
-                          <span className="text-sm text-gray-400">
-                            {new Date(latestSubscription.end_date).toLocaleDateString('el-GR')} (Ανενεργή)
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="p-2">
-                        <div className="flex gap-2">
-                          {isUserActive ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => deactivateUserSubscription(user.id)}
-                              className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                            >
-                              <X className="w-3 h-3 mr-1" />
-                              Απενεργοποίηση
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              onClick={() => activateUserSubscription(user.id)}
-                              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                            >
-                              <Check className="w-3 h-3 mr-1" />
-                              Ενεργοποίηση
-                            </Button>
-                          )}
-                        </div>
-                      </td>
+                       <td className="p-2">
+                         {(() => {
+                           const subscriptionStatus = getSubscriptionStatus(user, activeSubscription);
+                           return (
+                             <Badge className={`rounded-none ${getStatusColor(subscriptionStatus)}`}>
+                               {subscriptionStatus === 'paused' ? 'Παύση' : 
+                                subscriptionStatus === 'expired' ? 'Λήξη' :
+                                subscriptionStatus === 'active' ? 'Ενεργή' : 'Ανενεργή'}
+                             </Badge>
+                           );
+                         })()}
+                       </td>
+                       <td className="p-2">
+                         {activeSubscription ? (
+                           <div>
+                             <span className="text-sm">
+                               {new Date(activeSubscription.end_date).toLocaleDateString('el-GR')}
+                             </span>
+                             {activeSubscription.is_paused && (
+                               <div className="text-xs text-orange-600">
+                                 {activeSubscription.paused_days_remaining} ημέρες σε αναμονή
+                               </div>
+                             )}
+                           </div>
+                         ) : latestSubscription ? (
+                           <span className="text-sm text-gray-400">
+                             {new Date(latestSubscription.end_date).toLocaleDateString('el-GR')} (Ανενεργή)
+                           </span>
+                         ) : (
+                           <span className="text-gray-400">-</span>
+                         )}
+                       </td>
+                       <td className="p-2">
+                         <div className="flex gap-1">
+                           {activeSubscription ? (
+                             <>
+                               {/* Pause/Resume Button */}
+                               {activeSubscription.is_paused ? (
+                                 <Button
+                                   size="sm"
+                                   onClick={() => resumeSubscription(activeSubscription.id)}
+                                   className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                                   title="Συνέχιση συνδρομής"
+                                 >
+                                   <Play className="w-3 h-3" />
+                                 </Button>
+                               ) : (
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => pauseSubscription(activeSubscription.id)}
+                                   className="rounded-none border-orange-300 text-orange-600 hover:bg-orange-50"
+                                   title="Παύση συνδρομής"
+                                 >
+                                   <Pause className="w-3 h-3" />
+                                 </Button>
+                               )}
+                               
+                               {/* Renewal Button */}
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={() => renewSubscription(activeSubscription.id)}
+                                 className="rounded-none border-blue-300 text-blue-600 hover:bg-blue-50"
+                                 title="Ανανέωση συνδρομής"
+                               >
+                                 <RotateCcw className="w-3 h-3" />
+                               </Button>
+                             </>
+                           ) : latestSubscription ? (
+                             /* Renewal Button for expired subscriptions */
+                             <Button
+                               size="sm"
+                               onClick={() => renewSubscription(latestSubscription.id)}
+                               className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                               title="Ανανέωση συνδρομής"
+                             >
+                               <RotateCcw className="w-3 h-3" />
+                             </Button>
+                           ) : (
+                             <span className="text-gray-400 text-sm">Χωρίς ενέργειες</span>
+                           )}
+                         </div>
+                       </td>
                     </tr>
                   );
                 })}
