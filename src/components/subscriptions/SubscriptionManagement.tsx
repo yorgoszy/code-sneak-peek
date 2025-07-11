@@ -423,11 +423,29 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  // Filter users for table display
+  // Filter users for table display and sort by subscription priority
   const filteredUsersForTable = users.filter(user => {
     if (usersTableSearchTerm.trim() === '') return true;
     return user.name.toLowerCase().includes(usersTableSearchTerm.toLowerCase()) ||
            user.email.toLowerCase().includes(usersTableSearchTerm.toLowerCase());
+  }).sort((a, b) => {
+    // Get active subscriptions for both users
+    const aActiveSubscription = userSubscriptions.find(s => s.user_id === a.id && s.status === 'active');
+    const bActiveSubscription = userSubscriptions.find(s => s.user_id === b.id && s.status === 'active');
+
+    // Priority 1: Users with active subscriptions come first
+    if (aActiveSubscription && !bActiveSubscription) return -1;
+    if (!aActiveSubscription && bActiveSubscription) return 1;
+
+    // Priority 2: Among active subscriptions, sort by end date (earliest first)
+    if (aActiveSubscription && bActiveSubscription) {
+      const aEndDate = new Date(aActiveSubscription.end_date);
+      const bEndDate = new Date(bActiveSubscription.end_date);
+      return aEndDate.getTime() - bEndDate.getTime();
+    }
+
+    // Priority 3: Users without active subscriptions sorted by name
+    return a.name.localeCompare(b.name);
   });
 
   if (loading) {
