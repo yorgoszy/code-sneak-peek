@@ -16,7 +16,7 @@ interface SubscriptionType {
   name: string;
   description: string;
   price: number;
-  duration_days: number;
+  duration_months: number;
   features: any;
   is_active: boolean;
 }
@@ -38,7 +38,7 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [durationDays, setDurationDays] = useState('');
+  const [durationMonths, setDurationMonths] = useState('');
   const [features, setFeatures] = useState('');
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     setName('');
     setDescription('');
     setPrice('');
-    setDurationDays('');
+    setDurationMonths('');
     setFeatures('');
     setEditingType(null);
   };
@@ -147,7 +147,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     setName(type.name);
     setDescription(type.description || '');
     setPrice(type.price.toString());
-    setDurationDays(type.duration_days.toString());
+    setDurationMonths(type.duration_months.toString());
     setFeatures(type.features ? JSON.stringify(type.features, null, 2) : '{}');
     setIsDialogOpen(true);
   };
@@ -163,13 +163,13 @@ export const SubscriptionTypeManager: React.FC = () => {
       return;
     }
 
-    if (!name.trim() || !price || !durationDays) {
+    if (!name.trim() || !price || !durationMonths) {
       toast.error('Συμπληρώστε όλα τα απαιτούμενα πεδία (Όνομα, Τιμή, Διάρκεια)');
       return;
     }
 
     const numericPrice = parseFloat(price);
-    const numericDuration = parseInt(durationDays);
+    const numericDuration = parseInt(durationMonths);
 
     if (isNaN(numericPrice) || numericPrice <= 0) {
       toast.error('Η τιμή πρέπει να είναι θετικός αριθμός');
@@ -199,7 +199,7 @@ export const SubscriptionTypeManager: React.FC = () => {
         name: name.trim(),
         description: description.trim() || null,
         price: numericPrice,
-        duration_days: numericDuration,
+        duration_months: numericDuration,
         features: parsedFeatures,
         is_active: true
       };
@@ -412,7 +412,7 @@ export const SubscriptionTypeManager: React.FC = () => {
                     )}
                     <div className="text-sm space-y-1">
                       <div><strong>Τιμή:</strong> €{type.price}</div>
-                      <div><strong>Διάρκεια:</strong> {type.duration_days} ημέρες</div>
+                      <div><strong>Διάρκεια:</strong> {type.duration_months} μήνες</div>
                       {type.features && Object.keys(type.features).length > 0 && (
                         <div><strong>Χαρακτηριστικά:</strong> {Object.keys(type.features).join(', ')}</div>
                       )}
@@ -501,13 +501,13 @@ export const SubscriptionTypeManager: React.FC = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="duration">Διάρκεια (ημέρες)*</Label>
+                <Label htmlFor="duration">Διάρκεια (μήνες)*</Label>
                 <Input
                   id="duration"
                   type="number"
                   min="1"
-                  value={durationDays}
-                  onChange={(e) => setDurationDays(e.target.value)}
+                  value={durationMonths}
+                  onChange={(e) => setDurationMonths(e.target.value)}
                   className="rounded-none"
                   disabled={saving}
                 />

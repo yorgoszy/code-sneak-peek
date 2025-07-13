@@ -16,7 +16,7 @@ interface SubscriptionType {
   name: string;
   description: string;
   price: number;
-  duration_days: number;
+  duration_months: number;
   features: any;
   is_active: boolean;
 }
@@ -160,7 +160,8 @@ export const SubscriptionManagement: React.FC = () => {
 
       const subscriptionStartDate = new Date(startDate);
       const endDate = new Date(subscriptionStartDate);
-      endDate.setDate(subscriptionStartDate.getDate() + subscriptionType.duration_days);
+      endDate.setMonth(subscriptionStartDate.getMonth() + subscriptionType.duration_months);
+      endDate.setDate(subscriptionStartDate.getDate() - 1); // Calendar month calculation
 
       // Δημιουργία νέας συνδρομής
       const { error: subscriptionError } = await supabase
@@ -314,32 +315,12 @@ export const SubscriptionManagement: React.FC = () => {
       const newStartDate = new Date(currentEndDate);
       newStartDate.setDate(currentEndDate.getDate() + 1);
 
-      // Υπολόγισε την ημερομηνία λήξης της νέας συνδρομής
-      const subscriptionType = currentSubscription.subscription_types;
-      const newEndDate = new Date(newStartDate);
-      newEndDate.setDate(newStartDate.getDate() + subscriptionType.duration_days);
+      // Use the database function to create renewal properly
+      const { data: newSubscriptionId, error: renewError } = await supabase.rpc('renew_subscription', {
+        original_subscription_id: subscriptionId
+      });
 
-      // Δημιουργία νέας συνδρομής
-      const { error: insertError } = await supabase
-        .from('user_subscriptions')
-        .insert({
-          user_id: currentSubscription.user_id,
-          subscription_type_id: currentSubscription.subscription_types.id,
-          start_date: newStartDate.toISOString().split('T')[0],
-          end_date: newEndDate.toISOString().split('T')[0],
-          status: 'active',
-          notes: `Ανανέωση από συνδρομή ${subscriptionId}`
-        });
-
-      if (insertError) throw insertError;
-
-      // Ενημέρωση status χρήστη
-      const { error: userError } = await supabase
-        .from('app_users')
-        .update({ subscription_status: 'active' })
-        .eq('id', currentSubscription.user_id);
-
-      if (userError) throw userError;
+      if (renewError) throw renewError;
 
       toast.success('Η συνδρομή ανανεώθηκε επιτυχώς');
       await loadData();
@@ -516,11 +497,11 @@ export const SubscriptionManagement: React.FC = () => {
     const aStatus = getSubscriptionStatus(a, aActiveSubscription);
     const bStatus = getSubscriptionStatus(b, bActiveSubscription);
 
-    // Priority order: active -> paused -> expired/inactive
+    // Priority order: active -> expired -> paused -> inactive
     const statusPriority: Record<string, number> = {
       'active': 1,
-      'paused': 2,
-      'expired': 3,
+      'expired': 2,
+      'paused': 3,
       'inactive': 4
     };
 
@@ -631,10 +612,14 @@ export const SubscriptionManagement: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Λήξης</label>
                   <Input
                     type="date"
-                    value={selectedSubscriptionType ? 
-                      new Date(new Date(startDate).getTime() + (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.duration_days || 0) * 24 * 60 * 60 * 1000).toISOString().split('T')[0] 
-                      : ''
-                    }
+                    value={selectedSubscriptionType ? (() => {
+                      const startDateObj = new Date(startDate);
+                      const endDateObj = new Date(startDateObj);
+                      const durationMonths = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.duration_months || 0;
+                      endDateObj.setMonth(startDateObj.getMonth() + durationMonths);
+                      endDateObj.setDate(startDateObj.getDate() - 1);
+                      return endDateObj.toISOString().split('T')[0];
+                    })() : ''}
                     disabled
                     className="rounded-none bg-gray-50"
                   />
@@ -651,7 +636,7 @@ export const SubscriptionManagement: React.FC = () => {
                   <SelectContent>
                     {subscriptionTypes.map((type) => (
                       <SelectItem key={type.id} value={type.id}>
-                        {type.name} - €{type.price} ({type.duration_days} ημέρες)
+                        {type.name} - €{type.price} ({type.duration_months} μήνες)
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -765,7 +750,7 @@ export const SubscriptionManagement: React.FC = () => {
                       <SelectContent>
                         {subscriptionTypes.map((type) => (
                           <SelectItem key={type.id} value={type.id}>
-                            {type.name} - €{type.price} ({type.duration_days} ημέρες)
+                            {type.name} - €{type.price} ({type.duration_months} μήνες)
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -926,7 +911,9 @@ export const SubscriptionManagement: React.FC = () => {
                     <tr key={user.id} className="border-b hover:bg-gray-50">
                       <td className="p-2">
                         <div>
-                          <div className="font-medium">{user.name}</div>
+                          <div className={`font-medium ${getSubscriptionStatus(user, activeSubscription) === 'expired' ? 'text-red-600' : ''}`}>
+                            {user.name}
+                          </div>
                           <div className="text-sm text-gray-500">{user.email}</div>
                         </div>
                       </td>
