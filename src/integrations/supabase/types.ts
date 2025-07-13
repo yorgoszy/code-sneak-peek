@@ -1396,7 +1396,7 @@ export type Database = {
           payment_date: string | null
           payment_method: string | null
           status: string | null
-          subscription_duration_days: number | null
+          subscription_duration_months: number | null
           subscription_type_id: string | null
           transaction_id: string | null
           updated_at: string | null
@@ -1411,7 +1411,7 @@ export type Database = {
           payment_date?: string | null
           payment_method?: string | null
           status?: string | null
-          subscription_duration_days?: number | null
+          subscription_duration_months?: number | null
           subscription_type_id?: string | null
           transaction_id?: string | null
           updated_at?: string | null
@@ -1426,7 +1426,7 @@ export type Database = {
           payment_date?: string | null
           payment_method?: string | null
           status?: string | null
-          subscription_duration_days?: number | null
+          subscription_duration_months?: number | null
           subscription_type_id?: string | null
           transaction_id?: string | null
           updated_at?: string | null
@@ -2182,7 +2182,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
-          duration_days: number
+          duration_months: number
           features: Json | null
           id: string
           is_active: boolean | null
@@ -2192,7 +2192,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
-          duration_days: number
+          duration_months?: number
           features?: Json | null
           id?: string
           is_active?: boolean | null
@@ -2202,7 +2202,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
-          duration_days?: number
+          duration_months?: number
           features?: Json | null
           id?: string
           is_active?: boolean | null
