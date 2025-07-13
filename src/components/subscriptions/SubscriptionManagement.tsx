@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw } from "lucide-react";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2 } from "lucide-react";
 
 interface SubscriptionType {
   id: string;
@@ -56,6 +56,11 @@ export const SubscriptionManagement: React.FC = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editSubscription, setEditSubscription] = useState<UserSubscription | null>(null);
+  const [editStartDate, setEditStartDate] = useState('');
+  const [editEndDate, setEditEndDate] = useState('');
+  const [editSubscriptionType, setEditSubscriptionType] = useState('');
 
   useEffect(() => {
     loadData();
@@ -297,16 +302,110 @@ export const SubscriptionManagement: React.FC = () => {
   const renewSubscription = async (subscriptionId: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.rpc('renew_subscription', {
-        original_subscription_id: subscriptionId
-      });
+      
+      // Βρες την τρέχουσα συνδρομή για να πάρεις την ημερομηνία λήξης
+      const currentSubscription = userSubscriptions.find(s => s.id === subscriptionId);
+      if (!currentSubscription) {
+        throw new Error('Η συνδρομή δεν βρέθηκε');
+      }
 
-      if (error) throw error;
+      // Υπολόγισε την ημερομηνία έναρξης της νέας συνδρομής (επόμενη μέρα της λήξης)
+      const currentEndDate = new Date(currentSubscription.end_date);
+      const newStartDate = new Date(currentEndDate);
+      newStartDate.setDate(currentEndDate.getDate() + 1);
+
+      // Υπολόγισε την ημερομηνία λήξης της νέας συνδρομής
+      const subscriptionType = currentSubscription.subscription_types;
+      const newEndDate = new Date(newStartDate);
+      newEndDate.setDate(newStartDate.getDate() + subscriptionType.duration_days);
+
+      // Δημιουργία νέας συνδρομής
+      const { error: insertError } = await supabase
+        .from('user_subscriptions')
+        .insert({
+          user_id: currentSubscription.user_id,
+          subscription_type_id: currentSubscription.subscription_types.id,
+          start_date: newStartDate.toISOString().split('T')[0],
+          end_date: newEndDate.toISOString().split('T')[0],
+          status: 'active',
+          notes: `Ανανέωση από συνδρομή ${subscriptionId}`
+        });
+
+      if (insertError) throw insertError;
+
+      // Ενημέρωση status χρήστη
+      const { error: userError } = await supabase
+        .from('app_users')
+        .update({ subscription_status: 'active' })
+        .eq('id', currentSubscription.user_id);
+
+      if (userError) throw userError;
 
       toast.success('Η συνδρομή ανανεώθηκε επιτυχώς');
       await loadData();
     } catch (error: any) {
       toast.error('Σφάλμα κατά την ανανέωση: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteSubscription = async (subscriptionId: string) => {
+    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη συνδρομή;')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Διαγραφή συνδρομής
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .delete()
+        .eq('id', subscriptionId);
+
+      if (error) throw error;
+
+      toast.success('Η συνδρομή διαγράφηκε επιτυχώς');
+      await loadData();
+    } catch (error: any) {
+      toast.error('Σφάλμα κατά τη διαγραφή: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openEditDialog = (subscription: UserSubscription) => {
+    setEditSubscription(subscription);
+    setEditStartDate(subscription.start_date);
+    setEditEndDate(subscription.end_date);
+    setEditSubscriptionType(subscription.subscription_types.id);
+    setIsEditDialogOpen(true);
+  };
+
+  const updateSubscription = async () => {
+    if (!editSubscription) return;
+
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .update({
+          start_date: editStartDate,
+          end_date: editEndDate,
+          subscription_type_id: editSubscriptionType
+        })
+        .eq('id', editSubscription.id);
+
+      if (error) throw error;
+
+      toast.success('Η συνδρομή ενημερώθηκε επιτυχώς');
+      setIsEditDialogOpen(false);
+      setEditSubscription(null);
+      await loadData();
+    } catch (error: any) {
+      toast.error('Σφάλμα κατά την ενημέρωση: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -638,6 +737,84 @@ export const SubscriptionManagement: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Subscription Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="rounded-none">
+            <DialogHeader>
+              <DialogTitle>Επεξεργασία Συνδρομής</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {editSubscription && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Χρήστης</label>
+                    <Input
+                      value={editSubscription.app_users.name}
+                      disabled
+                      className="rounded-none bg-gray-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Τύπος Συνδρομής</label>
+                    <Select value={editSubscriptionType} onValueChange={setEditSubscriptionType}>
+                      <SelectTrigger className="rounded-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {subscriptionTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.name} - €{type.price} ({type.duration_days} ημέρες)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ημερομηνία Έναρξης</label>
+                      <Input
+                        type="date"
+                        value={editStartDate}
+                        onChange={(e) => setEditStartDate(e.target.value)}
+                        className="rounded-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ημερομηνία Λήξης</label>
+                      <Input
+                        type="date"
+                        value={editEndDate}
+                        onChange={(e) => setEditEndDate(e.target.value)}
+                        className="rounded-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button
+                      onClick={updateSubscription}
+                      className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Ενημέρωση
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditDialogOpen(false)}
+                      className="flex-1 rounded-none"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Ακύρωση
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Στατιστικά */}
@@ -825,30 +1002,73 @@ export const SubscriptionManagement: React.FC = () => {
                                  </Button>
                                )}
                                
-                               {/* Renewal Button */}
-                               <Button
-                                 size="sm"
-                                 variant="outline"
-                                 onClick={() => renewSubscription(activeSubscription.id)}
-                                 className="rounded-none border-blue-300 text-blue-600 hover:bg-blue-50"
-                                 title="Ανανέωση συνδρομής"
-                               >
-                                 <RotateCcw className="w-3 h-3" />
-                               </Button>
+                                {/* Renewal Button */}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => renewSubscription(activeSubscription.id)}
+                                  className="rounded-none border-blue-300 text-blue-600 hover:bg-blue-50"
+                                  title="Ανανέωση συνδρομής"
+                                >
+                                  <RotateCcw className="w-3 h-3" />
+                                </Button>
+
+                                {/* Edit Button */}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEditDialog(activeSubscription)}
+                                  className="rounded-none border-gray-300 text-gray-600 hover:bg-gray-50"
+                                  title="Επεξεργασία συνδρομής"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </Button>
+
+                                {/* Delete Button */}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => deleteSubscription(activeSubscription.id)}
+                                  className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                                  title="Διαγραφή συνδρομής"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
                              </>
-                           ) : latestSubscription ? (
-                             /* Renewal Button for expired subscriptions */
-                             <Button
-                               size="sm"
-                               onClick={() => renewSubscription(latestSubscription.id)}
-                               className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                               title="Ανανέωση συνδρομής"
-                             >
-                               <RotateCcw className="w-3 h-3" />
-                             </Button>
-                           ) : (
-                             <span className="text-gray-400 text-sm">Χωρίς ενέργειες</span>
-                           )}
+                            ) : latestSubscription ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => renewSubscription(latestSubscription.id)}
+                                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                                  title="Ανανέωση συνδρομής"
+                                >
+                                  <RotateCcw className="w-3 h-3" />
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEditDialog(latestSubscription)}
+                                  className="rounded-none border-gray-300 text-gray-600 hover:bg-gray-50"
+                                  title="Επεξεργασία συνδρομής"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => deleteSubscription(latestSubscription.id)}
+                                  className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                                  title="Διαγραφή συνδρομής"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </>
+                            ) : (
+                              <span className="text-gray-400 text-sm">Χωρίς ενέργειες</span>
+                            )}
                          </div>
                        </td>
                     </tr>
