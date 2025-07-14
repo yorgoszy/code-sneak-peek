@@ -497,10 +497,10 @@ export const SubscriptionManagement: React.FC = () => {
     const aStatus = getSubscriptionStatus(a, aActiveSubscription);
     const bStatus = getSubscriptionStatus(b, bActiveSubscription);
 
-    // Priority order: active -> expired -> paused -> inactive
+    // Priority order: expired -> active -> paused -> inactive
     const statusPriority: Record<string, number> = {
-      'active': 1,
-      'expired': 2,
+      'expired': 1,
+      'active': 2,
       'paused': 3,
       'inactive': 4
     };
