@@ -741,7 +741,9 @@ export const ReceiptManagement: React.FC = () => {
                     <p className="text-gray-600">Φόρτωση...</p>
                   </div>
                 ) : (
-                  receipts.map((receipt) => (
+                  receipts
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map((receipt) => (
                     <div key={receipt.id} className="border border-gray-200 p-4 rounded-none">
                       <div className="flex items-center justify-between">
                         <div>
