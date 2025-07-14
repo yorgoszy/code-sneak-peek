@@ -51,6 +51,7 @@ interface ReceiptData {
   endDate?: string;
   myDataStatus: 'pending' | 'sent' | 'error';
   myDataId?: string;
+  invoiceMark?: string; // Αριθμός ΜΑΡΚ από MyData
 }
 
 interface ReceiptItem {
@@ -442,7 +443,12 @@ export const ReceiptManagement: React.FC = () => {
       // Update receipt status
       setReceipts(prev => prev.map(r => 
         r.id === receipt.id 
-          ? { ...r, myDataStatus: 'sent', myDataId: data?.myDataId || 'demo-id' }
+          ? { 
+              ...r, 
+              myDataStatus: 'sent', 
+              myDataId: data?.myDataId || 'demo-id',
+              invoiceMark: data?.invoiceMark // Αποθήκευση αριθμού ΜΑΡΚ από MyData
+            }
           : r
       ));
 
@@ -760,6 +766,9 @@ export const ReceiptManagement: React.FC = () => {
                           </Badge>
                           {receipt.myDataId && (
                             <p className="text-xs text-gray-500 mt-1">ID: {receipt.myDataId}</p>
+                          )}
+                          {receipt.invoiceMark && (
+                            <p className="text-xs text-green-600 mt-1 font-medium">ΜΑΡΚ: {receipt.invoiceMark}</p>
                           )}
                         </div>
                       </div>
