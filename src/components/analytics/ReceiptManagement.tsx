@@ -789,11 +789,23 @@ export const ReceiptManagement: React.FC = () => {
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => sendToMyData(receipt)}
+                            onClick={async () => {
+                              try {
+                                setLoading(true);
+                                await sendToMyData(receipt);
+                                toast.success('Η απόδειξη στάλθηκε επιτυχώς στο MyData!');
+                              } catch (error) {
+                                console.error('Retry send error:', error);
+                                toast.error('Σφάλμα στην επανάληψη αποστολής');
+                              } finally {
+                                setLoading(false);
+                              }
+                            }}
+                            disabled={loading}
                             className="rounded-none"
                           >
                             <Send className="h-4 w-4 mr-1" />
-                            Επανάληψη
+                            {loading ? 'Αποστολή...' : 'Επανάληψη'}
                           </Button>
                         )}
                       </div>
