@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck } from "lucide-react";
 
 interface SubscriptionType {
   id: string;
@@ -42,6 +42,7 @@ interface UserSubscription {
 }
 
 export const SubscriptionManagement: React.FC = () => {
+  const { toast } = useToast();
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [userSubscriptions, setUserSubscriptions] = useState<UserSubscription[]>([]);
   const [users, setUsers] = useState<any[]>([]);
@@ -131,7 +132,11 @@ export const SubscriptionManagement: React.FC = () => {
 
     } catch (error) {
       console.error('❌ Error loading data:', error);
-      toast.error('Σφάλμα κατά τη φόρτωση των δεδομένων');
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά τη φόρτωση των δεδομένων"
+      });
     } finally {
       setLoading(false);
     }
@@ -148,7 +153,11 @@ export const SubscriptionManagement: React.FC = () => {
 
   const createSubscription = async () => {
     if (!selectedUser || !selectedSubscriptionType) {
-      toast.error('Επιλέξτε χρήστη και τύπο συνδρομής');
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Επιλέξτε χρήστη και τύπο συνδρομής"
+      });
       return;
     }
 
@@ -207,14 +216,25 @@ export const SubscriptionManagement: React.FC = () => {
 
         if (emailResponse.error) {
           console.error('❌ Σφάλμα αποστολής email:', emailResponse.error);
-          toast.error('Η συνδρομή δημιουργήθηκε αλλά η απόδειξη δεν στάλθηκε');
+          toast({
+            variant: "destructive",
+            title: "Σφάλμα",
+            description: "Η συνδρομή δημιουργήθηκε αλλά η απόδειξη δεν στάλθηκε"
+          });
         } else {
           console.log('✅ Email στάλθηκε επιτυχώς');
-          toast.success('Η συνδρομή δημιουργήθηκε και η απόδειξη στάλθηκε επιτυχώς!');
+          toast({
+            title: "Επιτυχία",
+            description: "Η συνδρομή δημιουργήθηκε και η απόδειξη στάλθηκε επιτυχώς!"
+          });
         }
       } catch (emailError) {
         console.error('❌ Σφάλμα email service:', emailError);
-        toast.error('Η συνδρομή δημιουργήθηκε αλλά η απόδειξη δεν στάλθηκε');
+        toast({
+          variant: "destructive", 
+          title: "Σφάλμα",
+          description: "Η συνδρομή δημιουργήθηκε αλλά η απόδειξη δεν στάλθηκε"
+        });
       }
 
       setIsDialogOpen(false);
@@ -229,7 +249,11 @@ export const SubscriptionManagement: React.FC = () => {
 
     } catch (error) {
       console.error('Error creating subscription:', error);
-      toast.error('Σφάλμα κατά τη δημιουργία της συνδρομής');
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά τη δημιουργία της συνδρομής"
+      });
     }
   };
 
@@ -273,10 +297,17 @@ export const SubscriptionManagement: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Η συνδρομή τέθηκε σε παύση επιτυχώς');
+      toast({
+        title: "Επιτυχία",
+        description: "Η συνδρομή τέθηκε σε παύση επιτυχώς"
+      });
       await loadData();
     } catch (error: any) {
-      toast.error('Σφάλμα κατά την παύση: ' + error.message);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά την παύση: " + error.message
+      });
     } finally {
       setLoading(false);
     }
@@ -291,12 +322,44 @@ export const SubscriptionManagement: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Η συνδρομή συνεχίστηκε επιτυχώς');
+      toast({
+        title: "Επιτυχία",
+        description: "Η συνδρομή συνεχίστηκε επιτυχώς"
+      });
       await loadData();
     } catch (error: any) {
-      toast.error('Σφάλμα κατά τη συνέχιση: ' + error.message);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα", 
+        description: "Σφάλμα κατά τη συνέχιση: " + error.message
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const recordVisit = async (userId: string) => {
+    try {
+      const { error } = await supabase.rpc('record_visit', {
+        p_user_id: userId,
+        p_visit_type: 'manual',
+        p_notes: 'Manual visit from subscription management'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Η παρουσία καταγράφηκε επιτυχώς!"
+      });
+      
+    } catch (error) {
+      console.error('Error recording visit:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα καταγραφής παρουσίας"
+      });
     }
   };
 
@@ -322,10 +385,17 @@ export const SubscriptionManagement: React.FC = () => {
 
       if (renewError) throw renewError;
 
-      toast.success('Η συνδρομή ανανεώθηκε επιτυχώς');
+      toast({
+        title: "Επιτυχία",
+        description: "Η συνδρομή ανανεώθηκε επιτυχώς"
+      });
       await loadData();
     } catch (error: any) {
-      toast.error('Σφάλμα κατά την ανανέωση: ' + error.message);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά την ανανέωση: " + error.message
+      });
     } finally {
       setLoading(false);
     }
@@ -347,10 +417,17 @@ export const SubscriptionManagement: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Η συνδρομή διαγράφηκε επιτυχώς');
+      toast({
+        title: "Επιτυχία",
+        description: "Η συνδρομή διαγράφηκε επιτυχώς"
+      });
       await loadData();
     } catch (error: any) {
-      toast.error('Σφάλμα κατά τη διαγραφή: ' + error.message);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά τη διαγραφή: " + error.message
+      });
     } finally {
       setLoading(false);
     }
@@ -381,12 +458,19 @@ export const SubscriptionManagement: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Η συνδρομή ενημερώθηκε επιτυχώς');
+      toast({
+        title: "Επιτυχία",
+        description: "Η συνδρομή ενημερώθηκε επιτυχώς"
+      });
       setIsEditDialogOpen(false);
       setEditSubscription(null);
       await loadData();
     } catch (error: any) {
-      toast.error('Σφάλμα κατά την ενημέρωση: ' + error.message);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα", 
+        description: "Σφάλμα κατά την ενημέρωση: " + error.message
+      });
     } finally {
       setLoading(false);
     }
@@ -451,14 +535,21 @@ export const SubscriptionManagement: React.FC = () => {
       if (error) throw error;
 
       console.log('✅ Κατάσταση χρήστη ενημερώθηκε επιτυχώς');
-      toast.success(`Ο χρήστης ${newUserStatus === 'active' ? 'ενεργοποιήθηκε' : 'απενεργοποιήθηκε'} επιτυχώς!`);
+      toast({
+        title: "Επιτυχία",
+        description: `Ο χρήστης ${newUserStatus === 'active' ? 'ενεργοποιήθηκε' : 'απενεργοποιήθηκε'} επιτυχώς!`
+      });
       
       // Άμεση ανανέωση των δεδομένων
       await loadData();
 
     } catch (error) {
       console.error('Error updating user status:', error);
-      toast.error('Σφάλμα κατά την ενημέρωση του χρήστη');
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά την ενημέρωση του χρήστη"
+      });
     }
   };
 
@@ -1011,16 +1102,27 @@ export const SubscriptionManagement: React.FC = () => {
                                   <Edit2 className="w-3 h-3" />
                                 </Button>
 
-                                {/* Delete Button */}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => deleteSubscription(activeSubscription.id)}
-                                  className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                                  title="Διαγραφή συνδρομής"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
+                                 {/* Visit Recording Button */}
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => recordVisit(user.id)}
+                                   className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+                                   title="Καταγραφή παρουσίας"
+                                 >
+                                   <UserCheck className="w-3 h-3" />
+                                 </Button>
+
+                                 {/* Delete Button */}
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => deleteSubscription(activeSubscription.id)}
+                                   className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                                   title="Διαγραφή συνδρομής"
+                                 >
+                                   <Trash2 className="w-3 h-3" />
+                                 </Button>
                              </>
                             ) : latestSubscription ? (
                               <>
@@ -1043,19 +1145,37 @@ export const SubscriptionManagement: React.FC = () => {
                                   <Edit2 className="w-3 h-3" />
                                 </Button>
 
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => deleteSubscription(latestSubscription.id)}
-                                  className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                                  title="Διαγραφή συνδρομής"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => recordVisit(user.id)}
+                                   className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+                                   title="Καταγραφή παρουσίας"
+                                 >
+                                   <UserCheck className="w-3 h-3" />
+                                 </Button>
+
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => deleteSubscription(latestSubscription.id)}
+                                   className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                                   title="Διαγραφή συνδρομής"
+                                 >
+                                   <Trash2 className="w-3 h-3" />
+                                 </Button>
                               </>
-                            ) : (
-                              <span className="text-gray-400 text-sm">Χωρίς ενέργειες</span>
-                            )}
+                             ) : (
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={() => recordVisit(user.id)}
+                                 className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+                                 title="Καταγραφή παρουσίας"
+                               >
+                                 <UserCheck className="w-3 h-3" />
+                               </Button>
+                             )}
                          </div>
                        </td>
                     </tr>
