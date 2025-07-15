@@ -317,6 +317,7 @@ export type Database = {
           name: string
           phone: string | null
           photo_url: string | null
+          qr_code: string | null
           role: string
           subscription_status: string | null
           updated_at: string | null
@@ -332,6 +333,7 @@ export type Database = {
           name: string
           phone?: string | null
           photo_url?: string | null
+          qr_code?: string | null
           role: string
           subscription_status?: string | null
           updated_at?: string | null
@@ -347,6 +349,7 @@ export type Database = {
           name?: string
           phone?: string | null
           photo_url?: string | null
+          qr_code?: string | null
           role?: string
           subscription_status?: string | null
           updated_at?: string | null
@@ -2188,6 +2191,9 @@ export type Database = {
           is_active: boolean | null
           name: string
           price: number
+          subscription_mode: string
+          visit_count: number | null
+          visit_expiry_months: number | null
         }
         Insert: {
           created_at?: string
@@ -2198,6 +2204,9 @@ export type Database = {
           is_active?: boolean | null
           name: string
           price: number
+          subscription_mode?: string
+          visit_count?: number | null
+          visit_expiry_months?: number | null
         }
         Update: {
           created_at?: string
@@ -2208,6 +2217,9 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           price?: number
+          subscription_mode?: string
+          visit_count?: number | null
+          visit_expiry_months?: number | null
         }
         Relationships: []
       }
@@ -2580,6 +2592,114 @@ export type Database = {
           },
         ]
       }
+      user_visits: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          location: string | null
+          notes: string | null
+          user_id: string
+          visit_date: string
+          visit_time: string
+          visit_type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          user_id: string
+          visit_date?: string
+          visit_time?: string
+          visit_type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          user_id?: string
+          visit_date?: string
+          visit_time?: string
+          visit_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_visits_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user_visits_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visit_packages: {
+        Row: {
+          created_at: string
+          expiry_date: string | null
+          id: string
+          payment_id: string | null
+          price: number | null
+          purchase_date: string
+          remaining_visits: number
+          status: string
+          total_visits: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          payment_id?: string | null
+          price?: number | null
+          purchase_date?: string
+          remaining_visits: number
+          status?: string
+          total_visits: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          payment_id?: string | null
+          price?: number | null
+          purchase_date?: string
+          remaining_visits?: number
+          status?: string
+          total_visits?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_visit_packages_payment_id"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_visit_packages_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_completions: {
         Row: {
           actual_duration_minutes: number | null
@@ -2714,6 +2834,15 @@ export type Database = {
       pause_subscription: {
         Args: { subscription_id: string }
         Returns: undefined
+      }
+      record_visit: {
+        Args: {
+          p_user_id: string
+          p_created_by?: string
+          p_visit_type?: string
+          p_notes?: string
+        }
+        Returns: string
       }
       renew_subscription: {
         Args: { original_subscription_id: string }
