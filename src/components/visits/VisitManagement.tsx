@@ -46,7 +46,8 @@ export const VisitManagement: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'scanner' | 'manual' | 'packages' | 'history'>('scanner');
+  const [activeTab, setActiveTab] = useState<'packages' | 'manual' | 'scanner' | 'history'>('packages');
+  const [showAddPackageForm, setShowAddPackageForm] = useState(false);
   const [selectedUserForQR, setSelectedUserForQR] = useState<any>(null);
   const { toast } = useToast();
 
@@ -318,38 +319,60 @@ export const VisitManagement: React.FC = () => {
       {/* Visit Packages Tab */}
       {activeTab === 'packages' && (
         <Card className="rounded-none">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Πακέτα Επισκέψεων</CardTitle>
+            <Button
+              onClick={() => setShowAddPackageForm(true)}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Προσθήκη Πακέτου
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {visitPackages.map((pkg) => (
-                <div key={pkg.id} className="border rounded-none p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium">{pkg.app_users.name}</h4>
-                      <p className="text-sm text-gray-600">{pkg.app_users.email}</p>
-                      <div className="flex items-center gap-4 mt-2 text-sm">
-                        <span>Σύνολο: {pkg.total_visits}</span>
-                        <span>Υπόλοιπο: {pkg.remaining_visits}</span>
-                        <span>Αγορά: {new Date(pkg.purchase_date).toLocaleDateString('el-GR')}</span>
+              {visitPackages.map((pkg) => {
+                const usedVisits = pkg.total_visits - pkg.remaining_visits;
+                return (
+                  <div key={pkg.id} className="border rounded-none p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{pkg.app_users.name}</h4>
+                        <p className="text-sm text-gray-600">{pkg.app_users.email}</p>
+                        <div className="flex items-center gap-4 mt-2 text-sm">
+                          <span className="font-medium text-[#00ffba]">
+                            {usedVisits}/{pkg.total_visits} επισκέψεις
+                          </span>
+                          <span>Υπόλοιπο: {pkg.remaining_visits}</span>
+                          <span>Αγορά: {new Date(pkg.purchase_date).toLocaleDateString('el-GR')}</span>
+                        </div>
+                        {pkg.expiry_date && (
+                          <p className="text-sm text-orange-600">
+                            Λήξη: {new Date(pkg.expiry_date).toLocaleDateString('el-GR')}
+                          </p>
+                        )}
                       </div>
-                      {pkg.expiry_date && (
-                        <p className="text-sm text-orange-600">
-                          Λήξη: {new Date(pkg.expiry_date).toLocaleDateString('el-GR')}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={pkg.status === 'active' ? 'default' : 'secondary'}
+                          className="rounded-none"
+                        >
+                          {pkg.status === 'active' ? 'Ενεργό' : 
+                           pkg.status === 'used' ? 'Εξαντλημένο' : 'Λήξη'}
+                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none"
+                          onClick={() => {/* TODO: Edit package functionality */}}
+                        >
+                          Επεξεργασία
+                        </Button>
+                      </div>
                     </div>
-                    <Badge 
-                      variant={pkg.status === 'active' ? 'default' : 'secondary'}
-                      className="rounded-none"
-                    >
-                      {pkg.status === 'active' ? 'Ενεργό' : 
-                       pkg.status === 'used' ? 'Εξαντλημένο' : 'Λήξη'}
-                    </Badge>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {visitPackages.length === 0 && (
                 <p className="text-center text-gray-500 py-8">
                   Δεν υπάρχουν πακέτα επισκέψεων
@@ -358,6 +381,77 @@ export const VisitManagement: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Add Package Form Modal */}
+      {showAddPackageForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-none max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Προσθήκη Πακέτου Επισκέψεων</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Επιλογή Χρήστη</label>
+                <Input
+                  placeholder="Αναζήτηση χρήστη..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="rounded-none mb-2"
+                />
+                <div className="max-h-40 overflow-y-auto border rounded-none">
+                  {filteredUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      onClick={() => setSelectedUser(user.id)}
+                      className={`p-3 cursor-pointer hover:bg-gray-50 ${
+                        selectedUser === user.id ? 'bg-[#00ffba]/10 border-l-4 border-[#00ffba]' : ''
+                      }`}
+                    >
+                      <p className="font-medium">{user.name}</p>
+                      <p className="text-sm text-gray-600">{user.email}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Αριθμός Επισκέψεων</label>
+                <Input
+                  type="number"
+                  placeholder="π.χ. 10"
+                  className="rounded-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Ημερομηνία Λήξης (Προαιρετικό)</label>
+                <Input
+                  type="date"
+                  className="rounded-none"
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setShowAddPackageForm(false);
+                    setSelectedUser('');
+                    setSearchTerm('');
+                  }}
+                  variant="outline"
+                  className="flex-1 rounded-none"
+                >
+                  Ακύρωση
+                </Button>
+                <Button
+                  onClick={() => {/* TODO: Add package functionality */}}
+                  className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  Προσθήκη
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Visit History Tab */}
@@ -379,7 +473,7 @@ export const VisitManagement: React.FC = () => {
                 {filteredVisits.map((visit) => (
                   <div key={visit.id} className="border rounded-none p-4">
                     <div className="flex justify-between items-start">
-                      <div>
+                      <div className="flex-1">
                         <h4 className="font-medium flex items-center gap-2">
                           <User className="h-4 w-4" />
                           {visit.app_users.name}
@@ -398,12 +492,22 @@ export const VisitManagement: React.FC = () => {
                           <p className="text-sm text-gray-600 mt-1">{visit.notes}</p>
                         )}
                       </div>
-                      <Badge 
-                        variant={visit.visit_type === 'qr_scan' ? 'default' : 'outline'}
-                        className="rounded-none"
-                      >
-                        {visit.visit_type === 'qr_scan' ? 'QR Scan' : 'Χειροκίνητη'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={visit.visit_type === 'qr_scan' ? 'default' : 'outline'}
+                          className="rounded-none"
+                        >
+                          {visit.visit_type === 'qr_scan' ? 'QR Scan' : 'Χειροκίνητη'}
+                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none text-red-600 hover:bg-red-50"
+                          onClick={() => {/* TODO: Delete visit functionality */}}
+                        >
+                          Διαγραφή
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
