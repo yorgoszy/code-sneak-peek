@@ -48,6 +48,8 @@ export const VisitManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'packages' | 'manual' | 'scanner' | 'history'>('packages');
   const [showAddPackageForm, setShowAddPackageForm] = useState(false);
+  const [packageVisits, setPackageVisits] = useState<string>('');
+  const [packageExpiryDate, setPackageExpiryDate] = useState<string>('');
   const [selectedUserForQR, setSelectedUserForQR] = useState<any>(null);
   const { toast } = useToast();
 
@@ -150,6 +152,77 @@ export const VisitManagement: React.FC = () => {
         variant: "destructive",
         title: "Σφάλμα",
         description: "Σφάλμα καταγραφής παρουσίας"
+      });
+    }
+  };
+
+  const addVisitPackage = async () => {
+    if (!selectedUser || !packageVisits) {
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη και αριθμό επισκέψεων"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('visit_packages')
+        .insert({
+          user_id: selectedUser,
+          total_visits: parseInt(packageVisits),
+          remaining_visits: parseInt(packageVisits),
+          expiry_date: packageExpiryDate || null
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Το πακέτο επισκέψεων προστέθηκε επιτυχώς!"
+      });
+      
+      // Reset form
+      setShowAddPackageForm(false);
+      setSelectedUser('');
+      setPackageVisits('');
+      setPackageExpiryDate('');
+      setSearchTerm('');
+      fetchData();
+      
+    } catch (error) {
+      console.error('Error adding visit package:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα προσθήκης πακέτου επισκέψεων"
+      });
+    }
+  };
+
+  const deleteVisit = async (visitId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_visits')
+        .delete()
+        .eq('id', visitId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Η επίσκεψη διαγράφηκε επιτυχώς!"
+      });
+      
+      fetchData();
+      
+    } catch (error) {
+      console.error('Error deleting visit:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα διαγραφής επίσκεψης"
       });
     }
   };
@@ -418,6 +491,8 @@ export const VisitManagement: React.FC = () => {
                 <Input
                   type="number"
                   placeholder="π.χ. 10"
+                  value={packageVisits}
+                  onChange={(e) => setPackageVisits(e.target.value)}
                   className="rounded-none"
                 />
               </div>
@@ -426,6 +501,8 @@ export const VisitManagement: React.FC = () => {
                 <label className="block text-sm font-medium mb-2">Ημερομηνία Λήξης (Προαιρετικό)</label>
                 <Input
                   type="date"
+                  value={packageExpiryDate}
+                  onChange={(e) => setPackageExpiryDate(e.target.value)}
                   className="rounded-none"
                 />
               </div>
@@ -435,6 +512,8 @@ export const VisitManagement: React.FC = () => {
                   onClick={() => {
                     setShowAddPackageForm(false);
                     setSelectedUser('');
+                    setPackageVisits('');
+                    setPackageExpiryDate('');
                     setSearchTerm('');
                   }}
                   variant="outline"
@@ -443,7 +522,8 @@ export const VisitManagement: React.FC = () => {
                   Ακύρωση
                 </Button>
                 <Button
-                  onClick={() => {/* TODO: Add package functionality */}}
+                  onClick={addVisitPackage}
+                  disabled={!selectedUser || !packageVisits}
                   className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
                 >
                   Προσθήκη
@@ -503,7 +583,7 @@ export const VisitManagement: React.FC = () => {
                           variant="outline"
                           size="sm"
                           className="rounded-none text-red-600 hover:bg-red-50"
-                          onClick={() => {/* TODO: Delete visit functionality */}}
+                          onClick={() => deleteVisit(visit.id)}
                         >
                           Διαγραφή
                         </Button>
