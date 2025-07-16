@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarDays, Clock, User, Plus, Search, QrCode } from "lucide-react";
+import { CalendarDays, Clock, User, Plus, Search, QrCode, Edit, Eye, Trash2, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { QRScanner } from "@/components/qr/QRScanner";
@@ -51,6 +51,10 @@ export const VisitManagement: React.FC = () => {
   const [packageVisits, setPackageVisits] = useState<string>('');
   const [packageExpiryDate, setPackageExpiryDate] = useState<string>('');
   const [selectedUserForQR, setSelectedUserForQR] = useState<any>(null);
+  const [showEditPackageForm, setShowEditPackageForm] = useState(false);
+  const [editingPackage, setEditingPackage] = useState<VisitPackage | null>(null);
+  const [showViewVisitsModal, setShowViewVisitsModal] = useState(false);
+  const [selectedPackageVisits, setSelectedPackageVisits] = useState<Visit[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -223,6 +227,207 @@ export const VisitManagement: React.FC = () => {
         variant: "destructive",
         title: "Σφάλμα",
         description: "Σφάλμα διαγραφής επίσκεψης"
+      });
+    }
+  };
+
+  const deletePackage = async (packageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('visit_packages')
+        .delete()
+        .eq('id', packageId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Το πακέτο επισκέψεων διαγράφηκε επιτυχώς!"
+      });
+      
+      fetchData();
+      
+    } catch (error) {
+      console.error('Error deleting package:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα διαγραφής πακέτου"
+      });
+    }
+  };
+
+  const editPackage = (pkg: VisitPackage) => {
+    setEditingPackage(pkg);
+    setPackageVisits(pkg.total_visits.toString());
+    setPackageExpiryDate(pkg.expiry_date || '');
+    setShowEditPackageForm(true);
+  };
+
+  const updatePackage = async () => {
+    if (!editingPackage || !packageVisits) {
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε όλα τα απαραίτητα πεδία"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('visit_packages')
+        .update({
+          total_visits: parseInt(packageVisits),
+          expiry_date: packageExpiryDate || null
+        })
+        .eq('id', editingPackage.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Το πακέτο επισκέψεων ενημερώθηκε επιτυχώς!"
+      });
+      
+      setShowEditPackageForm(false);
+      setEditingPackage(null);
+      setPackageVisits('');
+      setPackageExpiryDate('');
+      fetchData();
+      
+    } catch (error) {
+      console.error('Error updating package:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα ενημέρωσης πακέτου"
+      });
+    }
+  };
+
+  const viewPackageVisits = async (pkg: VisitPackage) => {
+    try {
+      const { data: visitsData, error } = await supabase
+        .from('user_visits')
+        .select(`
+          id,
+          user_id,
+          visit_date,
+          visit_time,
+          visit_type,
+          notes,
+          created_at,
+          app_users!fk_user_visits_user_id (name, email)
+        `)
+        .eq('user_id', pkg.user_id)
+        .gte('created_at', pkg.purchase_date)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setSelectedPackageVisits(visitsData || []);
+      setShowViewVisitsModal(true);
+      
+    } catch (error) {
+      console.error('Error fetching package visits:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα φόρτωσης επισκέψεων"
+      });
+    }
+  };
+
+  const addVisitToPackage = async (packageId: string, userId: string) => {
+    try {
+      const { error } = await supabase.rpc('record_visit', {
+        p_user_id: userId,
+        p_visit_type: 'package',
+        p_notes: 'Προσθήκη από πακέτο επισκέψεων'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Η επίσκεψη προστέθηκε επιτυχώς!"
+      });
+      
+      fetchData();
+      
+    } catch (error) {
+      console.error('Error adding visit to package:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα προσθήκης επίσκεψης"
+      });
+    }
+  };
+
+  const removeVisitFromPackage = async (userId: string) => {
+    try {
+      // Find the latest visit for this user
+      const { data: latestVisit, error: fetchError } = await supabase
+        .from('user_visits')
+        .select('id')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (fetchError || !latestVisit) {
+        toast({
+          variant: "destructive",
+          title: "Σφάλμα",
+          description: "Δεν βρέθηκε επίσκεψη για διαγραφή"
+        });
+        return;
+      }
+
+      // Delete the latest visit
+      const { error } = await supabase
+        .from('user_visits')
+        .delete()
+        .eq('id', latestVisit.id);
+
+      if (error) throw error;
+
+      // Update package visits - manually increment remaining visits
+      const { data: currentPackage, error: fetchPackageError } = await supabase
+        .from('visit_packages')
+        .select('remaining_visits')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .single();
+
+      if (fetchPackageError || !currentPackage) {
+        console.log('No active package found for user');
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from('visit_packages')
+        .update({ remaining_visits: currentPackage.remaining_visits + 1 })
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Η επίσκεψη αφαιρέθηκε επιτυχώς!"
+      });
+      
+      fetchData();
+      
+    } catch (error) {
+      console.error('Error removing visit from package:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα αφαίρεσης επίσκεψης"
       });
     }
   };
@@ -425,23 +630,77 @@ export const VisitManagement: React.FC = () => {
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge 
-                          variant={pkg.status === 'active' ? 'default' : 'secondary'}
-                          className="rounded-none"
-                        >
-                          {pkg.status === 'active' ? 'Ενεργό' : 
-                           pkg.status === 'used' ? 'Εξαντλημένο' : 'Λήξη'}
-                        </Badge>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-none"
-                          onClick={() => {/* TODO: Edit package functionality */}}
-                        >
-                          Επεξεργασία
-                        </Button>
-                      </div>
+                       <div className="flex flex-col gap-2">
+                         <div className="flex items-center gap-2">
+                           <Badge 
+                             variant={pkg.status === 'active' ? 'default' : 'secondary'}
+                             className="rounded-none"
+                           >
+                             {pkg.status === 'active' ? 'Ενεργό' : 
+                              pkg.status === 'used' ? 'Εξαντλημένο' : 'Λήξη'}
+                           </Badge>
+                         </div>
+                         
+                         {/* Visit Control Section */}
+                         <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-none">
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             className="rounded-none w-8 h-8 p-0"
+                             onClick={() => removeVisitFromPackage(pkg.user_id)}
+                             disabled={usedVisits === 0}
+                           >
+                             <Minus className="h-3 w-3" />
+                           </Button>
+                           
+                           <span className="text-sm font-medium px-2">
+                             {usedVisits}/{pkg.total_visits} επισκέψεις
+                           </span>
+                           
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             className="rounded-none w-8 h-8 p-0"
+                             onClick={() => addVisitToPackage(pkg.id, pkg.user_id)}
+                             disabled={pkg.remaining_visits === 0}
+                           >
+                             <Plus className="h-3 w-3" />
+                           </Button>
+                         </div>
+                         
+                         {/* Action Buttons */}
+                         <div className="flex items-center gap-1">
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             className="rounded-none p-1"
+                             onClick={() => viewPackageVisits(pkg)}
+                             title="Προβολή επισκέψεων"
+                           >
+                             <Eye className="h-3 w-3" />
+                           </Button>
+                           
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             className="rounded-none p-1"
+                             onClick={() => editPackage(pkg)}
+                             title="Επεξεργασία πακέτου"
+                           >
+                             <Edit className="h-3 w-3" />
+                           </Button>
+                           
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             className="rounded-none p-1 text-red-600 hover:bg-red-50"
+                             onClick={() => deletePackage(pkg.id)}
+                             title="Διαγραφή πακέτου"
+                           >
+                             <Trash2 className="h-3 w-3" />
+                           </Button>
+                         </div>
+                       </div>
                     </div>
                   </div>
                 );
@@ -599,8 +858,143 @@ export const VisitManagement: React.FC = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-};
+         </Card>
+       )}
+
+       {/* Edit Package Form Modal */}
+       {showEditPackageForm && editingPackage && (
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+           <div className="bg-white p-6 rounded-none max-w-md w-full mx-4">
+             <h3 className="text-lg font-semibold mb-4">Επεξεργασία Πακέτου Επισκέψεων</h3>
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-sm font-medium mb-2">Χρήστης</label>
+                 <Input
+                   value={editingPackage.app_users.name}
+                   disabled
+                   className="rounded-none bg-gray-100"
+                 />
+               </div>
+               
+               <div>
+                 <label className="block text-sm font-medium mb-2">Αριθμός Επισκέψεων</label>
+                 <Input
+                   type="number"
+                   placeholder="π.χ. 10"
+                   value={packageVisits}
+                   onChange={(e) => setPackageVisits(e.target.value)}
+                   className="rounded-none"
+                 />
+               </div>
+               
+               <div>
+                 <label className="block text-sm font-medium mb-2">Ημερομηνία Λήξης (Προαιρετικό)</label>
+                 <Input
+                   type="date"
+                   value={packageExpiryDate}
+                   onChange={(e) => setPackageExpiryDate(e.target.value)}
+                   className="rounded-none"
+                 />
+               </div>
+               
+               <div className="flex gap-2">
+                 <Button
+                   onClick={() => {
+                     setShowEditPackageForm(false);
+                     setEditingPackage(null);
+                     setPackageVisits('');
+                     setPackageExpiryDate('');
+                   }}
+                   variant="outline"
+                   className="flex-1 rounded-none"
+                 >
+                   Ακύρωση
+                 </Button>
+                 <Button
+                   onClick={updatePackage}
+                   disabled={!packageVisits}
+                   className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                 >
+                   Ενημέρωση
+                 </Button>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
+
+       {/* View Package Visits Modal */}
+       {showViewVisitsModal && (
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+           <div className="bg-white p-6 rounded-none max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+             <div className="flex justify-between items-center mb-4">
+               <h3 className="text-lg font-semibold">Επισκέψεις Πακέτου</h3>
+               <Button
+                 onClick={() => {
+                   setShowViewVisitsModal(false);
+                   setSelectedPackageVisits([]);
+                 }}
+                 variant="outline"
+                 size="sm"
+                 className="rounded-none"
+               >
+                 Κλείσιμο
+               </Button>
+             </div>
+             
+             <div className="space-y-3 overflow-y-auto max-h-96">
+               {selectedPackageVisits.map((visit) => (
+                 <div key={visit.id} className="border rounded-none p-3">
+                   <div className="flex justify-between items-start">
+                     <div className="flex-1">
+                       <h4 className="font-medium flex items-center gap-2">
+                         <User className="h-4 w-4" />
+                         {visit.app_users.name}
+                       </h4>
+                       <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                         <span className="flex items-center gap-1">
+                           <CalendarDays className="h-3 w-3" />
+                           {new Date(visit.visit_date).toLocaleDateString('el-GR')}
+                         </span>
+                         <span className="flex items-center gap-1">
+                           <Clock className="h-3 w-3" />
+                           {visit.visit_time}
+                         </span>
+                       </div>
+                       {visit.notes && (
+                         <p className="text-sm text-gray-600 mt-1">{visit.notes}</p>
+                       )}
+                     </div>
+                     <div className="flex items-center gap-2">
+                       <Badge 
+                         variant={visit.visit_type === 'qr_scan' ? 'default' : 'outline'}
+                         className="rounded-none"
+                       >
+                         {visit.visit_type === 'qr_scan' ? 'QR Scan' : 
+                          visit.visit_type === 'package' ? 'Πακέτο' : 'Χειροκίνητη'}
+                       </Badge>
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         className="rounded-none text-red-600 hover:bg-red-50 p-1"
+                         onClick={() => deleteVisit(visit.id)}
+                         title="Διαγραφή επίσκεψης"
+                       >
+                         <Trash2 className="h-3 w-3" />
+                       </Button>
+                     </div>
+                   </div>
+                 </div>
+               ))}
+               {selectedPackageVisits.length === 0 && (
+                 <p className="text-center text-gray-500 py-8">
+                   Δεν υπάρχουν επισκέψεις για αυτό το πακέτο
+                 </p>
+               )}
+             </div>
+           </div>
+         </div>
+       )}
+     </div>
+   );
+ };
