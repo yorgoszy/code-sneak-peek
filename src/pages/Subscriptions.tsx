@@ -25,9 +25,9 @@ export default function Subscriptions() {
         <Tabs defaultValue="management" className="w-full">
           <TabsList className="grid w-full grid-cols-6 mb-6 rounded-none">
             <TabsTrigger value="management" className="rounded-none">Συνδρομές</TabsTrigger>
-            <TabsTrigger value="types" className="rounded-none">Τύποι</TabsTrigger>
             <TabsTrigger value="visits" className="rounded-none">Επισκέψεις</TabsTrigger>
             <TabsTrigger value="receipts" className="rounded-none">Αποδείξεις</TabsTrigger>
+            <TabsTrigger value="types" className="rounded-none">Τύποι</TabsTrigger>
             <TabsTrigger value="certificates" className="rounded-none">Certificates</TabsTrigger>
             <TabsTrigger value="mydata" className="rounded-none">Banking</TabsTrigger>
           </TabsList>
