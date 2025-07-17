@@ -214,7 +214,10 @@ export const VisitManagement: React.FC = () => {
         .eq('id', visitId)
         .single();
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('Error fetching visit data:', fetchError);
+        throw fetchError;
+      }
 
       // Delete the visit
       const { error } = await supabase
@@ -222,23 +225,30 @@ export const VisitManagement: React.FC = () => {
         .delete()
         .eq('id', visitId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting visit:', error);
+        throw error;
+      }
 
       // If it was a package visit, update the package remaining visits
-      if (visitData.visit_type === 'package') {
+      if (visitData.visit_type === 'package' || visitData.visit_type === 'qr_scan' || visitData.visit_type === 'manual') {
         const { data: currentPackage, error: packageError } = await supabase
           .from('visit_packages')
           .select('remaining_visits')
           .eq('user_id', visitData.user_id)
           .eq('status', 'active')
-          .single();
+          .maybeSingle();
 
         if (!packageError && currentPackage) {
-          await supabase
+          const { error: updateError } = await supabase
             .from('visit_packages')
             .update({ remaining_visits: currentPackage.remaining_visits + 1 })
             .eq('user_id', visitData.user_id)
             .eq('status', 'active');
+
+          if (updateError) {
+            console.error('Error updating package:', updateError);
+          }
         }
       }
 
@@ -402,13 +412,18 @@ export const VisitManagement: React.FC = () => {
       // Find the latest visit for this user
       const { data: latestVisit, error: fetchError } = await supabase
         .from('user_visits')
-        .select('id')
+        .select('id, user_id, visit_type')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (fetchError || !latestVisit) {
+      if (fetchError) {
+        console.error('Error fetching latest visit:', fetchError);
+        throw fetchError;
+      }
+
+      if (!latestVisit) {
         toast({
           variant: "destructive",
           title: "Σφάλμα",
@@ -417,13 +432,16 @@ export const VisitManagement: React.FC = () => {
         return;
       }
 
-      // Delete the latest visit
+      // Delete the latest visit from the history
       const { error } = await supabase
         .from('user_visits')
         .delete()
         .eq('id', latestVisit.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting visit:', error);
+        throw error;
+      }
 
       // Update package visits - manually increment remaining visits
       const { data: currentPackage, error: fetchPackageError } = await supabase
@@ -431,10 +449,20 @@ export const VisitManagement: React.FC = () => {
         .select('remaining_visits')
         .eq('user_id', userId)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
-      if (fetchPackageError || !currentPackage) {
+      if (fetchPackageError) {
+        console.error('Error fetching package:', fetchPackageError);
+        throw fetchPackageError;
+      }
+
+      if (!currentPackage) {
         console.log('No active package found for user');
+        toast({
+          variant: "destructive",
+          title: "Σφάλμα",
+          description: "Δεν βρέθηκε ενεργό πακέτο για τον χρήστη"
+        });
         return;
       }
 
@@ -444,11 +472,14 @@ export const VisitManagement: React.FC = () => {
         .eq('user_id', userId)
         .eq('status', 'active');
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating package:', updateError);
+        throw updateError;
+      }
 
       toast({
         title: "Επιτυχία",
-        description: "Η επίσκεψη αφαιρέθηκε επιτυχώς!"
+        description: "Η επίσκεψη αφαιρέθηκε επιτυχώς από το ιστορικό!"
       });
       
       fetchData();
