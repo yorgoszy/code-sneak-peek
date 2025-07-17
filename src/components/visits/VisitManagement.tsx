@@ -207,12 +207,40 @@ export const VisitManagement: React.FC = () => {
 
   const deleteVisit = async (visitId: string) => {
     try {
+      // First get the visit to check if we need to update package
+      const { data: visitData, error: fetchError } = await supabase
+        .from('user_visits')
+        .select('user_id, visit_type')
+        .eq('id', visitId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Delete the visit
       const { error } = await supabase
         .from('user_visits')
         .delete()
         .eq('id', visitId);
 
       if (error) throw error;
+
+      // If it was a package visit, update the package remaining visits
+      if (visitData.visit_type === 'package') {
+        const { data: currentPackage, error: packageError } = await supabase
+          .from('visit_packages')
+          .select('remaining_visits')
+          .eq('user_id', visitData.user_id)
+          .eq('status', 'active')
+          .single();
+
+        if (!packageError && currentPackage) {
+          await supabase
+            .from('visit_packages')
+            .update({ remaining_visits: currentPackage.remaining_visits + 1 })
+            .eq('user_id', visitData.user_id)
+            .eq('status', 'active');
+        }
+      }
 
       toast({
         title: "Επιτυχία",
@@ -308,6 +336,7 @@ export const VisitManagement: React.FC = () => {
 
   const viewPackageVisits = async (pkg: VisitPackage) => {
     try {
+      // Get visits that belong to this specific package by date range and visit type
       const { data: visitsData, error } = await supabase
         .from('user_visits')
         .select(`
@@ -322,7 +351,9 @@ export const VisitManagement: React.FC = () => {
         `)
         .eq('user_id', pkg.user_id)
         .gte('created_at', pkg.purchase_date)
-        .order('created_at', { ascending: false });
+        .in('visit_type', ['package', 'qr_scan', 'manual'])
+        .order('created_at', { ascending: false })
+        .limit(pkg.total_visits - pkg.remaining_visits); // Only show used visits
 
       if (error) throw error;
 
@@ -450,12 +481,12 @@ export const VisitManagement: React.FC = () => {
       {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-2">
         <Button
-          onClick={() => setActiveTab('scanner')}
-          variant={activeTab === 'scanner' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('packages')}
+          variant={activeTab === 'packages' ? 'default' : 'outline'}
           className="rounded-none"
         >
-          <QrCode className="h-4 w-4 mr-2" />
-          QR Scanner
+          <CalendarDays className="h-4 w-4 mr-2" />
+          Πακέτα Επισκέψεων
         </Button>
         <Button
           onClick={() => setActiveTab('manual')}
@@ -466,12 +497,12 @@ export const VisitManagement: React.FC = () => {
           Χειροκίνητη Καταγραφή
         </Button>
         <Button
-          onClick={() => setActiveTab('packages')}
-          variant={activeTab === 'packages' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('scanner')}
+          variant={activeTab === 'scanner' ? 'default' : 'outline'}
           className="rounded-none"
         >
-          <CalendarDays className="h-4 w-4 mr-2" />
-          Πακέτα Επισκέψεων
+          <QrCode className="h-4 w-4 mr-2" />
+          QR Scanner
         </Button>
         <Button
           onClick={() => setActiveTab('history')}
@@ -824,7 +855,11 @@ export const VisitManagement: React.FC = () => {
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {visit.visit_time}
+                            {new Date(`${visit.visit_date}T${visit.visit_time}`).toLocaleString('el-GR', {
+                              timeZone: 'Europe/Athens',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </span>
                         </div>
                         {visit.notes && (
@@ -956,10 +991,14 @@ export const VisitManagement: React.FC = () => {
                            <CalendarDays className="h-3 w-3" />
                            {new Date(visit.visit_date).toLocaleDateString('el-GR')}
                          </span>
-                         <span className="flex items-center gap-1">
-                           <Clock className="h-3 w-3" />
-                           {visit.visit_time}
-                         </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(`${visit.visit_date}T${visit.visit_time}`).toLocaleString('el-GR', {
+                              timeZone: 'Europe/Athens',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
                        </div>
                        {visit.notes && (
                          <p className="text-sm text-gray-600 mt-1">{visit.notes}</p>

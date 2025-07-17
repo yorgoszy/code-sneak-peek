@@ -20,21 +20,30 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess }) => {
   // Start camera
   const startCamera = async () => {
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported');
+      }
+      
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } 
       });
       setStream(mediaStream);
       setIsScanning(true);
       
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        videoRef.current.play();
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast({
         variant: "destructive",
         title: "Σφάλμα",
-        description: "Σφάλμα πρόσβασης στην κάμερα"
+        description: "Σφάλμα πρόσβασης στην κάμερα. Παρακαλώ ελέγξτε τις άδειες."
       });
     }
   };
@@ -157,15 +166,6 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess }) => {
             >
               <Camera className="h-4 w-4 mr-2" />
               Άνοιγμα Κάμερας
-            </Button>
-            
-            {/* Demo button */}
-            <Button 
-              onClick={simulateQRScan}
-              variant="outline"
-              className="w-full rounded-none"
-            >
-              Demo Scan
             </Button>
           </div>
         ) : (

@@ -13,7 +13,7 @@ interface UserQRCodeProps {
 }
 
 export const UserQRCode: React.FC<UserQRCodeProps> = ({ user, size = 200 }) => {
-  // Generate QR code placeholder (στην πραγματικότητα θα χρησιμοποιούσες μια QR library)
+  // Generate unique QR code for each user
   const generateQRPlaceholder = () => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -22,18 +22,31 @@ export const UserQRCode: React.FC<UserQRCodeProps> = ({ user, size = 200 }) => {
     canvas.width = size;
     canvas.height = size;
     
-    // Simple QR-like pattern
+    // Create unique pattern based on user ID
     ctx.fillStyle = '#000000';
     const blockSize = size / 20;
+    const userIdHash = user.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
     
-    // Create a simple pattern
+    // Create a unique pattern based on user ID
     for (let i = 0; i < 20; i++) {
       for (let j = 0; j < 20; j++) {
-        if ((i + j) % 3 === 0 || (i % 5 === 0 && j % 7 === 0)) {
+        const value = (i * 20 + j + userIdHash) % 7;
+        if (value < 3) {
           ctx.fillRect(i * blockSize, j * blockSize, blockSize, blockSize);
         }
       }
     }
+    
+    // Add corners markers
+    ctx.fillRect(0, 0, blockSize * 7, blockSize * 7);
+    ctx.fillRect(13 * blockSize, 0, blockSize * 7, blockSize * 7);
+    ctx.fillRect(0, 13 * blockSize, blockSize * 7, blockSize * 7);
+    
+    // Clear inner corners
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(blockSize, blockSize, blockSize * 5, blockSize * 5);
+    ctx.fillRect(14 * blockSize, blockSize, blockSize * 5, blockSize * 5);
+    ctx.fillRect(blockSize, 14 * blockSize, blockSize * 5, blockSize * 5);
     
     return canvas.toDataURL();
   };
