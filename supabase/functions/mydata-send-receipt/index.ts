@@ -11,21 +11,22 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, subscriptionKey, environment, receipt } = await req.json()
+    const { userId, subscriptionKey, environment, receipt, taxisnetUsername, taxisnetPassword } = await req.json()
 
     console.log('🚀 MyData Send Receipt called with:', { 
       userId, 
       environment,
       hasSubscriptionKey: !!subscriptionKey,
+      hasTaxisnetCredentials: !!(taxisnetUsername && taxisnetPassword),
       receiptId: receipt?.invoiceHeader?.aa
     })
     console.log('📄 Receipt data:', JSON.stringify(receipt, null, 2))
 
-    // Validation
-    if (!userId || !subscriptionKey) {
+    // Validation - Ελέγχουμε και τα Taxisnet credentials
+    if (!userId || !subscriptionKey || !taxisnetUsername || !taxisnetPassword) {
       const errorResponse = {
         success: false,
-        error: 'Missing required parameters: userId or subscriptionKey',
+        error: 'Missing required parameters: userId, subscriptionKey, taxisnetUsername, or taxisnetPassword',
         timestamp: new Date().toISOString()
       }
       console.error('❌ Validation error:', errorResponse.error)
@@ -71,7 +72,9 @@ serve(async (req) => {
       headers: {
         'Content-Type': 'application/json',
         'aade-user-id': userId,
-        'Ocp-Apim-Subscription-Key': subscriptionKey
+        'Ocp-Apim-Subscription-Key': subscriptionKey,
+        'taxisnet-username': taxisnetUsername,
+        'taxisnet-password': taxisnetPassword
       },
       body: JSON.stringify(receipt)
     }

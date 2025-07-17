@@ -67,6 +67,8 @@ interface MyDataSettings {
   userId: string;
   subscriptionKey: string;
   environment: 'production'; // ΜΟΝΟ ΠΑΡΑΓΩΓΗ
+  taxisnetUsername: string;
+  taxisnetPassword: string;
   connected: boolean;
 }
 
@@ -75,6 +77,8 @@ export const ReceiptManagement: React.FC = () => {
     userId: localStorage.getItem('mydata_user_id') || '',
     subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
     environment: 'production', // ΜΟΝΟ ΠΑΡΑΓΩΓΗ
+    taxisnetUsername: localStorage.getItem('mydata_taxisnet_username') || '',
+    taxisnetPassword: localStorage.getItem('mydata_taxisnet_password') || '',
     connected: false
   });
 
@@ -111,19 +115,21 @@ export const ReceiptManagement: React.FC = () => {
     loadUsers();
     loadSubscriptionTypes();
     
-    if (settings.userId && settings.subscriptionKey) {
+    if (settings.userId && settings.subscriptionKey && settings.taxisnetUsername && settings.taxisnetPassword) {
       setSettings(prev => ({ ...prev, connected: true }));
     }
   }, []);
 
   const handleConnect = () => {
-    if (!settings.userId || !settings.subscriptionKey) {
+    if (!settings.userId || !settings.subscriptionKey || !settings.taxisnetUsername || !settings.taxisnetPassword) {
       toast.error('Παρακαλώ συμπληρώστε όλα τα στοιχεία σύνδεσης');
       return;
     }
 
     localStorage.setItem('mydata_user_id', settings.userId);
     localStorage.setItem('mydata_subscription_key', settings.subscriptionKey);
+    localStorage.setItem('mydata_taxisnet_username', settings.taxisnetUsername);
+    localStorage.setItem('mydata_taxisnet_password', settings.taxisnetPassword);
     
     setSettings(prev => ({ ...prev, connected: true }));
     toast.success('Επιτυχής σύνδεση με MyData AADE!');
@@ -421,7 +427,9 @@ export const ReceiptManagement: React.FC = () => {
               totalDeductionsAmount: 0,
               totalGrossValue: receipt.total
             }
-          }
+          },
+          taxisnetUsername: settings.taxisnetUsername,
+          taxisnetPassword: settings.taxisnetPassword
         }
       });
 
@@ -843,6 +851,28 @@ export const ReceiptManagement: React.FC = () => {
                       </div>
                     </div>
                     
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Taxisnet Username</label>
+                        <Input
+                          placeholder="Εισάγετε το username σας για TAXISnet"
+                          value={settings.taxisnetUsername}
+                          onChange={(e) => setSettings(prev => ({ ...prev, taxisnetUsername: e.target.value }))}
+                          className="rounded-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Taxisnet Password</label>
+                        <Input
+                          type="password"
+                          placeholder="Εισάγετε τον κωδικό σας για TAXISnet"
+                          value={settings.taxisnetPassword}
+                          onChange={(e) => setSettings(prev => ({ ...prev, taxisnetPassword: e.target.value }))}
+                          className="rounded-none"
+                        />
+                      </div>
+                    </div>
+                    
                     <div>
                       <label className="block text-sm font-medium mb-2">Περιβάλλον - ΜΟΝΟ ΠΑΡΑΓΩΓΗ</label>
                       <div className="p-3 bg-red-50 border border-red-200 rounded-none">
@@ -861,7 +891,7 @@ export const ReceiptManagement: React.FC = () => {
 
                     <div className="p-3 bg-blue-50 border border-blue-200 rounded-none">
                       <p className="text-sm text-blue-800">
-                        ℹ️ Χρειάζεστε έγκυρο ΑΦΜ και Subscription Key από το MyData portal της AADE για να στέλνετε παραστατικά.
+                        ℹ️ Χρειάζεστε έγκυρο ΑΦΜ, Subscription Key από το MyData portal της AADE και τα στοιχεία σας από το TAXISnet για να στέλνετε παραστατικά.
                       </p>
                     </div>
                   </div>
