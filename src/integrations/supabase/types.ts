@@ -1899,6 +1899,63 @@ export type Database = {
           },
         ]
       }
+      receipts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_email: string | null
+          customer_name: string
+          customer_vat: string | null
+          id: string
+          invoice_mark: string | null
+          issue_date: string
+          items: Json
+          mydata_id: string | null
+          mydata_status: string
+          receipt_number: string
+          subtotal: number
+          total: number
+          updated_at: string
+          vat: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_email?: string | null
+          customer_name: string
+          customer_vat?: string | null
+          id?: string
+          invoice_mark?: string | null
+          issue_date?: string
+          items?: Json
+          mydata_id?: string | null
+          mydata_status?: string
+          receipt_number: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          vat?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          customer_vat?: string | null
+          id?: string
+          invoice_mark?: string | null
+          issue_date?: string
+          items?: Json
+          mydata_id?: string | null
+          mydata_status?: string
+          receipt_number?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          vat?: number
+        }
+        Relationships: []
+      }
       site_images: {
         Row: {
           created_at: string

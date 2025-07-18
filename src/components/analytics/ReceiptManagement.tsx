@@ -133,59 +133,37 @@ export const ReceiptManagement: React.FC = () => {
   const loadReceipts = async () => {
     setLoading(true);
     try {
-      console.log('🔄 Φόρτωση αποδείξεων...');
-      // Φόρτωση αποδείξεων από τις συνδρομές
-      const { data: subscriptions, error } = await supabase
-        .from('user_subscriptions')
-        .select(`
-          *,
-          subscription_types (*),
-          app_users (name, email)
-        `)
-        .order('created_at', { ascending: false });
+      console.log('🔄 Φόρτωση αποδείξεων από τη βάση δεδομένων...');
+      
+      // Φόρτωση αποδείξεων από τον πίνακα receipts
+      const { data: receiptsData, error } = await supabase
+        .from('receipts')
+        .select('*')
+        .order('issue_date', { ascending: false });
 
       if (error) {
-        console.error('❌ Error loading subscriptions:', error);
+        console.error('❌ Error loading receipts:', error);
         throw error;
       }
       
-      console.log('📋 Loaded subscriptions:', subscriptions?.length || 0, subscriptions);
+      console.log('📋 Loaded receipts:', receiptsData?.length || 0, receiptsData);
 
-      // Μετατροπή συνδρομών σε αποδείξεις
-      const receiptData: ReceiptData[] = (subscriptions || []).map((sub, index) => {
-        const subscriptionType = sub.subscription_types;
-        const user = sub.app_users;
-        const invoiceNumber = `SUB-${new Date(sub.created_at).getFullYear()}${String(new Date(sub.created_at).getMonth() + 1).padStart(2, '0')}${String(new Date(sub.created_at).getDate()).padStart(2, '0')}-${String(index + 1).padStart(4, '0')}`;
-        
-        const netAmount = subscriptionType?.price || 0;
-        const vatAmount = netAmount * 0.13; // 13% ΦΠΑ για γυμναστήριο
-        const totalAmount = netAmount + vatAmount;
-
-        return {
-          id: sub.id,
-          receiptNumber: `ΑΠΥ-${String(index + 1).padStart(4, '0')}`,
-          customerName: user?.name || 'Άγνωστος χρήστης',
-          customerEmail: user?.email,
-          items: [
-            {
-              id: '1',
-              description: subscriptionType?.name || 'Συνδρομή',
-              quantity: 1,
-              unitPrice: netAmount,
-              vatRate: 13,
-              total: totalAmount
-            }
-          ],
-          subtotal: netAmount,
-          vat: vatAmount,
-          total: totalAmount,
-          date: sub.start_date,
-          startDate: sub.start_date,
-          endDate: sub.end_date,
-          myDataStatus: 'sent' as const,
-          myDataId: `MD${Date.now()}`
-        };
-      });
+      // Μετατροπή από βάση δεδομένων σε ReceiptData format
+      const receiptData: ReceiptData[] = (receiptsData || []).map((receipt) => ({
+        id: receipt.id,
+        receiptNumber: receipt.receipt_number,
+        customerName: receipt.customer_name,
+        customerVat: receipt.customer_vat,
+        customerEmail: receipt.customer_email,
+        items: (receipt.items as unknown as ReceiptItem[]) || [],
+        subtotal: Number(receipt.subtotal),
+        vat: Number(receipt.vat),
+        total: Number(receipt.total),
+        date: receipt.issue_date,
+        myDataStatus: receipt.mydata_status as 'pending' | 'sent' | 'error',
+        myDataId: receipt.mydata_id || undefined,
+        invoiceMark: receipt.invoice_mark || undefined
+      }));
 
       setReceipts(receiptData);
     } catch (error) {
@@ -305,6 +283,7 @@ export const ReceiptManagement: React.FC = () => {
 
       // Παίρνουμε το σωστό app_users.id από το auth.uid()
       const { data: { user } } = await supabase.auth.getUser();
+      let createdBy = null;
       if (user?.id) {
         // Βρίσκουμε το app_users.id που αντιστοιχεί στο auth_user_id
         const { data: appUser } = await supabase
@@ -314,6 +293,8 @@ export const ReceiptManagement: React.FC = () => {
           .single();
 
         if (appUser?.id) {
+          createdBy = appUser.id;
+          
           // Αποθήκευση στη βάση με το σωστό app_users.id
           const { error: paymentError } = await supabase.from('payments').insert({
             user_id: appUser.id,
@@ -331,16 +312,51 @@ export const ReceiptManagement: React.FC = () => {
         }
       }
 
-      setReceipts(prev => [receipt, ...prev]);
+      // Αποθήκευση της απόδειξης στη βάση δεδομένων
+      const { data: savedReceipt, error: receiptError } = await supabase
+        .from('receipts')
+        .insert({
+          receipt_number: receiptNumber,
+          customer_name: receipt.customerName,
+          customer_vat: receipt.customerVat,
+          customer_email: receipt.customerEmail,
+          items: receipt.items as any,  // Cast to any for JSON compatibility
+          subtotal: receipt.subtotal,
+          vat: receipt.vat,
+          total: receipt.total,
+          issue_date: receipt.date,
+          mydata_status: receipt.myDataStatus,
+          created_by: createdBy
+        })
+        .select()
+        .single();
+
+      if (receiptError) {
+        console.error('❌ Receipt save error:', receiptError);
+        throw new Error('Σφάλμα στην αποθήκευση της απόδειξης');
+      }
+
+      console.log('✅ Receipt saved to database:', savedReceipt);
+      
+      // Ενημέρωση local state με την αποθηκευμένη απόδειξη
+      const finalReceipt = {
+        ...receipt,
+        id: savedReceipt.id
+      };
+      
+      setReceipts(prev => [finalReceipt, ...prev]);
       
       // Αυτόματη αποστολή στο MyData
       try {
-        await sendToMyData(receipt);
+        await sendToMyData(finalReceipt);
         toast.success('Απόδειξη δημιουργήθηκε και στάλθηκε στο MyData!');
       } catch (mydataError) {
         console.error('MyData send error:', mydataError);
         toast.warning('Απόδειξη δημιουργήθηκε αλλά δεν στάλθηκε στο MyData. Δοκιμάστε ξανά.');
       }
+      
+      // Ξαναφορτώνουμε τις αποδείξεις για να έχουμε τα πιο πρόσφατα στοιχεία
+      await loadReceipts();
       
       // Reset form
       setSelectedUser('');
@@ -440,7 +456,21 @@ export const ReceiptManagement: React.FC = () => {
 
       console.log('✅ MyData response successful:', data);
 
-      // Update receipt status
+      // Update receipt status in database
+      const { error: updateError } = await supabase
+        .from('receipts')
+        .update({
+          mydata_status: 'sent',
+          mydata_id: data?.myDataId || 'demo-id',
+          invoice_mark: data?.invoiceMark
+        })
+        .eq('id', receipt.id);
+
+      if (updateError) {
+        console.error('❌ Error updating receipt status:', updateError);
+      }
+
+      // Update local state
       setReceipts(prev => prev.map(r => 
         r.id === receipt.id 
           ? { 
@@ -455,6 +485,20 @@ export const ReceiptManagement: React.FC = () => {
       return data;
     } catch (error) {
       console.error('❌ MyData send error:', error);
+      
+      // Update receipt status to error in database
+      const { error: updateError } = await supabase
+        .from('receipts')
+        .update({
+          mydata_status: 'error'
+        })
+        .eq('id', receipt.id);
+
+      if (updateError) {
+        console.error('❌ Error updating receipt status to error:', updateError);
+      }
+
+      // Update local state
       setReceipts(prev => prev.map(r => 
         r.id === receipt.id 
           ? { ...r, myDataStatus: 'error' }
