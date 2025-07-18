@@ -7,6 +7,7 @@ import { UserProfileCalendar } from "./UserProfileCalendar";
 import { UserProfileProgramCards } from "./UserProfileProgramCards";
 import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
+import { UserProfileOverview } from "./UserProfileOverview";
 import { TrainingAnalytics } from "./TrainingAnalytics";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ interface UserProfileContentProps {
   programs: any[];
   tests: any[];
   payments: any[];
+  visits: any[];
 }
 
 export const UserProfileContent = ({
@@ -27,7 +29,8 @@ export const UserProfileContent = ({
   stats,
   programs,
   tests,
-  payments
+  payments,
+  visits
 }: UserProfileContentProps) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
@@ -46,9 +49,14 @@ export const UserProfileContent = ({
                 RID AI Προπονητής
               </Button>
             </div>
-            <UserProfileHeader user={userProfile} />
-            <UserProfileStats user={userProfile} stats={stats} />
-            <TrainingAnalytics userId={userProfile.id} />
+            <UserProfileOverview 
+              userProfile={userProfile} 
+              stats={stats} 
+              programs={programs} 
+              tests={tests} 
+              payments={payments} 
+              visits={visits}
+            />
           </div>
         );
       case "programs":

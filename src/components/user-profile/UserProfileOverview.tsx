@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
 import { WorkoutStatsTabsSection } from "./WorkoutStatsTabsSection";
-import { Activity, Calendar, FileText, CreditCard } from "lucide-react";
+import { UserProfileTabs } from "./UserProfileTabs";
+import { Activity, Calendar, FileText, CreditCard, MapPin } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UserProfileOverviewProps {
@@ -12,6 +13,7 @@ interface UserProfileOverviewProps {
   programs: any[];
   tests: any[];
   payments: any[];
+  visits: any[];
 }
 
 export const UserProfileOverview = ({
@@ -19,7 +21,8 @@ export const UserProfileOverview = ({
   stats,
   programs,
   tests,
-  payments
+  payments,
+  visits
 }: UserProfileOverviewProps) => {
   const isMobile = useIsMobile();
   
@@ -115,6 +118,25 @@ export const UserProfileOverview = ({
               </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs για λεπτομερείς προβολές */}
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <MapPin className="h-5 w-5" />
+            <span>Λεπτομερή Στοιχεία</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <UserProfileTabs 
+            user={userProfile} 
+            programs={programs} 
+            tests={tests} 
+            payments={payments} 
+            visits={visits}
+          />
         </CardContent>
       </Card>
     </div>

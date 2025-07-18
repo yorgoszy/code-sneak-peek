@@ -21,7 +21,7 @@ const UserProfile = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
 
-  const { stats, programs, tests, payments } = useUserProfileData(userProfile, !!userProfile);
+  const { stats, programs, tests, payments, visits } = useUserProfileData(userProfile, !!userProfile);
 
   useEffect(() => {
     if (userId) {
@@ -182,6 +182,7 @@ const UserProfile = () => {
             programs={programs}
             tests={tests}
             payments={payments}
+            visits={visits}
           />
         </div>
       </div>
