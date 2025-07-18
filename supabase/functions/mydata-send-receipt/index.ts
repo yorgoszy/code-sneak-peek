@@ -68,9 +68,13 @@ serve(async (req) => {
       ? 'https://mydataapidev.aade.gr/SendInvoices'
       : 'https://mydatapi.aade.gr/myDATA/SendInvoices'
     
-    // Μετατροπή σε XML format όπως απαιτεί το MyData
+    // Μετατροπή σε σωστό XML format με namespaces όπως απαιτεί το MyDATA API
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
-<InvoicesDoc>
+<InvoicesDoc xmlns="http://www.aade.gr/myDATA/invoice/v1.0" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:ic="https://www.aade.gr/myDATA/incomeClassificaton/v1.0" 
+             xmlns:exp="https://www.aade.gr/myDATA/expensesClassificaton/v1.0" 
+             xsi:schemaLocation="http://www.aade.gr/myDATA/invoice/v1.0 http://www.aade.gr/myDATA/invoice/v1.0/myDATA-invoice-doc-v1.0.xsd">
   <invoice>
     <issuer>
       <vatNumber>${receipt.issuer.vatNumber}</vatNumber>
@@ -90,12 +94,15 @@ serve(async (req) => {
     </invoiceHeader>
     <invoiceDetails>
       ${receipt.invoiceDetails.map(detail => `
-      <invoiceRowType>
-        <lineNumber>${detail.lineNumber}</lineNumber>
-        <netValue>${detail.netValue}</netValue>
-        <vatCategory>${detail.vatCategory}</vatCategory>
-        <vatAmount>${detail.vatAmount}</vatAmount>
-      </invoiceRowType>`).join('')}
+      <lineNumber>${detail.lineNumber}</lineNumber>
+      <netValue>${detail.netValue}</netValue>
+      <vatCategory>${detail.vatCategory}</vatCategory>
+      <vatAmount>${detail.vatAmount}</vatAmount>
+      <incomeClassification>
+        <ic:classificationType>E3_561_001</ic:classificationType>
+        <ic:classificationCategory>category1_1</ic:classificationCategory>
+        <ic:amount>${detail.netValue}</ic:amount>
+      </incomeClassification>`).join('')}
     </invoiceDetails>
     <invoiceSummary>
       <totalNetValue>${receipt.invoiceSummary.totalNetValue}</totalNetValue>
@@ -106,6 +113,11 @@ serve(async (req) => {
       <totalOtherTaxesAmount>${receipt.invoiceSummary.totalOtherTaxesAmount}</totalOtherTaxesAmount>
       <totalDeductionsAmount>${receipt.invoiceSummary.totalDeductionsAmount}</totalDeductionsAmount>
       <totalGrossValue>${receipt.invoiceSummary.totalGrossValue}</totalGrossValue>
+      <incomeClassification>
+        <ic:classificationType>E3_561_001</ic:classificationType>
+        <ic:classificationCategory>category1_1</ic:classificationCategory>
+        <ic:amount>${receipt.invoiceSummary.totalNetValue}</ic:amount>
+      </incomeClassification>
     </invoiceSummary>
   </invoice>
 </InvoicesDoc>`
