@@ -60,22 +60,64 @@ serve(async (req) => {
       )
     }
 
-    // Production MyData API - ΜΟΝΟ ΠΑΡΑΓΩΓΗ
-    console.log('🚀 Κλήση Production MyData API...')
+    // Production MyData API - Σωστά URLs σύμφωνα με την τεκμηρίωση ΑΑΔΕ
+    console.log('🚀 Κλήση MyData API...')
     
-    // MyData API URL - Σωστό URL σύμφωνα με την τεκμηρίωση
+    // MyData API URL - Σωστά URLs από την τεκμηρίωση
     const myDataUrl = environment === 'development' 
       ? 'https://mydataapidev.aade.gr/SendInvoices'
       : 'https://mydatapi.aade.gr/myDATA/SendInvoices'
     
+    // Μετατροπή σε XML format όπως απαιτεί το MyData
+    const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
+<InvoicesDoc>
+  <invoice>
+    <issuer>
+      <vatNumber>${receipt.issuer.vatNumber}</vatNumber>
+      <country>${receipt.issuer.country}</country>
+      <branch>${receipt.issuer.branch}</branch>
+    </issuer>
+    <counterpart>
+      <vatNumber>${receipt.counterpart.vatNumber}</vatNumber>
+      <country>${receipt.counterpart.country}</country>
+    </counterpart>
+    <invoiceHeader>
+      <series>${receipt.invoiceHeader.series}</series>
+      <aa>${receipt.invoiceHeader.aa}</aa>
+      <issueDate>${receipt.invoiceHeader.issueDate}</issueDate>
+      <invoiceType>${receipt.invoiceHeader.invoiceType}</invoiceType>
+      <currency>${receipt.invoiceHeader.currency}</currency>
+    </invoiceHeader>
+    <invoiceDetails>
+      ${receipt.invoiceDetails.map(detail => `
+      <invoiceRowType>
+        <lineNumber>${detail.lineNumber}</lineNumber>
+        <netValue>${detail.netValue}</netValue>
+        <vatCategory>${detail.vatCategory}</vatCategory>
+        <vatAmount>${detail.vatAmount}</vatAmount>
+      </invoiceRowType>`).join('')}
+    </invoiceDetails>
+    <invoiceSummary>
+      <totalNetValue>${receipt.invoiceSummary.totalNetValue}</totalNetValue>
+      <totalVatAmount>${receipt.invoiceSummary.totalVatAmount}</totalVatAmount>
+      <totalWithheldAmount>${receipt.invoiceSummary.totalWithheldAmount}</totalWithheldAmount>
+      <totalFeesAmount>${receipt.invoiceSummary.totalFeesAmount}</totalFeesAmount>
+      <totalStampDutyAmount>${receipt.invoiceSummary.totalStampDutyAmount}</totalStampDutyAmount>
+      <totalOtherTaxesAmount>${receipt.invoiceSummary.totalOtherTaxesAmount}</totalOtherTaxesAmount>
+      <totalDeductionsAmount>${receipt.invoiceSummary.totalDeductionsAmount}</totalDeductionsAmount>
+      <totalGrossValue>${receipt.invoiceSummary.totalGrossValue}</totalGrossValue>
+    </invoiceSummary>
+  </invoice>
+</InvoicesDoc>`
+    
     const myDataRequest = {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/xml',
         'aade-user-id': aadeUserId,
         'ocp-apim-subscription-key': subscriptionKey
       },
-      body: JSON.stringify(receipt)
+      body: xmlBody
     }
 
     console.log('📡 MyData Request:', {
