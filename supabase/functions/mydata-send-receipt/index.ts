@@ -68,6 +68,11 @@ serve(async (req) => {
       ? 'https://mydataapidev.aade.gr/SendInvoices'
       : 'https://mydatapi.aade.gr/myDATA/SendInvoices'
     
+    // Helper function για στρογγύλευση τιμών σε 2 δεκαδικά ψηφία
+    const roundToTwoDecimals = (value) => {
+      return Math.round(value * 100) / 100
+    }
+
     // Μετατροπή σε σωστό XML format με namespaces όπως απαιτεί το MyDATA API
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <InvoicesDoc xmlns="http://www.aade.gr/myDATA/invoice/v1.0" 
@@ -84,6 +89,7 @@ serve(async (req) => {
     <counterpart>
       <vatNumber>${receipt.counterpart.vatNumber}</vatNumber>
       <country>${receipt.counterpart.country}</country>
+      <branch>${receipt.counterpart.branch || 0}</branch>
     </counterpart>
     <invoiceHeader>
       <series>${receipt.invoiceHeader.series}</series>
@@ -95,28 +101,28 @@ serve(async (req) => {
     <invoiceDetails>
       ${receipt.invoiceDetails.map(detail => `
       <lineNumber>${detail.lineNumber}</lineNumber>
-      <netValue>${detail.netValue}</netValue>
+      <netValue>${roundToTwoDecimals(detail.netValue)}</netValue>
       <vatCategory>${detail.vatCategory}</vatCategory>
-      <vatAmount>${detail.vatAmount}</vatAmount>
+      <vatAmount>${roundToTwoDecimals(detail.vatAmount)}</vatAmount>
       <incomeClassification>
         <ic:classificationType>E3_561_001</ic:classificationType>
         <ic:classificationCategory>category1_1</ic:classificationCategory>
-        <ic:amount>${detail.netValue}</ic:amount>
+        <ic:amount>${roundToTwoDecimals(detail.netValue)}</ic:amount>
       </incomeClassification>`).join('')}
     </invoiceDetails>
     <invoiceSummary>
-      <totalNetValue>${receipt.invoiceSummary.totalNetValue}</totalNetValue>
-      <totalVatAmount>${receipt.invoiceSummary.totalVatAmount}</totalVatAmount>
-      <totalWithheldAmount>${receipt.invoiceSummary.totalWithheldAmount}</totalWithheldAmount>
-      <totalFeesAmount>${receipt.invoiceSummary.totalFeesAmount}</totalFeesAmount>
-      <totalStampDutyAmount>${receipt.invoiceSummary.totalStampDutyAmount}</totalStampDutyAmount>
-      <totalOtherTaxesAmount>${receipt.invoiceSummary.totalOtherTaxesAmount}</totalOtherTaxesAmount>
-      <totalDeductionsAmount>${receipt.invoiceSummary.totalDeductionsAmount}</totalDeductionsAmount>
-      <totalGrossValue>${receipt.invoiceSummary.totalGrossValue}</totalGrossValue>
+      <totalNetValue>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue)}</totalNetValue>
+      <totalVatAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalVatAmount)}</totalVatAmount>
+      <totalWithheldAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalWithheldAmount)}</totalWithheldAmount>
+      <totalFeesAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalFeesAmount)}</totalFeesAmount>
+      <totalStampDutyAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalStampDutyAmount)}</totalStampDutyAmount>
+      <totalOtherTaxesAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalOtherTaxesAmount)}</totalOtherTaxesAmount>
+      <totalDeductionsAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalDeductionsAmount)}</totalDeductionsAmount>
+      <totalGrossValue>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue)}</totalGrossValue>
       <incomeClassification>
         <ic:classificationType>E3_561_001</ic:classificationType>
         <ic:classificationCategory>category1_1</ic:classificationCategory>
-        <ic:amount>${receipt.invoiceSummary.totalNetValue}</ic:amount>
+        <ic:amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue)}</ic:amount>
       </incomeClassification>
     </invoiceSummary>
   </invoice>
@@ -149,16 +155,32 @@ serve(async (req) => {
         throw new Error(`MyData API Error: ${myDataResponse.status} - ${responseText}`)
       }
 
-      // Parse response
+      // Parse XML response
       let responseData
       try {
-        responseData = JSON.parse(responseText)
+        // Έλεγχος αν υπάρχει success response στο XML
+        if (responseText.includes('<statusCode>Success</statusCode>')) {
+          // Εξαγωγή uid και invoiceMark από XML
+          const uidMatch = responseText.match(/<uid>(.*?)<\/uid>/)
+          const invoiceMarkMatch = responseText.match(/<invoiceMark>(.*?)<\/invoiceMark>/)
+          const authenticationCodeMatch = responseText.match(/<authenticationCode>(.*?)<\/authenticationCode>/)
+          
+          responseData = {
+            uid: uidMatch ? uidMatch[1] : null,
+            invoiceMark: invoiceMarkMatch ? invoiceMarkMatch[1] : null,
+            authenticationCode: authenticationCodeMatch ? authenticationCodeMatch[1] : null
+          }
+          
+          console.log('✅ MyData API Success:', responseData)
+        } else {
+          // Αν δεν είναι success, throw error
+          console.error('❌ MyData API returned non-success response:', responseText)
+          throw new Error('MyData API returned error response')
+        }
       } catch (parseError) {
         console.error('❌ Failed to parse MyData response:', responseText)
         throw new Error('Invalid response format from MyData API')
       }
-
-      console.log('✅ MyData API Success:', responseData)
 
       const response = {
         success: true,
