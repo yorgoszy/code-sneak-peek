@@ -77,7 +77,8 @@ export const workoutStatusService = {
       console.log(`📊 Found ${assignments.length} active assignments`);
 
       // 2. Για κάθε ανάθεση, ελέγξε για χαμένες προπονήσεις
-      const missedWorkouts = [];
+      let updatedCount = 0;
+      let createdCount = 0;
       
       for (const assignment of assignments) {
         if (!assignment.training_dates || !Array.isArray(assignment.training_dates)) {
@@ -97,34 +98,16 @@ export const workoutStatusService = {
             .maybeSingle();
 
           // Αν δεν υπάρχει completion ή υπάρχει αλλά δεν είναι completed/missed
-          if (!existingCompletion || (existingCompletion.status !== 'completed' && existingCompletion.status !== 'missed')) {
+          if (!existingCompletion) {
             // Υπολόγισε week_number και day_number από τη θέση στο array
             const dateIndex = assignment.training_dates.indexOf(date);
-            
-            // Θεωρούμε ότι κάθε εβδομάδα έχει 7 ημέρες (ή λιγότερες)
-            // Αλλά επειδή δεν γνωρίζουμε την ακριβή δομή, θέτουμε απλές τιμές
             const weekNumber = Math.floor(dateIndex / 7) + 1;
             const dayNumber = (dateIndex % 7) + 1;
 
-            if (existingCompletion) {
-              // Ενημέρωση του υπάρχοντος record
-              const { error: updateError } = await supabase
-                .from('workout_completions')
-                .update({
-                  status: 'missed',
-                  status_color: 'red',
-                  updated_at: new Date().toISOString()
-                })
-                .eq('id', existingCompletion.id);
-
-              if (updateError) {
-                console.error('❌ Error updating workout to missed:', updateError);
-              } else {
-                console.log(`✅ Updated workout ${existingCompletion.id} to missed`);
-              }
-            } else {
-              // Νέο record
-              missedWorkouts.push({
+            // Δημιούργησε νέο record
+            const { error: insertError } = await supabase
+              .from('workout_completions')
+              .insert({
                 assignment_id: assignment.id,
                 user_id: assignment.user_id,
                 program_id: assignment.program_id,
@@ -136,31 +119,36 @@ export const workoutStatusService = {
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
               });
+
+            if (insertError) {
+              console.error('❌ Error creating missed workout:', insertError);
+            } else {
+              createdCount++;
+              console.log(`✅ Created missed workout for ${date}`);
+            }
+          } else if (existingCompletion.status !== 'completed' && existingCompletion.status !== 'missed') {
+            // Ενημέρωση του υπάρχοντος record
+            const { error: updateError } = await supabase
+              .from('workout_completions')
+              .update({
+                status: 'missed',
+                status_color: 'red',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingCompletion.id);
+
+            if (updateError) {
+              console.error('❌ Error updating workout to missed:', updateError);
+            } else {
+              updatedCount++;
+              console.log(`✅ Updated workout ${existingCompletion.id} to missed`);
             }
           }
         }
       }
 
-      if (missedWorkouts.length === 0) {
-        console.log('ℹ️ No new missed workouts found to create');
-        return [];
-      }
-
-      console.log(`🔄 Creating ${missedWorkouts.length} missed workout records`);
-
-      // 3. Εισαγωγή των χαμένων προπονήσεων (μόνο τις νέες)
-      const { data, error } = await supabase
-        .from('workout_completions')
-        .insert(missedWorkouts)
-        .select();
-
-      if (error) {
-        console.error('❌ Error creating missed workout records:', error);
-        throw error;
-      }
-
-      console.log(`✅ Created ${data?.length || 0} missed workout records`);
-      return data || [];
+      console.log(`✅ Processed missed workouts: ${createdCount} created, ${updatedCount} updated`);
+      return { created: createdCount, updated: updatedCount };
 
     } catch (error) {
       console.error('❌ Unexpected error in markMissedWorkoutsForPastDates:', error);
