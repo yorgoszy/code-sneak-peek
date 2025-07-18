@@ -7,8 +7,8 @@ export const fetchWorkoutCompletions = async (userId: string, startDate: string,
     .from('workout_completions')
     .select('*')
     .eq('user_id', userId)
-    .gte('completed_date', startDate)
-    .lte('completed_date', endDate);
+    .gte('scheduled_date', startDate)
+    .lte('scheduled_date', endDate);
 
   return data || [];
 };

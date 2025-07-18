@@ -91,12 +91,13 @@ export const workoutStatusService = {
           // Ελέγξε αν υπάρχει ήδη completion για αυτή την ημερομηνία
           const { data: existingCompletion } = await supabase
             .from('workout_completions')
-            .select('id')
+            .select('id, status')
             .eq('assignment_id', assignment.id)
             .eq('scheduled_date', date)
-            .single();
+            .maybeSingle();
 
-          if (!existingCompletion) {
+          // Αν δεν υπάρχει completion ή υπάρχει αλλά δεν είναι completed/missed
+          if (!existingCompletion || (existingCompletion.status !== 'completed' && existingCompletion.status !== 'missed')) {
             // Υπολόγισε week_number και day_number από τη θέση στο array
             const dateIndex = assignment.training_dates.indexOf(date);
             
@@ -105,30 +106,49 @@ export const workoutStatusService = {
             const weekNumber = Math.floor(dateIndex / 7) + 1;
             const dayNumber = (dateIndex % 7) + 1;
 
-            missedWorkouts.push({
-              assignment_id: assignment.id,
-              user_id: assignment.user_id,
-              program_id: assignment.program_id,
-              scheduled_date: date,
-              week_number: weekNumber,
-              day_number: dayNumber,
-              status: 'missed',
-              status_color: 'red',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
+            if (existingCompletion) {
+              // Ενημέρωση του υπάρχοντος record
+              const { error: updateError } = await supabase
+                .from('workout_completions')
+                .update({
+                  status: 'missed',
+                  status_color: 'red',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingCompletion.id);
+
+              if (updateError) {
+                console.error('❌ Error updating workout to missed:', updateError);
+              } else {
+                console.log(`✅ Updated workout ${existingCompletion.id} to missed`);
+              }
+            } else {
+              // Νέο record
+              missedWorkouts.push({
+                assignment_id: assignment.id,
+                user_id: assignment.user_id,
+                program_id: assignment.program_id,
+                scheduled_date: date,
+                week_number: weekNumber,
+                day_number: dayNumber,
+                status: 'missed',
+                status_color: 'red',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+            }
           }
         }
       }
 
       if (missedWorkouts.length === 0) {
-        console.log('ℹ️ No missed workouts found to create');
+        console.log('ℹ️ No new missed workouts found to create');
         return [];
       }
 
       console.log(`🔄 Creating ${missedWorkouts.length} missed workout records`);
 
-      // 3. Εισαγωγή των χαμένων προπονήσεων
+      // 3. Εισαγωγή των χαμένων προπονήσεων (μόνο τις νέες)
       const { data, error } = await supabase
         .from('workout_completions')
         .insert(missedWorkouts)
