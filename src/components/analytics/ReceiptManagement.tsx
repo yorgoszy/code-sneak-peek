@@ -139,7 +139,7 @@ export const ReceiptManagement: React.FC = () => {
       const { data: receiptsData, error } = await supabase
         .from('receipts')
         .select('*')
-        .order('issue_date', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ Error loading receipts:', error);
