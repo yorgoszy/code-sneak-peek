@@ -61,6 +61,44 @@ serve(async (req) => {
 
       console.log(`🔄 [FORCE-MISSED] Processing assignment ${assignment.id} with ${assignment.training_dates.length} dates`);
 
+      // Πάρε τη δομή του προγράμματος για σωστό υπολογισμό των week/day numbers
+      const { data: programStructure } = await supabaseClient
+        .from('programs')
+        .select(`
+          id,
+          program_weeks (
+            id,
+            week_number,
+            program_days (
+              id,
+              day_number
+            )
+          )
+        `)
+        .eq('id', assignment.program_id)
+        .single();
+
+      if (!programStructure?.program_weeks) {
+        console.error(`❌ [FORCE-MISSED] No program structure found for program ${assignment.program_id}`);
+        continue;
+      }
+
+      // Δημιούργησε mapping από date index σε week/day numbers
+      const dateToWeekDay = new Map();
+      let dateIndex = 0;
+      
+      for (const week of programStructure.program_weeks.sort((a, b) => a.week_number - b.week_number)) {
+        for (const day of week.program_days.sort((a, b) => a.day_number - b.day_number)) {
+          if (dateIndex < assignment.training_dates.length) {
+            dateToWeekDay.set(assignment.training_dates[dateIndex], {
+              week_number: week.week_number,
+              day_number: day.day_number
+            });
+            dateIndex++;
+          }
+        }
+      }
+
       // Βρες προπονήσεις στο παρελθόν
       const pastDates = assignment.training_dates.filter(date => date < today);
       console.log(`📅 [FORCE-MISSED] Found ${pastDates.length} past dates for assignment ${assignment.id}`);
@@ -80,11 +118,14 @@ serve(async (req) => {
             continue;
           }
 
-          // Δημιούργησε missed workout
-          const dateIndex = assignment.training_dates.indexOf(date);
-          const weekNumber = Math.floor(dateIndex / 7) + 1;
-          const dayNumber = (dateIndex % 7) + 1;
+          // Πάρε τα σωστά week/day numbers από το mapping
+          const weekDayInfo = dateToWeekDay.get(date);
+          if (!weekDayInfo) {
+            console.error(`❌ [FORCE-MISSED] No week/day info found for date ${date}`);
+            continue;
+          }
 
+          // Δημιούργησε missed workout
           const { error: insertError } = await supabaseClient
             .from('workout_completions')
             .insert({
@@ -92,8 +133,8 @@ serve(async (req) => {
               user_id: assignment.user_id,
               program_id: assignment.program_id,
               scheduled_date: date,
-              week_number: weekNumber,
-              day_number: dayNumber,
+              week_number: weekDayInfo.week_number,
+              day_number: weekDayInfo.day_number,
               status: 'missed',
               status_color: 'red'
             });
@@ -102,7 +143,7 @@ serve(async (req) => {
             console.error(`❌ [FORCE-MISSED] Error creating missed workout for ${date}:`, insertError);
             errorCount++;
           } else {
-            console.log(`✅ [FORCE-MISSED] Created missed workout for ${date}`);
+            console.log(`✅ [FORCE-MISSED] Created missed workout for ${date} (Week ${weekDayInfo.week_number}, Day ${weekDayInfo.day_number})`);
             processedCount++;
           }
 
