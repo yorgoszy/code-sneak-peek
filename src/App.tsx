@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
-import { useAutoMissedWorkouts } from "@/hooks/useWorkoutCompletions/useAutoMissedWorkouts";
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 
 import Index from "@/pages/Index";
@@ -27,8 +26,6 @@ import Analytics from "@/pages/Analytics";
 const queryClient = new QueryClient();
 
 function App() {
-  // Αυτόματη σήμανση χαμένων προπονήσεων
-  useAutoMissedWorkouts();
   return (
     <Router>
       <AnalyticsProvider>

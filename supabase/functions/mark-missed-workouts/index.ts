@@ -50,8 +50,8 @@ serve(async (req) => {
     console.log(`📊 Found ${assignments.length} active assignments`);
 
     // 2. Για κάθε ανάθεση, ελέγξε για χαμένες προπονήσεις
-    let createdCount = 0;
-    let updatedCount = 0;
+    let processedCount = 0;
+    let errorCount = 0;
     let processedUsers = new Set();
 
     for (const assignment of assignments) {
@@ -61,62 +61,73 @@ serve(async (req) => {
 
       // Βρες προπονήσεις στο παρελθόν που δεν έχουν completion
       const pastDates = assignment.training_dates.filter(date => date < today);
+      if (pastDates.length === 0) continue;
+
       processedUsers.add(assignment.user_id);
+      console.log(`🔄 Processing assignment ${assignment.id} with ${pastDates.length} past dates`);
 
       for (const date of pastDates) {
-        // Ελέγξε αν υπάρχει ήδη completion για αυτή την ημερομηνία
-        const { data: existingCompletion } = await supabaseClient
-          .from('workout_completions')
-          .select('id, status')
-          .eq('assignment_id', assignment.id)
-          .eq('scheduled_date', date)
-          .maybeSingle();
-
-        if (!existingCompletion) {
-          // Υπολόγισε week_number και day_number από τη θέση στο array
-          const dateIndex = assignment.training_dates.indexOf(date);
-          const weekNumber = Math.floor(dateIndex / 7) + 1;
-          const dayNumber = (dateIndex % 7) + 1;
-
-          // Δημιούργησε νέο record
-          const { error: insertError } = await supabaseClient
+        try {
+          // Ελέγξε αν υπάρχει ήδη completion για αυτή την ημερομηνία
+          const { data: existingCompletion } = await supabaseClient
             .from('workout_completions')
-            .insert({
-              assignment_id: assignment.id,
-              user_id: assignment.user_id,
-              program_id: assignment.program_id,
-              scheduled_date: date,
-              week_number: weekNumber,
-              day_number: dayNumber,
-              status: 'missed',
-              status_color: 'red',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
+            .select('id, status')
+            .eq('assignment_id', assignment.id)
+            .eq('scheduled_date', date)
+            .maybeSingle();
 
-          if (insertError) {
-            console.error('❌ Error creating missed workout:', insertError);
-          } else {
-            createdCount++;
-            console.log(`✅ Created missed workout for user ${assignment.user_id} on ${date}`);
-          }
-        } else if (existingCompletion.status !== 'completed' && existingCompletion.status !== 'missed') {
-          // Ενημέρωση του υπάρχοντος record
-          const { error: updateError } = await supabaseClient
-            .from('workout_completions')
-            .update({
-              status: 'missed',
-              status_color: 'red',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existingCompletion.id);
+          if (!existingCompletion) {
+            // Υπολόγισε week_number και day_number από τη θέση στο array
+            const dateIndex = assignment.training_dates.indexOf(date);
+            const weekNumber = Math.floor(dateIndex / 7) + 1;
+            const dayNumber = (dateIndex % 7) + 1;
 
-          if (updateError) {
-            console.error('❌ Error updating workout to missed:', updateError);
-          } else {
-            updatedCount++;
-            console.log(`✅ Updated workout ${existingCompletion.id} to missed`);
+            // Δημιούργησε νέο record
+            const { error: insertError } = await supabaseClient
+              .from('workout_completions')
+              .insert({
+                assignment_id: assignment.id,
+                user_id: assignment.user_id,
+                program_id: assignment.program_id,
+                scheduled_date: date,
+                week_number: weekNumber,
+                day_number: dayNumber,
+                status: 'missed',
+                status_color: 'red',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+
+            if (insertError) {
+              console.error('❌ Error creating missed workout:', insertError);
+              errorCount++;
+            } else {
+              processedCount++;
+              console.log(`✅ Created missed workout for user ${assignment.user_id} on ${date}`);
+            }
+
+          } else if (existingCompletion.status === 'scheduled' || existingCompletion.status === 'pending') {
+            // Ενημέρωση του υπάρχοντος record μόνο αν είναι scheduled/pending
+            const { error: updateError } = await supabaseClient
+              .from('workout_completions')
+              .update({
+                status: 'missed',
+                status_color: 'red',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingCompletion.id);
+
+            if (updateError) {
+              console.error('❌ Error updating workout to missed:', updateError);
+              errorCount++;
+            } else {
+              processedCount++;
+              console.log(`✅ Updated workout ${existingCompletion.id} to missed`);
+            }
           }
+        } catch (error) {
+          console.error(`❌ Error processing date ${date}:`, error);
+          errorCount++;
         }
       }
     }
@@ -124,8 +135,8 @@ serve(async (req) => {
     const result = {
       success: true,
       message: `Processed missed workouts for ${processedUsers.size} users`,
-      created: createdCount,
-      updated: updatedCount,
+      processed: processedCount,
+      errors: errorCount,
       processedUsers: processedUsers.size,
       totalAssignments: assignments.length
     };

@@ -2,3 +2,6 @@ project_id = "dicwdviufetibnafzipa"
 
 [functions.mydata-send-receipt]
 verify_jwt = false
+
+[functions.mark-missed-workouts]
+verify_jwt = false
