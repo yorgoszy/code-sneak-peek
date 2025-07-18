@@ -18,8 +18,8 @@ export const UserProfileTabs = ({ user, programs, tests, payments, visits }: Use
   return (
     <Tabs defaultValue="programs" className="w-full">
       <TabsList className="grid w-full grid-cols-5 rounded-none">
-        <TabsTrigger value="programs" className="rounded-none">Προγράμματα</TabsTrigger>
-        <TabsTrigger value="calendar" className="rounded-none">Ημερολόγιο</TabsTrigger>
+        <TabsTrigger value="programs" className="rounded-none">Ημερολόγιο</TabsTrigger>
+        <TabsTrigger value="calendar" className="rounded-none">Προγράμματα</TabsTrigger>
         <TabsTrigger value="tests" className="rounded-none">Τεστ</TabsTrigger>
         <TabsTrigger value="payments" className="rounded-none">Πληρωμές</TabsTrigger>
         <TabsTrigger value="visits" className="rounded-none">Επισκέψεις</TabsTrigger>
