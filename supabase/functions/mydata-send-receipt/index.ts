@@ -11,22 +11,21 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, subscriptionKey, environment, receipt, taxisnetUsername, taxisnetPassword } = await req.json()
+    const { aadeUserId, subscriptionKey, environment, receipt } = await req.json()
 
     console.log('🚀 MyData Send Receipt called with:', { 
-      userId, 
+      aadeUserId, 
       environment,
       hasSubscriptionKey: !!subscriptionKey,
-      hasTaxisnetCredentials: !!(taxisnetUsername && taxisnetPassword),
       receiptId: receipt?.invoiceHeader?.aa
     })
     console.log('📄 Receipt data:', JSON.stringify(receipt, null, 2))
 
-    // Validation - Ελέγχουμε και τα Taxisnet credentials
-    if (!userId || !subscriptionKey || !taxisnetUsername || !taxisnetPassword) {
+    // Validation - Ελέγχουμε τα myDATA credentials
+    if (!aadeUserId || !subscriptionKey) {
       const errorResponse = {
         success: false,
-        error: 'Missing required parameters: userId, subscriptionKey, taxisnetUsername, or taxisnetPassword',
+        error: 'Missing required parameters: aadeUserId or subscriptionKey',
         timestamp: new Date().toISOString()
       }
       console.error('❌ Validation error:', errorResponse.error)
@@ -64,17 +63,17 @@ serve(async (req) => {
     // Production MyData API - ΜΟΝΟ ΠΑΡΑΓΩΓΗ
     console.log('🚀 Κλήση Production MyData API...')
     
-    // MyData API URL - ΠΑΡΑΓΩΓΗ ΜΟΝΟ
-    const myDataUrl = 'https://mydata.aade.gr/myDATA/SendInvoices'
+    // MyData API URL - Σωστό URL σύμφωνα με την τεκμηρίωση
+    const myDataUrl = environment === 'development' 
+      ? 'https://mydataapidev.aade.gr/SendInvoices'
+      : 'https://mydatapi.aade.gr/myDATA/SendInvoices'
     
     const myDataRequest = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'aade-user-id': userId,
-        'Ocp-Apim-Subscription-Key': subscriptionKey,
-        'taxisnet-username': taxisnetUsername,
-        'taxisnet-password': taxisnetPassword
+        'aade-user-id': aadeUserId,
+        'ocp-apim-subscription-key': subscriptionKey
       },
       body: JSON.stringify(receipt)
     }

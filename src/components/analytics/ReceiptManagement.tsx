@@ -64,21 +64,17 @@ interface ReceiptItem {
 }
 
 interface MyDataSettings {
-  userId: string;
+  aadeUserId: string;
   subscriptionKey: string;
-  environment: 'production'; // ΜΟΝΟ ΠΑΡΑΓΩΓΗ
-  taxisnetUsername: string;
-  taxisnetPassword: string;
+  environment: 'development' | 'production';
   connected: boolean;
 }
 
 export const ReceiptManagement: React.FC = () => {
   const [settings, setSettings] = useState<MyDataSettings>({
-    userId: localStorage.getItem('mydata_user_id') || '',
+    aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
     subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
-    environment: 'production', // ΜΟΝΟ ΠΑΡΑΓΩΓΗ
-    taxisnetUsername: localStorage.getItem('mydata_taxisnet_username') || '',
-    taxisnetPassword: localStorage.getItem('mydata_taxisnet_password') || '',
+    environment: 'production',
     connected: false
   });
 
@@ -115,21 +111,19 @@ export const ReceiptManagement: React.FC = () => {
     loadUsers();
     loadSubscriptionTypes();
     
-    if (settings.userId && settings.subscriptionKey && settings.taxisnetUsername && settings.taxisnetPassword) {
+    if (settings.aadeUserId && settings.subscriptionKey) {
       setSettings(prev => ({ ...prev, connected: true }));
     }
   }, []);
 
   const handleConnect = () => {
-    if (!settings.userId || !settings.subscriptionKey || !settings.taxisnetUsername || !settings.taxisnetPassword) {
-      toast.error('Παρακαλώ συμπληρώστε όλα τα στοιχεία σύνδεσης');
+    if (!settings.aadeUserId || !settings.subscriptionKey) {
+      toast.error('Παρακαλώ συμπληρώστε τα στοιχεία σύνδεσης MyData');
       return;
     }
 
-    localStorage.setItem('mydata_user_id', settings.userId);
+    localStorage.setItem('mydata_aade_user_id', settings.aadeUserId);
     localStorage.setItem('mydata_subscription_key', settings.subscriptionKey);
-    localStorage.setItem('mydata_taxisnet_username', settings.taxisnetUsername);
-    localStorage.setItem('mydata_taxisnet_password', settings.taxisnetPassword);
     
     setSettings(prev => ({ ...prev, connected: true }));
     toast.success('Επιτυχής σύνδεση με MyData AADE!');
@@ -391,12 +385,12 @@ export const ReceiptManagement: React.FC = () => {
       console.log('📡 Καλώ το edge function mydata-send-receipt...');
       const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
         body: {
-          userId: settings.userId,
+          aadeUserId: settings.aadeUserId,
           subscriptionKey: settings.subscriptionKey,
           environment: settings.environment,
           receipt: {
             issuer: {
-              vatNumber: settings.userId, // Χρησιμοποιούμε το userId ως ΑΦΜ
+              vatNumber: settings.aadeUserId, // Χρησιμοποιούμε το aadeUserId ως ΑΦΜ
               country: "GR",
               branch: 0
             },
@@ -427,9 +421,7 @@ export const ReceiptManagement: React.FC = () => {
               totalDeductionsAmount: 0,
               totalGrossValue: receipt.total
             }
-          },
-          taxisnetUsername: settings.taxisnetUsername,
-          taxisnetPassword: settings.taxisnetPassword
+          }
         }
       });
 
@@ -830,15 +822,15 @@ export const ReceiptManagement: React.FC = () => {
                 {!settings.connected ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">User ID (ΑΦΜ)</label>
-                        <Input
-                          placeholder="Εισάγετε το ΑΦΜ σας"
-                          value={settings.userId}
-                          onChange={(e) => setSettings(prev => ({ ...prev, userId: e.target.value }))}
-                          className="rounded-none"
-                        />
-                      </div>
+                       <div>
+                         <label className="block text-sm font-medium mb-2">AADE User ID</label>
+                         <Input
+                           placeholder="Εισάγετε το AADE User ID από το MyData portal"
+                           value={settings.aadeUserId}
+                           onChange={(e) => setSettings(prev => ({ ...prev, aadeUserId: e.target.value }))}
+                           className="rounded-none"
+                         />
+                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Subscription Key</label>
                         <Input
@@ -851,26 +843,17 @@ export const ReceiptManagement: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Taxisnet Username</label>
-                        <Input
-                          placeholder="Εισάγετε το username σας για TAXISnet"
-                          value={settings.taxisnetUsername}
-                          onChange={(e) => setSettings(prev => ({ ...prev, taxisnetUsername: e.target.value }))}
-                          className="rounded-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Taxisnet Password</label>
-                        <Input
-                          type="password"
-                          placeholder="Εισάγετε τον κωδικό σας για TAXISnet"
-                          value={settings.taxisnetPassword}
-                          onChange={(e) => setSettings(prev => ({ ...prev, taxisnetPassword: e.target.value }))}
-                          className="rounded-none"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Περιβάλλον</label>
+                      <Select value={settings.environment} onValueChange={(value: 'development' | 'production') => setSettings(prev => ({ ...prev, environment: value }))}>
+                        <SelectTrigger className="rounded-none">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="development">Development (Δοκιμαστικό)</SelectItem>
+                          <SelectItem value="production">Production (Παραγωγή)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div>
@@ -898,10 +881,10 @@ export const ReceiptManagement: React.FC = () => {
                 ) : (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">User ID (ΑΦΜ)</label>
-                        <Input value={settings.userId} disabled className="rounded-none bg-gray-50" />
-                      </div>
+                       <div>
+                         <label className="block text-sm font-medium mb-2">AADE User ID</label>
+                         <Input value={settings.aadeUserId} disabled className="rounded-none bg-gray-50" />
+                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Περιβάλλον</label>
                         <Badge className={settings.environment === 'production' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
