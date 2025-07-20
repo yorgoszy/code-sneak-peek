@@ -928,10 +928,22 @@ export const SubscriptionManagement: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Μηνιαίος Τζίρος</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  €{userSubscriptions
-                    .filter(s => s.status === 'active')
-                    .reduce((sum, s) => sum + (s.subscription_types?.price || 0), 0)
-                    .toFixed(2)}
+                  €{(() => {
+                    const monthlyRevenue = userSubscriptions
+                      .filter(s => s.status === 'active')
+                      .reduce((sum, s) => {
+                        const subscriptionType = s.subscription_types;
+                        if (!subscriptionType) return sum;
+                        
+                        // Υπολογισμός μηνιαίου τζίρου βάσει διάρκειας συνδρομής
+                        const monthlyPrice = subscriptionType.price / subscriptionType.duration_months;
+                        return sum + monthlyPrice;
+                      }, 0);
+                    return monthlyRevenue.toFixed(2);
+                  })()}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Από {userSubscriptions.filter(s => s.status === 'active').length} ενεργές συνδρομές
                 </p>
               </div>
             </div>
