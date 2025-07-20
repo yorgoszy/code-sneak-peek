@@ -146,7 +146,7 @@ export const useWeekStats = (userId: string) => {
               }
             }
             
-            // Υπολογισμός προγραμματισμένων λεπτών με τη λογική του DayCalculations
+            // Υπολογισμός προγραμματισμένων λεπτών - χρησιμοποιούμε την ίδια λογική με το DayCalculations
             if (programData?.program_weeks?.[0]?.program_days) {
               const trainingDate = new Date(date);
               const dateIndex = program.training_dates.indexOf(date);
@@ -187,8 +187,9 @@ export const useWeekStats = (userId: string) => {
                   });
                 });
                 
-                totalScheduledMinutes += Math.round(dayTimeSeconds / 60);
-                console.log('⏰ Day time for date:', date, 'minutes:', Math.round(dayTimeSeconds / 60));
+                const dayMinutes = Math.round(dayTimeSeconds / 60);
+                totalScheduledMinutes += dayMinutes;
+                console.log('⏰ Day time for date:', date, 'minutes:', dayMinutes);
               }
             }
           }
