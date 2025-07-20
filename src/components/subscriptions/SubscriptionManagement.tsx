@@ -62,6 +62,8 @@ export const SubscriptionManagement: React.FC = () => {
   const [editStartDate, setEditStartDate] = useState('');
   const [editEndDate, setEditEndDate] = useState('');
   const [editSubscriptionType, setEditSubscriptionType] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
+  const [monthlyRevenue, setMonthlyRevenue] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -141,6 +143,34 @@ export const SubscriptionManagement: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const calculateMonthlyRevenue = async (monthYear: string) => {
+    try {
+      const startDate = `${monthYear}-01`;
+      const endDate = new Date(monthYear + '-01');
+      endDate.setMonth(endDate.getMonth() + 1);
+      const endDateStr = endDate.toISOString().slice(0, 10);
+
+      const { data: payments, error } = await supabase
+        .from('payments')
+        .select('amount, payment_date')
+        .gte('payment_date', startDate)
+        .lt('payment_date', endDateStr)
+        .eq('status', 'completed');
+
+      if (error) throw error;
+
+      const total = payments?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0;
+      setMonthlyRevenue(total);
+    } catch (error) {
+      console.error('Error calculating monthly revenue:', error);
+      setMonthlyRevenue(0);
+    }
+  };
+
+  useEffect(() => {
+    calculateMonthlyRevenue(selectedMonth);
+  }, [selectedMonth]);
 
   const generateInvoiceNumber = () => {
     const date = new Date();
@@ -922,28 +952,43 @@ export const SubscriptionManagement: React.FC = () => {
         </Card>
 
         <Card className="rounded-none">
-          <CardContent className="p-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Μηνιαίος Τζίρος</CardTitle>
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="rounded-none h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-none">
+                {(() => {
+                  const months = [];
+                  const currentDate = new Date();
+                  for (let i = 0; i < 12; i++) {
+                    const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+                    const monthKey = date.toISOString().slice(0, 7);
+                    const monthName = date.toLocaleDateString('el-GR', { 
+                      year: 'numeric', 
+                      month: 'long' 
+                    });
+                    months.push(
+                      <SelectItem key={monthKey} value={monthKey} className="rounded-none">
+                        {monthName}
+                      </SelectItem>
+                    );
+                  }
+                  return months;
+                })()}
+              </SelectContent>
+            </Select>
+          </CardHeader>
+          <CardContent className="pt-0">
             <div className="flex items-center">
               <DollarSign className="h-8 w-8 text-green-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Μηνιαίος Τζίρος</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  €{(() => {
-                    const monthlyRevenue = userSubscriptions
-                      .filter(s => s.status === 'active')
-                      .reduce((sum, s) => {
-                        const subscriptionType = s.subscription_types;
-                        if (!subscriptionType) return sum;
-                        
-                        // Υπολογισμός μηνιαίου τζίρου βάσει διάρκειας συνδρομής
-                        const monthlyPrice = subscriptionType.price / subscriptionType.duration_months;
-                        return sum + monthlyPrice;
-                      }, 0);
-                    return monthlyRevenue.toFixed(2);
-                  })()}
+                  €{monthlyRevenue.toFixed(2)}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  Από {userSubscriptions.filter(s => s.status === 'active').length} ενεργές συνδρομές
+                  Από αποδείξεις
                 </p>
               </div>
             </div>
