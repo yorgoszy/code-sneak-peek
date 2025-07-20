@@ -24,7 +24,7 @@ export const DashboardStats = ({ stats }: DashboardStatsProps) => {
     },
     {
       title: "Ενεργοί Χρήστες",
-      subtitle: "Τελευταίες 30 ημέρες",
+      subtitle: "Αυτόν τον μήνα",
       value: stats.activeUsers,
       icon: Activity,
       color: "text-[#00ffba]"

@@ -119,10 +119,10 @@ export const FinancialOverview: React.FC = () => {
       </div>
 
       {/* Annual Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="rounded-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ετήσιος Τζίρος</CardTitle>
+            <CardTitle className="text-sm font-medium">Ετήσια Έσοδα</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -153,6 +153,16 @@ export const FinancialOverview: React.FC = () => {
             <div className={`text-2xl font-bold ${currentYearProfit >= 0 ? 'text-[#00ffba]' : 'text-red-500'}`}>
               {formatCurrency(currentYearProfit)}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-none">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ετήσιος Τζίρος</CardTitle>
+            <TrendingUp className="h-4 w-4 text-[#00ffba]" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-[#00ffba]">{formatCurrency(currentYearTotal)}</div>
           </CardContent>
         </Card>
       </div>
