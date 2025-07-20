@@ -63,6 +63,8 @@ export const SubscriptionManagement: React.FC = () => {
   const [editStartDate, setEditStartDate] = useState('');
   const [editEndDate, setEditEndDate] = useState('');
   const [editSubscriptionType, setEditSubscriptionType] = useState('');
+  const [showReceiptDialog, setShowReceiptDialog] = useState(false);
+  const [pendingSubscriptionData, setPendingSubscriptionData] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -255,60 +257,6 @@ export const SubscriptionManagement: React.FC = () => {
     setShowReceiptDialog(true);
   };
 
-    const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
-    const selectedUserData = users.find(u => u.id === selectedUser);
-    
-    if (!subscriptionType || !selectedUserData) return;
-
-    const subscriptionStartDate = new Date(startDate);
-    const endDate = new Date(subscriptionStartDate);
-    endDate.setMonth(subscriptionStartDate.getMonth() + subscriptionType.duration_months);
-    endDate.setDate(subscriptionStartDate.getDate() - 1);
-
-    // Αποθήκευση δεδομένων για μετά την επιλογή απόδειξης
-    setPendingSubscriptionData({
-      subscriptionType,
-      selectedUserData,
-      subscriptionStartDate,
-      endDate
-    });
-
-    // Εμφάνιση dialog για απόδειξη
-    setShowReceiptDialog(true);
-  };
-
-    try {
-      const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
-      const selectedUserData = users.find(u => u.id === selectedUser);
-      
-      if (!subscriptionType || !selectedUserData) return;
-
-      const subscriptionStartDate = new Date(startDate);
-      const endDate = new Date(subscriptionStartDate);
-      endDate.setMonth(subscriptionStartDate.getMonth() + subscriptionType.duration_months);
-      endDate.setDate(subscriptionStartDate.getDate() - 1); // Calendar month calculation
-
-      // Δημιουργία νέας συνδρομής
-      const { error: subscriptionError } = await supabase
-        .from('user_subscriptions')
-        .insert({
-          user_id: selectedUser,
-          subscription_type_id: selectedSubscriptionType,
-          start_date: startDate,
-          end_date: endDate.toISOString().split('T')[0],
-          status: 'active',
-          notes: notes
-        });
-
-      if (subscriptionError) throw subscriptionError;
-
-      // Ενημέρωση status χρήστη
-      const { error: userError } = await supabase
-        .from('app_users')
-        .update({ subscription_status: 'active' })
-        .eq('id', selectedUser);
-
-      if (userError) throw userError;
 
   const handleCreateSubscription = async (createReceipt: boolean) => {
     if (!pendingSubscriptionData) return;
