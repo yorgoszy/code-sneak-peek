@@ -1,13 +1,13 @@
 
 export interface WorkoutStats {
   currentMonth: {
-    scheduledWorkouts: number;
+    completedWorkouts: number;
     totalTrainingHours: number;
     totalVolume: number;
     missedWorkouts: number;
   };
   previousMonth: {
-    scheduledWorkouts: number;
+    completedWorkouts: number;
     totalTrainingHours: number;
     totalVolume: number;
     missedWorkouts: number;

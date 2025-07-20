@@ -6,13 +6,13 @@ import { WorkoutStats } from "./workoutStatsTypes";
 export const useWorkoutStats = (userId: string) => {
   const [stats, setStats] = useState<WorkoutStats>({
     currentMonth: {
-      scheduledWorkouts: 0,
+      completedWorkouts: 0,
       totalTrainingHours: 0,
       totalVolume: 0,
       missedWorkouts: 0
     },
     previousMonth: {
-      scheduledWorkouts: 0,
+      completedWorkouts: 0,
       totalTrainingHours: 0,
       totalVolume: 0,
       missedWorkouts: 0
@@ -37,20 +37,42 @@ export const useWorkoutStats = (userId: string) => {
       
       const dateRanges = getDateRanges();
 
-      // Calculate metrics for both months using scheduled workouts
+      // Fetch workout completions for both months  
+      const [currentMonthData, previousMonthData] = await Promise.all([
+        fetchWorkoutCompletions(userId, dateRanges.currentMonth.start, dateRanges.currentMonth.end),
+        fetchWorkoutCompletions(userId, dateRanges.previousMonth.start, dateRanges.previousMonth.end)
+      ]);
+
+      // Calculate metrics for both months (completed workouts)
       const [currentMonthMetrics, previousMonthMetrics] = await Promise.all([
+        calculateWorkoutMetrics(currentMonthData),
+        calculateWorkoutMetrics(previousMonthData)
+      ]);
+
+      // Calculate missing workouts separately using the correct method
+      const [currentMonthMissed, previousMonthMissed] = await Promise.all([
         calculateScheduledWorkoutMetrics(userId, dateRanges.currentMonth.start, dateRanges.currentMonth.end),
         calculateScheduledWorkoutMetrics(userId, dateRanges.previousMonth.start, dateRanges.previousMonth.end)
       ]);
 
-      // Calculate improvements
-      const workoutsImprovement = currentMonthMetrics.scheduledWorkouts - previousMonthMetrics.scheduledWorkouts;
+      // Calculate improvements based on completed workouts
+      const workoutsImprovement = currentMonthMetrics.completedWorkouts - previousMonthMetrics.completedWorkouts;
       const hoursImprovement = currentMonthMetrics.totalTrainingHours - previousMonthMetrics.totalTrainingHours;
       const volumeImprovement = currentMonthMetrics.totalVolume - previousMonthMetrics.totalVolume;
 
       setStats({
-        currentMonth: currentMonthMetrics,
-        previousMonth: previousMonthMetrics,
+        currentMonth: {
+          completedWorkouts: currentMonthMetrics.completedWorkouts,
+          totalTrainingHours: currentMonthMetrics.totalTrainingHours,
+          totalVolume: currentMonthMetrics.totalVolume,
+          missedWorkouts: currentMonthMissed.missedWorkouts
+        },
+        previousMonth: {
+          completedWorkouts: previousMonthMetrics.completedWorkouts,
+          totalTrainingHours: previousMonthMetrics.totalTrainingHours,
+          totalVolume: previousMonthMetrics.totalVolume,
+          missedWorkouts: previousMonthMissed.missedWorkouts
+        },
         improvements: {
           workoutsImprovement,
           hoursImprovement: Math.round(hoursImprovement * 10) / 10,
