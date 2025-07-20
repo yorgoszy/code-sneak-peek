@@ -734,7 +734,7 @@ export const SubscriptionManagement: React.FC = () => {
               Νέα Συνδρομή
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-none">
+          <DialogContent className="rounded-none max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Δημιουργία Νέας Συνδρομής</DialogTitle>
             </DialogHeader>
@@ -915,7 +915,7 @@ export const SubscriptionManagement: React.FC = () => {
 
         {/* Edit Subscription Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="rounded-none">
+          <DialogContent className="rounded-none max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Επεξεργασία Συνδρομής</DialogTitle>
             </DialogHeader>
