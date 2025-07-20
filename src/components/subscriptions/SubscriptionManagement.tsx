@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck } from "lucide-react";
+import { ReceiptConfirmDialog } from './ReceiptConfirmDialog';
 
 interface SubscriptionType {
   id: string;
@@ -232,8 +233,49 @@ export const SubscriptionManagement: React.FC = () => {
       return;
     }
 
-    // Ερώτηση για απόδειξη
-    const createReceipt = confirm('Θέλετε να κοπεί απόδειξη για αυτή τη συνδρομή;');
+    const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
+    const selectedUserData = users.find(u => u.id === selectedUser);
+    
+    if (!subscriptionType || !selectedUserData) return;
+
+    const subscriptionStartDate = new Date(startDate);
+    const endDate = new Date(subscriptionStartDate);
+    endDate.setMonth(subscriptionStartDate.getMonth() + subscriptionType.duration_months);
+    endDate.setDate(subscriptionStartDate.getDate() - 1);
+
+    // Αποθήκευση δεδομένων για μετά την επιλογή απόδειξης
+    setPendingSubscriptionData({
+      subscriptionType,
+      selectedUserData,
+      subscriptionStartDate,
+      endDate
+    });
+
+    // Εμφάνιση dialog για απόδειξη
+    setShowReceiptDialog(true);
+  };
+
+    const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
+    const selectedUserData = users.find(u => u.id === selectedUser);
+    
+    if (!subscriptionType || !selectedUserData) return;
+
+    const subscriptionStartDate = new Date(startDate);
+    const endDate = new Date(subscriptionStartDate);
+    endDate.setMonth(subscriptionStartDate.getMonth() + subscriptionType.duration_months);
+    endDate.setDate(subscriptionStartDate.getDate() - 1);
+
+    // Αποθήκευση δεδομένων για μετά την επιλογή απόδειξης
+    setPendingSubscriptionData({
+      subscriptionType,
+      selectedUserData,
+      subscriptionStartDate,
+      endDate
+    });
+
+    // Εμφάνιση dialog για απόδειξη
+    setShowReceiptDialog(true);
+  };
 
     try {
       const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
@@ -246,6 +288,34 @@ export const SubscriptionManagement: React.FC = () => {
       endDate.setMonth(subscriptionStartDate.getMonth() + subscriptionType.duration_months);
       endDate.setDate(subscriptionStartDate.getDate() - 1); // Calendar month calculation
 
+      // Δημιουργία νέας συνδρομής
+      const { error: subscriptionError } = await supabase
+        .from('user_subscriptions')
+        .insert({
+          user_id: selectedUser,
+          subscription_type_id: selectedSubscriptionType,
+          start_date: startDate,
+          end_date: endDate.toISOString().split('T')[0],
+          status: 'active',
+          notes: notes
+        });
+
+      if (subscriptionError) throw subscriptionError;
+
+      // Ενημέρωση status χρήστη
+      const { error: userError } = await supabase
+        .from('app_users')
+        .update({ subscription_status: 'active' })
+        .eq('id', selectedUser);
+
+      if (userError) throw userError;
+
+  const handleCreateSubscription = async (createReceipt: boolean) => {
+    if (!pendingSubscriptionData) return;
+
+    const { subscriptionType, selectedUserData, subscriptionStartDate, endDate } = pendingSubscriptionData;
+
+    try {
       // Δημιουργία νέας συνδρομής
       const { error: subscriptionError } = await supabase
         .from('user_subscriptions')
@@ -452,14 +522,48 @@ export const SubscriptionManagement: React.FC = () => {
         throw new Error('Η συνδρομή δεν βρέθηκε');
       }
 
-      // Ερώτηση για απόδειξη
-      const createReceipt = confirm('Θέλετε να κοπεί απόδειξη για αυτή την ανανέωση;');
+      const userData = users.find(u => u.id === currentSubscription.user_id);
+      if (!userData) {
+        throw new Error('Ο χρήστης δεν βρέθηκε');
+      }
 
       // Υπολόγισε την ημερομηνία έναρξης της νέας συνδρομής (επόμενη μέρα της λήξης)
       const currentEndDate = new Date(currentSubscription.end_date);
       const newStartDate = new Date(currentEndDate);
       newStartDate.setDate(currentEndDate.getDate() + 1);
+      const newEndDate = new Date(newStartDate);
+      newEndDate.setMonth(newStartDate.getMonth() + currentSubscription.subscription_types.duration_months);
+      newEndDate.setDate(newStartDate.getDate() - 1);
 
+      // Αποθήκευση δεδομένων για τη διαδικασία ανανέωσης
+      setPendingSubscriptionData({
+        subscriptionId,
+        userData,
+        subscriptionType: currentSubscription.subscription_types,
+        newStartDate: newStartDate.toISOString().split('T')[0],
+        newEndDate,
+        isRenewal: true
+      });
+
+      // Εμφάνιση dialog για απόδειξη
+      setShowReceiptDialog(true);
+
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά την ανανέωση: " + error.message
+      });
+      setLoading(false);
+    }
+  };
+
+  const handleRenewSubscription = async (createReceipt: boolean) => {
+    if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) return;
+
+    const { subscriptionId, userData, subscriptionType, newStartDate, newEndDate } = pendingSubscriptionData;
+
+    try {
       // Use the database function to create renewal properly
       const { data: newSubscriptionId, error: renewError } = await supabase.rpc('renew_subscription', {
         original_subscription_id: subscriptionId
@@ -469,25 +573,16 @@ export const SubscriptionManagement: React.FC = () => {
 
       // Δημιουργία απόδειξης αν επιλέχθηκε
       if (createReceipt) {
-        const userData = users.find(u => u.id === currentSubscription.user_id);
-        if (userData) {
-          const newEndDate = new Date(newStartDate);
-          newEndDate.setMonth(newStartDate.getMonth() + currentSubscription.subscription_types.duration_months);
-          newEndDate.setDate(newStartDate.getDate() - 1);
-          
-          await createReceiptForSubscription(
-            userData, 
-            currentSubscription.subscription_types, 
-            newStartDate.toISOString().split('T')[0], 
-            newEndDate
-          );
-        }
+        await createReceiptForSubscription(userData, subscriptionType, newStartDate, newEndDate);
       }
 
       toast({
         title: "Επιτυχία",
         description: "Η συνδρομή ανανεώθηκε επιτυχώς"
       });
+      
+      setShowReceiptDialog(false);
+      setPendingSubscriptionData(null);
       await loadData();
     } catch (error: any) {
       toast({
@@ -495,6 +590,8 @@ export const SubscriptionManagement: React.FC = () => {
         title: "Σφάλμα",
         description: "Σφάλμα κατά την ανανέωση: " + error.message
       });
+      setShowReceiptDialog(false);
+      setPendingSubscriptionData(null);
     } finally {
       setLoading(false);
     }
@@ -990,6 +1087,22 @@ export const SubscriptionManagement: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Receipt Creation Dialog */}
+        <ReceiptConfirmDialog
+          isOpen={showReceiptDialog}
+          onClose={() => {
+            setShowReceiptDialog(false);
+            setPendingSubscriptionData(null);
+          }}
+          onConfirm={(createReceipt) => {
+            if (pendingSubscriptionData?.isRenewal) {
+              handleRenewSubscription(createReceipt);
+            } else {
+              handleCreateSubscription(createReceipt);
+            }
+          }}
+        />
       </div>
 
       {/* Στατιστικά */}
