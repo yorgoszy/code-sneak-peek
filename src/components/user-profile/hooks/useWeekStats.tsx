@@ -259,9 +259,9 @@ export const useWeekStats = (userId: string) => {
 
       const weeklyStats = {
         scheduledHours: Math.floor(totalScheduledMinutes / 60),
-        scheduledMinutes: totalScheduledMinutes % 60,
+        scheduledMinutes: totalScheduledMinutes, // Συνολικά λεπτά, όχι υπόλοιπο!
         actualHours: Math.floor(totalActualMinutes / 60),
-        actualMinutes: totalActualMinutes % 60,
+        actualMinutes: totalActualMinutes, // Συνολικά λεπτά, όχι υπόλοιπο!
         scheduledWorkouts: allWeeklyWorkouts,
         totalScheduledWorkouts: allWeeklyWorkouts,
         missedWorkouts: missedCount
