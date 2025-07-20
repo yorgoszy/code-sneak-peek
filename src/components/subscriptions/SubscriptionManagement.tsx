@@ -1335,29 +1335,34 @@ export const SubscriptionManagement: React.FC = () => {
                            <span className="text-gray-400">-</span>
                          )}
                        </td>
-                        <td className="p-2">
-                          {activeSubscription ? (
-                            <div className="text-sm">
-                              {(() => {
-                                const today = new Date();
-                                const endDate = new Date(activeSubscription.end_date);
-                                const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-                                
-                                if (remainingDays < 0) {
-                                  return <span className="text-red-600 font-medium">Έληξε</span>;
-                                } else if (remainingDays === 0) {
-                                  return <span className="text-orange-600 font-medium">Λήγει σήμερα</span>;
-                                } else if (remainingDays <= 7) {
-                                  return <span className="text-orange-600 font-medium">{remainingDays} ημέρες</span>;
-                                } else {
-                                  return <span className="text-green-600">{remainingDays} ημέρες</span>;
-                                }
-                              })()}
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </td>
+                         <td className="p-2">
+                           {activeSubscription ? (
+                             <div className="text-sm">
+                               {(() => {
+                                 // Εάν η συνδρομή είναι σε παύση, δείξε τις ημέρες παύσης
+                                 if (activeSubscription.is_paused && activeSubscription.paused_days_remaining) {
+                                   return <span className="text-orange-600 font-medium">{activeSubscription.paused_days_remaining} ημέρες</span>;
+                                 }
+                                 
+                                 const today = new Date();
+                                 const endDate = new Date(activeSubscription.end_date);
+                                 const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                                 
+                                 if (remainingDays < 0) {
+                                   return <span className="text-red-600 font-medium">Έληξε</span>;
+                                 } else if (remainingDays === 0) {
+                                   return <span className="text-orange-600 font-medium">Λήγει σήμερα</span>;
+                                 } else if (remainingDays <= 7) {
+                                   return <span className="text-orange-600 font-medium">{remainingDays} ημέρες</span>;
+                                 } else {
+                                   return <span className="text-green-600">{remainingDays} ημέρες</span>;
+                                 }
+                               })()}
+                             </div>
+                           ) : (
+                             <span className="text-gray-400">-</span>
+                           )}
+                         </td>
                         <td className="p-2">
                           <div className="flex gap-1">
                            {activeSubscription ? (

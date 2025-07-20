@@ -18,21 +18,31 @@ interface UserProfileStatsProps {
 export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const isMobile = useIsMobile();
   const [subscriptionDays, setSubscriptionDays] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
       try {
         const { data: activeSubscription, error } = await supabase
           .from('user_subscriptions')
-          .select('end_date, status')
+          .select('end_date, status, is_paused, paused_days_remaining')
           .eq('user_id', user.id)
           .eq('status', 'active')
-          .single();
+          .maybeSingle();
 
         if (error || !activeSubscription) {
           setSubscriptionDays(null);
           return;
         }
+
+        // Εάν η συνδρομή είναι σε παύση, δείξε τις ημέρες παύσης
+        if (activeSubscription.is_paused && activeSubscription.paused_days_remaining) {
+          setSubscriptionDays(activeSubscription.paused_days_remaining);
+          setIsPaused(true);
+          return;
+        }
+        
+        setIsPaused(false);
 
         const today = new Date();
         const endDate = new Date(activeSubscription.end_date);
@@ -82,21 +92,23 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           </div>
           <div className="text-center">
             <Clock className={`mx-auto text-[#00ffba] mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {subscriptionDays !== null ? (
-                subscriptionDays < 0 ? (
-                  <span className="text-red-600">Έληξε</span>
-                ) : subscriptionDays === 0 ? (
-                  <span className="text-orange-600">Σήμερα</span>
-                ) : subscriptionDays <= 7 ? (
-                  <span className="text-orange-600">{subscriptionDays}</span>
-                ) : (
-                  <span className="text-green-600">{subscriptionDays}</span>
-                )
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
-            </p>
+             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+               {subscriptionDays !== null ? (
+                 isPaused ? (
+                   <span className="text-orange-600">{subscriptionDays}</span>
+                 ) : subscriptionDays < 0 ? (
+                   <span className="text-red-600">Έληξε</span>
+                 ) : subscriptionDays === 0 ? (
+                   <span className="text-orange-600">Σήμερα</span>
+                 ) : subscriptionDays <= 7 ? (
+                   <span className="text-orange-600">{subscriptionDays}</span>
+                 ) : (
+                   <span className="text-green-600">{subscriptionDays}</span>
+                 )
+               ) : (
+                 <span className="text-gray-400">-</span>
+               )}
+             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Μέρες Συνδρομής</p>
           </div>
         </div>
