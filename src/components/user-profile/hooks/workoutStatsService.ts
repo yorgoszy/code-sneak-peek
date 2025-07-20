@@ -14,8 +14,10 @@ export const fetchWorkoutCompletions = async (userId: string, startDate: string,
 };
 
 export const calculateScheduledWorkoutMetrics = async (userId: string, startDate: string, endDate: string) => {
+  console.log('🔍 calculateScheduledWorkoutMetrics:', { userId, startDate, endDate });
   // Παίρνουμε τα completions για να δούμε τι έχει γίνει
   const completions = await fetchWorkoutCompletions(userId, startDate, endDate);
+  console.log('🔍 Completions found:', completions?.length || 0);
   
   // Παίρνουμε όλα τα assignments του χρήστη
   const { data: assignments } = await supabase
@@ -40,12 +42,17 @@ export const calculateScheduledWorkoutMetrics = async (userId: string, startDate
     .eq('user_id', userId)
     .eq('status', 'active');
 
-  if (!assignments) return {
-    scheduledWorkouts: 0,
-    totalTrainingHours: 0,
-    totalVolume: 0,
-    missedWorkouts: 0
-  };
+  if (!assignments) {
+    console.log('❌ No assignments found for user:', userId);
+    return {
+      scheduledWorkouts: 0,
+      totalTrainingHours: 0,
+      totalVolume: 0,
+      missedWorkouts: 0
+    };
+  }
+  
+  console.log('✅ Assignments found:', assignments.length);
 
   let scheduledWorkouts = 0;
   let totalVolume = 0;
@@ -54,6 +61,7 @@ export const calculateScheduledWorkoutMetrics = async (userId: string, startDate
   const today = new Date();
 
   for (const assignment of assignments) {
+    console.log('🔍 Processing assignment:', assignment.id, 'Training dates:', assignment.training_dates?.length || 0);
     if (!assignment.training_dates || !assignment.programs) continue;
 
     for (let i = 0; i < assignment.training_dates.length; i++) {
@@ -89,12 +97,20 @@ export const calculateScheduledWorkoutMetrics = async (userId: string, startDate
             
             if (isPast && (!completion || completion.status !== 'completed')) {
               missedWorkouts++;
+              console.log('❌ Missed workout found:', date, 'completion:', completion?.status);
             }
           }
         }
       }
     }
   }
+
+  console.log('📊 Final stats:', {
+    scheduledWorkouts,
+    totalTrainingHours: Math.round(totalHours * 10) / 10,
+    totalVolume: Math.round(totalVolume),
+    missedWorkouts
+  });
 
   return {
     scheduledWorkouts,
