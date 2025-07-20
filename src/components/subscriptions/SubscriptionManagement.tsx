@@ -983,6 +983,7 @@ export const SubscriptionManagement: React.FC = () => {
                   <th className="text-left p-2">Συνδρομή</th>
                   <th className="text-left p-2">Κατάσταση</th>
                   <th className="text-left p-2">Λήξη</th>
+                  <th className="text-left p-2">Υπόλοιπες Μέρες</th>
                   <th className="text-left p-2">Ενέργειες</th>
                 </tr>
               </thead>
@@ -1054,8 +1055,31 @@ export const SubscriptionManagement: React.FC = () => {
                            <span className="text-gray-400">-</span>
                          )}
                        </td>
-                       <td className="p-2">
-                         <div className="flex gap-1">
+                        <td className="p-2">
+                          {activeSubscription ? (
+                            <div className="text-sm">
+                              {(() => {
+                                const today = new Date();
+                                const endDate = new Date(activeSubscription.end_date);
+                                const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                                
+                                if (remainingDays < 0) {
+                                  return <span className="text-red-600 font-medium">Έληξε</span>;
+                                } else if (remainingDays === 0) {
+                                  return <span className="text-orange-600 font-medium">Λήγει σήμερα</span>;
+                                } else if (remainingDays <= 7) {
+                                  return <span className="text-orange-600 font-medium">{remainingDays} ημέρες</span>;
+                                } else {
+                                  return <span className="text-green-600">{remainingDays} ημέρες</span>;
+                                }
+                              })()}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="p-2">
+                          <div className="flex gap-1">
                            {activeSubscription ? (
                              <>
                                {/* Pause/Resume Button */}
