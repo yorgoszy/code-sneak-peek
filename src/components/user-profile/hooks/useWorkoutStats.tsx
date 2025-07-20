@@ -1,18 +1,18 @@
 
 import { useState, useEffect } from "react";
-import { fetchWorkoutCompletions, calculateWorkoutMetrics, getDateRanges } from "./workoutStatsService";
+import { fetchWorkoutCompletions, calculateWorkoutMetrics, calculateScheduledWorkoutMetrics, getDateRanges } from "./workoutStatsService";
 import { WorkoutStats } from "./workoutStatsTypes";
 
 export const useWorkoutStats = (userId: string) => {
   const [stats, setStats] = useState<WorkoutStats>({
     currentMonth: {
-      completedWorkouts: 0,
+      scheduledWorkouts: 0,
       totalTrainingHours: 0,
       totalVolume: 0,
       missedWorkouts: 0
     },
     previousMonth: {
-      completedWorkouts: 0,
+      scheduledWorkouts: 0,
       totalTrainingHours: 0,
       totalVolume: 0,
       missedWorkouts: 0
@@ -37,20 +37,14 @@ export const useWorkoutStats = (userId: string) => {
       
       const dateRanges = getDateRanges();
 
-      // Fetch workout completions for both months
-      const [currentMonthData, previousMonthData] = await Promise.all([
-        fetchWorkoutCompletions(userId, dateRanges.currentMonth.start, dateRanges.currentMonth.end),
-        fetchWorkoutCompletions(userId, dateRanges.previousMonth.start, dateRanges.previousMonth.end)
-      ]);
-
-      // Calculate metrics for both months
+      // Calculate metrics for both months using scheduled workouts
       const [currentMonthMetrics, previousMonthMetrics] = await Promise.all([
-        calculateWorkoutMetrics(currentMonthData),
-        calculateWorkoutMetrics(previousMonthData)
+        calculateScheduledWorkoutMetrics(userId, dateRanges.currentMonth.start, dateRanges.currentMonth.end),
+        calculateScheduledWorkoutMetrics(userId, dateRanges.previousMonth.start, dateRanges.previousMonth.end)
       ]);
 
       // Calculate improvements
-      const workoutsImprovement = currentMonthMetrics.completedWorkouts - previousMonthMetrics.completedWorkouts;
+      const workoutsImprovement = currentMonthMetrics.scheduledWorkouts - previousMonthMetrics.scheduledWorkouts;
       const hoursImprovement = currentMonthMetrics.totalTrainingHours - previousMonthMetrics.totalTrainingHours;
       const volumeImprovement = currentMonthMetrics.totalVolume - previousMonthMetrics.totalVolume;
 

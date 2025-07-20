@@ -5,7 +5,7 @@ import { Activity, Clock, Dumbbell, TrendingUp, TrendingDown, Minus, AlertTriang
 interface WorkoutStatsCardsProps {
   stats: {
     currentMonth: {
-      completedWorkouts: number;
+      scheduledWorkouts: number;
       totalTrainingHours: number;
       totalVolume: number;
       missedWorkouts: number;
@@ -59,7 +59,7 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="text-2xl font-bold">{stats.currentMonth.completedWorkouts}</div>
+          <div className="text-2xl font-bold">{stats.currentMonth.scheduledWorkouts}</div>
           <div className={`text-xs ${getTrendColor(stats.improvements.workoutsImprovement)}`}>
             {stats.improvements.workoutsImprovement > 0 ? '+' : ''}{stats.improvements.workoutsImprovement} από προηγ. μήνα
           </div>
