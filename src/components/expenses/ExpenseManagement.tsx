@@ -200,7 +200,7 @@ export const ExpenseManagement: React.FC = () => {
         <h2 className="text-2xl font-bold">Διαχείριση Εξόδων</h2>
         <Button
           onClick={() => setShowAddForm(true)}
-          className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+          className="bg-red-600 hover:bg-red-700 text-white rounded-none"
         >
           <Plus className="w-4 h-4 mr-2" />
           Προσθήκη Εξόδου
@@ -212,7 +212,7 @@ export const ExpenseManagement: React.FC = () => {
         <Card className="rounded-none">
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Receipt className="h-8 w-8 text-[#00ffba]" />
+              <Receipt className="h-8 w-8 text-red-600" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500">Σύνολο Εξόδων</p>
                 <p className="text-lg font-semibold">€{totalExpenses.toFixed(2)}</p>
@@ -224,7 +224,7 @@ export const ExpenseManagement: React.FC = () => {
         <Card className="rounded-none">
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Receipt className="h-8 w-8 text-[#00ffba]" />
+              <Receipt className="h-8 w-8 text-red-600" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500">Αριθμός Εξόδων</p>
                 <p className="text-lg font-semibold">{expenses.length}</p>
