@@ -788,6 +788,45 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          expense_date: string
+          expense_number: string
+          id: string
+          receipt_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          expense_date?: string
+          expense_number: string
+          id?: string
+          receipt_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          expense_date?: string
+          expense_number?: string
+          id?: string
+          receipt_number?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       functional_assessments: {
         Row: {
           assessment_type: string | null
@@ -1916,6 +1955,7 @@ export type Database = {
           subtotal: number
           total: number
           updated_at: string
+          user_id: string | null
           vat: number
         }
         Insert: {
@@ -1934,6 +1974,7 @@ export type Database = {
           subtotal?: number
           total?: number
           updated_at?: string
+          user_id?: string | null
           vat?: number
         }
         Update: {
@@ -1952,9 +1993,18 @@ export type Database = {
           subtotal?: number
           total?: number
           updated_at?: string
+          user_id?: string | null
           vat?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "receipts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_images: {
         Row: {

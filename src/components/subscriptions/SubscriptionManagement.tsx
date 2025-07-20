@@ -151,6 +151,77 @@ export const SubscriptionManagement: React.FC = () => {
     return `SUB-${year}${month}${day}-${timestamp}`;
   };
 
+  const generateReceiptNumber = async () => {
+    const { data, error } = await supabase
+      .from('receipts')
+      .select('receipt_number')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error('Error generating receipt number:', error);
+      return 'ΑΠΥ-0001';
+    }
+
+    if (!data || data.length === 0) {
+      return 'ΑΠΥ-0001';
+    }
+
+    const lastNumber = data[0].receipt_number;
+    const numberPart = parseInt(lastNumber.split('-')[1]);
+    return `ΑΠΥ-${String(numberPart + 1).padStart(4, '0')}`;
+  };
+
+  const createReceiptForSubscription = async (userData: any, subscriptionType: SubscriptionType, startDate: string, endDate: Date) => {
+    try {
+      const receiptNumber = await generateReceiptNumber();
+      const totalPrice = subscriptionType.price;
+      const netPrice = totalPrice / 1.13;
+      const vatAmount = totalPrice - netPrice;
+
+      const receiptData = {
+        receipt_number: receiptNumber,
+        customer_name: userData.name,
+        customer_email: userData.email,
+        user_id: userData.id,
+        items: [{
+          id: "1",
+          description: subscriptionType.name,
+          quantity: 1,
+          unitPrice: netPrice,
+          total: totalPrice,
+          vatRate: 13
+        }],
+        subtotal: netPrice,
+        vat: vatAmount,
+        total: totalPrice,
+        issue_date: new Date().toISOString().split('T')[0],
+        mydata_status: 'pending'
+      };
+
+      const { error: receiptError } = await supabase
+        .from('receipts')
+        .insert([receiptData]);
+
+      if (receiptError) throw receiptError;
+
+      console.log('✅ Απόδειξη δημιουργήθηκε επιτυχώς:', receiptNumber);
+      
+      toast({
+        title: "Επιτυχία",
+        description: `Η απόδειξη ${receiptNumber} δημιουργήθηκε επιτυχώς`,
+      });
+
+    } catch (error) {
+      console.error('❌ Σφάλμα δημιουργίας απόδειξης:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά τη δημιουργία απόδειξης",
+      });
+    }
+  };
+
   const createSubscription = async () => {
     if (!selectedUser || !selectedSubscriptionType) {
       toast({
@@ -160,6 +231,9 @@ export const SubscriptionManagement: React.FC = () => {
       });
       return;
     }
+
+    // Ερώτηση για απόδειξη
+    const createReceipt = confirm('Θέλετε να κοπεί απόδειξη για αυτή τη συνδρομή;');
 
     try {
       const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
@@ -193,6 +267,11 @@ export const SubscriptionManagement: React.FC = () => {
         .eq('id', selectedUser);
 
       if (userError) throw userError;
+
+      // Δημιουργία απόδειξης αν επιλέχθηκε
+      if (createReceipt) {
+        await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate);
+      }
 
       // Αποστολή απόδειξης με email
       try {
@@ -373,6 +452,9 @@ export const SubscriptionManagement: React.FC = () => {
         throw new Error('Η συνδρομή δεν βρέθηκε');
       }
 
+      // Ερώτηση για απόδειξη
+      const createReceipt = confirm('Θέλετε να κοπεί απόδειξη για αυτή την ανανέωση;');
+
       // Υπολόγισε την ημερομηνία έναρξης της νέας συνδρομής (επόμενη μέρα της λήξης)
       const currentEndDate = new Date(currentSubscription.end_date);
       const newStartDate = new Date(currentEndDate);
@@ -384,6 +466,23 @@ export const SubscriptionManagement: React.FC = () => {
       });
 
       if (renewError) throw renewError;
+
+      // Δημιουργία απόδειξης αν επιλέχθηκε
+      if (createReceipt) {
+        const userData = users.find(u => u.id === currentSubscription.user_id);
+        if (userData) {
+          const newEndDate = new Date(newStartDate);
+          newEndDate.setMonth(newStartDate.getMonth() + currentSubscription.subscription_types.duration_months);
+          newEndDate.setDate(newStartDate.getDate() - 1);
+          
+          await createReceiptForSubscription(
+            userData, 
+            currentSubscription.subscription_types, 
+            newStartDate.toISOString().split('T')[0], 
+            newEndDate
+          );
+        }
+      }
 
       toast({
         title: "Επιτυχία",
