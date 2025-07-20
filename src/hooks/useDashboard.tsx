@@ -53,8 +53,15 @@ export const useDashboard = () => {
         `)
       ]);
 
-      // Υπολογισμός ενεργών χρηστών από τα workout completions
-      const uniqueActiveUsers = new Set(recentActiveUsers?.map(item => item.user_id) || []);
+      // Υπολογισμός ενεργών χρηστών βάσει ενεργών συνδρομών
+      const { data: activeSubscriptionUsers } = await supabase
+        .from('user_subscriptions')
+        .select('user_id')
+        .eq('status', 'active')
+        .eq('is_paused', false)
+        .gte('end_date', todayString);
+      
+      const uniqueActiveUsers = new Set(activeSubscriptionUsers?.map(item => item.user_id) || []);
 
       // Φιλτράρισμα ενεργών προγραμμάτων με την ίδια λογική που χρησιμοποιεί το useActivePrograms
       const activePrograms = (allAssignments || []).filter(assignment => {

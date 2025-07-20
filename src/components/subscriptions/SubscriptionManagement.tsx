@@ -1063,7 +1063,7 @@ export const SubscriptionManagement: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Ενεργές Συνδρομές</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {userSubscriptions.filter(s => s.status === 'active').length}
+                  {userSubscriptions.filter(s => s.status === 'active' && !s.is_paused).length}
                 </p>
               </div>
             </div>
