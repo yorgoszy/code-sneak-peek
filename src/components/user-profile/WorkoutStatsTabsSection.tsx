@@ -46,7 +46,7 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
               <div className="bg-white p-6 border rounded-none">
                 <h4 className="text-md font-medium text-gray-700 mb-4">Προγραμματισμένες Ώρες</h4>
                 <div className="text-2xl font-semibold text-blue-600">
-                  {weekStats.scheduledHours}h
+                  {Math.floor(weekStats.scheduledMinutes / 60)}:{String(weekStats.scheduledMinutes % 60).padStart(2, '0')}
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
                   Αυτή την εβδομάδα
@@ -56,7 +56,7 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
               <div className="bg-white p-6 border rounded-none">
                 <h4 className="text-md font-medium text-gray-700 mb-4">Πραγματικές Ώρες</h4>
                 <div className="text-2xl font-semibold text-green-600">
-                  {weekStats.actualHours}h
+                  {Math.floor(weekStats.actualMinutes / 60)}:{String(weekStats.actualMinutes % 60).padStart(2, '0')}
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
                   Ολοκληρώθηκαν
@@ -66,12 +66,12 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
               <div className="bg-white p-6 border rounded-none">
                 <h4 className="text-md font-medium text-gray-700 mb-4">Διαφορά</h4>
                 <div className={`text-2xl font-semibold ${
-                  weekStats.actualHours >= weekStats.scheduledHours 
+                  weekStats.actualMinutes >= weekStats.scheduledMinutes 
                     ? 'text-green-600' 
                     : 'text-red-600'
                 }`}>
-                  {weekStats.actualHours >= weekStats.scheduledHours ? '+' : ''}
-                  {(weekStats.actualHours - weekStats.scheduledHours).toFixed(1)}h
+                  {weekStats.actualMinutes >= weekStats.scheduledMinutes ? '+' : ''}
+                  {Math.floor(Math.abs(weekStats.actualMinutes - weekStats.scheduledMinutes) / 60)}:{String(Math.abs(weekStats.actualMinutes - weekStats.scheduledMinutes) % 60).padStart(2, '0')}
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
                   Από προγραμματισμένες

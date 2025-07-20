@@ -8,6 +8,8 @@ interface WeekStats {
   scheduledWorkouts: number;
   totalScheduledWorkouts: number;
   missedWorkouts: number;
+  scheduledMinutes: number;
+  actualMinutes: number;
 }
 
 export const useWeekStats = (userId: string) => {
@@ -16,7 +18,9 @@ export const useWeekStats = (userId: string) => {
     actualHours: 0,
     scheduledWorkouts: 0,
     totalScheduledWorkouts: 0,
-    missedWorkouts: 0
+    missedWorkouts: 0,
+    scheduledMinutes: 0,
+    actualMinutes: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -133,7 +137,9 @@ export const useWeekStats = (userId: string) => {
         actualHours: Math.round((weeklyStats.actualMinutes / 60) * 10) / 10,
         scheduledWorkouts: weeklyStats.total,
         totalScheduledWorkouts: weeklyStats.total,
-        missedWorkouts: weeklyStats.missed
+        missedWorkouts: weeklyStats.missed,
+        scheduledMinutes: weeklyStats.scheduledMinutes,
+        actualMinutes: weeklyStats.actualMinutes
       });
 
     } catch (error) {
