@@ -43,59 +43,69 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="bg-white p-6 border rounded-none">
-                <h4 className="text-md font-medium text-gray-700 mb-4">Προγραμματισμένες Ώρες</h4>
-                <div className="text-2xl font-semibold text-blue-600">
-                  {Math.floor(weekStats.scheduledMinutes / 60)}:{String(weekStats.scheduledMinutes % 60).padStart(2, '0')}
+              <div className="bg-white p-6 border rounded-none flex flex-col justify-between h-32">
+                <h4 className="text-md font-medium text-gray-700">Προγραμματισμένες Ώρες</h4>
+                <div className="flex flex-col">
+                  <div className="text-2xl font-semibold text-blue-600">
+                    {Math.floor(weekStats.scheduledMinutes / 60)}:{String(weekStats.scheduledMinutes % 60).padStart(2, '0')}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Αυτή την εβδομάδα
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Αυτή την εβδομάδα
-                </p>
               </div>
               
-              <div className="bg-white p-6 border rounded-none">
-                <h4 className="text-md font-medium text-gray-700 mb-4">Πραγματικές Ώρες</h4>
-                <div className="text-2xl font-semibold text-green-600">
-                  {Math.floor(weekStats.actualMinutes / 60)}:{String(weekStats.actualMinutes % 60).padStart(2, '0')}
+              <div className="bg-white p-6 border rounded-none flex flex-col justify-between h-32">
+                <h4 className="text-md font-medium text-gray-700">Πραγματικές Ώρες</h4>
+                <div className="flex flex-col">
+                  <div className="text-2xl font-semibold text-green-600">
+                    {Math.floor(weekStats.actualMinutes / 60)}:{String(weekStats.actualMinutes % 60).padStart(2, '0')}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Ολοκληρώθηκαν
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Ολοκληρώθηκαν
-                </p>
               </div>
               
-              <div className="bg-white p-6 border rounded-none">
-                <h4 className="text-md font-medium text-gray-700 mb-4">Διαφορά</h4>
-                <div className={`text-2xl font-semibold ${
-                  weekStats.actualMinutes >= weekStats.scheduledMinutes 
-                    ? 'text-green-600' 
-                    : 'text-red-600'
-                }`}>
-                  {weekStats.actualMinutes >= weekStats.scheduledMinutes ? '+' : ''}
-                  {Math.floor(Math.abs(weekStats.actualMinutes - weekStats.scheduledMinutes) / 60)}:{String(Math.abs(weekStats.actualMinutes - weekStats.scheduledMinutes) % 60).padStart(2, '0')}
+              <div className="bg-white p-6 border rounded-none flex flex-col justify-between h-32">
+                <h4 className="text-md font-medium text-gray-700">Διαφορά</h4>
+                <div className="flex flex-col">
+                  <div className={`text-2xl font-semibold ${
+                    weekStats.actualMinutes >= weekStats.scheduledMinutes 
+                      ? 'text-green-600' 
+                      : 'text-red-600'
+                  }`}>
+                    {weekStats.actualMinutes >= weekStats.scheduledMinutes ? '+' : ''}
+                    {Math.floor(Math.abs(weekStats.actualMinutes - weekStats.scheduledMinutes) / 60)}:{String(Math.abs(weekStats.actualMinutes - weekStats.scheduledMinutes) % 60).padStart(2, '0')}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Από προγραμματισμένες
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Από προγραμματισμένες
-                </p>
               </div>
               
-              <div className="bg-white p-6 border rounded-none">
-                <h4 className="text-md font-medium text-gray-700 mb-4">Προπονήσεις</h4>
-                <div className="text-2xl font-semibold text-purple-600">
-                  {weekStats.scheduledWorkouts}
+              <div className="bg-white p-6 border rounded-none flex flex-col justify-between h-32">
+                <h4 className="text-md font-medium text-gray-700">Προπονήσεις</h4>
+                <div className="flex flex-col">
+                  <div className="text-2xl font-semibold text-purple-600">
+                    {weekStats.scheduledWorkouts}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Προγραμματισμένες
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Προγραμματισμένες
-                </p>
               </div>
               
-              <div className="bg-white p-6 border rounded-none">
-                <h4 className="text-md font-medium text-gray-700 mb-4">Χαμένες Προπονήσεις</h4>
-                <div className="text-2xl font-semibold text-orange-600">
-                  {weekStats.missedWorkouts}
+              <div className="bg-white p-6 border rounded-none flex flex-col justify-between h-32">
+                <h4 className="text-md font-medium text-gray-700">Χαμένες Προπονήσεις</h4>
+                <div className="flex flex-col">
+                  <div className="text-2xl font-semibold text-orange-600">
+                    {weekStats.missedWorkouts}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Αυτή την εβδομάδα
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Αυτή την εβδομάδα
-                </p>
               </div>
             </div>
           )}
