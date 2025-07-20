@@ -69,6 +69,7 @@ export const useWeekStats = (userId: string) => {
       // ΑΚΡΙΒΗ ΑΝΤΙΓΡΑΦΗ από UserProfileDailyProgram calculateWeeklyStats
       const calculateWeeklyStats = async () => {
         const weekStr = startOfWeek.toISOString().split('T')[0]; // YYYY-MM-DD
+        console.log('🔍 Week Stats: Starting calculation for week:', weekStr);
         
         // Βρες όλες τις προπονήσεις της εβδομάδας από τα training dates
         let allWeeklyWorkouts = 0;
@@ -79,12 +80,15 @@ export const useWeekStats = (userId: string) => {
         
         for (const program of userPrograms) {
           if (!program.training_dates) continue;
+          console.log('📅 Processing program:', program.id, 'training_dates:', program.training_dates);
           
           const weeklyDates = program.training_dates.filter(date => {
             if (!date) return false;
             const trainingDate = new Date(date);
             return trainingDate >= startOfWeek && trainingDate <= endOfWeek;
           });
+          
+          console.log('📅 Weekly dates for program:', program.id, weeklyDates);
           
           // Φέρε τα στοιχεία του προγράμματος για υπολογισμό χρόνου
           const { data: programData } = await supabase
@@ -184,10 +188,19 @@ export const useWeekStats = (userId: string) => {
                 });
                 
                 totalScheduledMinutes += Math.round(dayTimeSeconds / 60);
+                console.log('⏰ Day time for date:', date, 'minutes:', Math.round(dayTimeSeconds / 60));
               }
             }
           }
         }
+
+        console.log('📊 Final week stats:', { 
+          completed: completedCount, 
+          missed: missedCount, 
+          total: allWeeklyWorkouts,
+          scheduledMinutes: totalScheduledMinutes,
+          actualMinutes: totalActualMinutes
+        });
 
         return { 
           completed: completedCount, 
