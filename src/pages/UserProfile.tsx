@@ -124,7 +124,7 @@ const UserProfile = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-3 md:px-6 py-4">
+        <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-3 md:px-6 py-4 shadow-sm">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2 md:space-x-4 min-w-0">
               {/* Mobile menu button */}
