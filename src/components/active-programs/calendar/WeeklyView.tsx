@@ -48,14 +48,22 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
     setCurrentMonth(newDate);
   };
 
-  const getNameColor = (status: string) => {
+  const getNameColor = (status: string, workoutDate: string) => {
+    const today = new Date();
+    const workoutDateObj = new Date(workoutDate);
+    const isPast = workoutDateObj < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
     switch (status) {
       case 'completed':
         return 'text-[#00ffba] font-semibold';
       case 'missed':
         return 'text-red-500 font-semibold';
+      case 'pending':
+      case 'scheduled':
+        // Αν έχει περάσει η ημερομηνία και δεν έχει ολοκληρωθεί → κόκκινο
+        return isPast ? 'text-red-500 font-semibold' : 'text-blue-500';
       default:
-        return 'text-blue-500';
+        return isPast ? 'text-red-500 font-semibold' : 'text-blue-500';
     }
   };
 
@@ -111,7 +119,7 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
                 {dateProgramsWithStatus.slice(0, 6).map((program, i) => (
                   <div 
                     key={`${program.assignmentId}-${i}-${realtimeKey}`}
-                    className={`text-xs cursor-pointer hover:underline truncate ${getNameColor(program.status)}`}
+                    className={`text-xs cursor-pointer hover:underline truncate ${getNameColor(program.status, program.date)}`}
                     onClick={(e) => onUserNameClick(program, e)}
                     style={{ fontSize: '10px', lineHeight: '12px' }}
                   >

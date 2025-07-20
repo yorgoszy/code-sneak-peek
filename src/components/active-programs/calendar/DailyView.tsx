@@ -45,14 +45,22 @@ export const DailyView: React.FC<DailyViewProps> = ({
     setCurrentMonth(newDate);
   };
 
-  const getNameColor = (status: string) => {
+  const getNameColor = (status: string, workoutDate: string) => {
+    const today = new Date();
+    const workoutDateObj = new Date(workoutDate);
+    const isPast = workoutDateObj < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
     switch (status) {
       case 'completed':
         return 'text-[#00ffba] font-semibold';
       case 'missed':
         return 'text-red-500 font-semibold';
+      case 'pending':
+      case 'scheduled':
+        // Αν έχει περάσει η ημερομηνία και δεν έχει ολοκληρωθεί → κόκκινο
+        return isPast ? 'text-red-500 font-semibold' : 'text-blue-500';
       default:
-        return 'text-blue-500';
+        return isPast ? 'text-red-500 font-semibold' : 'text-blue-500';
     }
   };
 
@@ -102,7 +110,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
                   ${program.status === 'completed' ? 'border-[#00ffba] bg-[#00ffba]/5' : 
                     program.status === 'missed' ? 'border-red-500 bg-red-50' : 
                     'border-blue-500 bg-blue-50'}
-                  ${getNameColor(program.status)}
+                  ${getNameColor(program.status, program.date)}
                 `}
                 onClick={(e) => onUserNameClick(program, e)}
               >

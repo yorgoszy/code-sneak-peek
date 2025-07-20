@@ -35,18 +35,22 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
   const isTodayDate = isToday(date);
 
-  const getNameColor = (status: string) => {
+  const getNameColor = (status: string, workoutDate: string) => {
+    const today = new Date();
+    const workoutDateObj = new Date(workoutDate);
+    const isPast = workoutDateObj < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
     switch (status) {
       case 'completed':
         return 'text-[#00ffba] font-semibold';
       case 'missed':
         return 'text-red-500 font-semibold';
       case 'pending':
-        return 'text-blue-500';
       case 'scheduled':
-        return 'text-blue-500';
+        // Αν έχει περάσει η ημερομηνία και δεν έχει ολοκληρωθεί → κόκκινο
+        return isPast ? 'text-red-500 font-semibold' : 'text-blue-500';
       default:
-        return 'text-blue-500';
+        return isPast ? 'text-red-500 font-semibold' : 'text-blue-500';
     }
   };
 
@@ -90,7 +94,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       <div className="h-full flex flex-col items-start justify-center space-y-0.5 px-1 pt-4 pb-1 w-full">
         {programsForDate.slice(0, 5).map((program, i) => {
           const userKey = `${program.assignmentId}-${i}-${realtimeKey}-${program.status}-${Date.now()}`;
-          const colorClass = getNameColor(program.status);
+          const colorClass = getNameColor(program.status, program.date);
           return (
             <div 
               key={userKey}

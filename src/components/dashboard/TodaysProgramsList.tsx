@@ -25,7 +25,20 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
     const completion = completions.find(c => 
       c.assignment_id === assignmentId && c.scheduled_date === todayStr
     );
-    return completion?.status || 'scheduled';
+    
+    const currentStatus = completion?.status || 'scheduled';
+    
+    // Ελέγχουμε αν η ημερομηνία έχει περάσει
+    const today = new Date();
+    const workoutDate = new Date(todayStr);
+    const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    // Αν έχει περάσει η μέρα και δεν έχει ολοκληρωθεί → missed
+    if (isPast && currentStatus !== 'completed') {
+      return 'missed';
+    }
+    
+    return currentStatus;
   };
 
   return (
@@ -33,6 +46,7 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
       {programs.map((assignment) => {
         const status = getWorkoutStatus(assignment.id);
         const isCompleted = status === 'completed';
+        const isMissed = status === 'missed';
 
         return (
           <div 
@@ -63,10 +77,12 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
                 className={`rounded-none text-xs ${
                   isCompleted 
                     ? 'bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]' 
+                    : isMissed
+                    ? 'bg-red-100 text-red-600 border-red-300'
                     : 'bg-blue-50 text-blue-600 border-blue-200'
                 }`}
               >
-                {isCompleted ? 'Completed' : 'Scheduled'}
+                {isCompleted ? 'Completed' : isMissed ? 'Missed' : 'Scheduled'}
               </Badge>
 
               <Button
@@ -78,6 +94,8 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
               >
                 {isCompleted ? (
                   <CheckCircle className="h-4 w-4 text-[#00ffba]" />
+                ) : isMissed ? (
+                  <CheckCircle className="h-4 w-4 text-red-600" />
                 ) : (
                   <Play className="h-4 w-4" />
                 )}

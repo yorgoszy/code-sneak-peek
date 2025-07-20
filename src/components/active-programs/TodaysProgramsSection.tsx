@@ -25,7 +25,20 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
     const completion = workoutCompletions.find(c => 
       c.assignment_id === assignment.id && c.scheduled_date === todayStr
     );
-    return completion?.status || 'scheduled';
+    
+    const currentStatus = completion?.status || 'scheduled';
+    
+    // Ελέγχουμε αν η ημερομηνία έχει περάσει
+    const today = new Date();
+    const workoutDate = new Date(todayStr);
+    const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    // Αν έχει περάσει η μέρα και δεν έχει ολοκληρωθεί → missed
+    if (isPast && currentStatus !== 'completed') {
+      return 'missed';
+    }
+    
+    return currentStatus;
   };
 
   // Μετατρέπουμε το todayStr σε Date
