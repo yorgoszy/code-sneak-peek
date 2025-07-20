@@ -495,6 +495,7 @@ export const SubscriptionManagement: React.FC = () => {
 
       // Εμφάνιση dialog για απόδειξη
       setShowReceiptDialog(true);
+      setLoading(false); // Επαναφορά loading state
 
     } catch (error: any) {
       toast({
