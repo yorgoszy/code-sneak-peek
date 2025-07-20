@@ -43,7 +43,7 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="bg-white p-6 border rounded-none flex flex-col h-32">
+              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
                 <h4 className="text-md font-medium text-gray-700 mb-2">Προγραμματισμένες Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-2xl font-semibold text-blue-600 mb-1">
@@ -55,7 +55,7 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
                 </div>
               </div>
               
-              <div className="bg-white p-6 border rounded-none flex flex-col h-32">
+              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
                 <h4 className="text-md font-medium text-gray-700 mb-2">Πραγματικές Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-2xl font-semibold text-green-600 mb-1">
@@ -67,7 +67,7 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
                 </div>
               </div>
               
-              <div className="bg-white p-6 border rounded-none flex flex-col h-32">
+              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
                 <h4 className="text-md font-medium text-gray-700 mb-2">Διαφορά</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className={`text-2xl font-semibold mb-1 ${
@@ -84,7 +84,7 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
                 </div>
               </div>
               
-              <div className="bg-white p-6 border rounded-none flex flex-col h-32">
+              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
                 <h4 className="text-md font-medium text-gray-700 mb-2">Προπονήσεις</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-2xl font-semibold text-purple-600 mb-1">
@@ -96,7 +96,7 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
                 </div>
               </div>
               
-              <div className="bg-white p-6 border rounded-none flex flex-col h-32">
+              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
                 <h4 className="text-md font-medium text-gray-700 mb-2">Χαμένες Προπονήσεις</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-2xl font-semibold text-orange-600 mb-1">
