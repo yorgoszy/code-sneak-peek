@@ -5,16 +5,18 @@ import { supabase } from "@/integrations/supabase/client";
 interface WeekStats {
   scheduledHours: number;
   actualHours: number;
-  completedWorkouts: number;
+  scheduledWorkouts: number;
   totalScheduledWorkouts: number;
+  missedWorkouts: number;
 }
 
 export const useWeekStats = (userId: string) => {
   const [stats, setStats] = useState<WeekStats>({
     scheduledHours: 0,
     actualHours: 0,
-    completedWorkouts: 0,
-    totalScheduledWorkouts: 0
+    scheduledWorkouts: 0,
+    totalScheduledWorkouts: 0,
+    missedWorkouts: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -38,14 +40,13 @@ export const useWeekStats = (userId: string) => {
       endOfWeek.setDate(startOfWeek.getDate() + 6); // Κυριακή
       endOfWeek.setHours(23, 59, 59, 999);
 
-      // Ανάκτηση ολοκληρωμένων προπονήσεων της εβδομάδας
+      // Ανάκτηση όλων των workout completions της εβδομάδας
       const { data: completions } = await supabase
         .from('workout_completions')
         .select('*')
         .eq('user_id', userId)
-        .eq('status', 'completed')
-        .gte('completed_date', startOfWeek.toISOString().split('T')[0])
-        .lte('completed_date', endOfWeek.toISOString().split('T')[0]);
+        .gte('scheduled_date', startOfWeek.toISOString().split('T')[0])
+        .lte('scheduled_date', endOfWeek.toISOString().split('T')[0]);
 
       // Ανάκτηση προγραμματισμένων προπονήσεων για την εβδομάδα - διχωρισμός σε ξεχωριστά queries
       const { data: assignments } = await supabase
@@ -57,6 +58,7 @@ export const useWeekStats = (userId: string) => {
       let totalScheduledHours = 0;
       let totalActualMinutes = 0;
       let totalScheduledWorkouts = 0;
+      let missedWorkouts = 0;
 
       if (assignments && assignments.length > 0) {
         // Για κάθε assignment, ανάκτηση των program details
@@ -81,6 +83,14 @@ export const useWeekStats = (userId: string) => {
               if (trainingDate >= startOfWeek && trainingDate <= endOfWeek) {
                 totalScheduledWorkouts++;
                 
+                // Έλεγχος αν είναι missed workout
+                const completion = completions?.find(c => c.scheduled_date === date);
+                const isPast = trainingDate < new Date();
+                
+                if (isPast && (!completion || completion.status !== 'completed')) {
+                  missedWorkouts++;
+                }
+                
                 // Βρες την αντίστοιχη ημέρα προγράμματος
                 const dayOfWeek = trainingDate.getDay();
                 const programDay = programData.program_weeks?.[0]?.program_days?.find(
@@ -99,8 +109,9 @@ export const useWeekStats = (userId: string) => {
         }
       }
 
-      // Υπολογισμός πραγματικών ωρών
-      completions?.forEach(completion => {
+      // Υπολογισμός πραγματικών ωρών από completed workouts
+      const completedCompletions = completions?.filter(c => c.status === 'completed') || [];
+      completedCompletions.forEach(completion => {
         if (completion.actual_duration_minutes) {
           totalActualMinutes += completion.actual_duration_minutes;
         } else if (completion.start_time && completion.end_time) {
@@ -114,8 +125,9 @@ export const useWeekStats = (userId: string) => {
       setStats({
         scheduledHours: Math.round(totalScheduledHours * 10) / 10,
         actualHours: Math.round((totalActualMinutes / 60) * 10) / 10,
-        completedWorkouts: completions?.length || 0,
-        totalScheduledWorkouts
+        scheduledWorkouts: totalScheduledWorkouts,
+        totalScheduledWorkouts,
+        missedWorkouts
       });
 
     } catch (error) {

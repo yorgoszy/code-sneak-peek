@@ -42,7 +42,7 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
               <p className="text-gray-500">Φόρτωση στατιστικών εβδομάδας...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="bg-white p-6 border rounded-none">
                 <h4 className="text-md font-medium text-gray-700 mb-4">Προγραμματισμένες Ώρες</h4>
                 <div className="text-2xl font-semibold text-blue-600">
@@ -81,10 +81,20 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
               <div className="bg-white p-6 border rounded-none">
                 <h4 className="text-md font-medium text-gray-700 mb-4">Προπονήσεις</h4>
                 <div className="text-2xl font-semibold text-purple-600">
-                  {weekStats.completedWorkouts}/{weekStats.totalScheduledWorkouts}
+                  {weekStats.scheduledWorkouts}
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
-                  Ολοκληρωμένες
+                  Προγραμματισμένες
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 border rounded-none">
+                <h4 className="text-md font-medium text-gray-700 mb-4">Χαμένες Προπονήσεις</h4>
+                <div className="text-2xl font-semibold text-orange-600">
+                  {weekStats.missedWorkouts}
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Αυτή την εβδομάδα
                 </p>
               </div>
             </div>
