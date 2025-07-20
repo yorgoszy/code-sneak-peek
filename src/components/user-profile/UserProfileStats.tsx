@@ -1,7 +1,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfileStatsProps {
   user: any;
@@ -15,12 +17,44 @@ interface UserProfileStatsProps {
 
 export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const isMobile = useIsMobile();
+  const [subscriptionDays, setSubscriptionDays] = useState<number | null>(null);
+  
+  useEffect(() => {
+    const fetchSubscriptionData = async () => {
+      try {
+        const { data: activeSubscription, error } = await supabase
+          .from('user_subscriptions')
+          .select('end_date, status')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .single();
+
+        if (error || !activeSubscription) {
+          setSubscriptionDays(null);
+          return;
+        }
+
+        const today = new Date();
+        const endDate = new Date(activeSubscription.end_date);
+        const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+        
+        setSubscriptionDays(remainingDays);
+      } catch (error) {
+        console.error('Error fetching subscription data:', error);
+        setSubscriptionDays(null);
+      }
+    };
+
+    if (user?.id) {
+      fetchSubscriptionData();
+    }
+  }, [user?.id]);
   
   return (
     <Card className="rounded-none">
       <CardContent className={isMobile ? "pt-4" : "pt-6"}>
         <div className={`grid gap-4 ${
-          isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'
+          isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-5'
         }`}>
           {user.role === 'trainer' && (
             <div className="text-center">
@@ -45,6 +79,25 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <CreditCard className={`mx-auto text-orange-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.paymentsCount}</p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Πληρωμές</p>
+          </div>
+          <div className="text-center">
+            <Clock className={`mx-auto text-[#00ffba] mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {subscriptionDays !== null ? (
+                subscriptionDays < 0 ? (
+                  <span className="text-red-600">Έληξε</span>
+                ) : subscriptionDays === 0 ? (
+                  <span className="text-orange-600">Σήμερα</span>
+                ) : subscriptionDays <= 7 ? (
+                  <span className="text-orange-600">{subscriptionDays}</span>
+                ) : (
+                  <span className="text-green-600">{subscriptionDays}</span>
+                )
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Μέρες Συνδρομής</p>
           </div>
         </div>
       </CardContent>
