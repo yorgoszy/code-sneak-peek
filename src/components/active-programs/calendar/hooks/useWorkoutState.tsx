@@ -83,23 +83,42 @@ export const useWorkoutState = (
       
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
       
+      // Υπολογισμός διάρκειας από το χρονόμετρο
+      const actualDurationMinutes = Math.round(elapsedTime / 60);
+      
       console.log('🔄 Updating workout completion:', {
         assignment_id: program.id,
         scheduled_date: selectedDateStr,
-        user_id: program.app_users?.id || program.user_id
+        user_id: program.app_users?.id || program.user_id,
+        actual_duration_minutes: actualDurationMinutes
       });
 
-      // Χρησιμοποιούμε το updateWorkoutStatus που είναι πιο αξιόπιστο
-      await updateWorkoutStatus(program.id, selectedDateStr, 'completed', 'green');
+      // Ενημέρωση του workout completion με τη διάρκεια από το χρονόμετρο
+      const { error } = await supabase
+        .from('workout_completions')
+        .update({
+          status: 'completed',
+          status_color: 'green',
+          completed_date: selectedDateStr,
+          actual_duration_minutes: actualDurationMinutes,
+          end_time: new Date().toISOString()
+        })
+        .eq('assignment_id', program.id)
+        .eq('scheduled_date', selectedDateStr);
+
+      if (error) {
+        console.error('❌ Error updating workout completion:', error);
+        throw error;
+      }
       
-      console.log('✅ Workout completion updated successfully with GREEN color for:', program.app_users?.name);
+      console.log('✅ Workout completion updated successfully with duration:', actualDurationMinutes, 'minutes');
       
       // Αφαίρεση από τις ενεργές προπονήσεις
       if (workoutId) {
         removeFromActiveWorkouts(workoutId);
       }
       
-      toast.success(`Προπόνηση ολοκληρώθηκε για ${program.app_users?.name}!`);
+      toast.success(`Προπόνηση ολοκληρώθηκε για ${program.app_users?.name}! Διάρκεια: ${actualDurationMinutes} λεπτά`);
       
       // ΑΜΕΣΗ ανανέωση
       if (onRefresh) {
@@ -118,7 +137,7 @@ export const useWorkoutState = (
       console.error('❌ Error completing workout:', error);
       toast.error(`Σφάλμα κατά την ολοκλήρωση της προπόνησης για ${program.app_users?.name}: ${(error as Error).message}`);
     }
-  }, [program, selectedDate, currentWorkout, onRefresh, onClose, removeFromActiveWorkouts, workoutId, updateWorkoutStatus]);
+  }, [program, selectedDate, currentWorkout, elapsedTime, onRefresh, onClose, removeFromActiveWorkouts, workoutId]);
 
   const handleCancelWorkout = useCallback(() => {
     if (!program || !selectedDate || !workoutId) return;

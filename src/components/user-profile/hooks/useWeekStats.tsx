@@ -40,94 +40,98 @@ export const useWeekStats = (userId: string) => {
       endOfWeek.setDate(startOfWeek.getDate() + 6); // Κυριακή
       endOfWeek.setHours(23, 59, 59, 999);
 
-      // Ανάκτηση όλων των workout completions της εβδομάδας
-      const { data: completions } = await supabase
-        .from('workout_completions')
-        .select('*')
-        .eq('user_id', userId)
-        .gte('scheduled_date', startOfWeek.toISOString().split('T')[0])
-        .lte('scheduled_date', endOfWeek.toISOString().split('T')[0]);
-
-      // Ανάκτηση προγραμματισμένων προπονήσεων για την εβδομάδα - διχωρισμός σε ξεχωριστά queries
-      const { data: assignments } = await supabase
+      // Φέρε τα προγράμματα του χρήστη
+      const { data: userPrograms } = await supabase
         .from('program_assignments')
         .select('id, program_id, training_dates')
         .eq('user_id', userId)
         .eq('status', 'active');
 
-      let totalScheduledHours = 0;
-      let totalActualMinutes = 0;
-      let totalScheduledWorkouts = 0;
-      let missedWorkouts = 0;
-
-      if (assignments && assignments.length > 0) {
-        // Για κάθε assignment, ανάκτηση των program details
-        for (const assignment of assignments) {
-          const { data: programData } = await supabase
-            .from('programs')
-            .select(`
-              id,
-              program_weeks(
-                program_days(
-                  estimated_duration_minutes,
-                  day_number
-                )
-              )
-            `)
-            .eq('id', assignment.program_id)
-            .single();
-
-          if (programData && assignment.training_dates) {
-            assignment.training_dates.forEach((date: string) => {
-              const trainingDate = new Date(date);
-              if (trainingDate >= startOfWeek && trainingDate <= endOfWeek) {
-                totalScheduledWorkouts++;
-                
-                // Έλεγχος αν είναι missed workout
-                const completion = completions?.find(c => c.scheduled_date === date);
-                const isPast = trainingDate < new Date();
-                
-                if (isPast && (!completion || completion.status !== 'completed')) {
-                  missedWorkouts++;
-                }
-                
-                // Βρες την αντίστοιχη ημέρα προγράμματος
-                const dayOfWeek = trainingDate.getDay();
-                const programDay = programData.program_weeks?.[0]?.program_days?.find(
-                  (day: any) => day.day_number === dayOfWeek
-                );
-
-                if (programDay?.estimated_duration_minutes) {
-                  totalScheduledHours += programDay.estimated_duration_minutes / 60;
-                } else {
-                  // Εκτίμηση διάρκειας 60 λεπτά αν δεν υπάρχει καθορισμένη διάρκεια
-                  totalScheduledHours += 1;
-                }
-              }
-            });
-          }
-        }
+      if (!userPrograms?.length) {
+        setLoading(false);
+        return;
       }
 
-      // Υπολογισμός πραγματικών ωρών από completed workouts
-      const completedCompletions = completions?.filter(c => c.status === 'completed') || [];
-      completedCompletions.forEach(completion => {
-        if (completion.actual_duration_minutes) {
-          totalActualMinutes += completion.actual_duration_minutes;
-        } else if (completion.start_time && completion.end_time) {
-          const start = new Date(completion.start_time);
-          const end = new Date(completion.end_time);
-          const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-          totalActualMinutes += durationMinutes;
+      // Φέρε τα workout completions
+      const assignmentIds = userPrograms.map(p => p.id);
+      const { data: workoutCompletions } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .in('assignment_id', assignmentIds);
+
+      // ΑΚΡΙΒΗ ΑΝΤΙΓΡΑΦΗ από UserProfileDailyProgram calculateWeeklyStats
+      const calculateWeeklyStats = () => {
+        const weekStr = startOfWeek.toISOString().split('T')[0]; // YYYY-MM-DD
+        
+        // Βρες όλες τις προπονήσεις της εβδομάδας από τα training dates
+        let allWeeklyWorkouts = 0;
+        let completedCount = 0;
+        let missedCount = 0;
+        let totalScheduledMinutes = 0;
+        let totalActualMinutes = 0;
+        
+        for (const program of userPrograms) {
+          if (!program.training_dates) continue;
+          
+          const weeklyDates = program.training_dates.filter(date => {
+            if (!date) return false;
+            const trainingDate = new Date(date);
+            return trainingDate >= startOfWeek && trainingDate <= endOfWeek;
+          });
+          
+          for (const date of weeklyDates) {
+            allWeeklyWorkouts++;
+            
+            const completion = workoutCompletions?.find(c => 
+              c.assignment_id === program.id && c.scheduled_date === date
+            );
+            
+            if (completion?.status === 'completed') {
+              completedCount++;
+              
+              // Υπολογισμός πραγματικών ωρών
+              if (completion.actual_duration_minutes) {
+                totalActualMinutes += completion.actual_duration_minutes;
+              } else if (completion.start_time && completion.end_time) {
+                const start = new Date(completion.start_time);
+                const end = new Date(completion.end_time);
+                const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+                totalActualMinutes += durationMinutes;
+              }
+            } else {
+              // Έλεγχος αν έχει περάσει η ημερομηνία
+              const workoutDate = new Date(date);
+              const today = new Date();
+              const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+              
+              if (isPast || completion?.status === 'missed') {
+                missedCount++;
+              }
+            }
+            
+            // Υπολογισμός προγραμματισμένων ωρών από τα program data
+            // Εκτίμηση 60 λεπτά ανά προπόνηση
+            totalScheduledMinutes += 60;
+          }
         }
-      });
+
+        return { 
+          completed: completedCount, 
+          missed: missedCount, 
+          total: allWeeklyWorkouts,
+          scheduledMinutes: totalScheduledMinutes,
+          actualMinutes: totalActualMinutes
+        };
+      };
+
+      const weeklyStats = calculateWeeklyStats();
 
       setStats({
-        scheduledHours: Math.round(totalScheduledHours * 10) / 10,
-        actualHours: Math.round((totalActualMinutes / 60) * 10) / 10,
-        scheduledWorkouts: totalScheduledWorkouts,
-        totalScheduledWorkouts,
-        missedWorkouts
+        scheduledHours: Math.round((weeklyStats.scheduledMinutes / 60) * 10) / 10,
+        actualHours: Math.round((weeklyStats.actualMinutes / 60) * 10) / 10,
+        scheduledWorkouts: weeklyStats.total,
+        totalScheduledWorkouts: weeklyStats.total,
+        missedWorkouts: weeklyStats.missed
       });
 
     } catch (error) {
