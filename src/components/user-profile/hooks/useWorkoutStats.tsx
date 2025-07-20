@@ -35,35 +35,99 @@ export const useWorkoutStats = (userId: string) => {
     try {
       setLoading(true);
       
-      // Ακριβής mirroring από UserProfileDailyProgram calculateMonthlyStats
+      const { supabase } = await import("@/integrations/supabase/client");
+
+      // Φέρε τα προγράμματα του χρήστη
+      const { data: userPrograms } = await supabase
+        .from('program_assignments')
+        .select('id, training_dates')
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      if (!userPrograms?.length) {
+        setLoading(false);
+        return;
+      }
+
+      // Φέρε τα workout completions
+      const assignmentIds = userPrograms.map(p => p.id);
+      const { data: workoutCompletions } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .in('assignment_id', assignmentIds);
+
+      // ΑΚΡΙΒΗ ΑΝΤΙΓΡΑΦΗ από UserProfileDailyProgram calculateMonthlyStats
+      const calculateMonthlyStats = (monthDate: Date) => {
+        const monthStr = format(monthDate, 'yyyy-MM');
+        
+        // Βρες όλες τις προπονήσεις του μήνα από τα training dates
+        let allMonthlyWorkouts = 0;
+        let completedCount = 0;
+        let missedCount = 0;
+        
+        for (const program of userPrograms) {
+          if (!program.training_dates) continue;
+          
+          const monthlyDates = program.training_dates.filter(date => 
+            date && date.startsWith(monthStr)
+          );
+          
+          for (const date of monthlyDates) {
+            allMonthlyWorkouts++;
+            
+            const completion = workoutCompletions?.find(c => 
+              c.assignment_id === program.id && c.scheduled_date === date
+            );
+            
+            if (completion?.status === 'completed') {
+              completedCount++;
+            } else {
+              // Έλεγχος αν έχει περάσει η ημερομηνία
+              const workoutDate = new Date(date);
+              const today = new Date();
+              const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+              
+              if (isPast || completion?.status === 'missed') {
+                missedCount++;
+              }
+            }
+          }
+        }
+
+        return { 
+          completed: completedCount, 
+          missed: missedCount, 
+          total: allMonthlyWorkouts 
+        };
+      };
+
+      // Υπολογισμός για τρέχον και προηγούμενο μήνα
       const currentMonth = new Date();
       const previousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
       
-      const currentMonthStats = await calculateMonthlyStatsLikeCalendar(userId, currentMonth);
-      const previousMonthStats = await calculateMonthlyStatsLikeCalendar(userId, previousMonth);
+      const currentMonthStats = calculateMonthlyStats(currentMonth);
+      const previousMonthStats = calculateMonthlyStats(previousMonth);
 
       // Calculate improvements
       const workoutsImprovement = currentMonthStats.completed - previousMonthStats.completed;
-      const hoursImprovement = currentMonthStats.totalHours - previousMonthStats.totalHours;
-      const volumeImprovement = currentMonthStats.totalVolume - previousMonthStats.totalVolume;
 
       setStats({
         currentMonth: {
           completedWorkouts: currentMonthStats.completed,
-          totalTrainingHours: currentMonthStats.totalHours,
-          totalVolume: currentMonthStats.totalVolume,
+          totalTrainingHours: 0, // Placeholder
+          totalVolume: 0, // Placeholder
           missedWorkouts: currentMonthStats.missed
         },
         previousMonth: {
           completedWorkouts: previousMonthStats.completed,
-          totalTrainingHours: previousMonthStats.totalHours,
-          totalVolume: previousMonthStats.totalVolume,
+          totalTrainingHours: 0, // Placeholder
+          totalVolume: 0, // Placeholder
           missedWorkouts: previousMonthStats.missed
         },
         improvements: {
           workoutsImprovement,
-          hoursImprovement: Math.round(hoursImprovement * 10) / 10,
-          volumeImprovement: Math.round(volumeImprovement)
+          hoursImprovement: 0, // Placeholder
+          volumeImprovement: 0 // Placeholder
         }
       });
 
@@ -72,87 +136,6 @@ export const useWorkoutStats = (userId: string) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Ακριβής copy από UserProfileDailyProgram calculateMonthlyStats
-  const calculateMonthlyStatsLikeCalendar = async (userId: string, month: Date) => {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const monthStr = format(month, 'yyyy-MM');
-    
-    // Βρες όλα τα προγράμματα του χρήστη
-    const { data: userPrograms } = await supabase
-      .from('program_assignments')
-      .select(`
-        id,
-        training_dates,
-        programs!inner(
-          program_weeks(
-            program_days(
-              estimated_duration_minutes
-            )
-          )
-        )
-      `)
-      .eq('user_id', userId)
-      .eq('status', 'active');
-
-    if (!userPrograms?.length) {
-      return { completed: 0, missed: 0, total: 0, totalHours: 0, totalVolume: 0 };
-    }
-
-    // Βρες όλα τα workout completions
-    const assignmentIds = userPrograms.map(p => p.id);
-    const { data: workoutCompletions } = await supabase
-      .from('workout_completions')
-      .select('*')
-      .in('assignment_id', assignmentIds);
-    
-    // Βρες όλες τις προπονήσεις του μήνα από τα training dates
-    let allMonthlyWorkouts = 0;
-    let completedCount = 0;
-    let missedCount = 0;
-    let totalHours = 0;
-    let totalVolume = 0;
-    
-    for (const program of userPrograms) {
-      if (!program.training_dates) continue;
-      
-      const monthlyDates = program.training_dates.filter(date => 
-        date && date.startsWith(monthStr)
-      );
-      
-      for (const date of monthlyDates) {
-        allMonthlyWorkouts++;
-        
-        const completion = workoutCompletions?.find(c => 
-          c.assignment_id === program.id && c.scheduled_date === date
-        );
-        
-        if (completion?.status === 'completed') {
-          completedCount++;
-          if (completion.actual_duration_minutes) {
-            totalHours += completion.actual_duration_minutes / 60;
-          }
-        } else {
-          // Έλεγχος αν έχει περάσει η ημερομηνία
-          const workoutDate = new Date(date);
-          const today = new Date();
-          const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-          
-          if (isPast || completion?.status === 'missed') {
-            missedCount++;
-          }
-        }
-      }
-    }
-
-    return { 
-      completed: completedCount, 
-      missed: missedCount, 
-      total: allMonthlyWorkouts,
-      totalHours: Math.round(totalHours * 10) / 10,
-      totalVolume: 0 // Placeholder για τώρα
-    };
   };
 
   return { stats, loading };
