@@ -126,7 +126,23 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     const dayProgram = getDayProgram(date);
     if (!dayProgram) return null;
     
-    return dayProgram.status;
+    // Έλεγχος αν έχει περάσει η ημερομηνία και δεν έχει ολοκληρωθεί
+    const today = new Date();
+    const workoutDate = new Date(date);
+    const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    // Αν έχει status από completion record, χρησιμοποίησε αυτό
+    if (dayProgram.status === 'completed') {
+      return 'completed';
+    } else if (dayProgram.status === 'missed') {
+      return 'missed';
+    } else if (isPast && dayProgram.status !== 'completed') {
+      // Αν έχει περάσει η ημερομηνία και δεν έχει ολοκληρωθεί → missed
+      return 'missed';
+    } else {
+      // Μελλοντική ή σημερινή προπόνηση που δεν έχει ολοκληρωθεί
+      return 'scheduled';
+    }
   };
 
   const handleRefresh = async () => {
@@ -141,15 +157,45 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     const currentMonth = new Date();
     const monthStr = format(currentMonth, 'yyyy-MM');
     
-    const monthlyCompletions = workoutCompletions.filter(c => 
-      c.scheduled_date && c.scheduled_date.startsWith(monthStr)
-    );
+    // Βρες όλες τις προπονήσεις του μήνα από τα training dates
+    let allMonthlyWorkouts = 0;
+    let completedCount = 0;
+    let missedCount = 0;
+    
+    for (const program of userPrograms) {
+      if (!program.training_dates) continue;
+      
+      const monthlyDates = program.training_dates.filter(date => 
+        date && date.startsWith(monthStr)
+      );
+      
+      for (const date of monthlyDates) {
+        allMonthlyWorkouts++;
+        
+        const completion = workoutCompletions.find(c => 
+          c.assignment_id === program.id && c.scheduled_date === date
+        );
+        
+        if (completion?.status === 'completed') {
+          completedCount++;
+        } else {
+          // Έλεγχος αν έχει περάσει η ημερομηνία
+          const workoutDate = new Date(date);
+          const today = new Date();
+          const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          
+          if (isPast || completion?.status === 'missed') {
+            missedCount++;
+          }
+        }
+      }
+    }
 
-    const completed = monthlyCompletions.filter(c => c.status === 'completed').length;
-    const missed = monthlyCompletions.filter(c => c.status === 'missed').length;
-    const total = monthlyCompletions.length;
-
-    return { completed, missed, total };
+    return { 
+      completed: completedCount, 
+      missed: missedCount, 
+      total: allMonthlyWorkouts 
+    };
   };
 
   const monthlyStats = calculateMonthlyStats();
@@ -209,7 +255,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
                 locale={el}
                 className="rounded-none border"
                 modifiers={{
-                  scheduled: (date) => getDateStatus(date) === 'scheduled' || getDateStatus(date) === 'pending',
+                  scheduled: (date) => getDateStatus(date) === 'scheduled',
                   completed: (date) => getDateStatus(date) === 'completed',
                   missed: (date) => getDateStatus(date) === 'missed'
                 }}
@@ -229,15 +275,15 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
               {selectedDate && getDayProgram(selectedDate) ? (
                 <div className="space-y-3">
                   <Badge 
-                    variant={getDayProgram(selectedDate)?.isCompleted ? "default" : "secondary"} 
+                    variant={getDateStatus(selectedDate) === 'completed' ? "default" : "secondary"} 
                     className={`rounded-none ${
-                      getDayProgram(selectedDate)?.status === 'completed' ? 'bg-[#00ffba] text-black' :
-                      getDayProgram(selectedDate)?.status === 'missed' ? 'bg-red-500 text-white' :
+                      getDateStatus(selectedDate) === 'completed' ? 'bg-[#00ffba] text-black' :
+                      getDateStatus(selectedDate) === 'missed' ? 'bg-red-500 text-white' :
                       'bg-blue-500 text-white'
                     }`}
                   >
-                    {getDayProgram(selectedDate)?.status === 'completed' ? 'Ολοκληρωμένη' :
-                     getDayProgram(selectedDate)?.status === 'missed' ? 'Χαμένη' :
+                    {getDateStatus(selectedDate) === 'completed' ? 'Ολοκληρωμένη' :
+                     getDateStatus(selectedDate) === 'missed' ? 'Χαμένη' :
                      'Προγραμματισμένη'}
                   </Badge>
                   
