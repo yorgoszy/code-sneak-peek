@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { parseRepsToTime, parseTempoToSeconds, parseRestTime, parseNumberWithComma } from '@/utils/timeCalculations';
+import { format } from "date-fns";
 
 interface WeekStats {
   scheduledHours: number;
@@ -47,239 +48,226 @@ export const useWeekStats = (userId: string) => {
       endOfWeek.setDate(startOfWeek.getDate() + 6); // Κυριακή
       endOfWeek.setHours(23, 59, 59, 999);
 
-      // Φέρε τα προγράμματα του χρήστη
-      const { data: userPrograms } = await supabase
+      console.log('🔍 Week Stats: Calculating for week', startOfWeek.toDateString(), 'to', endOfWeek.toDateString());
+
+      // Φέτε τα προγράμματα του χρήστη - χρησιμοποιούμε την ίδια λογική με το UserProfileDailyProgram
+      const { data: userPrograms, error: programsError } = await supabase
         .from('program_assignments')
-        .select('id, program_id, training_dates')
-        .eq('user_id', userId)
-        .eq('status', 'active');
-
-      if (!userPrograms?.length) {
-        setLoading(false);
-        return;
-      }
-
-      // Φέρε τα workout completions
-      const assignmentIds = userPrograms.map(p => p.id);
-      const { data: workoutCompletions } = await supabase
-        .from('workout_completions')
-        .select('*')
-        .in('assignment_id', assignmentIds);
-
-      // ΑΚΡΙΒΗ ΑΝΤΙΓΡΑΦΗ από UserProfileDailyProgram calculateWeeklyStats
-      const calculateWeeklyStats = async () => {
-        const weekStr = startOfWeek.toISOString().split('T')[0]; // YYYY-MM-DD
-        console.log('🔍 Week Stats: Starting calculation for week:', weekStr);
-        console.log('📅 Week range:', startOfWeek.toDateString(), 'to', endOfWeek.toDateString());
-        
-        // Βρες όλες τις προπονήσεις της εβδομάδας από τα training dates
-        let allWeeklyWorkouts = 0;
-        let completedCount = 0;
-        let missedCount = 0;
-        let totalScheduledMinutes = 0;
-        let totalActualMinutes = 0;
-        
-        console.log('👥 Total user programs:', userPrograms.length);
-        
-        for (const program of userPrograms) {
-          if (!program.training_dates) {
-            console.log('⚠️ Program has no training_dates:', program.id);
-            continue;
-          }
-          console.log('📅 Processing program:', program.id, 'training_dates:', program.training_dates);
-          
-          const weeklyDates = program.training_dates.filter(date => {
-            if (!date) return false;
-            const trainingDate = new Date(date);
-            return trainingDate >= startOfWeek && trainingDate <= endOfWeek;
-          });
-          
-          console.log('📅 Weekly dates for program:', program.id, weeklyDates);
-          
-          // Φέρε τα στοιχεία του προγράμματος για υπολογισμό χρόνου
-          const { data: programData } = await supabase
-            .from('programs')
-            .select(`
+        .select(`
+          *,
+          programs:program_id (
+            id,
+            name,
+            description,
+            program_weeks (
               id,
-              program_weeks(
-                program_days(
-                  day_number,
-                  program_blocks(
-                    program_exercises(
-                      sets,
-                      reps,
-                      kg,
-                      tempo,
-                      rest,
-                      percentage_1rm,
-                      velocity_ms,
-                      exercise_id
+              week_number,
+              name,
+              program_days (
+                id,
+                day_number,
+                name,
+                estimated_duration_minutes,
+                program_blocks (
+                  id,
+                  name,
+                  sets,
+                  program_exercises (
+                    id,
+                    exercise_id,
+                    sets,
+                    reps,
+                    kg,
+                    tempo,
+                    rest,
+                    notes,
+                    exercises (
+                      id,
+                      name,
+                      description,
+                      video_url
                     )
                   )
                 )
               )
-            `)
-            .eq('id', program.program_id)
-            .single();
+            )
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      if (programsError) {
+        throw programsError;
+      }
+
+      // Φέτε workout completions
+      const { data: completions, error: completionsError } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (completionsError) {
+        throw completionsError;
+      }
+
+      console.log('📅 Found user programs:', userPrograms?.length || 0);
+      console.log('📊 Found completions:', completions?.length || 0);
+
+      // Helper function για να βρούμε το day program - ίδια λογική με UserProfileDailyProgram
+      const getDayProgram = (date: Date, programs: any[]) => {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        
+        for (const program of programs) {
+          if (!program.training_dates) continue;
           
-          for (const date of weeklyDates) {
-            allWeeklyWorkouts++;
+          const dateIndex = program.training_dates.findIndex(d => d === dateStr);
+          if (dateIndex === -1) continue;
+
+          const weeks = program.programs?.program_weeks || [];
+          if (weeks.length === 0) continue;
+
+          // Βρίσκουμε τη συνολική ημέρα στο πρόγραμμα
+          let targetDay = null;
+          let currentDayCount = 0;
+
+          for (const week of weeks) {
+            const daysInWeek = week.program_days?.length || 0;
             
-            const completion = workoutCompletions?.find(c => 
-              c.assignment_id === program.id && c.scheduled_date === date
-            );
-            
-            if (completion?.status === 'completed') {
-              completedCount++;
-              
-              // Υπολογισμός πραγματικών ωρών
-              if (completion.actual_duration_minutes) {
-                totalActualMinutes += completion.actual_duration_minutes;
-              } else if (completion.start_time && completion.end_time) {
-                const start = new Date(completion.start_time);
-                const end = new Date(completion.end_time);
-                const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-                totalActualMinutes += durationMinutes;
-              }
-            } else {
-              // Έλεγχος αν έχει περάσει η ημερομηνία
-              const workoutDate = new Date(date);
-              const today = new Date();
-              const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-              
-              if (isPast || completion?.status === 'missed') {
-                missedCount++;
-              }
+            if (dateIndex >= currentDayCount && dateIndex < currentDayCount + daysInWeek) {
+              const dayIndexInWeek = dateIndex - currentDayCount;
+              targetDay = week.program_days?.[dayIndexInWeek] || null;
+              break;
             }
             
-            // Υπολογισμός προγραμματισμένων λεπτών - χρησιμοποιούμε την ίδια ακριβώς λογική με το DayCalculations
-            if (programData?.program_weeks?.[0]?.program_days) {
-              console.log('🏗️ Program data exists for:', program.program_id);
-              const dateIndex = program.training_dates.indexOf(date);
-              const daysPerWeek = programData.program_weeks[0].program_days.length;
-              const dayInCycle = dateIndex % daysPerWeek;
-              const programDay = programData.program_weeks[0].program_days[dayInCycle];
-              
-              console.log('📊 Day calculation for date:', date, {
-                dateIndex,
-                daysPerWeek,
-                dayInCycle,
-                programDayExists: !!programDay,
-                blocksCount: programDay?.program_blocks?.length || 0
-              });
-              
-              if (programDay?.program_blocks) {
-                // ΑΚΡΙΒΗ ΑΝΤΙΓΡΑΦΗ της calculateDayMetrics από DayCalculations
-                let totalVolume = 0;
-                let totalIntensitySum = 0;
-                let intensityCount = 0;
-                let totalWatts = 0;
-                let totalTimeSeconds = 0;
+            currentDayCount += daysInWeek;
+          }
 
-                programDay.program_blocks.forEach((block: any) => {
-                  console.log('🔄 Processing block:', block.name || 'Unnamed', 'exercises:', block.program_exercises?.length || 0);
-                  block.program_exercises?.forEach((exercise: any) => {
-                    console.log('🏋️ Processing exercise:', exercise.exercise_id, {
-                      sets: exercise.sets,
-                      reps: exercise.reps,
-                      kg: exercise.kg,
-                      tempo: exercise.tempo,
-                      rest: exercise.rest
-                    });
-                    if (exercise.exercise_id) {
-                      const sets = exercise.sets || 0;
-                      const repsData = parseRepsToTime(exercise.reps);
-                      const kg = parseNumberWithComma(exercise.kg || '0');
+          if (targetDay) {
+            return {
+              program,
+              targetDay,
+              dateIndex
+            };
+          }
+        }
+        return null;
+      };
 
-                      if (repsData.isTime) {
-                        // Αν το reps είναι χρόνος, προσθέτουμε τον χρόνο απευθείας
-                        // Time calculation for time-based reps: sets × time_per_set + (sets - 1) × rest
-                        const workTime = sets * repsData.seconds;
-                        const restSeconds = parseRestTime(exercise.rest || '');
-                        const totalRestTime = (sets - 1) * restSeconds;
-                        totalTimeSeconds += workTime + totalRestTime;
-                        
-                        // Δεν υπολογίζουμε όγκο για χρονικές ασκήσεις
-                      } else {
-                        // Κανονική άσκηση με επαναλήψεις
-                        const reps = repsData.count;
-                        
-                        // Volume calculation (sets × reps × kg) in kg
-                        const volumeKg = sets * reps * kg;
-                        totalVolume += volumeKg;
+      // Helper functions από DayCalculations
+      const parseRepsToTime = (reps: any) => {
+        if (!reps) return 0;
+        const repsStr = String(reps);
+        if (repsStr.includes('.')) {
+          return repsStr.split('.').reduce((sum: number, val: string) => sum + (parseInt(val) || 0), 0);
+        }
+        return parseInt(repsStr) || 0;
+      };
 
-                        // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
-                        const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
-                        const restSeconds = parseRestTime(exercise.rest || '');
-                        
-                        // Work time: sets × reps × tempo (in seconds)
-                        const workTime = sets * reps * tempoSeconds;
-                        
-                        // Rest time: (sets - 1) × rest time between sets
-                        const totalRestTime = (sets - 1) * restSeconds;
-                        
-                        totalTimeSeconds += workTime + totalRestTime;
-                      }
+      const parseTempoToSeconds = (tempo: any) => {
+        if (!tempo || tempo === '0') return 4;
+        const tempoStr = String(tempo);
+        if (tempoStr.includes('.')) {
+          return tempoStr.split('.').reduce((sum: number, val: string) => sum + (parseInt(val) || 0), 0);
+        }
+        return parseInt(tempoStr) || 4;
+      };
 
-                      // Intensity calculation - μέσος όρος όλων των εντάσεων
-                      const intensity = parseNumberWithComma(exercise.percentage_1rm || '0');
-                      if (intensity > 0) {
-                        totalIntensitySum += intensity;
-                        intensityCount++;
-                      }
+      // Υπολογισμός εβδομαδιαίων στατιστικών
+      let allWeeklyWorkouts = 0;
+      let completedCount = 0;
+      let missedCount = 0;
+      let totalScheduledMinutes = 0;
+      let totalActualMinutes = 0;
 
-                      // Watts calculation - Force × Velocity (μόνο για ασκήσεις με βάρος)
-                      const velocity = parseNumberWithComma(exercise.velocity_ms || '0');
-                      if (kg > 0 && velocity > 0 && !repsData.isTime) {
-                        // Force = mass × acceleration (9.81 m/s²)
-                        const force = kg * 9.81; // in Newtons
-                        // Power = Force × Velocity
-                        const watts = force * velocity;
-                        // Συνολική ισχύς για όλα τα sets και reps
-                        totalWatts += watts * sets * repsData.count;
-                      }
-                    }
-                  });
-                });
+      // Γενάρουμε όλες τις ημέρες της εβδομάδας
+      const weekDays = [];
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(startOfWeek);
+        day.setDate(startOfWeek.getDate() + i);
+        weekDays.push(day);
+      }
 
-                // Επιστρέφουμε το time σε λεπτά - ίδια ακριβώς λογική με DayCalculations
-                const dayTimeMinutes = Math.round(totalTimeSeconds / 60);
-                totalScheduledMinutes += dayTimeMinutes;
-                console.log('⏰ Day time for date:', date, 'minutes:', dayTimeMinutes, 'totalTimeSeconds:', totalTimeSeconds);
-              }
+      console.log('📅 Checking days:', weekDays.map(d => format(d, 'yyyy-MM-dd')));
+
+      // Ελέγχουμε κάθε ημέρα της εβδομάδας
+      for (const day of weekDays) {
+        const dayProgram = getDayProgram(day, userPrograms || []);
+        
+        if (!dayProgram) continue; // Δεν υπάρχει πρόγραμμα για αυτή την ημέρα
+        
+        allWeeklyWorkouts++;
+        const dateStr = format(day, 'yyyy-MM-dd');
+        
+        console.log('🏋️ Found workout for', dateStr, '- Program:', dayProgram.program.programs?.name);
+
+        // Έλεγχος completion
+        const completion = completions?.find(c => 
+          c.assignment_id === dayProgram.program.id && c.scheduled_date === dateStr
+        );
+
+        if (completion) {
+          if (completion.status === 'completed') {
+            completedCount++;
+            if (completion.actual_duration_minutes) {
+              totalActualMinutes += completion.actual_duration_minutes;
             }
+          } else if (completion.status === 'missed') {
+            missedCount++;
+          }
+        } else {
+          // Έλεγχος αν έχει περάσει η ημερομηνία
+          const today = new Date();
+          const isPast = day < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          
+          if (isPast) {
+            missedCount++;
           }
         }
 
-        console.log('📊 Final week stats:', { 
-          completed: completedCount, 
-          missed: missedCount, 
-          total: allWeeklyWorkouts,
-          scheduledMinutes: totalScheduledMinutes,
-          actualMinutes: totalActualMinutes
-        });
+        // Υπολογισμός χρόνου από το program day - ίδια λογική με DayCalculations
+        if (dayProgram.targetDay?.program_blocks) {
+          let totalTimeSeconds = 0;
 
-        return { 
-          completed: completedCount, 
-          missed: missedCount, 
-          total: allWeeklyWorkouts,
-          scheduledMinutes: totalScheduledMinutes,
-          actualMinutes: totalActualMinutes
-        };
-      };
+          dayProgram.targetDay.program_blocks.forEach((block: any) => {
+            block.program_exercises?.forEach((exercise: any) => {
+              if (exercise.exercise_id) {
+                const sets = exercise.sets || 0;
+                const repsData = parseRepsToTime(exercise.reps);
+                const tempo = parseTempoToSeconds(exercise.tempo);
+                const restTime = parseInt(exercise.rest) || 0;
+                
+                const exerciseTime = (sets * repsData * tempo) + ((sets - 1) * restTime);
+                totalTimeSeconds += exerciseTime;
+              }
+            });
+          });
 
-      const weeklyStats = await calculateWeeklyStats();
+          const timeMinutes = Math.round(totalTimeSeconds / 60);
+          totalScheduledMinutes += timeMinutes;
+          
+          console.log('⏰ Day', dateStr, 'calculated time:', timeMinutes, 'minutes');
+        }
+      }
 
-      setStats({
-        scheduledHours: Math.round((weeklyStats.scheduledMinutes / 60) * 10) / 10,
-        actualHours: Math.round((weeklyStats.actualMinutes / 60) * 10) / 10,
-        scheduledWorkouts: weeklyStats.total,
-        totalScheduledWorkouts: weeklyStats.total,
-        missedWorkouts: weeklyStats.missed,
-        scheduledMinutes: weeklyStats.scheduledMinutes,
-        actualMinutes: weeklyStats.actualMinutes
+      console.log('📊 Week Stats Final:', {
+        allWeeklyWorkouts,
+        completedCount,
+        missedCount,
+        totalScheduledMinutes,
+        totalActualMinutes
       });
 
+      const weeklyStats = {
+        scheduledHours: Math.floor(totalScheduledMinutes / 60),
+        scheduledMinutes: totalScheduledMinutes % 60,
+        actualHours: Math.floor(totalActualMinutes / 60),
+        actualMinutes: totalActualMinutes % 60,
+        scheduledWorkouts: allWeeklyWorkouts,
+        totalScheduledWorkouts: allWeeklyWorkouts,
+        missedWorkouts: missedCount
+      };
+
+      setStats(weeklyStats);
     } catch (error) {
       console.error('Error fetching week stats:', error);
     } finally {
