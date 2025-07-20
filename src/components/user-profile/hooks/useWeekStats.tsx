@@ -30,10 +30,12 @@ export const useWeekStats = (userId: string) => {
     try {
       setLoading(true);
       
-      // Υπολογισμός ημερομηνιών τρέχουσας εβδομάδας
+      // Υπολογισμός ημερομηνιών τρέχουσας εβδομάδας (ξεκινάει από Δευτέρα)
       const now = new Date();
       const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Δευτέρα
+      const dayOfWeek = now.getDay();
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Για Κυριακή πάμε στην προηγούμενη Δευτέρα
+      startOfWeek.setDate(now.getDate() - daysToSubtract);
       startOfWeek.setHours(0, 0, 0, 0);
       
       const endOfWeek = new Date(startOfWeek);
