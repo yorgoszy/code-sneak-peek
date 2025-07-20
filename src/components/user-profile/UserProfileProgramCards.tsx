@@ -38,10 +38,31 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     const trainingDates = assignment.training_dates || [];
     const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
     
-    const completed = assignmentCompletions.filter(c => c.status === 'completed').length;
+    let completed = 0;
+    let missed = 0;
     const total = trainingDates.length;
-    const missed = assignmentCompletions.filter(c => c.status === 'missed').length;
-    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const today = new Date();
+    
+    // Για κάθε training date, έλεγξε το status
+    for (const date of trainingDates) {
+      const completion = assignmentCompletions.find(c => c.scheduled_date === date);
+      
+      if (completion?.status === 'completed') {
+        completed++;
+      } else {
+        // Έλεγχος αν έχει περάσει η ημερομηνία
+        const workoutDate = new Date(date);
+        const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        
+        if (isPast || completion?.status === 'missed') {
+          missed++;
+        }
+      }
+    }
+    
+    // Το progress υπολογίζεται από completed + missed (όλες οι "ολοκληρωμένες" προπονήσεις)
+    const processedWorkouts = completed + missed;
+    const progress = total > 0 ? Math.round((processedWorkouts / total) * 100) : 0;
     
     return {
       completed,
