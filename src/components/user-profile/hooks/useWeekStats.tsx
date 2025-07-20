@@ -70,6 +70,7 @@ export const useWeekStats = (userId: string) => {
       const calculateWeeklyStats = async () => {
         const weekStr = startOfWeek.toISOString().split('T')[0]; // YYYY-MM-DD
         console.log('🔍 Week Stats: Starting calculation for week:', weekStr);
+        console.log('📅 Week range:', startOfWeek.toDateString(), 'to', endOfWeek.toDateString());
         
         // Βρες όλες τις προπονήσεις της εβδομάδας από τα training dates
         let allWeeklyWorkouts = 0;
@@ -78,8 +79,13 @@ export const useWeekStats = (userId: string) => {
         let totalScheduledMinutes = 0;
         let totalActualMinutes = 0;
         
+        console.log('👥 Total user programs:', userPrograms.length);
+        
         for (const program of userPrograms) {
-          if (!program.training_dates) continue;
+          if (!program.training_dates) {
+            console.log('⚠️ Program has no training_dates:', program.id);
+            continue;
+          }
           console.log('📅 Processing program:', program.id, 'training_dates:', program.training_dates);
           
           const weeklyDates = program.training_dates.filter(date => {
@@ -148,10 +154,19 @@ export const useWeekStats = (userId: string) => {
             
             // Υπολογισμός προγραμματισμένων λεπτών - χρησιμοποιούμε την ίδια ακριβώς λογική με το DayCalculations
             if (programData?.program_weeks?.[0]?.program_days) {
+              console.log('🏗️ Program data exists for:', program.program_id);
               const dateIndex = program.training_dates.indexOf(date);
               const daysPerWeek = programData.program_weeks[0].program_days.length;
               const dayInCycle = dateIndex % daysPerWeek;
               const programDay = programData.program_weeks[0].program_days[dayInCycle];
+              
+              console.log('📊 Day calculation for date:', date, {
+                dateIndex,
+                daysPerWeek,
+                dayInCycle,
+                programDayExists: !!programDay,
+                blocksCount: programDay?.program_blocks?.length || 0
+              });
               
               if (programDay?.program_blocks) {
                 // ΑΚΡΙΒΗ ΑΝΤΙΓΡΑΦΗ της calculateDayMetrics από DayCalculations
@@ -162,7 +177,15 @@ export const useWeekStats = (userId: string) => {
                 let totalTimeSeconds = 0;
 
                 programDay.program_blocks.forEach((block: any) => {
+                  console.log('🔄 Processing block:', block.name || 'Unnamed', 'exercises:', block.program_exercises?.length || 0);
                   block.program_exercises?.forEach((exercise: any) => {
+                    console.log('🏋️ Processing exercise:', exercise.exercise_id, {
+                      sets: exercise.sets,
+                      reps: exercise.reps,
+                      kg: exercise.kg,
+                      tempo: exercise.tempo,
+                      rest: exercise.rest
+                    });
                     if (exercise.exercise_id) {
                       const sets = exercise.sets || 0;
                       const repsData = parseRepsToTime(exercise.reps);
