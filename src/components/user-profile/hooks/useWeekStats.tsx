@@ -146,29 +146,29 @@ export const useWeekStats = (userId: string) => {
               }
             }
             
-            // Υπολογισμός προγραμματισμένων λεπτών - χρησιμοποιούμε την ίδια λογική με το DayCalculations
+            // Υπολογισμός προγραμματισμένων λεπτών - χρησιμοποιούμε την ίδια ακριβώς λογική με το DayCalculations
             if (programData?.program_weeks?.[0]?.program_days) {
-              const trainingDate = new Date(date);
               const dateIndex = program.training_dates.indexOf(date);
               const daysPerWeek = programData.program_weeks[0].program_days.length;
               const dayInCycle = dateIndex % daysPerWeek;
               const programDay = programData.program_weeks[0].program_days[dayInCycle];
               
               if (programDay?.program_blocks) {
-                let dayTimeSeconds = 0;
+                // Χρησιμοποιούμε την ίδια ακριβώς λογική με το DayCalculations
+                let totalTimeSeconds = 0;
                 
                 programDay.program_blocks.forEach((block: any) => {
                   block.program_exercises?.forEach((exercise: any) => {
                     if (exercise.exercise_id) {
                       const sets = exercise.sets || 0;
                       const repsData = parseRepsToTime(exercise.reps);
-                      
+
                       if (repsData.isTime) {
                         // Time calculation for time-based reps: sets × time_per_set + (sets - 1) × rest
                         const workTime = sets * repsData.seconds;
                         const restSeconds = parseRestTime(exercise.rest || '');
                         const totalRestTime = (sets - 1) * restSeconds;
-                        dayTimeSeconds += workTime + totalRestTime;
+                        totalTimeSeconds += workTime + totalRestTime;
                       } else {
                         // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
                         const reps = repsData.count;
@@ -181,15 +181,16 @@ export const useWeekStats = (userId: string) => {
                         // Rest time: (sets - 1) × rest time between sets
                         const totalRestTime = (sets - 1) * restSeconds;
                         
-                        dayTimeSeconds += workTime + totalRestTime;
+                        totalTimeSeconds += workTime + totalRestTime;
                       }
                     }
                   });
                 });
                 
-                const dayMinutes = Math.round(dayTimeSeconds / 60);
+                // Convert to minutes - ίδια λογική με DayCalculations
+                const dayMinutes = Math.round(totalTimeSeconds / 60);
                 totalScheduledMinutes += dayMinutes;
-                console.log('⏰ Day time for date:', date, 'minutes:', dayMinutes);
+                console.log('⏰ Day time for date:', date, 'minutes:', dayMinutes, 'seconds:', totalTimeSeconds);
               }
             }
           }
