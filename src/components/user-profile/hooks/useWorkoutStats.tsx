@@ -37,29 +37,41 @@ export const useWorkoutStats = (userId: string) => {
       
       const dateRanges = getDateRanges();
 
-      // Calculate metrics using scheduled workouts για όλα τα στατιστικά 
-      const [currentMonthMetrics, previousMonthMetrics] = await Promise.all([
+      // Fetch workout completions for both months (για ολοκληρωμένες προπονήσεις)
+      const [currentMonthData, previousMonthData] = await Promise.all([
+        fetchWorkoutCompletions(userId, dateRanges.currentMonth.start, dateRanges.currentMonth.end),
+        fetchWorkoutCompletions(userId, dateRanges.previousMonth.start, dateRanges.previousMonth.end)
+      ]);
+
+      // Calculate completed workouts metrics
+      const [currentMonthCompleted, previousMonthCompleted] = await Promise.all([
+        calculateWorkoutMetrics(currentMonthData),
+        calculateWorkoutMetrics(previousMonthData)
+      ]);
+
+      // Calculate missed workouts using the correct method
+      const [currentMonthMissed, previousMonthMissed] = await Promise.all([
         calculateScheduledWorkoutMetrics(userId, dateRanges.currentMonth.start, dateRanges.currentMonth.end),
         calculateScheduledWorkoutMetrics(userId, dateRanges.previousMonth.start, dateRanges.previousMonth.end)
       ]);
 
-      // Calculate improvements based on scheduled workouts
-      const workoutsImprovement = currentMonthMetrics.scheduledWorkouts - previousMonthMetrics.scheduledWorkouts;
-      const hoursImprovement = currentMonthMetrics.totalTrainingHours - previousMonthMetrics.totalTrainingHours;
-      const volumeImprovement = currentMonthMetrics.totalVolume - previousMonthMetrics.totalVolume;
+      // Calculate improvements based on completed workouts
+      const workoutsImprovement = currentMonthCompleted.completedWorkouts - previousMonthCompleted.completedWorkouts;
+      const hoursImprovement = currentMonthCompleted.totalTrainingHours - previousMonthCompleted.totalTrainingHours;
+      const volumeImprovement = currentMonthCompleted.totalVolume - previousMonthCompleted.totalVolume;
 
       setStats({
         currentMonth: {
-          completedWorkouts: currentMonthMetrics.scheduledWorkouts, // Προγραμματισμένες προπονήσεις
-          totalTrainingHours: currentMonthMetrics.totalTrainingHours,
-          totalVolume: currentMonthMetrics.totalVolume,
-          missedWorkouts: currentMonthMetrics.missedWorkouts
+          completedWorkouts: currentMonthCompleted.completedWorkouts, // Ολοκληρωμένες (πράσινες)
+          totalTrainingHours: currentMonthCompleted.totalTrainingHours,
+          totalVolume: currentMonthCompleted.totalVolume,
+          missedWorkouts: currentMonthMissed.missedWorkouts // Χαμένες (κόκκινες)
         },
         previousMonth: {
-          completedWorkouts: previousMonthMetrics.scheduledWorkouts, // Προγραμματισμένες προπονήσεις
-          totalTrainingHours: previousMonthMetrics.totalTrainingHours,
-          totalVolume: previousMonthMetrics.totalVolume,
-          missedWorkouts: previousMonthMetrics.missedWorkouts
+          completedWorkouts: previousMonthCompleted.completedWorkouts, // Ολοκληρωμένες (πράσινες)
+          totalTrainingHours: previousMonthCompleted.totalTrainingHours,
+          totalVolume: previousMonthCompleted.totalVolume,
+          missedWorkouts: previousMonthMissed.missedWorkouts // Χαμένες (κόκκινες)
         },
         improvements: {
           workoutsImprovement,
