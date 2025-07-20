@@ -5,6 +5,7 @@ import { MyDataIntegration } from "@/components/analytics/MyDataIntegration";
 import { ReceiptManagement } from "@/components/analytics/ReceiptManagement";
 import { CertificateManager } from "@/components/analytics/CertificateManager";
 import { VisitManagement } from "@/components/visits/VisitManagement";
+import { FinancialOverview } from "@/components/analytics/FinancialOverview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sidebar } from "@/components/Sidebar";
 import { useState } from "react";
@@ -23,8 +24,9 @@ export default function Subscriptions() {
         </div>
         
         <Tabs defaultValue="management" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6 rounded-none">
+          <TabsList className="grid w-full grid-cols-7 mb-6 rounded-none">
             <TabsTrigger value="management" className="rounded-none">Συνδρομές</TabsTrigger>
+            <TabsTrigger value="financial" className="rounded-none">Έσοδα-Έξοδα</TabsTrigger>
             <TabsTrigger value="visits" className="rounded-none">Επισκέψεις</TabsTrigger>
             <TabsTrigger value="receipts" className="rounded-none">Αποδείξεις</TabsTrigger>
             <TabsTrigger value="types" className="rounded-none">Τύποι</TabsTrigger>
@@ -34,6 +36,10 @@ export default function Subscriptions() {
           
           <TabsContent value="management">
             <SubscriptionManagement />
+          </TabsContent>
+
+          <TabsContent value="financial">
+            <FinancialOverview />
           </TabsContent>
           
           <TabsContent value="types">

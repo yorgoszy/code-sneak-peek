@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck } from "lucide-react";
+import { MonthlyRevenueCard } from './MonthlyRevenueCard';
 
 interface SubscriptionType {
   id: string;
@@ -895,6 +896,8 @@ export const SubscriptionManagement: React.FC = () => {
 
       {/* Στατιστικά */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <MonthlyRevenueCard />
+        
         <Card className="rounded-none">
           <CardContent className="p-4">
             <div className="flex items-center">
