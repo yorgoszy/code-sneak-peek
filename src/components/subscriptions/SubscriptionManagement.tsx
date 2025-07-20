@@ -176,15 +176,46 @@ export const SubscriptionManagement: React.FC = () => {
         .select('id')
         .lte('created_at', lastMonthEnd.toISOString());
 
-      // Υπολογισμός τρεχόντων στατιστικών
-      const currentActiveSubscriptions = currentSubscriptions.filter(s => s.status === 'active' && !s.is_paused).length;
+      // Υπολογισμός τρεχόντων στατιστικών - χρήστες με συνδρομή αυτό τον μήνα
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      
+      const currentUsersWithSubscription = new Set(
+        currentSubscriptions
+          .filter(s => {
+            const startDate = new Date(s.start_date);
+            const endDate = new Date(s.end_date);
+            const isActiveInCurrentMonth = 
+              (startDate.getFullYear() < currentYear || 
+               (startDate.getFullYear() === currentYear && startDate.getMonth() <= currentMonth)) &&
+              (endDate.getFullYear() > currentYear || 
+               (endDate.getFullYear() === currentYear && endDate.getMonth() >= currentMonth)) &&
+              s.status === 'active';
+            return isActiveInCurrentMonth;
+          })
+          .map(s => s.user_id)
+      ).size;
       const currentTotalUsers = currentUsers.length;
       const currentMonthlyRevenue = currentSubscriptions
         .filter(s => s.status === 'active' && !s.is_paused)
         .reduce((sum, s) => sum + (s.subscription_types?.price || 0), 0);
 
-      // Υπολογισμός προηγούμενου μήνα
-      const lastMonthActiveSubscriptions = (lastMonthSubscriptions || []).filter(s => !s.is_paused).length;
+      // Υπολογισμός προηγούμενου μήνα - χρήστες με συνδρομή
+      const lastMonthUsersWithSubscription = new Set(
+        (lastMonthSubscriptions || [])
+          .filter(s => {
+            const startDate = new Date(s.start_date);
+            const endDate = new Date(s.end_date);
+            const isActiveInLastMonth = 
+              (startDate.getFullYear() < lastMonth.getFullYear() || 
+               (startDate.getFullYear() === lastMonth.getFullYear() && startDate.getMonth() <= lastMonth.getMonth())) &&
+              (endDate.getFullYear() > lastMonth.getFullYear() || 
+               (endDate.getFullYear() === lastMonth.getFullYear() && endDate.getMonth() >= lastMonth.getMonth()));
+            return isActiveInLastMonth;
+          })
+          .map(s => s.user_id)
+      ).size;
       const lastMonthTotalUsers = lastMonthUsers?.length || 0;
       const lastMonthRevenue = (lastMonthSubscriptions || [])
         .filter(s => !s.is_paused)
@@ -192,7 +223,7 @@ export const SubscriptionManagement: React.FC = () => {
 
       // Υπολογισμός διαφορών
       setMonthlyChanges({
-        activeSubscriptions: currentActiveSubscriptions - lastMonthActiveSubscriptions,
+        activeSubscriptions: currentUsersWithSubscription - lastMonthUsersWithSubscription,
         totalUsers: currentTotalUsers - lastMonthTotalUsers,
         monthlyRevenue: currentMonthlyRevenue - lastMonthRevenue
       });
@@ -1119,9 +1150,30 @@ export const SubscriptionManagement: React.FC = () => {
             <div className="flex items-center">
               <Crown className="h-8 w-8 text-[#00ffba]" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Ενεργές Συνδρομές</p>
+                <p className="text-sm font-medium text-gray-600">Χρήστες με Συνδρομή</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {userSubscriptions.filter(s => s.status === 'active' && !s.is_paused).length}
+                  {(() => {
+                    const today = new Date();
+                    const currentMonth = today.getMonth();
+                    const currentYear = today.getFullYear();
+                    
+                    const usersWithActiveSubscription = new Set(
+                      userSubscriptions
+                        .filter(s => {
+                          const startDate = new Date(s.start_date);
+                          const endDate = new Date(s.end_date);
+                          const isActiveInCurrentMonth = 
+                            (startDate.getFullYear() < currentYear || 
+                             (startDate.getFullYear() === currentYear && startDate.getMonth() <= currentMonth)) &&
+                            (endDate.getFullYear() > currentYear || 
+                             (endDate.getFullYear() === currentYear && endDate.getMonth() >= currentMonth)) &&
+                            s.status === 'active';
+                          return isActiveInCurrentMonth;
+                        })
+                        .map(s => s.user_id)
+                    );
+                    return usersWithActiveSubscription.size;
+                  })()}
                 </p>
                 <p className="text-xs text-gray-500">
                   {monthlyChanges.activeSubscriptions > 0 ? '+' : ''}{monthlyChanges.activeSubscriptions} από προηγούμενο μήνα
