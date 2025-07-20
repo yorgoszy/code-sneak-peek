@@ -26,20 +26,16 @@ export default function Subscriptions() {
         <Tabs defaultValue="management" className="w-full">
           <TabsList className="grid w-full grid-cols-7 mb-6 rounded-none">
             <TabsTrigger value="management" className="rounded-none">Συνδρομές</TabsTrigger>
-            <TabsTrigger value="financial" className="rounded-none">Έσοδα-Έξοδα</TabsTrigger>
             <TabsTrigger value="visits" className="rounded-none">Επισκέψεις</TabsTrigger>
             <TabsTrigger value="receipts" className="rounded-none">Αποδείξεις</TabsTrigger>
             <TabsTrigger value="types" className="rounded-none">Τύποι</TabsTrigger>
             <TabsTrigger value="certificates" className="rounded-none">Certificates</TabsTrigger>
             <TabsTrigger value="mydata" className="rounded-none">Banking</TabsTrigger>
+            <TabsTrigger value="financial" className="rounded-none">Έσοδα-Έξοδα</TabsTrigger>
           </TabsList>
           
           <TabsContent value="management">
             <SubscriptionManagement />
-          </TabsContent>
-
-          <TabsContent value="financial">
-            <FinancialOverview />
           </TabsContent>
           
           <TabsContent value="types">
@@ -60,6 +56,10 @@ export default function Subscriptions() {
           
           <TabsContent value="mydata">
             <MyDataIntegration />
+          </TabsContent>
+
+          <TabsContent value="financial">
+            <FinancialOverview />
           </TabsContent>
         </Tabs>
       </div>
