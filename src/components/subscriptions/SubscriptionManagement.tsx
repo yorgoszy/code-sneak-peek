@@ -65,6 +65,11 @@ export const SubscriptionManagement: React.FC = () => {
   const [editSubscriptionType, setEditSubscriptionType] = useState('');
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
   const [pendingSubscriptionData, setPendingSubscriptionData] = useState<any>(null);
+  const [monthlyChanges, setMonthlyChanges] = useState({
+    activeSubscriptions: 0,
+    totalUsers: 0,
+    monthlyRevenue: 0
+  });
 
   useEffect(() => {
     loadData();
@@ -131,6 +136,9 @@ export const SubscriptionManagement: React.FC = () => {
       setUsers(allUsers || []);
       setFilteredUsers(allUsers || []);
 
+      // Υπολογισμός μηνιαίων αλλαγών
+      await calculateMonthlyChanges(subscriptions || [], allUsers || []);
+
       console.log('✅ All data loaded successfully');
 
     } catch (error) {
@@ -142,6 +150,56 @@ export const SubscriptionManagement: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const calculateMonthlyChanges = async (currentSubscriptions: UserSubscription[], currentUsers: any[]) => {
+    try {
+      // Ημερομηνίες για τον προηγούμενο μήνα
+      const lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+      const lastMonthStart = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1);
+      const lastMonthEnd = new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0);
+
+      // Φόρτωση δεδομένων προηγούμενου μήνα
+      const { data: lastMonthSubscriptions } = await supabase
+        .from('user_subscriptions')
+        .select(`
+          *,
+          subscription_types (*)
+        `)
+        .lte('created_at', lastMonthEnd.toISOString())
+        .eq('status', 'active');
+
+      const { data: lastMonthUsers } = await supabase
+        .from('app_users')
+        .select('id')
+        .lte('created_at', lastMonthEnd.toISOString());
+
+      // Υπολογισμός τρεχόντων στατιστικών
+      const currentActiveSubscriptions = currentSubscriptions.filter(s => s.status === 'active' && !s.is_paused).length;
+      const currentTotalUsers = currentUsers.length;
+      const currentMonthlyRevenue = currentSubscriptions
+        .filter(s => s.status === 'active' && !s.is_paused)
+        .reduce((sum, s) => sum + (s.subscription_types?.price || 0), 0);
+
+      // Υπολογισμός προηγούμενου μήνα
+      const lastMonthActiveSubscriptions = (lastMonthSubscriptions || []).filter(s => !s.is_paused).length;
+      const lastMonthTotalUsers = lastMonthUsers?.length || 0;
+      const lastMonthRevenue = (lastMonthSubscriptions || [])
+        .filter(s => !s.is_paused)
+        .reduce((sum, s) => sum + (s.subscription_types?.price || 0), 0);
+
+      // Υπολογισμός διαφορών
+      setMonthlyChanges({
+        activeSubscriptions: currentActiveSubscriptions - lastMonthActiveSubscriptions,
+        totalUsers: currentTotalUsers - lastMonthTotalUsers,
+        monthlyRevenue: currentMonthlyRevenue - lastMonthRevenue
+      });
+
+    } catch (error) {
+      console.error('Error calculating monthly changes:', error);
+      setMonthlyChanges({ activeSubscriptions: 0, totalUsers: 0, monthlyRevenue: 0 });
     }
   };
 
@@ -1065,6 +1123,9 @@ export const SubscriptionManagement: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {userSubscriptions.filter(s => s.status === 'active' && !s.is_paused).length}
                 </p>
+                <p className="text-xs text-gray-500">
+                  {monthlyChanges.activeSubscriptions > 0 ? '+' : ''}{monthlyChanges.activeSubscriptions} από προηγούμενο μήνα
+                </p>
               </div>
             </div>
           </CardContent>
@@ -1077,6 +1138,9 @@ export const SubscriptionManagement: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Συνολικοί Χρήστες</p>
                 <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+                <p className="text-xs text-gray-500">
+                  {monthlyChanges.totalUsers > 0 ? '+' : ''}{monthlyChanges.totalUsers} από προηγούμενο μήνα
+                </p>
               </div>
             </div>
           </CardContent>
@@ -1090,9 +1154,12 @@ export const SubscriptionManagement: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600">Μηνιαίος Τζίρος</p>
                 <p className="text-2xl font-bold text-gray-900">
                   €{userSubscriptions
-                    .filter(s => s.status === 'active')
+                    .filter(s => s.status === 'active' && !s.is_paused)
                     .reduce((sum, s) => sum + (s.subscription_types?.price || 0), 0)
                     .toFixed(2)}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {monthlyChanges.monthlyRevenue > 0 ? '+' : ''}€{monthlyChanges.monthlyRevenue.toFixed(2)} από προηγούμενο μήνα
                 </p>
               </div>
             </div>
