@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { parseRepsToTime, parseTempoToSeconds, parseRestTime, parseNumberWithComma } from '@/utils/timeCalculations';
 
 interface WeekStats {
   scheduledHours: number;
@@ -66,7 +67,7 @@ export const useWeekStats = (userId: string) => {
         .in('assignment_id', assignmentIds);
 
       // ΑΚΡΙΒΗ ΑΝΤΙΓΡΑΦΗ από UserProfileDailyProgram calculateWeeklyStats
-      const calculateWeeklyStats = () => {
+      const calculateWeeklyStats = async () => {
         const weekStr = startOfWeek.toISOString().split('T')[0]; // YYYY-MM-DD
         
         // Βρες όλες τις προπονήσεις της εβδομάδας από τα training dates
@@ -84,6 +85,32 @@ export const useWeekStats = (userId: string) => {
             const trainingDate = new Date(date);
             return trainingDate >= startOfWeek && trainingDate <= endOfWeek;
           });
+          
+          // Φέρε τα στοιχεία του προγράμματος για υπολογισμό χρόνου
+          const { data: programData } = await supabase
+            .from('programs')
+            .select(`
+              id,
+              program_weeks(
+                program_days(
+                  day_number,
+                  program_blocks(
+                    program_exercises(
+                      sets,
+                      reps,
+                      kg,
+                      tempo,
+                      rest,
+                      percentage_1rm,
+                      velocity_ms,
+                      exercise_id
+                    )
+                  )
+                )
+              )
+            `)
+            .eq('id', program.program_id)
+            .single();
           
           for (const date of weeklyDates) {
             allWeeklyWorkouts++;
@@ -115,9 +142,50 @@ export const useWeekStats = (userId: string) => {
               }
             }
             
-            // Υπολογισμός προγραμματισμένων ωρών από τα program data
-            // Εκτίμηση 60 λεπτά ανά προπόνηση
-            totalScheduledMinutes += 60;
+            // Υπολογισμός προγραμματισμένων λεπτών με τη λογική του DayCalculations
+            if (programData?.program_weeks?.[0]?.program_days) {
+              const trainingDate = new Date(date);
+              const dateIndex = program.training_dates.indexOf(date);
+              const daysPerWeek = programData.program_weeks[0].program_days.length;
+              const dayInCycle = dateIndex % daysPerWeek;
+              const programDay = programData.program_weeks[0].program_days[dayInCycle];
+              
+              if (programDay?.program_blocks) {
+                let dayTimeSeconds = 0;
+                
+                programDay.program_blocks.forEach((block: any) => {
+                  block.program_exercises?.forEach((exercise: any) => {
+                    if (exercise.exercise_id) {
+                      const sets = exercise.sets || 0;
+                      const repsData = parseRepsToTime(exercise.reps);
+                      
+                      if (repsData.isTime) {
+                        // Time calculation for time-based reps: sets × time_per_set + (sets - 1) × rest
+                        const workTime = sets * repsData.seconds;
+                        const restSeconds = parseRestTime(exercise.rest || '');
+                        const totalRestTime = (sets - 1) * restSeconds;
+                        dayTimeSeconds += workTime + totalRestTime;
+                      } else {
+                        // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
+                        const reps = repsData.count;
+                        const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
+                        const restSeconds = parseRestTime(exercise.rest || '');
+                        
+                        // Work time: sets × reps × tempo (in seconds)
+                        const workTime = sets * reps * tempoSeconds;
+                        
+                        // Rest time: (sets - 1) × rest time between sets
+                        const totalRestTime = (sets - 1) * restSeconds;
+                        
+                        dayTimeSeconds += workTime + totalRestTime;
+                      }
+                    }
+                  });
+                });
+                
+                totalScheduledMinutes += Math.round(dayTimeSeconds / 60);
+              }
+            }
           }
         }
 
@@ -130,7 +198,7 @@ export const useWeekStats = (userId: string) => {
         };
       };
 
-      const weeklyStats = calculateWeeklyStats();
+      const weeklyStats = await calculateWeeklyStats();
 
       setStats({
         scheduledHours: Math.round((weeklyStats.scheduledMinutes / 60) * 10) / 10,
