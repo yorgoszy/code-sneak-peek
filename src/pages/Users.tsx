@@ -42,7 +42,7 @@ interface AppUser {
 }
 
 interface UserWithSubscription extends AppUser {
-  subscription_status: 'Ενεργή' | 'Ανενεργή';
+  subscription_status: 'Ενεργή' | 'Ανενεργή' | 'Παύση';
 }
 
 const Users = () => {
@@ -91,12 +91,19 @@ const Users = () => {
             .limit(1)
             .maybeSingle();
 
-          const hasActiveSubscription = subscription && 
-            (subscription.is_paused || new Date(subscription.end_date) >= new Date());
+          let subscriptionStatus: 'Ενεργή' | 'Ανενεργή' | 'Παύση' = 'Ανενεργή';
+          
+          if (subscription) {
+            if (subscription.is_paused) {
+              subscriptionStatus = 'Παύση';
+            } else if (new Date(subscription.end_date) >= new Date()) {
+              subscriptionStatus = 'Ενεργή';
+            }
+          }
 
           return {
             ...user,
-            subscription_status: hasActiveSubscription ? 'Ενεργή' : 'Ανενεργή' as const
+            subscription_status: subscriptionStatus
           };
         })
       );
@@ -231,8 +238,17 @@ const Users = () => {
     }
   };
 
-  const getSubscriptionStatusColor = (status: 'Ενεργή' | 'Ανενεργή') => {
-    return status === 'Ενεργή' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+  const getSubscriptionStatusColor = (status: 'Ενεργή' | 'Ανενεργή' | 'Παύση') => {
+    switch (status) {
+      case 'Ενεργή':
+        return 'bg-green-100 text-green-800';
+      case 'Ανενεργή':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Παύση':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   console.log('👑 Rendering Users page for admin');
