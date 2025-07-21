@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const [subscriptionDays, setSubscriptionDays] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [paymentStatus, setPaymentStatus] = useState<boolean | null>(null);
+  const [visitsData, setVisitsData] = useState<{used: number, total: number} | null>(null);
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -86,8 +87,52 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
       }
     };
 
+    const fetchVisitsData = async () => {
+      try {
+        // Φόρτωση visit packages
+        const { data: visitPackages, error: packagesError } = await supabase
+          .from('visit_packages')
+          .select('total_visits, remaining_visits')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+
+        if (packagesError) {
+          console.error('Error fetching visit packages:', packagesError);
+          setVisitsData(null);
+          return;
+        }
+
+        // Φόρτωση συνολικών επισκέψεων που έχουν γίνει
+        const { data: visits, count: totalVisits, error: visitsError } = await supabase
+          .from('user_visits')
+          .select('*', { count: 'exact' })
+          .eq('user_id', user.id);
+
+        if (visitsError) {
+          console.error('Error fetching visits:', visitsError);
+          setVisitsData(null);
+          return;
+        }
+
+        // Υπολογισμός συνολικών αγορασμένων επισκέψεων
+        const totalBoughtVisits = visitPackages?.reduce((sum, pkg) => sum + pkg.total_visits, 0) || 0;
+        const usedVisits = totalVisits || 0;
+
+        setVisitsData({
+          used: usedVisits,
+          total: totalBoughtVisits
+        });
+
+      } catch (error) {
+        console.error('Error fetching visits data:', error);
+        setVisitsData(null);
+      }
+    };
+
     if (user?.id) {
       fetchSubscriptionData();
+      fetchVisitsData();
     }
   }, [user?.id]);
   
@@ -95,7 +140,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
     <Card className="rounded-none">
       <CardContent className={isMobile ? "pt-4" : "pt-6"}>
         <div className={`grid gap-4 ${
-          isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-5'
+          isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-6'
         }`}>
           {user.role === 'trainer' && (
             <div className="text-center">
@@ -149,6 +194,19 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                )}
              </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Μέρες Συνδρομής</p>
+          </div>
+          <div className="text-center">
+            <MapPin className={`mx-auto text-blue-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {visitsData ? (
+                <span className="text-gray-900">
+                  {visitsData.used}/{visitsData.total}
+                </span>
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επισκέψεις</p>
           </div>
         </div>
       </CardContent>
