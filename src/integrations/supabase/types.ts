@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_chat_files: {
+        Row: {
+          created_at: string
+          expires_at: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_conversations: {
         Row: {
           content: string
@@ -3002,6 +3035,10 @@ export type Database = {
         Returns: undefined
       }
       check_and_update_expired_subscriptions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_expired_ai_chat_files: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
