@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Plus, Edit, Trash2, Eye, Upload, X, CalendarIcon } from "lucide-react";
@@ -361,6 +360,28 @@ export const ArticleManagement = () => {
           </DialogHeader>
           
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="title_el">Τίτλος (Ελληνικά) *</Label>
+                <Input
+                  id="title_el"
+                  value={formData.title_el}
+                  onChange={(e) => setFormData({ ...formData, title_el: e.target.value })}
+                  required
+                  className="rounded-none"
+                />
+              </div>
+              <div>
+                <Label htmlFor="title_en">Τίτλος (English)</Label>
+                <Input
+                  id="title_en"
+                  value={formData.title_en}
+                  onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
+                  className="rounded-none"
+                />
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="published_date">Ημερομηνία Δημοσίευσης *</Label>
               <Input
@@ -437,83 +458,53 @@ export const ArticleManagement = () => {
               </div>
             </div>
 
-            <Tabs defaultValue="greek" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2 rounded-none">
-                <TabsTrigger value="greek" className="rounded-none">Ελληνικά</TabsTrigger>
-                <TabsTrigger value="english" className="rounded-none">English</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="greek" className="space-y-4">
-                <div>
-                  <Label htmlFor="title_el">Τίτλος (Ελληνικά) *</Label>
-                  <Input
-                    id="title_el"
-                    value={formData.title_el}
-                    onChange={(e) => setFormData({ ...formData, title_el: e.target.value })}
-                    required
-                    className="rounded-none"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="excerpt_el">Περίληψη (Ελληνικά) *</Label>
-                  <Textarea
-                    id="excerpt_el"
-                    value={formData.excerpt_el}
-                    onChange={(e) => setFormData({ ...formData, excerpt_el: e.target.value })}
-                    required
-                    rows={3}
-                    className="rounded-none"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="content_el">Περιεχόμενο Άρθρου (Ελληνικά) *</Label>
-                  <Textarea
-                    id="content_el"
-                    value={formData.content_el}
-                    onChange={(e) => setFormData({ ...formData, content_el: e.target.value })}
-                    required
-                    rows={10}
-                    className="rounded-none"
-                  />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="english" className="space-y-4">
-                <div>
-                  <Label htmlFor="title_en">Τίτλος (English)</Label>
-                  <Input
-                    id="title_en"
-                    value={formData.title_en}
-                    onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
-                    className="rounded-none"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="excerpt_en">Περίληψη (English)</Label>
-                  <Textarea
-                    id="excerpt_en"
-                    value={formData.excerpt_en}
-                    onChange={(e) => setFormData({ ...formData, excerpt_en: e.target.value })}
-                    rows={3}
-                    className="rounded-none"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="content_en">Περιεχόμενο Άρθρου (English)</Label>
-                  <Textarea
-                    id="content_en"
-                    value={formData.content_en}
-                    onChange={(e) => setFormData({ ...formData, content_en: e.target.value })}
-                    rows={10}
-                    className="rounded-none"
-                  />
-                </div>
-              </TabsContent>
-            </Tabs>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="excerpt_el">Περίληψη (Ελληνικά) *</Label>
+                <Textarea
+                  id="excerpt_el"
+                  value={formData.excerpt_el}
+                  onChange={(e) => setFormData({ ...formData, excerpt_el: e.target.value })}
+                  required
+                  rows={3}
+                  className="rounded-none"
+                />
+              </div>
+              <div>
+                <Label htmlFor="excerpt_en">Περίληψη (English)</Label>
+                <Textarea
+                  id="excerpt_en"
+                  value={formData.excerpt_en}
+                  onChange={(e) => setFormData({ ...formData, excerpt_en: e.target.value })}
+                  rows={3}
+                  className="rounded-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="content_el">Περιεχόμενο Άρθρου (Ελληνικά) *</Label>
+                <Textarea
+                  id="content_el"
+                  value={formData.content_el}
+                  onChange={(e) => setFormData({ ...formData, content_el: e.target.value })}
+                  required
+                  rows={10}
+                  className="rounded-none"
+                />
+              </div>
+              <div>
+                <Label htmlFor="content_en">Περιεχόμενο Άρθρου (English)</Label>
+                <Textarea
+                  id="content_en"
+                  value={formData.content_en}
+                  onChange={(e) => setFormData({ ...formData, content_en: e.target.value })}
+                  rows={10}
+                  className="rounded-none"
+                />
+              </div>
+            </div>
 
             <div>
               <Label htmlFor="bibliography">Βιβλιογραφία</Label>
