@@ -175,40 +175,6 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
             )}
           </CardContent>
         </Card>
-
-        {/* Ιστορικό Πληρωμών */}
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Ιστορικό Πληρωμών
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {payments.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">
-                Δεν βρέθηκαν πληρωμές
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {payments.map((payment) => (
-                  <div key={payment.id} className="border p-3 rounded-none">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-medium">€{payment.amount}</h4>
-                        <p className="text-sm text-gray-600">{payment.payment_method}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {formatDate(payment.payment_date)}
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="rounded-none">{payment.status}</Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
 
       {/* Receipt Preview Dialog */}
