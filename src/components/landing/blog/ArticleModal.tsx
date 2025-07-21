@@ -6,9 +6,10 @@ interface ArticleModalProps {
   article: Article | null;
   onClose: () => void;
   language: string;
+  translations: any;
 }
 
-const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language }) => {
+const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language, translations }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,8 +69,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language 
           {/* Bibliography Section */}
           {article.bibliography && (
             <div className="mt-8 pt-6 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Βιβλιογραφία:</h3>
-              <div className="text-sm text-gray-700 leading-relaxed">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{translations.bibliography}</h3>
+              <div className="text-xs text-gray-600 leading-relaxed">
                 {article.bibliography.split('\n').map((line, index) => {
                   if (line.trim() === '') return null;
                   return (

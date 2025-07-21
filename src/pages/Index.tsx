@@ -58,7 +58,7 @@ const Index = () => {
     { name: correctedTranslations.about, href: "#about" },
     { name: correctedTranslations.blog, href: "#blog" },
     { name: correctedTranslations.results, href: "#results" },
-    { name: "Επικοινωνία", href: "#footer" }
+    { name: correctedTranslations.contact, href: "#footer" }
   ];
 
   const programs = [

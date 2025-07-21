@@ -136,6 +136,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           article={selectedArticle}
           onClose={() => setSelectedArticle(null)}
           language={currentLanguage}
+          translations={translations}
         />
       </div>
     </section>
