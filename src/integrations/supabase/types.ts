@@ -2765,6 +2765,7 @@ export type Database = {
           created_at: string
           end_date: string
           id: string
+          is_paid: boolean
           is_paused: boolean | null
           notes: string | null
           paused_at: string | null
@@ -2782,6 +2783,7 @@ export type Database = {
           created_at?: string
           end_date: string
           id?: string
+          is_paid?: boolean
           is_paused?: boolean | null
           notes?: string | null
           paused_at?: string | null
@@ -2799,6 +2801,7 @@ export type Database = {
           created_at?: string
           end_date?: string
           id?: string
+          is_paid?: boolean
           is_paused?: boolean | null
           notes?: string | null
           paused_at?: string | null

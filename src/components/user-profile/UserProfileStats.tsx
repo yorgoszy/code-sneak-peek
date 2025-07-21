@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const isMobile = useIsMobile();
   const [subscriptionDays, setSubscriptionDays] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [paymentStatus, setPaymentStatus] = useState<boolean | null>(null);
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -33,6 +34,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
         if (error) {
           console.error('Error fetching all subscriptions:', error);
           setSubscriptionDays(null);
+          setPaymentStatus(null);
           return;
         }
 
@@ -40,6 +42,14 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
         // Φιλτράρισμα για ενεργές συνδρομές μόνο για εμφάνιση ημερών
         const activeSubscriptions = allSubscriptions?.filter(sub => sub.status === 'active') || [];
+
+        // Φόρτωση payment status από την πιο πρόσφατη συνδρομή
+        if (allSubscriptions && allSubscriptions.length > 0) {
+          const latestSubscription = allSubscriptions[0];
+          setPaymentStatus(latestSubscription.is_paid);
+        } else {
+          setPaymentStatus(null);
+        }
 
         if (activeSubscriptions.length === 0) {
           setSubscriptionDays(null);
@@ -108,7 +118,15 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           </div>
           <div className="text-center">
             <CreditCard className={`mx-auto text-orange-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.paymentsCount}</p>
+            <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {paymentStatus === null ? (
+                <span className="text-gray-400">-</span>
+              ) : paymentStatus ? (
+                <Check className={`mx-auto text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              ) : (
+                <X className={`mx-auto text-red-500 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              )}
+            </div>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Πληρωμές</p>
           </div>
           <div className="text-center">

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck } from "lucide-react";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard } from "lucide-react";
 import { ReceiptConfirmDialog } from './ReceiptConfirmDialog';
 import { SubscriptionDeleteDialog } from './SubscriptionDeleteDialog';
 
@@ -34,6 +34,7 @@ interface UserSubscription {
   is_paused: boolean;
   paused_at: string | null;
   paused_days_remaining: number | null;
+  is_paid: boolean;
   subscription_types: SubscriptionType;
   app_users: {
     name: string;
@@ -525,6 +526,32 @@ export const SubscriptionManagement: React.FC = () => {
         variant: "destructive",
         title: "Σφάλμα", 
         description: "Σφάλμα κατά τη συνέχιση: " + error.message
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const togglePaymentStatus = async (subscriptionId: string, currentStatus: boolean) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .update({ is_paid: !currentStatus })
+        .eq('id', subscriptionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία",
+        description: !currentStatus ? "Η συνδρομή σημειώθηκε ως πληρωμένη" : "Η συνδρομή σημειώθηκε ως μη πληρωμένη"
+      });
+      await loadData();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά την ενημέρωση της κατάστασης πληρωμής: " + error.message
       });
     } finally {
       setLoading(false);
@@ -1398,8 +1425,21 @@ export const SubscriptionManagement: React.FC = () => {
                             })()}
                           </div>
                         </td>
-                        <td className="p-2">
+                         <td className="p-2">
                           <div className="flex gap-1">
+                            {/* Payment Status Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => togglePaymentStatus(subscription.id, subscription.is_paid)}
+                              className={`rounded-none ${subscription.is_paid 
+                                ? 'border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10' 
+                                : 'border-red-300 text-red-600 hover:bg-red-50'}`}
+                              title={subscription.is_paid ? "Σημείωση ως μη πληρωμένη" : "Σημείωση ως πληρωμένη"}
+                            >
+                              {subscription.is_paid ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                            </Button>
+
                             {/* Pause/Resume Button */}
                             {subscription.is_paused ? (
                               <Button
@@ -1524,17 +1564,30 @@ export const SubscriptionManagement: React.FC = () => {
                           <span className="text-gray-400">-</span>
                         </td>
                         <td className="p-2">
-                          <div className="flex gap-1">
-                            {latestSubscription ? (
-                              <>
-                                <Button
-                                  size="sm"
-                                  onClick={() => renewSubscription(latestSubscription.id)}
-                                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                                  title="Ανανέωση συνδρομής"
-                                >
-                                  <RotateCcw className="w-3 h-3" />
-                                </Button>
+                           <div className="flex gap-1">
+                             {latestSubscription ? (
+                               <>
+                                 {/* Payment Status Button */}
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => togglePaymentStatus(latestSubscription.id, latestSubscription.is_paid)}
+                                   className={`rounded-none ${latestSubscription.is_paid 
+                                     ? 'border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10' 
+                                     : 'border-red-300 text-red-600 hover:bg-red-50'}`}
+                                   title={latestSubscription.is_paid ? "Σημείωση ως μη πληρωμένη" : "Σημείωση ως πληρωμένη"}
+                                 >
+                                   {latestSubscription.is_paid ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                                 </Button>
+
+                                 <Button
+                                   size="sm"
+                                   onClick={() => renewSubscription(latestSubscription.id)}
+                                   className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                                   title="Ανανέωση συνδρομής"
+                                 >
+                                   <RotateCcw className="w-3 h-3" />
+                                 </Button>
 
                                 <Button
                                   size="sm"
