@@ -27,34 +27,14 @@ const ProgramCards = () => {
     loadCompletions();
   }, [activePrograms, getAllWorkoutCompletions]);
 
-  // Calculate stats the same way as UserProfileProgramCards but with better completion logic
+  // Calculate stats the same way as calendar does
   const calculateProgramStats = (assignment: any) => {
     const trainingDates = assignment.training_dates || [];
     const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
     
-    let completed = 0;
-    let missed = 0;
+    const completed = assignmentCompletions.filter(c => c.status === 'completed').length;
     const total = trainingDates.length;
-    const today = new Date();
-    
-    // Για κάθε training date, έλεγξε το status
-    for (const date of trainingDates) {
-      const completion = assignmentCompletions.find(c => c.scheduled_date === date);
-      
-      if (completion?.status === 'completed') {
-        completed++;
-      } else {
-        // Έλεγχος αν έχει περάσει η ημερομηνία
-        const workoutDate = new Date(date);
-        const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        
-        if (isPast || completion?.status === 'missed') {
-          missed++;
-        }
-      }
-    }
-    
-    // Το progress υπολογίζεται μόνο από completed workouts
+    const missed = assignmentCompletions.filter(c => c.status === 'missed').length;
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
     
     return {
