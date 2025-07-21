@@ -38,7 +38,7 @@ export const UserProfileTabs = ({ user, programs, tests, payments, visits }: Use
       </TabsContent>
 
       <TabsContent value="payments" className="space-y-4">
-        <UserProfilePayments payments={payments} />
+        <UserProfilePayments payments={payments} userProfile={user} />
       </TabsContent>
 
       <TabsContent value="visits" className="space-y-4">

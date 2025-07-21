@@ -120,7 +120,7 @@ export const UserProfileContent = ({
                 RID AI Προπονητής
               </Button>
             </div>
-            <UserProfilePayments payments={payments} />
+            <UserProfilePayments payments={payments} userProfile={userProfile} />
           </div>
         );
       default:
