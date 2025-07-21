@@ -27,7 +27,7 @@ const ProgramCards = () => {
     loadCompletions();
   }, [activePrograms, getAllWorkoutCompletions]);
 
-  // Calculate stats the same way as UserProfileProgramCards
+  // Calculate stats the same way as UserProfileProgramCards but with better completion logic
   const calculateProgramStats = (assignment: any) => {
     const trainingDates = assignment.training_dates || [];
     const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
@@ -54,9 +54,8 @@ const ProgramCards = () => {
       }
     }
     
-    // Το progress υπολογίζεται από completed + missed (όλες οι "ολοκληρωμένες" προπονήσεις)
-    const processedWorkouts = completed + missed;
-    const progress = total > 0 ? Math.round((processedWorkouts / total) * 100) : 0;
+    // Το progress υπολογίζεται μόνο από completed workouts
+    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
     
     return {
       completed,
