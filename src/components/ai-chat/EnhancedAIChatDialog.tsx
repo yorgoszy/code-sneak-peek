@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Bot, User, Loader2, Download, Sparkles, Brain } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ChatInput } from './components/ChatInput';
 
 interface Message {
   id: string;
@@ -488,8 +489,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     return !uncertainPhrases.some(phrase => lowResponse.includes(phrase));
   };
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (files?: string[]) => {
+    if (!input.trim() && !files?.length || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -584,6 +585,10 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleSendMessage = () => {
+    sendMessage();
   };
 
   const getUserInitials = (name?: string) => {
@@ -683,27 +688,16 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             </div>
           </ScrollArea>
 
-          <div className="flex gap-2 p-4 border-t bg-white">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ρώτα τον RidAI Προπονητή για προπόνηση, διατροφή, ανάκαμψη..."
-              className="rounded-none"
-              disabled={isLoading || isLoadingHistory}
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={!input.trim() || isLoading || isLoadingHistory}
-              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
+          <ChatInput
+            input={input}
+            setInput={setInput}
+            isLoading={isLoading || isLoadingHistory}
+            hasActiveSubscription={true}
+            onSend={sendMessage}
+            onKeyPress={handleKeyPress}
+            isMobile={false}
+            userId={athleteId}
+          />
         </div>
       </DialogContent>
     </Dialog>
