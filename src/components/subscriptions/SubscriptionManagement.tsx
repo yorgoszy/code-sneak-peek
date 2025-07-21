@@ -105,7 +105,10 @@ export const SubscriptionManagement: React.FC = () => {
       console.log('✅ Subscription types loaded:', types?.length);
       setSubscriptionTypes(types || []);
 
-      // Φόρτωση συνδρομών χρηστών
+      // Ενημέρωση ληγμένων συνδρομών πρώτα
+      await supabase.rpc('check_and_update_expired_subscriptions');
+
+      // Φόρτωση συνδρομών χρηστών (μόνο ενεργές και σε παύση)
       const { data: subscriptions, error: subscriptionsError } = await supabase
         .from('user_subscriptions')
         .select(`
@@ -113,6 +116,7 @@ export const SubscriptionManagement: React.FC = () => {
           subscription_types (*),
           app_users (name, email, subscription_status, role, user_status)
         `)
+        .in('status', ['active'])
         .order('created_at', { ascending: false });
 
       if (subscriptionsError) {

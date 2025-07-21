@@ -23,14 +23,46 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   useEffect(() => {
     const fetchSubscriptionData = async () => {
       try {
-        const { data: activeSubscriptions, error } = await supabase
+        // Φόρτωση όλων των συνδρομών (ενεργές, σε παύση, ληγμένες)
+        const { data: allSubscriptions, error } = await supabase
           .from('user_subscriptions')
-          .select('end_date, status, is_paused, paused_days_remaining, subscription_types(name)')
+          .select('*, subscription_types(name, price)')
           .eq('user_id', user.id)
-          .eq('status', 'active')
           .order('created_at', { ascending: false });
 
-        if (error || !activeSubscriptions || activeSubscriptions.length === 0) {
+        if (error) {
+          console.error('Error fetching all subscriptions:', error);
+          setSubscriptionDays(null);
+          return;
+        }
+
+        // Αποθήκευση όλων των συνδρομών στο προφίλ του χρήστη
+        if (allSubscriptions && allSubscriptions.length > 0) {
+          const { error: updateError } = await supabase
+            .from('app_users')
+            .update({ 
+              subscription_history: allSubscriptions.map(sub => ({
+                id: sub.id,
+                type: sub.subscription_types?.name,
+                start_date: sub.start_date,
+                end_date: sub.end_date,
+                status: sub.status,
+                is_paused: sub.is_paused,
+                paused_days_remaining: sub.paused_days_remaining,
+                price: sub.subscription_types?.price
+              }))
+            })
+            .eq('id', user.id);
+
+          if (updateError) {
+            console.error('Error updating user subscription history:', updateError);
+          }
+        }
+
+        // Φιλτράρισμα για ενεργές συνδρομές μόνο για εμφάνιση ημερών
+        const activeSubscriptions = allSubscriptions?.filter(sub => sub.status === 'active') || [];
+
+        if (activeSubscriptions.length === 0) {
           setSubscriptionDays(null);
           return;
         }

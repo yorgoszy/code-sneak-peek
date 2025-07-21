@@ -2628,6 +2628,7 @@ export type Database = {
       }
       user_subscriptions: {
         Row: {
+          archived_at: string | null
           auto_renewal: boolean | null
           created_at: string
           end_date: string
@@ -2644,6 +2645,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           auto_renewal?: boolean | null
           created_at?: string
           end_date: string
@@ -2660,6 +2662,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           auto_renewal?: boolean | null
           created_at?: string
           end_date?: string
@@ -2897,6 +2900,10 @@ export type Database = {
       }
       admin_delete_athlete_memberships: {
         Args: { athlete_id: string }
+        Returns: undefined
+      }
+      check_and_update_expired_subscriptions: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       create_exercise_tables: {
