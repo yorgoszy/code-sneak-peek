@@ -14,7 +14,7 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
           {/* Επικοινωνία */}
           <div>
             <h3 className="text-xl font-bold mb-6" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-              Επικοινωνία
+              {translations.contactTitle}
             </h3>
             <div className="space-y-4">
               <a 
@@ -92,18 +92,18 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
           {/* Ώρες */}
           <div className="md:ml-auto">
             <h3 className="text-xl font-bold mb-6" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-              Ώρες
+              {translations.hoursTitle}
             </h3>
             <div className="space-y-2">
-              <p>Δευτέρα - Παρασκευή: 7:00 - 22:00</p>
-              <p>Σάββατο: Κλειστά</p>
-              <p>Κυριακή: Κλειστά</p>
+              <p>{translations.mondayFriday}</p>
+              <p>{translations.saturday}</p>
+              <p>{translations.sunday}</p>
             </div>
           </div>
         </div>
 
         <div className="text-center text-gray-400 border-t border-gray-800 pt-8 mt-12">
-          <p>© 2024 hyperkids. Όλα τα δικαιώματα διατηρούνται.</p>
+          <p>{translations.copyright}</p>
         </div>
       </div>
     </footer>

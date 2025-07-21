@@ -171,13 +171,13 @@ const Index = () => {
       <section className="py-20 bg-[#00ffba]">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-black mb-6">
-            Είσαι έτοιμος;
+            {correctedTranslations.readyQuestion}
           </h2>
           <p className="text-xl text-black max-w-3xl mx-auto mb-8">
-            Το ταξίδι προς την κορυφή ξεκινάει εδώ.
+            {correctedTranslations.journeyText}
           </p>
           <button className="bg-black text-[#00ffba] px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors">
-            Ξεκινήστε τώρα
+            {correctedTranslations.startNow}
           </button>
         </div>
       </section>
