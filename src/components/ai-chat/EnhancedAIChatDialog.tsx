@@ -217,9 +217,11 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3dkdml1ZmV0aWJuYWZ6aXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczOTczNTAsImV4cCI6MjA2Mjk3MzM1MH0.Rlr7MWSRm1dUnXH_5xBkTNYxKBb3t8xCzwwnv1SlIs8`,
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
-          context,
-          athleteId
+          message: userMessage.content,
+          userId: athleteId,
+          userName: 'HYPERKIDS',
+          platformData: context,
+          files: null
         }),
       });
 
