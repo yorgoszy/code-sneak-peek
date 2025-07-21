@@ -103,7 +103,7 @@ serve(async (req) => {
               week.program_days?.forEach(day => {
                 day.program_blocks?.forEach(block => {
                   block.program_exercises?.forEach(pe => {
-                    if (pe.exercises) {
+                    if (pe.exercises?.name) {
                       exercises.add(`- Άσκηση: ${pe.exercises.name} (${pe.sets} sets x ${pe.reps} reps${pe.kg ? `, ${pe.kg}kg` : ''})`);
                     }
                   });
