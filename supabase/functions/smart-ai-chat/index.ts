@@ -21,7 +21,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, userId, userName, platformData } = await req.json();
+    const { message, userId, userName, platformData, files } = await req.json();
 
     if (!userId) {
       throw new Error('User ID is required');
@@ -29,9 +29,66 @@ serve(async (req) => {
 
     console.log('🚀 Smart AI Chat request for user:', userId, 'message:', message);
     console.log('📊 Platform data received:', platformData ? 'Yes' : 'No');
+    console.log('📁 Files received:', files ? files.length : 0);
+
+    // Process uploaded files
+    let filesContext = '';
+    if (files && files.length > 0) {
+      console.log('📁 Processing uploaded files...');
+      
+      for (const filePath of files) {
+        try {
+          // Download file from storage
+          const { data: fileData, error: downloadError } = await supabase.storage
+            .from('ai-chat-files')
+            .download(filePath);
+
+          if (downloadError) {
+            console.error('Error downloading file:', filePath, downloadError);
+            continue;
+          }
+
+          // Get file metadata
+          const { data: metadata } = await supabase
+            .from('ai_chat_files')
+            .select('file_name, file_type')
+            .eq('file_path', filePath)
+            .single();
+
+          const fileName = metadata?.file_name || 'Unknown file';
+          const fileType = metadata?.file_type || '';
+
+          // Process based on file type
+          let fileContent = '';
+          
+          if (fileType.startsWith('text/')) {
+            // Text files
+            fileContent = await fileData.text();
+            filesContext += `\n\n📄 Αρχείο: ${fileName}\nΠεριεχόμενο:\n${fileContent}`;
+          } else if (fileType.startsWith('image/')) {
+            // Image files - convert to base64 for AI analysis
+            const arrayBuffer = await fileData.arrayBuffer();
+            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            filesContext += `\n\n🖼️ Εικόνα: ${fileName}\n[Εικόνα διαθέσιμη για ανάλυση - base64 encoded]`;
+            
+            // For vision-capable models, we can include the base64 data
+            // This is a placeholder - would need to be implemented based on the AI model's vision capabilities
+          } else if (fileType === 'application/pdf') {
+            // PDF files - would need a PDF parser
+            filesContext += `\n\n📋 PDF: ${fileName}\n[PDF αρχείο - χρειάζεται επεξεργασία]`;
+          } else {
+            filesContext += `\n\n📎 Αρχείο: ${fileName}\n[Τύπος: ${fileType}]`;
+          }
+          
+        } catch (error) {
+          console.error('Error processing file:', filePath, error);
+          filesContext += `\n\n❌ Σφάλμα στην επεξεργασία αρχείου: ${filePath}`;
+        }
+      }
+    }
 
     // Create enhanced context with platform data
-    let enhancedContext = '';
+    let enhancedContext = filesContext;
     
     if (platformData) {
       // Process programs data

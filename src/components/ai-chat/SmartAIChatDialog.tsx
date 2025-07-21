@@ -39,8 +39,8 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
     }
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) {
+  const handleSendMessage = async (files?: string[]) => {
+    if ((!input.trim() && !files?.length) || isLoading) {
       return;
     }
 
@@ -53,7 +53,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
 
     const userInput = input;
     setInput('');
-    await sendMessage(userInput);
+    await sendMessage(userInput, files);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -89,6 +89,7 @@ export const SmartAIChatDialog: React.FC<SmartAIChatDialogProps> = ({
         onSend={handleSendMessage}
         onKeyPress={handleKeyPress}
         onClearConversation={clearConversation}
+        userId={userId}
       />
     </DialogWrapper>
   );

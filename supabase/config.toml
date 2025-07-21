@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.force-missed-workouts]
 verify_jwt = false
+
+[functions.cleanup-ai-files]
+verify_jwt = false

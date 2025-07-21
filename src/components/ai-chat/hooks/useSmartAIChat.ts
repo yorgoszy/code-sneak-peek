@@ -50,8 +50,8 @@ export const useSmartAIChat = ({ isOpen, userId, userName }: UseSmartAIChatProps
     return () => clearTimeout(timer);
   }, [messages]);
 
-  const sendMessage = async (userMessage: string) => {
-    await handleSendMessage(userMessage);
+  const sendMessage = async (userMessage: string, files?: string[]) => {
+    await handleSendMessage(userMessage, files);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
