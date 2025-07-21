@@ -1,6 +1,7 @@
 
 import { SubscriptionManagement } from "@/components/subscriptions/SubscriptionManagement";
 import { SubscriptionTypeManager } from "@/components/subscriptions/SubscriptionTypeManager";
+import { SubscriptionHistory } from "@/components/subscriptions/SubscriptionHistory";
 import { MyDataIntegration } from "@/components/analytics/MyDataIntegration";
 import { ReceiptManagement } from "@/components/analytics/ReceiptManagement";
 import { CertificateManager } from "@/components/analytics/CertificateManager";
@@ -25,13 +26,14 @@ export default function Subscriptions() {
         </div>
         
         <Tabs defaultValue="management" className="w-full">
-          <TabsList className="grid w-full grid-cols-8 mb-6 rounded-none">
+          <TabsList className="grid w-full grid-cols-9 mb-6 rounded-none">
             <TabsTrigger value="management" className="rounded-none">Συνδρομές</TabsTrigger>
             <TabsTrigger value="visits" className="rounded-none">Επισκέψεις</TabsTrigger>
             <TabsTrigger value="receipts" className="rounded-none">Αποδείξεις</TabsTrigger>
             <TabsTrigger value="expenses" className="rounded-none">Έξοδα</TabsTrigger>
             <TabsTrigger value="financial" className="rounded-none">Έσοδα-Έξοδα</TabsTrigger>
             <TabsTrigger value="types" className="rounded-none">Τύποι</TabsTrigger>
+            <TabsTrigger value="history" className="rounded-none">Ιστορικό</TabsTrigger>
             <TabsTrigger value="certificates" className="rounded-none">Certificates</TabsTrigger>
             <TabsTrigger value="mydata" className="rounded-none">Banking</TabsTrigger>
           </TabsList>
@@ -42,6 +44,10 @@ export default function Subscriptions() {
           
           <TabsContent value="types">
             <SubscriptionTypeManager />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <SubscriptionHistory />
           </TabsContent>
           
           <TabsContent value="visits">
