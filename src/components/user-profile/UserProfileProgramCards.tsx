@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, CheckCircle, Clock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { useAllPrograms } from "@/hooks/useAllPrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
 
@@ -12,7 +12,7 @@ interface UserProfileProgramCardsProps {
 }
 
 export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = ({ userProfile }) => {
-  const { data: allActivePrograms = [], isLoading, error, refetch } = useActivePrograms();
+  const { data: allActivePrograms = [], isLoading, error, refetch } = useAllPrograms();
   const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
 
