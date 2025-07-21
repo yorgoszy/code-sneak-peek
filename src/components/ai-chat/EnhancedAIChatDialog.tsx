@@ -380,7 +380,12 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
   useEffect(() => {
     if (isOpen && athleteId) {
+      console.log('🔄 Dialog opened, loading conversation for athleteId:', athleteId);
       loadConversationHistory();
+    } else if (!isOpen) {
+      // Clear messages when dialog closes to prevent old conversations from showing
+      console.log('🧹 Dialog closed, clearing messages');
+      setMessages([]);
     }
   }, [isOpen, athleteId]);
 
@@ -392,6 +397,10 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     if (!athleteId) return;
     
     setIsLoadingHistory(true);
+    
+    // Καθαρισμός προηγούμενων μηνυμάτων πρώτα
+    setMessages([]);
+    
     try {
       console.log('📚 Loading conversation history for:', athleteId);
       
@@ -416,6 +425,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         console.log('✅ Loaded', formattedMessages.length, 'messages from history');
       } else {
         // Αν δεν υπάρχει ιστορικό, δείχνουμε το καλωσόρισμα
+        console.log('📝 No history found, initializing chat');
         await initializeChat();
       }
     } catch (error) {
