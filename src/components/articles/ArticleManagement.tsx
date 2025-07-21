@@ -6,10 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Eye, Upload, X } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Plus, Edit, Trash2, Eye, Upload, X, CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Article {
   id: string;
@@ -21,6 +24,8 @@ interface Article {
   published_date: string;
   language: string;
   created_at: string;
+  status?: string;
+  scheduled_date?: string;
 }
 
 export const ArticleManagement = () => {
@@ -38,7 +43,9 @@ export const ArticleManagement = () => {
     bibliography: '',
     image_url: '',
     published_date: format(new Date(), 'yyyy-MM-dd'),
-    language: 'el'
+    language: 'el',
+    status: 'published',
+    scheduled_date: ''
   });
 
   useEffect(() => {
@@ -81,7 +88,7 @@ export const ArticleManagement = () => {
     return publicUrl;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, status: string = 'published') => {
     e.preventDefault();
     setLoading(true);
 
@@ -96,7 +103,9 @@ export const ArticleManagement = () => {
 
       const articleData = {
         ...formData,
-        image_url: imageUrl
+        image_url: imageUrl,
+        status: status,
+        scheduled_date: status === 'scheduled' ? formData.scheduled_date : null
       };
 
       if (editingArticle) {
@@ -118,7 +127,7 @@ export const ArticleManagement = () => {
         if (error) throw error;
         toast({
           title: "Επιτυχία", 
-          description: "Το άρθρο δημιουργήθηκε επιτυχώς",
+          description: `Το άρθρο ${status === 'draft' ? 'αποθηκεύτηκε ως προχείρο' : status === 'scheduled' ? 'προγραμματίστηκε για δημοσίευση' : 'δημιουργήθηκε'} επιτυχώς`,
         });
       }
 
@@ -136,6 +145,22 @@ export const ArticleManagement = () => {
       setLoading(false);
       setUploading(false);
     }
+  };
+
+  const handleSaveAsDraft = (e: React.FormEvent) => {
+    handleSubmit(e, 'draft');
+  };
+
+  const handleScheduledPublish = (e: React.FormEvent) => {
+    if (!formData.scheduled_date) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε ημερομηνία προγραμματισμένης δημοσίευσης",
+        variant: "destructive",
+      });
+      return;
+    }
+    handleSubmit(e, 'scheduled');
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -182,7 +207,9 @@ export const ArticleManagement = () => {
       bibliography: article.bibliography || '',
       image_url: article.image_url || '',
       published_date: article.published_date,
-      language: article.language
+      language: article.language,
+      status: article.status || 'published',
+      scheduled_date: article.scheduled_date || ''
     });
     setPreviewUrl(article.image_url || '');
     setSelectedFile(null);
@@ -224,7 +251,9 @@ export const ArticleManagement = () => {
       bibliography: '',
       image_url: '',
       published_date: format(new Date(), 'yyyy-MM-dd'),
-      language: 'el'
+      language: 'el',
+      status: 'published',
+      scheduled_date: ''
     });
     setEditingArticle(null);
     setSelectedFile(null);
@@ -263,6 +292,7 @@ export const ArticleManagement = () => {
                   <TableHead>Τίτλος</TableHead>
                   <TableHead>Ημερομηνία</TableHead>
                   <TableHead>Γλώσσα</TableHead>
+                  <TableHead>Κατάσταση</TableHead>
                   <TableHead className="text-right">Ενέργειες</TableHead>
                 </TableRow>
               </TableHeader>
@@ -272,6 +302,19 @@ export const ArticleManagement = () => {
                     <TableCell className="font-medium">{article.title}</TableCell>
                     <TableCell>{format(new Date(article.published_date), 'dd/MM/yyyy')}</TableCell>
                     <TableCell>{article.language === 'el' ? 'Ελληνικά' : 'English'}</TableCell>
+                    <TableCell>
+                      <span className={cn(
+                        "px-2 py-1 rounded-full text-xs font-medium",
+                        article.status === 'published' && "bg-green-100 text-green-800",
+                        article.status === 'draft' && "bg-gray-100 text-gray-800",
+                        article.status === 'scheduled' && "bg-blue-100 text-blue-800"
+                      )}>
+                        {article.status === 'published' && 'Δημοσιευμένο'}
+                        {article.status === 'draft' && 'Προχείρο'}
+                        {article.status === 'scheduled' && 'Προγραμματισμένο'}
+                        {!article.status && 'Δημοσιευμένο'}
+                      </span>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
                         <Button
@@ -433,22 +476,75 @@ export const ArticleManagement = () => {
               />
             </div>
 
-            <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleDialogClose}
-                className="rounded-none"
-              >
-                Ακύρωση
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading || uploading}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                {uploading ? 'Μεταφόρτωση...' : loading ? 'Αποθήκευση...' : editingArticle ? 'Ενημέρωση' : 'Δημιουργία'}
-              </Button>
+            <div>
+              <Label htmlFor="scheduled_date">Ημερομηνία Προγραμματισμένης Δημοσίευσης</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal rounded-none",
+                      !formData.scheduled_date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.scheduled_date ? format(new Date(formData.scheduled_date), "dd/MM/yyyy") : "Επιλέξτε ημερομηνία"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.scheduled_date ? new Date(formData.scheduled_date) : undefined}
+                    onSelect={(date) => setFormData({ ...formData, scheduled_date: date ? format(date, 'yyyy-MM-dd') : '' })}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-gray-500 mt-1">
+                Για προγραμματισμένη δημοσίευση, επιλέξτε μελλοντική ημερομηνία
+              </p>
+            </div>
+
+            <div className="flex justify-between">
+              <div className="flex space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSaveAsDraft}
+                  disabled={loading || uploading}
+                  className="rounded-none"
+                >
+                  Αποθήκευση ως Προχείρο
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleScheduledPublish}
+                  disabled={loading || uploading}
+                  className="rounded-none"
+                >
+                  Προγραμματισμένη Δημοσίευση
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleDialogClose}
+                  className="rounded-none"
+                >
+                  Ακύρωση
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading || uploading}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  {uploading ? 'Μεταφόρτωση...' : loading ? 'Αποθήκευση...' : editingArticle ? 'Ενημέρωση' : 'Δημοσίευση'}
+                </Button>
+              </div>
             </div>
           </form>
         </DialogContent>

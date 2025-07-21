@@ -368,6 +368,8 @@ export type Database = {
           image_url: string | null
           language: string
           published_date: string
+          scheduled_date: string | null
+          status: string
           title: string
           updated_at: string
         }
@@ -381,6 +383,8 @@ export type Database = {
           image_url?: string | null
           language?: string
           published_date?: string
+          scheduled_date?: string | null
+          status?: string
           title: string
           updated_at?: string
         }
@@ -394,6 +398,8 @@ export type Database = {
           image_url?: string | null
           language?: string
           published_date?: string
+          scheduled_date?: string | null
+          status?: string
           title?: string
           updated_at?: string
         }
