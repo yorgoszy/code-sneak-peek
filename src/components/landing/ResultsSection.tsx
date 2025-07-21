@@ -5,6 +5,7 @@ import { format } from "date-fns";
 
 interface ResultsSectionProps {
   translations: any;
+  currentLanguage?: string;
 }
 
 interface Result {
@@ -19,7 +20,7 @@ interface Result {
   status: string;
 }
 
-const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
+const ResultsSection: React.FC<ResultsSectionProps> = ({ translations, currentLanguage = 'el' }) => {
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,15 +51,41 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
     return hashtagsString.split(' ').filter(tag => tag.startsWith('#'));
   };
 
+  const getTitle = (result: Result) => {
+    if (currentLanguage === 'en' && result.title_en) {
+      return result.title_en;
+    }
+    return result.title_el;
+  };
+
+  const getContent = (result: Result) => {
+    if (currentLanguage === 'en' && result.content_en) {
+      return result.content_en;
+    }
+    return result.content_el;
+  };
+
+  const getSectionTitle = () => {
+    return currentLanguage === 'en' ? 'Results' : 'Αποτελέσματα';
+  };
+
+  const getNoResultsText = () => {
+    return currentLanguage === 'en' ? 'No results to display' : 'Δεν υπάρχουν αποτελέσματα προς εμφάνιση';
+  };
+
+  const getLoadingText = () => {
+    return currentLanguage === 'en' ? 'Loading...' : 'Φόρτωση...';
+  };
+
   if (loading) {
     return (
       <section id="results" className="py-8 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-4xl font-bold mb-4 text-black" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-              Αποτελέσματα
+              {getSectionTitle()}
             </h2>
-            <div>Φόρτωση...</div>
+            <div>{getLoadingText()}</div>
           </div>
         </div>
       </section>
@@ -70,13 +97,13 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4 text-black" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-            Αποτελέσματα
+            {getSectionTitle()}
           </h2>
         </div>
         
         {results.length === 0 ? (
           <div className="text-center text-gray-500">
-            Δεν υπάρχουν αποτελέσματα προς εμφάνιση
+            {getNoResultsText()}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -85,7 +112,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                 {result.image_url && (
                   <img 
                     src={result.image_url} 
-                    alt={result.title_el}
+                    alt={getTitle(result)}
                     className="w-full h-48 object-cover"
                   />
                 )}
@@ -96,11 +123,11 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                   </div>
                   
                   <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-                    {result.title_el}
+                    {getTitle(result)}
                   </h3>
                   
                   <p className="text-gray-600 mb-4 flex-grow">
-                    {result.content_el}
+                    {getContent(result)}
                   </p>
                   
                   {result.hashtags && (
