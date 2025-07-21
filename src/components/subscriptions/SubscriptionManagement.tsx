@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { matchesSearchTerm } from "@/lib/utils";
 import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard } from "lucide-react";
 import { ReceiptConfirmDialog } from './ReceiptConfirmDialog';
 import { SubscriptionDeleteDialog } from './SubscriptionDeleteDialog';
@@ -87,8 +88,8 @@ export const SubscriptionManagement: React.FC = () => {
       setFilteredUsers(users);
     } else {
       const filtered = users.filter(user =>
-        user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
+        matchesSearchTerm(user.name, userSearchTerm) ||
+        matchesSearchTerm(user.email, userSearchTerm)
       );
       setFilteredUsers(filtered);
     }
@@ -391,7 +392,7 @@ export const SubscriptionManagement: React.FC = () => {
         .insert({
           user_id: selectedUser,
           subscription_type_id: selectedSubscriptionType,
-          start_date: startDate,
+          start_date: subscriptionStartDate.toISOString().split('T')[0],
           end_date: endDate.toISOString().split('T')[0],
           status: 'active',
           notes: notes
@@ -418,7 +419,7 @@ export const SubscriptionManagement: React.FC = () => {
             user_id: selectedUser,
             total_visits: subscriptionType.visit_count,
             remaining_visits: subscriptionType.visit_count,
-            purchase_date: startDate,
+            purchase_date: subscriptionStartDate.toISOString().split('T')[0],
             expiry_date: visitEndDate.toISOString().split('T')[0],
             price: subscriptionType.price
           });
@@ -440,7 +441,7 @@ export const SubscriptionManagement: React.FC = () => {
           userEmail: selectedUserData.email,
           subscriptionType: subscriptionType.name,
           price: subscriptionType.price,
-          startDate: startDate,
+          startDate: subscriptionStartDate.toISOString().split('T')[0],
           endDate: endDate.toISOString().split('T')[0],
           invoiceNumber: invoiceNumber
         };
@@ -482,6 +483,8 @@ export const SubscriptionManagement: React.FC = () => {
       setShowUserDropdown(false);
       setStartDate(new Date().toISOString().split('T')[0]);
       setIssueDate(new Date().toISOString().split('T')[0]);
+      setShowReceiptDialog(false);
+      setPendingSubscriptionData(null);
       await loadData();
 
     } catch (error) {
@@ -927,8 +930,8 @@ export const SubscriptionManagement: React.FC = () => {
   // Filter users for table display and sort by subscription priority
   const filteredUsersForTable = users.filter(user => {
     if (usersTableSearchTerm.trim() === '') return true;
-    return user.name.toLowerCase().includes(usersTableSearchTerm.toLowerCase()) ||
-           user.email.toLowerCase().includes(usersTableSearchTerm.toLowerCase());
+    return matchesSearchTerm(user.name, usersTableSearchTerm) ||
+           matchesSearchTerm(user.email, usersTableSearchTerm);
   }).sort((a, b) => {
     // Get active subscriptions for both users
     const aActiveSubscription = userSubscriptions.find(s => s.user_id === a.id && s.status === 'active');
