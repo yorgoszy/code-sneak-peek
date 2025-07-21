@@ -2060,6 +2060,51 @@ export type Database = {
           },
         ]
       }
+      results: {
+        Row: {
+          content_el: string
+          content_en: string | null
+          created_at: string | null
+          created_by: string | null
+          hashtags: string | null
+          id: string
+          image_url: string | null
+          result_date: string
+          status: string
+          title_el: string
+          title_en: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content_el: string
+          content_en?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          hashtags?: string | null
+          id?: string
+          image_url?: string | null
+          result_date?: string
+          status?: string
+          title_el: string
+          title_en?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content_el?: string
+          content_en?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          hashtags?: string | null
+          id?: string
+          image_url?: string | null
+          result_date?: string
+          status?: string
+          title_el?: string
+          title_en?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       site_images: {
         Row: {
           created_at: string

@@ -90,21 +90,21 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
-      icon: BarChart3,
-      label: "Αποτελέσματα",
-      path: "/dashboard/results",
-      badge: null
-    },
-    {
       icon: TrendingUp,
       label: "Analytics",
       path: "/dashboard/analytics",
       badge: "NEW"
     },
-    {
-      icon: BookOpen,
-      label: "Άρθρα",
+    { 
+      icon: BookOpen, 
+      label: "Άρθρα", 
       path: "/dashboard/articles",
+      badge: null
+    },
+    { 
+      icon: BarChart3, 
+      label: "Αποτελέσματα", 
+      path: "/dashboard/results",
       badge: null
     },
     {

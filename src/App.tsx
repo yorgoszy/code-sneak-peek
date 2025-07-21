@@ -23,6 +23,7 @@ import NotFound from "@/pages/NotFound";
 import Subscriptions from "@/pages/Subscriptions";
 import Analytics from "@/pages/Analytics";
 import ArticlesWithSidebar from "@/pages/Dashboard/ArticlesWithSidebar";
+import ResultsWithSidebar from "@/pages/Dashboard/ResultsWithSidebar";
 
 const queryClient = new QueryClient();
 
@@ -46,9 +47,9 @@ function App() {
                 <Route path="/dashboard/active-programs" element={<ActivePrograms />} />
                 <Route path="/dashboard/program-cards" element={<ProgramCards />} />
                 <Route path="/dashboard/tests" element={<Tests />} />
-                <Route path="/dashboard/results" element={<Results />} />
                 <Route path="/dashboard/analytics" element={<Analytics />} />
                 <Route path="/dashboard/articles" element={<ArticlesWithSidebar />} />
+                <Route path="/dashboard/results" element={<ResultsWithSidebar />} />
                 <Route path="/user/:userId" element={<UserProfile />} />
                 <Route path="/dashboard/user-profile/:userId" element={<UserProfile />} />
                 <Route path="/program-builder" element={<ProgramBuilder />} />
