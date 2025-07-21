@@ -54,8 +54,9 @@ const ProgramCards = () => {
       }
     }
     
-    // Το progress υπολογίζεται μόνο από completed workouts
-    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    // Το progress υπολογίζεται από completed + missed (όλες οι "ολοκληρωμένες" προπονήσεις)
+    const processedWorkouts = completed + missed;
+    const progress = total > 0 ? Math.round((processedWorkouts / total) * 100) : 0;
     
     return {
       completed,
