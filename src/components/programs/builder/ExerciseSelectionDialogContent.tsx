@@ -9,6 +9,7 @@ import { ExerciseGrid } from './ExerciseGrid';
 import { AddExerciseDialog } from '@/components/AddExerciseDialog';
 import { useExerciseRealtime } from './hooks/useExerciseRealtime';
 import { useExerciseWithCategories } from './hooks/useExerciseWithCategories';
+import { matchesSearchTerm } from "@/lib/utils";
 
 interface Exercise {
   id: string;
@@ -56,7 +57,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(exercise => 
-        exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
+        matchesSearchTerm(exercise.name, searchTerm)
       );
     }
 

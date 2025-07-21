@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { matchesSearchTerm } from "@/lib/utils";
 
 interface ExerciseSelectorProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ export const ExerciseSelector: React.FC<ExerciseSelectorProps> = ({
 
   useEffect(() => {
     const filtered = exercises.filter(exercise =>
-      exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
+      matchesSearchTerm(exercise.name, searchTerm)
     );
     setFilteredExercises(filtered);
   }, [exercises, searchTerm]);

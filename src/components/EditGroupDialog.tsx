@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Users } from "lucide-react";
+import { matchesSearchTerm } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -201,8 +202,8 @@ export const EditGroupDialog = ({ isOpen, onClose, onGroupUpdated, group }: Edit
   };
 
   const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    matchesSearchTerm(user.name, searchTerm) ||
+    matchesSearchTerm(user.email, searchTerm)
   );
 
   return (

@@ -7,6 +7,7 @@ import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
+import { matchesSearchTerm } from "@/lib/utils";
 
 interface User {
   id: string;
@@ -38,7 +39,7 @@ export const AthleteSelector = ({ selectedAthleteIds, onAthleteToggle, onSelectA
   };
 
   const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    matchesSearchTerm(user.name, searchTerm)
   );
 
   const selectedUsers = users.filter(user => selectedAthleteIds.includes(user.id));
