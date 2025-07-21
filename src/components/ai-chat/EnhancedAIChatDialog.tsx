@@ -26,10 +26,15 @@ interface EnhancedAIChatDialogProps {
 }
 
 // Κλήσεις στα AI Edge Functions
-const callGeminiAI = async (message: string): Promise<string> => {
+const callGeminiAI = async (message: string, files: string[] = [], userId?: string, userName?: string): Promise<string> => {
   try {
-    const { data, error } = await supabase.functions.invoke('gemini-ai-chat', {
-      body: { message }
+    const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
+      body: { 
+        message, 
+        userId: userId,
+        userName: userName,
+        files: files
+      }
     });
 
     if (error) throw error;
@@ -490,7 +495,12 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   };
 
   const sendMessage = async (files?: string[]) => {
-    if (!input.trim() && !files?.length || isLoading) return;
+    console.log('🔄 EnhancedAIChatDialog sendMessage called with:', { input: input.substring(0, 50), files, athleteId });
+    
+    if (!input.trim() && !files?.length || isLoading) {
+      console.log('❌ No input or files, or already loading');
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -523,7 +533,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         // Βήμα 2: Δοκιμάζουμε πρώτα το Gemini AI (δωρεάν)
         try {
           console.log('🔥 Δοκιμάζω Gemini AI πρώτα...');
-          const geminiResponse = await callGeminiAI(currentInput);
+          const geminiResponse = await callGeminiAI(currentInput, files, athleteId, athleteName);
           
           if (isGoodResponse(geminiResponse)) {
             finalResponse = geminiResponse;
