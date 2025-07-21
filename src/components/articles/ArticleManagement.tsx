@@ -16,13 +16,15 @@ import { cn } from "@/lib/utils";
 
 interface Article {
   id: string;
-  title: string;
-  excerpt: string;
-  content: string;
+  title_el: string;
+  title_en?: string;
+  excerpt_el: string;
+  excerpt_en?: string;
+  content_el: string;
+  content_en?: string;
   bibliography?: string;
   image_url?: string;
   published_date: string;
-  language: string;
   created_at: string;
   status?: string;
   scheduled_date?: string;
@@ -37,13 +39,15 @@ export const ArticleManagement = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [formData, setFormData] = useState({
-    title: '',
-    excerpt: '',
-    content: '',
+    title_el: '',
+    title_en: '',
+    excerpt_el: '',
+    excerpt_en: '',
+    content_el: '',
+    content_en: '',
     bibliography: '',
     image_url: '',
     published_date: format(new Date(), 'yyyy-MM-dd'),
-    language: 'el',
     status: 'published',
     scheduled_date: ''
   });
@@ -201,13 +205,15 @@ export const ArticleManagement = () => {
   const handleEdit = (article: Article) => {
     setEditingArticle(article);
     setFormData({
-      title: article.title,
-      excerpt: article.excerpt,
-      content: article.content,
+      title_el: article.title_el,
+      title_en: article.title_en || '',
+      excerpt_el: article.excerpt_el,
+      excerpt_en: article.excerpt_en || '',
+      content_el: article.content_el,
+      content_en: article.content_en || '',
       bibliography: article.bibliography || '',
       image_url: article.image_url || '',
       published_date: article.published_date,
-      language: article.language,
       status: article.status || 'published',
       scheduled_date: article.scheduled_date || ''
     });
@@ -245,13 +251,15 @@ export const ArticleManagement = () => {
 
   const resetForm = () => {
     setFormData({
-      title: '',
-      excerpt: '',
-      content: '',
+      title_el: '',
+      title_en: '',
+      excerpt_el: '',
+      excerpt_en: '',
+      content_el: '',
+      content_en: '',
       bibliography: '',
       image_url: '',
       published_date: format(new Date(), 'yyyy-MM-dd'),
-      language: 'el',
       status: 'published',
       scheduled_date: ''
     });
@@ -299,9 +307,9 @@ export const ArticleManagement = () => {
               <TableBody>
                 {articles.map((article) => (
                   <TableRow key={article.id}>
-                    <TableCell className="font-medium">{article.title}</TableCell>
+                    <TableCell className="font-medium">{article.title_el}</TableCell>
                     <TableCell>{format(new Date(article.published_date), 'dd/MM/yyyy')}</TableCell>
-                    <TableCell>{article.language === 'el' ? 'Ελληνικά' : 'English'}</TableCell>
+                    <TableCell>Δίγλωσσο</TableCell>
                     <TableCell>
                       <span className={cn(
                         "px-2 py-1 rounded-full text-xs font-medium",
@@ -354,26 +362,36 @@ export const ArticleManagement = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="title">Τίτλος *</Label>
+                <Label htmlFor="title_el">Τίτλος (Ελληνικά) *</Label>
                 <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  id="title_el"
+                  value={formData.title_el}
+                  onChange={(e) => setFormData({ ...formData, title_el: e.target.value })}
                   required
                   className="rounded-none"
                 />
               </div>
               <div>
-                <Label htmlFor="published_date">Ημερομηνία Δημοσίευσης *</Label>
+                <Label htmlFor="title_en">Τίτλος (English)</Label>
                 <Input
-                  id="published_date"
-                  type="date"
-                  value={formData.published_date}
-                  onChange={(e) => setFormData({ ...formData, published_date: e.target.value })}
-                  required
+                  id="title_en"
+                  value={formData.title_en}
+                  onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
                   className="rounded-none"
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="published_date">Ημερομηνία Δημοσίευσης *</Label>
+              <Input
+                id="published_date"
+                type="date"
+                value={formData.published_date}
+                onChange={(e) => setFormData({ ...formData, published_date: e.target.value })}
+                required
+                className="rounded-none"
+              />
             </div>
 
             <div>
@@ -440,28 +458,52 @@ export const ArticleManagement = () => {
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="excerpt">Περίληψη *</Label>
-              <Textarea
-                id="excerpt"
-                value={formData.excerpt}
-                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                required
-                rows={3}
-                className="rounded-none"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="excerpt_el">Περίληψη (Ελληνικά) *</Label>
+                <Textarea
+                  id="excerpt_el"
+                  value={formData.excerpt_el}
+                  onChange={(e) => setFormData({ ...formData, excerpt_el: e.target.value })}
+                  required
+                  rows={3}
+                  className="rounded-none"
+                />
+              </div>
+              <div>
+                <Label htmlFor="excerpt_en">Περίληψη (English)</Label>
+                <Textarea
+                  id="excerpt_en"
+                  value={formData.excerpt_en}
+                  onChange={(e) => setFormData({ ...formData, excerpt_en: e.target.value })}
+                  rows={3}
+                  className="rounded-none"
+                />
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="content">Περιεχόμενο Άρθρου *</Label>
-              <Textarea
-                id="content"
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                required
-                rows={10}
-                className="rounded-none"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="content_el">Περιεχόμενο Άρθρου (Ελληνικά) *</Label>
+                <Textarea
+                  id="content_el"
+                  value={formData.content_el}
+                  onChange={(e) => setFormData({ ...formData, content_el: e.target.value })}
+                  required
+                  rows={10}
+                  className="rounded-none"
+                />
+              </div>
+              <div>
+                <Label htmlFor="content_en">Περιεχόμενο Άρθρου (English)</Label>
+                <Textarea
+                  id="content_en"
+                  value={formData.content_en}
+                  onChange={(e) => setFormData({ ...formData, content_en: e.target.value })}
+                  rows={10}
+                  className="rounded-none"
+                />
+              </div>
             </div>
 
             <div>

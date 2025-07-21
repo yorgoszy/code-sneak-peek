@@ -30,7 +30,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         const { data, error } = await supabase
           .from('articles')
           .select('*')
-          .eq('language', currentLanguage)
+          .eq('status', 'published')
           .order('published_date', { ascending: false })
           .limit(6);
 
@@ -39,15 +39,15 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         // Transform data to match Article interface
         const transformedArticles = (data || []).map(article => ({
           id: parseInt(article.id.substring(0, 8), 16), // Convert UUID to number for compatibility
-          title: article.title,
-          excerpt: article.excerpt,
+          title: currentLanguage === 'el' ? article.title_el : (article.title_en || article.title_el),
+          excerpt: currentLanguage === 'el' ? article.excerpt_el : (article.excerpt_en || article.excerpt_el),
           image: article.image_url || '',
           date: new Date(article.published_date).toLocaleDateString('el-GR', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
           }),
-          content: article.content
+          content: currentLanguage === 'el' ? article.content_el : (article.content_en || article.content_el)
         }));
         
         setArticles(transformedArticles);
