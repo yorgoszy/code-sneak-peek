@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Receipt, FileText, Eye, Download } from "lucide-react";
+import { Receipt, FileText, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
@@ -82,11 +82,6 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
     }
   };
 
-  const handleCreateNewReceipt = () => {
-    // Redirect to receipt management page with user pre-selected
-    window.open(`/dashboard/receipts?user=${userProfile.id}`, '_blank');
-  };
-
   const handleViewReceipt = (receipt: ReceiptData) => {
     setSelectedReceipt(receipt);
     setIsPreviewOpen(true);
@@ -125,22 +120,13 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   return (
     <>
       <div className="space-y-6">
-        {/* Αποδείξεις */}
+        {/* Ιστορικό Αποδείξεων που έχουν κοπεί */}
         <Card className="rounded-none">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Receipt className="h-5 w-5" />
-                Αποδείξεις
-              </CardTitle>
-              <Button 
-                onClick={handleCreateNewReceipt}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Νέα Απόδειξη
-              </Button>
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <Receipt className="h-5 w-5" />
+              Ιστορικό Αποδείξεων
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -150,15 +136,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
             ) : receipts.length === 0 ? (
               <div className="text-center py-8">
                 <Receipt className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500 mb-4">Δεν υπάρχουν αποδείξεις για αυτόν τον χρήστη</p>
-                <Button 
-                  onClick={handleCreateNewReceipt}
-                  variant="outline"
-                  className="rounded-none"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Δημιουργία Πρώτης Απόδειξης
-                </Button>
+                <p className="text-gray-500">Δεν υπάρχουν αποδείξεις για αυτόν τον χρήστη</p>
               </div>
             ) : (
               <div className="space-y-3">
