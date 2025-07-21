@@ -189,7 +189,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const sendMessage = async (input: string) => {
     console.log('🔄 EnhancedAIChatDialog sendMessage called with:', { input, athleteId });
     
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !athleteId) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
