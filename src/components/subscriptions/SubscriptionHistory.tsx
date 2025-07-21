@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { matchesSearchTerm } from "@/lib/utils";
 import { Search, Calendar, Clock, Archive, Trash2 } from "lucide-react";
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
@@ -111,9 +112,9 @@ export const SubscriptionHistory: React.FC = () => {
   };
 
   const filteredSubscriptions = historicalSubscriptions.filter(subscription =>
-    subscription.app_users?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    subscription.app_users?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    subscription.subscription_types?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    matchesSearchTerm(subscription.app_users?.name || '', searchTerm) ||
+    matchesSearchTerm(subscription.app_users?.email || '', searchTerm) ||
+    matchesSearchTerm(subscription.subscription_types?.name || '', searchTerm)
   );
 
   const getStatusColor = (status: string) => {

@@ -9,6 +9,7 @@ import { TestResultItem } from "./TestResultItem";
 import { TestViewDialog } from "./TestViewDialog";
 import { TestEditDialog } from "./TestEditDialog";
 import { TestResult } from "./types";
+import { matchesSearchTerm } from "@/lib/utils";
 
 export const TestResultsList = () => {
   const { testResults, loading, deleteTest, refetch } = useTestResults();
@@ -34,7 +35,7 @@ export const TestResultsList = () => {
 
   // Filter tests based on search criteria
   const filteredTests = testResults.filter(test => {
-    const matchesSearch = test.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = matchesSearchTerm(test.user_name, searchTerm) ||
                          test.test_type.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = testTypeFilter === "all" || test.test_type === testTypeFilter;
     

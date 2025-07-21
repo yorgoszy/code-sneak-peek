@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { LogOut, Plus, Edit, Trash2, Users, Search, Eye } from "lucide-react";
+import { matchesSearchTerm } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -234,8 +235,8 @@ const Groups = () => {
   };
 
   const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    matchesSearchTerm(user.name, searchTerm) ||
+    matchesSearchTerm(user.email, searchTerm)
   );
 
   if (loading) {

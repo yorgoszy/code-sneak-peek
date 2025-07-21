@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Edit2, Trash2, Search, Calendar, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { matchesSearchTerm } from "@/lib/utils";
 
 interface SubscriptionType {
   id: string;
@@ -65,7 +66,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       setFilteredSubscriptionTypes(subscriptionTypes);
     } else {
       const filtered = subscriptionTypes.filter(type =>
-        type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        matchesSearchTerm(type.name, searchTerm) ||
         (type.description && type.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
       setFilteredSubscriptionTypes(filtered);

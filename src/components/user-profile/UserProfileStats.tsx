@@ -89,13 +89,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
     const fetchVisitsData = async () => {
       try {
-        // Φόρτωση visit packages
+        // Φόρτωση ενεργών visit packages
         const { data: visitPackages, error: packagesError } = await supabase
           .from('visit_packages')
-          .select('total_visits, remaining_visits')
+          .select('total_visits, remaining_visits, purchase_date')
           .eq('user_id', user.id)
           .eq('status', 'active')
-          .order('created_at', { ascending: false });
+          .order('purchase_date', { ascending: false });
 
         if (packagesError) {
           console.error('Error fetching visit packages:', packagesError);
@@ -103,11 +103,20 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return;
         }
 
-        // Φόρτωση συνολικών επισκέψεων που έχουν γίνει
-        const { data: visits, count: totalVisits, error: visitsError } = await supabase
+        // Βρες το πιο πρόσφατο ενεργό πακέτο
+        const activePackage = visitPackages?.[0];
+        
+        if (!activePackage) {
+          setVisitsData({ used: 0, total: 0 });
+          return;
+        }
+
+        // Φόρτωση επισκέψεων που έγιναν μετά την αγορά του ενεργού πακέτου
+        const { data: visits, count: visitCount, error: visitsError } = await supabase
           .from('user_visits')
           .select('*', { count: 'exact' })
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .gte('visit_date', activePackage.purchase_date);
 
         if (visitsError) {
           console.error('Error fetching visits:', visitsError);
@@ -115,13 +124,12 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return;
         }
 
-        // Υπολογισμός συνολικών αγορασμένων επισκέψεων
-        const totalBoughtVisits = visitPackages?.reduce((sum, pkg) => sum + pkg.total_visits, 0) || 0;
-        const usedVisits = totalVisits || 0;
+        // Υπολογισμός χρησιμοποιημένων επισκέψεων από το ενεργό πακέτο
+        const usedFromActivePackage = visitCount || 0;
 
         setVisitsData({
-          used: usedVisits,
-          total: totalBoughtVisits
+          used: usedFromActivePackage,
+          total: activePackage.total_visits
         });
 
       } catch (error) {

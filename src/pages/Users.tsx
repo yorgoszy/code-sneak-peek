@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye } from "lucide-react";
+import { matchesSearchTerm } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -192,8 +193,8 @@ const Users = () => {
 
   // Filter users based on search term and filters
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = matchesSearchTerm(user.name, searchTerm) ||
+                          matchesSearchTerm(user.email, searchTerm);
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     const matchesStatus = statusFilter === "all" || user.user_status === statusFilter;
     

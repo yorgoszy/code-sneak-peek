@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
+import { matchesSearchTerm } from "@/lib/utils";
 
 interface Exercise {
   id: string;
@@ -19,10 +20,10 @@ export const useExerciseFilters = (exercises: Exercise[]) => {
     console.log('Total exercises:', exercises.length);
     
     let filtered = exercises.filter(exercise => {
-      const matchesSearch = exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        exercise.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const matchesSearch = matchesSearchTerm(exercise.name, searchQuery) ||
+        matchesSearchTerm(exercise.description || '', searchQuery) ||
         exercise.categories.some(cat => 
-          cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+          matchesSearchTerm(cat.name, searchQuery)
         );
       
       return matchesSearch;

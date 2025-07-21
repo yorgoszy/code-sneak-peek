@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { QRScanner } from "@/components/qr/QRScanner";
 import { UserQRCode } from "@/components/qr/UserQRCode";
+import { matchesSearchTerm } from "@/lib/utils";
 
 interface Visit {
   id: string;
@@ -495,12 +496,12 @@ export const VisitManagement: React.FC = () => {
   };
 
   const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    matchesSearchTerm(user.name, searchTerm) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredVisits = visits.filter(visit =>
-    visit.app_users.name.toLowerCase().includes(searchTerm.toLowerCase())
+    matchesSearchTerm(visit.app_users.name, searchTerm)
   );
 
   if (loading) {
