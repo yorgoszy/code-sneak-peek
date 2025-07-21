@@ -41,11 +41,15 @@ interface AppUser {
   created_at: string;
 }
 
+interface UserWithSubscription extends AppUser {
+  subscription_status: 'Ενεργή' | 'Ανενεργή';
+}
+
 const Users = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [users, setUsers] = useState<AppUser[]>([]);
+  const [users, setUsers] = useState<UserWithSubscription[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -65,17 +69,40 @@ const Users = () => {
     setLoadingUsers(true);
     try {
       console.log('📊 Fetching users...');
-      const { data, error } = await supabase
+      const { data: usersData, error } = await supabase
         .from('app_users')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ Error fetching users:', error);
-      } else {
-        console.log('✅ Users fetched:', data?.length);
-        setUsers(data || []);
+        return;
       }
+
+      // Fetch subscription status for each user
+      const usersWithSubscription: UserWithSubscription[] = await Promise.all(
+        (usersData || []).map(async (user) => {
+          const { data: subscription } = await supabase
+            .from('user_subscriptions')
+            .select('end_date, status, is_paused')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          const hasActiveSubscription = subscription && 
+            (subscription.is_paused || new Date(subscription.end_date) >= new Date());
+
+          return {
+            ...user,
+            subscription_status: hasActiveSubscription ? 'Ενεργή' : 'Ανενεργή' as const
+          };
+        })
+      );
+
+      console.log('✅ Users fetched:', usersWithSubscription.length);
+      setUsers(usersWithSubscription);
     } catch (error) {
       console.error('💥 Error:', error);
     } finally {
@@ -202,6 +229,10 @@ const Users = () => {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getSubscriptionStatusColor = (status: 'Ενεργή' | 'Ανενεργή') => {
+    return status === 'Ενεργή' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
   };
 
   console.log('👑 Rendering Users page for admin');
@@ -345,8 +376,8 @@ const Users = () => {
                         </TableCell>
                         <TableCell>{user.phone || '-'}</TableCell>
                         <TableCell>
-                          <span className={`px-2 py-1 text-xs rounded ${getStatusColor(user.user_status)}`}>
-                            {user.user_status}
+                          <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
+                            {user.subscription_status}
                           </span>
                         </TableCell>
                         <TableCell>{formatDate(user.created_at)}</TableCell>
