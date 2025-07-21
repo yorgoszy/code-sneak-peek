@@ -208,7 +208,7 @@ export const EditGroupDialog = ({ isOpen, onClose, onGroupUpdated, group }: Edit
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[630px]">
         <DialogHeader>
           <DialogTitle>Επεξεργασία Ομάδας</DialogTitle>
           <DialogDescription>
