@@ -1229,7 +1229,7 @@ export const SubscriptionManagement: React.FC = () => {
                     const endDate = new Date(s.end_date);
                     const today = new Date();
                     const daysUntilExpiry = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-                    return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
+                    return s.status === 'active' && !s.is_paused && daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
                   }).length}
                 </p>
               </div>
@@ -1268,172 +1268,208 @@ export const SubscriptionManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsersForTable.map((user) => {
-                  const activeSubscription = userSubscriptions.find(
-                    s => s.user_id === user.id && s.status === 'active'
-                  );
+                {filteredUsersForTable.flatMap((user) => {
+                  const userSubscriptions_filtered = userSubscriptions.filter(s => s.user_id === user.id);
+                  const activeSubscriptions = userSubscriptions_filtered.filter(s => s.status === 'active');
                   
-                  const latestSubscription = userSubscriptions
-                    .filter(s => s.user_id === user.id)
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-                  
-                  const isUserActive = user.subscription_status === 'active';
-                  
-                  return (
-                    <tr key={user.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">
-                        <div>
-                          <div className={`font-medium ${getSubscriptionStatus(user, activeSubscription) === 'expired' ? 'text-red-600' : ''}`}>
-                            {user.name}
+                  // Αν έχει ενεργές συνδρομές, δείξε όλες
+                  if (activeSubscriptions.length > 0) {
+                    return activeSubscriptions.map((subscription, index) => (
+                      <tr key={`${user.id}-${subscription.id}`} className="border-b hover:bg-gray-50">
+                        <td className="p-2">
+                          <div>
+                            <div className={`font-medium ${getSubscriptionStatus(user, subscription) === 'expired' ? 'text-red-600' : ''}`}>
+                              {user.name} {activeSubscriptions.length > 1 ? `(${index + 1}/${activeSubscriptions.length})` : ''}
+                            </div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
                           </div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
-                        </div>
-                      </td>
-                      <td className="p-2">
-                        {activeSubscription || latestSubscription ? (
+                        </td>
+                        <td className="p-2">
                           <div>
                             <div className="font-medium">
-                              {(activeSubscription || latestSubscription)?.subscription_types?.name}
+                              {subscription.subscription_types?.name}
                             </div>
                             <div className="text-sm text-gray-500">
-                              €{(activeSubscription || latestSubscription)?.subscription_types?.price}
+                              €{subscription.subscription_types?.price}
                             </div>
                           </div>
-                        ) : (
-                          <span className="text-gray-400">Χωρίς συνδρομή</span>
-                        )}
-                      </td>
-                       <td className="p-2">
-                         {(() => {
-                           const subscriptionStatus = getSubscriptionStatus(user, activeSubscription);
-                           return (
-                             <Badge className={`rounded-none ${getStatusColor(subscriptionStatus)}`}>
-                               {subscriptionStatus === 'paused' ? 'Παύση' : 
-                                subscriptionStatus === 'expired' ? 'Λήξη' :
-                                subscriptionStatus === 'active' ? 'Ενεργή' : 'Ανενεργή'}
-                             </Badge>
-                           );
-                         })()}
-                       </td>
-                       <td className="p-2">
-                         {activeSubscription ? (
-                           <div>
-                             <span className="text-sm">
-                               {new Date(activeSubscription.end_date).toLocaleDateString('el-GR')}
-                             </span>
-                             {activeSubscription.is_paused && (
-                               <div className="text-xs text-orange-600">
-                                 {activeSubscription.paused_days_remaining} ημέρες σε αναμονή
-                               </div>
-                             )}
-                           </div>
-                         ) : latestSubscription ? (
-                           <span className="text-sm text-gray-400">
-                             {new Date(latestSubscription.end_date).toLocaleDateString('el-GR')} (Ανενεργή)
-                           </span>
-                         ) : (
-                           <span className="text-gray-400">-</span>
-                         )}
-                       </td>
-                         <td className="p-2">
-                           {activeSubscription ? (
-                             <div className="text-sm">
-                               {(() => {
-                                 // Εάν η συνδρομή είναι σε παύση, δείξε τις ημέρες παύσης
-                                 if (activeSubscription.is_paused && activeSubscription.paused_days_remaining) {
-                                   return <span className="text-orange-600 font-medium">{activeSubscription.paused_days_remaining} ημέρες</span>;
-                                 }
-                                 
-                                 const today = new Date();
-                                 const endDate = new Date(activeSubscription.end_date);
-                                 const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-                                 
-                                 if (remainingDays < 0) {
-                                   return <span className="text-red-600 font-medium">Έληξε</span>;
-                                 } else if (remainingDays === 0) {
-                                   return <span className="text-orange-600 font-medium">Λήγει σήμερα</span>;
-                                 } else if (remainingDays <= 7) {
-                                   return <span className="text-orange-600 font-medium">{remainingDays} ημέρες</span>;
-                                 } else {
-                                   return <span className="text-green-600">{remainingDays} ημέρες</span>;
-                                 }
-                               })()}
-                             </div>
-                           ) : (
-                             <span className="text-gray-400">-</span>
-                           )}
-                         </td>
+                        </td>
+                        <td className="p-2">
+                          {(() => {
+                            const subscriptionStatus = getSubscriptionStatus(user, subscription);
+                            return (
+                              <Badge className={`rounded-none ${getStatusColor(subscriptionStatus)}`}>
+                                {subscriptionStatus === 'paused' ? 'Παύση' : 
+                                 subscriptionStatus === 'expired' ? 'Λήξη' :
+                                 subscriptionStatus === 'active' ? 'Ενεργή' : 'Ανενεργή'}
+                              </Badge>
+                            );
+                          })()}
+                        </td>
+                        <td className="p-2">
+                          <div>
+                            <span className="text-sm">
+                              {new Date(subscription.end_date).toLocaleDateString('el-GR')}
+                            </span>
+                            {subscription.is_paused && (
+                              <div className="text-xs text-orange-600">
+                                {subscription.paused_days_remaining} ημέρες σε αναμονή
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-2">
+                          <div className="text-sm">
+                            {(() => {
+                              // Εάν η συνδρομή είναι σε παύση, δείξε τις ημέρες παύσης
+                              if (subscription.is_paused && subscription.paused_days_remaining) {
+                                return <span className="text-orange-600 font-medium">{subscription.paused_days_remaining} ημέρες</span>;
+                              }
+                              
+                              const today = new Date();
+                              const endDate = new Date(subscription.end_date);
+                              const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                              
+                              if (remainingDays < 0) {
+                                return <span className="text-red-600 font-medium">Έληξε</span>;
+                              } else if (remainingDays === 0) {
+                                return <span className="text-orange-600 font-medium">Λήγει σήμερα</span>;
+                              } else if (remainingDays <= 7) {
+                                return <span className="text-orange-600 font-medium">{remainingDays} ημέρες</span>;
+                              } else {
+                                return <span className="text-green-600">{remainingDays} ημέρες</span>;
+                              }
+                            })()}
+                          </div>
+                        </td>
                         <td className="p-2">
                           <div className="flex gap-1">
-                           {activeSubscription ? (
-                             <>
-                               {/* Pause/Resume Button */}
-                               {activeSubscription.is_paused ? (
-                                 <Button
-                                   size="sm"
-                                   onClick={() => resumeSubscription(activeSubscription.id)}
-                                   className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                                   title="Συνέχιση συνδρομής"
-                                 >
-                                   <Play className="w-3 h-3" />
-                                 </Button>
-                               ) : (
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={() => pauseSubscription(activeSubscription.id)}
-                                   className="rounded-none border-orange-300 text-orange-600 hover:bg-orange-50"
-                                   title="Παύση συνδρομής"
-                                 >
-                                   <Pause className="w-3 h-3" />
-                                 </Button>
-                               )}
-                               
-                                {/* Renewal Button */}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => renewSubscription(activeSubscription.id)}
-                                  className="rounded-none border-blue-300 text-blue-600 hover:bg-blue-50"
-                                  title="Ανανέωση συνδρομής"
-                                >
-                                  <RotateCcw className="w-3 h-3" />
-                                </Button>
+                            {/* Pause/Resume Button */}
+                            {subscription.is_paused ? (
+                              <Button
+                                size="sm"
+                                onClick={() => resumeSubscription(subscription.id)}
+                                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                                title="Συνέχιση συνδρομής"
+                              >
+                                <Play className="w-3 h-3" />
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => pauseSubscription(subscription.id)}
+                                className="rounded-none border-orange-300 text-orange-600 hover:bg-orange-50"
+                                title="Παύση συνδρομής"
+                              >
+                                <Pause className="w-3 h-3" />
+                              </Button>
+                            )}
+                            
+                            {/* Renewal Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => renewSubscription(subscription.id)}
+                              className="rounded-none border-blue-300 text-blue-600 hover:bg-blue-50"
+                              title="Ανανέωση συνδρομής"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                            </Button>
 
-                                {/* Edit Button */}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => openEditDialog(activeSubscription)}
-                                  className="rounded-none border-gray-300 text-gray-600 hover:bg-gray-50"
-                                  title="Επεξεργασία συνδρομής"
-                                >
-                                  <Edit2 className="w-3 h-3" />
-                                </Button>
+                            {/* Edit Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditDialog(subscription)}
+                              className="rounded-none border-gray-300 text-gray-600 hover:bg-gray-50"
+                              title="Επεξεργασία συνδρομής"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </Button>
 
-                                 {/* Visit Recording Button */}
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={() => recordVisit(user.id)}
-                                   className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
-                                   title="Καταγραφή παρουσίας"
-                                 >
-                                   <UserCheck className="w-3 h-3" />
-                                 </Button>
+                            {/* Visit Recording Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => recordVisit(user.id)}
+                              className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+                              title="Καταγραφή παρουσίας"
+                            >
+                              <UserCheck className="w-3 h-3" />
+                            </Button>
 
-                                 {/* Delete Button */}
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={() => deleteSubscription(activeSubscription.id)}
-                                   className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                                   title="Διαγραφή συνδρομής"
-                                 >
-                                   <Trash2 className="w-3 h-3" />
-                                 </Button>
-                             </>
-                            ) : latestSubscription ? (
+                            {/* Delete Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deleteSubscription(subscription.id)}
+                              className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                              title="Διαγραφή συνδρομής"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ));
+                  }
+                  
+                  // Αν δεν έχει ενεργές συνδρομές, δείξε την πιο πρόσφατη
+                  const latestSubscription = userSubscriptions_filtered
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+                  
+                  return [
+                    <tr key={user.id} className="border-b hover:bg-gray-50">
+                        <td className="p-2">
+                          <div>
+                            <div className={`font-medium ${getSubscriptionStatus(user, latestSubscription) === 'expired' ? 'text-red-600' : ''}`}>
+                              {user.name}
+                            </div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                          </div>
+                        </td>
+                        <td className="p-2">
+                          {latestSubscription ? (
+                            <div>
+                              <div className="font-medium">
+                                {latestSubscription.subscription_types?.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                €{latestSubscription.subscription_types?.price}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">Χωρίς συνδρομή</span>
+                          )}
+                        </td>
+                        <td className="p-2">
+                          {(() => {
+                            const subscriptionStatus = getSubscriptionStatus(user, null);
+                            return (
+                              <Badge className={`rounded-none ${getStatusColor(subscriptionStatus)}`}>
+                                {subscriptionStatus === 'paused' ? 'Παύση' : 
+                                 subscriptionStatus === 'expired' ? 'Λήξη' :
+                                 subscriptionStatus === 'active' ? 'Ενεργή' : 'Ανενεργή'}
+                              </Badge>
+                            );
+                          })()}
+                        </td>
+                        <td className="p-2">
+                          {latestSubscription ? (
+                            <span className="text-sm text-gray-400">
+                              {new Date(latestSubscription.end_date).toLocaleDateString('el-GR')} (Ανενεργή)
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="p-2">
+                          <span className="text-gray-400">-</span>
+                        </td>
+                        <td className="p-2">
+                          <div className="flex gap-1">
+                            {latestSubscription ? (
                               <>
                                 <Button
                                   size="sm"
@@ -1454,41 +1490,41 @@ export const SubscriptionManagement: React.FC = () => {
                                   <Edit2 className="w-3 h-3" />
                                 </Button>
 
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={() => recordVisit(user.id)}
-                                   className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
-                                   title="Καταγραφή παρουσίας"
-                                 >
-                                   <UserCheck className="w-3 h-3" />
-                                 </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => recordVisit(user.id)}
+                                  className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+                                  title="Καταγραφή παρουσίας"
+                                >
+                                  <UserCheck className="w-3 h-3" />
+                                </Button>
 
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={() => deleteSubscription(latestSubscription.id)}
-                                   className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                                   title="Διαγραφή συνδρομής"
-                                 >
-                                   <Trash2 className="w-3 h-3" />
-                                 </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => deleteSubscription(latestSubscription.id)}
+                                  className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                                  title="Διαγραφή συνδρομής"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
                               </>
-                             ) : (
-                               <Button
-                                 size="sm"
-                                 variant="outline"
-                                 onClick={() => recordVisit(user.id)}
-                                 className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
-                                 title="Καταγραφή παρουσίας"
-                               >
-                                 <UserCheck className="w-3 h-3" />
-                               </Button>
-                             )}
-                         </div>
-                       </td>
-                    </tr>
-                  );
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => recordVisit(user.id)}
+                                className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+                                title="Καταγραφή παρουσίας"
+                              >
+                                <UserCheck className="w-3 h-3" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ];
                 })}
               </tbody>
             </table>

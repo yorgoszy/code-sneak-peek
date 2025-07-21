@@ -23,34 +23,42 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   useEffect(() => {
     const fetchSubscriptionData = async () => {
       try {
-        const { data: activeSubscription, error } = await supabase
+        const { data: activeSubscriptions, error } = await supabase
           .from('user_subscriptions')
-          .select('end_date, status, is_paused, paused_days_remaining')
+          .select('end_date, status, is_paused, paused_days_remaining, subscription_types(name)')
           .eq('user_id', user.id)
           .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .order('created_at', { ascending: false });
 
-        if (error || !activeSubscription) {
+        if (error || !activeSubscriptions || activeSubscriptions.length === 0) {
           setSubscriptionDays(null);
           return;
         }
 
-        // Εάν η συνδρομή είναι σε παύση, δείξε τις ημέρες παύσης
-        if (activeSubscription.is_paused && activeSubscription.paused_days_remaining) {
-          setSubscriptionDays(activeSubscription.paused_days_remaining);
-          setIsPaused(true);
-          return;
-        }
-        
-        setIsPaused(false);
+        // Βρες την συνδρομή με τις λιγότερες ημέρες
+        let minDays = Infinity;
+        let isPausedStatus = false;
 
-        const today = new Date();
-        const endDate = new Date(activeSubscription.end_date);
-        const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-        
-        setSubscriptionDays(remainingDays);
+        activeSubscriptions.forEach(subscription => {
+          if (subscription.is_paused && subscription.paused_days_remaining) {
+            if (subscription.paused_days_remaining < minDays) {
+              minDays = subscription.paused_days_remaining;
+              isPausedStatus = true;
+            }
+          } else if (!subscription.is_paused) {
+            const today = new Date();
+            const endDate = new Date(subscription.end_date);
+            const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+            
+            if (remainingDays < minDays) {
+              minDays = remainingDays;
+              isPausedStatus = false;
+            }
+          }
+        });
+
+        setSubscriptionDays(minDays === Infinity ? null : minDays);
+        setIsPaused(isPausedStatus);
       } catch (error) {
         console.error('Error fetching subscription data:', error);
         setSubscriptionDays(null);
