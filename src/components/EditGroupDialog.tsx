@@ -208,7 +208,7 @@ export const EditGroupDialog = ({ isOpen, onClose, onGroupUpdated, group }: Edit
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Επεξεργασία Ομάδας</DialogTitle>
           <DialogDescription>
@@ -229,7 +229,9 @@ export const EditGroupDialog = ({ isOpen, onClose, onGroupUpdated, group }: Edit
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="groupDescription">Περιγραφή (προαιρετικό)</Label>
+            <Label htmlFor="groupDescription">
+              Περιγραφή (προαιρετικό) - {selectedUsers.length} μέλη
+            </Label>
             <Input
               id="groupDescription"
               value={groupDescription}
@@ -258,7 +260,7 @@ export const EditGroupDialog = ({ isOpen, onClose, onGroupUpdated, group }: Edit
                 <p className="text-gray-600">Φόρτωση χρηστών...</p>
               </div>
             ) : (
-              <div className="max-h-64 overflow-y-auto border rounded">
+              <div className="max-h-80 overflow-y-auto border rounded">
                 <Table>
                   <TableHeader>
                     <TableRow>
