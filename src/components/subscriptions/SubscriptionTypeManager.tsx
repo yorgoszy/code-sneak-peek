@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, Search } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Calendar, MapPin } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SubscriptionType {
   id: string;
@@ -19,6 +20,9 @@ interface SubscriptionType {
   duration_months: number;
   features: any;
   is_active: boolean;
+  subscription_mode: 'time_based' | 'visit_based';
+  visit_count?: number;
+  visit_expiry_months?: number;
 }
 
 export const SubscriptionTypeManager: React.FC = () => {
@@ -40,6 +44,9 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [price, setPrice] = useState('');
   const [durationMonths, setDurationMonths] = useState('');
   const [features, setFeatures] = useState('');
+  const [subscriptionMode, setSubscriptionMode] = useState<'time_based' | 'visit_based'>('time_based');
+  const [visitCount, setVisitCount] = useState('');
+  const [visitExpiryMonths, setVisitExpiryMonths] = useState('');
 
   useEffect(() => {
     checkUserRole();
@@ -116,8 +123,12 @@ export const SubscriptionTypeManager: React.FC = () => {
       }
       
       console.log('✅ Loaded subscription types:', data);
-      setSubscriptionTypes(data || []);
-      setFilteredSubscriptionTypes(data || []);
+      const typedData = (data || []).map(item => ({
+        ...item,
+        subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based'
+      }));
+      setSubscriptionTypes(typedData);
+      setFilteredSubscriptionTypes(typedData);
     } catch (error) {
       console.error('💥 Error loading subscription types:', error);
       toast.error('Σφάλμα κατά τη φόρτωση των τύπων συνδρομών');
@@ -132,6 +143,9 @@ export const SubscriptionTypeManager: React.FC = () => {
     setPrice('');
     setDurationMonths('');
     setFeatures('');
+    setSubscriptionMode('time_based');
+    setVisitCount('');
+    setVisitExpiryMonths('');
     setEditingType(null);
   };
 
@@ -149,6 +163,9 @@ export const SubscriptionTypeManager: React.FC = () => {
     setPrice(type.price.toString());
     setDurationMonths(type.duration_months.toString());
     setFeatures(type.features ? JSON.stringify(type.features, null, 2) : '{}');
+    setSubscriptionMode(type.subscription_mode || 'time_based');
+    setVisitCount(type.visit_count?.toString() || '');
+    setVisitExpiryMonths(type.visit_expiry_months?.toString() || '');
     setIsDialogOpen(true);
   };
 
@@ -163,22 +180,47 @@ export const SubscriptionTypeManager: React.FC = () => {
       return;
     }
 
-    if (!name.trim() || !price || !durationMonths) {
-      toast.error('Συμπληρώστε όλα τα απαιτούμενα πεδία (Όνομα, Τιμή, Διάρκεια)');
+    if (!name.trim() || !price) {
+      toast.error('Συμπληρώστε όλα τα απαιτούμενα πεδία (Όνομα, Τιμή)');
+      return;
+    }
+
+    // Validation για time_based subscriptions
+    if (subscriptionMode === 'time_based' && !durationMonths) {
+      toast.error('Η διάρκεια είναι απαραίτητη για χρονικές συνδρομές');
+      return;
+    }
+
+    // Validation για visit_based subscriptions
+    if (subscriptionMode === 'visit_based' && (!visitCount || !visitExpiryMonths)) {
+      toast.error('Ο αριθμός επισκέψεων και η διάρκεια λήξης είναι απαραίτητα για συνδρομές επισκέψεων');
       return;
     }
 
     const numericPrice = parseFloat(price);
-    const numericDuration = parseInt(durationMonths);
+    const numericDuration = durationMonths ? parseInt(durationMonths) : 0;
+    const numericVisitCount = visitCount ? parseInt(visitCount) : null;
+    const numericVisitExpiryMonths = visitExpiryMonths ? parseInt(visitExpiryMonths) : null;
 
     if (isNaN(numericPrice) || numericPrice <= 0) {
       toast.error('Η τιμή πρέπει να είναι θετικός αριθμός');
       return;
     }
 
-    if (isNaN(numericDuration) || numericDuration <= 0) {
+    if (subscriptionMode === 'time_based' && (isNaN(numericDuration) || numericDuration <= 0)) {
       toast.error('Η διάρκεια πρέπει να είναι θετικός αριθμός');
       return;
+    }
+
+    if (subscriptionMode === 'visit_based') {
+      if (!numericVisitCount || numericVisitCount <= 0) {
+        toast.error('Ο αριθμός επισκέψεων πρέπει να είναι θετικός αριθμός');
+        return;
+      }
+      if (!numericVisitExpiryMonths || numericVisitExpiryMonths <= 0) {
+        toast.error('Η διάρκεια λήξης πρέπει να είναι θετικός αριθμός');
+        return;
+      }
     }
 
     setSaving(true);
@@ -201,7 +243,10 @@ export const SubscriptionTypeManager: React.FC = () => {
         price: numericPrice,
         duration_months: numericDuration,
         features: parsedFeatures,
-        is_active: true
+        is_active: true,
+        subscription_mode: subscriptionMode,
+        visit_count: subscriptionMode === 'visit_based' ? numericVisitCount : null,
+        visit_expiry_months: subscriptionMode === 'visit_based' ? numericVisitExpiryMonths : null
       };
 
       console.log('💾 Saving subscription type:', typeData);
@@ -411,8 +456,28 @@ export const SubscriptionTypeManager: React.FC = () => {
                       <p className="text-sm text-gray-600 mb-2">{type.description}</p>
                     )}
                     <div className="text-sm space-y-1">
-                      <div><strong>Τιμή:</strong> €{type.price}</div>
-                      <div><strong>Διάρκεια:</strong> {type.duration_months} μήνες</div>
+                      <div className="flex items-center gap-2">
+                        <strong>Τιμή:</strong> €{type.price}
+                        {type.subscription_mode === 'visit_based' ? (
+                          <Badge variant="outline" className="rounded-none bg-blue-50 text-blue-600">
+                            <MapPin className="w-3 h-3 mr-1" />
+                            Επισκέψεις
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="rounded-none bg-green-50 text-green-600">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            Χρονική
+                          </Badge>
+                        )}
+                      </div>
+                      {type.subscription_mode === 'visit_based' ? (
+                        <>
+                          <div><strong>Επισκέψεις:</strong> {type.visit_count} επισκέψεις</div>
+                          <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
+                        </>
+                      ) : (
+                        <div><strong>Διάρκεια:</strong> {type.duration_months} μήνες</div>
+                      )}
                       {type.features && Object.keys(type.features).length > 0 && (
                         <div><strong>Χαρακτηριστικά:</strong> {Object.keys(type.features).join(', ')}</div>
                       )}
@@ -486,6 +551,33 @@ export const SubscriptionTypeManager: React.FC = () => {
                 disabled={saving}
               />
             </div>
+            <div>
+              <Label htmlFor="subscriptionMode">Τύπος Συνδρομής*</Label>
+              <Select
+                value={subscriptionMode}
+                onValueChange={(value: 'time_based' | 'visit_based') => setSubscriptionMode(value)}
+                disabled={saving}
+              >
+                <SelectTrigger className="rounded-none">
+                  <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="time_based">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Χρονική Συνδρομή
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="visit_based">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Επισκέψεις
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="price">Τιμή (€)*</Label>
@@ -500,19 +592,50 @@ export const SubscriptionTypeManager: React.FC = () => {
                   disabled={saving}
                 />
               </div>
+              {subscriptionMode === 'time_based' ? (
+                <div>
+                  <Label htmlFor="duration">Διάρκεια (μήνες)*</Label>
+                  <Input
+                    id="duration"
+                    type="number"
+                    min="1"
+                    value={durationMonths}
+                    onChange={(e) => setDurationMonths(e.target.value)}
+                    className="rounded-none"
+                    disabled={saving}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label htmlFor="visitCount">Αριθμός Επισκέψεων*</Label>
+                  <Input
+                    id="visitCount"
+                    type="number"
+                    min="1"
+                    value={visitCount}
+                    onChange={(e) => setVisitCount(e.target.value)}
+                    className="rounded-none"
+                    disabled={saving}
+                  />
+                </div>
+              )}
+            </div>
+
+            {subscriptionMode === 'visit_based' && (
               <div>
-                <Label htmlFor="duration">Διάρκεια (μήνες)*</Label>
+                <Label htmlFor="visitExpiryMonths">Διάρκεια Λήξης (μήνες)*</Label>
                 <Input
-                  id="duration"
+                  id="visitExpiryMonths"
                   type="number"
                   min="1"
-                  value={durationMonths}
-                  onChange={(e) => setDurationMonths(e.target.value)}
+                  value={visitExpiryMonths}
+                  onChange={(e) => setVisitExpiryMonths(e.target.value)}
                   className="rounded-none"
+                  placeholder="Σε πόσους μήνες λήγουν οι επισκέψεις"
                   disabled={saving}
                 />
               </div>
-            </div>
+            )}
             <div>
               <Label htmlFor="features">Χαρακτηριστικά (JSON)</Label>
               <Textarea
