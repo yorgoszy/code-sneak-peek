@@ -27,6 +27,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   isMobile = false,
   userId
 }) => {
+  console.log('🔄 ChatInput: Props received:', { userId, hasActiveSubscription, isLoading });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{id: string, name: string, path: string}>>([]);
   const [isUploading, setIsUploading] = useState(false);
