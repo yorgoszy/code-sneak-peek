@@ -6,6 +6,7 @@ export interface Article {
   image: string;
   date: string;
   content: string;
+  bibliography?: string;
 }
 
 export interface BlogSectionProps {

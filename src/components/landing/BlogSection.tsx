@@ -47,7 +47,8 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
             month: 'long',
             year: 'numeric'
           }),
-          content: currentLanguage === 'el' ? article.content_el : (article.content_en || article.content_el)
+          content: currentLanguage === 'el' ? article.content_el : (article.content_en || article.content_el),
+          bibliography: article.bibliography || ''
         }));
         
         setArticles(transformedArticles);

@@ -1,7 +1,6 @@
 
 import React, { useRef, useEffect } from 'react';
 import { Article } from './types';
-import { getBibliography } from './blogBibliography';
 
 interface ArticleModalProps {
   article: Article | null;
@@ -65,7 +64,23 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language 
               </p>
             ))}
           </div>
-          <div dangerouslySetInnerHTML={{ __html: getBibliography(article.id, language) }} />
+          
+          {/* Bibliography Section */}
+          {article.bibliography && (
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Βιβλιογραφία:</h3>
+              <div className="text-sm text-gray-700 leading-relaxed">
+                {article.bibliography.split('\n').map((line, index) => {
+                  if (line.trim() === '') return null;
+                  return (
+                    <div key={index} className="mb-2">
+                      {line.trim()}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
