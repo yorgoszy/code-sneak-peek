@@ -12,7 +12,8 @@ import {
   Mail,
   ArrowLeft,
   Crown,
-  TrendingUp
+  TrendingUp,
+  BookOpen
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -99,6 +100,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       label: "Analytics",
       path: "/dashboard/analytics",
       badge: "NEW"
+    },
+    {
+      icon: BookOpen,
+      label: "Άρθρα",
+      path: "/dashboard/articles",
+      badge: null
     },
     {
       icon: Mail,

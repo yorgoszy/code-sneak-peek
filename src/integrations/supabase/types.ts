@@ -357,6 +357,48 @@ export type Database = {
         }
         Relationships: []
       }
+      articles: {
+        Row: {
+          bibliography: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          excerpt: string
+          id: string
+          image_url: string | null
+          language: string
+          published_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bibliography?: string | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          excerpt: string
+          id?: string
+          image_url?: string | null
+          language?: string
+          published_date?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bibliography?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string
+          id?: string
+          image_url?: string | null
+          language?: string
+          published_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       assignment_attendance: {
         Row: {
           assignment_id: string

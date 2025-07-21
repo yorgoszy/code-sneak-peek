@@ -22,6 +22,7 @@ import ProgramBuilder from "@/pages/ProgramBuilder";
 import NotFound from "@/pages/NotFound";
 import Subscriptions from "@/pages/Subscriptions";
 import Analytics from "@/pages/Analytics";
+import Articles from "@/pages/Dashboard/Articles";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ function App() {
                 <Route path="/dashboard/tests" element={<Tests />} />
                 <Route path="/dashboard/results" element={<Results />} />
                 <Route path="/dashboard/analytics" element={<Analytics />} />
+                <Route path="/dashboard/articles" element={<Articles />} />
                 <Route path="/user/:userId" element={<UserProfile />} />
                 <Route path="/dashboard/user-profile/:userId" element={<UserProfile />} />
                 <Route path="/program-builder" element={<ProgramBuilder />} />
