@@ -186,7 +186,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     }
   };
 
-  const sendMessage = async ({ input, files, athleteId }: { input: string; files?: any; athleteId: string }) => {
+  const sendMessage = async (input: string) => {
     console.log('🔄 EnhancedAIChatDialog sendMessage called with:', { input, athleteId });
     
     if (!input.trim() || isLoading) return;
@@ -308,14 +308,14 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey && input.trim() && !isLoading) {
                     e.preventDefault();
-                    sendMessage({ input, files: undefined, athleteId });
+                    sendMessage(input);
                   }
                 }}
                 disabled={isLoading}
                 className="rounded-none"
               />
               <Button
-                onClick={() => sendMessage({ input, files: undefined, athleteId })}
+                onClick={() => sendMessage(input)}
                 disabled={!input.trim() || isLoading}
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
