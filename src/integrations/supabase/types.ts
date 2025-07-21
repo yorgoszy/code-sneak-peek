@@ -360,47 +360,53 @@ export type Database = {
       articles: {
         Row: {
           bibliography: string | null
-          content: string
+          content_el: string
+          content_en: string | null
           created_at: string
           created_by: string | null
-          excerpt: string
+          excerpt_el: string
+          excerpt_en: string | null
           id: string
           image_url: string | null
-          language: string
           published_date: string
           scheduled_date: string | null
           status: string
-          title: string
+          title_el: string
+          title_en: string | null
           updated_at: string
         }
         Insert: {
           bibliography?: string | null
-          content: string
+          content_el: string
+          content_en?: string | null
           created_at?: string
           created_by?: string | null
-          excerpt: string
+          excerpt_el: string
+          excerpt_en?: string | null
           id?: string
           image_url?: string | null
-          language?: string
           published_date?: string
           scheduled_date?: string | null
           status?: string
-          title: string
+          title_el: string
+          title_en?: string | null
           updated_at?: string
         }
         Update: {
           bibliography?: string | null
-          content?: string
+          content_el?: string
+          content_en?: string | null
           created_at?: string
           created_by?: string | null
-          excerpt?: string
+          excerpt_el?: string
+          excerpt_en?: string | null
           id?: string
           image_url?: string | null
-          language?: string
           published_date?: string
           scheduled_date?: string | null
           status?: string
-          title?: string
+          title_el?: string
+          title_en?: string | null
           updated_at?: string
         }
         Relationships: []
