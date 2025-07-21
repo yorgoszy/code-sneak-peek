@@ -37,12 +37,9 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="max-w-md rounded-none">
+      <AlertDialogContent className="max-w-md rounded-none fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-center text-lg">
-            {title}
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-center text-sm">
+          <AlertDialogDescription className="text-center text-base font-medium">
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>

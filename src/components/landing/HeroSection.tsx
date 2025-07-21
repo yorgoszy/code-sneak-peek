@@ -9,9 +9,9 @@ interface HeroSectionProps {
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
   const handleContactClick = () => {
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({ 
+    const footerSection = document.getElementById('footer');
+    if (footerSection) {
+      footerSection.scrollIntoView({ 
         behavior: 'smooth',
         block: 'start'
       });

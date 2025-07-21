@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck } from "lucide-react";
 import { ReceiptConfirmDialog } from './ReceiptConfirmDialog';
+import { SubscriptionDeleteDialog } from './SubscriptionDeleteDialog';
 
 interface SubscriptionType {
   id: string;
@@ -70,6 +71,8 @@ export const SubscriptionManagement: React.FC = () => {
     totalUsers: 0,
     monthlyRevenue: 0
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [subscriptionToDelete, setSubscriptionToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -639,10 +642,13 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const deleteSubscription = async (subscriptionId: string) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη συνδρομή;')) {
-      return;
-    }
+  const openDeleteDialog = (subscriptionId: string) => {
+    setSubscriptionToDelete(subscriptionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteSubscription = async () => {
+    if (!subscriptionToDelete) return;
 
     try {
       setLoading(true);
@@ -651,7 +657,7 @@ export const SubscriptionManagement: React.FC = () => {
       const { error } = await supabase
         .from('user_subscriptions')
         .delete()
-        .eq('id', subscriptionId);
+        .eq('id', subscriptionToDelete);
 
       if (error) throw error;
 
@@ -668,6 +674,41 @@ export const SubscriptionManagement: React.FC = () => {
       });
     } finally {
       setLoading(false);
+      setSubscriptionToDelete(null);
+    }
+  };
+
+  const moveToHistory = async () => {
+    if (!subscriptionToDelete) return;
+
+    try {
+      setLoading(true);
+      
+      // Μεταφορά στο ιστορικό (αλλαγή status και archived_at)
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .update({
+          status: 'expired',
+          archived_at: new Date().toISOString()
+        })
+        .eq('id', subscriptionToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Η συνδρομή μεταφέρθηκε στο ιστορικό επιτυχώς"
+      });
+      await loadData();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά τη μεταφορά: " + error.message
+      });
+    } finally {
+      setLoading(false);
+      setSubscriptionToDelete(null);
     }
   };
 
@@ -1145,6 +1186,17 @@ export const SubscriptionManagement: React.FC = () => {
             }
           }}
         />
+
+        {/* Subscription Delete Dialog */}
+        <SubscriptionDeleteDialog
+          isOpen={deleteDialogOpen}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setSubscriptionToDelete(null);
+          }}
+          onDelete={deleteSubscription}
+          onMoveToHistory={moveToHistory}
+        />
       </div>
 
       {/* Στατιστικά */}
@@ -1407,7 +1459,7 @@ export const SubscriptionManagement: React.FC = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => deleteSubscription(subscription.id)}
+                              onClick={() => openDeleteDialog(subscription.id)}
                               className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
                               title="Διαγραφή συνδρομής"
                             >
@@ -1507,7 +1559,7 @@ export const SubscriptionManagement: React.FC = () => {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => deleteSubscription(latestSubscription.id)}
+                                  onClick={() => openDeleteDialog(latestSubscription.id)}
                                   className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
                                   title="Διαγραφή συνδρομής"
                                 >
