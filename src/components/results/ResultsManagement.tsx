@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -54,10 +54,13 @@ interface ResultFormData {
 export const ResultsManagement: React.FC = () => {
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingResult, setEditingResult] = useState<Result | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [resultToDelete, setResultToDelete] = useState<Result | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<ResultFormData>({
@@ -74,6 +77,21 @@ export const ResultsManagement: React.FC = () => {
   useEffect(() => {
     fetchResults();
   }, []);
+
+  const uploadImage = async (file: File): Promise<string> => {
+    const fileName = `${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('articles') // χρησιμοποιούμε το ίδιο bucket
+      .upload(fileName, file);
+
+    if (error) throw error;
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from('articles')
+      .getPublicUrl(fileName);
+      
+    return publicUrl;
+  };
 
   const fetchResults = async () => {
     try {
@@ -98,15 +116,24 @@ export const ResultsManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
     try {
+      let imageUrl = formData.image_url;
+      
+      // Upload new image if selected
+      if (selectedFile) {
+        setUploading(true);
+        imageUrl = await uploadImage(selectedFile);
+      }
+      
       const resultData = {
         result_date: format(formData.result_date, 'yyyy-MM-dd'),
         title_el: formData.title_el,
         title_en: formData.title_en || null,
         content_el: formData.content_el,
         content_en: formData.content_en || null,
-        image_url: formData.image_url || null,
+        image_url: imageUrl || null,
         hashtags: formData.hashtags || null,
         status: formData.status
       };
@@ -145,7 +172,45 @@ export const ResultsManagement: React.FC = () => {
         description: "Αποτυχία αποθήκευσης αποτελέσματος",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
+      setUploading(false);
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Σφάλμα",
+          description: "Παρακαλώ επιλέξτε μια έγκυρη εικόνα",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Σφάλμα",
+          description: "Το μέγεθος της εικόνας δεν πρέπει να υπερβαίνει τα 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl('');
+    setFormData(prev => ({ ...prev, image_url: '' }));
   };
 
   const handleEdit = (result: Result) => {
@@ -160,6 +225,8 @@ export const ResultsManagement: React.FC = () => {
       hashtags: result.hashtags || '',
       status: result.status
     });
+    setPreviewUrl(result.image_url || '');
+    setSelectedFile(null);
     setIsDialogOpen(true);
   };
 
@@ -196,6 +263,8 @@ export const ResultsManagement: React.FC = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingResult(null);
+    setSelectedFile(null);
+    setPreviewUrl('');
     setFormData({
       result_date: new Date(),
       title_el: '',
@@ -346,16 +415,69 @@ export const ResultsManagement: React.FC = () => {
                 </Popover>
               </div>
 
-              {/* Image URL */}
+              {/* Image Upload */}
               <div className="space-y-2">
-                <Label htmlFor="image_url">URL Εικόνας</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                  placeholder="https://example.com/image.jpg"
-                  className="rounded-none"
-                />
+                <Label htmlFor="image">Φωτογραφία</Label>
+                <div className="space-y-4">
+                  {/* Image Preview */}
+                  {previewUrl && (
+                    <div className="relative w-full h-48 border rounded-none overflow-hidden">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 rounded-none"
+                        onClick={handleRemoveImage}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* File Upload */}
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="rounded-none"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('image')?.click()}
+                      className="rounded-none"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Επιλογή
+                    </Button>
+                  </div>
+                  
+                  {/* Alternative URL Input */}
+                  <div>
+                    <Label htmlFor="image_url" className="text-sm text-gray-600">
+                      Ή εισάγετε URL εικόνας
+                    </Label>
+                    <Input
+                      id="image_url"
+                      value={formData.image_url}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, image_url: e.target.value }));
+                        if (e.target.value && !selectedFile) {
+                          setPreviewUrl(e.target.value);
+                        }
+                      }}
+                      placeholder="https://example.com/image.jpg"
+                      className="rounded-none"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -436,9 +558,10 @@ export const ResultsManagement: React.FC = () => {
               </Button>
               <Button
                 type="submit"
+                disabled={loading || uploading}
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
-                {editingResult ? 'Ενημέρωση' : 'Δημιουργία'}
+                {uploading ? 'Μεταφόρτωση...' : loading ? 'Αποθήκευση...' : editingResult ? 'Ενημέρωση' : 'Δημιουργία'}
               </Button>
             </div>
           </form>

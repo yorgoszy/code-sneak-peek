@@ -426,6 +426,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     if (!athleteId) return;
     
     try {
+      console.log('💾 Saving message to database:', { athleteId, role: message.role, content: message.content.substring(0, 50) });
+      
       const { error } = await supabase
         .from('ai_conversations')
         .insert({
@@ -437,9 +439,13 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
       if (error) {
         console.error('❌ Error saving message:', error);
+        toast.error('Σφάλμα αποθήκευσης μηνύματος');
+      } else {
+        console.log('✅ Message saved successfully');
       }
     } catch (error) {
       console.error('❌ Error saving message to database:', error);
+      toast.error('Σφάλμα αποθήκευσης συνομιλίας');
     }
   };
 

@@ -61,7 +61,7 @@ export const ArticleManagement = () => {
       const { data, error } = await supabase
         .from('articles')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('published_date', { ascending: false }); // Νεότερα πρώτα
 
       if (error) throw error;
       setArticles(data || []);
@@ -297,6 +297,7 @@ export const ArticleManagement = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">#</TableHead>
                   <TableHead>Τίτλος</TableHead>
                   <TableHead>Ημερομηνία</TableHead>
                   <TableHead>Γλώσσα</TableHead>
@@ -305,8 +306,11 @@ export const ArticleManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {articles.map((article) => (
+                {articles.map((article, index) => (
                   <TableRow key={article.id}>
+                    <TableCell className="font-mono text-sm text-gray-500">
+                      {index + 1}
+                    </TableCell>
                     <TableCell className="font-medium">{article.title_el}</TableCell>
                     <TableCell>{format(new Date(article.published_date), 'dd/MM/yyyy')}</TableCell>
                     <TableCell>Δίγλωσσο</TableCell>
