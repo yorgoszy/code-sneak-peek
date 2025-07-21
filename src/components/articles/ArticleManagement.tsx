@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 interface Article {
   id: string;
@@ -222,14 +223,22 @@ export const ArticleManagement = () => {
     setIsDialogOpen(true);
   };
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το άρθρο;')) return;
+    setArticleToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!articleToDelete) return;
 
     try {
       const { error } = await supabase
         .from('articles')
         .delete()
-        .eq('id', id);
+        .eq('id', articleToDelete);
 
       if (error) throw error;
       
@@ -246,6 +255,9 @@ export const ArticleManagement = () => {
         description: "Αδυναμία διαγραφής άρθρου",
         variant: "destructive",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setArticleToDelete(null);
     }
   };
 
@@ -595,6 +607,13 @@ export const ArticleManagement = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        description="Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το άρθρο;"
+      />
     </div>
   );
 };
