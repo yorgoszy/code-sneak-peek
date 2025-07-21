@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -28,6 +28,9 @@ export const ArticleManagement = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
@@ -63,15 +66,43 @@ export const ArticleManagement = () => {
     }
   };
 
+  const uploadImage = async (file: File): Promise<string> => {
+    const fileName = `${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('articles')
+      .upload(fileName, file);
+
+    if (error) throw error;
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from('articles')
+      .getPublicUrl(fileName);
+      
+    return publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      let imageUrl = formData.image_url;
+      
+      // Upload new image if selected
+      if (selectedFile) {
+        setUploading(true);
+        imageUrl = await uploadImage(selectedFile);
+      }
+
+      const articleData = {
+        ...formData,
+        image_url: imageUrl
+      };
+
       if (editingArticle) {
         const { error } = await supabase
           .from('articles')
-          .update(formData)
+          .update(articleData)
           .eq('id', editingArticle.id);
 
         if (error) throw error;
@@ -82,7 +113,7 @@ export const ArticleManagement = () => {
       } else {
         const { error } = await supabase
           .from('articles')
-          .insert([formData]);
+          .insert([articleData]);
 
         if (error) throw error;
         toast({
@@ -103,7 +134,43 @@ export const ArticleManagement = () => {
       });
     } finally {
       setLoading(false);
+      setUploading(false);
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Σφάλμα",
+          description: "Παρακαλώ επιλέξτε μια έγκυρη εικόνα",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Σφάλμα",
+          description: "Το μέγεθος της εικόνας δεν πρέπει να υπερβαίνει τα 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl('');
+    setFormData({ ...formData, image_url: '' });
   };
 
   const handleEdit = (article: Article) => {
@@ -117,6 +184,8 @@ export const ArticleManagement = () => {
       published_date: article.published_date,
       language: article.language
     });
+    setPreviewUrl(article.image_url || '');
+    setSelectedFile(null);
     setIsDialogOpen(true);
   };
 
@@ -158,6 +227,8 @@ export const ArticleManagement = () => {
       language: 'el'
     });
     setEditingArticle(null);
+    setSelectedFile(null);
+    setPreviewUrl('');
   };
 
   const handleDialogClose = () => {
@@ -263,14 +334,67 @@ export const ArticleManagement = () => {
             </div>
 
             <div>
-              <Label htmlFor="image_url">URL Φωτογραφίας</Label>
-              <Input
-                id="image_url"
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://example.com/image.jpg"
-                className="rounded-none"
-              />
+              <Label htmlFor="image">Φωτογραφία Άρθρου</Label>
+              <div className="space-y-4">
+                {/* Image Preview */}
+                {previewUrl && (
+                  <div className="relative w-full h-48 border rounded-none overflow-hidden">
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2 rounded-none"
+                      onClick={handleRemoveImage}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+                
+                {/* File Upload */}
+                <div className="flex items-center space-x-2">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="rounded-none"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('image')?.click()}
+                    className="rounded-none"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Επιλογή
+                  </Button>
+                </div>
+                
+                {/* Alternative URL Input */}
+                <div>
+                  <Label htmlFor="image_url" className="text-sm text-gray-600">
+                    Ή εισάγετε URL εικόνας
+                  </Label>
+                  <Input
+                    id="image_url"
+                    value={formData.image_url}
+                    onChange={(e) => {
+                      setFormData({ ...formData, image_url: e.target.value });
+                      if (e.target.value && !selectedFile) {
+                        setPreviewUrl(e.target.value);
+                      }
+                    }}
+                    placeholder="https://example.com/image.jpg"
+                    className="rounded-none"
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
@@ -320,10 +444,10 @@ export const ArticleManagement = () => {
               </Button>
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploading}
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
               >
-                {loading ? 'Αποθήκευση...' : editingArticle ? 'Ενημέρωση' : 'Δημιουργία'}
+                {uploading ? 'Μεταφόρτωση...' : loading ? 'Αποθήκευση...' : editingArticle ? 'Ενημέρωση' : 'Δημιουργία'}
               </Button>
             </div>
           </form>
