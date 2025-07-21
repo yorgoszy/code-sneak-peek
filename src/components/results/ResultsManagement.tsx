@@ -302,6 +302,7 @@ export const ResultsManagement: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">#</TableHead>
                 <TableHead>Τίτλος</TableHead>
                 <TableHead>Ημερομηνία</TableHead>
                 <TableHead>Γλώσσα</TableHead>
@@ -312,13 +313,16 @@ export const ResultsManagement: React.FC = () => {
             <TableBody>
               {results.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-500">
+                  <TableCell colSpan={6} className="text-center text-gray-500">
                     Δεν υπάρχουν αποτελέσματα
                   </TableCell>
                 </TableRow>
               ) : (
-                results.map((result) => (
+                results.map((result, index) => (
                   <TableRow key={result.id}>
+                    <TableCell className="font-mono text-sm text-gray-500">
+                      {results.length - index}
+                    </TableCell>
                     <TableCell className="font-medium">
                       {result.title_el}
                     </TableCell>

@@ -321,7 +321,7 @@ export const ArticleManagement = () => {
                 {articles.map((article, index) => (
                   <TableRow key={article.id}>
                     <TableCell className="font-mono text-sm text-gray-500">
-                      {index + 1}
+                      {articles.length - index}
                     </TableCell>
                     <TableCell className="font-medium">{article.title_el}</TableCell>
                     <TableCell>{format(new Date(article.published_date), 'dd/MM/yyyy')}</TableCell>
