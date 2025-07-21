@@ -30,10 +30,10 @@ export default function Subscriptions() {
             <TabsTrigger value="visits" className="rounded-none">Επισκέψεις</TabsTrigger>
             <TabsTrigger value="receipts" className="rounded-none">Αποδείξεις</TabsTrigger>
             <TabsTrigger value="expenses" className="rounded-none">Έξοδα</TabsTrigger>
+            <TabsTrigger value="financial" className="rounded-none">Έσοδα-Έξοδα</TabsTrigger>
             <TabsTrigger value="types" className="rounded-none">Τύποι</TabsTrigger>
             <TabsTrigger value="certificates" className="rounded-none">Certificates</TabsTrigger>
             <TabsTrigger value="mydata" className="rounded-none">Banking</TabsTrigger>
-            <TabsTrigger value="financial" className="rounded-none">Έσοδα-Έξοδα</TabsTrigger>
           </TabsList>
           
           <TabsContent value="management">

@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingUp, TrendingDown, DollarSign, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { el } from "date-fns/locale";
 
 interface FinancialData {
   revenue: number;
@@ -26,7 +27,7 @@ export const FinancialOverview: React.FC = () => {
   const [yearlyData, setYearlyData] = useState<YearlyData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+  const years = Array.from({ length: new Date().getFullYear() - 2024 + 1 }, (_, i) => new Date().getFullYear() - i).filter(year => year >= 2024);
 
   useEffect(() => {
     fetchFinancialData();
@@ -45,21 +46,37 @@ export const FinancialOverview: React.FC = () => {
 
       if (revenueError) throw revenueError;
 
-      // Group by month
+      // Fetch monthly expenses for selected year
+      const { data: monthlyExpenses, error: expensesError } = await supabase
+        .from('expenses')
+        .select('amount, expense_date')
+        .gte('expense_date', `${selectedYear}-01-01`)
+        .lt('expense_date', `${selectedYear + 1}-01-01`);
+
+      if (expensesError) throw expensesError;
+
+      // Group revenue by month
       const monthlyRevMap = new Map<string, number>();
       monthlyRevenue?.forEach(payment => {
         const month = format(new Date(payment.payment_date), 'yyyy-MM');
         monthlyRevMap.set(month, (monthlyRevMap.get(month) || 0) + Number(payment.amount));
       });
 
-      // Create monthly data (for now, expenses are 0 - you can add expenses table later)
+      // Group expenses by month
+      const monthlyExpMap = new Map<string, number>();
+      monthlyExpenses?.forEach(expense => {
+        const month = format(new Date(expense.expense_date), 'yyyy-MM');
+        monthlyExpMap.set(month, (monthlyExpMap.get(month) || 0) + Number(expense.amount));
+      });
+
+      // Create monthly data with both revenue and expenses
       const months = [];
       for (let month = 1; month <= 12; month++) {
         const monthKey = `${selectedYear}-${month.toString().padStart(2, '0')}`;
         const revenue = monthlyRevMap.get(monthKey) || 0;
-        const expenses = 0; // TODO: Add expenses calculation
+        const expenses = monthlyExpMap.get(monthKey) || 0;
         months.push({
-          month: format(new Date(selectedYear, month - 1), 'MMMM'),
+          month: format(new Date(selectedYear, month - 1), 'MMMM', { locale: el }),
           year: selectedYear,
           revenue,
           expenses,
@@ -78,8 +95,14 @@ export const FinancialOverview: React.FC = () => {
           .gte('payment_date', `${year}-01-01`)
           .lt('payment_date', `${year + 1}-01-01`);
 
+        const { data: yearExpenses } = await supabase
+          .from('expenses')
+          .select('amount')
+          .gte('expense_date', `${year}-01-01`)
+          .lt('expense_date', `${year + 1}-01-01`);
+
         const revenue = yearRevenue?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
-        const expenses = 0; // TODO: Add expenses calculation
+        const expenses = yearExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
         yearlyResults.push({
           year,
           revenue,
