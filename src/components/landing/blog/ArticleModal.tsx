@@ -70,7 +70,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language,
           {article.bibliography && (
             <div className="mt-8 pt-6 border-t border-gray-200">
               <h3 className="text-base font-semibold text-gray-900 mb-3">{translations.bibliography}</h3>
-              <div className="text-[10px] text-gray-500 leading-tight space-y-1">
+              <div className="text-[11px] text-gray-500 leading-tight space-y-1">
                 {article.bibliography.split('\n').map((line, index) => {
                   if (line.trim() === '') return null;
                   return (
