@@ -74,6 +74,32 @@ export const useMessageSender = ({
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Αποθήκευση στη βάση δεδομένων
+      try {
+        console.log('💾 Saving conversation to database...');
+        
+        await supabase.from('ai_conversations').insert([
+          {
+            user_id: userId,
+            content: userMessage,
+            message_type: 'user',
+            metadata: {}
+          },
+          {
+            user_id: userId,
+            content: data.response,
+            message_type: 'assistant',
+            metadata: { aiType: 'rid-smart' }
+          }
+        ]);
+
+        console.log('✅ Conversation saved successfully');
+      } catch (saveError) {
+        console.error('❌ Error saving conversation:', saveError);
+        // Δεν διακόπτουμε τη λειτουργία αν αποτύχει η αποθήκευση
+      }
+
     } catch (error) {
       console.error('💥 useMessageSender: RID AI Error:', error);
       toast.error('Σφάλμα στον RID AI βοηθό');

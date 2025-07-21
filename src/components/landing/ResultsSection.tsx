@@ -96,11 +96,11 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                   </div>
                   
                   <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-                    {result.title_el}
+                    {translations?.language === 'en' && result.title_en ? result.title_en : result.title_el}
                   </h3>
                   
                   <p className="text-gray-600 mb-4 flex-grow">
-                    {result.content_el}
+                    {translations?.language === 'en' && result.content_en ? result.content_en : result.content_el}
                   </p>
                   
                   {result.hashtags && (

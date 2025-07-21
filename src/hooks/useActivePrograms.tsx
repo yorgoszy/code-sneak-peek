@@ -11,11 +11,12 @@ export const useActivePrograms = () => {
       console.log('🔄 Fetching active programs from database...');
       
       try {
-        // Fetch program assignments first
+        // Fetch program assignments first - filter out expired ones
         const { data: assignments, error: assignmentsError } = await supabase
           .from('program_assignments')
           .select('*')
-          .eq('status', 'active');
+          .eq('status', 'active')
+          .gte('end_date', new Date().toISOString().split('T')[0]); // Only get assignments that haven't expired
 
         if (assignmentsError) {
           console.error('❌ Error fetching program assignments:', assignmentsError);
