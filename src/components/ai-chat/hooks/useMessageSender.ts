@@ -19,8 +19,8 @@ export const useMessageSender = ({
 }: UseMessageSenderProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const sendMessage = async (userMessage: string, files?: string[]) => {
-    if ((!userMessage.trim() && !files?.length) || isLoading || !userId) return;
+  const sendMessage = async (userMessage: string) => {
+    if (!userMessage.trim() || isLoading || !userId) return;
 
     // Αυστηρός έλεγχος συνδρομής πριν από κάθε μήνυμα
     if (!hasActiveSubscription) {
@@ -48,8 +48,7 @@ export const useMessageSender = ({
       const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
         body: {
           message: userMessage,
-          userId: userId,
-          files: files
+          userId: userId
         }
       });
 

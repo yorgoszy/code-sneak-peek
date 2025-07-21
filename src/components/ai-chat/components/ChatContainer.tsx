@@ -20,9 +20,8 @@ interface ChatContainerProps {
   input: string;
   setInput: (value: string) => void;
   hasActiveSubscription: boolean;
-  onSend: (files?: string[]) => void;
+  onSend: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
-  userId?: string;
 }
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({
@@ -36,8 +35,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   setInput,
   hasActiveSubscription,
   onSend,
-  onKeyPress,
-  userId
+  onKeyPress
 }) => {
   return (
     <div className="flex-1 flex flex-col min-h-0">
@@ -58,7 +56,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         onSend={onSend}
         onKeyPress={onKeyPress}
         isMobile={isMobile}
-        userId={userId}
       />
     </div>
   );

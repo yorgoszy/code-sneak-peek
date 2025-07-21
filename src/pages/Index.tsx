@@ -165,7 +165,6 @@ const Index = () => {
 
       <ResultsSection 
         translations={correctedTranslations}
-        currentLanguage={language}
       />
 
       {/* Green Section */}

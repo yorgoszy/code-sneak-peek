@@ -24,10 +24,9 @@ interface ChatContentProps {
   messagesEndRef: React.RefObject<HTMLDivElement>;
   input: string;
   setInput: (value: string) => void;
-  onSend: (files?: string[]) => void;
+  onSend: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
   onClearConversation: () => void;
-  userId?: string;
 }
 
 export const ChatContent: React.FC<ChatContentProps> = ({
@@ -44,8 +43,7 @@ export const ChatContent: React.FC<ChatContentProps> = ({
   setInput,
   onSend,
   onKeyPress,
-  onClearConversation,
-  userId
+  onClearConversation
 }) => {
   return (
     <>
@@ -81,7 +79,6 @@ export const ChatContent: React.FC<ChatContentProps> = ({
           hasActiveSubscription={hasActiveSubscription}
           onSend={onSend}
           onKeyPress={onKeyPress}
-          userId={userId}
         />
       )}
     </>
