@@ -21,6 +21,9 @@ interface SubscriptionType {
   duration_months: number;
   features: any;
   is_active: boolean;
+  subscription_mode: 'time_based' | 'visit_based';
+  visit_count?: number;
+  visit_expiry_months?: number;
 }
 
 interface UserSubscription {
@@ -107,7 +110,13 @@ export const SubscriptionManagement: React.FC = () => {
         throw typesError;
       }
       console.log('✅ Subscription types loaded:', types?.length);
-      setSubscriptionTypes(types || []);
+      
+      const typedSubscriptionTypes = (types || []).map(type => ({
+        ...type,
+        subscription_mode: (type.subscription_mode || 'time_based') as 'time_based' | 'visit_based'
+      })) as SubscriptionType[];
+      
+      setSubscriptionTypes(typedSubscriptionTypes);
 
       // Ενημέρωση ληγμένων συνδρομών πρώτα
       await supabase.rpc('check_and_update_expired_subscriptions');
@@ -128,7 +137,16 @@ export const SubscriptionManagement: React.FC = () => {
         throw subscriptionsError;
       }
       console.log('✅ User subscriptions loaded:', subscriptions?.length);
-      setUserSubscriptions(subscriptions || []);
+      
+      const typedSubscriptions = (subscriptions || []).map(sub => ({
+        ...sub,
+        subscription_types: {
+          ...sub.subscription_types,
+          subscription_mode: (sub.subscription_types.subscription_mode || 'time_based') as 'time_based' | 'visit_based'
+        }
+      })) as UserSubscription[];
+      
+      setUserSubscriptions(typedSubscriptions);
 
       // Φόρτωση όλων των χρηστών
       const { data: allUsers, error: usersError } = await supabase
@@ -145,7 +163,7 @@ export const SubscriptionManagement: React.FC = () => {
       setFilteredUsers(allUsers || []);
 
       // Υπολογισμός μηνιαίων αλλαγών
-      await calculateMonthlyChanges(subscriptions || [], allUsers || []);
+      await calculateMonthlyChanges(typedSubscriptions, allUsers || []);
 
       console.log('✅ All data loaded successfully');
 
@@ -339,7 +357,13 @@ export const SubscriptionManagement: React.FC = () => {
 
     const subscriptionStartDate = new Date(startDate);
     const endDate = new Date(subscriptionStartDate);
-    endDate.setMonth(subscriptionStartDate.getMonth() + subscriptionType.duration_months);
+    
+    // Υπολογισμός ημερομηνίας λήξης ανάλογα με τον τύπο συνδρομής
+    if (subscriptionType.subscription_mode === 'visit_based') {
+      endDate.setMonth(subscriptionStartDate.getMonth() + (subscriptionType.visit_expiry_months || 0));
+    } else {
+      endDate.setMonth(subscriptionStartDate.getMonth() + subscriptionType.duration_months);
+    }
     endDate.setDate(subscriptionStartDate.getDate() - 1);
 
     // Αποθήκευση δεδομένων για μετά την επιλογή απόδειξης
@@ -382,6 +406,25 @@ export const SubscriptionManagement: React.FC = () => {
         .eq('id', selectedUser);
 
       if (userError) throw userError;
+
+      // Δημιουργία visit package αν είναι visit-based subscription
+      if (subscriptionType.subscription_mode === 'visit_based' && subscriptionType.visit_count) {
+        const visitEndDate = new Date(subscriptionStartDate);
+        visitEndDate.setMonth(subscriptionStartDate.getMonth() + (subscriptionType.visit_expiry_months || 0));
+        
+        const { error: visitPackageError } = await supabase
+          .from('visit_packages')
+          .insert({
+            user_id: selectedUser,
+            total_visits: subscriptionType.visit_count,
+            remaining_visits: subscriptionType.visit_count,
+            purchase_date: startDate,
+            expiry_date: visitEndDate.toISOString().split('T')[0],
+            price: subscriptionType.price
+          });
+
+        if (visitPackageError) throw visitPackageError;
+      }
 
       // Δημιουργία απόδειξης αν επιλέχθηκε
       if (createReceipt) {
