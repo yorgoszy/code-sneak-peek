@@ -36,28 +36,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return;
         }
 
-        // Αποθήκευση όλων των συνδρομών στο προφίλ του χρήστη
-        if (allSubscriptions && allSubscriptions.length > 0) {
-          const { error: updateError } = await supabase
-            .from('app_users')
-            .update({ 
-              subscription_history: allSubscriptions.map(sub => ({
-                id: sub.id,
-                type: sub.subscription_types?.name,
-                start_date: sub.start_date,
-                end_date: sub.end_date,
-                status: sub.status,
-                is_paused: sub.is_paused,
-                paused_days_remaining: sub.paused_days_remaining,
-                price: sub.subscription_types?.price
-              }))
-            })
-            .eq('id', user.id);
-
-          if (updateError) {
-            console.error('Error updating user subscription history:', updateError);
-          }
-        }
+        // TODO: Θα προστεθεί αποθήκευση subscription_history μετά την εκτέλεση του migration
 
         // Φιλτράρισμα για ενεργές συνδρομές μόνο για εμφάνιση ημερών
         const activeSubscriptions = allSubscriptions?.filter(sub => sub.status === 'active') || [];
