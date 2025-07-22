@@ -184,6 +184,13 @@ export const useUserBookings = () => {
   };
 
   const cancelBooking = async (bookingId: string) => {
+    // First get the booking details
+    const { data: booking } = await supabase
+      .from('booking_sessions')
+      .select('booking_type, user_id')
+      .eq('id', bookingId)
+      .single();
+
     const { data: canCancel } = await supabase.rpc('can_cancel_booking', {
       booking_id: bookingId
     });
@@ -201,6 +208,49 @@ export const useUserBookings = () => {
       .eq('id', bookingId);
 
     if (error) throw error;
+
+    // If it's a gym visit, return the visit to the package
+    if (booking?.booking_type === 'gym_visit' && booking?.user_id) {
+      try {
+        // Get the current visit package
+        const { data: visitPackage } = await supabase
+          .from('visit_packages')
+          .select('remaining_visits')
+          .eq('user_id', booking.user_id)
+          .in('status', ['active', 'used'])
+          .order('purchase_date', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (visitPackage) {
+          // Update the visit package
+          const { error: visitError } = await supabase
+            .from('visit_packages')
+            .update({ 
+              remaining_visits: visitPackage.remaining_visits + 1,
+              updated_at: new Date().toISOString(),
+              status: 'active'
+            })
+            .eq('user_id', booking.user_id)
+            .in('status', ['active', 'used'])
+            .order('purchase_date', { ascending: false })
+            .limit(1);
+
+          if (visitError) {
+            console.error('Error returning visit to package:', visitError);
+          }
+        }
+
+        // Also delete the visit record if it exists
+        await supabase
+          .from('user_visits')
+          .delete()
+          .ilike('notes', `%Booking ID: ${bookingId}%`);
+
+      } catch (visitError) {
+        console.error('Error handling visit return:', visitError);
+      }
+    }
 
     // Refresh data after cancelling
     await Promise.all([fetchAvailability(), fetchBookings()]);
