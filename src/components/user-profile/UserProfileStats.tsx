@@ -89,10 +89,10 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
     const fetchVisitsData = async () => {
       try {
-        // Φόρτωση ενεργών visit packages
+        // Φόρτωση ενεργών visit packages (ίδια λογική με VisitManagement)
         const { data: visitPackages, error: packagesError } = await supabase
           .from('visit_packages')
-          .select('total_visits, remaining_visits, purchase_date')
+          .select('total_visits, remaining_visits, status')
           .eq('user_id', user.id)
           .eq('status', 'active')
           .order('purchase_date', { ascending: false });
@@ -111,24 +111,11 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return;
         }
 
-        // Φόρτωση επισκέψεων που έγιναν μετά την αγορά του ενεργού πακέτου
-        const { data: visits, count: visitCount, error: visitsError } = await supabase
-          .from('user_visits')
-          .select('*', { count: 'exact' })
-          .eq('user_id', user.id)
-          .gte('visit_date', activePackage.purchase_date);
-
-        if (visitsError) {
-          console.error('Error fetching visits:', visitsError);
-          setVisitsData(null);
-          return;
-        }
-
-        // Υπολογισμός χρησιμοποιημένων επισκέψεων από το ενεργό πακέτο
-        const usedFromActivePackage = visitCount || 0;
+        // Υπολογισμός χρησιμοποιημένων επισκέψεων (ίδια λογική με VisitManagement)
+        const usedVisits = activePackage.total_visits - activePackage.remaining_visits;
 
         setVisitsData({
-          used: usedFromActivePackage,
+          used: usedVisits,
           total: activePackage.total_visits
         });
 
