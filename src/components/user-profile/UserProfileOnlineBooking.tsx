@@ -67,13 +67,16 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     {
       id: 'gym_visit',
       title: 'Επισκέψεις Γυμναστηρίου',
-      description: 'Κλείσε το ραντεβού σου για προπόνηση',
+      description: availability?.type === 'none' 
+        ? 'Χρειάζεται αγορά πακέτου για κρατήσεις'
+        : 'Κλείσε το ραντεβού σου για προπόνηση',
       icon: MapPin,
       color: 'bg-blue-100 text-blue-600',
       available: availability && (
         (availability.type === 'hypergym' && availability.available_monthly > 0) ||
         (availability.type === 'visit_packages' && availability.available_visits > 0)
-      )
+      ),
+      requiresPurchase: availability?.type === 'none'
     },
     {
       id: 'videocall',
@@ -81,7 +84,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       description: 'Online συνεδρίες με τον προπονητή σου',
       icon: Video,
       color: 'bg-green-100 text-green-600',
-      available: false
+      available: false,
+      requiresPurchase: false
     }
   ];
 
@@ -103,8 +107,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
               </Badge>
             )}
             {availability.type === 'none' && (
-              <Badge variant="secondary" className="rounded-none">
-                Δεν έχεις διαθέσιμες επισκέψεις
+              <Badge variant="destructive" className="rounded-none">
+                Δεν έχεις ενεργό πακέτο - <a href="/dashboard/user-profile/shop" className="underline">Αγόρασε πακέτο</a>
               </Badge>
             )}
           </div>
@@ -134,7 +138,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none disabled:bg-gray-300 disabled:text-gray-500"
               >
                 <Calendar className="w-4 h-4 mr-2" />
-                {option.available ? 'Κλείσε Ραντεβού' : 'Σύντομα'}
+                {option.requiresPurchase ? 'Αγόρασε Πακέτο' : option.available ? 'Κλείσε Ραντεβού' : 'Σύντομα'}
               </Button>
             </CardContent>
           </Card>
@@ -198,7 +202,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         <CardContent>
           <div className="space-y-2 text-gray-600">
             <p>• Δευτέρα - Παρασκευή: 08:00 - 20:00</p>
-            <p>• Σαββατοκύριακα: 09:00 - 18:00</p>
+            <p>• <del>Σαββατοκύριακα: κλειστά</del></p>
             <p>• Μπορείς να ακυρώσεις ή να αναβάλεις το ραντεβού σου έως 12 ώρες πριν</p>
             <p>• Για επείγουσες αλλαγές επικοινώνησε τηλεφωνικά</p>
           </div>
