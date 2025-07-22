@@ -88,6 +88,78 @@ const ShopWithSidebar = () => {
     }
   };
 
+  const handleMockPurchase = async (product: SubscriptionType) => {
+    setLoading(product.id);
+    
+    try {
+      if (!user) {
+        toast.error('Δεν είστε συνδεδεμένοι');
+        return;
+      }
+
+      // Get user profile
+      const { data: userProfile } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!userProfile) {
+        toast.error('Δεν βρέθηκε το προφίλ χρήστη');
+        return;
+      }
+
+      if (product.subscription_mode === 'visit_based') {
+        // Create visit package
+        const { error } = await supabase
+          .from('visit_packages')
+          .insert({
+            user_id: userProfile.id,
+            total_visits: product.visit_count || 1,
+            remaining_visits: product.visit_count || 1,
+            expiry_date: product.visit_expiry_months 
+              ? new Date(Date.now() + (product.visit_expiry_months * 30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0]
+              : null,
+            price: product.price,
+            status: 'active'
+          });
+
+        if (error) throw error;
+        toast.success('Πακέτο επισκέψεων δημιουργήθηκε επιτυχώς!');
+      } else {
+        // Create subscription
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + product.duration_months);
+
+        const { error } = await supabase
+          .from('user_subscriptions')
+          .insert({
+            user_id: userProfile.id,
+            subscription_type_id: product.id,
+            start_date: new Date().toISOString().split('T')[0],
+            end_date: endDate.toISOString().split('T')[0],
+            status: 'active',
+            is_paid: true
+          });
+
+        if (error) throw error;
+
+        // Update user subscription status
+        await supabase
+          .from('app_users')
+          .update({ subscription_status: 'active' })
+          .eq('id', userProfile.id);
+
+        toast.success('Συνδρομή δημιουργήθηκε επιτυχώς!');
+      }
+    } catch (error) {
+      console.error('Mock purchase error:', error);
+      toast.error('Σφάλμα κατά τη δημιουργία πακέτου');
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const getProductIcon = (product: SubscriptionType) => {
     if (product.subscription_mode === 'visit_based') {
       return <Dumbbell className="w-6 h-6" />;
@@ -214,10 +286,19 @@ const ShopWithSidebar = () => {
                       <Button 
                         onClick={() => handlePurchase(product)}
                         disabled={loading === product.id}
-                        className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                        className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none mb-2"
                       >
                         <ShoppingCart className="w-4 h-4 mr-2" />
                         {loading === product.id ? 'Φόρτωση...' : 'Αγορά Τώρα'}
+                      </Button>
+                      
+                      <Button 
+                        onClick={() => handleMockPurchase(product)}
+                        disabled={loading === product.id}
+                        variant="outline"
+                        className="w-full rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black"
+                      >
+                        {loading === product.id ? 'Φόρτωση...' : 'Δημιουργία Πακέτου'}
                       </Button>
                     </CardContent>
                   </Card>
