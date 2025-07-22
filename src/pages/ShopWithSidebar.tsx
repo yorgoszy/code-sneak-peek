@@ -50,7 +50,7 @@ const ShopWithSidebar = () => {
 
       if (error) throw error;
 
-      setProducts(data || []);
+      setProducts((data as SubscriptionType[]) || []);
     } catch (error) {
       console.error('Error loading products:', error);
       toast.error('Σφάλμα κατά τη φόρτωση των προϊόντων');

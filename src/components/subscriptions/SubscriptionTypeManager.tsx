@@ -116,7 +116,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       console.log('🔄 Loading subscription types...');
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('*')
+        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop')
         .order('price');
 
       if (error) {
@@ -127,8 +127,9 @@ export const SubscriptionTypeManager: React.FC = () => {
       console.log('✅ Loaded subscription types:', data);
       const typedData = (data || []).map(item => ({
         ...item,
-        subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based'
-      }));
+        subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based',
+        available_in_shop: item.available_in_shop || false
+      })) as SubscriptionType[];
       setSubscriptionTypes(typedData);
       setFilteredSubscriptionTypes(typedData);
     } catch (error) {
@@ -537,6 +538,14 @@ export const SubscriptionTypeManager: React.FC = () => {
                       className="rounded-none"
                     >
                       {type.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={type.available_in_shop ? "secondary" : "outline"}
+                      onClick={() => toggleAvailableInShop(type)}
+                      className="rounded-none"
+                    >
+                      {type.available_in_shop ? 'Στο Shop' : 'Προσθήκη στο Shop'}
                     </Button>
                   </div>
                 </div>

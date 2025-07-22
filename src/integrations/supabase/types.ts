@@ -2422,6 +2422,7 @@ export type Database = {
       }
       subscription_types: {
         Row: {
+          available_in_shop: boolean
           created_at: string
           description: string | null
           duration_months: number
@@ -2435,6 +2436,7 @@ export type Database = {
           visit_expiry_months: number | null
         }
         Insert: {
+          available_in_shop?: boolean
           created_at?: string
           description?: string | null
           duration_months?: number
@@ -2448,6 +2450,7 @@ export type Database = {
           visit_expiry_months?: number | null
         }
         Update: {
+          available_in_shop?: boolean
           created_at?: string
           description?: string | null
           duration_months?: number
