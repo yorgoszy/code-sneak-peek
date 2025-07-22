@@ -149,7 +149,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
-            <Card key={product.id} className="rounded-none hover:shadow-lg transition-all duration-200">
+            <Card key={product.id} className="rounded-none hover:shadow-lg transition-all duration-200 flex flex-col h-[400px]">
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center items-center mb-4">
                   {product.subscription_mode === 'visit_based' ? (
@@ -170,12 +170,12 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 flex-1 flex flex-col">
                 {product.description && (
                   <p className="text-gray-600 text-sm mb-4">{product.description}</p>
                 )}
 
-                <div className="space-y-3 mb-6">
+                <div className="space-y-3 mb-6 flex-1">
                   {product.subscription_mode === 'visit_based' ? (
                     <>
                       <div className="flex items-center justify-between py-2 border-b border-gray-100">
@@ -210,14 +210,22 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                   )}
                 </div>
 
-                <Button 
-                  onClick={() => handlePurchase(product)}
-                  disabled={purchasing === product.id}
-                  className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  {purchasing === product.id ? 'Επεξεργασία...' : 'Αγορά Τώρα'}
-                </Button>
+                <div className="mt-auto space-y-2">
+                  <Button 
+                    variant="outline"
+                    className="w-full rounded-none"
+                  >
+                    Πληροφορίες
+                  </Button>
+                  <Button 
+                    onClick={() => handlePurchase(product)}
+                    disabled={purchasing === product.id}
+                    className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    {purchasing === product.id ? 'Επεξεργασία...' : 'Αγορά Τώρα'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
