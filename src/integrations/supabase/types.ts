@@ -2514,6 +2514,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           price: number
+          single_purchase: boolean | null
           subscription_mode: string
           visit_count: number | null
           visit_expiry_months: number | null
@@ -2528,6 +2529,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           price: number
+          single_purchase?: boolean | null
           subscription_mode?: string
           visit_count?: number | null
           visit_expiry_months?: number | null
@@ -2542,6 +2544,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           price?: number
+          single_purchase?: boolean | null
           subscription_mode?: string
           visit_count?: number | null
           visit_expiry_months?: number | null

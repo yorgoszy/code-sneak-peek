@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
 
 interface BookingAvailability {
-  type: 'hypergym' | 'visit_packages' | 'videocall' | 'none';
+  type: 'hypergym' | 'visit_packages' | 'videocall' | 'single_videocall' | 'none';
   total_monthly?: number;
   used_monthly?: number;
   available_monthly?: number;
@@ -13,6 +13,7 @@ interface BookingAvailability {
   subscription_name?: string;
   has_videocall?: boolean;
   videocall_subscription?: string;
+  single_videocall_sessions?: number;
   has_gym_access?: boolean;
 }
 

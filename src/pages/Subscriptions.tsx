@@ -8,6 +8,7 @@ import { CertificateManager } from "@/components/analytics/CertificateManager";
 import { VisitManagement } from "@/components/visits/VisitManagement";
 import { FinancialOverview } from "@/components/analytics/FinancialOverview";
 import { ExpenseManagement } from "@/components/expenses/ExpenseManagement";
+import { AdminBookingManagement } from "@/components/admin/AdminBookingManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sidebar } from "@/components/Sidebar";
 import { useState } from "react";
@@ -26,8 +27,9 @@ export default function Subscriptions() {
         </div>
         
         <Tabs defaultValue="management" className="w-full">
-          <TabsList className="grid w-full grid-cols-9 mb-6 rounded-none">
+          <TabsList className="grid w-full grid-cols-10 mb-6 rounded-none">
             <TabsTrigger value="management" className="rounded-none">Συνδρομές</TabsTrigger>
+            <TabsTrigger value="booking" className="rounded-none">Booking</TabsTrigger>
             <TabsTrigger value="visits" className="rounded-none">Επισκέψεις</TabsTrigger>
             <TabsTrigger value="receipts" className="rounded-none">Αποδείξεις</TabsTrigger>
             <TabsTrigger value="expenses" className="rounded-none">Έξοδα</TabsTrigger>
@@ -40,6 +42,10 @@ export default function Subscriptions() {
           
           <TabsContent value="management">
             <SubscriptionManagement />
+          </TabsContent>
+
+          <TabsContent value="booking">
+            <AdminBookingManagement />
           </TabsContent>
           
           <TabsContent value="types">

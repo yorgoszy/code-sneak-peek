@@ -25,6 +25,7 @@ interface SubscriptionType {
   visit_count?: number;
   visit_expiry_months?: number;
   available_in_shop?: boolean;
+  single_purchase?: boolean;
 }
 
 export const SubscriptionTypeManager: React.FC = () => {
@@ -49,6 +50,7 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [subscriptionMode, setSubscriptionMode] = useState<'time_based' | 'visit_based'>('time_based');
   const [visitCount, setVisitCount] = useState('');
   const [visitExpiryMonths, setVisitExpiryMonths] = useState('');
+  const [singlePurchase, setSinglePurchase] = useState(false);
 
   useEffect(() => {
     checkUserRole();
@@ -116,7 +118,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       console.log('🔄 Loading subscription types...');
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop')
+        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase')
         .order('price');
 
       if (error) {
@@ -128,7 +130,8 @@ export const SubscriptionTypeManager: React.FC = () => {
       const typedData = (data || []).map(item => ({
         ...item,
         subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based',
-        available_in_shop: item.available_in_shop || false
+        available_in_shop: item.available_in_shop || false,
+        single_purchase: item.single_purchase || false
       })) as SubscriptionType[];
       setSubscriptionTypes(typedData);
       setFilteredSubscriptionTypes(typedData);
@@ -149,6 +152,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     setSubscriptionMode('time_based');
     setVisitCount('');
     setVisitExpiryMonths('');
+    setSinglePurchase(false);
     setEditingType(null);
   };
 
@@ -169,6 +173,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     setSubscriptionMode(type.subscription_mode || 'time_based');
     setVisitCount(type.visit_count?.toString() || '');
     setVisitExpiryMonths(type.visit_expiry_months?.toString() || '');
+    setSinglePurchase(type.single_purchase || false);
     setIsDialogOpen(true);
   };
 
@@ -249,7 +254,8 @@ export const SubscriptionTypeManager: React.FC = () => {
         is_active: true,
         subscription_mode: subscriptionMode,
         visit_count: subscriptionMode === 'visit_based' ? numericVisitCount : null,
-        visit_expiry_months: subscriptionMode === 'visit_based' ? numericVisitExpiryMonths : null
+        visit_expiry_months: subscriptionMode === 'visit_based' ? numericVisitExpiryMonths : null,
+        single_purchase: singlePurchase
       };
 
       console.log('💾 Saving subscription type:', typeData);
@@ -691,6 +697,21 @@ export const SubscriptionTypeManager: React.FC = () => {
                 disabled={saving}
               />
             </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                id="singlePurchase"
+                type="checkbox"
+                checked={singlePurchase}
+                onChange={(e) => setSinglePurchase(e.target.checked)}
+                className="h-4 w-4 text-[#00ffba] focus:ring-[#00ffba] border-gray-300 rounded"
+                disabled={saving}
+              />
+              <Label htmlFor="singlePurchase" className="text-sm">
+                Μονή Αγορά (π.χ. videocall session)
+              </Label>
+            </div>
+            
             <div className="flex gap-2">
               <Button 
                 onClick={handleSave} 

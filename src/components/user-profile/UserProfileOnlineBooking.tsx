@@ -113,14 +113,19 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 Videocall Coaching ενεργή
               </Badge>
             )}
+            {availability.type === 'single_videocall' && (
+              <Badge variant="outline" className="rounded-none">
+                {availability.single_videocall_sessions} videocall sessions διαθέσιμες
+              </Badge>
+            )}
             {availability.type === 'none' && (
               <Badge variant="destructive" className="rounded-none">
                 Δεν έχεις ενεργό πακέτο - <a href="/dashboard/user-profile/shop" className="underline">Αγόρασε πακέτο</a>
               </Badge>
             )}
-            {availability?.has_videocall && availability.type !== 'videocall' && (
+            {availability?.has_videocall && availability.type !== 'videocall' && availability.type !== 'single_videocall' && (
               <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">
-                + Videocall Coaching διαθέσιμο
+                + Videocall διαθέσιμο ({availability.single_videocall_sessions || 0} sessions)
               </Badge>
             )}
           </div>

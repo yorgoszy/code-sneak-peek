@@ -15,6 +15,7 @@ interface UserAvailability {
   type: string;
   has_videocall?: boolean;
   videocall_subscription?: string;
+  single_videocall_sessions?: number;
 }
 
 export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps> = ({ 
@@ -116,7 +117,12 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Online Coaching</h2>
         <p className="text-gray-600">Συνδέσου με τον προπονητή σου μέσω βιντεοκλήσης</p>
         <Badge variant="outline" className="mt-2 rounded-none bg-green-50 text-green-700 border-green-200">
-          {availability.videocall_subscription || 'Videocall Coaching ενεργό'}
+          {availability.videocall_subscription 
+            ? availability.videocall_subscription 
+            : availability.single_videocall_sessions 
+              ? `${availability.single_videocall_sessions} videocall sessions διαθέσιμες`
+              : 'Videocall διαθέσιμο'
+          }
         </Badge>
       </div>
 
