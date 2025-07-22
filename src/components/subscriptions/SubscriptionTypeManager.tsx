@@ -21,7 +21,7 @@ interface SubscriptionType {
   duration_months: number;
   features: any;
   is_active: boolean;
-  subscription_mode: 'time_based' | 'visit_based';
+  subscription_mode: 'time_based' | 'visit_based' | 'videocall';
   visit_count?: number;
   visit_expiry_months?: number;
   available_in_shop?: boolean;
@@ -47,7 +47,7 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [price, setPrice] = useState('');
   const [durationMonths, setDurationMonths] = useState('');
   const [features, setFeatures] = useState('');
-  const [subscriptionMode, setSubscriptionMode] = useState<'time_based' | 'visit_based'>('time_based');
+  const [subscriptionMode, setSubscriptionMode] = useState<'time_based' | 'visit_based' | 'videocall'>('time_based');
   const [visitCount, setVisitCount] = useState('');
   const [visitExpiryMonths, setVisitExpiryMonths] = useState('');
   const [singlePurchase, setSinglePurchase] = useState(false);
@@ -129,7 +129,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       console.log('✅ Loaded subscription types:', data);
       const typedData = (data || []).map(item => ({
         ...item,
-        subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based',
+        subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based' | 'videocall',
         available_in_shop: item.available_in_shop || false,
         single_purchase: item.single_purchase || false
       })) as SubscriptionType[];
@@ -604,7 +604,7 @@ export const SubscriptionTypeManager: React.FC = () => {
               <Label htmlFor="subscriptionMode">Τύπος Συνδρομής*</Label>
               <Select
                 value={subscriptionMode}
-                onValueChange={(value: 'time_based' | 'visit_based') => setSubscriptionMode(value)}
+                onValueChange={(value: 'time_based' | 'visit_based' | 'videocall') => setSubscriptionMode(value)}
                 disabled={saving}
               >
                 <SelectTrigger className="rounded-none">
@@ -621,6 +621,12 @@ export const SubscriptionTypeManager: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
                       Επισκέψεις
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="videocall">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      VIDEOCALL
                     </div>
                   </SelectItem>
                 </SelectContent>
