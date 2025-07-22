@@ -52,28 +52,48 @@ export const useUserBookings = () => {
   }, [userProfile]);
 
   const fetchUserProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('🚫 fetchUserProfile: No user found');
+      return;
+    }
 
-    const { data } = await supabase
+    console.log('🔄 Fetching user profile for auth_user_id:', user.id);
+    const { data, error } = await supabase
       .from('app_users')
       .select('*')
       .eq('auth_user_id', user.id)
       .single();
 
+    if (error) {
+      console.error('❌ Error fetching user profile:', error);
+      return;
+    }
+
+    console.log('✅ User profile found:', data);
     setUserProfile(data);
   };
 
   const fetchAvailability = async () => {
-    if (!user || !userProfile) return;
+    if (!user || !userProfile) {
+      console.log('🚫 fetchAvailability: Missing user or userProfile', { user: !!user, userProfile: !!userProfile });
+      return;
+    }
 
     try {
-      const { data } = await supabase.rpc('get_user_available_bookings', {
+      console.log('🔄 Fetching booking availability for user:', userProfile.id);
+      const { data, error } = await supabase.rpc('get_user_available_bookings', {
         user_uuid: userProfile.id
       });
 
+      if (error) {
+        console.error('❌ RPC error:', error);
+        throw error;
+      }
+
+      console.log('✅ Availability data received:', data);
       setAvailability(data as unknown as BookingAvailability);
     } catch (error) {
-      console.error('Error fetching booking availability:', error);
+      console.error('❌ Error fetching booking availability:', error);
     }
   };
 
