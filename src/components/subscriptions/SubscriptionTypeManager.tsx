@@ -545,8 +545,8 @@ export const SubscriptionTypeManager: React.FC = () => {
                       onClick={() => toggleAvailableInShop(type)}
                       className={`rounded-none p-2 ${
                         type.available_in_shop 
-                          ? 'text-[#00ffba] border-[#00ffba] hover:bg-[#00ffba]/10' 
-                          : 'text-gray-400 hover:text-gray-600'
+                          ? 'bg-[#00ffba] text-white border-white hover:bg-[#00ffba]/90' 
+                          : 'text-gray-400 hover:text-gray-600 border-gray-300'
                       }`}
                     >
                       <ShoppingCart className="w-4 h-4" />
