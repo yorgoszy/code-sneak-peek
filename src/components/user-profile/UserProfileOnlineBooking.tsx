@@ -53,6 +53,27 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     }
   };
 
+  // Helper function to calculate time remaining for cancellation
+  const getTimeRemainingForCancellation = (bookingDate: string, bookingTime: string) => {
+    const bookingDateTime = new Date(`${bookingDate} ${bookingTime}`);
+    const cancellationDeadline = new Date(bookingDateTime.getTime() - 12 * 60 * 60 * 1000); // 12 hours before
+    const now = new Date();
+    
+    if (now >= cancellationDeadline) {
+      return null; // Cannot cancel anymore
+    }
+    
+    const timeDiff = cancellationDeadline.getTime() - now.getTime();
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) {
+      return `${days} μέρες, ${hours} ώρες`;
+    } else {
+      return `${hours} ώρες`;
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Φόρτωση...</div>;
   }
@@ -189,30 +210,45 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
             </div>
           ) : (
             <div className="space-y-3">
-              {bookings.map((booking) => (
-                <div key={booking.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-none">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center justify-center w-10 h-10 bg-[#00ffba] text-black rounded-none">
-                      <MapPin className="w-5 h-5" />
+              {bookings.map((booking) => {
+                const timeRemaining = getTimeRemainingForCancellation(booking.booking_date, booking.booking_time);
+                const canCancel = timeRemaining !== null;
+                
+                return (
+                  <div key={booking.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-none">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center justify-center w-10 h-10 bg-[#00ffba] text-black rounded-none">
+                        <MapPin className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">{booking.section?.name}</h4>
+                        <p className="text-sm text-gray-600">
+                          {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time}
+                        </p>
+                        {canCancel ? (
+                          <p className="text-xs text-green-600">
+                            Μπορείς να ακυρώσεις για άλλες {timeRemaining}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-red-600">
+                            Δεν μπορείς να ακυρώσεις (λιγότερο από 12 ώρες)
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium">{booking.section?.name}</h4>
-                      <p className="text-sm text-gray-600">
-                        {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time}
-                      </p>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!canCancel}
+                      onClick={() => handleCancelBooking(booking.id)}
+                      className="rounded-none disabled:opacity-50"
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Ακύρωση
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCancelBooking(booking.id)}
-                    className="rounded-none"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Ακύρωση
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
