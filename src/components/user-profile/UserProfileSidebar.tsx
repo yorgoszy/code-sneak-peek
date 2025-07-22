@@ -6,7 +6,9 @@ import {
   Calendar,
   FileText,
   CreditCard,
-  Brain
+  Brain,
+  ShoppingCart,
+  Video
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState } from "react";
@@ -63,6 +65,18 @@ export const UserProfileSidebar = ({
       label: "Πληρωμές", 
       key: "payments",
       badge: stats.paymentsCount > 0 ? stats.paymentsCount : null
+    },
+    {
+      icon: ShoppingCart,
+      label: "Αγορές",
+      key: "shop",
+      badge: null
+    },
+    {
+      icon: Video,
+      label: "Online Coaching",
+      key: "online-coaching",
+      badge: null
     },
   ];
 

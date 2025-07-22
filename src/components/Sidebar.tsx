@@ -13,7 +13,9 @@ import {
   ArrowLeft,
   Crown,
   TrendingUp,
-  BookOpen
+  BookOpen,
+  ShoppingCart,
+  Video
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -106,6 +108,18 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       label: "Αποτελέσματα", 
       path: "/dashboard/results",
       badge: null
+    },
+    {
+      icon: ShoppingCart,
+      label: "Αγορές",
+      path: "/dashboard/shop",
+      badge: null
+    },
+    {
+      icon: Video,
+      label: "Online Coaching",
+      path: "/dashboard/online-coaching",
+      badge: "NEW"
     },
     {
       icon: Mail,
