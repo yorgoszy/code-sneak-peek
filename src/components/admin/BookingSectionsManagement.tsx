@@ -174,7 +174,7 @@ export const BookingSectionsManagement = () => {
               Νέο Τμήμα
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl rounded-none">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-none">
             <DialogHeader>
               <DialogTitle>
                 {editingSection ? 'Επεξεργασία Τμήματος' : 'Νέο Τμήμα'}
