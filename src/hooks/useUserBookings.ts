@@ -91,9 +91,13 @@ export const useUserBookings = () => {
       }
 
       console.log('✅ Availability data received:', data);
+      
+      // Refresh component after successful fetch
       setAvailability(data as unknown as BookingAvailability);
+      setLoading(false);
     } catch (error) {
       console.error('❌ Error fetching booking availability:', error);
+      setLoading(false);
     }
   };
 

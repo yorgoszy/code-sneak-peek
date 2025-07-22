@@ -19,7 +19,13 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const [selectedBookingType, setSelectedBookingType] = useState<string>('');
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
 
-  const handleBookingTypeClick = (type: string) => {
+  const handleBookingTypeClick = (type: string, requiresPurchase?: boolean) => {
+    if (requiresPurchase) {
+      // Navigate to shop
+      window.location.href = `/dashboard/user-profile/shop`;
+      return;
+    }
+    
     if (type === 'videocall' && (!availability?.has_videocall)) {
       toast.info('Χρειάζεσαι συνδρομή Videocall Coaching για online συνεδρίες');
       return;
@@ -76,7 +82,9 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         (availability.type === 'hypergym' && availability.available_monthly > 0) ||
         (availability.type === 'visit_packages' && availability.available_visits > 0)
       ),
-      requiresPurchase: availability?.type === 'none'
+      requiresPurchase: availability?.type === 'none',
+      availableVisits: availability?.type === 'visit_packages' ? availability.available_visits : 0,
+      totalVisits: availability?.type === 'visit_packages' ? availability.total_visits : 0
     },
     {
       id: 'videocall',
@@ -160,12 +168,17 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
             
             <CardContent className="text-center">
               <Button 
-                disabled={!option.available}
-                onClick={() => handleBookingTypeClick(option.id)}
+                disabled={!option.available && !option.requiresPurchase}
+                onClick={() => handleBookingTypeClick(option.id, option.requiresPurchase)}
                 className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none disabled:bg-gray-300 disabled:text-gray-500"
               >
                 <Calendar className="w-4 h-4 mr-2" />
-                {option.requiresPurchase ? 'Αγόρασε Πακέτο' : option.available ? 'Κλείσε Ραντεβού' : 'Σύντομα'}
+                {option.requiresPurchase ? 'Αγόρασε Πακέτο' : 
+                 option.available ? 
+                   (option.id === 'gym_visit' && option.availableVisits > 0 ? 
+                     `${option.availableVisits} Διαθέσιμες Επισκέψεις` : 
+                     'Κλείσε Ραντεβού') : 
+                   'Σύντομα'}
               </Button>
             </CardContent>
           </Card>
