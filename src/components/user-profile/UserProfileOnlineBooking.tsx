@@ -20,8 +20,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
 
   const handleBookingTypeClick = (type: string) => {
-    if (type === 'videocall') {
-      toast.info('Οι videocall συνεδρίες θα είναι σύντομα διαθέσιμες');
+    if (type === 'videocall' && (!availability?.has_videocall)) {
+      toast.info('Χρειάζεσαι συνδρομή Videocall Coaching για online συνεδρίες');
       return;
     }
     
@@ -81,11 +81,13 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     {
       id: 'videocall',
       title: 'Videocall Συνεδρίες',
-      description: 'Online συνεδρίες με τον προπονητή σου',
+      description: availability?.has_videocall 
+        ? 'Online συνεδρίες με τον προπονητή σου'
+        : 'Χρειάζεται συνδρομή Videocall Coaching',
       icon: Video,
       color: 'bg-green-100 text-green-600',
-      available: false,
-      requiresPurchase: false
+      available: availability?.has_videocall || false,
+      requiresPurchase: !availability?.has_videocall
     }
   ];
 
@@ -106,9 +108,19 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 Επισκέψεις: {availability.available_visits} διαθέσιμες
               </Badge>
             )}
+            {availability.type === 'videocall' && (
+              <Badge variant="outline" className="rounded-none">
+                Videocall Coaching ενεργή
+              </Badge>
+            )}
             {availability.type === 'none' && (
               <Badge variant="destructive" className="rounded-none">
                 Δεν έχεις ενεργό πακέτο - <a href="/dashboard/user-profile/shop" className="underline">Αγόρασε πακέτο</a>
+              </Badge>
+            )}
+            {availability?.has_videocall && availability.type !== 'videocall' && (
+              <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">
+                + Videocall Coaching διαθέσιμο
               </Badge>
             )}
           </div>
