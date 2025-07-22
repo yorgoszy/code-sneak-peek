@@ -62,57 +62,21 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
     setPurchasing(product.id);
     
     try {
-      if (!userProfile) {
-        toast.error('Δεν βρέθηκε το προφίλ χρήστη');
-        return;
-      }
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          amount: product.price,
+          currency: "eur",
+          productName: product.name
+        }
+      });
 
-      if (product.subscription_mode === 'visit_based') {
-        // Create visit package
-        const { error } = await supabase
-          .from('visit_packages')
-          .insert({
-            user_id: userProfile.id,
-            total_visits: product.visit_count || 1,
-            remaining_visits: product.visit_count || 1,
-            expiry_date: product.visit_expiry_months 
-              ? new Date(Date.now() + (product.visit_expiry_months * 30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0]
-              : null,
-            price: product.price,
-            status: 'active'
-          });
+      if (error) throw error;
 
-        if (error) throw error;
-        toast.success('Πακέτο επισκέψεων δημιουργήθηκε επιτυχώς!');
-      } else {
-        // Create subscription
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + product.duration_months);
-
-        const { error } = await supabase
-          .from('user_subscriptions')
-          .insert({
-            user_id: userProfile.id,
-            subscription_type_id: product.id,
-            start_date: new Date().toISOString().split('T')[0],
-            end_date: endDate.toISOString().split('T')[0],
-            status: 'active',
-            is_paid: true
-          });
-
-        if (error) throw error;
-
-        // Update user subscription status
-        await supabase
-          .from('app_users')
-          .update({ subscription_status: 'active' })
-          .eq('id', userProfile.id);
-
-        toast.success('Συνδρομή δημιουργήθηκε επιτυχώς!');
-      }
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
     } catch (error) {
-      console.error('Purchase error:', error);
-      toast.error('Σφάλμα κατά την αγορά');
+      console.error('Payment error:', error);
+      toast.error('Σφάλμα κατά τη δημιουργία πληρωμής');
     } finally {
       setPurchasing(null);
     }
@@ -210,13 +174,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                   )}
                 </div>
 
-                <div className="mt-auto space-y-2">
-                  <Button 
-                    variant="outline"
-                    className="w-full rounded-none"
-                  >
-                    Πληροφορίες
-                  </Button>
+                <div className="mt-auto">
                   <Button 
                     onClick={() => handlePurchase(product)}
                     disabled={purchasing === product.id}

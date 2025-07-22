@@ -122,6 +122,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: "NEW"
     },
     {
+      icon: Calendar,
+      label: "Online Booking",
+      path: "/dashboard/online-booking",
+      badge: null
+    },
+    {
       icon: Mail,
       label: "Webmail",
       path: "https://webmail.hyperkids.gr/",

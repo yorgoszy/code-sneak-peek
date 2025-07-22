@@ -292,14 +292,6 @@ const ShopWithSidebar = () => {
                         {loading === product.id ? 'Φόρτωση...' : 'Αγορά Τώρα'}
                       </Button>
                       
-                      <Button 
-                        onClick={() => handleMockPurchase(product)}
-                        disabled={loading === product.id}
-                        variant="outline"
-                        className="w-full rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black"
-                      >
-                        {loading === product.id ? 'Φόρτωση...' : 'Δημιουργία Πακέτου'}
-                      </Button>
                     </CardContent>
                   </Card>
                 ))}

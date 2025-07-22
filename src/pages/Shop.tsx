@@ -172,13 +172,7 @@ const Shop = () => {
                     )}
                   </div>
 
-                  <div className="mt-auto space-y-2">
-                    <Button 
-                      variant="outline"
-                      className="w-full rounded-none"
-                    >
-                      Πληροφορίες
-                    </Button>
+                  <div className="mt-auto">
                     <Button 
                       onClick={() => handlePurchase(product)}
                       disabled={loading === product.id}
