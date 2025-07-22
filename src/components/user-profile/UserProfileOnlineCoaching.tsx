@@ -88,7 +88,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-amber-700">
                 <Video className="w-4 h-4" />
-                <span className="text-sm">Απεριόριστες videocall συνεδρίες</span>
+                <span className="text-sm">Videocall συνεδρίες (ανάλογα με πακέτο)</span>
               </div>
               <div className="flex items-center space-x-2 text-amber-700">
                 <Users className="w-4 h-4" />
@@ -99,12 +99,20 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                 <span className="text-sm">Προγραμματισμός συνεδριών</span>
               </div>
             </div>
-            <Button 
-              onClick={() => window.location.href = '/dashboard/user-profile/shop'}
-              className="w-full mt-4 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              Αγόρασε Videocall Coaching - €29.99/μήνα
-            </Button>
+            <div className="space-y-2">
+              <Button 
+                onClick={() => window.location.href = '/dashboard/user-profile/shop'}
+                className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                Αγόρασε Videocall Coaching - €39.99/μήνα
+              </Button>
+              <Button 
+                onClick={() => window.location.href = '/dashboard/user-profile/shop'}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-none"
+              >
+                Αγόρασε 1 Συνεδρία - €29.99
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -118,9 +126,9 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         <p className="text-gray-600">Συνδέσου με τον προπονητή σου μέσω βιντεοκλήσης</p>
         <Badge variant="outline" className="mt-2 rounded-none bg-green-50 text-green-700 border-green-200">
           {availability.videocall_subscription 
-            ? availability.videocall_subscription 
-            : availability.single_videocall_sessions 
-              ? `${availability.single_videocall_sessions} videocall sessions διαθέσιμες`
+            ? `${availability.videocall_subscription} - Απεριόριστες συνεδρίες`
+            : availability.single_videocall_sessions && availability.single_videocall_sessions > 0
+              ? `${availability.single_videocall_sessions} συνεδρία${availability.single_videocall_sessions > 1 ? 'ες' : ''} διαθέσιμη${availability.single_videocall_sessions > 1 ? 'ες' : ''}`
               : 'Videocall διαθέσιμο'
           }
         </Badge>
