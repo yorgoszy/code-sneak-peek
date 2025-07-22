@@ -239,8 +239,8 @@ const ShopWithSidebar = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
-                  <Card key={product.id} className="rounded-none hover:shadow-lg transition-shadow">
-                    <CardHeader className="text-center">
+                  <Card key={product.id} className="rounded-none hover:shadow-lg transition-shadow h-[500px] flex flex-col">
+                    <CardHeader className="text-center flex-shrink-0">
                       <div className="flex items-center justify-center w-12 h-12 bg-[#00ffba] text-black rounded-none mx-auto mb-4">
                         {getProductIcon(product)}
                       </div>
@@ -278,20 +278,23 @@ const ShopWithSidebar = () => {
                       </div>
                     </CardHeader>
                     
-                    <CardContent className="text-center">
-                      <div className="mb-6">
+                    {/* Flexible content area */}
+                    <div className="flex-1"></div>
+                    
+                    {/* Fixed bottom section with price and button */}
+                    <CardContent className="text-center flex-shrink-0 mt-auto">
+                      <div className="mb-4">
                         <span className="text-3xl font-bold text-gray-900">€{product.price}</span>
                       </div>
                       
                       <Button 
                         onClick={() => handlePurchase(product)}
                         disabled={loading === product.id}
-                        className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none mb-2"
+                        className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
                       >
                         <ShoppingCart className="w-4 h-4 mr-2" />
                         {loading === product.id ? 'Φόρτωση...' : 'Αγορά Τώρα'}
                       </Button>
-                      
                     </CardContent>
                   </Card>
                 ))}
