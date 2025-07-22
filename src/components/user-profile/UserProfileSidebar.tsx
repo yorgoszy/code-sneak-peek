@@ -8,7 +8,8 @@ import {
   CreditCard,
   Brain,
   ShoppingCart,
-  Video
+  Video,
+  CalendarDays
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState } from "react";
@@ -76,6 +77,12 @@ export const UserProfileSidebar = ({
       icon: Video,
       label: "Online Coaching",
       key: "online-coaching",
+      badge: null
+    },
+    {
+      icon: CalendarDays,
+      label: "Online Booking",
+      key: "online-booking",
       badge: null
     },
   ];

@@ -9,6 +9,7 @@ import { UserProfileTests } from "./UserProfileTests";
 import { UserProfilePayments } from "./UserProfilePayments";
 import { UserProfileOverview } from "./UserProfileOverview";
 import { UserProfileShop } from "./UserProfileShop";
+import { UserProfileOnlineBooking } from "./UserProfileOnlineBooking";
 import { TrainingAnalytics } from "./TrainingAnalytics";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { Button } from "@/components/ui/button";
@@ -138,6 +139,22 @@ export const UserProfileContent = ({
               </Button>
             </div>
             <UserProfileShop userProfile={userProfile} />
+          </div>
+        );
+      case "online-booking":
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Online Booking</h2>
+              <Button
+                onClick={() => setIsAIChatOpen(true)}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                RID AI Προπονητής
+              </Button>
+            </div>
+            <UserProfileOnlineBooking userProfile={userProfile} />
           </div>
         );
       default:
