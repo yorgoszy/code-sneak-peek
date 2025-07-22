@@ -58,6 +58,27 @@ export const useUserBookings = () => {
     }
 
     console.log('🔄 Fetching user profile for auth_user_id:', user.id);
+    
+    // First try to get from URL if we're on a user profile page
+    const urlPath = window.location.pathname;
+    const userIdFromUrl = urlPath.match(/\/dashboard\/user-profile\/([^\/]+)/)?.[1];
+    
+    if (userIdFromUrl && userIdFromUrl !== 'online-booking' && userIdFromUrl !== 'shop') {
+      console.log('🔄 Using user ID from URL:', userIdFromUrl);
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('*')
+        .eq('id', userIdFromUrl)
+        .single();
+
+      if (!error && data) {
+        console.log('✅ User profile found from URL:', data);
+        setUserProfile(data);
+        return;
+      }
+    }
+
+    // Fallback to auth user
     const { data, error } = await supabase
       .from('app_users')
       .select('*')
