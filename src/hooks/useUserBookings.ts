@@ -37,10 +37,15 @@ export const useUserBookings = () => {
   useEffect(() => {
     if (user) {
       fetchUserProfile();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (userProfile) {
       fetchAvailability();
       fetchBookings();
     }
-  }, [user]);
+  }, [userProfile]);
 
   const fetchUserProfile = async () => {
     if (!user) return;

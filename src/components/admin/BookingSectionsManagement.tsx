@@ -210,6 +210,10 @@ export const BookingSectionsManagement = () => {
                   rows={3}
                 />
               </div>
+              <div>
+                <Label>Διαθέσιμες Ώρες (παραμένουν οι προεπιλεγμένες)</Label>
+                <p className="text-sm text-gray-500 mb-2">Καθημερινές: 08:00-20:00, Σαβ/Κυρ: 09:00-18:00</p>
+              </div>
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="rounded-none">
                   Ακύρωση
