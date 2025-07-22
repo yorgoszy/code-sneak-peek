@@ -110,8 +110,8 @@ const Shop = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
-              <Card key={product.id} className="rounded-none hover:shadow-lg transition-all duration-200 flex flex-col h-[400px]">
-                <CardHeader className="text-center pb-4">
+              <Card key={product.id} className="rounded-none hover:shadow-lg transition-all duration-200 flex flex-col h-[500px]">
+                <CardHeader className="text-center pb-4 flex-shrink-0">
                   <div className="flex justify-center items-center mb-4">
                     {product.subscription_mode === 'visit_based' ? (
                       <div className="bg-blue-100 p-3 rounded-full">
@@ -124,12 +124,6 @@ const Shop = () => {
                     )}
                   </div>
                   <CardTitle className="text-xl font-bold">{product.name}</CardTitle>
-                  <div className="text-3xl font-bold text-[#00ffba]">
-                    €{product.price}
-                    {product.subscription_mode === 'time_based' && (
-                      <span className="text-sm text-gray-500 font-normal">/μήνα</span>
-                    )}
-                  </div>
                 </CardHeader>
                 
                 <CardContent className="pt-0 flex-1 flex flex-col">
@@ -172,7 +166,16 @@ const Shop = () => {
                     )}
                   </div>
 
-                  <div className="mt-auto">
+                  {/* Fixed bottom section with price and button */}
+                  <div className="mt-auto text-center flex-shrink-0">
+                    <div className="mb-4">
+                      <span className="text-3xl font-bold text-[#00ffba]">
+                        €{product.price}
+                        {product.subscription_mode === 'time_based' && (
+                          <span className="text-sm text-gray-500 font-normal">/μήνα</span>
+                        )}
+                      </span>
+                    </div>
                     <Button 
                       onClick={() => handlePurchase(product)}
                       disabled={loading === product.id}
