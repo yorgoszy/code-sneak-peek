@@ -334,7 +334,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       
       const { error } = await supabase
         .from('subscription_types')
-        .update({ available_in_shop: !type.available_in_shop })
+        .update({ available_in_shop: !type.available_in_shop } as any)
         .eq('id', type.id);
 
       if (error) {

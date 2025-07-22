@@ -46,11 +46,11 @@ const ShopWithSidebar = () => {
         .select('id, name, description, price, duration_months, subscription_mode, visit_count, visit_expiry_months, is_active, available_in_shop')
         .eq('is_active', true)
         .eq('available_in_shop', true)
-        .order('price');
+        .order('price') as { data: SubscriptionType[] | null, error: any };
 
       if (error) throw error;
 
-      setProducts((data as SubscriptionType[]) || []);
+      setProducts(data || []);
     } catch (error) {
       console.error('Error loading products:', error);
       toast.error('Σφάλμα κατά τη φόρτωση των προϊόντων');
