@@ -96,6 +96,16 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Online Booking</h2>
         <p className="text-gray-600">Κλείσε online τα ραντεβού σου για προπονήσεις και συνεδρίες</p>
+        
+        {/* Debug Panel */}
+        <div className="mt-4 p-4 bg-gray-100 rounded text-left text-sm">
+          <h3 className="font-bold mb-2">Debug Info:</h3>
+          <p><strong>User:</strong> {userProfile?.name || 'Not loaded'}</p>
+          <p><strong>User ID:</strong> {userProfile?.id || 'Not loaded'}</p>
+          <p><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</p>
+          <p><strong>Availability:</strong> {availability ? JSON.stringify(availability) : 'Not loaded'}</p>
+        </div>
+        
         {availability && (
           <div className="mt-4 flex justify-center">
             {availability.type === 'hypergym' && (
