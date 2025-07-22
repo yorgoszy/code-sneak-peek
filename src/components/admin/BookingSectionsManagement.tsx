@@ -9,13 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit, Trash2, Users, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AvailableHoursSelector } from "./AvailableHoursSelector";
 
 interface BookingSection {
   id: string;
   name: string;
   description?: string;
   max_capacity: number;
-  available_hours: any;
+  available_hours: Record<string, string[]>;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -26,16 +27,21 @@ export const BookingSectionsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<BookingSection | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    max_capacity: number;
+    available_hours: Record<string, string[]>;
+  }>({
     name: '',
     description: '',
     max_capacity: 10,
     available_hours: {
-      monday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
-      tuesday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
-      wednesday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
-      thursday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
-      friday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
       saturday: [],
       sunday: []
     }
@@ -53,7 +59,7 @@ export const BookingSectionsManagement = () => {
         .order('name');
 
       if (error) throw error;
-      setSections(data || []);
+      setSections((data as BookingSection[]) || []);
     } catch (error: any) {
       toast.error('Σφάλμα κατά τη φόρτωση των τμημάτων: ' + error.message);
     } finally {
@@ -111,7 +117,7 @@ export const BookingSectionsManagement = () => {
       name: section.name,
       description: section.description || '',
       max_capacity: section.max_capacity,
-      available_hours: section.available_hours
+      available_hours: section.available_hours as Record<string, string[]>
     });
     setIsDialogOpen(true);
   };
@@ -138,11 +144,11 @@ export const BookingSectionsManagement = () => {
       description: '',
       max_capacity: 10,
       available_hours: {
-        monday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
-        tuesday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
-        wednesday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
-        thursday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
-        friday: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"],
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
         saturday: [],
         sunday: []
       }
@@ -210,9 +216,11 @@ export const BookingSectionsManagement = () => {
                   rows={3}
                 />
               </div>
-              <div>
-                <Label>Διαθέσιμες Ώρες</Label>
-                <p className="text-sm text-gray-500 mb-2">Δευτέρα-Παρασκευή: 08:00-20:00 (κλειστά Σαβ/Κυρ)</p>
+              <div className="space-y-4">
+                <AvailableHoursSelector
+                  availableHours={formData.available_hours}
+                  onChange={(hours) => setFormData(prev => ({ ...prev, available_hours: hours }))}
+                />
               </div>
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="rounded-none">
@@ -252,7 +260,12 @@ export const BookingSectionsManagement = () => {
                 <div className="flex items-center space-x-2">
                   <Clock className="w-4 h-4 text-gray-500" />
                   <span className="text-sm">
-                    Διαθέσιμες ώρες: {Object.keys(section.available_hours).length} ημέρες
+                    Διαθέσιμες ώρες: {
+                      Object.entries(section.available_hours)
+                        .filter(([day, hours]) => hours && hours.length > 0)
+                        .map(([day, hours]) => `${day}: ${hours.length}h`)
+                        .join(', ') || 'Καμία ημέρα'
+                    }
                   </span>
                 </div>
                 <div className="flex space-x-2 pt-2">
