@@ -163,6 +163,20 @@ export const useUserBookings = () => {
 
     if (error) throw error;
 
+    // If it's a gym visit, deduct from visit package using the existing function
+    if (bookingType === 'gym_visit') {
+      try {
+        await supabase.rpc('record_visit', {
+          p_user_id: userProfile.id,
+          p_visit_type: 'booking',
+          p_notes: `Booking ID: ${data.id}`
+        });
+      } catch (visitError) {
+        console.error('Error recording visit:', visitError);
+        // Still continue since the booking was created successfully
+      }
+    }
+
     // Refresh data after creating booking
     await Promise.all([fetchAvailability(), fetchBookings()]);
     
