@@ -24,6 +24,7 @@ interface SubscriptionType {
   subscription_mode: 'time_based' | 'visit_based';
   visit_count?: number;
   visit_expiry_months?: number;
+  available_in_shop?: boolean;
 }
 
 export const SubscriptionTypeManager: React.FC = () => {
@@ -317,6 +318,34 @@ export const SubscriptionTypeManager: React.FC = () => {
       await loadSubscriptionTypes();
     } catch (error) {
       console.error('💥 Error toggling subscription type:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση: ' + (error as Error).message);
+    }
+  };
+
+  const toggleAvailableInShop = async (type: SubscriptionType) => {
+    if (!isAdmin) {
+      toast.error('Δεν έχετε δικαιώματα διαχειριστή');
+      return;
+    }
+
+    try {
+      console.log('🔄 Toggling shop availability for:', type.name, 'Current:', type.available_in_shop);
+      
+      const { error } = await supabase
+        .from('subscription_types')
+        .update({ available_in_shop: !type.available_in_shop })
+        .eq('id', type.id);
+
+      if (error) {
+        console.error('❌ Error toggling shop availability:', error);
+        throw error;
+      }
+      
+      console.log('✅ Shop availability toggled successfully');
+      toast.success(`Ο τύπος συνδρομής ${!type.available_in_shop ? 'προστέθηκε στο' : 'αφαιρέθηκε από το'} shop επιτυχώς!`);
+      await loadSubscriptionTypes();
+    } catch (error) {
+      console.error('💥 Error toggling shop availability:', error);
       toast.error('Σφάλμα κατά την ενημέρωση: ' + (error as Error).message);
     }
   };
