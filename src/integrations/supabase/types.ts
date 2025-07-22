@@ -495,6 +495,89 @@ export type Database = {
           },
         ]
       }
+      booking_sections: {
+        Row: {
+          available_hours: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_capacity: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          available_hours?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_capacity?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          available_hours?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_capacity?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      booking_sessions: {
+        Row: {
+          booking_date: string
+          booking_time: string
+          booking_type: string
+          cancelled_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          section_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_date: string
+          booking_time: string
+          booking_type?: string
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          section_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_date?: string
+          booking_time?: string
+          booking_type?: string
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          section_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_sessions_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           created_at: string | null
@@ -3040,6 +3123,10 @@ export type Database = {
         Args: { athlete_id: string }
         Returns: undefined
       }
+      can_cancel_booking: {
+        Args: { booking_id: string }
+        Returns: boolean
+      }
       check_and_update_expired_subscriptions: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -3071,6 +3158,10 @@ export type Database = {
       get_suggested_velocity: {
         Args: { athlete_id: string; exercise_id: string; percentage: number }
         Returns: number
+      }
+      get_user_available_bookings: {
+        Args: { user_uuid: string }
+        Returns: Json
       }
       get_user_role: {
         Args: { _user_id: string }
