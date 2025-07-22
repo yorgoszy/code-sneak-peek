@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, Search, Calendar, MapPin } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { matchesSearchTerm } from "@/lib/utils";
 
@@ -541,11 +541,15 @@ export const SubscriptionTypeManager: React.FC = () => {
                     </Button>
                     <Button
                       size="sm"
-                      variant={type.available_in_shop ? "secondary" : "outline"}
+                      variant="outline"
                       onClick={() => toggleAvailableInShop(type)}
-                      className="rounded-none"
+                      className={`rounded-none p-2 ${
+                        type.available_in_shop 
+                          ? 'text-[#00ffba] border-[#00ffba] hover:bg-[#00ffba]/10' 
+                          : 'text-gray-400 hover:text-gray-600'
+                      }`}
                     >
-                      {type.available_in_shop ? 'Στο Shop' : 'Προσθήκη στο Shop'}
+                      <ShoppingCart className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
