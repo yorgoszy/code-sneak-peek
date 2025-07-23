@@ -220,13 +220,27 @@ export const VideocallManagement: React.FC = () => {
 
   const deleteVideocallPackage = async (packageId: string) => {
     try {
+      const packageToDelete = videocallPackages.find(p => p.id === packageId);
+      if (!packageToDelete) throw new Error('Package not found');
+
       // Πρώτα διαγράφουμε όλες τις σχετικές βιντεοκλήσεις
       const { error: videocallsError } = await supabase
         .from('user_videocalls')
         .delete()
-        .eq('user_id', (videocallPackages.find(p => p.id === packageId)?.user_id));
+        .eq('user_id', packageToDelete.user_id);
 
       if (videocallsError) throw videocallsError;
+
+      // Διαγράφουμε τα επερχόμενα videocall bookings του χρήστη
+      const { error: bookingsError } = await supabase
+        .from('booking_sessions')
+        .delete()
+        .eq('user_id', packageToDelete.user_id)
+        .eq('booking_type', 'videocall')
+        .eq('status', 'confirmed')
+        .gte('booking_date', new Date().toISOString().split('T')[0]); // μόνο επερχόμενα
+
+      if (bookingsError) throw bookingsError;
 
       // Μετά διαγράφουμε το πακέτο
       const { error } = await supabase
@@ -236,7 +250,7 @@ export const VideocallManagement: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Το πακέτο και όλες οι σχετικές βιντεοκλήσεις διαγράφηκαν επιτυχώς!');
+      toast.success('Το πακέτο και όλες οι σχετικές βιντεοκλήσεις και ραντεβού διαγράφηκαν επιτυχώς!');
       fetchData();
       
     } catch (error) {
