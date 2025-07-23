@@ -12,9 +12,9 @@ import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { Calendar as DatePicker } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn, normalizeGreekText } from "@/lib/utils";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 interface User {
   id: string;
@@ -45,6 +45,8 @@ export const VideocallManagement: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [saving, setSaving] = useState(false);
+  const [userSearchOpen, setUserSearchOpen] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   useEffect(() => {
     loadData();
@@ -123,8 +125,8 @@ export const VideocallManagement: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!selectedUserId || !selectedDate) {
-      toast.error('Παρακαλώ επιλέξτε χρήστη και ημερομηνία');
+    if (!selectedUserId) {
+      toast.error('Παρακαλώ επιλέξτε χρήστη');
       return;
     }
 
@@ -144,7 +146,7 @@ export const VideocallManagement: React.FC = () => {
         .from('booking_sessions')
         .insert({
           user_id: selectedUserId,
-          booking_date: format(selectedDate, 'yyyy-MM-dd'),
+          booking_date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
           booking_time: '00:00', // Default time for videocall sessions
           booking_type: 'videocall',
           status: 'completed', // Mark as completed since we're manually adding it
@@ -187,7 +189,18 @@ export const VideocallManagement: React.FC = () => {
     setSelectedUserId('');
     setSelectedDate(undefined);
     setNotes('');
+    setUserSearchTerm('');
+    setUserSearchOpen(false);
   };
+
+  // Filter users based on search term (supports Greek text without accents)
+  const filteredUsers = users.filter(user => {
+    if (!userSearchTerm) return true;
+    const searchableText = `${user.name} ${user.email}`;
+    return normalizeGreekText(searchableText).includes(normalizeGreekText(userSearchTerm));
+  });
+
+  const selectedUser = users.find(user => user.id === selectedUserId);
 
   const filteredVideocalls = videocalls.filter(videocall => {
     const userName = videocall.app_users?.name || '';
@@ -353,22 +366,60 @@ export const VideocallManagement: React.FC = () => {
           <div className="space-y-4">
             <div>
               <Label htmlFor="user">Χρήστης*</Label>
-              <Select value={selectedUserId} onValueChange={setSelectedUserId} disabled={saving}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε χρήστη" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={userSearchOpen} onOpenChange={setUserSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={userSearchOpen}
+                    className={cn(
+                      "w-full justify-between rounded-none",
+                      !selectedUserId && "text-muted-foreground"
+                    )}
+                    disabled={saving}
+                  >
+                    {selectedUser ? `${selectedUser.name} (${selectedUser.email})` : "Επιλέξτε χρήστη"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput 
+                      placeholder="Αναζήτηση χρήστη..." 
+                      value={userSearchTerm}
+                      onValueChange={setUserSearchTerm}
+                    />
+                    <CommandList>
+                      <CommandEmpty>Δεν βρέθηκε χρήστης.</CommandEmpty>
+                      <CommandGroup>
+                        {filteredUsers.map((user) => (
+                          <CommandItem
+                            key={user.id}
+                            value={`${user.name} ${user.email}`}
+                            onSelect={() => {
+                              setSelectedUserId(user.id);
+                              setUserSearchOpen(false);
+                              setUserSearchTerm('');
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedUserId === user.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {user.name} ({user.email})
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div>
-              <Label>Ημερομηνία Βιντεοκλήσης*</Label>
+              <Label>Ημερομηνία Βιντεοκλήσης (προαιρετική)</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
