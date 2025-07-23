@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Video, Plus, Trash2, Search, Calendar, Minus, Eye, Edit } from "lucide-react";
@@ -58,6 +59,17 @@ export const VideocallManagement: React.FC = () => {
   const [packageVideocalls, setPackageVideocalls] = useState<string>('');
   const [packageExpiryDate, setPackageExpiryDate] = useState<string>('');
   const [saving, setSaving] = useState(false);
+  
+  // View/Edit dialog states
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<VideocallPackage | null>(null);
+  const [packageHistory, setPackageHistory] = useState<VideocallSession[]>([]);
+  
+  // Edit form states
+  const [editPackageVideocalls, setEditPackageVideocalls] = useState<string>('');
+  const [editSelectedUserId, setEditSelectedUserId] = useState<string>('');
+  const [editPackageExpiryDate, setEditPackageExpiryDate] = useState<string>('');
 
   useEffect(() => {
     fetchData();
@@ -208,6 +220,15 @@ export const VideocallManagement: React.FC = () => {
 
   const deleteVideocallPackage = async (packageId: string) => {
     try {
+      // Πρώτα διαγράφουμε όλες τις σχετικές βιντεοκλήσεις
+      const { error: videocallsError } = await supabase
+        .from('user_videocalls')
+        .delete()
+        .eq('user_id', (videocallPackages.find(p => p.id === packageId)?.user_id));
+
+      if (videocallsError) throw videocallsError;
+
+      // Μετά διαγράφουμε το πακέτο
       const { error } = await supabase
         .from('videocall_packages')
         .delete()
@@ -215,7 +236,7 @@ export const VideocallManagement: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Το πακέτο διαγράφηκε επιτυχώς!');
+      toast.success('Το πακέτο και όλες οι σχετικές βιντεοκλήσεις διαγράφηκαν επιτυχώς!');
       fetchData();
       
     } catch (error) {
@@ -339,6 +360,71 @@ export const VideocallManagement: React.FC = () => {
     setVideocallCount(1);
     setPackageVideocalls('');
     setPackageExpiryDate('');
+  };
+
+  const fetchPackageHistory = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_videocalls')
+        .select(`
+          id,
+          user_id,
+          videocall_date,
+          videocall_time,
+          videocall_type,
+          notes,
+          created_at,
+          app_users (name, email)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPackageHistory(data || []);
+    } catch (error) {
+      console.error('Error fetching package history:', error);
+      toast.error('Σφάλμα φόρτωσης ιστορικού');
+    }
+  };
+
+  const handleViewPackage = async (pkg: VideocallPackage) => {
+    setSelectedPackage(pkg);
+    await fetchPackageHistory(pkg.user_id);
+    setViewDialogOpen(true);
+  };
+
+  const handleEditPackage = (pkg: VideocallPackage) => {
+    setSelectedPackage(pkg);
+    setEditPackageVideocalls(pkg.total_videocalls.toString());
+    setEditSelectedUserId(pkg.user_id);
+    setEditPackageExpiryDate(pkg.expiry_date || '');
+    setEditDialogOpen(true);
+  };
+
+  const updatePackage = async () => {
+    if (!selectedPackage) return;
+
+    try {
+      const { error } = await supabase
+        .from('videocall_packages')
+        .update({
+          total_videocalls: parseInt(editPackageVideocalls),
+          remaining_videocalls: parseInt(editPackageVideocalls) - (selectedPackage.total_videocalls - selectedPackage.remaining_videocalls),
+          user_id: editSelectedUserId,
+          expiry_date: editPackageExpiryDate || null
+        })
+        .eq('id', selectedPackage.id);
+
+      if (error) throw error;
+
+      toast.success('Το πακέτο ενημερώθηκε επιτυχώς!');
+      setEditDialogOpen(false);
+      fetchData();
+      
+    } catch (error) {
+      console.error('Error updating package:', error);
+      toast.error('Σφάλμα ενημέρωσης πακέτου');
+    }
   };
 
   const filteredVideocalls = videocalls.filter(videocall => {
@@ -518,6 +604,7 @@ export const VideocallManagement: React.FC = () => {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => handleViewPackage(pkg)}
                           className="rounded-none"
                           title="Προβολή πακέτου"
                         >
@@ -526,6 +613,7 @@ export const VideocallManagement: React.FC = () => {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => handleEditPackage(pkg)}
                           className="rounded-none"
                           title="Επεξεργασία πακέτου"
                         >
@@ -617,6 +705,118 @@ export const VideocallManagement: React.FC = () => {
           </div>
         )}
       </CardContent>
+
+      {/* View Package Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-4xl rounded-none">
+          <DialogHeader>
+            <DialogTitle>
+              Ιστορικό Πακέτου - {selectedPackage?.app_users.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p><strong>Χρήστης:</strong> {selectedPackage?.app_users.name}</p>
+                <p><strong>Email:</strong> {selectedPackage?.app_users.email}</p>
+              </div>
+              <div>
+                <p><strong>Συνολικές Βιντεοκλήσεις:</strong> {selectedPackage?.total_videocalls}</p>
+                <p><strong>Χρησιμοποιημένες:</strong> {selectedPackage ? selectedPackage.total_videocalls - selectedPackage.remaining_videocalls : 0}</p>
+                <p><strong>Κατάσταση:</strong> <Badge className="rounded-none">{selectedPackage?.status === 'active' ? 'Ενεργό' : 'Χρησιμοποιημένο'}</Badge></p>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-2">Ιστορικό Βιντεοκλήσεων</h4>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {packageHistory.length === 0 ? (
+                  <p className="text-gray-500">Δεν υπάρχουν βιντεοκλήσεις</p>
+                ) : (
+                  packageHistory.map((videocall) => (
+                    <Card key={videocall.id} className="rounded-none">
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4" />
+                              <span>{format(new Date(videocall.videocall_date), 'dd/MM/yyyy', { locale: el })}</span>
+                              <Badge className="rounded-none text-xs">
+                                {videocall.videocall_type === 'manual' ? 'Χειροκίνητη' : 'Πακέτο'}
+                              </Badge>
+                            </div>
+                            {videocall.notes && (
+                              <p className="text-sm text-gray-600 mt-1">{videocall.notes}</p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Package Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-lg rounded-none">
+          <DialogHeader>
+            <DialogTitle>Επεξεργασία Πακέτου</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Χρήστης</label>
+              <select
+                value={editSelectedUserId}
+                onChange={(e) => setEditSelectedUserId(e.target.value)}
+                className="w-full p-2 border rounded-none"
+              >
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.name} ({user.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Συνολικές Βιντεοκλήσεις</label>
+              <Input
+                type="number"
+                value={editPackageVideocalls}
+                onChange={(e) => setEditPackageVideocalls(e.target.value)}
+                className="rounded-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Ημερομηνία Λήξης (προαιρετικό)</label>
+              <Input
+                type="date"
+                value={editPackageExpiryDate}
+                onChange={(e) => setEditPackageExpiryDate(e.target.value)}
+                className="rounded-none"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={updatePackage}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                Ενημέρωση
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setEditDialogOpen(false)}
+                className="rounded-none"
+              >
+                Ακύρωση
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
