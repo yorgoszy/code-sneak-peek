@@ -81,7 +81,20 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
 
       console.log('✅ Booking created successfully:', data);
 
-      // Don't record videocall usage for pending bookings - they'll be charged when approved
+      // For videocall bookings, charge the package immediately (even for pending)
+      if (type === 'videocall') {
+        try {
+          await supabase.rpc('record_videocall', {
+            p_user_id: userProfile.id,
+            p_videocall_type: 'booking',
+            p_notes: `Booking ID: ${data.id}`
+          });
+          console.log('✅ Videocall recorded successfully');
+        } catch (videocallError) {
+          console.error('❌ Error recording videocall:', videocallError);
+          // Don't throw error, booking was created successfully
+        }
+      }
       
       toast.success('Το ραντεβού δημιουργήθηκε επιτυχώς!');
       fetchVideocallBookings();
@@ -167,51 +180,56 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
 
       if (error) throw error;
 
-      // Only return videocall to package if booking was confirmed (meaning it was charged)
-      if (bookingDetails?.status === 'confirmed') {
-        try {
-          // Find active videocall package and increase remaining_videocalls
-          const { data: activePackage } = await supabase
+      // Always return videocall to package since it was charged immediately
+      try {
+        // Find active videocall package and increase remaining_videocalls
+        const { data: activePackage } = await supabase
+          .from('videocall_packages')
+          .select('*')
+          .eq('user_id', userProfile.id)
+          .eq('status', 'active')
+          .order('purchase_date', { ascending: false })
+          .limit(1);
+
+        if (activePackage && activePackage.length > 0) {
+          await supabase
+            .from('videocall_packages')
+            .update({
+              remaining_videocalls: activePackage[0].remaining_videocalls + 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', activePackage[0].id);
+        } else {
+          // If no active package, look for 'used' package that can become active again
+          const { data: usedPackage } = await supabase
             .from('videocall_packages')
             .select('*')
             .eq('user_id', userProfile.id)
-            .eq('status', 'active')
+            .eq('status', 'used')
+            .eq('remaining_videocalls', 0)
             .order('purchase_date', { ascending: false })
             .limit(1);
 
-          if (activePackage && activePackage.length > 0) {
+          if (usedPackage && usedPackage.length > 0) {
             await supabase
               .from('videocall_packages')
               .update({
-                remaining_videocalls: activePackage[0].remaining_videocalls + 1,
+                remaining_videocalls: 1,
+                status: 'active',
                 updated_at: new Date().toISOString()
               })
-              .eq('id', activePackage[0].id);
-          } else {
-            // If no active package, look for 'used' package that can become active again
-            const { data: usedPackage } = await supabase
-              .from('videocall_packages')
-              .select('*')
-              .eq('user_id', userProfile.id)
-              .eq('status', 'used')
-              .eq('remaining_videocalls', 0)
-              .order('purchase_date', { ascending: false })
-              .limit(1);
-
-            if (usedPackage && usedPackage.length > 0) {
-              await supabase
-                .from('videocall_packages')
-                .update({
-                  remaining_videocalls: 1,
-                  status: 'active',
-                  updated_at: new Date().toISOString()
-                })
-                .eq('id', usedPackage[0].id);
-            }
+              .eq('id', usedPackage[0].id);
           }
-        } catch (packageError) {
-          console.error('Error returning videocall to package:', packageError);
         }
+
+        // Also delete the videocall record if it exists
+        await supabase
+          .from('user_videocalls')
+          .delete()
+          .ilike('notes', `%Booking ID: ${bookingId}%`);
+
+      } catch (packageError) {
+        console.error('Error returning videocall to package:', packageError);
       }
 
       toast.success('Το ραντεβού ακυρώθηκε επιτυχώς');

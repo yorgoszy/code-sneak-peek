@@ -178,8 +178,8 @@ export const useUserBookings = () => {
       }
     }
 
-    // If it's a videocall and status is confirmed, deduct from videocall package
-    if (bookingType === 'videocall' && data.status === 'confirmed') {
+    // If it's a videocall, charge the package immediately
+    if (bookingType === 'videocall') {
       try {
         await supabase.rpc('record_videocall', {
           p_user_id: userProfile.id,
@@ -188,6 +188,7 @@ export const useUserBookings = () => {
         });
       } catch (videocallError) {
         console.error('Error recording videocall:', videocallError);
+        // Still continue since the booking was created successfully
       }
     }
 
@@ -264,8 +265,8 @@ export const useUserBookings = () => {
       }
     }
 
-    // If it's a videocall and was confirmed, return the videocall to the package
-    if (booking?.booking_type === 'videocall' && booking?.user_id && booking?.status === 'confirmed') {
+    // If it's a videocall, return the videocall to the package (since it was charged immediately)
+    if (booking?.booking_type === 'videocall' && booking?.user_id) {
       try {
         // Get the current videocall package
         const { data: videocallPackage } = await supabase

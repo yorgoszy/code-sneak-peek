@@ -88,16 +88,7 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
       if (error) throw error;
 
-      // Record videocall to charge the package
-      try {
-        await supabase.rpc('record_videocall', {
-          p_user_id: booking.user_id,
-          p_videocall_type: 'booking',
-          p_notes: `Booking ID: ${booking.id}`
-        });
-      } catch (videocallError) {
-        console.error('Error recording videocall:', videocallError);
-      }
+      // No need to record videocall here - it was already charged when booking was created
 
       toast.success('Η βιντεοκλήση εγκρίθηκε επιτυχώς!');
       onRefresh?.();
