@@ -579,6 +579,13 @@ export type Database = {
             referencedRelation: "booking_sections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_booking_sessions_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
         ]
       }
       bookings: {
