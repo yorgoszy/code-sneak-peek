@@ -8,7 +8,7 @@ import { VideocallBookingCard } from "@/components/online-coaching/VideocallBook
 
 const OnlineCoachingWithSidebar: React.FC = () => {
   // For admin view - show all videocall bookings
-  const { bookings, loading } = useVideocallBookings(true);
+  const { bookings, loading, fetchBookings } = useVideocallBookings(true);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -31,20 +31,26 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-[#00ffba]">{bookings.length}</div>
                     <div className="text-sm text-gray-600">Συνολικές Κλήσεις</div>
                   </div>
                   <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {bookings.filter(b => b.status === 'pending').length}
+                    </div>
+                    <div className="text-sm text-gray-600">Εκκρεμείς</div>
+                  </div>
+                  <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">
-                      {bookings.filter(b => new Date(b.booking_date) > new Date()).length}
+                      {bookings.filter(b => b.status === 'confirmed' && new Date(b.booking_date) > new Date()).length}
                     </div>
                     <div className="text-sm text-gray-600">Επερχόμενες</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-green-600">
-                      {bookings.filter(b => new Date(b.booking_date) <= new Date()).length}
+                      {bookings.filter(b => b.status === 'confirmed' && new Date(b.booking_date) <= new Date()).length}
                     </div>
                     <div className="text-sm text-gray-600">Ολοκληρωμένες</div>
                   </div>
@@ -71,7 +77,12 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                 ) : (
                   <div className="space-y-4">
                     {bookings.map((booking) => (
-                      <VideocallBookingCard key={booking.id} booking={booking} isAdmin={true} />
+                      <VideocallBookingCard 
+                        key={booking.id} 
+                        booking={booking} 
+                        isAdmin={true} 
+                        onRefresh={() => fetchBookings()}
+                      />
                     ))}
                   </div>
                 )}

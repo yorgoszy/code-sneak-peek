@@ -81,14 +81,14 @@ export const useVideocallBookings = (isAdmin = false) => {
           user:app_users!user_id(first_name, last_name, email)
         `)
         .eq('booking_type', 'videocall')
-        .eq('status', 'confirmed')
         .order('booking_date', { ascending: true })
         .order('booking_time', { ascending: true });
 
-      // If not admin, filter by user
+      // If not admin, filter by user and only show confirmed bookings
       if (!isAdmin && userProfile) {
-        query = query.eq('user_id', userProfile.id);
+        query = query.eq('user_id', userProfile.id).eq('status', 'confirmed');
       }
+      // If admin, show all statuses (pending, confirmed, rejected)
 
       const { data, error } = await query;
 
