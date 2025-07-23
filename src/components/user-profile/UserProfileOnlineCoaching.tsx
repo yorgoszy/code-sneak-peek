@@ -147,6 +147,51 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
 
       if (error) throw error;
 
+      // Επιστροφή της βιντεοκλήσης στα διαθέσιμα packages
+      try {
+        // Βρες το τελευταίο ενεργό videocall package και αύξησε τα remaining_videocalls
+        const { data: activePackage } = await supabase
+          .from('videocall_packages')
+          .select('*')
+          .eq('user_id', userProfile.id)
+          .eq('status', 'active')
+          .order('purchase_date', { ascending: false })
+          .limit(1);
+
+        if (activePackage && activePackage.length > 0) {
+          await supabase
+            .from('videocall_packages')
+            .update({
+              remaining_videocalls: activePackage[0].remaining_videocalls + 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', activePackage[0].id);
+        } else {
+          // Αν δεν υπάρχει ενεργό package, ψάξε για 'used' package που μπορεί να γίνει πάλι active
+          const { data: usedPackage } = await supabase
+            .from('videocall_packages')
+            .select('*')
+            .eq('user_id', userProfile.id)
+            .eq('status', 'used')
+            .eq('remaining_videocalls', 0)
+            .order('purchase_date', { ascending: false })
+            .limit(1);
+
+          if (usedPackage && usedPackage.length > 0) {
+            await supabase
+              .from('videocall_packages')
+              .update({
+                remaining_videocalls: 1,
+                status: 'active',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', usedPackage[0].id);
+          }
+        }
+      } catch (packageError) {
+        console.error('Error returning videocall to package:', packageError);
+      }
+
       toast.success('Το ραντεβού ακυρώθηκε επιτυχώς');
       fetchVideocallBookings();
       fetchAvailability();
