@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { BookingCalendar } from "@/components/booking/BookingCalendar";
 import { useUserBookings } from "@/hooks/useUserBookings";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
@@ -17,12 +18,58 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedBookingType, setSelectedBookingType] = useState<string>('');
+  const [videocallData, setVideocallData] = useState<{used: number, total: number, remaining: number} | null>(null);
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
+
+  useEffect(() => {
+    const fetchVideocallData = async () => {
+      if (!userProfile?.id) return;
+      
+      try {
+        // Φόρτωση ενεργών videocall packages
+        const { data: videocallPackages, error } = await supabase
+          .from('videocall_packages')
+          .select('total_videocalls, remaining_videocalls, status')
+          .eq('user_id', userProfile.id)
+          .eq('status', 'active')
+          .order('purchase_date', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching videocall packages:', error);
+          setVideocallData(null);
+          return;
+        }
+
+        // Βρες το πιο πρόσφατο ενεργό πακέτο
+        const activePackage = videocallPackages?.[0];
+        
+        if (!activePackage) {
+          setVideocallData(null);
+          return;
+        }
+
+        // Υπολογισμός χρησιμοποιημένων βιντεοκλήσεων
+        const usedVideocalls = activePackage.total_videocalls - activePackage.remaining_videocalls;
+
+        setVideocallData({
+          used: usedVideocalls,
+          total: activePackage.total_videocalls,
+          remaining: activePackage.remaining_videocalls
+        });
+
+      } catch (error) {
+        console.error('Error fetching videocall data:', error);
+        setVideocallData(null);
+      }
+    };
+
+    fetchVideocallData();
+  }, [userProfile?.id]);
 
   const handleBookingTypeClick = (type: string, requiresPurchase?: boolean) => {
     if (requiresPurchase) {
       // Navigate to shop
-      window.location.href = `/dashboard/user-profile/shop`;
+      window.location.href = `/dashboard/user-profile/${userProfile.id}/shop`;
       return;
     }
     
@@ -110,13 +157,14 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     {
       id: 'videocall',
       title: 'Videocall Συνεδρίες',
-      description: availability?.has_videocall 
+      description: videocallData && videocallData.remaining > 0
         ? 'Online συνεδρίες με τον προπονητή σου'
-        : 'Χρειάζεται συνδρομή Videocall Coaching',
+        : 'Χρειάζεται αγορά πακέτου βιντεοκλήσεων',
       icon: Video,
       color: 'bg-green-100 text-green-600',
-      available: availability?.has_videocall || false,
-      requiresPurchase: !availability?.has_videocall
+      available: videocallData && videocallData.remaining > 0,
+      requiresPurchase: !videocallData || videocallData.remaining === 0,
+      remainingVideocalls: videocallData?.remaining || 0
     }
   ];
 
@@ -185,6 +233,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                  option.available ? 
                    (option.id === 'gym_visit' && option.availableVisits > 0 ? 
                      `${option.availableVisits} Διαθέσιμες Επισκέψεις` : 
+                     option.id === 'videocall' && option.remainingVideocalls > 0 ?
+                     `${option.remainingVideocalls} Διαθέσιμες Κλήσεις` :
                      'Κλείσε Ραντεβού') : 
                    'Σύντομα'}
               </Button>
