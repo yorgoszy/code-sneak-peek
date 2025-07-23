@@ -47,7 +47,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     if (!selectedDate || !selectedSection) return;
 
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    const { available, full } = await getTimeSlotStatus(selectedSection, dateStr);
+    const { available, full } = await getTimeSlotStatus(selectedSection, dateStr, bookingType);
     setAvailableSlots(available);
     setFullSlots(full);
     setSelectedTime(''); // Reset selected time when slots change
@@ -71,6 +71,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const canBook = () => {
     if (!availability) return false;
 
+    if (bookingType === 'videocall') {
+      return availability.has_videocall && availability.single_videocall_sessions > 0;
+    }
+
     if (availability.type === 'hypergym') {
       return availability.available_monthly > 0;
     } else if (availability.type === 'visit_packages') {
@@ -91,7 +95,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 mb-4">
-            Για να κλείσεις ραντεβού, χρειάζεται να έχεις ενεργό πακέτο επισκέψεων ή συνδρομή Hypergym.
+            {bookingType === 'videocall' 
+              ? 'Για να κλείσεις videocall, χρειάζεται να έχεις διαθέσιμες βιντεοκλήσεις.'
+              : 'Για να κλείσεις ραντεβού, χρειάζεται να έχεις ενεργό πακέτο επισκέψεων ή συνδρομή Hypergym.'
+            }
           </p>
           <Button onClick={onClose} className="w-full rounded-none">
             Κλείσιμο
@@ -108,15 +115,20 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
           <div>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
-              Κλείσε Ραντεβού
+              {bookingType === 'videocall' ? 'Κλείσε Videocall' : 'Κλείσε Ραντεβού'}
             </CardTitle>
             <div className="mt-2">
-              {availability?.type === 'hypergym' && (
+              {bookingType === 'videocall' && availability?.has_videocall && (
+                <Badge variant="outline" className="rounded-none">
+                  Videocalls: {availability.single_videocall_sessions} διαθέσιμες
+                </Badge>
+              )}
+              {bookingType !== 'videocall' && availability?.type === 'hypergym' && (
                 <Badge variant="outline" className="rounded-none">
                   Hypergym: {availability.available_monthly}/{availability.total_monthly} διαθέσιμες αυτό το μήνα
                 </Badge>
               )}
-              {availability?.type === 'visit_packages' && (
+              {bookingType !== 'videocall' && availability?.type === 'visit_packages' && (
                 <Badge variant="outline" className="rounded-none">
                   Επισκέψεις: {availability.available_visits} διαθέσιμες
                 </Badge>
@@ -155,7 +167,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
             {/* Section Selection */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Χώρος Γυμναστηρίου
+                {bookingType === 'videocall' ? 'Χώρος Videocall' : 'Χώρος Γυμναστηρίου'}
               </label>
               <div className="space-y-2">
                 {sections.map((section) => (

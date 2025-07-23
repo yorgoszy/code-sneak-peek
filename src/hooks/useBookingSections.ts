@@ -74,7 +74,7 @@ export const useBookingSections = () => {
     }
   };
 
-  const getTimeSlotStatus = async (sectionId: string, date: string) => {
+  const getTimeSlotStatus = async (sectionId: string, date: string, bookingType?: string) => {
     try {
       // Get the section to check available hours
       const section = sections.find(s => s.id === sectionId);
@@ -84,18 +84,32 @@ export const useBookingSections = () => {
       const availableHours = section.available_hours[dayOfWeek] || [];
 
       // Get existing bookings for this date and section
-      const { data: existingBookings } = await supabase
+      let query = supabase
         .from('booking_sessions')
-        .select('booking_time')
+        .select('booking_time, booking_type')
         .eq('section_id', sectionId)
         .eq('booking_date', date)
         .eq('status', 'confirmed');
 
+      // For videocalls, only check videocall bookings (each slot can only have 1 videocall)
+      if (bookingType === 'videocall') {
+        query = query.eq('booking_type', 'videocall');
+      }
+
+      const { data: existingBookings } = await query;
+
       // Count bookings per time slot
       const bookingCounts: { [time: string]: number } = {};
+      const videocallTimes: Set<string> = new Set();
+      
       existingBookings?.forEach(booking => {
         const time = booking.booking_time;
         bookingCounts[time] = (bookingCounts[time] || 0) + 1;
+        
+        // Track times that already have videocalls
+        if (booking.booking_type === 'videocall') {
+          videocallTimes.add(time);
+        }
       });
 
       // Categorize slots
@@ -104,10 +118,21 @@ export const useBookingSections = () => {
 
       availableHours.forEach((time: string) => {
         const currentBookings = bookingCounts[time] || 0;
-        if (currentBookings >= section.max_capacity) {
-          full.push(time);
+        
+        if (bookingType === 'videocall') {
+          // For videocalls, if there's already a videocall at this time, it's full
+          if (videocallTimes.has(time)) {
+            full.push(time);
+          } else {
+            available.push(time);
+          }
         } else {
-          available.push(time);
+          // For gym visits, use normal capacity check
+          if (currentBookings >= section.max_capacity) {
+            full.push(time);
+          } else {
+            available.push(time);
+          }
         }
       });
 
