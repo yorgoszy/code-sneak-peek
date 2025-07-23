@@ -199,85 +199,28 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
     return <div className="text-center py-8">Φόρτωση...</div>;
   }
 
-  const hasVideocallAccess = availability?.has_videocall && (
-    (availability?.videocall_packages_available || 0) > 0 || 
-    (availability?.single_videocall_sessions || 0) > 0 ||
-    availability?.videocall_subscription
-  );
-
-  if (!hasVideocallAccess) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Online Coaching</h2>
-          <p className="text-gray-600">Χρειάζεσαι συνδρομή Videocall Coaching για πρόσβαση</p>
-        </div>
-
-        <Card className="rounded-none border-amber-200 bg-amber-50">
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Lock className="w-5 h-5 text-amber-600" />
-              <CardTitle className="text-amber-800">Περιορισμένη Πρόσβαση</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-amber-700 mb-4">
-              Για να έχεις πρόσβαση στο Online Coaching, χρειάζεσαι ενεργή συνδρομή "Videocall Coaching".
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2 text-amber-700">
-                <Video className="w-4 h-4" />
-                <span className="text-sm">Videocall συνεδρίες (ανάλογα με πακέτο)</span>
-              </div>
-              <div className="flex items-center space-x-2 text-amber-700">
-                <Users className="w-4 h-4" />
-                <span className="text-sm">Προσωπική καθοδήγηση από προπονητή</span>
-              </div>
-              <div className="flex items-center space-x-2 text-amber-700">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm">Προγραμματισμός συνεδριών</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Button 
-                onClick={() => window.location.href = '/dashboard/user-profile/shop'}
-                className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                Αγόρασε Videocall Coaching - €39.99/μήνα
-              </Button>
-              <Button 
-                onClick={() => window.location.href = '/dashboard/user-profile/shop'}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-none"
-              >
-                Αγόρασε 1 Συνεδρία - €29.99
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Online Coaching</h2>
         <p className="text-gray-600">Συνδέσου με τον προπονητή σου μέσω βιντεοκλήσης</p>
-        <div className="mt-4 flex justify-center gap-4">
-          <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">
-            {availability.videocall_subscription 
-              ? `${availability.videocall_subscription} - Απεριόριστες συνεδρίες`
-              : availability.single_videocall_sessions && availability.single_videocall_sessions > 0
-                ? `${availability.single_videocall_sessions} συνεδρία${availability.single_videocall_sessions > 1 ? 'ες' : ''} διαθέσιμη${availability.single_videocall_sessions > 1 ? 'ες' : ''}`
-                : 'Videocall διαθέσιμο'
-            }
-          </Badge>
-          {(availability.videocall_packages_available > 0 || availability.single_videocall_sessions > 0) && (
-            <Badge variant="outline" className="rounded-none bg-blue-50 text-blue-700 border-blue-200">
-              + Videocall διαθέσιμο ({(availability.videocall_packages_available || 0) + (availability.single_videocall_sessions || 0)} sessions)
+        {availability && (
+          <div className="mt-4 flex justify-center gap-4">
+            <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">
+              {availability.videocall_subscription 
+                ? `${availability.videocall_subscription} - Απεριόριστες συνεδρίες`
+                : availability.single_videocall_sessions && availability.single_videocall_sessions > 0
+                  ? `${availability.single_videocall_sessions} συνεδρία${availability.single_videocall_sessions > 1 ? 'ες' : ''} διαθέσιμη${availability.single_videocall_sessions > 1 ? 'ες' : ''}`
+                  : 'Videocall διαθέσιμο'
+              }
             </Badge>
-          )}
-        </div>
+            {((availability.videocall_packages_available || 0) > 0 || (availability.single_videocall_sessions || 0) > 0) && (
+              <Badge variant="outline" className="rounded-none bg-blue-50 text-blue-700 border-blue-200">
+                + Videocall διαθέσιμο ({(availability.videocall_packages_available || 0) + (availability.single_videocall_sessions || 0)} sessions)
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Booking Calendar for Videocall */}
