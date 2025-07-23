@@ -70,13 +70,8 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                     {bookings.map((booking) => (
-                      <VideocallBookingCard 
-                        key={booking.id} 
-                        booking={booking} 
-                        isAdmin={true}
-                        onStatusChange={() => window.location.reload()}
-                      />
+                    {bookings.map((booking) => (
+                      <VideocallBookingCard key={booking.id} booking={booking} isAdmin={true} />
                     ))}
                   </div>
                 )}

@@ -53,7 +53,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
           booking_date: date,
           booking_time: time,
           booking_type: type,
-          status: 'pending'
+          status: 'confirmed'
         })
         .select()
         .single();
