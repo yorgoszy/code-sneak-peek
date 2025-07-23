@@ -16,8 +16,7 @@ interface VideocallBooking {
     description?: string;
   };
   user?: {
-    first_name: string;
-    last_name: string;
+    name: string;
     email: string;
   };
 }
@@ -78,7 +77,7 @@ export const useVideocallBookings = (isAdmin = false) => {
         .select(`
           *,
           section:booking_sections(name, description),
-          user:app_users!user_id(first_name, last_name, email)
+          user:app_users!user_id(name, email)
         `)
         .eq('booking_type', 'videocall')
         .order('booking_date', { ascending: true })

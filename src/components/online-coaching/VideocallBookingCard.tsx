@@ -22,8 +22,7 @@ interface VideocallBooking {
     description?: string;
   };
   user?: {
-    first_name: string;
-    last_name: string;
+    name: string;
     email: string;
   };
 }
@@ -184,7 +183,7 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
             {isAdmin && booking.user && (
               <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
                 <User className="w-4 h-4" />
-                <span>{booking.user.first_name} {booking.user.last_name}</span>
+                <span>{booking.user.name}</span>
                 <span className="text-gray-400">({booking.user.email})</span>
               </div>
             )}
