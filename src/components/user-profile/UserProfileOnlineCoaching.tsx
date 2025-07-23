@@ -337,12 +337,12 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                         </div>
                       </div>
                        <div className="flex items-center space-x-2">
+                         <span className="text-xs text-red-600 font-medium">
+                           Απομένουν: {timeRemaining}
+                         </span>
                          <Badge variant="outline" className="text-xs rounded-none">
                            {booking.status}
                          </Badge>
-                         <span className="text-xs text-gray-500">
-                           Απομένουν: {timeRemaining}
-                         </span>
                          {canCancelBooking(booking.booking_date, booking.booking_time) && (
                            <Button
                              variant="outline"
