@@ -25,8 +25,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [fullSlots, setFullSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const { sections, getAvailableSlots } = useBookingSections();
+  const { sections, getTimeSlotStatus } = useBookingSections();
 
   // Set default section when sections load
   useEffect(() => {
@@ -46,8 +47,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     if (!selectedDate || !selectedSection) return;
 
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    const slots = await getAvailableSlots(selectedSection, dateStr);
-    setAvailableSlots(slots);
+    const { available, full } = await getTimeSlotStatus(selectedSection, dateStr);
+    setAvailableSlots(available);
+    setFullSlots(full);
     setSelectedTime(''); // Reset selected time when slots change
   };
 
@@ -180,8 +182,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Διαθέσιμες Ώρες για {format(selectedDate, 'dd/MM/yyyy')}
                 </label>
-                {availableSlots.length > 0 ? (
+                {(availableSlots.length > 0 || fullSlots.length > 0) ? (
                   <div className="grid grid-cols-3 gap-2">
+                    {/* Available slots */}
                     {availableSlots.map((time) => (
                       <Button
                         key={time}
@@ -192,6 +195,20 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                       >
                         <Clock className="w-3 h-3 mr-1" />
                         {time}
+                      </Button>
+                    ))}
+                    {/* Full slots - grayed out and not clickable */}
+                    {fullSlots.map((time) => (
+                      <Button
+                        key={time}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-none opacity-40 cursor-not-allowed"
+                        disabled
+                      >
+                        <Clock className="w-3 h-3 mr-1" />
+                        {time}
+                        <span className="ml-1 text-xs">(Πλήρης)</span>
                       </Button>
                     ))}
                   </div>

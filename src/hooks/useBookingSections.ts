@@ -74,10 +74,55 @@ export const useBookingSections = () => {
     }
   };
 
+  const getTimeSlotStatus = async (sectionId: string, date: string) => {
+    try {
+      // Get the section to check available hours
+      const section = sections.find(s => s.id === sectionId);
+      if (!section) return { available: [], full: [] };
+
+      const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      const availableHours = section.available_hours[dayOfWeek] || [];
+
+      // Get existing bookings for this date and section
+      const { data: existingBookings } = await supabase
+        .from('booking_sessions')
+        .select('booking_time')
+        .eq('section_id', sectionId)
+        .eq('booking_date', date)
+        .eq('status', 'confirmed');
+
+      // Count bookings per time slot
+      const bookingCounts: { [time: string]: number } = {};
+      existingBookings?.forEach(booking => {
+        const time = booking.booking_time;
+        bookingCounts[time] = (bookingCounts[time] || 0) + 1;
+      });
+
+      // Categorize slots
+      const available: string[] = [];
+      const full: string[] = [];
+
+      availableHours.forEach((time: string) => {
+        const currentBookings = bookingCounts[time] || 0;
+        if (currentBookings >= section.max_capacity) {
+          full.push(time);
+        } else {
+          available.push(time);
+        }
+      });
+
+      return { available, full };
+    } catch (error) {
+      console.error('Error fetching time slot status:', error);
+      return { available: [], full: [] };
+    }
+  };
+
   return {
     sections,
     loading,
     getAvailableSlots,
+    getTimeSlotStatus,
     refetch: fetchSections
   };
 };
