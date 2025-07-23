@@ -144,3 +144,5 @@ export const MeetingRoom: React.FC = () => {
     </div>
   );
 };
+
+export default MeetingRoom;

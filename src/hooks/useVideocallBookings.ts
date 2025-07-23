@@ -78,7 +78,7 @@ export const useVideocallBookings = (isAdmin = false) => {
         .select(`
           *,
           section:booking_sections(name, description),
-          user:app_users(first_name, last_name, email)
+          user:app_users!user_id(first_name, last_name, email)
         `)
         .eq('booking_type', 'videocall')
         .eq('status', 'confirmed')
@@ -96,7 +96,7 @@ export const useVideocallBookings = (isAdmin = false) => {
 
       // Generate meeting links for bookings that don't have them
       const bookingsWithLinks = await Promise.all(
-        (data || []).map(async (booking) => {
+        (data || []).map(async (booking: any) => {
           if (!booking.meeting_link) {
             const meetingLink = generateMeetingLink(booking.id);
             

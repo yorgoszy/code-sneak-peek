@@ -536,6 +536,7 @@ export type Database = {
           cancelled_at: string | null
           created_at: string
           id: string
+          meeting_link: string | null
           notes: string | null
           section_id: string
           status: string
@@ -549,6 +550,7 @@ export type Database = {
           cancelled_at?: string | null
           created_at?: string
           id?: string
+          meeting_link?: string | null
           notes?: string | null
           section_id: string
           status?: string
@@ -562,6 +564,7 @@ export type Database = {
           cancelled_at?: string | null
           created_at?: string
           id?: string
+          meeting_link?: string | null
           notes?: string | null
           section_id?: string
           status?: string
