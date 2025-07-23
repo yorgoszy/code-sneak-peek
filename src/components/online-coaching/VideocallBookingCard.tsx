@@ -75,7 +75,10 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
   const handleJoinMeeting = () => {
     if (booking.meeting_link) {
-      window.open(booking.meeting_link, '_blank');
+      // Get admin name or fallback to Admin
+      const adminName = encodeURIComponent('Admin');
+      const meetingUrl = `${booking.meeting_link}?userInfo.displayName=${adminName}&config.startWithVideoMuted=false&config.startWithAudioMuted=false`;
+      window.open(meetingUrl, '_blank');
     }
   };
 

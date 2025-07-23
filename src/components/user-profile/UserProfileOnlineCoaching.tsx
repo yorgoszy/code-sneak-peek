@@ -416,7 +416,12 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => window.open(booking.meeting_link, '_blank')}
+                            onClick={() => {
+                              // Get user name from profile
+                              const userName = encodeURIComponent(userProfile?.name || userProfile?.email || 'User');
+                              const meetingUrl = `${booking.meeting_link}?userInfo.displayName=${userName}&config.startWithVideoMuted=false&config.startWithAudioMuted=false`;
+                              window.open(meetingUrl, '_blank');
+                            }}
                             className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
                           >
                             <Video className="w-3 h-3 mr-1" />
