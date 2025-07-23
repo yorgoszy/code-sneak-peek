@@ -473,7 +473,7 @@ export const VideocallManagement: React.FC = () => {
                         <p className="text-sm text-gray-500">{pkg.app_users.email}</p>
                         <div className="flex items-center gap-4 mt-1">
                           <span className="text-sm">
-                            Βιντεοκλήσεις: {pkg.remaining_videocalls}/{pkg.total_videocalls}
+                            Βιντεοκλήσεις: {pkg.total_videocalls - pkg.remaining_videocalls}/{pkg.total_videocalls}
                           </span>
                           <Badge 
                             variant={pkg.status === 'active' ? 'default' : 'secondary'}
@@ -490,6 +490,7 @@ export const VideocallManagement: React.FC = () => {
                           onClick={() => addVideocallToPackage(pkg.id, pkg.user_id)}
                           disabled={pkg.remaining_videocalls === 0}
                           className="rounded-none"
+                          title="Προσθήκη χρησιμοποιημένης βιντεοκλήσης"
                         >
                           <Plus className="w-4 h-4" />
                         </Button>
@@ -497,7 +498,9 @@ export const VideocallManagement: React.FC = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => removeVideocallFromPackage(pkg.user_id)}
+                          disabled={pkg.total_videocalls - pkg.remaining_videocalls === 0}
                           className="rounded-none"
+                          title="Αφαίρεση χρησιμοποιημένης βιντεοκλήσης"
                         >
                           <Minus className="w-4 h-4" />
                         </Button>
