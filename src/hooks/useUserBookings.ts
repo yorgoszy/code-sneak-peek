@@ -201,7 +201,7 @@ export const useUserBookings = () => {
     // First get the booking details
     const { data: booking } = await supabase
       .from('booking_sessions')
-      .select('booking_type, user_id')
+      .select('booking_type, user_id, status')
       .eq('id', bookingId)
       .single();
 
@@ -264,8 +264,8 @@ export const useUserBookings = () => {
       }
     }
 
-    // If it's a videocall, return the videocall to the package
-    if (booking?.booking_type === 'videocall' && booking?.user_id) {
+    // If it's a videocall and was confirmed, return the videocall to the package
+    if (booking?.booking_type === 'videocall' && booking?.user_id && booking?.status === 'confirmed') {
       try {
         // Get the current videocall package
         const { data: videocallPackage } = await supabase
