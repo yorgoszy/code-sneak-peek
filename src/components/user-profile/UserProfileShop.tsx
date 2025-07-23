@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ShoppingCart, Clock, Users, MapPin, Calendar, Dumbbell, History } from "lucide-react";
+import { ShoppingCart, Clock, Users, MapPin, Calendar, Dumbbell, History, Video } from "lucide-react";
 import { UserProfileShopHistory } from "./UserProfileShopHistory";
 
 interface SubscriptionType {
@@ -14,7 +14,7 @@ interface SubscriptionType {
   description: string;
   price: number;
   duration_months: number;
-  subscription_mode: 'time_based' | 'visit_based';
+  subscription_mode: 'time_based' | 'visit_based' | 'videocall';
   visit_count?: number;
   visit_expiry_months?: number;
   is_active: boolean;
@@ -47,7 +47,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
 
       const typedData = (data || []).map(item => ({
         ...item,
-        subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based',
+        subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based' | 'videocall',
         available_in_shop: item.available_in_shop || false
       })) as SubscriptionType[];
 
@@ -134,6 +134,10 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                       <div className="bg-blue-100 p-3 rounded-full">
                         <MapPin className="w-6 h-6 text-blue-600" />
                       </div>
+                    ) : product.subscription_mode === 'videocall' ? (
+                      <div className="bg-purple-100 p-3 rounded-full">
+                        <Video className="w-6 h-6 text-purple-600" />
+                      </div>
                     ) : (
                       <div className="bg-green-100 p-3 rounded-full">
                         <Calendar className="w-6 h-6 text-green-600" />
@@ -165,15 +169,40 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                             {product.visit_count}
                           </Badge>
                         </div>
+                        {product.visit_expiry_months && (
+                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                            <span className="flex items-center text-sm">
+                              <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                              Λήξη σε
+                            </span>
+                            <Badge variant="secondary" className="rounded-none">
+                              {product.visit_expiry_months} μήνες
+                            </Badge>
+                          </div>
+                        )}
+                      </>
+                    ) : product.subscription_mode === 'videocall' ? (
+                      <>
                         <div className="flex items-center justify-between py-2 border-b border-gray-100">
                           <span className="flex items-center text-sm">
-                            <Clock className="w-4 h-4 mr-2 text-blue-500" />
-                            Λήξη σε
+                            <Video className="w-4 h-4 mr-2 text-purple-500" />
+                            Κλήσεις
                           </span>
                           <Badge variant="secondary" className="rounded-none">
-                            {product.visit_expiry_months} μήνες
+                            {product.visit_count}
                           </Badge>
                         </div>
+                        {product.visit_expiry_months && (
+                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                            <span className="flex items-center text-sm">
+                              <Clock className="w-4 h-4 mr-2 text-purple-500" />
+                              Λήξη σε
+                            </span>
+                            <Badge variant="secondary" className="rounded-none">
+                              {product.visit_expiry_months} μήνες
+                            </Badge>
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div className="flex items-center justify-between py-2 border-b border-gray-100">
