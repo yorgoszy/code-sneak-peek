@@ -177,6 +177,20 @@ export const useUserBookings = () => {
       }
     }
 
+    // If it's a videocall, deduct from videocall package using the existing function
+    if (bookingType === 'videocall') {
+      try {
+        await supabase.rpc('record_videocall', {
+          p_user_id: userProfile.id,
+          p_videocall_type: 'booking',
+          p_notes: `Booking ID: ${data.id}`
+        });
+      } catch (videocallError) {
+        console.error('Error recording videocall:', videocallError);
+        // Still continue since the booking was created successfully
+      }
+    }
+
     // Refresh data after creating booking
     await Promise.all([fetchAvailability(), fetchBookings()]);
     
@@ -249,6 +263,48 @@ export const useUserBookings = () => {
 
       } catch (visitError) {
         console.error('Error handling visit return:', visitError);
+      }
+    }
+
+    // If it's a videocall, return the videocall to the package
+    if (booking?.booking_type === 'videocall' && booking?.user_id) {
+      try {
+        // Get the current videocall package
+        const { data: videocallPackage } = await supabase
+          .from('videocall_packages')
+          .select('remaining_videocalls')
+          .eq('user_id', booking.user_id)
+          .eq('status', 'active')
+          .order('purchase_date', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (videocallPackage) {
+          // Update the videocall package
+          const { error: videocallError } = await supabase
+            .from('videocall_packages')
+            .update({ 
+              remaining_videocalls: videocallPackage.remaining_videocalls + 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', booking.user_id)
+            .eq('status', 'active')
+            .order('purchase_date', { ascending: false })
+            .limit(1);
+
+          if (videocallError) {
+            console.error('Error returning videocall to package:', videocallError);
+          }
+        }
+
+        // Also delete the videocall record if it exists
+        await supabase
+          .from('user_videocalls')
+          .delete()
+          .ilike('notes', `%Booking ID: ${bookingId}%`);
+
+      } catch (videocallError) {
+        console.error('Error handling videocall return:', videocallError);
       }
     }
 

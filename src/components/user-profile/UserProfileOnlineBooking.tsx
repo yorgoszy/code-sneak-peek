@@ -87,35 +87,13 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       await createBooking(sectionId, date, time, type);
       toast.success('Το ραντεβού δημιουργήθηκε επιτυχώς!');
       
-      // Αν είναι videocall booking, ενημέρωσε τα στατιστικά
-      if (type === 'videocall') {
-        // Refetch videocall data για να ενημερωθούν οι διαθέσιμες κλήσεις
-        const fetchVideocallData = async () => {
-          try {
-            const { data: videocallPackages, error } = await supabase
-              .from('videocall_packages')
-              .select('total_videocalls, remaining_videocalls, status')
-              .eq('user_id', userProfile.id)
-              .eq('status', 'active')
-              .order('purchase_date', { ascending: false });
-
-            if (error) throw error;
-
-            const activePackage = videocallPackages?.[0];
-            if (activePackage) {
-              const usedVideocalls = activePackage.total_videocalls - activePackage.remaining_videocalls;
-              setVideocallData({
-                used: usedVideocalls,
-                total: activePackage.total_videocalls,
-                remaining: activePackage.remaining_videocalls
-              });
-            }
-          } catch (error) {
-            console.error('Error refreshing videocall data:', error);
-          }
-        };
-        
-        fetchVideocallData();
+      // Αν είναι videocall booking, ενημέρωσε τα local στατιστικά
+      if (type === 'videocall' && videocallData) {
+        setVideocallData({
+          ...videocallData,
+          used: videocallData.used + 1,
+          remaining: videocallData.remaining - 1
+        });
       }
     } catch (error: any) {
       toast.error(error.message || 'Σφάλμα κατά τη δημιουργία του ραντεβού');
