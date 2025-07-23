@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Video, Plus, Trash2, Search, Calendar, Minus } from "lucide-react";
+import { Video, Plus, Trash2, Search, Calendar, Minus, Eye, Edit } from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 
@@ -360,13 +360,6 @@ export const VideocallManagement: React.FC = () => {
               Πακέτα
             </Button>
             <Button 
-              onClick={() => setActiveTab('manual')}
-              variant={activeTab === 'manual' ? 'default' : 'outline'}
-              className="rounded-none"
-            >
-              Χειροκίνητη
-            </Button>
-            <Button 
               onClick={() => setActiveTab('history')}
               variant={activeTab === 'history' ? 'default' : 'outline'}
               className="rounded-none"
@@ -504,6 +497,30 @@ export const VideocallManagement: React.FC = () => {
                         >
                           <Minus className="w-4 h-4" />
                         </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-none"
+                          title="Προβολή πακέτου"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-none"
+                          title="Επεξεργασία πακέτου"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-none text-red-600 hover:text-red-700 hover:bg-red-50"
+                          title="Διαγραφή πακέτου"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -513,71 +530,6 @@ export const VideocallManagement: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'manual' && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Χειροκίνητη Προσθήκη Βιντεοκλήσης</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Αναζήτηση Χρήστη</label>
-                <Input
-                  placeholder="Αναζήτηση χρήστη..."
-                  value={userSearchTerm}
-                  onChange={(e) => setUserSearchTerm(e.target.value)}
-                  className="rounded-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Χρήστης</label>
-                <select
-                  value={selectedUserId}
-                  onChange={(e) => setSelectedUserId(e.target.value)}
-                  className="w-full p-2 border rounded-none"
-                >
-                  <option value="">Επιλέξτε χρήστη</option>
-                  {users
-                    .filter(user => 
-                      user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-                      user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
-                    )
-                    .map(user => (
-                      <option key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                      </option>
-                    ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Αριθμός Βιντεοκλήσεων</label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={videocallCount}
-                  onChange={(e) => setVideocallCount(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="rounded-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Σημειώσεις</label>
-                <Input
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="rounded-none"
-                  placeholder="Προαιρετικές σημειώσεις..."
-                />
-              </div>
-            </div>
-
-            <Button
-              onClick={recordManualVideocall}
-              disabled={saving}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              {saving ? 'Αποθήκευση...' : 'Προσθήκη Βιντεοκλήσης'}
-            </Button>
-          </div>
-        )}
 
         {activeTab === 'history' && (
           <div className="space-y-4">
