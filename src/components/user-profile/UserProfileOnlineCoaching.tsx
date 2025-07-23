@@ -418,8 +418,8 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                             size="sm"
                             onClick={() => {
                               // Get user name from profile
-                              const userName = encodeURIComponent(userProfile?.name || userProfile?.email || 'User');
-                              const meetingUrl = `${booking.meeting_link}?userInfo.displayName=${userName}&config.startWithVideoMuted=false&config.startWithAudioMuted=false`;
+                              const userName = userProfile?.name || userProfile?.email || 'User';
+                              const meetingUrl = `${booking.meeting_link}#userInfo.displayName="${userName}"&config.prejoinPageEnabled=false&config.startWithVideoMuted=false&config.startWithAudioMuted=false`;
                               window.open(meetingUrl, '_blank');
                             }}
                             className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
