@@ -389,7 +389,7 @@ export const VideocallManagement: React.FC = () => {
                       value={userSearchTerm}
                       onValueChange={setUserSearchTerm}
                     />
-                    <CommandList>
+                    <CommandList className="max-h-60 overflow-y-auto">
                       <CommandEmpty>Δεν βρέθηκε χρήστης.</CommandEmpty>
                       <CommandGroup>
                         {filteredUsers.map((user) => (
