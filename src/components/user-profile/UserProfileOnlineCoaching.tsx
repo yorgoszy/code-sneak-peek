@@ -144,13 +144,30 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         `)
         .eq('user_id', userProfile.id)
         .eq('booking_type', 'videocall')
-        .in('status', ['confirmed', 'pending'])
+        .in('status', ['confirmed', 'pending', 'rejected'])
         .gte('booking_date', new Date().toISOString().split('T')[0])
         .order('booking_date', { ascending: true });
 
       setVideocallBookings(data || []);
     } catch (error) {
       console.error('Error fetching videocall bookings:', error);
+    }
+  };
+
+  const deleteRejectedBooking = async (bookingId: string) => {
+    try {
+      const { error } = await supabase
+        .from('booking_sessions')
+        .delete()
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      toast.success('Το απορριφθέν ραντεβού διαγράφηκε επιτυχώς');
+      fetchVideocallBookings();
+    } catch (error) {
+      console.error('Error deleting rejected booking:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή του ραντεβού');
     }
   };
 
@@ -375,15 +392,36 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                             {booking.section?.name || 'Videocall Session'}
                           </div>
                         </div>
-                      </div>
+                        </div>
                        <div className="flex items-center space-x-2">
-                         <span className="text-xs text-red-600 font-medium">
-                           Απομένουν: {timeRemaining}
-                         </span>
-                         <Badge variant="outline" className="text-xs rounded-none">
-                           {booking.status}
+                         {booking.status !== 'rejected' && (
+                           <span className="text-xs text-red-600 font-medium">
+                             Απομένουν: {timeRemaining}
+                           </span>
+                         )}
+                         <Badge 
+                           variant="outline" 
+                           className={`text-xs rounded-none ${
+                             booking.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                             booking.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                             booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' : ''
+                           }`}
+                         >
+                           {booking.status === 'pending' ? 'Εκκρεμεί' :
+                            booking.status === 'rejected' ? 'Απορρίφθηκε' :
+                            booking.status === 'confirmed' ? 'Εγκεκριμένη' : booking.status}
                          </Badge>
-                         {canCancelBooking(booking.booking_date, booking.booking_time) && (
+                         {booking.status === 'rejected' ? (
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => deleteRejectedBooking(booking.id)}
+                             className="rounded-none"
+                           >
+                             <X className="w-3 h-3 mr-1" />
+                             Διαγραφή
+                           </Button>
+                         ) : canCancelBooking(booking.booking_date, booking.booking_time) && (
                            <Button
                              variant="outline"
                              size="sm"

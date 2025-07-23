@@ -56,19 +56,19 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
   const getStatusBadge = () => {
     if (booking.status === 'pending') {
-      return <Badge variant="outline" className="rounded-none bg-orange-50 text-orange-700 border-orange-200">Εκκρεμεί</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-yellow-50 text-yellow-700 border-yellow-200">Εκκρεμεί</Badge>;
     }
     if (booking.status === 'rejected') {
-      return <Badge variant="destructive" className="rounded-none">Απορρίφθηκε</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Απορρίφθηκε</Badge>;
     }
     if (isPastMeeting) {
       return <Badge variant="secondary" className="rounded-none">Ολοκληρωμένη</Badge>;
     }
     if (canJoinMeeting && booking.status === 'confirmed') {
-      return <Badge className="rounded-none bg-green-500 hover:bg-green-600">Ενεργή</Badge>;
+      return <Badge className="rounded-none bg-[#00ffba] text-black">Ενεργή</Badge>;
     }
     if (booking.status === 'confirmed') {
-      return <Badge variant="outline" className="rounded-none">Εγκεκριμένη</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">Εγκεκριμένη</Badge>;
     }
     return <Badge variant="outline" className="rounded-none">Προγραμματισμένη</Badge>;
   };
