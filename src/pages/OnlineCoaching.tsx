@@ -13,8 +13,12 @@ const OnlineCoaching: React.FC = () => {
 
   // Διαχωρισμός bookings σε επερχόμενα και ιστορικό
   const now = new Date();
-  const upcomingBookings = bookings.filter(booking => new Date(booking.booking_date) >= now);
-  const pastBookings = bookings.filter(booking => new Date(booking.booking_date) < now);
+  const upcomingBookings = bookings.filter(booking => 
+    booking.status === 'confirmed' && new Date(booking.booking_date) >= now
+  );
+  const pastBookings = bookings.filter(booking => 
+    booking.status !== 'confirmed' || new Date(booking.booking_date) < now
+  );
 
   if (loading) {
     return (
