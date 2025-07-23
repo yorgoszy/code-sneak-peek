@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [paymentStatus, setPaymentStatus] = useState<boolean | null>(null);
   const [visitsData, setVisitsData] = useState<{used: number, total: number} | null>(null);
+  const [videocallData, setVideocallData] = useState<{used: number, total: number} | null>(null);
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -125,9 +126,62 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
       }
     };
 
+    const fetchVideocallData = async () => {
+      try {
+        // Φόρτωση ενεργών videocall packages (συνδρομές με subscription_mode = 'videocall')
+        const { data: videocallSubscriptions, error: subscriptionsError } = await supabase
+          .from('user_subscriptions')
+          .select(`
+            *, 
+            subscription_types!inner(subscription_mode, visit_count)
+          `)
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .eq('subscription_types.subscription_mode', 'videocall')
+          .order('created_at', { ascending: false });
+
+        if (subscriptionsError) {
+          console.error('Error fetching videocall subscriptions:', subscriptionsError);
+          setVideocallData(null);
+          return;
+        }
+
+        // Φόρτωση ολοκληρωμένων videocall bookings
+        const { data: completedVideocalls, error: bookingsError } = await supabase
+          .from('booking_sessions')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('booking_type', 'videocall')
+          .eq('status', 'completed');
+
+        if (bookingsError) {
+          console.error('Error fetching completed videocalls:', bookingsError);
+          setVideocallData(null);
+          return;
+        }
+
+        // Υπολογισμός συνολικών διαθέσιμων κλήσεων από όλες τις ενεργές συνδρομές
+        const totalCalls = videocallSubscriptions?.reduce(
+          (sum, sub) => sum + (sub.subscription_types?.visit_count || 0), 0
+        ) || 0;
+
+        const usedCalls = completedVideocalls?.length || 0;
+
+        setVideocallData({
+          used: usedCalls,
+          total: totalCalls
+        });
+
+      } catch (error) {
+        console.error('Error fetching videocall data:', error);
+        setVideocallData(null);
+      }
+    };
+
     if (user?.id) {
       fetchSubscriptionData();
       fetchVisitsData();
+      fetchVideocallData();
     }
   }, [user?.id]);
   
@@ -135,7 +189,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
     <Card className="rounded-none">
       <CardContent className={isMobile ? "pt-4" : "pt-6"}>
         <div className={`grid gap-4 ${
-          isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-6'
+          isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-7'
         }`}>
           {user.role === 'trainer' && (
             <div className="text-center">
@@ -202,6 +256,19 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επισκέψεις</p>
+          </div>
+          <div className="text-center">
+            <Video className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {videocallData ? (
+                <span className="text-gray-900">
+                  {videocallData.used}/{videocallData.total}
+                </span>
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Βιντεοκλήσεις</p>
           </div>
         </div>
       </CardContent>

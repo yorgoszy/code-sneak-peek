@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { matchesSearchTerm } from "@/lib/utils";
 
@@ -205,6 +205,12 @@ export const SubscriptionTypeManager: React.FC = () => {
       return;
     }
 
+    // Validation για videocall subscriptions
+    if (subscriptionMode === 'videocall' && (!visitCount || !visitExpiryMonths)) {
+      toast.error('Ο αριθμός κλήσεων και η διάρκεια λήξης είναι απαραίτητα για videocall συνδρομές');
+      return;
+    }
+
     const numericPrice = parseFloat(price);
     const numericDuration = durationMonths ? parseInt(durationMonths) : 0;
     const numericVisitCount = visitCount ? parseInt(visitCount) : null;
@@ -223,6 +229,17 @@ export const SubscriptionTypeManager: React.FC = () => {
     if (subscriptionMode === 'visit_based') {
       if (!numericVisitCount || numericVisitCount <= 0) {
         toast.error('Ο αριθμός επισκέψεων πρέπει να είναι θετικός αριθμός');
+        return;
+      }
+      if (!numericVisitExpiryMonths || numericVisitExpiryMonths <= 0) {
+        toast.error('Η διάρκεια λήξης πρέπει να είναι θετικός αριθμός');
+        return;
+      }
+    }
+
+    if (subscriptionMode === 'videocall') {
+      if (!numericVisitCount || numericVisitCount <= 0) {
+        toast.error('Ο αριθμός κλήσεων πρέπει να είναι θετικός αριθμός');
         return;
       }
       if (!numericVisitExpiryMonths || numericVisitExpiryMonths <= 0) {
@@ -253,8 +270,8 @@ export const SubscriptionTypeManager: React.FC = () => {
         features: parsedFeatures,
         is_active: true,
         subscription_mode: subscriptionMode,
-        visit_count: subscriptionMode === 'visit_based' ? numericVisitCount : null,
-        visit_expiry_months: subscriptionMode === 'visit_based' ? numericVisitExpiryMonths : null,
+        visit_count: (subscriptionMode === 'visit_based' || subscriptionMode === 'videocall') ? numericVisitCount : null,
+        visit_expiry_months: (subscriptionMode === 'visit_based' || subscriptionMode === 'videocall') ? numericVisitExpiryMonths : null,
         single_purchase: singlePurchase
       };
 
@@ -500,6 +517,11 @@ export const SubscriptionTypeManager: React.FC = () => {
                             <MapPin className="w-3 h-3 mr-1" />
                             Επισκέψεις
                           </Badge>
+                        ) : type.subscription_mode === 'videocall' ? (
+                          <Badge variant="outline" className="rounded-none bg-purple-50 text-purple-600">
+                            <Video className="w-3 h-3 mr-1" />
+                            Videocall
+                          </Badge>
                         ) : (
                           <Badge variant="outline" className="rounded-none bg-green-50 text-green-600">
                             <Calendar className="w-3 h-3 mr-1" />
@@ -510,6 +532,11 @@ export const SubscriptionTypeManager: React.FC = () => {
                       {type.subscription_mode === 'visit_based' ? (
                         <>
                           <div><strong>Επισκέψεις:</strong> {type.visit_count} επισκέψεις</div>
+                          <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
+                        </>
+                      ) : type.subscription_mode === 'videocall' ? (
+                        <>
+                          <div><strong>Κλήσεις:</strong> {type.visit_count} κλήσεις</div>
                           <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
                         </>
                       ) : (
@@ -625,7 +652,7 @@ export const SubscriptionTypeManager: React.FC = () => {
                   </SelectItem>
                   <SelectItem value="videocall">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
+                      <Video className="w-4 h-4" />
                       VIDEOCALL
                     </div>
                   </SelectItem>
@@ -662,7 +689,9 @@ export const SubscriptionTypeManager: React.FC = () => {
                 </div>
               ) : (
                 <div>
-                  <Label htmlFor="visitCount">Αριθμός Επισκέψεων*</Label>
+                  <Label htmlFor="visitCount">
+                    {subscriptionMode === 'videocall' ? 'Αριθμός Κλήσεων*' : 'Αριθμός Επισκέψεων*'}
+                  </Label>
                   <Input
                     id="visitCount"
                     type="number"
@@ -676,7 +705,7 @@ export const SubscriptionTypeManager: React.FC = () => {
               )}
             </div>
 
-            {subscriptionMode === 'visit_based' && (
+            {(subscriptionMode === 'visit_based' || subscriptionMode === 'videocall') && (
               <div>
                 <Label htmlFor="visitExpiryMonths">Διάρκεια Λήξης (μήνες)*</Label>
                 <Input
@@ -686,7 +715,7 @@ export const SubscriptionTypeManager: React.FC = () => {
                   value={visitExpiryMonths}
                   onChange={(e) => setVisitExpiryMonths(e.target.value)}
                   className="rounded-none"
-                  placeholder="Σε πόσους μήνες λήγουν οι επισκέψεις"
+                  placeholder={subscriptionMode === 'videocall' ? "Σε πόσους μήνες λήγουν οι κλήσεις" : "Σε πόσους μήνες λήγουν οι επισκέψεις"}
                   disabled={saving}
                 />
               </div>
