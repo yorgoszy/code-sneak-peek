@@ -53,20 +53,22 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
           booking_date: date,
           booking_time: time,
           booking_type: type,
-          status: 'confirmed'
+          status: type === 'videocall' ? 'pending' : 'confirmed'
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Record the videocall usage
-      await supabase.rpc('record_videocall', {
-        p_user_id: userProfile.id,
-        p_created_by: null,
-        p_videocall_type: 'booked',
-        p_notes: `Videocall booking for ${date} at ${time}`
-      });
+      // Only record videocall usage if status is confirmed
+      if (data.status === 'confirmed') {
+        await supabase.rpc('record_videocall', {
+          p_user_id: userProfile.id,
+          p_created_by: null,
+          p_videocall_type: 'booked',
+          p_notes: `Videocall booking for ${date} at ${time}`
+        });
+      }
 
       toast.success('Το ραντεβού δημιουργήθηκε επιτυχώς!');
       fetchVideocallBookings();
@@ -116,7 +118,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         `)
         .eq('user_id', userProfile.id)
         .eq('booking_type', 'videocall')
-        .eq('status', 'confirmed')
+        .in('status', ['confirmed', 'pending'])
         .gte('booking_date', new Date().toISOString().split('T')[0])
         .order('booking_date', { ascending: true });
 
@@ -137,12 +139,10 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         return;
       }
 
+      // Delete the booking instead of updating status
       const { error } = await supabase
         .from('booking_sessions')
-        .update({
-          status: 'cancelled',
-          cancelled_at: new Date().toISOString()
-        })
+        .delete()
         .eq('id', bookingId);
 
       if (error) throw error;

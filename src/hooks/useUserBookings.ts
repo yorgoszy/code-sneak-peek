@@ -134,7 +134,7 @@ export const useUserBookings = () => {
           section:booking_sections(name, description)
         `)
         .eq('user_id', userProfile.id)
-        .eq('status', 'confirmed')
+        .in('status', ['confirmed', 'pending'])
         .gte('booking_date', new Date().toISOString().split('T')[0])
         .order('booking_date', { ascending: true });
 
@@ -213,12 +213,10 @@ export const useUserBookings = () => {
       throw new Error('Cannot cancel booking within 12 hours of the scheduled time');
     }
 
+    // Delete the booking instead of updating status
     const { error } = await supabase
       .from('booking_sessions')
-      .update({
-        status: 'cancelled',
-        cancelled_at: new Date().toISOString()
-      })
+      .delete()
       .eq('id', bookingId);
 
     if (error) throw error;
