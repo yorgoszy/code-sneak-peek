@@ -206,6 +206,24 @@ export const VideocallManagement: React.FC = () => {
     }
   };
 
+  const deleteVideocallPackage = async (packageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('videocall_packages')
+        .delete()
+        .eq('id', packageId);
+
+      if (error) throw error;
+
+      toast.success('Το πακέτο διαγράφηκε επιτυχώς!');
+      fetchData();
+      
+    } catch (error) {
+      console.error('Error deleting videocall package:', error);
+      toast.error('Σφάλμα διαγραφής πακέτου');
+    }
+  };
+
   const removeVideocallFromPackage = async (userId: string) => {
     try {
       // Βρίσκουμε την τελευταία βιντεοκλήση για αυτόν τον χρήστη
@@ -516,6 +534,7 @@ export const VideocallManagement: React.FC = () => {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => deleteVideocallPackage(pkg.id)}
                           className="rounded-none text-red-600 hover:text-red-700 hover:bg-red-50"
                           title="Διαγραφή πακέτου"
                         >
