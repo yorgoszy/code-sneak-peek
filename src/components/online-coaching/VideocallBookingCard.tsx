@@ -81,16 +81,21 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
   const handleApprove = async () => {
     try {
+      // Generate unique meeting link
+      const meetingId = `meeting-${booking.id}-${Date.now()}`;
+      const meetingLink = `https://meet.jit.si/${meetingId}`;
+
       const { error } = await supabase
         .from('booking_sessions')
-        .update({ status: 'confirmed' })
+        .update({ 
+          status: 'confirmed',
+          meeting_link: meetingLink
+        })
         .eq('id', booking.id);
 
       if (error) throw error;
 
-      // No need to record videocall here - it was already charged when booking was created
-
-      toast.success('Η βιντεοκλήση εγκρίθηκε επιτυχώς!');
+      toast.success('Η βιντεοκλήση εγκρίθηκε και δημιουργήθηκε το meeting link!');
       onRefresh?.();
     } catch (error) {
       console.error('Error approving booking:', error);
@@ -196,9 +201,14 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
               </p>
             )}
 
-            <div className="text-xs text-gray-400">
-              Meeting Link: {booking.meeting_link || 'Generating...'}
-            </div>
+            {booking.meeting_link && (
+              <div className="text-xs text-gray-400 bg-gray-50 p-2 rounded-none border">
+                <strong>Meeting Link:</strong> <br />
+                <a href={booking.meeting_link} target="_blank" rel="noopener noreferrer" className="text-[#00ffba] hover:underline break-all">
+                  {booking.meeting_link}
+                </a>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -225,33 +235,37 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
               </div>
             )}
 
-            {canJoinMeeting && booking.meeting_link && booking.status === 'confirmed' && (
-              <Button
-                onClick={handleJoinMeeting}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                size="sm"
-              >
-                <Video className="w-4 h-4 mr-2" />
-                Συμμετοχή
-              </Button>
-            )}
-            
-            {!canJoinMeeting && !isPastMeeting && booking.status === 'confirmed' && (
-              <div className="text-xs text-gray-500 text-center">
-                Διαθέσιμη 15' πριν
+            {/* Meeting controls for confirmed bookings */}
+            {booking.status === 'confirmed' && booking.meeting_link && (
+              <div className="flex flex-col gap-2">
+                {canJoinMeeting ? (
+                  <Button
+                    onClick={handleJoinMeeting}
+                    className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                    size="sm"
+                  >
+                    <Video className="w-4 h-4 mr-2" />
+                    Συμμετοχή
+                  </Button>
+                ) : !isPastMeeting ? (
+                  <div className="text-xs text-gray-500 text-center">
+                    Διαθέσιμη 15' πριν
+                  </div>
+                ) : null}
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(booking.meeting_link!);
+                    toast.success('Meeting link αντιγράφηκε στο clipboard!');
+                  }}
+                  className="rounded-none"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Αντιγραφή Link
+                </Button>
               </div>
-            )}
-
-            {booking.meeting_link && booking.status === 'confirmed' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigator.clipboard.writeText(booking.meeting_link!)}
-                className="rounded-none"
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Αντιγραφή Link
-              </Button>
             )}
           </div>
         </div>
