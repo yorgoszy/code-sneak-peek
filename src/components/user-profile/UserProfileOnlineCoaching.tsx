@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Video, Calendar, Lock, ExternalLink, Play, Users } from "lucide-react";
+import { Video, Calendar, Lock, ExternalLink, Play, Users, Clock, MapPin, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface UserProfileOnlineCoachingProps {
   userProfile: any;
@@ -18,6 +19,17 @@ interface UserAvailability {
   single_videocall_sessions?: number;
 }
 
+interface VideocallBooking {
+  id: string;
+  booking_date: string;
+  booking_time: string;
+  status: string;
+  section?: {
+    name: string;
+    description?: string;
+  };
+}
+
 export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps> = ({ 
   userProfile 
 }) => {
@@ -26,10 +38,12 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
   const [loading, setLoading] = useState(true);
   const [meetingUrl, setMeetingUrl] = useState('');
   const [roomName, setRoomName] = useState('');
+  const [videocallBookings, setVideocallBookings] = useState<VideocallBooking[]>([]);
 
   useEffect(() => {
     if (userProfile?.id) {
       fetchAvailability();
+      fetchVideocallBookings();
     }
   }, [userProfile]);
 
@@ -47,6 +61,67 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchVideocallBookings = async () => {
+    if (!userProfile?.id) return;
+
+    try {
+      const { data } = await supabase
+        .from('booking_sessions')
+        .select(`
+          *,
+          section:booking_sections(name, description)
+        `)
+        .eq('user_id', userProfile.id)
+        .eq('booking_type', 'videocall')
+        .eq('status', 'confirmed')
+        .gte('booking_date', new Date().toISOString().split('T')[0])
+        .order('booking_date', { ascending: true });
+
+      setVideocallBookings(data || []);
+    } catch (error) {
+      console.error('Error fetching videocall bookings:', error);
+    }
+  };
+
+  const cancelBooking = async (bookingId: string) => {
+    try {
+      const { data: canCancel } = await supabase.rpc('can_cancel_booking', {
+        booking_id: bookingId
+      });
+
+      if (!canCancel) {
+        toast.error('Δεν μπορείς να ακυρώσεις το ραντεβού εντός 12 ωρών');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('booking_sessions')
+        .update({
+          status: 'cancelled',
+          cancelled_at: new Date().toISOString()
+        })
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      toast.success('Το ραντεβού ακυρώθηκε επιτυχώς');
+      fetchVideocallBookings();
+      fetchAvailability();
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      toast.error('Σφάλμα κατά την ακύρωση του ραντεβού');
+    }
+  };
+
+  const getTimeRemainingForCancellation = (bookingDate: string, bookingTime: string) => {
+    const bookingDateTime = new Date(`${bookingDate}T${bookingTime}`);
+    const now = new Date();
+    const timeDiff = bookingDateTime.getTime() - now.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+    
+    return hoursDiff > 12 ? null : `${Math.round(hoursDiff)}h`;
   };
 
   const handleJoinMeeting = () => {
@@ -208,6 +283,66 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
           </CardContent>
         </Card>
       </div>
+
+      {/* Upcoming Videocall Bookings */}
+      {videocallBookings.length > 0 && (
+        <Card className="rounded-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Επερχόμενα Videocall Ραντεβού
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {videocallBookings.map((booking) => {
+                const timeRemaining = getTimeRemainingForCancellation(booking.booking_date, booking.booking_time);
+                
+                return (
+                  <div key={booking.id} className="border border-gray-200 rounded-none p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center justify-center w-8 h-8 bg-[#00ffba] text-black rounded-none">
+                          <Video className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm">
+                            {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {booking.section?.name || 'Videocall Session'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="outline" className="text-xs rounded-none">
+                          {booking.status}
+                        </Badge>
+                        {timeRemaining === null && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => cancelBooking(booking.id)}
+                            className="rounded-none"
+                          >
+                            <X className="w-3 h-3 mr-1" />
+                            Ακύρωση
+                          </Button>
+                        )}
+                        {timeRemaining && (
+                          <span className="text-xs text-gray-500">
+                            Δεν μπορεί να ακυρωθεί
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Info Section */}
       <Card className="rounded-none">

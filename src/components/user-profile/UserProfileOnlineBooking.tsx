@@ -282,7 +282,9 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
             </div>
           ) : (
             <div className="space-y-3">
-              {bookings.map((booking) => {
+              {bookings
+                .filter(booking => booking.booking_type !== 'videocall')
+                .map((booking) => {
                 const timeRemaining = getTimeRemainingForCancellation(booking.booking_date, booking.booking_time);
                 const canCancel = timeRemaining !== null;
                 

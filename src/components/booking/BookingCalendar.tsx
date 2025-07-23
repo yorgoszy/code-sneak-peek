@@ -171,21 +171,37 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                 {bookingType === 'videocall' ? 'Χώρος Videocall' : 'Χώρος Γυμναστηρίου'}
               </label>
               <div className="space-y-2">
-                {sections.map((section) => (
-                  <Button
-                    key={section.id}
-                    variant={selectedSection === section.id ? "default" : "outline"}
-                    className="w-full justify-start rounded-none"
-                    onClick={() => setSelectedSection(section.id)}
-                  >
-                    <div className="text-left">
-                      <div className="font-medium">{section.name}</div>
-                      {section.description && (
-                        <div className="text-xs text-gray-500">{section.description}</div>
-                      )}
-                    </div>
-                  </Button>
-                ))}
+                {sections
+                  .filter(section => {
+                    // Filter sections based on booking type
+                    if (bookingType === 'videocall') {
+                      return section.name.toLowerCase().includes('videocall') || 
+                             section.name.toLowerCase().includes('online') ||
+                             section.description?.toLowerCase().includes('videocall') ||
+                             section.description?.toLowerCase().includes('online');
+                    } else {
+                      // For gym visits, exclude videocall sections
+                      return !section.name.toLowerCase().includes('videocall') && 
+                             !section.name.toLowerCase().includes('online') &&
+                             !section.description?.toLowerCase().includes('videocall') &&
+                             !section.description?.toLowerCase().includes('online');
+                    }
+                  })
+                  .map((section) => (
+                    <Button
+                      key={section.id}
+                      variant={selectedSection === section.id ? "default" : "outline"}
+                      className="w-full justify-start rounded-none"
+                      onClick={() => setSelectedSection(section.id)}
+                    >
+                      <div className="text-left">
+                        <div className="font-medium">{section.name}</div>
+                        {section.description && (
+                          <div className="text-xs text-gray-500">{section.description}</div>
+                        )}
+                      </div>
+                    </Button>
+                  ))}
               </div>
             </div>
 
