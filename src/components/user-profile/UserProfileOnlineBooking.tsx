@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Users, MapPin, Video, X } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, X } from "lucide-react";
 import { BookingCalendar } from "@/components/booking/BookingCalendar";
 import { useUserBookings } from "@/hooks/useUserBookings";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
@@ -18,77 +17,19 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedBookingType, setSelectedBookingType] = useState<string>('');
-  const [videocallData, setVideocallData] = useState<{used: number, total: number, remaining: number} | null>(null);
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
 
   useEffect(() => {
-    const fetchVideocallData = async () => {
-      if (!userProfile?.id) return;
-      
-      try {
-        // Φόρτωση ενεργών videocall packages
-        const { data: videocallPackages, error } = await supabase
-          .from('videocall_packages')
-          .select('total_videocalls, remaining_videocalls, status')
-          .eq('user_id', userProfile.id)
-          .eq('status', 'active')
-          .order('purchase_date', { ascending: false });
-
-        if (error) {
-          console.error('Error fetching videocall packages:', error);
-          setVideocallData(null);
-          return;
-        }
-
-        // Βρες το πιο πρόσφατο ενεργό πακέτο
-        const activePackage = videocallPackages?.[0];
-        
-        if (!activePackage) {
-          setVideocallData(null);
-          return;
-        }
-
-        // Υπολογισμός χρησιμοποιημένων βιντεοκλήσεων
-        const usedVideocalls = activePackage.total_videocalls - activePackage.remaining_videocalls;
-
-        setVideocallData({
-          used: usedVideocalls,
-          total: activePackage.total_videocalls,
-          remaining: activePackage.remaining_videocalls
-        });
-
-      } catch (error) {
-        console.error('Error fetching videocall data:', error);
-        setVideocallData(null);
-      }
-    };
-
-    fetchVideocallData();
-  }, [userProfile?.id]);
+    if (userProfile?.id) {
+      // Any additional setup can go here
+    }
+  }, [userProfile]);
 
   const handleBookingTypeClick = (type: string, requiresPurchase?: boolean) => {
     if (requiresPurchase) {
       // Navigate to shop
       window.location.href = `/dashboard/user-profile/${userProfile.id}/shop`;
       return;
-    }
-    
-    console.log('🔍 Debug videocall booking:', {
-      type,
-      has_videocall: availability?.has_videocall,
-      videocall_packages_available: availability?.videocall_packages_available,
-      single_videocall_sessions: availability?.single_videocall_sessions,
-      full_availability: availability
-    });
-    
-    if (type === 'videocall') {
-      const hasVideocallAccess = availability?.has_videocall;
-      const hasAvailableSessions = (availability?.videocall_packages_available || 0) > 0 || (availability?.single_videocall_sessions || 0) > 0;
-      
-      if (!hasVideocallAccess || !hasAvailableSessions) {
-        toast.error('Δεν έχεις διαθέσιμες βιντεοκλήσεις');
-        return;
-      }
     }
     
     setSelectedBookingType(type);
@@ -99,15 +40,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     try {
       await createBooking(sectionId, date, time, type);
       toast.success('Το ραντεβού δημιουργήθηκε επιτυχώς!');
-      
-      // Αν είναι videocall booking, ενημέρωσε τα local στατιστικά
-      if (type === 'videocall' && videocallData) {
-        setVideocallData({
-          ...videocallData,
-          used: videocallData.used + 1,
-          remaining: videocallData.remaining - 1
-        });
-      }
     } catch (error: any) {
       toast.error(error.message || 'Σφάλμα κατά τη δημιουργία του ραντεβού');
     }
@@ -158,7 +90,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     );
   }
 
-  // Booking options based on user's availability
+  // Booking options - only gym visits
   const bookingOptions = [
     {
       id: 'gym_visit',
@@ -175,18 +107,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       requiresPurchase: availability?.type === 'none',
       availableVisits: availability?.type === 'visit_packages' ? availability.available_visits : 0,
       totalVisits: availability?.type === 'visit_packages' ? availability.total_visits : 0
-    },
-    {
-      id: 'videocall',
-      title: 'Videocall Συνεδρίες',
-      description: (availability?.has_videocall && (availability?.videocall_packages_available > 0 || availability?.single_videocall_sessions > 0))
-        ? 'Online συνεδρίες με τον προπονητή σου'
-        : 'Χρειάζεται αγορά πακέτου βιντεοκλήσεων',
-      icon: Video,
-      color: 'bg-green-100 text-green-600',
-      available: availability?.has_videocall && (availability?.videocall_packages_available > 0 || availability?.single_videocall_sessions > 0),
-      requiresPurchase: !availability?.has_videocall || (availability?.videocall_packages_available === 0 && availability?.single_videocall_sessions === 0),
-      remainingVideocalls: (availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)
     }
   ];
 
@@ -196,12 +116,11 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Online Booking</h2>
         <p className="text-gray-600">Κλείσε online τα ραντεβού σου για προπονήσεις και συνεδρίες</p>
         
-        
         {availability && availability.type !== 'none' && (
           <div className="mt-4 flex justify-center">
             {availability.type === 'hypergym' && (
               <Badge variant="outline" className="rounded-none">
-                Hypergym: {availability.available_monthly}/{availability.total_monthly} διαθέσιμες αυτό το μήνα
+                Επισκέψεις: {availability.available_monthly}/{availability.total_monthly} διαθέσιμες αυτό το μήνα
               </Badge>
             )}
             {availability.type === 'visit_packages' && (
@@ -209,26 +128,11 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 Επισκέψεις: {availability.available_visits} διαθέσιμες
               </Badge>
             )}
-            {availability.type === 'videocall' && (
-              <Badge variant="outline" className="rounded-none">
-                Videocall Coaching ενεργή
-              </Badge>
-            )}
-            {availability.type === 'single_videocall' && (
-              <Badge variant="outline" className="rounded-none">
-                {availability.single_videocall_sessions} videocall sessions διαθέσιμες
-              </Badge>
-            )}
-            {availability?.has_videocall && availability.type !== 'videocall' && availability.type !== 'single_videocall' && (
-              <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">
-                + Videocall διαθέσιμο ({(availability.videocall_packages_available || 0) + (availability.single_videocall_sessions || 0)} sessions)
-              </Badge>
-            )}
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {bookingOptions.map((option) => (
           <Card key={option.id} className="rounded-none hover:shadow-lg transition-shadow">
             <CardHeader className="text-center">
@@ -239,7 +143,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
               <p className="text-gray-600">{option.description}</p>
               {!option.available && (
                 <Badge variant="secondary" className="rounded-none">
-                  Σύντομα Διαθέσιμο
+                  Χρειάζεται Αγορά
                 </Badge>
               )}
             </CardHeader>
@@ -253,19 +157,17 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 <Calendar className="w-4 h-4 mr-2" />
                 {option.requiresPurchase ? 'Αγόρασε Πακέτο' : 
                  option.available ? 
-                   (option.id === 'gym_visit' && option.availableVisits > 0 ? 
+                   (option.availableVisits > 0 ? 
                      `${option.availableVisits} Διαθέσιμες Επισκέψεις` : 
-                     option.id === 'videocall' && option.remainingVideocalls > 0 ?
-                     `${option.remainingVideocalls} Διαθέσιμες Κλήσεις` :
                      'Κλείσε Ραντεβού') : 
-                   'Σύντομα'}
+                   'Χρειάζεται Αγορά'}
               </Button>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Current Bookings Section */}
+      {/* Current Bookings Section - Only Gym Visits */}
       <Card className="rounded-none">
         <CardHeader>
           <CardTitle className="flex items-center">
@@ -274,11 +176,11 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {bookings.length === 0 ? (
+          {bookings.filter(booking => booking.booking_type !== 'videocall').length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Calendar className="mx-auto h-12 w-12 text-gray-300 mb-4" />
               <h3 className="text-lg font-medium mb-2">Δεν έχεις επερχόμενα ραντεβού</h3>
-              <p>Κλείσε ένα ραντεβού από τις παραπάνω επιλογές</p>
+              <p>Κλείσε ένα ραντεβού από την παραπάνω επιλογή</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -339,7 +241,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         <CardContent>
           <div className="space-y-2 text-gray-600">
             <p>• Δευτέρα - Παρασκευή: 08:00 - 20:00</p>
-            <p>• <del>Σαββατοκύριακα: κλειστά</del></p>
+            <p>• Σαββατοκύριακα: κλειστά</p>
             <p>• Μπορείς να ακυρώσεις ή να αναβάλεις το ραντεβού σου έως 12 ώρες πριν</p>
             <p>• Για επείγουσες αλλαγές επικοινώνησε τηλεφωνικά</p>
           </div>
