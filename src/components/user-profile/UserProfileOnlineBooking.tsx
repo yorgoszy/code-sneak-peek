@@ -73,9 +73,22 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       return;
     }
     
-    if (type === 'videocall' && (!availability?.has_videocall || (availability?.videocall_packages_available === 0 && availability?.single_videocall_sessions === 0))) {
-      toast.error('Δεν έχεις διαθέσιμες επισκέψεις');
-      return;
+    console.log('🔍 Debug videocall booking:', {
+      type,
+      has_videocall: availability?.has_videocall,
+      videocall_packages_available: availability?.videocall_packages_available,
+      single_videocall_sessions: availability?.single_videocall_sessions,
+      full_availability: availability
+    });
+    
+    if (type === 'videocall') {
+      const hasVideocallAccess = availability?.has_videocall;
+      const hasAvailableSessions = (availability?.videocall_packages_available || 0) > 0 || (availability?.single_videocall_sessions || 0) > 0;
+      
+      if (!hasVideocallAccess || !hasAvailableSessions) {
+        toast.error('Δεν έχεις διαθέσιμες βιντεοκλήσεις');
+        return;
+      }
     }
     
     setSelectedBookingType(type);
