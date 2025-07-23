@@ -72,7 +72,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     if (!availability) return false;
 
     if (bookingType === 'videocall') {
-      return availability.has_videocall && availability.single_videocall_sessions > 0;
+      return availability.has_videocall && 
+        ((availability.single_videocall_sessions || 0) > 0 || (availability.videocall_packages_available || 0) > 0);
     }
 
     if (availability.type === 'hypergym') {
@@ -120,7 +121,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
             <div className="mt-2">
               {bookingType === 'videocall' && availability?.has_videocall && (
                 <Badge variant="outline" className="rounded-none">
-                  Videocalls: {availability.single_videocall_sessions} διαθέσιμες
+                  Videocalls: {(availability.videocall_packages_available || 0) + (availability.single_videocall_sessions || 0)} διαθέσιμες
                 </Badge>
               )}
               {bookingType !== 'videocall' && availability?.type === 'hypergym' && (
