@@ -382,14 +382,14 @@ export const VideocallManagement: React.FC = () => {
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
+                <PopoverContent className="w-full p-0 max-h-60">
                   <Command>
                     <CommandInput 
                       placeholder="Αναζήτηση χρήστη..." 
                       value={userSearchTerm}
                       onValueChange={setUserSearchTerm}
                     />
-                    <CommandList className="max-h-60 overflow-y-auto">
+                    <CommandList className="max-h-48 overflow-y-auto">
                       <CommandEmpty>Δεν βρέθηκε χρήστης.</CommandEmpty>
                       <CommandGroup>
                         {filteredUsers.map((user) => (
