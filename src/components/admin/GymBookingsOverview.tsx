@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Calendar, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MapPin, Calendar, Users, CalendarIcon, Filter } from "lucide-react";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { el } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { GymBookingCard } from "./GymBookingCard";
 
@@ -26,6 +32,9 @@ interface GymBooking {
 export const GymBookingsOverview = () => {
   const [bookings, setBookings] = useState<GymBooking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dateFrom, setDateFrom] = useState<Date>();
+  const [dateTo, setDateTo] = useState<Date>();
+  const [filterType, setFilterType] = useState<'day' | 'week' | 'month' | 'all'>('all');
 
   useEffect(() => {
     fetchBookings();
@@ -53,17 +62,67 @@ export const GymBookingsOverview = () => {
     }
   };
 
-  // Filter bookings by status
-  const upcomingBookings = bookings.filter(booking => 
+  // Apply date filter
+  const applyDateFilter = (bookingsList: GymBooking[]) => {
+    if (filterType === 'all') return bookingsList;
+    
+    const now = new Date();
+    let start: Date, end: Date;
+    
+    switch (filterType) {
+      case 'day':
+        if (dateFrom) {
+          start = new Date(dateFrom);
+          end = new Date(dateFrom);
+          end.setHours(23, 59, 59, 999);
+        } else {
+          start = new Date(now);
+          end = new Date(now);
+          end.setHours(23, 59, 59, 999);
+        }
+        break;
+      case 'week':
+        start = dateFrom ? startOfWeek(dateFrom, { locale: el }) : startOfWeek(now, { locale: el });
+        end = dateFrom ? endOfWeek(dateFrom, { locale: el }) : endOfWeek(now, { locale: el });
+        break;
+      case 'month':
+        start = dateFrom ? startOfMonth(dateFrom) : startOfMonth(now);
+        end = dateFrom ? endOfMonth(dateFrom) : endOfMonth(now);
+        break;
+      default:
+        return bookingsList;
+    }
+    
+    if (dateTo) {
+      end = new Date(dateTo);
+      end.setHours(23, 59, 59, 999);
+    }
+    
+    return bookingsList.filter(booking => {
+      const bookingDate = new Date(booking.booking_date);
+      return isWithinInterval(bookingDate, { start, end });
+    });
+  };
+
+  // Filter bookings by status and date
+  const filteredBookings = applyDateFilter(bookings);
+  
+  const upcomingBookings = filteredBookings.filter(booking => 
     booking.status === 'confirmed' && new Date(`${booking.booking_date} ${booking.booking_time}`) > new Date()
   );
   
-  const pendingBookings = bookings.filter(booking => booking.status === 'pending');
+  const pendingBookings = filteredBookings.filter(booking => booking.status === 'pending');
   
-  const pastBookings = bookings.filter(booking => 
+  const pastBookings = filteredBookings.filter(booking => 
     (booking.status === 'confirmed' && new Date(`${booking.booking_date} ${booking.booking_time}`) <= new Date()) ||
     booking.status === 'cancelled'
   );
+
+  const resetFilters = () => {
+    setDateFrom(undefined);
+    setDateTo(undefined);
+    setFilterType('all');
+  };
 
   if (loading) {
     return <div className="text-center py-8">Φόρτωση...</div>;
@@ -75,6 +134,123 @@ export const GymBookingsOverview = () => {
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Κρατήσεις Γυμναστηρίου</h2>
         <p className="text-gray-600">Διαχείριση όλων των κρατήσεων για το γυμναστήριο</p>
       </div>
+
+      {/* Date Filters */}
+      <Card className="rounded-none">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-medium flex items-center gap-2">
+            <Filter className="w-5 h-5" />
+            Φίλτρα Ημερομηνιών
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Filter Type Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={filterType === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterType('all')}
+              className="rounded-none"
+            >
+              Όλες
+            </Button>
+            <Button
+              variant={filterType === 'day' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterType('day')}
+              className="rounded-none"
+            >
+              Ημέρα
+            </Button>
+            <Button
+              variant={filterType === 'week' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterType('week')}
+              className="rounded-none"
+            >
+              Εβδομάδα
+            </Button>
+            <Button
+              variant={filterType === 'month' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterType('month')}
+              className="rounded-none"
+            >
+              Μήνας
+            </Button>
+          </div>
+
+          {/* Date Pickers */}
+          {filterType !== 'all' && (
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Από:</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[200px] justify-start text-left font-normal rounded-none",
+                        !dateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateFrom ? format(dateFrom, "dd/MM/yyyy", { locale: el }) : "Επιλέξτε ημερομηνία"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={setDateFrom}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {filterType === 'day' && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Έως:</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-[200px] justify-start text-left font-normal rounded-none",
+                          !dateTo && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateTo ? format(dateTo, "dd/MM/yyyy", { locale: el }) : "Επιλέξτε ημερομηνία"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={dateTo}
+                        onSelect={setDateTo}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+                className="rounded-none"
+              >
+                Καθαρισμός
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Summary Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -112,8 +288,8 @@ export const GymBookingsOverview = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{bookings.length}</div>
-            <p className="text-xs text-gray-500">Όλες οι κρατήσεις</p>
+            <div className="text-2xl font-bold">{filteredBookings.length}</div>
+            <p className="text-xs text-gray-500">Φιλτραρισμένες κρατήσεις</p>
           </CardContent>
         </Card>
       </div>
