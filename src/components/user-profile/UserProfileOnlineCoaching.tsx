@@ -199,7 +199,13 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
     return <div className="text-center py-8">Φόρτωση...</div>;
   }
 
-  if (!availability?.has_videocall) {
+  const hasVideocallAccess = availability?.has_videocall && (
+    (availability?.videocall_packages_available || 0) > 0 || 
+    (availability?.single_videocall_sessions || 0) > 0 ||
+    availability?.videocall_subscription
+  );
+
+  if (!hasVideocallAccess) {
     return (
       <div className="space-y-6">
         <div className="text-center">
