@@ -246,12 +246,6 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
                 Συμμετοχή
               </Button>
             )}
-            
-            {!canJoinMeeting && !isPastMeeting && booking.status === 'confirmed' && (
-              <div className="text-xs text-gray-500 text-center">
-                Διαθέσιμη 15' πριν
-              </div>
-            )}
           </div>
         </div>
       </CardContent>
