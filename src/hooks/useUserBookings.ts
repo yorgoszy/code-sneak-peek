@@ -14,6 +14,7 @@ interface BookingAvailability {
   has_videocall?: boolean;
   videocall_subscription?: string;
   single_videocall_sessions?: number;
+  videocall_packages_available?: number;
   has_gym_access?: boolean;
 }
 

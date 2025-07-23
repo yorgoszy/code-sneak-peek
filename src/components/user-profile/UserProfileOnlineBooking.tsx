@@ -73,8 +73,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       return;
     }
     
-    if (type === 'videocall' && (!videocallData || videocallData.remaining === 0)) {
-      toast.info('Χρειάζεσαι αγορά πακέτου βιντεοκλήσεων για online συνεδρίες');
+    if (type === 'videocall' && (!availability?.has_videocall || (availability?.videocall_packages_available === 0 && availability?.single_videocall_sessions === 0))) {
+      toast.error('Δεν έχεις διαθέσιμες επισκέψεις');
       return;
     }
     
@@ -166,14 +166,14 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     {
       id: 'videocall',
       title: 'Videocall Συνεδρίες',
-      description: videocallData && videocallData.remaining > 0
+      description: (availability?.has_videocall && (availability?.videocall_packages_available > 0 || availability?.single_videocall_sessions > 0))
         ? 'Online συνεδρίες με τον προπονητή σου'
         : 'Χρειάζεται αγορά πακέτου βιντεοκλήσεων',
       icon: Video,
       color: 'bg-green-100 text-green-600',
-      available: videocallData && videocallData.remaining > 0,
-      requiresPurchase: !videocallData || videocallData.remaining === 0,
-      remainingVideocalls: videocallData?.remaining || 0
+      available: availability?.has_videocall && (availability?.videocall_packages_available > 0 || availability?.single_videocall_sessions > 0),
+      requiresPurchase: !availability?.has_videocall || (availability?.videocall_packages_available === 0 && availability?.single_videocall_sessions === 0),
+      remainingVideocalls: (availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)
     }
   ];
 
@@ -208,7 +208,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
             )}
             {availability?.has_videocall && availability.type !== 'videocall' && availability.type !== 'single_videocall' && (
               <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">
-                + Videocall διαθέσιμο ({availability.single_videocall_sessions || 0} sessions)
+                + Videocall διαθέσιμο ({(availability.videocall_packages_available || 0) + (availability.single_videocall_sessions || 0)} sessions)
               </Badge>
             )}
           </div>
