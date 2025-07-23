@@ -2,9 +2,11 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Video, User, ExternalLink } from "lucide-react";
+import { Calendar, Clock, Video, User, ExternalLink, Check, X } from "lucide-react";
 import { format, isToday, isTomorrow, isPast, isWithinInterval, addMinutes } from "date-fns";
 import { el } from 'date-fns/locale';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface VideocallBooking {
   id: string;
@@ -29,11 +31,13 @@ interface VideocallBooking {
 interface VideocallBookingCardProps {
   booking: VideocallBooking;
   isAdmin?: boolean;
+  onStatusChange?: () => void;
 }
 
 export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({ 
   booking, 
-  isAdmin = false 
+  isAdmin = false,
+  onStatusChange
 }) => {
   const bookingDateTime = new Date(`${booking.booking_date} ${booking.booking_time}`);
   const now = new Date();
@@ -52,11 +56,20 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
   };
 
   const getStatusBadge = () => {
+    if (booking.status === 'pending') {
+      return <Badge variant="outline" className="rounded-none bg-yellow-50 text-yellow-700 border-yellow-200">Εκκρεμεί Έγκριση</Badge>;
+    }
+    if (booking.status === 'rejected') {
+      return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Απορρίφθηκε</Badge>;
+    }
     if (isPastMeeting) {
       return <Badge variant="secondary" className="rounded-none">Ολοκληρωμένη</Badge>;
     }
-    if (canJoinMeeting) {
+    if (canJoinMeeting && booking.status === 'confirmed') {
       return <Badge className="rounded-none bg-green-500 hover:bg-green-600">Ενεργή</Badge>;
+    }
+    if (booking.status === 'confirmed') {
+      return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">Εγκρίθηκε</Badge>;
     }
     return <Badge variant="outline" className="rounded-none">Προγραμματισμένη</Badge>;
   };
@@ -64,6 +77,105 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
   const handleJoinMeeting = () => {
     if (booking.meeting_link) {
       window.open(booking.meeting_link, '_blank');
+    }
+  };
+
+  const handleApprove = async () => {
+    try {
+      const { error } = await supabase
+        .from('booking_sessions')
+        .update({ 
+          status: 'confirmed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', booking.id);
+
+      if (error) throw error;
+
+      toast.success('Η βιντεοκλήση εγκρίθηκε επιτυχώς!');
+      if (onStatusChange) onStatusChange();
+    } catch (error) {
+      console.error('Error approving booking:', error);
+      toast.error('Σφάλμα κατά την έγκριση της βιντεοκλήσης');
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      const { error } = await supabase
+        .from('booking_sessions')
+        .update({ 
+          status: 'rejected',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', booking.id);
+
+      if (error) throw error;
+
+      // Επιστροφή της βιντεοκλήσης στα διαθέσιμα packages
+      try {
+        const { data: activePackage } = await supabase
+          .from('videocall_packages')
+          .select('*')
+          .eq('user_id', booking.user_id)
+          .eq('status', 'active')
+          .order('purchase_date', { ascending: false })
+          .limit(1);
+
+        if (activePackage && activePackage.length > 0) {
+          await supabase
+            .from('videocall_packages')
+            .update({
+              remaining_videocalls: activePackage[0].remaining_videocalls + 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', activePackage[0].id);
+        } else {
+          const { data: usedPackage } = await supabase
+            .from('videocall_packages')
+            .select('*')
+            .eq('user_id', booking.user_id)
+            .eq('status', 'used')
+            .eq('remaining_videocalls', 0)
+            .order('purchase_date', { ascending: false })
+            .limit(1);
+
+          if (usedPackage && usedPackage.length > 0) {
+            await supabase
+              .from('videocall_packages')
+              .update({
+                remaining_videocalls: 1,
+                status: 'active',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', usedPackage[0].id);
+          }
+        }
+      } catch (packageError) {
+        console.error('Error returning videocall to package:', packageError);
+      }
+
+      toast.success('Η βιντεοκλήση απορρίφθηκε');
+      if (onStatusChange) onStatusChange();
+    } catch (error) {
+      console.error('Error rejecting booking:', error);
+      toast.error('Σφάλμα κατά την απόρριψη της βιντεοκλήσης');
+    }
+  };
+
+  const getTimeRemaining = () => {
+    const now = new Date();
+    const timeDiff = bookingDateTime.getTime() - now.getTime();
+    
+    if (timeDiff <= 0) return 'Έληξε';
+    
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) {
+      return `${days} μέρα${days > 1 ? 'ες' : ''} ${hours} ώρα${hours !== 1 ? 'ες' : ''}`;
+    } else {
+      return `${hours} ώρα${hours !== 1 ? 'ες' : ''}`;
     }
   };
 
@@ -105,13 +217,43 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
               </p>
             )}
 
-            <div className="text-xs text-gray-400">
-              Meeting Link: {booking.meeting_link || 'Generating...'}
-            </div>
+            {booking.status === 'pending' && (
+              <div className="text-sm text-orange-600 mb-2">
+                Απομένουν: {getTimeRemaining()}
+              </div>
+            )}
+
+            {booking.status === 'confirmed' && (
+              <div className="text-xs text-gray-400">
+                Meeting Link: {booking.meeting_link || 'Generating...'}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
-            {canJoinMeeting && booking.meeting_link && (
+            {isAdmin && booking.status === 'pending' && (
+              <>
+                <Button
+                  onClick={handleApprove}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  size="sm"
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Έγκριση
+                </Button>
+                <Button
+                  onClick={handleReject}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-none border-red-200 text-red-600 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Απόρριψη
+                </Button>
+              </>
+            )}
+
+            {canJoinMeeting && booking.meeting_link && booking.status === 'confirmed' && (
               <Button
                 onClick={handleJoinMeeting}
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
@@ -122,13 +264,13 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
               </Button>
             )}
             
-            {!canJoinMeeting && !isPastMeeting && (
+            {!canJoinMeeting && !isPastMeeting && booking.status === 'confirmed' && (
               <div className="text-xs text-gray-500 text-center">
                 Διαθέσιμη 15' πριν
               </div>
             )}
 
-            {booking.meeting_link && (
+            {booking.meeting_link && booking.status === 'confirmed' && (
               <Button
                 variant="outline"
                 size="sm"

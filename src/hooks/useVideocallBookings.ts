@@ -81,7 +81,7 @@ export const useVideocallBookings = (isAdmin = false) => {
           user:app_users!user_id(first_name, last_name, email)
         `)
         .eq('booking_type', 'videocall')
-        .eq('status', 'confirmed')
+        .in('status', isAdmin ? ['pending', 'confirmed', 'rejected'] : ['confirmed'])
         .order('booking_date', { ascending: true })
         .order('booking_time', { ascending: true });
 
