@@ -2926,6 +2926,42 @@ export type Database = {
           },
         ]
       }
+      user_videocalls: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+          videocall_date: string
+          videocall_time: string
+          videocall_type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+          videocall_date?: string
+          videocall_time?: string
+          videocall_type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          videocall_date?: string
+          videocall_time?: string
+          videocall_type?: string
+        }
+        Relationships: []
+      }
       user_visits: {
         Row: {
           created_at: string
@@ -2976,6 +3012,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      videocall_packages: {
+        Row: {
+          created_at: string
+          expiry_date: string | null
+          id: string
+          payment_id: string | null
+          price: number | null
+          purchase_date: string
+          remaining_videocalls: number
+          status: string
+          total_videocalls: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          payment_id?: string | null
+          price?: number | null
+          purchase_date?: string
+          remaining_videocalls: number
+          status?: string
+          total_videocalls: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          payment_id?: string | null
+          price?: number | null
+          purchase_date?: string
+          remaining_videocalls?: number
+          status?: string
+          total_videocalls?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       visit_packages: {
         Row: {
@@ -3184,6 +3262,15 @@ export type Database = {
       pause_subscription: {
         Args: { subscription_id: string }
         Returns: undefined
+      }
+      record_videocall: {
+        Args: {
+          p_user_id: string
+          p_created_by?: string
+          p_videocall_type?: string
+          p_notes?: string
+        }
+        Returns: string
       }
       record_visit: {
         Args: {
