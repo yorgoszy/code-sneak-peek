@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Calendar, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GymBookingCard } from "./GymBookingCard";
+import { GymBookingsCalendarView } from "./GymBookingsCalendarView";
 
 interface GymBooking {
   id: string;
@@ -119,8 +120,11 @@ export const GymBookingsOverview = () => {
       </div>
 
       {/* Bookings by status */}
-      <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 rounded-none">
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4 rounded-none">
+          <TabsTrigger value="overview" className="rounded-none">
+            Επισκόπηση
+          </TabsTrigger>
           <TabsTrigger value="pending" className="rounded-none">
             Εκκρεμείς ({pendingBookings.length})
           </TabsTrigger>
@@ -131,6 +135,10 @@ export const GymBookingsOverview = () => {
             Ιστορικό ({pastBookings.length})
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <GymBookingsCalendarView />
+        </TabsContent>
 
         <TabsContent value="pending" className="space-y-4">
           {pendingBookings.length === 0 ? (
