@@ -584,22 +584,22 @@ export const VideocallManagement: React.FC = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => addVideocallToPackage(pkg.id, pkg.user_id)}
-                          disabled={pkg.remaining_videocalls === 0}
-                          className="rounded-none"
-                          title="Προσθήκη χρησιμοποιημένης βιντεοκλήσης"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
                           onClick={() => removeVideocallFromPackage(pkg.user_id)}
                           disabled={pkg.total_videocalls - pkg.remaining_videocalls === 0}
                           className="rounded-none"
                           title="Αφαίρεση χρησιμοποιημένης βιντεοκλήσης"
                         >
                           <Minus className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => addVideocallToPackage(pkg.id, pkg.user_id)}
+                          disabled={pkg.remaining_videocalls === 0}
+                          className="rounded-none"
+                          title="Προσθήκη χρησιμοποιημένης βιντεοκλήσης"
+                        >
+                          <Plus className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
