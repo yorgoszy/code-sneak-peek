@@ -257,14 +257,21 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Online Coaching</h2>
         <p className="text-gray-600">Συνδέσου με τον προπονητή σου μέσω βιντεοκλήσης</p>
-        <Badge variant="outline" className="mt-2 rounded-none bg-green-50 text-green-700 border-green-200">
-          {availability.videocall_subscription 
-            ? `${availability.videocall_subscription} - Απεριόριστες συνεδρίες`
-            : availability.single_videocall_sessions && availability.single_videocall_sessions > 0
-              ? `${availability.single_videocall_sessions} συνεδρία${availability.single_videocall_sessions > 1 ? 'ες' : ''} διαθέσιμη${availability.single_videocall_sessions > 1 ? 'ες' : ''}`
-              : 'Videocall διαθέσιμο'
-          }
-        </Badge>
+        <div className="mt-4 flex justify-center gap-4">
+          <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">
+            {availability.videocall_subscription 
+              ? `${availability.videocall_subscription} - Απεριόριστες συνεδρίες`
+              : availability.single_videocall_sessions && availability.single_videocall_sessions > 0
+                ? `${availability.single_videocall_sessions} συνεδρία${availability.single_videocall_sessions > 1 ? 'ες' : ''} διαθέσιμη${availability.single_videocall_sessions > 1 ? 'ες' : ''}`
+                : 'Videocall διαθέσιμο'
+            }
+          </Badge>
+          {(availability.videocall_packages_available > 0 || availability.single_videocall_sessions > 0) && (
+            <Badge variant="outline" className="rounded-none bg-blue-50 text-blue-700 border-blue-200">
+              + Videocall διαθέσιμο ({(availability.videocall_packages_available || 0) + (availability.single_videocall_sessions || 0)} sessions)
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Booking Calendar for Videocall */}
