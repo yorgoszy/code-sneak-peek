@@ -130,7 +130,16 @@ export const VideocallManagement: React.FC = () => {
 
     setSaving(true);
     try {
-      // Προσθήκη δεδομένων στον πίνακα booking_sessions με τη σωστή δομή
+      // Πρώτα παίρνουμε το section_id για τις βιντεοκλήσεις
+      const { data: sectionData, error: sectionError } = await supabase
+        .from('booking_sections')
+        .select('id')
+        .eq('name', 'Βιντεοκλήσεις')
+        .single();
+
+      if (sectionError) throw sectionError;
+
+      // Προσθήκη δεδομένων στον πίνακα booking_sessions
       const { error } = await supabase
         .from('booking_sessions')
         .insert({
@@ -140,7 +149,7 @@ export const VideocallManagement: React.FC = () => {
           booking_type: 'videocall',
           status: 'completed', // Mark as completed since we're manually adding it
           notes: notes.trim() || null,
-          section_id: 'videocall-session' // Χρησιμοποιούμε ένα default section_id για videocalls
+          section_id: sectionData.id
         });
 
       if (error) throw error;
