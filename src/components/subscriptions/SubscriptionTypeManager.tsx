@@ -200,14 +200,14 @@ export const SubscriptionTypeManager: React.FC = () => {
     }
 
     // Validation για visit_based subscriptions
-    if (subscriptionMode === 'visit_based' && (!visitCount || !visitExpiryMonths)) {
-      toast.error('Ο αριθμός επισκέψεων και η διάρκεια λήξης είναι απαραίτητα για συνδρομές επισκέψεων');
+    if (subscriptionMode === 'visit_based' && !visitCount) {
+      toast.error('Ο αριθμός επισκέψεων είναι απαραίτητος για συνδρομές επισκέψεων');
       return;
     }
 
     // Validation για videocall subscriptions
-    if (subscriptionMode === 'videocall' && (!visitCount || !visitExpiryMonths)) {
-      toast.error('Ο αριθμός κλήσεων και η διάρκεια λήξης είναι απαραίτητα για videocall συνδρομές');
+    if (subscriptionMode === 'videocall' && !visitCount) {
+      toast.error('Ο αριθμός κλήσεων είναι απαραίτητος για videocall συνδρομές');
       return;
     }
 
@@ -231,7 +231,7 @@ export const SubscriptionTypeManager: React.FC = () => {
         toast.error('Ο αριθμός επισκέψεων πρέπει να είναι θετικός αριθμός');
         return;
       }
-      if (!numericVisitExpiryMonths || numericVisitExpiryMonths <= 0) {
+      if (numericVisitExpiryMonths && numericVisitExpiryMonths <= 0) {
         toast.error('Η διάρκεια λήξης πρέπει να είναι θετικός αριθμός');
         return;
       }
@@ -242,7 +242,7 @@ export const SubscriptionTypeManager: React.FC = () => {
         toast.error('Ο αριθμός κλήσεων πρέπει να είναι θετικός αριθμός');
         return;
       }
-      if (!numericVisitExpiryMonths || numericVisitExpiryMonths <= 0) {
+      if (numericVisitExpiryMonths && numericVisitExpiryMonths <= 0) {
         toast.error('Η διάρκεια λήξης πρέπει να είναι θετικός αριθμός');
         return;
       }
@@ -707,7 +707,7 @@ export const SubscriptionTypeManager: React.FC = () => {
 
             {(subscriptionMode === 'visit_based' || subscriptionMode === 'videocall') && (
               <div>
-                <Label htmlFor="visitExpiryMonths">Διάρκεια Λήξης (μήνες)*</Label>
+                <Label htmlFor="visitExpiryMonths">Διάρκεια Λήξης (μήνες)</Label>
                 <Input
                   id="visitExpiryMonths"
                   type="number"
@@ -715,7 +715,7 @@ export const SubscriptionTypeManager: React.FC = () => {
                   value={visitExpiryMonths}
                   onChange={(e) => setVisitExpiryMonths(e.target.value)}
                   className="rounded-none"
-                  placeholder={subscriptionMode === 'videocall' ? "Σε πόσους μήνες λήγουν οι κλήσεις" : "Σε πόσους μήνες λήγουν οι επισκέψεις"}
+                  placeholder={subscriptionMode === 'videocall' ? "Προαιρετικό - Αφήστε κενό για αόριστη διάρκεια" : "Προαιρετικό - Αφήστε κενό για αόριστη διάρκεια"}
                   disabled={saving}
                 />
               </div>
