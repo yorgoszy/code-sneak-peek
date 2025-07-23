@@ -41,9 +41,10 @@ export const VideocallManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [notes, setNotes] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [videocallCount, setVideocallCount] = useState<number>(1);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -123,8 +124,8 @@ export const VideocallManagement: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!selectedUserId || !selectedDate) {
-      toast.error('Παρακαλώ επιλέξτε χρήστη και ημερομηνία');
+    if (!selectedUserId) {
+      toast.error('Παρακαλώ επιλέξτε χρήστη');
       return;
     }
 
@@ -139,22 +140,24 @@ export const VideocallManagement: React.FC = () => {
 
       if (sectionError) throw sectionError;
 
-      // Προσθήκη δεδομένων στον πίνακα booking_sessions
+      // Προσθήκη πολλαπλών βιντεοκλήσεων
+      const videocallsToInsert = Array.from({ length: videocallCount }, () => ({
+        user_id: selectedUserId,
+        booking_date: format(new Date(), 'yyyy-MM-dd'), // Χρήση σημερινής ημερομηνίας
+        booking_time: '00:00', // Default time for videocall sessions
+        booking_type: 'videocall',
+        status: 'completed', // Mark as completed since we're manually adding it
+        notes: notes.trim() || null,
+        section_id: sectionData.id
+      }));
+
       const { error } = await supabase
         .from('booking_sessions')
-        .insert({
-          user_id: selectedUserId,
-          booking_date: format(selectedDate, 'yyyy-MM-dd'),
-          booking_time: '00:00', // Default time for videocall sessions
-          booking_type: 'videocall',
-          status: 'completed', // Mark as completed since we're manually adding it
-          notes: notes.trim() || null,
-          section_id: sectionData.id
-        });
+        .insert(videocallsToInsert);
 
       if (error) throw error;
 
-      toast.success('Η βιντεοκλήση προστέθηκε επιτυχώς!');
+      toast.success(`${videocallCount === 1 ? 'Η βιντεοκλήση προστέθηκε' : `${videocallCount} βιντεοκλήσεις προστέθηκαν`} επιτυχώς!`);
       setIsDialogOpen(false);
       resetForm();
       await loadVideocalls();
@@ -185,8 +188,9 @@ export const VideocallManagement: React.FC = () => {
 
   const resetForm = () => {
     setSelectedUserId('');
-    setSelectedDate(undefined);
     setNotes('');
+    setUserSearchTerm('');
+    setVideocallCount(1);
   };
 
   const filteredVideocalls = videocalls.filter(videocall => {
@@ -350,7 +354,22 @@ export const VideocallManagement: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Προσθήκη Βιντεοκλήσης</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+           <div className="space-y-4">
+            <div>
+              <Label htmlFor="user-search">Αναζήτηση Χρήστη*</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  id="user-search"
+                  placeholder="Αναζήτηση χρήστη..."
+                  value={userSearchTerm}
+                  onChange={(e) => setUserSearchTerm(e.target.value)}
+                  className="pl-10 rounded-none"
+                  disabled={saving}
+                />
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="user">Χρήστης*</Label>
               <Select value={selectedUserId} onValueChange={setSelectedUserId} disabled={saving}>
@@ -358,41 +377,32 @@ export const VideocallManagement: React.FC = () => {
                   <SelectValue placeholder="Επιλέξτε χρήστη" />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </SelectItem>
-                  ))}
+                  {users
+                    .filter(user => 
+                      user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                      user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
+                    )
+                    .map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label>Ημερομηνία Βιντεοκλήσης*</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal rounded-none",
-                      !selectedDate && "text-muted-foreground"
-                    )}
-                    disabled={saving}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, "dd/MM/yyyy", { locale: el }) : "Επιλέξτε ημερομηνία"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <DatePicker
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
+              <Label htmlFor="videocall-count">Αριθμός Βιντεοκλήσεων*</Label>
+              <Input
+                id="videocall-count"
+                type="number"
+                min="1"
+                max="100"
+                value={videocallCount}
+                onChange={(e) => setVideocallCount(Math.max(1, parseInt(e.target.value) || 1))}
+                className="rounded-none"
+                disabled={saving}
+              />
             </div>
 
             <div>
