@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { BookingCalendar } from "@/components/booking/BookingCalendar";
 
 interface UserProfileOnlineCoachingProps {
   userProfile: any;
@@ -17,6 +18,7 @@ interface UserAvailability {
   has_videocall?: boolean;
   videocall_subscription?: string;
   single_videocall_sessions?: number;
+  videocall_packages_available?: number;
 }
 
 interface VideocallBooking {
@@ -39,6 +41,45 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
   const [meetingUrl, setMeetingUrl] = useState('');
   const [roomName, setRoomName] = useState('');
   const [videocallBookings, setVideocallBookings] = useState<VideocallBooking[]>([]);
+  const [bookingCalendarOpen, setBookingCalendarOpen] = useState(false);
+
+  const handleBookingCreate = async (sectionId: string, date: string, time: string, type: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('booking_sessions')
+        .insert({
+          user_id: userProfile.id,
+          section_id: sectionId,
+          booking_date: date,
+          booking_time: time,
+          booking_type: type,
+          status: 'confirmed'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Record the videocall usage
+      await supabase.rpc('record_videocall', {
+        p_user_id: userProfile.id,
+        p_created_by: null,
+        p_videocall_type: 'booked',
+        p_notes: `Videocall booking for ${date} at ${time}`
+      });
+
+      toast.success('Το ραντεβού δημιουργήθηκε επιτυχώς!');
+      fetchVideocallBookings();
+      fetchAvailability();
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      toast.error('Σφάλμα κατά τη δημιουργία του ραντεβού');
+    }
+  };
+
+  const handleBookingClose = () => {
+    setBookingCalendarOpen(false);
+  };
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -119,9 +160,26 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
     const bookingDateTime = new Date(`${bookingDate}T${bookingTime}`);
     const now = new Date();
     const timeDiff = bookingDateTime.getTime() - now.getTime();
+    
+    if (timeDiff <= 0) return 'Έληξε';
+    
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) {
+      return `${days} μέρα${days > 1 ? 'ες' : ''} ${hours} ώρα${hours !== 1 ? 'ες' : ''}`;
+    } else {
+      return `${hours} ώρα${hours !== 1 ? 'ες' : ''}`;
+    }
+  };
+
+  const canCancelBooking = (bookingDate: string, bookingTime: string) => {
+    const bookingDateTime = new Date(`${bookingDate}T${bookingTime}`);
+    const now = new Date();
+    const timeDiff = bookingDateTime.getTime() - now.getTime();
     const hoursDiff = timeDiff / (1000 * 60 * 60);
     
-    return hoursDiff > 12 ? null : `${Math.round(hoursDiff)}h`;
+    return hoursDiff > 12;
   };
 
   const handleJoinMeeting = () => {
@@ -209,80 +267,13 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Instant Meeting */}
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Play className="w-5 h-5 text-[#00ffba]" />
-              <span>Άμεση Συνεδρία</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-600">
-              Ξεκίνησε μια άμεση συνεδρία online coaching
-            </p>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Όνομα Αίθουσας (προαιρετικό)
-              </label>
-              <input
-                type="text"
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                placeholder="π.χ. coaching-session"
-                className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#00ffba]"
-              />
-            </div>
-
-            <Button 
-              onClick={handleStartInstantMeeting}
-              className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              <Video className="w-4 h-4 mr-2" />
-              Ξεκίνα Άμεσα
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Join Meeting */}
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <ExternalLink className="w-5 h-5 text-blue-600" />
-              <span>Συμμετοχή σε Meeting</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-600">
-              Εισήγαγε το link του meeting για συμμετοχή
-            </p>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Meeting URL
-              </label>
-              <input
-                type="url"
-                value={meetingUrl}
-                onChange={(e) => setMeetingUrl(e.target.value)}
-                placeholder="https://meet.jit.si/room-name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#00ffba]"
-              />
-            </div>
-
-            <Button 
-              onClick={handleJoinMeeting}
-              disabled={!meetingUrl}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-none disabled:bg-gray-300"
-            >
-              <Video className="w-4 h-4 mr-2" />
-              Συμμετοχή στο Meeting
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Booking Calendar for Videocall */}
+      <BookingCalendar
+        onBookingCreate={handleBookingCreate}
+        onClose={handleBookingClose}
+        bookingType="videocall"
+        availability={availability}
+      />
 
       {/* Upcoming Videocall Bookings */}
       {videocallBookings.length > 0 && (
@@ -314,27 +305,25 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="text-xs rounded-none">
-                          {booking.status}
-                        </Badge>
-                        {timeRemaining === null && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => cancelBooking(booking.id)}
-                            className="rounded-none"
-                          >
-                            <X className="w-3 h-3 mr-1" />
-                            Ακύρωση
-                          </Button>
-                        )}
-                        {timeRemaining && (
-                          <span className="text-xs text-gray-500">
-                            Δεν μπορεί να ακυρωθεί
-                          </span>
-                        )}
-                      </div>
+                       <div className="flex items-center space-x-2">
+                         <Badge variant="outline" className="text-xs rounded-none">
+                           {booking.status}
+                         </Badge>
+                         <span className="text-xs text-gray-500">
+                           Απομένουν: {timeRemaining}
+                         </span>
+                         {canCancelBooking(booking.booking_date, booking.booking_time) && (
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => cancelBooking(booking.id)}
+                             className="rounded-none"
+                           >
+                             <X className="w-3 h-3 mr-1" />
+                             Ακύρωση
+                           </Button>
+                         )}
+                       </div>
                     </div>
                   </div>
                 );
