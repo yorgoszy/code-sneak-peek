@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingSectionsManagement } from "@/components/admin/BookingSectionsManagement";
 import { BookingSessionsOverview } from "@/components/admin/BookingSessionsOverview";
+import { GymBookingsOverview } from "@/components/admin/GymBookingsOverview";
 
 const OnlineBookingWithSidebar = () => {
   const { user, signOut } = useAuth();
@@ -67,8 +68,12 @@ const OnlineBookingWithSidebar = () => {
               </p>
             </div>
 
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2 rounded-none">
+            <Tabs defaultValue="bookings" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3 rounded-none">
+                <TabsTrigger value="bookings" className="rounded-none">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Κρατήσεις
+                </TabsTrigger>
                 <TabsTrigger value="overview" className="rounded-none">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Επισκόπηση
@@ -78,6 +83,10 @@ const OnlineBookingWithSidebar = () => {
                   Διαχείριση Τμημάτων
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="bookings" className="space-y-6">
+                <GymBookingsOverview />
+              </TabsContent>
 
               <TabsContent value="overview" className="space-y-6">
                 <BookingSessionsOverview />
