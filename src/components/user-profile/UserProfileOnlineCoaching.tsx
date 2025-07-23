@@ -413,29 +413,15 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                            booking.status === 'confirmed' ? 'Εγκεκριμένη' : booking.status}
                         </Badge>
                         {booking.meeting_link && (
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => window.open(booking.meeting_link, '_blank')}
-                              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-                            >
-                              <Video className="w-3 h-3 mr-1" />
-                              Συμμετοχή
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                navigator.clipboard.writeText(booking.meeting_link!);
-                                toast.success('Meeting link αντιγράφηκε στο clipboard!');
-                              }}
-                              className="rounded-none"
-                            >
-                              <ExternalLink className="w-3 h-3 mr-1" />
-                              Link
-                            </Button>
-                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(booking.meeting_link, '_blank')}
+                            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                          >
+                            <Video className="w-3 h-3 mr-1" />
+                            Συμμετοχή
+                          </Button>
                         )}
                         {booking.status === 'rejected' ? (
                           <Button

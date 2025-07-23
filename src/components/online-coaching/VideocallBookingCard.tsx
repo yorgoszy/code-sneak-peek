@@ -237,34 +237,19 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
             {/* Meeting controls for confirmed bookings */}
             {booking.status === 'confirmed' && booking.meeting_link && (
-              <div className="flex flex-col gap-2">
-                {canJoinMeeting ? (
-                  <Button
-                    onClick={handleJoinMeeting}
-                    className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                    size="sm"
-                  >
-                    <Video className="w-4 h-4 mr-2" />
-                    Συμμετοχή
-                  </Button>
-                ) : !isPastMeeting ? (
-                  <div className="text-xs text-gray-500 text-center">
-                    Διαθέσιμη 15' πριν
-                  </div>
-                ) : null}
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(booking.meeting_link!);
-                    toast.success('Meeting link αντιγράφηκε στο clipboard!');
-                  }}
-                  className="rounded-none"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Αντιγραφή Link
-                </Button>
+              <Button
+                onClick={handleJoinMeeting}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                size="sm"
+              >
+                <Video className="w-4 h-4 mr-2" />
+                Συμμετοχή
+              </Button>
+            )}
+            
+            {!canJoinMeeting && !isPastMeeting && booking.status === 'confirmed' && (
+              <div className="text-xs text-gray-500 text-center">
+                Διαθέσιμη 15' πριν
               </div>
             )}
           </div>
