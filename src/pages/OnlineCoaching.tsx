@@ -6,7 +6,7 @@ import { VideocallBookingCard } from "@/components/online-coaching/VideocallBook
 import { useVideocallBookings } from "@/hooks/useVideocallBookings";
 import { useAuth } from '@/hooks/useAuth';
 
-export const OnlineCoaching: React.FC = () => {
+const OnlineCoaching: React.FC = () => {
   const { user } = useAuth();
   const { bookings, loading } = useVideocallBookings();
 
