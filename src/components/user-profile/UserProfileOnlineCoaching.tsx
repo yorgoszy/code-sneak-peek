@@ -44,7 +44,23 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
   const [bookingCalendarOpen, setBookingCalendarOpen] = useState(false);
 
   const handleBookingCreate = async (sectionId: string, date: string, time: string, type: string) => {
+    console.log('🔍 handleBookingCreate called with:', { sectionId, date, time, type, userProfileId: userProfile?.id });
+    
     try {
+      if (!userProfile?.id) {
+        console.error('❌ No user profile ID available');
+        throw new Error('User profile not found');
+      }
+
+      console.log('📤 Inserting booking with data:', {
+        user_id: userProfile.id,
+        section_id: sectionId,
+        booking_date: date,
+        booking_time: time,
+        booking_type: type,
+        status: type === 'videocall' ? 'pending' : 'confirmed'
+      });
+
       const { data, error } = await supabase
         .from('booking_sessions')
         .insert({
@@ -58,7 +74,12 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase insert error:', error);
+        throw error;
+      }
+
+      console.log('✅ Booking created successfully:', data);
 
       // Don't record videocall usage for pending bookings - they'll be charged when approved
       
@@ -66,8 +87,8 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
       fetchVideocallBookings();
       fetchAvailability();
     } catch (error) {
-      console.error('Error creating booking:', error);
-      toast.error('Σφάλμα κατά τη δημιουργία του ραντεβού');
+      console.error('❌ Error creating booking:', error);
+      toast.error(`Σφάλμα κατά τη δημιουργία του ραντεβού: ${error.message || error}`);
     }
   };
 
