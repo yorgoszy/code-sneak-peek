@@ -128,48 +128,34 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
     const fetchVideocallData = async () => {
       try {
-        // Φόρτωση ενεργών videocall packages (συνδρομές με subscription_mode = 'videocall')
-        const { data: videocallSubscriptions, error: subscriptionsError } = await supabase
-          .from('user_subscriptions')
-          .select(`
-            *, 
-            subscription_types!inner(subscription_mode, visit_count)
-          `)
+        // Φόρτωση ενεργών videocall packages
+        const { data: videocallPackages, error: packagesError } = await supabase
+          .from('videocall_packages')
+          .select('total_videocalls, remaining_videocalls, status')
           .eq('user_id', user.id)
           .eq('status', 'active')
-          .eq('subscription_types.subscription_mode', 'videocall')
-          .order('created_at', { ascending: false });
+          .order('purchase_date', { ascending: false });
 
-        if (subscriptionsError) {
-          console.error('Error fetching videocall subscriptions:', subscriptionsError);
+        if (packagesError) {
+          console.error('Error fetching videocall packages:', packagesError);
           setVideocallData(null);
           return;
         }
 
-        // Φόρτωση ολοκληρωμένων videocall bookings
-        const { data: completedVideocalls, error: bookingsError } = await supabase
-          .from('booking_sessions')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('booking_type', 'videocall')
-          .eq('status', 'completed');
-
-        if (bookingsError) {
-          console.error('Error fetching completed videocalls:', bookingsError);
-          setVideocallData(null);
+        // Βρες το πιο πρόσφατο ενεργό πακέτο
+        const activePackage = videocallPackages?.[0];
+        
+        if (!activePackage) {
+          setVideocallData({ used: 0, total: 0 });
           return;
         }
 
-        // Υπολογισμός συνολικών διαθέσιμων κλήσεων από όλες τις ενεργές συνδρομές
-        const totalCalls = videocallSubscriptions?.reduce(
-          (sum, sub) => sum + (sub.subscription_types?.visit_count || 0), 0
-        ) || 0;
-
-        const usedCalls = completedVideocalls?.length || 0;
+        // Υπολογισμός χρησιμοποιημένων βιντεοκλήσεων (ίδια λογική με VideocallManagement)
+        const usedVideocalls = activePackage.total_videocalls - activePackage.remaining_videocalls;
 
         setVideocallData({
-          used: usedCalls,
-          total: totalCalls
+          used: usedVideocalls,
+          total: activePackage.total_videocalls
         });
 
       } catch (error) {
