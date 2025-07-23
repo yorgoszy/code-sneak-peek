@@ -41,7 +41,7 @@ export const useBookingSections = () => {
     try {
       // Get the section to check available hours
       const section = sections.find(s => s.id === sectionId);
-      if (!section) return [];
+      if (!section) return { available: [], full: [], past: [] };
 
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availableHours = section.available_hours[dayOfWeek] || [];
@@ -61,16 +61,41 @@ export const useBookingSections = () => {
         bookingCounts[time] = (bookingCounts[time] || 0) + 1;
       });
 
-      // Filter available slots based on capacity
-      const availableSlots = availableHours.filter((time: string) => {
+      const now = new Date();
+      const selectedDate = new Date(date);
+      const isToday = selectedDate.toDateString() === now.toDateString();
+      
+      // Minimum booking time: 1 day and 1 hour before
+      const minBookingTime = new Date(now.getTime() + (25 * 60 * 60 * 1000)); // 25 hours from now
+      
+      const available: string[] = [];
+      const full: string[] = [];
+      const past: string[] = [];
+
+      availableHours.forEach((time: string) => {
         const currentBookings = bookingCounts[time] || 0;
-        return currentBookings < section.max_capacity;
+        const [hours, minutes] = time.split(':').map(Number);
+        const slotDateTime = new Date(selectedDate);
+        slotDateTime.setHours(hours, minutes, 0, 0);
+
+        // Έλεγχος αν η ώρα έχει περάσει ή είναι πολύ κοντά
+        if (slotDateTime <= minBookingTime) {
+          past.push(time);
+        }
+        // Έλεγχος αν έχουν γεμίσει οι θέσεις (6 άτομα = max capacity)
+        else if (currentBookings >= 6) {
+          full.push(time);
+        }
+        // Διαθέσιμη ώρα
+        else {
+          available.push(time);
+        }
       });
 
-      return availableSlots;
+      return { available, full, past };
     } catch (error) {
       console.error('Error fetching available slots:', error);
-      return [];
+      return { available: [], full: [], past: [] };
     }
   };
 

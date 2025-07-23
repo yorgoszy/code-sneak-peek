@@ -24,7 +24,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<{available: string[], full: string[], past: string[]}>({available: [], full: [], past: []});
   const [loading, setLoading] = useState(false);
   const { sections, getAvailableSlots } = useBookingSections();
 
@@ -138,7 +138,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
-              disabled={(date) => date < addDays(new Date(), 0)}
+              disabled={(date) => {
+                const minDate = addDays(new Date(), 1); // Τουλάχιστον 1 ημέρα μετά
+                minDate.setHours(minDate.getHours() + 1); // Και 1 ώρα επιπλέον
+                return date < minDate;
+              }}
               className={cn("w-full pointer-events-auto")}
             />
           </CardContent>
@@ -180,9 +184,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Διαθέσιμες Ώρες για {format(selectedDate, 'dd/MM/yyyy')}
                 </label>
-                {availableSlots.length > 0 ? (
+                {(availableSlots.available.length > 0 || availableSlots.full.length > 0 || availableSlots.past.length > 0) ? (
                   <div className="grid grid-cols-3 gap-2">
-                    {availableSlots.map((time) => (
+                    {/* Διαθέσιμες ώρες */}
+                    {availableSlots.available.map((time) => (
                       <Button
                         key={time}
                         variant={selectedTime === time ? "default" : "outline"}
@@ -192,6 +197,36 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                       >
                         <Clock className="w-3 h-3 mr-1" />
                         {time}
+                      </Button>
+                    ))}
+                    
+                    {/* Γεμάτες ώρες - αχνές και μη κλικάρες */}
+                    {availableSlots.full.map((time) => (
+                      <Button
+                        key={time}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-none opacity-50 cursor-not-allowed"
+                        disabled
+                      >
+                        <Clock className="w-3 h-3 mr-1" />
+                        {time}
+                        <span className="text-xs ml-1">(γεμάτο)</span>
+                      </Button>
+                    ))}
+                    
+                    {/* Παρελθούσες ώρες - αχνές και μη κλικάρες */}
+                    {availableSlots.past.map((time) => (
+                      <Button
+                        key={time}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-none opacity-50 cursor-not-allowed"
+                        disabled
+                      >
+                        <Clock className="w-3 h-3 mr-1" />
+                        {time}
+                        <span className="text-xs ml-1">(παρελθόν)</span>
                       </Button>
                     ))}
                   </div>
@@ -206,7 +241,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
             {/* Booking Button */}
             <Button
               onClick={handleBookingSubmit}
-              disabled={!selectedDate || !selectedSection || !selectedTime || loading}
+              disabled={!selectedDate || !selectedSection || !selectedTime || loading || !availableSlots.available.includes(selectedTime)}
               className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
             >
               {loading ? 'Δημιουργία...' : 'Επιβεβαίωση Ραντεβού'}
