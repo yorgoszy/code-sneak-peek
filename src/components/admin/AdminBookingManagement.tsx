@@ -47,7 +47,7 @@ export const AdminBookingManagement: React.FC = () => {
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedBookingType, setSelectedBookingType] = useState<string>('gym_visit');
-  const [availableSlots, setAvailableSlots] = useState<{available: string[], full: string[], past: string[]}>({available: [], full: [], past: []});
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const { sections, getAvailableSlots } = useBookingSections();
 
   useEffect(() => {
@@ -352,14 +352,13 @@ export const AdminBookingManagement: React.FC = () => {
               </Select>
             </div>
 
-            {selectedSection && (availableSlots.available.length > 0 || availableSlots.full.length > 0 || availableSlots.past.length > 0) && (
+            {selectedSection && availableSlots.length > 0 && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   Διαθέσιμες Ώρες ({selectedDate ? format(selectedDate, 'dd/MM/yyyy') : ''})
                 </label>
                 <div className="grid grid-cols-4 gap-2">
-                  {/* Διαθέσιμες ώρες */}
-                  {availableSlots.available.map((time) => (
+                  {availableSlots.map((time) => (
                     <Button
                       key={time}
                       variant={selectedTime === time ? "default" : "outline"}
@@ -371,41 +370,11 @@ export const AdminBookingManagement: React.FC = () => {
                       {time}
                     </Button>
                   ))}
-                  
-                  {/* Γεμάτες ώρες */}
-                  {availableSlots.full.map((time) => (
-                    <Button
-                      key={time}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-none opacity-50 cursor-not-allowed"
-                      disabled
-                    >
-                      <Clock className="w-3 h-3 mr-1" />
-                      {time}
-                      <span className="text-xs ml-1">(γεμάτο)</span>
-                    </Button>
-                  ))}
-                  
-                  {/* Παρελθούσες ώρες */}
-                  {availableSlots.past.map((time) => (
-                    <Button
-                      key={time}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-none opacity-50 cursor-not-allowed"
-                      disabled
-                    >
-                      <Clock className="w-3 h-3 mr-1" />
-                      {time}
-                      <span className="text-xs ml-1">(παρελθόν)</span>
-                    </Button>
-                  ))}
                 </div>
               </div>
             )}
 
-            {selectedSection && availableSlots.available.length === 0 && availableSlots.full.length === 0 && availableSlots.past.length === 0 && (
+            {selectedSection && availableSlots.length === 0 && (
               <p className="text-sm text-gray-500">
                 Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία και χώρο
               </p>
