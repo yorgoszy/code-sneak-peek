@@ -207,7 +207,17 @@ export const GymBookingsCalendarView = () => {
           <ChevronLeft className="w-4 h-4 mr-2" />
           Προηγούμενη Εβδομάδα
         </Button>
-        <h3 className="text-lg font-semibold">
+        <h3 className={cn(
+          "text-lg font-semibold",
+          {
+            "text-[#00ffba]": (() => {
+              const now = new Date();
+              const currentWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+              const displayWeekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
+              return format(currentWeekStart, 'yyyy-MM-dd') === format(displayWeekStart, 'yyyy-MM-dd');
+            })()
+          }
+        )}>
           Εβδομάδα {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM/yyyy')}
         </h3>
         <Button onClick={nextWeek} variant="outline" className="rounded-none">
