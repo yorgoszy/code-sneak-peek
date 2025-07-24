@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, MapPin, X } from "lucide-react";
 import { format, addDays, isSameDay } from "date-fns";
 import { useBookingSections } from "@/hooks/useBookingSections";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 interface BookingCalendarProps {
@@ -42,6 +43,32 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     if (selectedDate && selectedSection) {
       updateAvailableSlots();
     }
+  }, [selectedDate, selectedSection]);
+
+  // Set up realtime updates for booking changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('user-booking-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'booking_sessions'
+        },
+        (payload) => {
+          console.log('🔄 Real-time booking update:', payload);
+          // Re-fetch available slots when bookings change
+          if (selectedDate && selectedSection) {
+            updateAvailableSlots();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [selectedDate, selectedSection]);
 
   const updateAvailableSlots = async () => {
@@ -218,20 +245,20 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                       return (
                         <div
                           key={time}
-                          className={`p-3 border rounded-none cursor-pointer transition-colors ${
+                          className={`p-2 border rounded-none cursor-pointer transition-colors ${
                             selectedTime === time 
                               ? 'border-[#00ffba] bg-[#00ffba]/10' 
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                           onClick={() => setSelectedTime(time)}
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              <span className="font-medium">{time}</span>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span className="text-sm font-medium">{time}</span>
                             </div>
-                            <span className="text-sm text-gray-500">
-                              {currentBookings}/{capacity} άτομα
+                            <span className="text-xs text-gray-500">
+                              {currentBookings}/{capacity}
                             </span>
                           </div>
                           
@@ -240,7 +267,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                             {Array.from({ length: capacity }).map((_, index) => (
                               <div
                                 key={index}
-                                className={`h-2 flex-1 rounded-none ${
+                                className={`h-1.5 flex-1 rounded-none ${
                                   index < currentBookings
                                     ? getLoadingBarColor(currentBookings, capacity)
                                     : 'bg-gray-200'
@@ -261,16 +288,16 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                       return (
                         <div
                           key={time}
-                          className="p-3 border border-gray-200 rounded-none opacity-50 cursor-not-allowed"
+                          className="p-2 border border-gray-200 rounded-none opacity-50 cursor-not-allowed"
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              <span className="font-medium">{time}</span>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span className="text-sm font-medium">{time}</span>
                               <span className="text-xs text-red-600">(Πλήρης)</span>
                             </div>
-                            <span className="text-sm text-gray-500">
-                              {currentBookings}/{capacity} άτομα
+                            <span className="text-xs text-gray-500">
+                              {currentBookings}/{capacity}
                             </span>
                           </div>
                           
@@ -279,7 +306,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                             {Array.from({ length: capacity }).map((_, index) => (
                               <div
                                 key={index}
-                                className="h-2 flex-1 rounded-none bg-red-400"
+                                className="h-1.5 flex-1 rounded-none bg-red-400"
                               />
                             ))}
                           </div>

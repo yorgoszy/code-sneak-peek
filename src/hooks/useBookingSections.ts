@@ -18,6 +18,28 @@ export const useBookingSections = (bookingType?: string) => {
 
   useEffect(() => {
     fetchSections();
+    
+    // Set up realtime subscription for booking_sessions changes
+    const channel = supabase
+      .channel('booking-sessions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'booking_sessions'
+        },
+        (payload) => {
+          console.log('🔄 Booking sessions change detected:', payload);
+          // Trigger re-fetch of current data when bookings change
+          // This will be handled by the components calling the hook functions
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchSections = async () => {
@@ -80,7 +102,7 @@ export const useBookingSections = (bookingType?: string) => {
         .select('booking_time')
         .eq('section_id', sectionId)
         .eq('booking_date', date)
-        .eq('status', 'confirmed');
+        .in('status', ['confirmed', 'pending']);
 
       // Count bookings per time slot
       const bookingCounts: { [time: string]: number } = {};
@@ -117,7 +139,7 @@ export const useBookingSections = (bookingType?: string) => {
         .select('booking_time, booking_type')
         .eq('section_id', sectionId)
         .eq('booking_date', date)
-        .eq('status', 'confirmed');
+        .in('status', ['confirmed', 'pending']);
 
       // For videocalls, only check videocall bookings (each slot can only have 1 videocall)
       if (bookingType === 'videocall') {
@@ -184,7 +206,7 @@ export const useBookingSections = (bookingType?: string) => {
         .select('booking_time, booking_type')
         .eq('section_id', sectionId)
         .eq('booking_date', date)
-        .eq('status', 'confirmed');
+        .in('status', ['confirmed', 'pending']);
 
       if (bookingType === 'videocall') {
         query = query.eq('booking_type', 'videocall');
