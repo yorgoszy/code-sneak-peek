@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const [videocallData, setVideocallData] = useState<{used: number, total: number} | null>(null);
   const [upcomingVideocall, setUpcomingVideocall] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number} | null>(null);
   const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number} | null>(null);
+  const [offersData, setOffersData] = useState<{available: number, accepted: boolean} | null>(null);
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -235,11 +236,60 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
       }
     };
 
+    const fetchOffersData = async () => {
+      try {
+        // Φόρτωση ενεργών προσφορών για τον χρήστη
+        const { data: offers, error } = await supabase
+          .from('offers')
+          .select('*')
+          .eq('is_active', true)
+          .gte('end_date', new Date().toISOString().split('T')[0])
+          .lte('start_date', new Date().toISOString().split('T')[0]);
+
+        if (error) {
+          console.error('Error fetching offers:', error);
+          setOffersData(null);
+          return;
+        }
+
+        // Φιλτράρισμα προσφορών βάσει visibility
+        const filteredOffers = offers?.filter(offer => {
+          if (offer.visibility === 'all') return true;
+          if (offer.visibility === 'individual' || offer.visibility === 'selected') {
+            return offer.target_users?.includes(user.id);
+          }
+          return false;
+        }) || [];
+
+        // Έλεγχος αν έχει αποδεχτεί προσφορά (θα ελέγξουμε τις πληρωμές)
+        const { data: recentPayments, error: paymentsError } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+          .gte('payment_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Τελευταίες 30 ημέρες
+          .order('payment_date', { ascending: false })
+          .limit(1);
+
+        const hasRecentPayment = !paymentsError && recentPayments && recentPayments.length > 0;
+
+        setOffersData({
+          available: filteredOffers.length,
+          accepted: hasRecentPayment
+        });
+
+      } catch (error) {
+        console.error('Error fetching offers data:', error);
+        setOffersData(null);
+      }
+    };
+
     if (user?.id) {
       fetchSubscriptionData();
       fetchVisitsData();
       fetchVideocallData();
       fetchUpcomingBookings();
+      fetchOffersData();
     }
   }, [user?.id]);
   
@@ -370,9 +420,23 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Ενεργές Προσφορές */}
           <div className="text-center">
-            <ShoppingBag className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-gray-400`} />
+            <Tag className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              offersData?.available > 0 && !offersData?.accepted 
+                ? 'text-[#00ffba] animate-pulse' 
+                : offersData?.accepted 
+                ? 'text-[#00ffba]' 
+                : 'text-gray-400'
+            }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              <span className="text-gray-400">-</span>
+              {offersData?.available > 0 ? (
+                offersData.accepted ? (
+                  <Check className={`mx-auto text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                ) : (
+                  <span className="text-[#00ffba] animate-pulse">{offersData.available}</span>
+                )
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Ενεργές Προσφορές</p>
           </div>
