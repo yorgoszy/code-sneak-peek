@@ -4,12 +4,11 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Calendar, Clock, Users, MapPin, Video, Settings, BarChart3 } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, Video, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookingSectionsManagement } from "@/components/admin/BookingSectionsManagement";
 import { BookingSessionsOverview } from "@/components/admin/BookingSessionsOverview";
 import { GymBookingsOverview } from "@/components/admin/GymBookingsOverview";
 import { GymBookingsCalendarView } from "@/components/admin/GymBookingsCalendarView";
@@ -65,12 +64,12 @@ const OnlineBookingWithSidebar = () => {
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-4">Online Booking - Διαχείριση</h1>
               <p className="text-lg text-gray-600">
-                Διαχειριστείτε τα τμήματα και τις κρατήσεις του γυμναστηρίου
+                Διαχειριστείτε τις κρατήσεις του γυμναστηρίου
               </p>
             </div>
 
             <Tabs defaultValue="bookings" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4 rounded-none">
+              <TabsList className="grid w-full grid-cols-3 rounded-none">
                 <TabsTrigger value="bookings" className="rounded-none">
                   <Calendar className="w-4 h-4 mr-2" />
                   Κρατήσεις
@@ -82,10 +81,6 @@ const OnlineBookingWithSidebar = () => {
                 <TabsTrigger value="overview" className="rounded-none">
                   <Users className="w-4 h-4 mr-2" />
                   Στατιστικά
-                </TabsTrigger>
-                <TabsTrigger value="sections" className="rounded-none">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Διαχείριση Τμημάτων
                 </TabsTrigger>
               </TabsList>
 
@@ -99,10 +94,6 @@ const OnlineBookingWithSidebar = () => {
 
               <TabsContent value="overview" className="space-y-6">
                 <BookingSessionsOverview />
-              </TabsContent>
-
-              <TabsContent value="sections" className="space-y-6">
-                <BookingSectionsManagement />
               </TabsContent>
             </Tabs>
           </div>

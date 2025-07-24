@@ -32,6 +32,7 @@ import MeetingRoom from "@/pages/MeetingRoom";
 import ShopWithSidebar from "@/pages/ShopWithSidebar";
 import OnlineCoachingWithSidebar from "@/pages/OnlineCoachingWithSidebar";
 import OnlineBookingWithSidebar from "@/pages/Dashboard/OnlineBookingWithSidebar";
+import BookingSectionsWithSidebar from "@/pages/Dashboard/BookingSectionsWithSidebar";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
 
@@ -65,6 +66,7 @@ function App() {
                 <Route path="/dashboard/offers" element={<Offers />} />
                 <Route path="/dashboard/online-coaching" element={<OnlineCoachingWithSidebar />} />
                 <Route path="/dashboard/online-booking" element={<OnlineBookingWithSidebar />} />
+                <Route path="/dashboard/booking-sections" element={<BookingSectionsWithSidebar />} />
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/online-coaching" element={<OnlineCoaching />} />
                 <Route path="/meeting/:roomId" element={<MeetingRoom />} />

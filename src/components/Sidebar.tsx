@@ -329,6 +329,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       hasCancellation: false
     },
     {
+      icon: Settings,
+      label: "Διαχείριση Τμημάτων",
+      path: "/dashboard/booking-sections",
+      badge: null
+    },
+    {
       icon: Mail,
       label: "Webmail",
       path: "https://webmail.hyperkids.gr/",
