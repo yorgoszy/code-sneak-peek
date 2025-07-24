@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,6 @@ export const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
   isOpen,
   onClose
 }) => {
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,7 +38,6 @@ export const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
     try {
       console.log('🔑 Attempting password change...');
       
-      // Αλλαγή κωδικού χωρίς επαλήθευση του παλιού
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -55,7 +52,6 @@ export const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
       toast.success("Ο κωδικός σας άλλαξε επιτυχώς");
 
       // Καθαρίζουμε τα πεδία και κλείνουμε το dialog
-      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       onClose();
