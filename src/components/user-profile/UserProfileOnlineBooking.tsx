@@ -126,7 +126,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
               </h3>
               
               <p className="text-sm text-gray-600 mb-6">
-                Για να κλείσεις ραντεβού, χρειάζεται να έχεις διαθέσιμες επισκέψεις
+                Για να κλείσεις ραντεβού, χρειάζεται να αγοράσεις επισκέψεις από τις αγορές
               </p>
               
               <Button 
