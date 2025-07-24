@@ -50,25 +50,57 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     if (!userProfile?.id) return;
     
     try {
-      const { data, error } = await supabase
+      const { data: offers, error } = await supabase
         .from('offers')
-        .select('*')
+        .select('id, target_users, visibility')
         .eq('is_active', true)
         .gte('end_date', new Date().toISOString().split('T')[0])
         .lte('start_date', new Date().toISOString().split('T')[0]);
 
       if (error) throw error;
       
-      // Φιλτράρισμα προσφορών για τον χρήστη
-      const userOffers = data?.filter(offer => {
-        if (offer.visibility === 'all') return true;
-        if (offer.visibility === 'individual' || offer.visibility === 'selected') {
-          return offer.target_users?.includes(userProfile.id);
+      if (userProfile.role === 'admin') {
+        // Για admin: υπολογίζουμε πόσες από τις τρέχουσες προσφορές έχουν γίνει δεκτές
+        const allActiveOffers = offers || [];
+        
+        if (allActiveOffers.length === 0) {
+          setAvailableOffers(0);
+          return;
         }
-        return false;
-      }) || [];
-      
-      setAvailableOffers(userOffers.length);
+        
+        // Βρίσκουμε τις αποδεκτές προσφορές από payments
+        const { data: acceptedOffers, error: paymentsError } = await supabase
+          .from('payments')
+          .select('subscription_type_id')
+          .not('subscription_type_id', 'is', null)
+          .gte('payment_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Τελευταίες 30 ημέρες
+
+        if (paymentsError) throw paymentsError;
+        
+        // Υπολογίζουμε πόσες προσφορές έχουν γίνει δεκτές
+        const acceptedOffersCount = acceptedOffers?.length || 0;
+        setAvailableOffers(acceptedOffersCount);
+      } else {
+        // Για χρήστες: φιλτράρισμα προσφορών βάσει visibility
+        const userOffers = offers?.filter(offer => {
+          if (offer.visibility === 'all') return true;
+          if (offer.visibility === 'individual' || offer.visibility === 'selected') {
+            return offer.target_users?.includes(userProfile.id);
+          }
+          return false;
+        }) || [];
+        
+        // Φιλτράρισμα απορριμμένων προσφορών
+        const { data: rejectedOffers } = await supabase
+          .from('offer_rejections')
+          .select('offer_id')
+          .eq('user_id', userProfile.id);
+        
+        const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
+        const availableUserOffers = userOffers.filter(offer => !rejectedOfferIds.has(offer.id));
+        
+        setAvailableOffers(availableUserOffers.length);
+      }
     } catch (error) {
       console.error('Error loading available offers:', error);
     }
