@@ -133,18 +133,13 @@ export const useBookingSections = (bookingType?: string) => {
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availableHours = section.available_hours[dayOfWeek] || [];
 
-      // Get existing bookings for this date and section - include all bookings for accurate counts
+      // Get existing confirmed bookings for this date and section (matching admin panel logic)
       let query = supabase
         .from('booking_sessions')
         .select('booking_time, booking_type')
         .eq('section_id', sectionId)
         .eq('booking_date', date)
-        .in('status', ['confirmed', 'pending']);
-
-      // For videocalls, only check videocall bookings (each slot can only have 1 videocall)
-      if (bookingType === 'videocall') {
-        query = query.eq('booking_type', 'videocall');
-      }
+        .eq('status', 'confirmed'); // Only count confirmed bookings like admin panel
 
       const { data: existingBookings } = await query;
 
@@ -153,7 +148,10 @@ export const useBookingSections = (bookingType?: string) => {
       const videocallTimes: Set<string> = new Set();
       
       existingBookings?.forEach(booking => {
-        const time = booking.booking_time;
+        // Handle both "HH:MM" and "HH:MM:SS" formats to match admin panel
+        const time = booking.booking_time.length > 5 
+          ? booking.booking_time.substring(0, 5) 
+          : booking.booking_time;
         bookingCounts[time] = (bookingCounts[time] || 0) + 1;
         
         // Track times that already have videocalls
@@ -201,22 +199,23 @@ export const useBookingSections = (bookingType?: string) => {
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availableHours = section.available_hours[dayOfWeek] || [];
 
-      // Get ALL bookings for this time slot to show accurate counts
+      // Get ALL confirmed bookings for this time slot to show accurate counts (matching admin panel)
       let query = supabase
         .from('booking_sessions')
-        .select('booking_time, booking_type')
+        .select('booking_time, booking_type, status')
         .eq('section_id', sectionId)
         .eq('booking_date', date)
-        .in('status', ['confirmed', 'pending']);
-
-      // Don't filter by booking type here - we want to show all bookings
+        .eq('status', 'confirmed'); // Only count confirmed bookings like admin panel
 
       const { data: existingBookings } = await query;
 
       const bookingCounts: { [time: string]: number } = {};
       
       existingBookings?.forEach(booking => {
-        const time = booking.booking_time;
+        // Handle both "HH:MM" and "HH:MM:SS" formats
+        const time = booking.booking_time.length > 5 
+          ? booking.booking_time.substring(0, 5) 
+          : booking.booking_time;
         bookingCounts[time] = (bookingCounts[time] || 0) + 1;
       });
 
