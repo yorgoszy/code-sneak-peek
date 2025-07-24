@@ -3420,6 +3420,14 @@ export type Database = {
         Args: { subscription_id: string }
         Returns: undefined
       }
+      send_videocall_reminders: {
+        Args: {
+          reminder_type: string
+          time_window_start: unknown
+          time_window_end: unknown
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       user_role: "admin" | "athlete" | "coach" | "parent" | "general"
