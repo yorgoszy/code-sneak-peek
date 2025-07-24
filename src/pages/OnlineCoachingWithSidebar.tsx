@@ -226,16 +226,16 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                   ) : (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-[#00ffba]">{bookings.length}</div>
-                        <div className="text-sm text-gray-600">Συνολικές Κλήσεις</div>
+                        <div className="text-2xl font-bold text-[#00ffba]">{upcomingBookings.length}</div>
+                        <div className="text-sm text-gray-600">Επερχόμενες Κλήσεις</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-orange-600">{pendingBookings.length}</div>
                         <div className="text-sm text-gray-600">Εκκρεμείς</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">{upcomingBookings.length}</div>
-                        <div className="text-sm text-gray-600">Επερχόμενες</div>
+                        <div className="text-2xl font-bold text-blue-600">{bookings.length}</div>
+                        <div className="text-sm text-gray-600">Συνολικά Bookings</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-green-600">{pastBookings.length}</div>
