@@ -142,7 +142,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
             Δεν έχεις διαθέσιμες επισκέψεις
           </h3>
           <p className="text-sm text-gray-600">
-            Για να κλείσεις videocall, χρειάζεται να έχεις διαθέσιμες βιντεοκλήσεις
+            {bookingType === 'videocall' 
+              ? 'Για να κλείσεις videocall, χρειάζεται να έχεις διαθέσιμες βιντεοκλήσεις'
+              : 'Για να κλείσεις ραντεβού, χρειάζεται να έχεις διαθέσιμες επισκέψεις'
+            }
           </p>
         </div>
         
