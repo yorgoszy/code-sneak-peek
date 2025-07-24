@@ -326,6 +326,43 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         )}
       </div>
 
+      {/* Videocall Sessions Card */}
+      <Card className="rounded-none hover:shadow-lg transition-shadow">
+        <CardHeader className="text-center">
+          <div className="flex items-center justify-center w-12 h-12 bg-green-100 text-green-600 rounded-none mx-auto mb-4">
+            <Video className="w-6 h-6" />
+          </div>
+          <CardTitle className="text-xl">Videocall Συνεδρίες</CardTitle>
+          <p className="text-gray-600">Online συνεδρίες με τον προπονητή σου</p>
+        </CardHeader>
+        
+        <CardContent className="text-center">
+          <Button 
+            onClick={() => setBookingCalendarOpen(true)}
+            className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            {((availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)) > 0
+              ? `${(availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)} Διαθέσιμες Κλήσεις`
+              : 'Κλείσε Videocall'
+            }
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Booking Calendar Modal */}
+      {bookingCalendarOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-none max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <BookingCalendar
+              onBookingCreate={handleBookingCreate}
+              onClose={handleBookingClose}
+              bookingType="videocall"
+              availability={availability}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Upcoming Videocall Bookings */}
       {videocallBookings.length > 0 && (
