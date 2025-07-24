@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingSectionsManagement } from "@/components/admin/BookingSectionsManagement";
 import { BookingSessionsOverview } from "@/components/admin/BookingSessionsOverview";
 import { GymBookingsOverview } from "@/components/admin/GymBookingsOverview";
+import { GymBookingsCalendarView } from "@/components/admin/GymBookingsCalendarView";
 
 const OnlineBookingWithSidebar = () => {
   const { user, signOut } = useAuth();
@@ -69,14 +70,18 @@ const OnlineBookingWithSidebar = () => {
             </div>
 
             <Tabs defaultValue="bookings" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3 rounded-none">
+              <TabsList className="grid w-full grid-cols-4 rounded-none">
                 <TabsTrigger value="bookings" className="rounded-none">
                   <Calendar className="w-4 h-4 mr-2" />
                   Κρατήσεις
                 </TabsTrigger>
-                <TabsTrigger value="overview" className="rounded-none">
+                <TabsTrigger value="calendar" className="rounded-none">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Επισκόπηση
+                </TabsTrigger>
+                <TabsTrigger value="overview" className="rounded-none">
+                  <Users className="w-4 h-4 mr-2" />
+                  Στατιστικά
                 </TabsTrigger>
                 <TabsTrigger value="sections" className="rounded-none">
                   <Settings className="w-4 h-4 mr-2" />
@@ -86,6 +91,16 @@ const OnlineBookingWithSidebar = () => {
 
               <TabsContent value="bookings" className="space-y-6">
                 <GymBookingsOverview />
+              </TabsContent>
+
+              <TabsContent value="calendar" className="space-y-6">
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Επισκόπηση Κρατήσεων</h2>
+                    <p className="text-gray-600">Ημερολογιακή προβολή όλων των κρατήσεων</p>
+                  </div>
+                  <GymBookingsCalendarView />
+                </div>
               </TabsContent>
 
               <TabsContent value="overview" className="space-y-6">
