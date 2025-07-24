@@ -65,6 +65,9 @@ const OnlineCoachingWithSidebar: React.FC = () => {
     }
   };
 
+  // Έλεγχος αν η επιλεγμένη ημερομηνία έχει confirmed bookings
+  const selectedDateHasConfirmedBookings = selectedDate && selectedDateBookings.some(booking => booking.status === 'confirmed');
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />
@@ -96,7 +99,9 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                     modifiers={modifiers}
                     modifiersStyles={modifiersStyles}
                     classNames={{
-                      day_selected: "border-2 border-[#00ffba] bg-transparent text-[#00ffba] hover:bg-[#00ffba]/10 focus:bg-[#00ffba]/10 rounded-none"
+                      day_selected: selectedDateHasConfirmedBookings 
+                        ? "border-2 border-black bg-transparent text-black hover:bg-black/10 focus:bg-black/10 rounded-none"
+                        : "border-2 border-[#00ffba] bg-transparent text-[#00ffba] hover:bg-[#00ffba]/10 focus:bg-[#00ffba]/10 rounded-none"
                     }}
                   />
                 </CardContent>
