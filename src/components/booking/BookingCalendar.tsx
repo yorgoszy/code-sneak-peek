@@ -136,7 +136,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
   if (!canBook()) {
     return (
-      <div className="bg-white border border-gray-200 rounded-none" style={{ margin: '0 10px' }}>
+      <div className="bg-white border border-gray-200 rounded-none" style={{ margin: '20px' }}>
         <div className="p-6 text-center">
           <X className="h-6 w-6 text-red-500 mx-auto mb-4" />
           
