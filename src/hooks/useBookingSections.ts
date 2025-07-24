@@ -171,11 +171,47 @@ export const useBookingSections = (bookingType?: string) => {
     }
   };
 
+  const getTimeSlotBookings = async (sectionId: string, date: string, bookingType?: string) => {
+    try {
+      const section = sections.find(s => s.id === sectionId);
+      if (!section) return {};
+
+      const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      const availableHours = section.available_hours[dayOfWeek] || [];
+
+      let query = supabase
+        .from('booking_sessions')
+        .select('booking_time, booking_type')
+        .eq('section_id', sectionId)
+        .eq('booking_date', date)
+        .eq('status', 'confirmed');
+
+      if (bookingType === 'videocall') {
+        query = query.eq('booking_type', 'videocall');
+      }
+
+      const { data: existingBookings } = await query;
+
+      const bookingCounts: { [time: string]: number } = {};
+      
+      existingBookings?.forEach(booking => {
+        const time = booking.booking_time;
+        bookingCounts[time] = (bookingCounts[time] || 0) + 1;
+      });
+
+      return bookingCounts;
+    } catch (error) {
+      console.error('Error fetching time slot bookings:', error);
+      return {};
+    }
+  };
+
   return {
     sections,
     loading,
     getAvailableSlots,
     getTimeSlotStatus,
+    getTimeSlotBookings,
     refetch: fetchSections
   };
 };
