@@ -372,7 +372,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           <div className="text-center">
             <ShoppingBag className={`mx-auto mb-2 animate-pulse ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[#00ffba]`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              <span className="text-[#00ffba] animate-pulse">3</span>
+              <span className="text-gray-400">-</span>
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Ενεργές Προσφορές</p>
           </div>
