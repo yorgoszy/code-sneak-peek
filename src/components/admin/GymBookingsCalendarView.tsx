@@ -171,11 +171,6 @@ export const GymBookingsCalendarView = () => {
 
   return (
     <div className="max-w-full mx-auto space-y-6 overflow-x-auto">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Επισκόπηση Κρατήσεων</h2>
-        <p className="text-gray-600">Διαχείριση όλων των κρατήσεων για το γυμναστήριο</p>
-      </div>
-
       {/* Section Selection */}
       <Card className="rounded-none">
         <CardHeader>
