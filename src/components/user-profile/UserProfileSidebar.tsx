@@ -180,7 +180,9 @@ export const UserProfileSidebar = ({
               {(!isCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
             </div>
             {(!isCollapsed || isMobile) && item.badge && (
-              <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full flex-shrink-0">
+              <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                item.key === 'offers' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'
+              }`}>
                 {item.badge}
               </span>
             )}

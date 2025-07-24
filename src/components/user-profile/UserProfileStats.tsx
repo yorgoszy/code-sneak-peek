@@ -435,13 +435,22 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Ενεργές Προσφορές */}
           <div className="text-center">
-            <Tag className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+            <div className={`relative ${
               offersData?.available > 0 && !offersData?.accepted 
-                ? 'text-[#00ffba] animate-pulse' 
-                : offersData?.accepted 
-                ? 'text-[#00ffba]' 
-                : 'text-gray-400'
-            }`} />
+                ? 'animate-pulse'
+                : ''
+            }`}>
+              <Tag className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                offersData?.available > 0 && !offersData?.accepted 
+                  ? 'text-gray-500' 
+                  : offersData?.accepted 
+                  ? 'text-[#00ffba]' 
+                  : 'text-gray-400'
+              } transition-all duration-1000`} />
+              {offersData?.available > 0 && !offersData?.accepted && (
+                <Tag className={`absolute top-0 left-1/2 transform -translate-x-1/2 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[#00ffba] animate-pulse`} />
+              )}
+            </div>
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {offersData?.available > 0 ? (
                 offersData.accepted ? (

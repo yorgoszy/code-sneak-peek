@@ -77,16 +77,29 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
 
     setProcessingOffer(offer.id);
     try {
+      // Πάρε το auth token για authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Πρέπει να είστε συνδεδεμένοι');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           offer_id: offer.id,
           subscription_type_id: offer.subscription_type_id,
           discounted_price: offer.discounted_price,
           isOffer: true
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
       if (data?.url) {
         window.location.href = data.url;
