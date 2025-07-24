@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarIcon, Video, History } from "lucide-react";
 import { VideocallBookingCard } from "@/components/online-coaching/VideocallBookingCard";
 import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
 const OnlineCoachingWithSidebar: React.FC = () => {
@@ -55,6 +56,14 @@ const OnlineCoachingWithSidebar: React.FC = () => {
         return bookingDate === selectedDateStr;
       })
     : [];
+
+  const handleJoinMeeting = (booking: any) => {
+    if (booking.meeting_link) {
+      const adminName = 'Admin';
+      const meetingUrl = `${booking.meeting_link}#userInfo.displayName="${adminName}"&config.prejoinPageEnabled=false&config.startWithVideoMuted=false&config.startWithAudioMuted=false`;
+      window.open(meetingUrl, '_blank');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -107,20 +116,31 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                       <div className="space-y-2 max-h-48 overflow-y-auto">
                         {selectedDateBookings.map((booking) => (
                           <div key={booking.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-none text-sm">
-                            <div>
+                            <div className="flex-1">
                               <div className="font-medium">{booking.user?.name || 'Άγνωστος χρήστης'}</div>
                               <div className="text-xs text-gray-500">{booking.user?.email}</div>
                             </div>
-                            <div className="text-right">
-                              <div className="font-medium">{booking.booking_time?.slice(0, 5)}</div>
-                              <div className={`text-xs px-2 py-1 rounded-none border ${
-                                booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
-                                booking.status === 'pending' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                'bg-gray-100 text-gray-800 border-gray-200'
-                              }`}>
-                                {booking.status === 'confirmed' ? 'Εγκεκριμένη' :
-                                 booking.status === 'pending' ? 'Εκκρεμής' : booking.status}
+                            <div className="flex items-center gap-2">
+                              <div className="text-right">
+                                <div className="font-medium">{booking.booking_time?.slice(0, 5)}</div>
+                                <div className={`text-xs px-2 py-1 rounded-none border ${
+                                  booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
+                                  booking.status === 'pending' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                  'bg-gray-100 text-gray-800 border-gray-200'
+                                }`}>
+                                  {booking.status === 'confirmed' ? 'Εγκεκριμένη' :
+                                   booking.status === 'pending' ? 'Εκκρεμής' : booking.status}
+                                </div>
                               </div>
+                              {booking.status === 'confirmed' && booking.meeting_link && (
+                                <Button
+                                  onClick={() => handleJoinMeeting(booking)}
+                                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                                  size="sm"
+                                >
+                                  <Video className="w-4 h-4" />
+                                </Button>
+                              )}
                             </div>
                           </div>
                         ))}
