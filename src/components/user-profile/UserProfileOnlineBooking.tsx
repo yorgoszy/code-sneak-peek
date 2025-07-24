@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Calendar, Clock, Users, MapPin, X } from "lucide-react";
 import { BookingCalendar } from "@/components/booking/BookingCalendar";
 import { useUserBookings } from "@/hooks/useUserBookings";
@@ -111,34 +112,33 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     }
   ];
 
-  // No visits dialog component
-  if (showNoVisitsDialog) {
-    return (
-      <div className="bg-white border border-gray-200 rounded-none" style={{ margin: '0' }}>
-        <div className="p-6 text-center">
-          <X className="h-6 w-6 text-red-500 mx-auto mb-4" />
-          
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Δεν έχεις διαθέσιμες επισκέψεις
-          </h3>
-          
-          <p className="text-sm text-gray-600 mb-6">
-            Για να κλείσεις ραντεβού, χρειάζεται να έχεις διαθέσιμες επισκέψεις
-          </p>
-          
-          <Button 
-            onClick={() => setShowNoVisitsDialog(false)}
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-none"
-          >
-            Κλείσε
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
+      {/* No visits dialog */}
+      <Dialog open={showNoVisitsDialog} onOpenChange={setShowNoVisitsDialog}>
+        <DialogContent className="max-w-md mx-auto rounded-none">
+          <div className="bg-white border border-gray-200 rounded-none" style={{ margin: '0' }}>
+            <div className="p-6 text-center">
+              <X className="h-6 w-6 text-red-500 mx-auto mb-4" />
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Δεν έχεις διαθέσιμες επισκέψεις
+              </h3>
+              
+              <p className="text-sm text-gray-600 mb-6">
+                Για να κλείσεις ραντεβού, χρειάζεται να έχεις διαθέσιμες επισκέψεις
+              </p>
+              
+              <Button 
+                onClick={() => setShowNoVisitsDialog(false)}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-none"
+              >
+                Κλείσε
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Online Booking</h2>
         <p className="text-gray-600">Κλείσε online τα ραντεβού σου για προπονήσεις και συνεδρίες</p>
