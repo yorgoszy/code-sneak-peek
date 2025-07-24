@@ -112,7 +112,7 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                               <div className="text-xs text-gray-500">{booking.user?.email}</div>
                             </div>
                             <div className="text-right">
-                              <div className="font-medium">{booking.booking_time}</div>
+                              <div className="font-medium">{booking.booking_time?.slice(0, 5)}</div>
                               <div className={`text-xs px-2 py-1 rounded-full ${
                                 booking.status === 'confirmed' ? 'bg-[#00ffba] text-black' :
                                 booking.status === 'pending' ? 'bg-orange-100 text-orange-800' :
