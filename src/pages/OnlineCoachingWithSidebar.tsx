@@ -21,11 +21,17 @@ const OnlineCoachingWithSidebar: React.FC = () => {
     booking.status === 'confirmed' && new Date(booking.booking_date) >= now
   );
   const pendingBookings = bookings.filter(booking => booking.status === 'pending');
-  const pastBookings = bookings.filter(booking => 
-    booking.status === 'completed' || 
-    booking.status === 'rejected' || 
-    (booking.status === 'confirmed' && new Date(booking.booking_date) < now)
-  );
+  const pastBookings = bookings
+    .filter(booking => 
+      booking.status === 'completed' || 
+      booking.status === 'rejected' || 
+      (booking.status === 'confirmed' && new Date(booking.booking_date) < now)
+    )
+    .sort((a, b) => {
+      const dateA = new Date(`${a.booking_date} ${a.booking_time}`);
+      const dateB = new Date(`${b.booking_date} ${b.booking_time}`);
+      return dateB.getTime() - dateA.getTime(); // Φθίνουσα σειρά (πιο πρόσφατες πρώτα)
+    });
 
   // Δημιουργία set με ημερομηνίες εγκεκριμένων βιντεοκλήσεων
   const confirmedDates = new Set(
