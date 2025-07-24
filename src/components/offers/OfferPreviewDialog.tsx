@@ -211,7 +211,7 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
               <CardContent className="p-4">
                 <h3 className="font-medium mb-3">Όλοι οι Χρήστες ({allUsers.length})</h3>
                 <div className="max-h-64 overflow-y-auto space-y-2">
-                  {allUsers.map((user) => (
+                  {allUsers.filter(user => user && user.id).map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-2 border rounded-none">
                       <div>
                         <span className="font-medium">{user?.name || 'N/A'}</span>
@@ -232,7 +232,7 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
               <CardContent className="p-4">
                 <h3 className="font-medium mb-3">Στοχευμένοι Χρήστες ({targetUsers.length})</h3>
                 <div className="max-h-64 overflow-y-auto space-y-2">
-                  {targetUsers.map((user) => (
+                  {targetUsers.filter(user => user && user.id).map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-2 border rounded-none">
                       <div>
                         <span className="font-medium">{user?.name || 'N/A'}</span>
@@ -253,7 +253,7 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
               <CardContent className="p-4">
                 <h3 className="font-medium mb-3">Στοχευμένες Ομάδες ({targetGroups.length})</h3>
                 <div className="max-h-64 overflow-y-auto space-y-2">
-                  {targetGroups.map((group) => (
+                  {targetGroups.filter(group => group && group.id).map((group) => (
                     <div key={group.id} className="p-2 border rounded-none">
                       <div className="font-medium">{group?.name || 'N/A'}</div>
                       {group?.description && (
