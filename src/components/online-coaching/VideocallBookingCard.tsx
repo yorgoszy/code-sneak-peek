@@ -219,6 +219,10 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
           ? 'Η βιντεοκλήση σημειώθηκε ως ολοκληρωμένη!'
           : 'Η βιντεοκλήση επαναφέρθηκε σε εγκεκριμένη!'
       );
+      
+      // Ενημέρωση τοπικού state για άμεση αντίδραση
+      booking.status = newStatus;
+      
       onRefresh?.();
     } catch (error) {
       console.error('Error toggling completion status:', error);

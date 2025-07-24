@@ -22,7 +22,9 @@ const OnlineCoachingWithSidebar: React.FC = () => {
   );
   const pendingBookings = bookings.filter(booking => booking.status === 'pending');
   const pastBookings = bookings.filter(booking => 
-    booking.status !== 'confirmed' || (booking.status === 'confirmed' && new Date(booking.booking_date) < now)
+    booking.status === 'completed' || 
+    booking.status === 'rejected' || 
+    (booking.status === 'confirmed' && new Date(booking.booking_date) < now)
   );
 
   // Δημιουργία set με ημερομηνίες εγκεκριμένων βιντεοκλήσεων
