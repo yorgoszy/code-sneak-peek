@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2, Users, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -135,6 +136,37 @@ export const BookingSectionsManagement = () => {
       await fetchSections();
     } catch (error: any) {
       toast.error('Σφάλμα: ' + error.message);
+    }
+  };
+
+  const handleDelete = async (section: BookingSection) => {
+    try {
+      // Έλεγχος αν υπάρχουν ενεργές κρατήσεις για αυτό το τμήμα
+      const { data: activeBookings, error: bookingsError } = await supabase
+        .from('booking_sessions')
+        .select('id')
+        .eq('section_id', section.id)
+        .in('status', ['confirmed', 'pending'])
+        .limit(1);
+
+      if (bookingsError) throw bookingsError;
+
+      if (activeBookings && activeBookings.length > 0) {
+        toast.error('Δεν μπορείτε να διαγράψετε το τμήμα γιατί έχει ενεργές κρατήσεις');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('booking_sections')
+        .delete()
+        .eq('id', section.id);
+
+      if (error) throw error;
+      
+      toast.success('Το τμήμα διαγράφηκε επιτυχώς');
+      await fetchSections();
+    } catch (error: any) {
+      toast.error('Σφάλμα κατά τη διαγραφή: ' + error.message);
     }
   };
 
@@ -286,6 +318,38 @@ export const BookingSectionsManagement = () => {
                   >
                     {section.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
                   </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="rounded-none px-2"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="rounded-none">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Διαγραφή Τμήματος</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Είστε σίγουροι ότι θέλετε να διαγράψετε το τμήμα "{section.name}";
+                          <br />
+                          <strong>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</strong>
+                          <br />
+                          Δεν μπορείτε να διαγράψετε τμήμα που έχει ενεργές κρατήσεις.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => handleDelete(section)}
+                          className="bg-red-600 hover:bg-red-700 rounded-none"
+                        >
+                          Διαγραφή
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardContent>
