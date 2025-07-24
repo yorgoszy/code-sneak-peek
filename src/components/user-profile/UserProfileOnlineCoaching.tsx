@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Video, Calendar, Lock, ExternalLink, Play, Users, Clock, MapPin, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +44,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
   const [roomName, setRoomName] = useState('');
   const [videocallBookings, setVideocallBookings] = useState<VideocallBooking[]>([]);
   const [bookingCalendarOpen, setBookingCalendarOpen] = useState(false);
+  const [showNoVideocallDialog, setShowNoVideocallDialog] = useState(false);
 
   const handleBookingCreate = async (sectionId: string, date: string, time: string, type: string) => {
     console.log('🔍 handleBookingCreate called with:', { sectionId, date, time, type, userProfileId: userProfile?.id });
@@ -338,7 +340,14 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         
         <CardContent className="text-center">
           <Button 
-            onClick={() => setBookingCalendarOpen(true)}
+            onClick={() => {
+              const hasVideocalls = ((availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)) > 0;
+              if (hasVideocalls) {
+                setBookingCalendarOpen(true);
+              } else {
+                setShowNoVideocallDialog(true);
+              }
+            }}
             className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
           >
             <Calendar className="w-4 h-4 mr-2" />
@@ -349,6 +358,32 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
           </Button>
         </CardContent>
       </Card>
+
+      {/* No videocalls dialog */}
+      <Dialog open={showNoVideocallDialog} onOpenChange={setShowNoVideocallDialog}>
+        <DialogContent className="max-w-md mx-auto rounded-none p-0 border-none [&>button]:hidden">
+          <div className="bg-white border border-gray-200 rounded-none" style={{ margin: '0' }}>
+            <div className="p-6 text-center">
+              <X className="h-6 w-6 text-red-500 mx-auto mb-4" />
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Δεν έχεις διαθέσιμες βιντεοκλήσεις
+              </h3>
+              
+              <p className="text-sm text-gray-600 mb-6">
+                Για να κλείσεις videocall, χρειάζεται να αγοράσεις μια βιντεοκλήση από τις αγορές
+              </p>
+              
+              <Button 
+                onClick={() => setShowNoVideocallDialog(false)}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-none"
+              >
+                Κλείσε
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Booking Calendar Modal */}
       {bookingCalendarOpen && (
