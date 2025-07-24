@@ -19,9 +19,29 @@ const OnlineCoachingWithSidebar: React.FC = () => {
 
   // Διαχωρισμός bookings σε επερχόμενα, εκκρεμείς και ιστορικό
   const now = new Date();
-  const upcomingBookings = bookings.filter(booking => 
-    booking.status === 'confirmed' && new Date(booking.booking_date) >= now
-  );
+  const upcomingBookings = bookings.filter(booking => {
+    if (booking.status !== 'confirmed') return false;
+    
+    const bookingDate = new Date(booking.booking_date);
+    
+    // Είναι μελλοντική κράτηση
+    if (bookingDate < now) return false;
+    
+    // Βρίσκουμε την αρχή της τρέχουσας εβδομάδας (Δευτέρα)
+    const startOfWeek = new Date(now);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Ρύθμιση για Δευτέρα
+    startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    // Βρίσκουμε το τέλος της τρέχουσας εβδομάδας (Κυριακή)
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    
+    // Επιστρέφουμε μόνο τις κρατήσεις της τρέχουσας εβδομάδας
+    return bookingDate >= startOfWeek && bookingDate <= endOfWeek;
+  });
   const pendingBookings = bookings.filter(booking => booking.status === 'pending');
   const pastBookings = bookings
     .filter(booking => 
