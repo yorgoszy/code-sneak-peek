@@ -101,3 +101,18 @@
     font-family: 'Robert Pro', sans-serif;
   }
 }
+
+@layer utilities {
+  @keyframes offer-blink {
+    0%, 100% { 
+      color: #9ca3af; /* ανοιχτό γκρι */
+    }
+    50% { 
+      color: #fa3055; /* κόκκινο */
+    }
+  }
+
+  .animate-offer-blink {
+    animation: offer-blink 1s ease-in-out infinite;
+  }
+}
