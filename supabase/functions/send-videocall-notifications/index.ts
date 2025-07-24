@@ -8,9 +8,14 @@ const corsHeaders = {
 }
 
 interface NotificationRequest {
-  type: 'booking_pending' | 'booking_approved' | 'booking_rejected' | 'reminder_24h' | 'reminder_1h' | 'reminder_15min'
-  bookingId: string
+  type: 'booking_pending' | 'booking_approved' | 'booking_rejected' | 'reminder_24h' | 'reminder_1h' | 'reminder_15min' | 
+        'booking_created' | 'booking_cancelled' | 'offer_accepted' | 'offer_rejected' | 
+        'package_purchased' | 'user_welcome'
+  bookingId?: string
   adminEmail?: string
+  userId?: string
+  paymentId?: string
+  offerId?: string
 }
 
 interface VideocallBooking {
@@ -27,7 +32,7 @@ interface VideocallBooking {
   videocall_type: string
 }
 
-const generateEmailHTML = (type: string, booking: VideocallBooking, adminEmail?: string) => {
+const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?: string, userData?: any) => {
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('el-GR')
   const formatTime = (timeStr: string) => timeStr.slice(0, 5)
   
@@ -388,6 +393,291 @@ const generateEmailHTML = (type: string, booking: VideocallBooking, adminEmail?:
         </html>
       `
 
+    case 'user_welcome':
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Καλώς ήρθατε στο HYPERKIDS!</title>
+          ${baseStyle}
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">HYPERKIDS</div>
+              <p>Καλώς ήρθατε στην οικογένεια μας! 🎉</p>
+            </div>
+            
+            <div class="content">
+              <h2>🎯 Καλώς ήρθατε ${userData?.full_name || 'στο HYPERKIDS'}!</h2>
+              <p>Είμαστε χαρούμενοι που εγγραφήκατε στο προπονητικό κέντρο HYPERKIDS!</p>
+              
+              <div class="booking-info">
+                <h3>Τι μπορείτε να κάνετε:</h3>
+                <ul>
+                  <li>🏃‍♂️ Κλείστε το ραντεβού σας για το γυμναστήριο</li>
+                  <li>💻 Προγραμματίστε online coaching sessions</li>
+                  <li>📊 Παρακολουθήστε την πρόοδό σας</li>
+                  <li>🎯 Δείτε τα προγράμματα προπόνησης</li>
+                </ul>
+              </div>
+              
+              <p>Για να ξεκινήσετε, συνδεθείτε στο λογαριασμό σας και εξερευνήστε τις υπηρεσίες μας!</p>
+              
+              <a href="https://www.hyperkids.gr" class="button">Εξερευνήστε το HYPERKIDS</a>
+            </div>
+            
+            <div class="footer">
+              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+    case 'booking_created':
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Κράτηση Επιβεβαιώθηκε - HYPERKIDS</title>
+          ${baseStyle}
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">HYPERKIDS</div>
+              <p>Η Κράτησή σας Επιβεβαιώθηκε! ✅</p>
+            </div>
+            
+            <div class="content">
+              <h2>📅 Κράτηση Επιβεβαιώθηκε</h2>
+              <p>Η κράτηση για το γυμναστήριο σας έχει επιβεβαιωθεί:</p>
+              
+              <div class="booking-info">
+                <div class="info-row">
+                  <span class="label">Ημερομηνία:</span>
+                  <span class="value">${userData?.booking_date ? formatDate(userData.booking_date) : 'TBD'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Ώρα:</span>
+                  <span class="value">${userData?.booking_time ? formatTime(userData.booking_time) : 'TBD'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Τύπος:</span>
+                  <span class="value">Επίσκεψη Γυμναστηρίου</span>
+                </div>
+              </div>
+              
+              <p>Θα λάβετε υπενθύμιση 24 ώρες πριν την επίσκεψή σας.</p>
+              
+              <a href="https://www.hyperkids.gr/bookings" class="button">Δείτε τις Κρατήσεις σας</a>
+            </div>
+            
+            <div class="footer">
+              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+    case 'booking_cancelled':
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Κράτηση Ακυρώθηκε - HYPERKIDS</title>
+          ${baseStyle}
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">HYPERKIDS</div>
+              <p>Ακύρωση Κράτησης</p>
+            </div>
+            
+            <div class="content">
+              <h2>❌ Κράτηση Ακυρώθηκε</h2>
+              <p>Η κράτησή σας έχει ακυρωθεί επιτυχώς:</p>
+              
+              <div class="booking-info">
+                <div class="info-row">
+                  <span class="label">Ημερομηνία:</span>
+                  <span class="value">${userData?.booking_date ? formatDate(userData.booking_date) : 'TBD'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Ώρα:</span>
+                  <span class="value">${userData?.booking_time ? formatTime(userData.booking_time) : 'TBD'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Κατάσταση:</span>
+                  <span class="value" style="color: #dc3545;">Ακυρωμένη</span>
+                </div>
+              </div>
+              
+              <p>Η επίσκεψη έχει επιστραφεί στο πακέτο σας. Μπορείτε να κάνετε νέα κράτηση όποτε θέλετε.</p>
+              
+              <a href="https://www.hyperkids.gr/bookings" class="button">Κάντε Νέα Κράτηση</a>
+            </div>
+            
+            <div class="footer">
+              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+    case 'package_purchased':
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Αγορά Πακέτου - HYPERKIDS</title>
+          ${baseStyle}
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">HYPERKIDS</div>
+              <p>Αγορά Πακέτου Επιβεβαιώθηκε! 🎉</p>
+            </div>
+            
+            <div class="content">
+              <h2>✅ Πακέτο Αγοράστηκε Επιτυχώς</h2>
+              <p>Ευχαριστούμε για την αγορά σας! Το πακέτο σας είναι έτοιμο προς χρήση:</p>
+              
+              <div class="booking-info">
+                <div class="info-row">
+                  <span class="label">Πακέτο:</span>
+                  <span class="value">${userData?.package_name || 'Πακέτο Υπηρεσιών'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Ποσό:</span>
+                  <span class="value">${userData?.amount || '0'}€</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Ημερομηνία Αγοράς:</span>
+                  <span class="value">${userData?.purchase_date ? formatDate(userData.purchase_date) : formatDate(new Date().toISOString())}</span>
+                </div>
+              </div>
+              
+              <p>Μπορείτε πλέον να κλείσετε ραντεβού και να χρησιμοποιήσετε τις υπηρεσίες του πακέτου σας!</p>
+              
+              <a href="https://www.hyperkids.gr/bookings" class="button">Κλείστε Ραντεβού</a>
+            </div>
+            
+            <div class="footer">
+              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+    case 'offer_accepted':
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Προσφορά Αποδεκτή - HYPERKIDS</title>
+          ${baseStyle}
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">HYPERKIDS</div>
+              <p>Προσφορά Αποδεκτή! 🎉</p>
+            </div>
+            
+            <div class="content">
+              <h2>✅ Η Προσφορά σας Αποδέχθηκε</h2>
+              <p>Ευχαριστούμε που αποδεχθήκατε την ειδική προσφορά μας:</p>
+              
+              <div class="booking-info">
+                <div class="info-row">
+                  <span class="label">Προσφορά:</span>
+                  <span class="value">${userData?.offer_name || 'Ειδική Προσφορά'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Έκπτωση:</span>
+                  <span class="value">${userData?.discount || '0'}%</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Νέα Τιμή:</span>
+                  <span class="value">${userData?.discounted_price || '0'}€</span>
+                </div>
+              </div>
+              
+              <p>Η προσφορά έχει εφαρμοστεί στο λογαριασμό σας και μπορείτε να προχωρήσετε στην αγορά!</p>
+              
+              <a href="https://www.hyperkids.gr/shop" class="button">Ολοκληρώστε την Αγορά</a>
+            </div>
+            
+            <div class="footer">
+              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+    case 'offer_rejected':
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Προσφορά Απορρίφθηκε - HYPERKIDS</title>
+          ${baseStyle}
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">HYPERKIDS</div>
+              <p>Σχετικά με την Προσφορά</p>
+            </div>
+            
+            <div class="content">
+              <h2>📋 Προσφορά Απορρίφθηκε</h2>
+              <p>Λάβαμε την απάντησή σας σχετικά με την προσφορά μας.</p>
+              
+              <div class="booking-info">
+                <div class="info-row">
+                  <span class="label">Προσφορά:</span>
+                  <span class="value">${userData?.offer_name || 'Ειδική Προσφορά'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Κατάσταση:</span>
+                  <span class="value" style="color: #dc3545;">Απορρίφθηκε</span>
+                </div>
+              </div>
+              
+              <p>Δεν υπάρχει πρόβλημα! Θα συνεχίσουμε να σας ενημερώνουμε για μελλοντικές προσφορές που μπορεί να σας ενδιαφέρουν.</p>
+              
+              <a href="https://www.hyperkids.gr/shop" class="button">Δείτε τις Υπηρεσίες μας</a>
+            </div>
+            
+            <div class="footer">
+              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
     default:
       return ''
   }
@@ -415,29 +705,69 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const resend = new Resend(resendApiKey)
-    const { type, bookingId, adminEmail }: NotificationRequest = await req.json()
+    const { type, bookingId, adminEmail, userId, paymentId, offerId }: NotificationRequest = await req.json()
 
-    console.log(`📧 Αποστολή ${type} notification για booking ${bookingId}`)
+    console.log(`📧 Αποστολή ${type} notification`)
 
-    // Fetch booking details with user info
-    const { data: booking, error } = await supabase
-      .from('user_videocalls')
-      .select(`
-        *,
-        app_users (full_name, email)
-      `)
-      .eq('id', bookingId)
-      .single()
+    let booking = null
+    let userData = null
+    let emailHTML = ''
 
-    if (error || !booking) {
-      console.error('❌ Booking not found:', error)
-      return new Response(
-        JSON.stringify({ error: 'Booking not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // Handle videocall notifications
+    if (['booking_pending', 'booking_approved', 'booking_rejected', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
+      const { data: bookingData, error } = await supabase
+        .from('user_videocalls')
+        .select(`
+          *,
+          app_users (full_name, email)
+        `)
+        .eq('id', bookingId)
+        .single()
+
+      if (error || !bookingData) {
+        console.error('❌ Booking not found:', error)
+        return new Response(
+          JSON.stringify({ error: 'Booking not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      booking = bookingData
+      emailHTML = generateEmailHTML(type, booking, adminEmail)
     }
 
-    const emailHTML = generateEmailHTML(type, booking, adminEmail)
+    // Handle other notification types
+    if (['user_welcome', 'booking_created', 'booking_cancelled', 'package_purchased', 'offer_accepted', 'offer_rejected'].includes(type)) {
+      // Fetch user data
+      if (userId) {
+        const { data: user } = await supabase
+          .from('app_users')
+          .select('*')
+          .eq('id', userId)
+          .single()
+        userData = user
+      }
+
+      // Fetch additional data based on type
+      if (type === 'package_purchased' && paymentId) {
+        const { data: payment } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('id', paymentId)
+          .single()
+        userData = { ...userData, ...payment }
+      }
+
+      if (['offer_accepted', 'offer_rejected'].includes(type) && offerId) {
+        const { data: offer } = await supabase
+          .from('offers')
+          .select('*')
+          .eq('id', offerId)
+          .single()
+        userData = { ...userData, ...offer }
+      }
+
+      emailHTML = generateEmailHTML(type, null, adminEmail, userData)
+    }
     
     // Determine recipient and subject based on notification type
     let recipient: string
@@ -446,7 +776,7 @@ serve(async (req) => {
     if (type === 'booking_pending') {
       recipient = adminEmail || 'yorgoszy@gmail.com'
       subject = `🔔 Νέα Κράτηση Βιντεοκλήσης - ${booking.app_users.full_name}`
-    } else {
+    } else if (['booking_approved', 'booking_rejected', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
       recipient = booking.app_users.email
       switch (type) {
         case 'booking_approved':
@@ -466,6 +796,31 @@ serve(async (req) => {
           break
         default:
           subject = `HYPERKIDS - Ενημέρωση Βιντεοκλήσης`
+      }
+    } else {
+      // Handle other notification types
+      recipient = userData?.email || 'info@hyperkids.gr'
+      switch (type) {
+        case 'user_welcome':
+          subject = `🎉 Καλώς ήρθατε στο HYPERKIDS!`
+          break
+        case 'booking_created':
+          subject = `✅ Κράτηση Επιβεβαιώθηκε - HYPERKIDS`
+          break
+        case 'booking_cancelled':
+          subject = `❌ Κράτηση Ακυρώθηκε - HYPERKIDS`
+          break
+        case 'package_purchased':
+          subject = `🎉 Αγορά Πακέτου Επιβεβαιώθηκε - HYPERKIDS`
+          break
+        case 'offer_accepted':
+          subject = `✅ Προσφορά Αποδεκτή - HYPERKIDS`
+          break
+        case 'offer_rejected':
+          subject = `📋 Σχετικά με την Προσφορά - HYPERKIDS`
+          break
+        default:
+          subject = `HYPERKIDS - Ενημέρωση`
       }
     }
 
