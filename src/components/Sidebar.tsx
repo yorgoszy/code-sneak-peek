@@ -38,11 +38,13 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const { userProfile } = useRoleCheck();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
+  const [pendingVideocalls, setPendingVideocalls] = useState(0);
   const isMobile = useIsMobile();
 
   useEffect(() => {
     if (userProfile?.id) {
       loadAvailableOffers();
+      loadPendingVideocalls();
     }
   }, [userProfile?.id]);
 
@@ -103,6 +105,25 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       }
     } catch (error) {
       console.error('Error loading available offers:', error);
+    }
+  };
+
+  const loadPendingVideocalls = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('booking_sessions')
+        .select('id')
+        .eq('booking_type', 'videocall')
+        .eq('status', 'confirmed')
+        .gte('booking_date', new Date().toISOString().split('T')[0]);
+
+      if (error) throw error;
+      
+      setPendingVideocalls(data?.length || 0);
+    } catch (error) {
+      console.error('Error loading pending videocalls:', error);
     }
   };
 
@@ -195,7 +216,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Video,
       label: "Online Coaching",
       path: "/dashboard/online-coaching",
-      badge: "NEW"
+      badge: userProfile?.role === 'admin' && pendingVideocalls > 0 ? pendingVideocalls.toString() : null
     },
     {
       icon: Calendar,
