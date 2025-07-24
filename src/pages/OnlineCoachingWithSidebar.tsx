@@ -95,6 +95,9 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                     className="rounded-none p-3 pointer-events-auto"
                     modifiers={modifiers}
                     modifiersStyles={modifiersStyles}
+                    classNames={{
+                      day_selected: "border-2 border-[#00ffba] bg-transparent text-[#00ffba] hover:bg-[#00ffba]/10 focus:bg-[#00ffba]/10 rounded-none"
+                    }}
                   />
                 </CardContent>
               </Card>
