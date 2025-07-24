@@ -189,7 +189,7 @@ export const UserProfileSidebar = forwardRef<
             </div>
             {(!isCollapsed || isMobile) && item.badge && (
               <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
-                item.key === 'offers' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'
+                item.key === 'offers' ? 'bg-[#fa3055] text-white' : 'bg-gray-200 text-gray-700'
               }`}>
                 {item.badge}
               </span>
