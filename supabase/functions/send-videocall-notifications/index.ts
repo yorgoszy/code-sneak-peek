@@ -19,14 +19,12 @@ interface VideocallBooking {
     full_name: string
     email: string
   }
-  videocall_sections: {
-    name: string
-  }
-  date: string
-  time: string
+  videocall_date: string
+  videocall_time: string
   status: string
   meeting_link?: string
   notes?: string
+  videocall_type: string
 }
 
 const generateEmailHTML = (type: string, booking: VideocallBooking, adminEmail?: string) => {
@@ -81,15 +79,15 @@ const generateEmailHTML = (type: string, booking: VideocallBooking, adminEmail?:
                 </div>
                 <div class="info-row">
                   <span class="label">Τύπος Συνεδρίας:</span>
-                  <span class="value">${booking.videocall_sections.name}</span>
+                  <span class="value">${booking.videocall_type}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ημερομηνία:</span>
-                  <span class="value">${formatDate(booking.date)}</span>
+                  <span class="value">${formatDate(booking.videocall_date)}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ώρα:</span>
-                  <span class="value">${formatTime(booking.time)}</span>
+                  <span class="value">${formatTime(booking.videocall_time)}</span>
                 </div>
                 ${booking.notes ? `
                 <div class="info-row">
@@ -136,15 +134,15 @@ const generateEmailHTML = (type: string, booking: VideocallBooking, adminEmail?:
               <div class="booking-info">
                 <div class="info-row">
                   <span class="label">Τύπος Συνεδρίας:</span>
-                  <span class="value">${booking.videocall_sections.name}</span>
+                  <span class="value">${booking.videocall_type}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ημερομηνία:</span>
-                  <span class="value">${formatDate(booking.date)}</span>
+                  <span class="value">${formatDate(booking.videocall_date)}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ώρα:</span>
-                  <span class="value">${formatTime(booking.time)}</span>
+                  <span class="value">${formatTime(booking.videocall_time)}</span>
                 </div>
                 ${booking.meeting_link ? `
                 <div class="info-row">
@@ -191,15 +189,15 @@ const generateEmailHTML = (type: string, booking: VideocallBooking, adminEmail?:
               <div class="booking-info">
                 <div class="info-row">
                   <span class="label">Τύπος Συνεδρίας:</span>
-                  <span class="value">${booking.videocall_sections.name}</span>
+                  <span class="value">${booking.videocall_type}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ημερομηνία:</span>
-                  <span class="value">${formatDate(booking.date)}</span>
+                  <span class="value">${formatDate(booking.videocall_date)}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ώρα:</span>
-                  <span class="value">${formatTime(booking.time)}</span>
+                  <span class="value">${formatTime(booking.videocall_time)}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Κατάσταση:</span>
@@ -245,15 +243,15 @@ const generateEmailHTML = (type: string, booking: VideocallBooking, adminEmail?:
               <div class="booking-info">
                 <div class="info-row">
                   <span class="label">Τύπος Συνεδρίας:</span>
-                  <span class="value">${booking.videocall_sections.name}</span>
+                  <span class="value">${booking.videocall_type}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ημερομηνία:</span>
-                  <span class="value">${formatDate(booking.date)}</span>
+                  <span class="value">${formatDate(booking.videocall_date)}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ώρα:</span>
-                  <span class="value">${formatTime(booking.time)}</span>
+                  <span class="value">${formatTime(booking.videocall_time)}</span>
                 </div>
                 ${booking.meeting_link ? `
                 <div class="info-row">
@@ -305,11 +303,11 @@ const generateEmailHTML = (type: string, booking: VideocallBooking, adminEmail?:
               <div class="booking-info">
                 <div class="info-row">
                   <span class="label">Τύπος Συνεδρίας:</span>
-                  <span class="value">${booking.videocall_sections.name}</span>
+                  <span class="value">${booking.videocall_type}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ώρα Έναρξης:</span>
-                  <span class="value">${formatTime(booking.time)}</span>
+                  <span class="value">${formatTime(booking.videocall_time)}</span>
                 </div>
                 ${booking.meeting_link ? `
                 <div class="info-row">
@@ -362,11 +360,11 @@ const generateEmailHTML = (type: string, booking: VideocallBooking, adminEmail?:
               <div class="booking-info">
                 <div class="info-row">
                   <span class="label">Τύπος Συνεδρίας:</span>
-                  <span class="value">${booking.videocall_sections.name}</span>
+                  <span class="value">${booking.videocall_type}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ώρα Έναρξης:</span>
-                  <span class="value">${formatTime(booking.time)}</span>
+                  <span class="value">${formatTime(booking.videocall_time)}</span>
                 </div>
               </div>
               
@@ -421,13 +419,12 @@ serve(async (req) => {
 
     console.log(`📧 Αποστολή ${type} notification για booking ${bookingId}`)
 
-    // Fetch booking details with user and section info
+    // Fetch booking details with user info
     const { data: booking, error } = await supabase
-      .from('videocall_bookings')
+      .from('user_videocalls')
       .select(`
         *,
-        app_users (full_name, email),
-        videocall_sections (name)
+        app_users (full_name, email)
       `)
       .eq('id', bookingId)
       .single()
@@ -453,19 +450,19 @@ serve(async (req) => {
       recipient = booking.app_users.email
       switch (type) {
         case 'booking_approved':
-          subject = `✅ Η Βιντεοκλήση σας Εγκρίθηκε - ${booking.videocall_sections.name}`
+          subject = `✅ Η Βιντεοκλήση σας Εγκρίθηκε - ${booking.videocall_type}`
           break
         case 'booking_rejected':
           subject = `📋 Ενημέρωση για την Κράτηση Βιντεοκλήσης`
           break
         case 'reminder_24h':
-          subject = `⏰ Υπενθύμιση: Βιντεοκλήση Αύριο - ${booking.videocall_sections.name}`
+          subject = `⏰ Υπενθύμιση: Βιντεοκλήση Αύριο - ${booking.videocall_type}`
           break
         case 'reminder_1h':
-          subject = `🔔 Η Βιντεοκλήση σας σε 1 ώρα - ${booking.videocall_sections.name}`
+          subject = `🔔 Η Βιντεοκλήση σας σε 1 ώρα - ${booking.videocall_type}`
           break
         case 'reminder_15min':
-          subject = `🚨 Η Βιντεοκλήση σας σε 15 λεπτά - ${booking.videocall_sections.name}`
+          subject = `🚨 Η Βιντεοκλήση σας σε 15 λεπτά - ${booking.videocall_type}`
           break
         default:
           subject = `HYPERKIDS - Ενημέρωση Βιντεοκλήσης`

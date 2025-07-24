@@ -3028,10 +3028,15 @@ export type Database = {
       }
       user_videocalls: {
         Row: {
+          approved_at: string | null
           created_at: string
           created_by: string | null
           id: string
+          meeting_link: string | null
           notes: string | null
+          rejected_at: string | null
+          requested_at: string | null
+          status: string | null
           updated_at: string
           user_id: string
           videocall_date: string
@@ -3039,10 +3044,15 @@ export type Database = {
           videocall_type: string
         }
         Insert: {
+          approved_at?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          meeting_link?: string | null
           notes?: string | null
+          rejected_at?: string | null
+          requested_at?: string | null
+          status?: string | null
           updated_at?: string
           user_id: string
           videocall_date?: string
@@ -3050,10 +3060,15 @@ export type Database = {
           videocall_type?: string
         }
         Update: {
+          approved_at?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          meeting_link?: string | null
           notes?: string | null
+          rejected_at?: string | null
+          requested_at?: string | null
+          status?: string | null
           updated_at?: string
           user_id?: string
           videocall_date?: string
