@@ -460,13 +460,22 @@ export const SubscriptionTypeManager: React.FC = () => {
           <div className="flex items-center gap-2">
             <span>Διαχείριση Τύπων Συνδρομών</span>
           </div>
-          <Button 
-            onClick={openCreateDialog}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Νέος Τύπος
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={openCreateDialog}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Νέος Τύπος
+            </Button>
+            <Button 
+              onClick={() => {/* TODO: Implement offer creation */}}
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-none"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Νέα Προσφορά
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>

@@ -167,30 +167,34 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card className="rounded-none">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              {bookingType === 'videocall' ? 'Κλείσε Videocall' : 'Κλείσε Ραντεβού'}
-            </CardTitle>
-            <div className="mt-2">
-              {bookingType === 'videocall' && availability?.has_videocall && (
-                <Badge variant="outline" className="rounded-none">
-                  Videocalls: {(availability.videocall_packages_available || 0) + (availability.single_videocall_sessions || 0)} διαθέσιμες
-                </Badge>
-              )}
-              {bookingType !== 'videocall' && availability?.type === 'hypergym' && (
-                <Badge variant="outline" className="rounded-none">
-                  Hypergym: {availability.available_monthly}/{availability.total_monthly} διαθέσιμες αυτό το μήνα
-                </Badge>
-              )}
-              {bookingType !== 'videocall' && availability?.type === 'visit_packages' && (
-                <Badge variant="outline" className="rounded-none">
-                  Επισκέψεις: {availability.available_visits} διαθέσιμες
-                </Badge>
-              )}
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                {bookingType === 'videocall' ? 'Κλείσε Videocall' : 'Κλείσε Ραντεβού'}
+              </CardTitle>
+              <div className="mt-2 space-y-2">
+                {/* Διαθέσιμα ραντεβού για τον μήνα */}
+                <div className="text-sm text-gray-600">
+                  Διαθέσιμα ραντεβού για {format(selectedDate || new Date(), 'MMMM yyyy')}
+                </div>
+                {bookingType === 'videocall' && availability?.has_videocall && (
+                  <Badge variant="outline" className="rounded-none">
+                    Videocalls: {(availability.videocall_packages_available || 0) + (availability.single_videocall_sessions || 0)} διαθέσιμες
+                  </Badge>
+                )}
+                {bookingType !== 'videocall' && availability?.type === 'hypergym' && (
+                  <Badge variant="outline" className="rounded-none">
+                    Hypergym: {availability.available_monthly}/{availability.total_monthly} διαθέσιμες αυτό το μήνα
+                  </Badge>
+                )}
+                {bookingType !== 'videocall' && availability?.type === 'visit_packages' && (
+                  <Badge variant="outline" className="rounded-none">
+                    Επισκέψεις: {availability.available_visits} διαθέσιμες
+                  </Badge>
+                )}
+              </div>
             </div>
-          </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -208,7 +212,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
-              disabled={(date) => date < addDays(new Date(), 0)}
+              disabled={(date) => {
+                if (date < addDays(new Date(), 0)) return true;
+                
+                // TODO: Προσθήκη περιορισμού μέχρι την ημερομηνία λήξης συνδρομής
+                return false;
+              }}
               className={cn("w-full pointer-events-auto")}
             />
           </CardContent>
@@ -348,7 +357,15 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
               disabled={!selectedDate || !selectedSection || !selectedTime || loading}
               className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
             >
-              {loading ? 'Δημιουργία...' : 'Επιβεβαίωση Ραντεβού'}
+              {loading ? 'Δημιουργία...' : 
+                `Κλείσε Ραντεβού (${
+                  bookingType === 'videocall' 
+                    ? (availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)
+                    : availability?.type === 'hypergym' 
+                      ? availability?.available_monthly || 0
+                      : availability?.available_visits || 0
+                } διαθέσιμες)`
+              }
             </Button>
           </CardContent>
         </Card>

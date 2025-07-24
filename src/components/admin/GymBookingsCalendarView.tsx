@@ -268,19 +268,28 @@ export const GymBookingsCalendarView = () => {
                             ))}
                           </div>
                           
-                          {/* User Avatars */}
-                          {slotBookings.length > 0 && (
-                            <div className="flex flex-wrap gap-0.5 mt-1">
-                              {slotBookings.map((booking) => (
-                                <Avatar key={booking.id} className="w-4 h-4">
-                                  <AvatarImage src="" />
-                                  <AvatarFallback className="text-xs bg-[#00ffba] text-black">
-                                    {booking.app_users?.name?.charAt(0) || 'Α'}
-                                  </AvatarFallback>
-                                </Avatar>
-                              ))}
-                            </div>
-                          )}
+                          {/* Position Bubbles */}
+                          <div className="flex gap-0.5 mt-1">
+                            {Array.from({ length: capacity }).map((_, index) => (
+                              <div
+                                key={index}
+                                className={`w-4 h-4 rounded-full border border-gray-200 flex items-center justify-center ${
+                                  index < currentBookings 
+                                    ? 'bg-[#00ffba]' 
+                                    : 'bg-gray-100'
+                                }`}
+                              >
+                                {index < slotBookings.length && (
+                                  <Avatar className="w-3 h-3">
+                                    <AvatarImage src="" />
+                                    <AvatarFallback className="text-xs bg-transparent text-black">
+                                      {slotBookings[index]?.app_users?.name?.charAt(0) || 'Α'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     );
