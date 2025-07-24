@@ -135,11 +135,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
       if (cancelError) throw cancelError;
       
-      const totalBookings = (newBookings?.length || 0) + (cancelledBookings?.length || 0);
+      const newBookingsCount = newBookings?.length || 0;
       const cancelledCount = cancelledBookings?.length || 0;
       
       setTodayBookings({ 
-        total: totalBookings, 
+        total: newBookingsCount, 
         cancelled: cancelledCount 
       });
     } catch (error) {
