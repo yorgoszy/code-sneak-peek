@@ -1572,6 +1572,65 @@ export type Database = {
         }
         Relationships: []
       }
+      offers: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          discounted_price: number
+          end_date: string
+          id: string
+          is_active: boolean | null
+          name: string
+          start_date: string
+          subscription_type_id: string | null
+          target_groups: string[] | null
+          target_users: string[] | null
+          updated_at: string | null
+          visibility: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          discounted_price: number
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          start_date: string
+          subscription_type_id?: string | null
+          target_groups?: string[] | null
+          target_users?: string[] | null
+          updated_at?: string | null
+          visibility?: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          discounted_price?: number
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          start_date?: string
+          subscription_type_id?: string | null
+          target_groups?: string[] | null
+          target_users?: string[] | null
+          updated_at?: string | null
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_subscription_type_id_fkey"
+            columns: ["subscription_type_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       one_rm_tests: {
         Row: {
           athlete_id: number | null

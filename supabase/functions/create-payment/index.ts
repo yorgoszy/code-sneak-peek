@@ -63,9 +63,49 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/shop`,
+      success_url: `${req.headers.get("origin")}/dashboard/shop?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get("origin")}/dashboard/shop?payment=cancelled`,
+      metadata: {
+        user_id: user.id,
+        amount: amount.toString(),
+        product_name: productName || "Αγορά Πακέτου"
+      }
     });
+
+    // Create payment and receipt records using service role key
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    // Get app_users id
+    const { data: appUser } = await supabaseService
+      .from('app_users')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (appUser) {
+      // Create payment record
+      await supabaseService.from("payments").insert({
+        user_id: appUser.id,
+        amount: amount,
+        transaction_id: session.id,
+        status: "pending",
+        payment_method: "stripe",
+        created_at: new Date().toISOString()
+      });
+
+      // Create receipt record
+      await supabaseService.from("receipts").insert({
+        user_id: appUser.id,
+        amount: amount,
+        payment_method: "stripe",
+        issued_date: new Date().toISOString().split('T')[0],
+        created_at: new Date().toISOString()
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

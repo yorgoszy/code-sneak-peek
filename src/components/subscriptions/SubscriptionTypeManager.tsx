@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { matchesSearchTerm } from "@/lib/utils";
+import { OfferCreationDialog } from "@/components/offers/OfferCreationDialog";
 
 interface SubscriptionType {
   id: string;
@@ -36,6 +37,7 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<SubscriptionType | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [typeToDelete, setTypeToDelete] = useState<SubscriptionType | null>(null);
@@ -469,7 +471,7 @@ export const SubscriptionTypeManager: React.FC = () => {
               Νέος Τύπος
             </Button>
             <Button 
-              onClick={() => {/* TODO: Implement offer creation */}}
+              onClick={() => setIsOfferDialogOpen(true)}
               className="bg-blue-500 hover:bg-blue-600 text-white rounded-none"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -793,6 +795,16 @@ export const SubscriptionTypeManager: React.FC = () => {
         description={`Είστε σίγουροι ότι θέλετε να διαγράψετε τον τύπο συνδρομής "${typeToDelete?.name}"; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.`}
         confirmText="Διαγραφή"
         cancelText="Ακύρωση"
+      />
+
+      {/* Offer Creation Dialog */}
+      <OfferCreationDialog
+        isOpen={isOfferDialogOpen}
+        onClose={() => setIsOfferDialogOpen(false)}
+        onSuccess={() => {
+          toast.success('Η προσφορά δημιουργήθηκε επιτυχώς!');
+          setIsOfferDialogOpen(false);
+        }}
       />
     </Card>
   );
