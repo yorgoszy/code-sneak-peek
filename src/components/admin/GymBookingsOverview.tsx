@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Calendar, Users } from "lucide-react";
+import { MapPin, Calendar, Users, Check, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GymBookingCard } from "./GymBookingCard";
+import { toast } from "sonner";
 
 interface GymBooking {
   id: string;
@@ -26,6 +28,8 @@ interface GymBooking {
 export const GymBookingsOverview = () => {
   const [bookings, setBookings] = useState<GymBooking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [readBookingIds, setReadBookingIds] = useState<Set<string>>(new Set());
+  const [markingAsRead, setMarkingAsRead] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -58,12 +62,35 @@ export const GymBookingsOverview = () => {
     booking.status === 'confirmed' && new Date(`${booking.booking_date} ${booking.booking_time}`) > new Date()
   );
   
-  const pendingBookings = bookings.filter(booking => booking.status === 'pending');
+  // Νέες κρατήσεις είναι όλες οι κρατήσεις που δεν έχουν "διαβαστεί"
+  const newBookings = bookings.filter(booking => 
+    !readBookingIds.has(booking.id)
+  );
   
   const pastBookings = bookings.filter(booking => 
     (booking.status === 'confirmed' && new Date(`${booking.booking_date} ${booking.booking_time}`) <= new Date()) ||
     booking.status === 'cancelled'
   );
+
+  const handleMarkAsRead = async () => {
+    setMarkingAsRead(true);
+    
+    try {
+      // Προσθέτουμε όλες τις νέες κρατήσεις στο set των διαβασμένων
+      const newReadIds = new Set([...readBookingIds, ...newBookings.map(b => b.id)]);
+      setReadBookingIds(newReadIds);
+      
+      // Ενημερώνουμε το sidebar
+      window.dispatchEvent(new CustomEvent('gym-bookings-read'));
+      
+      toast.success('Όλες οι νέες κρατήσεις μεταφέρθηκαν στο "Ενημερώθηκα"');
+    } catch (error) {
+      console.error('Error marking as read:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση');
+    } finally {
+      setMarkingAsRead(false);
+    }
+  };
 
   if (loading) {
     return <div className="text-center py-8">Φόρτωση...</div>;
@@ -71,9 +98,26 @@ export const GymBookingsOverview = () => {
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Κρατήσεις Γυμναστηρίου</h2>
-        <p className="text-gray-600">Διαχείριση όλων των κρατήσεων για το γυμναστήριο</p>
+      <div className="flex items-center justify-between">
+        <div className="text-center flex-1">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Κρατήσεις Γυμναστηρίου</h2>
+          <p className="text-gray-600">Διαχείριση όλων των κρατήσεων για το γυμναστήριο</p>
+        </div>
+        
+        {newBookings.length > 0 && (
+          <Button
+            onClick={handleMarkAsRead}
+            disabled={markingAsRead}
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+          >
+            {markingAsRead ? (
+              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Check className="w-4 h-4 mr-2" />
+            )}
+            Ενημερώθηκα
+          </Button>
+        )}
       </div>
 
       {/* Summary Statistics */}
@@ -82,12 +126,12 @@ export const GymBookingsOverview = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              Εκκρεμείς Κρατήσεις
+              Νέες Κρατήσεις
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingBookings.length}</div>
-            <p className="text-xs text-gray-500">Χρειάζονται έγκριση</p>
+            <div className="text-2xl font-bold">{newBookings.length}</div>
+            <p className="text-xs text-gray-500">Χρειάζονται επισκόπηση</p>
           </CardContent>
         </Card>
 
@@ -119,10 +163,10 @@ export const GymBookingsOverview = () => {
       </div>
 
       {/* Bookings by status */}
-      <Tabs defaultValue="pending" className="space-y-4">
+      <Tabs defaultValue="new" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3 rounded-none">
-          <TabsTrigger value="pending" className="rounded-none">
-            Εκκρεμείς ({pendingBookings.length})
+          <TabsTrigger value="new" className="rounded-none">
+            Νέα ({newBookings.length})
           </TabsTrigger>
           <TabsTrigger value="upcoming" className="rounded-none">
             Επερχόμενες ({upcomingBookings.length})
@@ -132,16 +176,16 @@ export const GymBookingsOverview = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pending" className="space-y-4">
-          {pendingBookings.length === 0 ? (
+        <TabsContent value="new" className="space-y-4">
+          {newBookings.length === 0 ? (
             <Card className="rounded-none">
               <CardContent className="text-center py-8">
                 <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">Δεν υπάρχουν εκκρεμείς κρατήσεις</p>
+                <p className="text-gray-500">Δεν υπάρχουν νέες κρατήσεις</p>
               </CardContent>
             </Card>
           ) : (
-            pendingBookings.map((booking) => (
+            newBookings.map((booking) => (
               <GymBookingCard
                 key={booking.id}
                 booking={booking}

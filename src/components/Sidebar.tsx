@@ -41,6 +41,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [pendingVideocalls, setPendingVideocalls] = useState(0);
   const [todayBookings, setTodayBookings] = useState({ total: 0, cancelled: 0 });
   const [totalPurchases, setTotalPurchases] = useState(0);
+  const [newGymBookings, setNewGymBookings] = useState(0);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -49,8 +50,22 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       loadPendingVideocalls();
       loadTodayBookings();
       loadTotalPurchases();
+      loadNewGymBookings();
     }
   }, [userProfile?.id]);
+
+  useEffect(() => {
+    // Listen για το event που στέλνει το GymBookingsOverview όταν γίνει mark as read
+    const handleGymBookingsRead = () => {
+      setNewGymBookings(0);
+    };
+    
+    window.addEventListener('gym-bookings-read', handleGymBookingsRead);
+    
+    return () => {
+      window.removeEventListener('gym-bookings-read', handleGymBookingsRead);
+    };
+  }, []);
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
@@ -186,6 +201,25 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     }
   };
 
+  const loadNewGymBookings = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου
+      const { data, error } = await supabase
+        .from('booking_sessions')
+        .select('id, created_at')
+        .eq('booking_type', 'gym_visit')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()); // Τελευταίες 24 ώρες
+
+      if (error) throw error;
+      
+      setNewGymBookings(data?.length || 0);
+    } catch (error) {
+      console.error('Error loading new gym bookings:', error);
+    }
+  };
+
   const menuItems = [
     { 
       icon: Home, 
@@ -281,7 +315,9 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Calendar,
       label: "Online Booking",
       path: "/dashboard/online-booking",
-      badge: userProfile?.role === 'admin' && todayBookings.total > 0 ? todayBookings.total.toString() : null,
+      badge: userProfile?.role === 'admin' && (todayBookings.total > 0 || newGymBookings > 0) 
+        ? (newGymBookings > 0 ? newGymBookings.toString() : todayBookings.total.toString()) 
+        : null,
       hasCancellation: todayBookings.cancelled > 0
     },
     {
