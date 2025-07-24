@@ -1,10 +1,13 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
 import { WorkoutStatsTabsSection } from "./WorkoutStatsTabsSection";
 import { UserProfileTabs } from "./UserProfileTabs";
-import { Activity, Calendar, FileText, CreditCard, MapPin } from "lucide-react";
+import { ChangePasswordDialog } from "./ChangePasswordDialog";
+import { Activity, Calendar, FileText, CreditCard, MapPin, Key } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UserProfileOverviewProps {
@@ -25,6 +28,7 @@ export const UserProfileOverview = ({
   visits
 }: UserProfileOverviewProps) => {
   const isMobile = useIsMobile();
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   
   return (
     <div className="space-y-4 md:space-y-6">
@@ -92,8 +96,17 @@ export const UserProfileOverview = ({
 
       {/* Additional Info */}
       <Card className="rounded-none">
-        <CardHeader className={isMobile ? "pb-3" : ""}>
+        <CardHeader className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-row items-center justify-between'} ${isMobile ? "pb-3" : ""}`}>
           <CardTitle className={isMobile ? 'text-base' : ''}>Στοιχεία Λογαριασμού</CardTitle>
+          <Button
+            onClick={() => setIsPasswordDialogOpen(true)}
+            variant="outline"
+            size={isMobile ? "sm" : "default"}
+            className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+          >
+            <Key className="w-4 h-4 mr-2" />
+            Αλλαγή Κωδικού
+          </Button>
         </CardHeader>
         <CardContent className={isMobile ? "pt-0" : ""}>
           <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
@@ -139,6 +152,12 @@ export const UserProfileOverview = ({
           />
         </CardContent>
       </Card>
+
+      {/* Change Password Dialog */}
+      <ChangePasswordDialog
+        isOpen={isPasswordDialogOpen}
+        onClose={() => setIsPasswordDialogOpen(false)}
+      />
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Key } from "lucide-react";
 
 interface ChangePasswordDialogProps {
@@ -21,26 +21,17 @@ export const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (newPassword !== confirmPassword) {
-      toast({
-        title: "Σφάλμα",
-        description: "Οι κωδικοί δεν ταιριάζουν",
-        variant: "destructive",
-      });
+      toast.error("Οι κωδικοί δεν ταιριάζουν");
       return;
     }
 
     if (newPassword.length < 6) {
-      toast({
-        title: "Σφάλμα", 
-        description: "Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες",
-        variant: "destructive",
-      });
+      toast.error("Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες");
       return;
     }
 
@@ -61,10 +52,7 @@ export const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
 
       console.log('✅ Password updated successfully');
       
-      toast({
-        title: "Επιτυχία!",
-        description: "Ο κωδικός σας άλλαξε επιτυχώς",
-      });
+      toast.success("Ο κωδικός σας άλλαξε επιτυχώς");
 
       // Καθαρίζουμε τα πεδία και κλείνουμε το dialog
       setCurrentPassword("");
@@ -74,11 +62,7 @@ export const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
 
     } catch (error: any) {
       console.error('❌ Password change error:', error);
-      toast({
-        title: "Σφάλμα",
-        description: error.message || "Παρουσιάστηκε σφάλμα κατά την αλλαγή κωδικού",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Παρουσιάστηκε σφάλμα κατά την αλλαγή κωδικού");
     } finally {
       setLoading(false);
     }
