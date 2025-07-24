@@ -40,6 +40,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [availableOffers, setAvailableOffers] = useState(0);
   const [pendingVideocalls, setPendingVideocalls] = useState(0);
   const [todayBookings, setTodayBookings] = useState({ total: 0, cancelled: 0 });
+  const [totalPurchases, setTotalPurchases] = useState(0);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -47,6 +48,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       loadAvailableOffers();
       loadPendingVideocalls();
       loadTodayBookings();
+      loadTotalPurchases();
     }
   }, [userProfile?.id]);
 
@@ -166,6 +168,24 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     }
   };
 
+  const loadTotalPurchases = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('status', 'completed')
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+
+      if (error) throw error;
+      
+      setTotalPurchases(data?.length || 0);
+    } catch (error) {
+      console.error('Error loading total purchases:', error);
+    }
+  };
+
   const menuItems = [
     { 
       icon: Home, 
@@ -243,7 +263,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: ShoppingCart,
       label: "Αγορές",
       path: "/dashboard/shop",
-      badge: null
+      badge: userProfile?.role === 'admin' && totalPurchases > 0 ? totalPurchases.toString() : null
     },
     {
       icon: Tag,
