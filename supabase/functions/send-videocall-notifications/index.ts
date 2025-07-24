@@ -10,7 +10,8 @@ const corsHeaders = {
 interface NotificationRequest {
   type: 'booking_pending' | 'booking_approved' | 'booking_rejected' | 'reminder_24h' | 'reminder_1h' | 'reminder_15min' | 
         'booking_created' | 'booking_cancelled' | 'offer_accepted' | 'offer_rejected' | 
-        'package_purchased' | 'user_welcome'
+        'package_purchased' | 'user_welcome' | 'user_welcome_admin' | 'booking_admin_notification' | 
+        'package_purchase_admin' | 'package_receipt' | 'offer_notification'
   bookingId?: string
   adminEmail?: string
   userId?: string
@@ -678,6 +679,82 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         </html>
       `
 
+    // Admin notifications για νέους χρήστες
+    case 'user_welcome_admin':
+      return `
+        <h1>Νέα Εγγραφή Χρήστη - HYPERKIDS</h1>
+        <p>Γεια σας,</p>
+        <p>Ένας νέος χρήστης εγγράφηκε στην πλατφόρμα:</p>
+        <ul>
+          <li><strong>Όνομα:</strong> ${userData?.name || userData?.full_name || 'N/A'}</li>
+          <li><strong>Email:</strong> ${userData?.email || 'N/A'}</li>
+          <li><strong>Ημερομηνία εγγραφής:</strong> ${new Date().toLocaleDateString('el-GR')}</li>
+        </ul>
+        <p>Με εκτίμηση,<br/>Το σύστημα HYPERKIDS</p>
+      `;
+
+    // Admin notification για booking
+    case 'booking_admin_notification':
+      return `
+        <h1>Νέα Κράτηση Επίσκεψης - HYPERKIDS</h1>
+        <p>Γεια σας,</p>
+        <p>Ο χρήστης <strong>${userData?.name || userData?.full_name || 'Άγνωστος'}</strong> έκανε κράτηση επίσκεψης:</p>
+        <ul>
+          <li><strong>Ημερομηνία:</strong> ${userData?.booking_date ? new Date(userData.booking_date).toLocaleDateString('el-GR') : 'N/A'}</li>
+          <li><strong>Ώρα:</strong> ${userData?.booking_time || 'N/A'}</li>
+          <li><strong>Email:</strong> ${userData?.email || 'N/A'}</li>
+        </ul>
+        <p>Με εκτίμηση,<br/>Το σύστημα HYPERKIDS</p>
+      `;
+
+    // Admin notification για αγορά πακέτου
+    case 'package_purchase_admin':
+      return `
+        <h1>Αγορά Πακέτου - HYPERKIDS</h1>
+        <p>Γεια σας,</p>
+        <p>Ο χρήστης <strong>${userData?.name || userData?.full_name || 'Άγνωστος'}</strong> αγόρασε ένα πακέτο:</p>
+        <ul>
+          <li><strong>Email:</strong> ${userData?.email || 'N/A'}</li>
+          <li><strong>Ημερομηνία αγοράς:</strong> ${new Date().toLocaleDateString('el-GR')}</li>
+          <li><strong>Ποσό:</strong> ${userData?.amount || 'N/A'}€</li>
+          <li><strong>Τρόπος πληρωμής:</strong> ${userData?.payment_method || 'N/A'}</li>
+        </ul>
+        <p>Με εκτίμηση,<br/>Το σύστημα HYPERKIDS</p>
+      `;
+
+    // User notification για απόδειξη πακέτου
+    case 'package_receipt':
+      return `
+        <h1>Απόδειξη Αγοράς - HYPERKIDS</h1>
+        <p>Αγαπητέ/ή ${userData?.name || userData?.full_name || 'Φίλε/η'},</p>
+        <p>Σας ευχαριστούμε για την αγορά σας! Παρακάτω θα βρείτε τα στοιχεία της απόδειξής σας:</p>
+        <div style="background-color: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px;">
+          <h3>Στοιχεία Απόδειξης</h3>
+          <p><strong>Ημερομηνία:</strong> ${new Date().toLocaleDateString('el-GR')}</p>
+          <p><strong>Ποσό:</strong> ${userData?.amount || 'N/A'}€</p>
+          <p><strong>Τρόπος πληρωμής:</strong> ${userData?.payment_method || 'N/A'}</p>
+          <p><strong>Αρ. συναλλαγής:</strong> ${userData?.transaction_id || 'N/A'}</p>
+        </div>
+        <p>Για οποιαδήποτε απορία, μη διστάσετε να επικοινωνήσετε μαζί μας.</p>
+        <p>Με εκτίμηση,<br/>Η ομάδα του HYPERKIDS</p>
+      `;
+
+    // User notification για νέα προσφορά
+    case 'offer_notification':
+      return `
+        <h1>Νέα Προσφορά για Εσάς! - HYPERKIDS</h1>
+        <p>Αγαπητέ/ά ${userData?.name || userData?.full_name || 'Φίλε/η'},</p>
+        <p>Έχουμε μια ειδική προσφορά για εσάς!</p>
+        <div style="background-color: #00ffba; padding: 20px; margin: 20px 0; border-radius: 5px; color: black;">
+          <h3>🎉 Ειδική Προσφορά!</h3>
+          <p><strong>Περιγραφή:</strong> ${userData?.description || 'Ειδική προσφορά διαθέσιμη'}</p>
+          <p><strong>Τιμή:</strong> ${userData?.discounted_price || 'N/A'}€</p>
+          <p><strong>Ισχύει έως:</strong> ${userData?.end_date ? new Date(userData.end_date).toLocaleDateString('el-GR') : 'N/A'}</p>
+        </div>
+        <p>Συνδεθείτε στην πλατφόρμα μας για να δείτε όλες τις λεπτομέρειες και να αξιοποιήσετε αυτή την προσφορά!</p>
+        <p>Με εκτίμηση,<br/>Η ομάδα του HYPERKIDS</p>
+      `;
+
     default:
       return ''
   }
@@ -736,7 +813,8 @@ serve(async (req) => {
     }
 
     // Handle other notification types
-    if (['user_welcome', 'booking_created', 'booking_cancelled', 'package_purchased', 'offer_accepted', 'offer_rejected'].includes(type)) {
+    if (['user_welcome', 'booking_created', 'booking_cancelled', 'package_purchased', 'offer_accepted', 'offer_rejected', 
+          'user_welcome_admin', 'booking_admin_notification', 'package_purchase_admin', 'package_receipt', 'offer_notification'].includes(type)) {
       // Fetch user data
       if (userId) {
         const { data: user } = await supabase
@@ -799,13 +877,24 @@ serve(async (req) => {
       }
     } else {
       // Handle other notification types
-      recipient = userData?.email || 'info@hyperkids.gr'
+      if (['user_welcome_admin', 'booking_admin_notification', 'package_purchase_admin'].includes(type)) {
+        recipient = 'yorgoszy@gmail.com'
+      } else {
+        recipient = userData?.email || 'info@hyperkids.gr'
+      }
+      
       switch (type) {
         case 'user_welcome':
           subject = `🎉 Καλώς ήρθατε στο HYPERKIDS!`
           break
+        case 'user_welcome_admin':
+          subject = `👤 Νέα Εγγραφή Χρήστη - HYPERKIDS`
+          break
         case 'booking_created':
           subject = `✅ Κράτηση Επιβεβαιώθηκε - HYPERKIDS`
+          break
+        case 'booking_admin_notification':
+          subject = `📅 Νέα Κράτηση Επίσκεψης - HYPERKIDS`
           break
         case 'booking_cancelled':
           subject = `❌ Κράτηση Ακυρώθηκε - HYPERKIDS`
@@ -813,11 +902,20 @@ serve(async (req) => {
         case 'package_purchased':
           subject = `🎉 Αγορά Πακέτου Επιβεβαιώθηκε - HYPERKIDS`
           break
+        case 'package_purchase_admin':
+          subject = `💰 Νέα Αγορά Πακέτου - HYPERKIDS`
+          break
+        case 'package_receipt':
+          subject = `🧾 Απόδειξη Αγοράς - HYPERKIDS`
+          break
         case 'offer_accepted':
           subject = `✅ Προσφορά Αποδεκτή - HYPERKIDS`
           break
         case 'offer_rejected':
           subject = `📋 Σχετικά με την Προσφορά - HYPERKIDS`
+          break
+        case 'offer_notification':
+          subject = `🎁 Νέα Προσφορά για Εσάς - HYPERKIDS`
           break
         default:
           subject = `HYPERKIDS - Ενημέρωση`
