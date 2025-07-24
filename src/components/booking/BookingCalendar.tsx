@@ -177,14 +177,22 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                     if (bookingType === 'videocall') {
                       return section.name.toLowerCase().includes('videocall') || 
                              section.name.toLowerCase().includes('online') ||
+                             section.name.toLowerCase().includes('βιντεοκλήσεις') ||
+                             section.name.toLowerCase().includes('βιντεοκληση') ||
                              section.description?.toLowerCase().includes('videocall') ||
-                             section.description?.toLowerCase().includes('online');
+                             section.description?.toLowerCase().includes('online') ||
+                             section.description?.toLowerCase().includes('βιντεοκλήσεις') ||
+                             section.description?.toLowerCase().includes('βιντεοκληση');
                     } else {
                       // For gym visits, exclude videocall sections
                       return !section.name.toLowerCase().includes('videocall') && 
                              !section.name.toLowerCase().includes('online') &&
+                             !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
+                             !section.name.toLowerCase().includes('βιντεοκληση') &&
                              !section.description?.toLowerCase().includes('videocall') &&
-                             !section.description?.toLowerCase().includes('online');
+                             !section.description?.toLowerCase().includes('online') &&
+                             !section.description?.toLowerCase().includes('βιντεοκλήσεις') &&
+                             !section.description?.toLowerCase().includes('βιντεοκληση');
                     }
                   })
                   .map((section) => (
