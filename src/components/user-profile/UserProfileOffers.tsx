@@ -26,6 +26,7 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
     
     setLoading(true);
     try {
+      // Φόρτωση προσφορών
       const { data: offers, error } = await supabase
         .from('offers')
         .select(`
@@ -37,9 +38,22 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
         .lte('start_date', new Date().toISOString().split('T')[0]);
 
       if (error) throw error;
+
+      // Φόρτωση απορριμμένων προσφορών
+      const { data: rejectedOffers, error: rejectedError } = await supabase
+        .from('offer_rejections')
+        .select('offer_id')
+        .eq('user_id', userProfile.id);
+
+      if (rejectedError) throw rejectedError;
+
+      const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
       
-      // Φιλτράρισμα προσφορών βάσει visibility
+      // Φιλτράρισμα προσφορών βάσει visibility και απόρριψης
       const filteredOffers = offers?.filter(offer => {
+        // Αποκλεισμός απορριμμένων προσφορών
+        if (rejectedOfferIds.has(offer.id)) return false;
+        
         if (offer.visibility === 'all') return true;
         if (offer.visibility === 'individual' || offer.visibility === 'selected') {
           return offer.target_users?.includes(userProfile.id);
@@ -65,9 +79,9 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
-          offerId: offer.id,
-          subscriptionTypeId: offer.subscription_type_id,
-          amount: offer.discounted_price,
+          offer_id: offer.id,
+          subscription_type_id: offer.subscription_type_id,
+          discounted_price: offer.discounted_price,
           isOffer: true
         }
       });
@@ -87,9 +101,26 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
     }
   };
 
-  const handleRejectOffer = (offer: any) => {
-    console.log('Απορρίφθηκε η προσφορά:', offer.name);
-    toast.success('Η προσφορά απορρίφθηκε');
+  const handleRejectOffer = async (offer: any) => {
+    try {
+      const { error } = await supabase
+        .from('offer_rejections')
+        .insert({
+          user_id: userProfile.id,
+          offer_id: offer.id
+        });
+
+      if (error) throw error;
+
+      console.log('Απορρίφθηκε η προσφορά:', offer.name);
+      toast.success('Η προσφορά απορρίφθηκε');
+      
+      // Ανανέωση των προσφορών για να αφαιρεθεί η απορριφθείσα
+      loadUserOffers();
+    } catch (error) {
+      console.error('Error rejecting offer:', error);
+      toast.error('Σφάλμα κατά την απόρριψη της προσφοράς');
+    }
   };
 
   if (loading) {

@@ -252,8 +252,23 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return;
         }
 
-        // Φιλτράρισμα προσφορών βάσει visibility
+        // Φόρτωση απορριμμένων προσφορών
+        const { data: rejectedOffers, error: rejectedError } = await supabase
+          .from('offer_rejections')
+          .select('offer_id')
+          .eq('user_id', user.id);
+
+        if (rejectedError) {
+          console.error('Error fetching rejected offers:', rejectedError);
+        }
+
+        const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
+
+        // Φιλτράρισμα προσφορών βάσει visibility και απόρριψης
         const filteredOffers = offers?.filter(offer => {
+          // Αποκλεισμός απορριμμένων προσφορών
+          if (rejectedOfferIds.has(offer.id)) return false;
+          
           if (offer.visibility === 'all') return true;
           if (offer.visibility === 'individual' || offer.visibility === 'selected') {
             return offer.target_users?.includes(user.id);

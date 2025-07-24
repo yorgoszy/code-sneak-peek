@@ -49,6 +49,7 @@ export const UserProfileSidebar = ({
     if (!userProfile?.id) return;
     
     try {
+      // Φόρτωση προσφορών
       const { data, error } = await supabase
         .from('offers')
         .select('*')
@@ -57,9 +58,22 @@ export const UserProfileSidebar = ({
         .lte('start_date', new Date().toISOString().split('T')[0]);
 
       if (error) throw error;
+
+      // Φόρτωση απορριμμένων προσφορών
+      const { data: rejectedOffers, error: rejectedError } = await supabase
+        .from('offer_rejections')
+        .select('offer_id')
+        .eq('user_id', userProfile.id);
+
+      if (rejectedError) throw rejectedError;
+
+      const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
       
       // Φιλτράρισμα προσφορών για τον χρήστη
       const userOffers = data?.filter(offer => {
+        // Αποκλεισμός απορριμμένων προσφορών
+        if (rejectedOfferIds.has(offer.id)) return false;
+        
         if (offer.visibility === 'all') return true;
         if (offer.visibility === 'individual' || offer.visibility === 'selected') {
           return offer.target_users?.includes(userProfile.id);
