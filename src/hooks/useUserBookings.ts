@@ -149,6 +149,34 @@ export const useUserBookings = () => {
   const createBooking = async (sectionId: string, bookingDate: string, bookingTime: string, bookingType: string) => {
     if (!userProfile) throw new Error('User profile not found');
 
+    // Check availability before creating booking
+    console.log('🔍 Checking availability before creating booking:', { bookingType, availability });
+    
+    if (!availability) {
+      throw new Error('Δεν υπάρχουν διαθέσιμα δεδομένα κράτησης');
+    }
+
+    // Validate booking availability
+    if (bookingType === 'gym_visit') {
+      if (availability.type === 'hypergym') {
+        if ((availability.available_monthly || 0) <= 0) {
+          throw new Error('Δεν έχεις διαθέσιμες επισκέψεις αυτό το μήνα');
+        }
+      } else if (availability.type === 'visit_packages') {
+        if ((availability.available_visits || 0) <= 0) {
+          throw new Error('Δεν έχεις διαθέσιμες επισκέψεις στο πακέτο σου');
+        }
+      } else {
+        throw new Error('Δεν έχεις ενεργή συνδρομή ή πακέτο για κρατήσεις');
+      }
+    } else if (bookingType === 'videocall') {
+      if (!availability.has_videocall || 
+          ((availability.single_videocall_sessions || 0) <= 0 && 
+           (availability.videocall_packages_available || 0) <= 0)) {
+        throw new Error('Δεν έχεις διαθέσιμες βιντεοκλήσεις');
+      }
+    }
+
     const { data, error } = await supabase
       .from('booking_sessions')
       .insert({
@@ -172,9 +200,12 @@ export const useUserBookings = () => {
           p_visit_type: 'booking',
           p_notes: `Booking ID: ${data.id}`
         });
+        console.log('✅ Visit recorded successfully');
       } catch (visitError) {
-        console.error('Error recording visit:', visitError);
-        // Still continue since the booking was created successfully
+        console.error('❌ Error recording visit:', visitError);
+        // Delete the booking if visit recording fails
+        await supabase.from('booking_sessions').delete().eq('id', data.id);
+        throw new Error('Σφάλμα κατά την καταγραφή της επίσκεψης');
       }
     }
 
@@ -186,9 +217,12 @@ export const useUserBookings = () => {
           p_videocall_type: 'booking',
           p_notes: `Booking ID: ${data.id}`
         });
+        console.log('✅ Videocall recorded successfully');
       } catch (videocallError) {
-        console.error('Error recording videocall:', videocallError);
-        // Still continue since the booking was created successfully
+        console.error('❌ Error recording videocall:', videocallError);
+        // Delete the booking if videocall recording fails
+        await supabase.from('booking_sessions').delete().eq('id', data.id);
+        throw new Error('Σφάλμα κατά την καταγραφή της βιντεοκλήσης');
       }
     }
 

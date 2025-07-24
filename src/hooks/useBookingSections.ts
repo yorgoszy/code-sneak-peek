@@ -133,7 +133,7 @@ export const useBookingSections = (bookingType?: string) => {
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availableHours = section.available_hours[dayOfWeek] || [];
 
-      // Get existing bookings for this date and section
+      // Get existing bookings for this date and section - include all bookings for accurate counts
       let query = supabase
         .from('booking_sessions')
         .select('booking_time, booking_type')
@@ -201,6 +201,7 @@ export const useBookingSections = (bookingType?: string) => {
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availableHours = section.available_hours[dayOfWeek] || [];
 
+      // Get ALL bookings for this time slot to show accurate counts
       let query = supabase
         .from('booking_sessions')
         .select('booking_time, booking_type')
@@ -208,9 +209,7 @@ export const useBookingSections = (bookingType?: string) => {
         .eq('booking_date', date)
         .in('status', ['confirmed', 'pending']);
 
-      if (bookingType === 'videocall') {
-        query = query.eq('booking_type', 'videocall');
-      }
+      // Don't filter by booking type here - we want to show all bookings
 
       const { data: existingBookings } = await query;
 

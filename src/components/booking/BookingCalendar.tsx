@@ -100,7 +100,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   };
 
   const canBook = () => {
-    if (!availability) return false;
+    if (!availability) {
+      console.log('❌ canBook: No availability data');
+      return false;
+    }
+
+    console.log('🔍 canBook check:', { bookingType, availability });
 
     if (bookingType === 'videocall') {
       return availability.has_videocall && 
@@ -108,11 +113,16 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     }
 
     if (availability.type === 'hypergym') {
-      return availability.available_monthly > 0;
+      const canBookGym = (availability.available_monthly || 0) > 0;
+      console.log('🏋️ Hypergym booking check:', canBookGym, 'available:', availability.available_monthly);
+      return canBookGym;
     } else if (availability.type === 'visit_packages') {
-      return availability.available_visits > 0;
+      const canBookVisits = (availability.available_visits || 0) > 0;
+      console.log('📦 Visit packages booking check:', canBookVisits, 'available:', availability.available_visits);
+      return canBookVisits;
     }
     
+    console.log('❌ No valid booking type found');
     return false;
   };
 
@@ -245,17 +255,17 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                       return (
                         <div
                           key={time}
-                          className={`p-2 border rounded-none cursor-pointer transition-colors ${
+                          className={`p-1.5 border rounded-none cursor-pointer transition-colors ${
                             selectedTime === time 
                               ? 'border-[#00ffba] bg-[#00ffba]/10' 
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                           onClick={() => setSelectedTime(time)}
                         >
-                          <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center justify-between mb-0.5">
                             <div className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              <span className="text-sm font-medium">{time}</span>
+                              <span className="text-xs font-medium">{time}</span>
                             </div>
                             <span className="text-xs text-gray-500">
                               {currentBookings}/{capacity}
@@ -267,7 +277,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                             {Array.from({ length: capacity }).map((_, index) => (
                               <div
                                 key={index}
-                                className={`h-1.5 flex-1 rounded-none ${
+                                className={`h-1 flex-1 rounded-none ${
                                   index < currentBookings
                                     ? getLoadingBarColor(currentBookings, capacity)
                                     : 'bg-gray-200'
@@ -288,12 +298,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                       return (
                         <div
                           key={time}
-                          className="p-2 border border-gray-200 rounded-none opacity-50 cursor-not-allowed"
+                          className="p-1.5 border border-gray-200 rounded-none opacity-50 cursor-not-allowed"
                         >
-                          <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center justify-between mb-0.5">
                             <div className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              <span className="text-sm font-medium">{time}</span>
+                              <span className="text-xs font-medium">{time}</span>
                               <span className="text-xs text-red-600">(Πλήρης)</span>
                             </div>
                             <span className="text-xs text-gray-500">
@@ -306,7 +316,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                             {Array.from({ length: capacity }).map((_, index) => (
                               <div
                                 key={index}
-                                className="h-1.5 flex-1 rounded-none bg-red-400"
+                                className="h-1 flex-1 rounded-none bg-red-400"
                               />
                             ))}
                           </div>
