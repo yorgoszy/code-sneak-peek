@@ -136,6 +136,14 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
 
     setSaving(true);
     try {
+      // Πάρε το current user id
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: currentUserData } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', user?.id)
+        .single();
+
       const offerData = {
         name: name.trim(),
         description: description.trim() || null,
@@ -146,14 +154,23 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
         visibility,
         target_users: visibility === 'individual' || visibility === 'selected' ? selectedUsers : [],
         target_groups: visibility === 'groups' ? selectedGroups : [],
-        is_active: true
+        is_active: true,
+        created_by: currentUserData?.id
       };
 
-      const { error } = await supabase
-        .from('offers')
-        .insert(offerData);
+      console.log('Creating offer with data:', offerData);
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('offers')
+        .insert(offerData)
+        .select();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Offer created successfully:', data);
 
       toast.success('Η προσφορά δημιουργήθηκε επιτυχώς!');
       onSuccess();
