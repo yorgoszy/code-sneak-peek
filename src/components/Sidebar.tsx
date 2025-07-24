@@ -228,7 +228,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
                 item.badge === 'NEW' 
                   ? 'bg-[#00ffba] text-black' 
                   : /^\d+$/.test(item.badge)
-                  ? 'bg-red-500 text-white'
+                  ? 'bg-[#fa3055] text-white'
                   : 'bg-gray-200 text-gray-700'
               }`}>
                 {item.badge}
