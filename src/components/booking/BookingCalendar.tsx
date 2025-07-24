@@ -136,23 +136,21 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
   if (!canBook()) {
     return (
-      <div className="space-y-4 p-6 text-center border border-gray-200 bg-white max-w-md mx-auto">
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-900">
+      <div className="text-center border border-gray-200 bg-white max-w-md mx-auto">
+        <div className="p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
             {bookingType === 'videocall' 
               ? 'Δεν έχεις διαθέσιμες βιντεοκλήσεις'
               : 'Δεν έχεις διαθέσιμες επισκέψεις'
             }
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 mb-4">
             {bookingType === 'videocall' 
               ? 'Για να κλείσεις videocall, χρειάζεται να αγοράσεις μια βιντεοκλήση από τις αγορές'
               : 'Για να κλείσεις ραντεβού, χρειάζεται να έχεις διαθέσιμες επισκέψεις'
             }
           </p>
-        </div>
-        
-        <div className="flex gap-3 justify-center">
+          
           <Button 
             variant="outline" 
             onClick={onClose}
