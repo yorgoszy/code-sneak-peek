@@ -8,6 +8,7 @@ import { format, addDays, isSameDay } from "date-fns";
 import { useBookingSections } from "@/hooks/useBookingSections";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { WaitingListButton } from "@/components/user-profile/bookings/WaitingListButton";
 
 interface BookingCalendarProps {
   onBookingCreate: (sectionId: string, date: string, time: string, type: string) => Promise<void>;
@@ -314,36 +315,46 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                        const selectedSection_obj = sections.find(s => s.id === selectedSection);
                        const capacity = selectedSection_obj?.max_capacity || 1;
                        const currentBookings = bookingCounts[time] || capacity;
-                       
-                       return (
-                         <div
-                           key={time}
-                           className="p-2 border border-gray-200 rounded-none opacity-50 cursor-not-allowed"
-                         >
-                           <div className="flex items-center justify-between">
-                             <div className="flex items-center gap-2">
-                               <Clock className="w-4 h-4" />
-                               <span className="text-sm font-medium">{time}</span>
-                               <span className="text-sm text-red-600">(Πλήρης)</span>
-                               
-                               {/* Loading Bar - inline */}
-                               <div className="flex gap-0.5 mx-2">
-                                 {Array.from({ length: capacity }).map((_, index) => (
-                                   <div
-                                     key={index}
-                                     className="h-2 w-3 rounded-none bg-red-400"
-                                   />
-                                 ))}
-                               </div>
-                             </div>
-                             <span className="text-sm text-gray-500">
-                               {currentBookings}/{capacity}
-                             </span>
-                           </div>
-                         </div>
-                       );
-                     })}
-                  </div>
+                        
+                        return (
+                          <div key={time} className="space-y-2">
+                            <div className="p-2 border border-gray-200 rounded-none opacity-50 cursor-not-allowed">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-4 h-4" />
+                                  <span className="text-sm font-medium">{time}</span>
+                                  <span className="text-sm text-red-600">(Πλήρης)</span>
+                                  
+                                  {/* Loading Bar - inline */}
+                                  <div className="flex gap-0.5 mx-2">
+                                    {Array.from({ length: capacity }).map((_, index) => (
+                                      <div
+                                        key={index}
+                                        className="h-2 w-3 rounded-none bg-red-400"
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                                <span className="text-sm text-gray-500">
+                                  {currentBookings}/{capacity}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Waiting List Button - only for gym bookings, not videocalls */}
+                            {bookingType !== 'videocall' && selectedDate && (
+                              <WaitingListButton
+                                sectionId={selectedSection}
+                                bookingDate={format(selectedDate, 'yyyy-MM-dd')}
+                                bookingTime={time}
+                                isTimeSlotFull={true}
+                                onStatusChange={updateAvailableSlots}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                   </div>
                 ) : (
                   <p className="text-gray-500 text-sm">
                     Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία

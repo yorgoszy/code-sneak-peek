@@ -11,12 +11,15 @@ interface NotificationRequest {
   type: 'booking_pending' | 'booking_approved' | 'booking_rejected' | 'reminder_24h' | 'reminder_1h' | 'reminder_15min' | 
         'booking_created' | 'booking_cancelled' | 'offer_accepted' | 'offer_rejected' | 
         'package_purchased' | 'user_welcome' | 'user_welcome_admin' | 'booking_admin_notification' | 
-        'package_purchase_admin' | 'package_receipt' | 'offer_notification'
+        'package_purchase_admin' | 'package_receipt' | 'offer_notification' | 'waiting_list_available'
   bookingId?: string
   adminEmail?: string
   userId?: string
   paymentId?: string
   offerId?: string
+  sectionId?: string
+  bookingDate?: string
+  bookingTime?: string
 }
 
 interface VideocallBooking {
@@ -755,6 +758,62 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <p>Με εκτίμηση,<br/>Η ομάδα του HYPERKIDS</p>
       `;
 
+    // Waiting list availability notification
+    case 'waiting_list_available':
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Διαθέσιμη Θέση στο Γυμναστήριο! - HYPERKIDS</title>
+          ${baseStyle}
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">HYPERKIDS</div>
+              <p>Καλά Νέα! Διαθέσιμη Θέση στο Γυμναστήριο! 🎉</p>
+            </div>
+            
+            <div class="content">
+              <h2>🚨 Επείγον: Διαθέσιμη Θέση!</h2>
+              <p>Μόλις ελευθερώθηκε μια θέση για την ώρα που είχατε επιλέξει στη λίστα αναμονής:</p>
+              
+              <div class="booking-info">
+                <div class="info-row">
+                  <span class="label">Ημερομηνία:</span>
+                  <span class="value">${userData?.bookingDate ? formatDate(userData.bookingDate) : 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Ώρα:</span>
+                  <span class="value">${userData?.bookingTime ? formatTime(userData.bookingTime) : 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Τμήμα:</span>
+                  <span class="value">Γυμναστήριο</span>
+                </div>
+              </div>
+              
+              <p><strong>⏰ Προσοχή:</strong> Έχετε περιορισμένο χρόνο για να κλείσετε αυτή τη θέση. Αν δεν κάνετε κράτηση σύντομα, η θέση θα δοθεί στον επόμενο στη λίστα αναμονής.</p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://www.hyperkids.gr/dashboard/user-profile/online-booking" class="button" style="font-size: 18px; padding: 15px 30px;">🏃‍♂️ Κλείστε τη Θέση Τώρα!</a>
+              </div>
+              
+              <p style="text-align: center; color: #666; font-size: 14px;">
+                Το email αυτό στάλθηκε επειδή βρισκόσασταν στη λίστα αναμονής για αυτή την ώρα.
+              </p>
+            </div>
+            
+            <div class="footer">
+              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
     default:
       return ''
   }
@@ -814,7 +873,7 @@ serve(async (req) => {
 
     // Handle other notification types
     if (['user_welcome', 'booking_created', 'booking_cancelled', 'package_purchased', 'offer_accepted', 'offer_rejected', 
-          'user_welcome_admin', 'booking_admin_notification', 'package_purchase_admin', 'package_receipt', 'offer_notification'].includes(type)) {
+          'user_welcome_admin', 'booking_admin_notification', 'package_purchase_admin', 'package_receipt', 'offer_notification', 'waiting_list_available'].includes(type)) {
       // Fetch user data
       if (userId) {
         const { data: user } = await supabase
@@ -842,6 +901,17 @@ serve(async (req) => {
           .eq('id', offerId)
           .single()
         userData = { ...userData, ...offer }
+      }
+
+      // Add booking data for waiting list notification
+      if (type === 'waiting_list_available') {
+        const { sectionId, bookingDate, bookingTime } = await req.json()
+        userData = { 
+          ...userData, 
+          bookingDate, 
+          bookingTime,
+          sectionId 
+        }
       }
 
       emailHTML = generateEmailHTML(type, null, adminEmail, userData)
@@ -916,6 +986,9 @@ serve(async (req) => {
           break
         case 'offer_notification':
           subject = `🎁 Νέα Προσφορά για Εσάς - HYPERKIDS`
+          break
+        case 'waiting_list_available':
+          subject = `🚨 Διαθέσιμη Θέση στο Γυμναστήριο! - HYPERKIDS`
           break
         default:
           subject = `HYPERKIDS - Ενημέρωση`

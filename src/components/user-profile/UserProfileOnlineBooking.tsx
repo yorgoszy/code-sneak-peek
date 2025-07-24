@@ -8,6 +8,7 @@ import { BookingCalendar } from "@/components/booking/BookingCalendar";
 import { useUserBookings } from "@/hooks/useUserBookings";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { UserWaitingLists } from "./bookings/UserWaitingLists";
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
@@ -256,6 +257,9 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
           )}
         </CardContent>
       </Card>
+
+      {/* Waiting Lists Section */}
+      <UserWaitingLists />
 
       {/* Available Hours Info */}
       <Card className="rounded-none">

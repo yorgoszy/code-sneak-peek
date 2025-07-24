@@ -588,6 +588,60 @@ export type Database = {
           },
         ]
       }
+      booking_waiting_list: {
+        Row: {
+          booking_date: string
+          booking_time: string
+          created_at: string
+          id: string
+          notified_at: string | null
+          position: number
+          section_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_date: string
+          booking_time: string
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          position: number
+          section_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_date?: string
+          booking_time?: string
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          position?: number
+          section_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_waiting_list_section"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_waiting_list_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           created_at: string | null
@@ -3347,6 +3401,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_expired_waiting_list: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_exercise_tables: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -3389,6 +3447,32 @@ export type Database = {
           _role: Database["public"]["Enums"]["user_role"]
         }
         Returns: boolean
+      }
+      join_waiting_list: {
+        Args: {
+          p_user_id: string
+          p_section_id: string
+          p_booking_date: string
+          p_booking_time: string
+        }
+        Returns: string
+      }
+      leave_waiting_list: {
+        Args: {
+          p_user_id: string
+          p_section_id: string
+          p_booking_date: string
+          p_booking_time: string
+        }
+        Returns: boolean
+      }
+      notify_next_in_waiting_list: {
+        Args: {
+          p_section_id: string
+          p_booking_date: string
+          p_booking_time: string
+        }
+        Returns: string
       }
       pause_subscription: {
         Args: { subscription_id: string }
