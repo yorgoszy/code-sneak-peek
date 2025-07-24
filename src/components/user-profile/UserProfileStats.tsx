@@ -22,6 +22,8 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const [paymentStatus, setPaymentStatus] = useState<boolean | null>(null);
   const [visitsData, setVisitsData] = useState<{used: number, total: number} | null>(null);
   const [videocallData, setVideocallData] = useState<{used: number, total: number} | null>(null);
+  const [upcomingVideocall, setUpcomingVideocall] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number} | null>(null);
+  const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number} | null>(null);
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -164,10 +166,80 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
       }
     };
 
+    const fetchUpcomingBookings = async () => {
+      try {
+        const now = new Date();
+        
+        // Φόρτωση επερχόμενων βιντεοκλήσεων
+        const { data: videocallBookings, error: videocallError } = await supabase
+          .from('booking_sessions')
+          .select('booking_date, booking_time')
+          .eq('user_id', user.id)
+          .eq('booking_type', 'videocall')
+          .eq('status', 'confirmed')
+          .gte('booking_date', now.toISOString().split('T')[0])
+          .order('booking_date', { ascending: true })
+          .order('booking_time', { ascending: true })
+          .limit(1);
+
+        if (!videocallError && videocallBookings && videocallBookings.length > 0) {
+          const nextVideocall = videocallBookings[0];
+          const bookingDateTime = new Date(`${nextVideocall.booking_date} ${nextVideocall.booking_time}`);
+          const diffMs = bookingDateTime.getTime() - now.getTime();
+          const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+          const hoursLeft = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          
+          setUpcomingVideocall({
+            date: nextVideocall.booking_date,
+            time: nextVideocall.booking_time,
+            daysLeft: Math.max(0, daysLeft),
+            hoursLeft: Math.max(0, hoursLeft)
+          });
+        } else {
+          setUpcomingVideocall(null);
+        }
+
+        // Φόρτωση επερχόμενων επισκέψεων
+        const { data: visitBookings, error: visitError } = await supabase
+          .from('booking_sessions')
+          .select('booking_date, booking_time')
+          .eq('user_id', user.id)
+          .eq('booking_type', 'gym_visit')
+          .eq('status', 'confirmed')
+          .gte('booking_date', now.toISOString().split('T')[0])
+          .order('booking_date', { ascending: true })
+          .order('booking_time', { ascending: true })
+          .limit(1);
+
+        if (!visitError && visitBookings && visitBookings.length > 0) {
+          const nextVisit = visitBookings[0];
+          const bookingDateTime = new Date(`${nextVisit.booking_date} ${nextVisit.booking_time}`);
+          const diffMs = bookingDateTime.getTime() - now.getTime();
+          const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+          const hoursLeft = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          
+          setUpcomingVisit({
+            date: nextVisit.booking_date,
+            time: nextVisit.booking_time,
+            daysLeft: Math.max(0, daysLeft),
+            hoursLeft: Math.max(0, hoursLeft)
+          });
+        } else {
+          setUpcomingVisit(null);
+        }
+
+      } catch (error) {
+        console.error('Error fetching upcoming bookings:', error);
+        setUpcomingVideocall(null);
+        setUpcomingVisit(null);
+      }
+    };
+
     if (user?.id) {
       fetchSubscriptionData();
       fetchVisitsData();
       fetchVideocallData();
+      fetchUpcomingBookings();
     }
   }, [user?.id]);
   
@@ -175,7 +247,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
     <Card className="rounded-none">
       <CardContent className={isMobile ? "pt-4" : "pt-6"}>
         <div className={`grid gap-4 ${
-          isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-7'
+          isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-9'
         }`}>
           {user.role === 'trainer' && (
             <div className="text-center">
@@ -255,6 +327,44 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Βιντεοκλήσεις</p>
+          </div>
+          
+          {/* Επερχόμενη Βιντεοκλήση */}
+          <div className="text-center">
+            <Video className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {upcomingVideocall ? (
+                upcomingVideocall.daysLeft > 0 ? (
+                  <span className="text-yellow-600">{upcomingVideocall.daysLeft}η {upcomingVideocall.hoursLeft}ώ</span>
+                ) : upcomingVideocall.hoursLeft > 0 ? (
+                  <span className="text-yellow-600">{upcomingVideocall.hoursLeft}ώ</span>
+                ) : (
+                  <span className="text-yellow-600">Τώρα!</span>
+                )
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Βιντεοκλήση</p>
+          </div>
+
+          {/* Επερχόμενη Επίσκεψη */}
+          <div className="text-center">
+            <MapPin className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {upcomingVisit ? (
+                upcomingVisit.daysLeft > 0 ? (
+                  <span className="text-yellow-600">{upcomingVisit.daysLeft}η {upcomingVisit.hoursLeft}ώ</span>
+                ) : upcomingVisit.hoursLeft > 0 ? (
+                  <span className="text-yellow-600">{upcomingVisit.hoursLeft}ώ</span>
+                ) : (
+                  <span className="text-yellow-600">Τώρα!</span>
+                )
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Επίσκεψη</p>
           </div>
         </div>
       </CardContent>
