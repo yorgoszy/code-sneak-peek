@@ -49,7 +49,7 @@ const OnlineCoachingWithSidebar: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />
-      <div className="flex-1 ml-64">
+      <div className="flex-1">
         <div className="w-full px-4 py-8">
           <div className="space-y-6">
             {/* Header */}
