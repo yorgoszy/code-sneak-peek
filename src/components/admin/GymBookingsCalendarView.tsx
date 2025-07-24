@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, User, Clock, Calendar } from "lucide-react";
+import { Clock, MapPin, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { format, addDays, startOfWeek, endOfWeek, isSameDay } from "date-fns";
-import { el } from "date-fns/locale";
+import { format, addDays } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface GymBooking {
   id: string;
@@ -17,6 +18,7 @@ interface GymBooking {
   section?: {
     name: string;
     description?: string;
+    max_capacity: number;
   };
   app_users?: {
     name: string;
@@ -24,15 +26,12 @@ interface GymBooking {
   };
 }
 
-interface TimeSlot {
-  time: string;
-  bookings: GymBooking[];
-  capacity: number;
-}
-
-interface DaySchedule {
-  date: string;
-  timeSlots: TimeSlot[];
+interface BookingSection {
+  id: string;
+  name: string;
+  description?: string;
+  max_capacity: number;
+  available_hours: any;
 }
 
 const AVAILABLE_HOURS = [
@@ -40,76 +39,114 @@ const AVAILABLE_HOURS = [
   "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
 ];
 
-const MAX_CAPACITY = 6;
-
 export const GymBookingsCalendarView = () => {
-  const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [sections, setSections] = useState<BookingSection[]>([]);
   const [bookings, setBookings] = useState<GymBooking[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [fullSlots, setFullSlots] = useState<string[]>([]);
+  const [bookingCounts, setBookingCounts] = useState<{ [time: string]: number }>({});
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchBookings();
-  }, [currentWeek]);
+    fetchSections();
+  }, []);
 
-  const fetchBookings = async () => {
+  useEffect(() => {
+    if (sections.length > 0 && !selectedSection) {
+      setSelectedSection(sections[0].id);
+    }
+  }, [sections, selectedSection]);
+
+  useEffect(() => {
+    if (selectedDate && selectedSection) {
+      fetchBookingsForDate();
+    }
+  }, [selectedDate, selectedSection]);
+
+  const fetchSections = async () => {
     try {
-      const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
-
       const { data, error } = await supabase
-        .from('booking_sessions')
-        .select(`
-          *,
-          section:booking_sections(name, description),
-          app_users(name, email)
-        `)
-        .eq('booking_type', 'gym_visit')
-        .gte('booking_date', format(weekStart, 'yyyy-MM-dd'))
-        .lte('booking_date', format(weekEnd, 'yyyy-MM-dd'))
-        .order('booking_date', { ascending: true })
-        .order('booking_time', { ascending: true });
+        .from('booking_sections')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
 
       if (error) throw error;
-      setBookings((data as any) || []);
+      
+      // Filter out videocall sections
+      const gymSections = (data || []).filter(section => 
+        !section.name.toLowerCase().includes('videocall') && 
+        !section.name.toLowerCase().includes('online') &&
+        !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
+        !section.name.toLowerCase().includes('βιντεοκληση')
+      );
+      
+      setSections(gymSections);
     } catch (error) {
-      console.error('Error fetching gym bookings:', error);
+      console.error('Error fetching sections:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getWeekDays = () => {
-    const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
-    const days = [];
-    
-    for (let i = 0; i < 7; i++) {
-      days.push(addDays(weekStart, i));
+  const fetchBookingsForDate = async () => {
+    if (!selectedDate || !selectedSection) return;
+
+    try {
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const section = sections.find(s => s.id === selectedSection);
+      if (!section) return;
+
+      const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      const availableHours = section.available_hours[dayOfWeek] || [];
+
+      // Get bookings for this date and section
+      const { data: existingBookings, error } = await supabase
+        .from('booking_sessions')
+        .select(`
+          *,
+          section:booking_sections(name, description, max_capacity),
+          app_users(name, email)
+        `)
+        .eq('section_id', selectedSection)
+        .eq('booking_date', dateStr)
+        .eq('booking_type', 'gym_visit')
+        .eq('status', 'confirmed')
+        .order('booking_time', { ascending: true });
+
+      if (error) throw error;
+
+      // Count bookings per time slot
+      const counts: { [time: string]: number } = {};
+      (existingBookings || []).forEach(booking => {
+        const time = booking.booking_time.length > 5 
+          ? booking.booking_time.substring(0, 5) 
+          : booking.booking_time;
+        counts[time] = (counts[time] || 0) + 1;
+      });
+
+      // Categorize slots
+      const available: string[] = [];
+      const full: string[] = [];
+
+      availableHours.forEach((time: string) => {
+        const currentBookings = counts[time] || 0;
+        if (currentBookings >= section.max_capacity) {
+          full.push(time);
+        } else {
+          available.push(time);
+        }
+      });
+
+      setBookings(existingBookings || []);
+      setAvailableSlots(available);
+      setFullSlots(full);
+      setBookingCounts(counts);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
     }
-    
-    return days;
-  };
-
-  const getDaySchedule = (date: Date): DaySchedule => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const dayBookings = bookings.filter(booking => booking.booking_date === dateStr);
-    
-    const timeSlots: TimeSlot[] = AVAILABLE_HOURS.map(time => {
-      const slotBookings = dayBookings.filter(booking => 
-        booking.booking_time === time + ':00' && booking.status === 'confirmed'
-      );
-      
-      return {
-        time,
-        bookings: slotBookings,
-        capacity: MAX_CAPACITY
-      };
-    });
-
-    return {
-      date: dateStr,
-      timeSlots
-    };
   };
 
   const getLoadingBarColor = (bookingsCount: number, capacity: number) => {
@@ -120,165 +157,194 @@ export const GymBookingsCalendarView = () => {
     return 'bg-red-400';
   };
 
-  const navigateWeek = (direction: 'prev' | 'next') => {
-    const newWeek = addDays(currentWeek, direction === 'next' ? 7 : -7);
-    setCurrentWeek(newWeek);
-    setSelectedDate(null);
-  };
-
-  const toggleDayDetails = (dateStr: string) => {
-    setSelectedDate(selectedDate === dateStr ? null : dateStr);
+  const getBookingsForTimeSlot = (time: string) => {
+    return bookings.filter(booking => {
+      const bookingTime = booking.booking_time.length > 5 
+        ? booking.booking_time.substring(0, 5) 
+        : booking.booking_time;
+      return bookingTime === time;
+    });
   };
 
   if (loading) {
     return <div className="text-center py-8">Φόρτωση...</div>;
   }
 
-  const weekDays = getWeekDays();
-
   return (
-    <div className="space-y-6">
-      {/* Week Navigation */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => navigateWeek('prev')}
-          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-none hover:bg-gray-50"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Προηγούμενη
-        </button>
-        
-        <h3 className="text-lg font-semibold">
-          {format(weekDays[0], 'd MMM', { locale: el })} - {format(weekDays[6], 'd MMM yyyy', { locale: el })}
-        </h3>
-        
-        <button
-          onClick={() => navigateWeek('next')}
-          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-none hover:bg-gray-50"
-        >
-          Επόμενη
-          <ChevronRight className="w-4 h-4" />
-        </button>
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Επισκόπηση Κρατήσεων</h2>
+        <p className="text-gray-600">Διαχείριση όλων των κρατήσεων για το γυμναστήριο</p>
       </div>
 
-      {/* Week View */}
-      <div className="grid grid-cols-7 gap-4">
-        {weekDays.map((date) => {
-          const daySchedule = getDaySchedule(date);
-          const isSelected = selectedDate === daySchedule.date;
-          const totalBookings = daySchedule.timeSlots.reduce((sum, slot) => sum + slot.bookings.length, 0);
-          
-          return (
-            <div key={daySchedule.date} className="space-y-2">
-              <Card 
-                className={`rounded-none cursor-pointer transition-colors ${
-                  isSelected ? 'ring-2 ring-[#00ffba] bg-[#00ffba]/5' : 'hover:bg-gray-50'
-                }`}
-                onClick={() => toggleDayDetails(daySchedule.date)}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-center">
-                    <div className="font-medium">
-                      {format(date, 'EEE', { locale: el })}
-                    </div>
-                    <div className="text-lg font-bold">
-                      {format(date, 'd')}
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-center mb-3">
-                    <Badge variant="outline" className="rounded-none text-xs">
-                      {totalBookings} άτομα
-                    </Badge>
-                  </div>
-                  
-                  {/* Time Slots with Loading Bars */}
-                  <div className="space-y-1">
-                    {daySchedule.timeSlots.map((slot) => (
-                      <div key={slot.time} className="flex items-center gap-2 text-xs">
-                        <span className="w-10 text-gray-600">{slot.time}</span>
-                        <div className="flex-1 flex gap-0.5">
-                          {Array.from({ length: slot.capacity }).map((_, index) => (
-                            <div
-                              key={index}
-                              className={`h-2 flex-1 rounded-none ${
-                                index < slot.bookings.length
-                                  ? getLoadingBarColor(slot.bookings.length, slot.capacity)
-                                  : 'bg-gray-200'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-gray-500 w-6 text-right">
-                          {slot.bookings.length}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Selected Day Details */}
-      {selectedDate && (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Calendar */}
         <Card className="rounded-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Λεπτομέρειες για {format(new Date(selectedDate), 'EEEE, d MMMM yyyy', { locale: el })}
-            </CardTitle>
+            <CardTitle>Επίλεξε Ημερομηνία</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {getDaySchedule(new Date(selectedDate)).timeSlots
-                .filter(slot => slot.bookings.length > 0)
-                .map((slot) => (
-                  <div key={slot.time} className="border border-gray-200 rounded-none p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Clock className="w-4 h-4" />
-                      <h4 className="font-medium">{slot.time}</h4>
-                      <Badge variant="outline" className="rounded-none">
-                        {slot.bookings.length}/{slot.capacity} άτομα
-                      </Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {slot.bookings.map((booking) => (
-                        <div key={booking.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-none">
-                          <User className="w-4 h-4 text-gray-600" />
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">
-                              {booking.app_users?.name || 'Άγνωστος χρήστης'}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {booking.app_users?.email}
-                            </div>
-                          </div>
-                          <Badge 
-                            variant={booking.status === 'confirmed' ? 'default' : 'secondary'}
-                            className="rounded-none text-xs"
-                          >
-                            {booking.status === 'confirmed' ? 'Επιβεβαιωμένο' : 'Εκκρεμές'}
-                          </Badge>
-                        </div>
-                      ))}
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              disabled={(date) => date < addDays(new Date(), -30)}
+              className={cn("w-full pointer-events-auto")}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Section & Time Selection */}
+        <Card className="rounded-none">
+          <CardHeader>
+            <CardTitle>Επίλεξε Χώρο & Ώρα</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Section Selection */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Χώρος Γυμναστηρίου
+              </label>
+              <div className="space-y-2">
+                {sections.map((section) => (
+                  <div
+                    key={section.id}
+                    className={`p-3 border rounded-none cursor-pointer transition-colors ${
+                      selectedSection === section.id 
+                        ? 'border-[#00ffba] bg-[#00ffba]/10' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setSelectedSection(section.id)}
+                  >
+                    <div className="font-medium">{section.name}</div>
+                    {section.description && (
+                      <div className="text-xs text-gray-500">{section.description}</div>
+                    )}
+                    <div className="text-xs text-gray-500 mt-1">
+                      Χωρητικότητα: {section.max_capacity} άτομα
                     </div>
                   </div>
                 ))}
-              
-              {getDaySchedule(new Date(selectedDate)).timeSlots.every(slot => slot.bookings.length === 0) && (
-                <div className="text-center py-8 text-gray-500">
-                  Δεν υπάρχουν κρατήσεις για αυτή την ημέρα
-                </div>
-              )}
+              </div>
             </div>
+
+            {/* Time Selection */}
+            {selectedDate && selectedSection && (
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Κρατήσεις για {format(selectedDate, 'dd/MM/yyyy')}
+                </label>
+                {(availableSlots.length > 0 || fullSlots.length > 0) ? (
+                  <div className="space-y-2">
+                    {/* Available slots with booking details */}
+                    {availableSlots.map((time) => {
+                      const selectedSection_obj = sections.find(s => s.id === selectedSection);
+                      const capacity = selectedSection_obj?.max_capacity || 6;
+                      const currentBookings = bookingCounts[time] || 0;
+                      const slotBookings = getBookingsForTimeSlot(time);
+                      
+                      return (
+                        <div key={time} className="border border-gray-200 rounded-none">
+                          <div className="p-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                <span className="text-sm font-medium">{time}</span>
+                                
+                                {/* Loading Bar - inline */}
+                                <div className="flex gap-0.5 mx-2">
+                                  {Array.from({ length: capacity }).map((_, index) => (
+                                    <div
+                                      key={index}
+                                      className={`h-2 w-3 rounded-none ${
+                                        index < currentBookings
+                                          ? getLoadingBarColor(currentBookings, capacity)
+                                          : 'bg-gray-200'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <span className="text-sm text-gray-500">
+                                {currentBookings}/{capacity}
+                              </span>
+                            </div>
+                            
+                            {/* Bookings for this time slot */}
+                            {slotBookings.length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                {slotBookings.map((booking) => (
+                                  <div key={booking.id} className="flex items-center gap-2 text-xs bg-gray-50 p-2 rounded-none">
+                                    <User className="w-3 h-3" />
+                                    <span className="font-medium">{booking.app_users?.name || 'Άγνωστος'}</span>
+                                    <span className="text-gray-500">({booking.app_users?.email})</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Full slots */}
+                    {fullSlots.map((time) => {
+                      const selectedSection_obj = sections.find(s => s.id === selectedSection);
+                      const capacity = selectedSection_obj?.max_capacity || 6;
+                      const currentBookings = bookingCounts[time] || capacity;
+                      const slotBookings = getBookingsForTimeSlot(time);
+                      
+                      return (
+                        <div key={time} className="border border-gray-200 rounded-none bg-red-50">
+                          <div className="p-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                <span className="text-sm font-medium">{time}</span>
+                                <span className="text-sm text-red-600">(Πλήρης)</span>
+                                
+                                {/* Loading Bar - inline */}
+                                <div className="flex gap-0.5 mx-2">
+                                  {Array.from({ length: capacity }).map((_, index) => (
+                                    <div
+                                      key={index}
+                                      className="h-2 w-3 rounded-none bg-red-400"
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <span className="text-sm text-gray-500">
+                                {currentBookings}/{capacity}
+                              </span>
+                            </div>
+                            
+                            {/* Bookings for this time slot */}
+                            {slotBookings.length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                {slotBookings.map((booking) => (
+                                  <div key={booking.id} className="flex items-center gap-2 text-xs bg-white p-2 rounded-none">
+                                    <User className="w-3 h-3" />
+                                    <span className="font-medium">{booking.app_users?.name || 'Άγνωστος'}</span>
+                                    <span className="text-gray-500">({booking.app_users?.email})</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm text-center py-4">
+                    Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία
+                  </p>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
-      )}
+      </div>
     </div>
   );
 };
