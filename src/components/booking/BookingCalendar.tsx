@@ -139,30 +139,20 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
       <div className="space-y-4 p-6 text-center border border-gray-200 bg-white max-w-md mx-auto">
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-gray-900">
-            Δεν έχεις διαθέσιμες επισκέψεις
+            {bookingType === 'videocall' 
+              ? 'Δεν έχεις διαθέσιμες βιντεοκλήσεις'
+              : 'Δεν έχεις διαθέσιμες επισκέψεις'
+            }
           </h3>
           <p className="text-sm text-gray-600">
             {bookingType === 'videocall' 
-              ? 'Για να κλείσεις videocall, χρειάζεται να έχεις διαθέσιμες βιντεοκλήσεις'
+              ? 'Για να κλείσεις videocall, χρειάζεται να αγοράσεις μια βιντεοκλήση από τις αγορές'
               : 'Για να κλείσεις ραντεβού, χρειάζεται να έχεις διαθέσιμες επισκέψεις'
             }
           </p>
         </div>
         
         <div className="flex gap-3 justify-center">
-          <Button 
-            onClick={() => {
-              const userIdMatch = window.location.pathname.match(/\/user-profile\/([^\/]+)/);
-              if (userIdMatch) {
-                window.location.href = `${window.location.pathname.split('/online-booking')[0]}?tab=shop`;
-              } else {
-                window.location.href = '/dashboard/shop';
-              }
-            }}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-          >
-            Πήγαινε στο Shop
-          </Button>
           <Button 
             variant="outline" 
             onClick={onClose}
