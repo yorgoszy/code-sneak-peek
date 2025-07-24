@@ -205,15 +205,16 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     if (!userProfile?.id || userProfile.role !== 'admin') return;
     
     try {
-      // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου
+      // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου (όλες οι κρατήσεις που θα εμφανίζονται στα "Νέα")
       const { data, error } = await supabase
         .from('booking_sessions')
         .select('id, created_at')
         .eq('booking_type', 'gym_visit')
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()); // Τελευταίες 24 ώρες
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       
+      // Όλες οι κρατήσεις είναι "νέες" μέχρι να πατηθεί το "Ενημερώθηκα"
       setNewGymBookings(data?.length || 0);
     } catch (error) {
       console.error('Error loading new gym bookings:', error);
@@ -315,10 +316,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Calendar,
       label: "Online Booking",
       path: "/dashboard/online-booking",
-      badge: userProfile?.role === 'admin' && (todayBookings.total > 0 || newGymBookings > 0) 
-        ? (newGymBookings > 0 ? newGymBookings.toString() : todayBookings.total.toString()) 
-        : null,
-      hasCancellation: todayBookings.cancelled > 0
+      badge: userProfile?.role === 'admin' && newGymBookings > 0 ? newGymBookings.toString() : null,
+      hasCancellation: false
     },
     {
       icon: Mail,
