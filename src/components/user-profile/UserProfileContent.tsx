@@ -10,6 +10,7 @@ import { UserProfilePayments } from "./UserProfilePayments";
 import { UserProfileOverview } from "./UserProfileOverview";
 import { UserProfileShop } from "./UserProfileShop";
 import { UserProfileOnlineBooking } from "./UserProfileOnlineBooking";
+import { UserProfileOffers } from "./UserProfileOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileOnlineCoaching } from "./UserProfileOnlineCoaching";
 import { TrainingAnalytics } from "./TrainingAnalytics";
@@ -141,6 +142,22 @@ export const UserProfileContent = ({
               </Button>
             </div>
             <UserProfileShop userProfile={userProfile} />
+          </div>
+        );
+      case "offers":
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Προσφορές</h2>
+              <Button
+                onClick={() => setIsAIChatOpen(true)}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                RID AI Προπονητής
+              </Button>
+            </div>
+            <UserProfileOffers userProfile={userProfile} />
           </div>
         );
       case "online-coaching":
