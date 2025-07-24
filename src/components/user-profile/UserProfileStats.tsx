@@ -315,6 +315,26 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επισκέψεις</p>
           </div>
+
+          {/* Επερχόμενη Επίσκεψη */}
+          <div className="text-center">
+            <MapPin className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {upcomingVisit ? (
+                upcomingVisit.daysLeft > 0 ? (
+                  <span className="text-yellow-600">{upcomingVisit.daysLeft}η {upcomingVisit.hoursLeft}ώ</span>
+                ) : upcomingVisit.hoursLeft > 0 ? (
+                  <span className="text-yellow-600">{upcomingVisit.hoursLeft}ώ</span>
+                ) : (
+                  <span className="text-yellow-600">Τώρα!</span>
+                )
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Επίσκεψη</p>
+          </div>
+
           <div className="text-center">
             <Video className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
@@ -346,25 +366,6 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Βιντεοκλήση</p>
-          </div>
-
-          {/* Επερχόμενη Επίσκεψη */}
-          <div className="text-center">
-            <MapPin className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {upcomingVisit ? (
-                upcomingVisit.daysLeft > 0 ? (
-                  <span className="text-yellow-600">{upcomingVisit.daysLeft}η {upcomingVisit.hoursLeft}ώ</span>
-                ) : upcomingVisit.hoursLeft > 0 ? (
-                  <span className="text-yellow-600">{upcomingVisit.hoursLeft}ώ</span>
-                ) : (
-                  <span className="text-yellow-600">Τώρα!</span>
-                )
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
-            </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Επίσκεψη</p>
           </div>
         </div>
       </CardContent>
