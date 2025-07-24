@@ -150,7 +150,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
               : 'Για να κλείσεις ραντεβού, χρειάζεται να έχεις ενεργό πακέτο επισκέψεων ή συνδρομή Hypergym.'
             }
           </p>
-          <Button onClick={onClose} className="w-full rounded-none">
+          <Button 
+            onClick={() => window.location.href = '/dashboard/shop'} 
+            className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black mb-2"
+          >
+            Πήγαινε στο Shop
+          </Button>
+          <Button onClick={onClose} variant="outline" className="w-full rounded-none">
             Κλείσιμο
           </Button>
         </CardContent>
@@ -246,83 +252,87 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                 </label>
                 {(availableSlots.length > 0 || fullSlots.length > 0) ? (
                   <div className="space-y-2">
-                    {/* Available slots with loading bars */}
-                    {availableSlots.map((time) => {
-                      const selectedSection_obj = sections.find(s => s.id === selectedSection);
-                      const capacity = selectedSection_obj?.max_capacity || 1;
-                      const currentBookings = bookingCounts[time] || 0;
-                      
-                      return (
-                        <div
-                          key={time}
-                          className={`p-1.5 border rounded-none cursor-pointer transition-colors ${
-                            selectedTime === time 
-                              ? 'border-[#00ffba] bg-[#00ffba]/10' 
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          onClick={() => setSelectedTime(time)}
-                        >
-                          <div className="flex items-center justify-between mb-0.5">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span className="text-xs font-medium">{time}</span>
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {currentBookings}/{capacity}
-                            </span>
-                          </div>
-                          
-                          {/* Loading Bar */}
-                          <div className="flex gap-0.5">
-                            {Array.from({ length: capacity }).map((_, index) => (
-                              <div
-                                key={index}
-                                className={`h-1 flex-1 rounded-none ${
-                                  index < currentBookings
-                                    ? getLoadingBarColor(currentBookings, capacity)
-                                    : 'bg-gray-200'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
+                     {/* Available slots with loading bars */}
+                     {availableSlots.map((time) => {
+                       const selectedSection_obj = sections.find(s => s.id === selectedSection);
+                       const capacity = selectedSection_obj?.max_capacity || 1;
+                       const currentBookings = bookingCounts[time] || 0;
+                       const isPendingSelection = selectedTime === time;
+                       const displayBookings = isPendingSelection ? currentBookings + 1 : currentBookings;
+                       
+                       return (
+                         <div
+                           key={time}
+                           className={`p-2 border rounded-none cursor-pointer transition-colors ${
+                             selectedTime === time 
+                               ? 'border-[#00ffba] bg-[#00ffba]/10' 
+                               : 'border-gray-200 hover:border-gray-300'
+                           }`}
+                           onClick={() => setSelectedTime(time)}
+                         >
+                           <div className="flex items-center justify-between">
+                             <div className="flex items-center gap-2">
+                               <Clock className="w-4 h-4" />
+                               <span className="text-sm font-medium">{time}</span>
+                               
+                               {/* Loading Bar - inline */}
+                               <div className="flex gap-0.5 mx-2">
+                                 {Array.from({ length: capacity }).map((_, index) => (
+                                   <div
+                                     key={index}
+                                     className={`h-2 w-3 rounded-none ${
+                                       index < displayBookings
+                                         ? isPendingSelection && index === currentBookings
+                                           ? 'bg-orange-400' // Pending selection color
+                                           : getLoadingBarColor(currentBookings, capacity)
+                                         : 'bg-gray-200'
+                                     }`}
+                                   />
+                                 ))}
+                               </div>
+                             </div>
+                             <span className="text-sm text-gray-500">
+                               {displayBookings}/{capacity}
+                             </span>
+                           </div>
+                         </div>
+                       );
+                     })}
                     
-                    {/* Full slots */}
-                    {fullSlots.map((time) => {
-                      const selectedSection_obj = sections.find(s => s.id === selectedSection);
-                      const capacity = selectedSection_obj?.max_capacity || 1;
-                      const currentBookings = bookingCounts[time] || capacity;
-                      
-                      return (
-                        <div
-                          key={time}
-                          className="p-1.5 border border-gray-200 rounded-none opacity-50 cursor-not-allowed"
-                        >
-                          <div className="flex items-center justify-between mb-0.5">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span className="text-xs font-medium">{time}</span>
-                              <span className="text-xs text-red-600">(Πλήρης)</span>
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {currentBookings}/{capacity}
-                            </span>
-                          </div>
-                          
-                          {/* Loading Bar - Full */}
-                          <div className="flex gap-0.5">
-                            {Array.from({ length: capacity }).map((_, index) => (
-                              <div
-                                key={index}
-                                className="h-1 flex-1 rounded-none bg-red-400"
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
+                     {/* Full slots */}
+                     {fullSlots.map((time) => {
+                       const selectedSection_obj = sections.find(s => s.id === selectedSection);
+                       const capacity = selectedSection_obj?.max_capacity || 1;
+                       const currentBookings = bookingCounts[time] || capacity;
+                       
+                       return (
+                         <div
+                           key={time}
+                           className="p-2 border border-gray-200 rounded-none opacity-50 cursor-not-allowed"
+                         >
+                           <div className="flex items-center justify-between">
+                             <div className="flex items-center gap-2">
+                               <Clock className="w-4 h-4" />
+                               <span className="text-sm font-medium">{time}</span>
+                               <span className="text-sm text-red-600">(Πλήρης)</span>
+                               
+                               {/* Loading Bar - inline */}
+                               <div className="flex gap-0.5 mx-2">
+                                 {Array.from({ length: capacity }).map((_, index) => (
+                                   <div
+                                     key={index}
+                                     className="h-2 w-3 rounded-none bg-red-400"
+                                   />
+                                 ))}
+                               </div>
+                             </div>
+                             <span className="text-sm text-gray-500">
+                               {currentBookings}/{capacity}
+                             </span>
+                           </div>
+                         </div>
+                       );
+                     })}
                   </div>
                 ) : (
                   <p className="text-gray-500 text-sm">
