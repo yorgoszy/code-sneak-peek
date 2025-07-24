@@ -43,12 +43,11 @@ interface Purchase {
 }
 
 const AdminShop = () => {
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [newPurchases, setNewPurchases] = useState<Purchase[]>([]);
   const [readPurchases, setReadPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [markingAsRead, setMarkingAsRead] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("new");
 
   useEffect(() => {
     fetchPurchases();
@@ -106,14 +105,18 @@ const AdminShop = () => {
         }
       }));
 
-      setPurchases(formattedPurchases);
-      
       // Νέα πακέτα είναι αυτά των τελευταίων 7 ημερών
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const newPurchasesData = formattedPurchases.filter(purchase => 
         new Date(purchase.created_at) >= sevenDaysAgo
       );
       setNewPurchases(newPurchasesData);
+      
+      // Όλες οι υπόλοιπες αγορές πάνε στο "Ενημερώθηκα"
+      const olderPurchases = formattedPurchases.filter(purchase => 
+        new Date(purchase.created_at) < sevenDaysAgo
+      );
+      setReadPurchases(olderPurchases);
       
     } catch (error) {
       console.error('Error fetching purchases:', error);
@@ -212,7 +215,7 @@ const AdminShop = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Αγορές</h1>
             <p className="text-gray-600 mt-1">
-              Διαχείριση όλων των αγορών πακέτων ({purchases.length} σύνολο)
+              Διαχείριση όλων των αγορών πακέτων ({newPurchases.length + readPurchases.length} σύνολο)
             </p>
           </div>
           
@@ -233,10 +236,7 @@ const AdminShop = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 rounded-none">
-            <TabsTrigger value="all" className="rounded-none">
-              Όλες οι Αγορές ({purchases.length})
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 rounded-none">
             <TabsTrigger value="new" className="rounded-none">
               Νέες Αγορές ({newPurchases.length})
             </TabsTrigger>
@@ -244,24 +244,6 @@ const AdminShop = () => {
               Ενημερώθηκα ({readPurchases.length})
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="all" className="mt-6">
-            <div className="space-y-4">
-              {purchases.length === 0 ? (
-                <Card className="rounded-none">
-                  <CardContent className="p-8 text-center text-gray-500">
-                    <ShoppingCart className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Δεν υπάρχουν αγορές</h3>
-                    <p>Δεν έχουν γίνει ακόμη αγορές πακέτων.</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid gap-4">
-                  {purchases.map(renderPurchaseCard)}
-                </div>
-              )}
-            </div>
-          </TabsContent>
 
           <TabsContent value="new" className="mt-6">
             <div className="space-y-4">
