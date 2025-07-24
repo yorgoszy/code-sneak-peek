@@ -17,6 +17,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedBookingType, setSelectedBookingType] = useState<string>('');
+  const [showNoVisitsDialog, setShowNoVisitsDialog] = useState(false);
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
 
   useEffect(() => {
@@ -27,8 +28,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
 
   const handleBookingTypeClick = (type: string, requiresPurchase?: boolean) => {
     if (requiresPurchase) {
-      // Navigate to shop
-      window.location.href = `/dashboard/user-profile/${userProfile.id}/shop`;
+      // Show no visits dialog instead of navigating to shop
+      setShowNoVisitsDialog(true);
       return;
     }
     
@@ -109,6 +110,32 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       totalVisits: availability?.type === 'visit_packages' ? availability.total_visits : 0
     }
   ];
+
+  // No visits dialog component
+  if (showNoVisitsDialog) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-none" style={{ margin: '0' }}>
+        <div className="p-6 text-center">
+          <X className="h-6 w-6 text-red-500 mx-auto mb-4" />
+          
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Δεν έχεις διαθέσιμες επισκέψεις
+          </h3>
+          
+          <p className="text-sm text-gray-600 mb-6">
+            Για να κλείσεις ραντεβού, χρειάζεται να έχεις διαθέσιμες επισκέψεις
+          </p>
+          
+          <Button 
+            onClick={() => setShowNoVisitsDialog(false)}
+            className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-none"
+          >
+            Κλείσε
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
