@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ const UserProfile = () => {
   const [profileLoading, setProfileLoading] = useState(true);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
+  const sidebarRef = useRef<{ refreshOffers: () => void }>(null);
 
   const { stats, programs, tests, payments, visits } = useUserProfileData(userProfile, !!userProfile);
 
@@ -87,11 +88,17 @@ const UserProfile = () => {
     await signOut();
   };
 
+  const handleOfferRejected = () => {
+    // Ανανεώνουμε το sidebar για να ενημερωθεί ο αριθμός προσφορών
+    sidebarRef.current?.refreshOffers();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <UserProfileSidebar 
+          ref={sidebarRef}
           isCollapsed={isCollapsed} 
           setIsCollapsed={setIsCollapsed}
           activeTab={activeTab}
@@ -183,6 +190,7 @@ const UserProfile = () => {
             tests={tests}
             payments={payments}
             visits={visits}
+            onOfferRejected={handleOfferRejected}
           />
         </div>
       </div>

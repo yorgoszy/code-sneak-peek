@@ -8,9 +8,10 @@ import { toast } from "sonner";
 
 interface UserProfileOffersProps {
   userProfile: any;
+  onOfferRejected?: () => void;
 }
 
-export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfile }) => {
+export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfile, onOfferRejected }) => {
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingOffer, setProcessingOffer] = useState<string | null>(null);
@@ -130,6 +131,9 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
       
       // Ανανέωση των προσφορών για να αφαιρεθεί η απορριφθείσα
       loadUserOffers();
+      
+      // Ενημέρωση του sidebar για τον αριθμό προσφορών
+      onOfferRejected?.();
     } catch (error) {
       console.error('Error rejecting offer:', error);
       toast.error('Σφάλμα κατά την απόρριψη της προσφοράς');

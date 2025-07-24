@@ -13,7 +13,7 @@ import {
   Tag
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,17 +27,25 @@ interface UserProfileSidebarProps {
   stats: any;
 }
 
-export const UserProfileSidebar = ({ 
+export const UserProfileSidebar = forwardRef<
+  { refreshOffers: () => void },
+  UserProfileSidebarProps
+>(({ 
   isCollapsed, 
   setIsCollapsed, 
   activeTab, 
   setActiveTab,
   userProfile,
   stats
-}: UserProfileSidebarProps) => {
+}, ref) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
   const isMobile = useIsMobile();
+
+  // Εκθέτει τη συνάρτηση loadAvailableOffers στο parent component
+  useImperativeHandle(ref, () => ({
+    refreshOffers: loadAvailableOffers
+  }));
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -243,4 +251,4 @@ export const UserProfileSidebar = ({
       />
     </>
   );
-};
+});

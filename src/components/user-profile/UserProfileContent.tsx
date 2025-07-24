@@ -26,6 +26,7 @@ interface UserProfileContentProps {
   tests: any[];
   payments: any[];
   visits: any[];
+  onOfferRejected?: () => void;
 }
 
 export const UserProfileContent = ({
@@ -35,7 +36,8 @@ export const UserProfileContent = ({
   programs,
   tests,
   payments,
-  visits
+  visits,
+  onOfferRejected
 }: UserProfileContentProps) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
@@ -157,7 +159,7 @@ export const UserProfileContent = ({
                 RID AI Προπονητής
               </Button>
             </div>
-            <UserProfileOffers userProfile={userProfile} />
+            <UserProfileOffers userProfile={userProfile} onOfferRejected={onOfferRejected} />
           </div>
         );
       case "online-coaching":
