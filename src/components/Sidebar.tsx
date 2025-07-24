@@ -57,7 +57,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   useEffect(() => {
     // Listen για το event που στέλνει το GymBookingsOverview όταν γίνει mark as read
     const handleGymBookingsRead = () => {
-      setNewGymBookings(0);
+      // Επαναφορτώνουμε τα bookings για να υπολογίσουμε σωστά τα νέα
+      loadNewGymBookings();
     };
     
     window.addEventListener('gym-bookings-read', handleGymBookingsRead);
@@ -65,7 +66,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     return () => {
       window.removeEventListener('gym-bookings-read', handleGymBookingsRead);
     };
-  }, []);
+  }, [userProfile?.id]); // Προσθέτουμε dependency
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
@@ -205,7 +206,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     if (!userProfile?.id || userProfile.role !== 'admin') return;
     
     try {
-      // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου (όλες οι κρατήσεις που θα εμφανίζονται στα "Νέα")
+      // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου
       const { data, error } = await supabase
         .from('booking_sessions')
         .select('id, created_at')
@@ -214,8 +215,16 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
       if (error) throw error;
       
-      // Όλες οι κρατήσεις είναι "νέες" μέχρι να πατηθεί το "Ενημερώθηκα"
-      setNewGymBookings(data?.length || 0);
+      // Φορτώνουμε τα διαβασμένα booking IDs από localStorage
+      const readBookingIdsStr = localStorage.getItem('readGymBookingIds');
+      const readBookingIds = readBookingIdsStr ? new Set(JSON.parse(readBookingIdsStr)) : new Set();
+      
+      // Υπολογίζουμε τα νέα bookings (όσα δεν έχουν διαβαστεί)
+      const allBookings = data || [];
+      const newBookingsCount = allBookings.filter(booking => !readBookingIds.has(booking.id)).length;
+      
+      console.log('Total bookings:', allBookings.length, 'Read bookings:', readBookingIds.size, 'New bookings:', newBookingsCount);
+      setNewGymBookings(newBookingsCount);
     } catch (error) {
       console.error('Error loading new gym bookings:', error);
     }

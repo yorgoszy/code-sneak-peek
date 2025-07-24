@@ -28,7 +28,11 @@ interface GymBooking {
 export const GymBookingsOverview = () => {
   const [bookings, setBookings] = useState<GymBooking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [readBookingIds, setReadBookingIds] = useState<Set<string>>(new Set());
+  const [readBookingIds, setReadBookingIds] = useState<Set<string>>(() => {
+    // Φορτώνουμε από localStorage κατά την αρχικοποίηση
+    const saved = localStorage.getItem('readGymBookingIds');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
   const [markingAsRead, setMarkingAsRead] = useState(false);
 
   useEffect(() => {
@@ -80,9 +84,13 @@ export const GymBookingsOverview = () => {
       const newReadIds = new Set([...readBookingIds, ...newBookings.map(b => b.id)]);
       setReadBookingIds(newReadIds);
       
+      // Αποθηκεύουμε στο localStorage
+      localStorage.setItem('readGymBookingIds', JSON.stringify([...newReadIds]));
+      
       // Ενημερώνουμε το sidebar
       window.dispatchEvent(new CustomEvent('gym-bookings-read'));
       
+      console.log('Marked as read:', [...newReadIds]);
       toast.success('Όλες οι νέες κρατήσεις μεταφέρθηκαν στο "Ενημερώθηκα"');
     } catch (error) {
       console.error('Error marking as read:', error);
