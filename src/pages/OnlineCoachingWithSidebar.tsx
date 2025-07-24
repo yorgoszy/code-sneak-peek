@@ -9,6 +9,8 @@ import { VideocallBookingCard } from "@/components/online-coaching/VideocallBook
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const OnlineCoachingWithSidebar: React.FC = () => {
   // For admin view - show all videocall bookings
@@ -70,6 +72,35 @@ const OnlineCoachingWithSidebar: React.FC = () => {
       const adminName = 'Admin';
       const meetingUrl = `${booking.meeting_link}#userInfo.displayName="${adminName}"&config.prejoinPageEnabled=false&config.startWithVideoMuted=false&config.startWithAudioMuted=false`;
       window.open(meetingUrl, '_blank');
+    }
+  };
+
+  const handleToggleComplete = async (booking: any) => {
+    if (booking.status === 'pending' || booking.status === 'rejected') return;
+    
+    try {
+      const newStatus = booking.status === 'confirmed' ? 'completed' : 'confirmed';
+      
+      const { error } = await supabase
+        .from('booking_sessions')
+        .update({ status: newStatus })
+        .eq('id', booking.id);
+
+      if (error) throw error;
+
+      // Ενημέρωση τοπικού state
+      booking.status = newStatus;
+      
+      // Refresh των bookings για ενημέρωση των lists
+      await fetchBookings();
+      
+      // Ενημέρωση των selectedDateBookings
+      const updatedBookings = selectedDateBookings.map(b => 
+        b.id === booking.id ? { ...b, status: newStatus } : b
+      );
+      
+    } catch (error) {
+      console.error('Error toggling completion status:', error);
     }
   };
 
@@ -139,12 +170,17 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <div className="text-right">
                                 <div className="font-medium">{booking.booking_time?.slice(0, 5)}</div>
-                                <div className={`text-xs px-2 py-1 rounded-none border ${
-                                  booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
-                                  booking.status === 'pending' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                  'bg-gray-100 text-gray-800 border-gray-200'
-                                }`}>
+                                <div 
+                                  className={`text-xs px-2 py-1 rounded-none border cursor-pointer transition-colors ${
+                                    booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' :
+                                    booking.status === 'completed' ? 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200' :
+                                    booking.status === 'pending' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                    'bg-gray-100 text-gray-800 border-gray-200'
+                                  }`}
+                                  onClick={() => handleToggleComplete(booking)}
+                                >
                                   {booking.status === 'confirmed' ? 'Εγκεκριμένη' :
+                                   booking.status === 'completed' ? 'Ολοκληρωμένη' :
                                    booking.status === 'pending' ? 'Εκκρεμής' : booking.status}
                                 </div>
                               </div>
