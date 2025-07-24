@@ -1,17 +1,59 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowLeft, Receipt } from "lucide-react";
+import { CheckCircle, ArrowLeft, Receipt, AlertCircle } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
+  const [processing, setProcessing] = useState(false);
+  const [processed, setProcessed] = useState(false);
+  const [receiptNumber, setReceiptNumber] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Here you could verify the payment with Stripe if needed
-    console.log('Payment successful, session ID:', sessionId);
-  }, [sessionId]);
+    if (sessionId && !processed && !processing) {
+      processPayment();
+    }
+  }, [sessionId, processed, processing]);
+
+  const processPayment = async () => {
+    if (!sessionId) return;
+    
+    setProcessing(true);
+    setError(null);
+    
+    try {
+      console.log('🔄 Processing payment success for session:', sessionId);
+      
+      const { data, error } = await supabase.functions.invoke('process-payment-success', {
+        body: { session_id: sessionId }
+      });
+
+      if (error) {
+        console.error('❌ Error processing payment:', error);
+        throw error;
+      }
+
+      if (data?.success) {
+        console.log('✅ Payment processed successfully:', data);
+        setReceiptNumber(data.receipt_number);
+        setProcessed(true);
+        toast.success('Η πληρωμή επεξεργάστηκε με επιτυχία!');
+      } else {
+        throw new Error(data?.error || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('💥 Error processing payment:', error);
+      setError(error instanceof Error ? error.message : 'Σφάλμα επεξεργασίας πληρωμής');
+      toast.error('Σφάλμα κατά την επεξεργασία της πληρωμής');
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
@@ -26,27 +68,54 @@ const PaymentSuccess = () => {
         </CardHeader>
         
         <CardContent className="text-center space-y-6">
-          <p className="text-gray-600">
-            Η πληρωμή σου ολοκληρώθηκε με επιτυχία. Θα λάβεις email επιβεβαίωσης σύντομα.
-          </p>
-
-          {sessionId && (
-            <div className="bg-gray-50 p-4 rounded-none border">
-              <p className="text-sm text-gray-500 mb-1">ID Συναλλαγής:</p>
-              <p className="text-xs font-mono text-gray-700 break-all">{sessionId}</p>
+          {processing ? (
+            <div className="space-y-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ffba] mx-auto"></div>
+              <p className="text-gray-600">Επεξεργάζεται η πληρωμή σας...</p>
             </div>
-          )}
+          ) : error ? (
+            <div className="space-y-4">
+              <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
+              <p className="text-red-600">{error}</p>
+              <Button 
+                onClick={processPayment}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                Επανάληψη
+              </Button>
+            </div>
+          ) : (
+            <>
+              <p className="text-gray-600">
+                Η πληρωμή σου ολοκληρώθηκε με επιτυχία. Θα λάβεις email επιβεβαίωσης σύντομα.
+              </p>
 
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600">
-              Τι ακολουθεί:
-            </p>
-            <ul className="text-sm text-gray-600 space-y-1 text-left">
-              <li>• Θα λάβεις email επιβεβαίωσης</li>
-              <li>• Οι επισκέψεις θα προστεθούν στον λογαριασμό σου</li>
-              <li>• Μπορείς να δεις τις αγορές σου στο προφίλ σου</li>
-            </ul>
-          </div>
+              {receiptNumber && (
+                <div className="bg-green-50 p-4 rounded-none border border-green-200">
+                  <p className="text-sm text-green-700 mb-1">Αριθμός Απόδειξης:</p>
+                  <p className="text-sm font-mono text-green-800 font-semibold">{receiptNumber}</p>
+                </div>
+              )}
+
+              {sessionId && (
+                <div className="bg-gray-50 p-4 rounded-none border">
+                  <p className="text-sm text-gray-500 mb-1">ID Συναλλαγής:</p>
+                  <p className="text-xs font-mono text-gray-700 break-all">{sessionId}</p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600">
+                  Τι ακολουθεί:
+                </p>
+                <ul className="text-sm text-gray-600 space-y-1 text-left">
+                  <li>• Η απόδειξη αποθηκεύτηκε στον λογαριασμό σας</li>
+                  <li>• Μπορείτε να τη δείτε στις πληρωμές του προφίλ σας</li>
+                  <li>• Η συνδρομή/υπηρεσία ενεργοποιήθηκε</li>
+                </ul>
+              </div>
+            </>
+          )}
 
           <div className="flex gap-3">
             <Button 
