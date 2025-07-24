@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Video, User, ExternalLink, Check, X } from "lucide-react";
-import { format, isToday, isTomorrow, isPast, isWithinInterval, addMinutes } from "date-fns";
+import { format, isToday, isTomorrow, isPast, isWithinInterval, addMinutes, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import { el } from 'date-fns/locale';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -71,6 +71,25 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
       return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">Εγκεκριμένη</Badge>;
     }
     return <Badge variant="outline" className="rounded-none">Προγραμματισμένη</Badge>;
+  };
+
+  const getTimeRemaining = () => {
+    if (isPastMeeting || booking.status !== 'confirmed') return null;
+    
+    const now = new Date();
+    const days = differenceInDays(bookingDateTime, now);
+    const hours = differenceInHours(bookingDateTime, now) % 24;
+    const minutes = differenceInMinutes(bookingDateTime, now) % 60;
+    
+    if (days > 0) {
+      return `${days} ημέρ${days === 1 ? 'α' : 'ες'}, ${hours} ώρ${hours === 1 ? 'α' : 'ες'}`;
+    } else if (hours > 0) {
+      return `${hours} ώρ${hours === 1 ? 'α' : 'ες'}, ${minutes} λεπτά`;
+    } else if (minutes > 0) {
+      return `${minutes} λεπτά`;
+    } else {
+      return 'Τώρα!';
+    }
   };
 
   const handleJoinMeeting = () => {
@@ -186,7 +205,7 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                <span>{booking.booking_time}</span>
+                <span>{booking.booking_time?.slice(0, 5)}</span>
               </div>
             </div>
 
@@ -240,14 +259,21 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
             {/* Meeting controls for confirmed bookings */}
             {booking.status === 'confirmed' && booking.meeting_link && (
-              <Button
-                onClick={handleJoinMeeting}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                size="sm"
-              >
-                <Video className="w-4 h-4 mr-2" />
-                Συμμετοχή
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={handleJoinMeeting}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  size="sm"
+                >
+                  <Video className="w-4 h-4 mr-2" />
+                  Συμμετοχή
+                </Button>
+                {getTimeRemaining() && (
+                  <div className="text-xs text-gray-500 text-center">
+                    Απομένουν: {getTimeRemaining()}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
