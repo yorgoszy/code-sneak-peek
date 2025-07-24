@@ -42,6 +42,8 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
   }, [isOpen, offer]);
 
   const fetchTargetData = async () => {
+    if (!offer) return;
+    
     setLoading(true);
     try {
       if (offer.visibility === 'all') {
@@ -87,6 +89,8 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
   };
 
   const renderVisibilityInfo = () => {
+    if (!offer) return null;
+    
     switch (offer.visibility) {
       case 'all':
         return (
@@ -149,11 +153,16 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
     );
   }
 
+  // Don't render if offer is null or undefined
+  if (!offer) {
+    return null;
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle>Προπροβολή Προσφοράς: {offer.name}</DialogTitle>
+          <DialogTitle>Προπροβολή Προσφοράς: {offer?.name || 'Άγνωστη Προσφορά'}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -162,22 +171,26 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
               <h3 className="font-medium mb-2">Πληροφορίες Προσφοράς</h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-medium">Όνομα:</span> {offer.name}
+                  <span className="font-medium">Όνομα:</span> {offer?.name || 'N/A'}
                 </div>
                 <div>
-                  <span className="font-medium">Τιμή:</span> €{offer.discounted_price}
+                  <span className="font-medium">Τιμή:</span> €{offer?.discounted_price || '0'}
                 </div>
                 <div>
-                  <span className="font-medium">Περίοδος:</span> {new Date(offer.start_date).toLocaleDateString('el-GR')} - {new Date(offer.end_date).toLocaleDateString('el-GR')}
+                  <span className="font-medium">Περίοδος:</span> 
+                  {offer?.start_date && offer?.end_date ? 
+                    `${new Date(offer.start_date).toLocaleDateString('el-GR')} - ${new Date(offer.end_date).toLocaleDateString('el-GR')}` 
+                    : 'N/A'
+                  }
                 </div>
                 <div>
                   <span className="font-medium">Κατάσταση:</span> 
-                  <Badge className={`ml-2 rounded-none ${offer.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                    {offer.is_active ? 'Ενεργή' : 'Ανενεργή'}
+                  <Badge className={`ml-2 rounded-none ${offer?.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                    {offer?.is_active ? 'Ενεργή' : 'Ανενεργή'}
                   </Badge>
                 </div>
               </div>
-              {offer.description && (
+              {offer?.description && (
                 <div className="mt-2">
                   <span className="font-medium">Περιγραφή:</span>
                   <p className="text-sm text-gray-600 mt-1">{offer.description}</p>
@@ -193,7 +206,7 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
             </CardContent>
           </Card>
 
-          {offer.visibility === 'all' && allUsers.length > 0 && (
+          {offer?.visibility === 'all' && allUsers.length > 0 && (
             <Card className="rounded-none">
               <CardContent className="p-4">
                 <h3 className="font-medium mb-3">Όλοι οι Χρήστες ({allUsers.length})</h3>
@@ -201,11 +214,11 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
                   {allUsers.map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-2 border rounded-none">
                       <div>
-                        <span className="font-medium">{user.name}</span>
-                        <span className="text-sm text-gray-600 ml-2">({user.email})</span>
+                        <span className="font-medium">{user?.name || 'N/A'}</span>
+                        <span className="text-sm text-gray-600 ml-2">({user?.email || 'N/A'})</span>
                       </div>
                       <Badge variant="outline" className="rounded-none">
-                        {user.subscription_status || 'Χωρίς συνδρομή'}
+                        {user?.subscription_status || 'Χωρίς συνδρομή'}
                       </Badge>
                     </div>
                   ))}
@@ -214,7 +227,7 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
             </Card>
           )}
 
-          {(offer.visibility === 'individual' || offer.visibility === 'selected') && targetUsers.length > 0 && (
+          {(offer?.visibility === 'individual' || offer?.visibility === 'selected') && targetUsers.length > 0 && (
             <Card className="rounded-none">
               <CardContent className="p-4">
                 <h3 className="font-medium mb-3">Στοχευμένοι Χρήστες ({targetUsers.length})</h3>
@@ -222,11 +235,11 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
                   {targetUsers.map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-2 border rounded-none">
                       <div>
-                        <span className="font-medium">{user.name}</span>
-                        <span className="text-sm text-gray-600 ml-2">({user.email})</span>
+                        <span className="font-medium">{user?.name || 'N/A'}</span>
+                        <span className="text-sm text-gray-600 ml-2">({user?.email || 'N/A'})</span>
                       </div>
                       <Badge variant="outline" className="rounded-none">
-                        {user.subscription_status || 'Χωρίς συνδρομή'}
+                        {user?.subscription_status || 'Χωρίς συνδρομή'}
                       </Badge>
                     </div>
                   ))}
@@ -235,15 +248,15 @@ export const OfferPreviewDialog: React.FC<OfferPreviewDialogProps> = ({
             </Card>
           )}
 
-          {offer.visibility === 'groups' && targetGroups.length > 0 && (
+          {offer?.visibility === 'groups' && targetGroups.length > 0 && (
             <Card className="rounded-none">
               <CardContent className="p-4">
                 <h3 className="font-medium mb-3">Στοχευμένες Ομάδες ({targetGroups.length})</h3>
                 <div className="max-h-64 overflow-y-auto space-y-2">
                   {targetGroups.map((group) => (
                     <div key={group.id} className="p-2 border rounded-none">
-                      <div className="font-medium">{group.name}</div>
-                      {group.description && (
+                      <div className="font-medium">{group?.name || 'N/A'}</div>
+                      {group?.description && (
                         <div className="text-sm text-gray-600 mt-1">{group.description}</div>
                       )}
                     </div>
