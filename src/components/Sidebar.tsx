@@ -39,12 +39,14 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
   const [pendingVideocalls, setPendingVideocalls] = useState(0);
+  const [todayBookings, setTodayBookings] = useState({ total: 0, cancelled: 0 });
   const isMobile = useIsMobile();
 
   useEffect(() => {
     if (userProfile?.id) {
       loadAvailableOffers();
       loadPendingVideocalls();
+      loadTodayBookings();
     }
   }, [userProfile?.id]);
 
@@ -105,6 +107,43 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       }
     } catch (error) {
       console.error('Error loading available offers:', error);
+    }
+  };
+
+  const loadTodayBookings = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Bookings που έγιναν σήμερα
+      const { data: newBookings, error: newError } = await supabase
+        .from('booking_sessions')
+        .select('id, status')
+        .gte('created_at', `${today}T00:00:00.000Z`)
+        .lt('created_at', `${today}T23:59:59.999Z`);
+
+      if (newError) throw newError;
+      
+      // Ακυρώσεις που έγιναν σήμερα
+      const { data: cancelledBookings, error: cancelError } = await supabase
+        .from('booking_sessions')
+        .select('id')
+        .eq('status', 'cancelled')
+        .gte('updated_at', `${today}T00:00:00.000Z`)
+        .lt('updated_at', `${today}T23:59:59.999Z`);
+
+      if (cancelError) throw cancelError;
+      
+      const totalBookings = (newBookings?.length || 0) + (cancelledBookings?.length || 0);
+      const cancelledCount = cancelledBookings?.length || 0;
+      
+      setTodayBookings({ 
+        total: totalBookings, 
+        cancelled: cancelledCount 
+      });
+    } catch (error) {
+      console.error('Error loading today bookings:', error);
     }
   };
 
@@ -222,7 +261,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Calendar,
       label: "Online Booking",
       path: "/dashboard/online-booking",
-      badge: null
+      badge: userProfile?.role === 'admin' && todayBookings.total > 0 ? todayBookings.total.toString() : null,
+      hasCancellation: todayBookings.cancelled > 0
     },
     {
       icon: Mail,
@@ -280,6 +320,10 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
               <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
                 item.badge === 'NEW' 
                   ? 'bg-[#00ffba] text-black' 
+                  : item.hasCancellation
+                  ? 'bg-red-300 text-red-800'
+                  : item.path === '/dashboard/online-booking'
+                  ? 'bg-blue-500 text-white'
                   : /^\d+$/.test(item.badge)
                   ? 'bg-[#fa3055] text-white'
                   : 'bg-gray-200 text-gray-700'
