@@ -12,7 +12,7 @@ interface BookingSection {
   updated_at: string;
 }
 
-export const useBookingSections = () => {
+export const useBookingSections = (bookingType?: string) => {
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,35 @@ export const useBookingSections = () => {
         .order('name');
 
       if (error) throw error;
-      setSections(data || []);
+      
+      // Filter sections based on booking type
+      let filteredData = data || [];
+      if (bookingType) {
+        filteredData = filteredData.filter(section => {
+          if (bookingType === 'videocall') {
+            return section.name.toLowerCase().includes('videocall') || 
+                   section.name.toLowerCase().includes('online') ||
+                   section.name.toLowerCase().includes('βιντεοκλήσεις') ||
+                   section.name.toLowerCase().includes('βιντεοκληση') ||
+                   section.description?.toLowerCase().includes('videocall') ||
+                   section.description?.toLowerCase().includes('online') ||
+                   section.description?.toLowerCase().includes('βιντεοκλήσεις') ||
+                   section.description?.toLowerCase().includes('βιντεοκληση');
+          } else {
+            // For gym visits, exclude videocall sections
+            return !section.name.toLowerCase().includes('videocall') && 
+                   !section.name.toLowerCase().includes('online') &&
+                   !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
+                   !section.name.toLowerCase().includes('βιντεοκληση') &&
+                   !section.description?.toLowerCase().includes('videocall') &&
+                   !section.description?.toLowerCase().includes('online') &&
+                   !section.description?.toLowerCase().includes('βιντεοκλήσεις') &&
+                   !section.description?.toLowerCase().includes('βιντεοκληση');
+          }
+        });
+      }
+      
+      setSections(filteredData);
     } catch (error) {
       console.error('Error fetching booking sections:', error);
     } finally {

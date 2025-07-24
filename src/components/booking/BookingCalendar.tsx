@@ -27,7 +27,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [fullSlots, setFullSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const { sections, getTimeSlotStatus } = useBookingSections();
+  const { sections, getTimeSlotStatus } = useBookingSections(bookingType);
 
   // Set default section when sections load
   useEffect(() => {
@@ -170,32 +170,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
               <label className="text-sm font-medium text-gray-700 mb-2 block">
                 {bookingType === 'videocall' ? 'Χώρος Videocall' : 'Χώρος Γυμναστηρίου'}
               </label>
-              <div className="space-y-2">
-                {sections
-                  .filter(section => {
-                    // Filter sections based on booking type
-                    if (bookingType === 'videocall') {
-                      return section.name.toLowerCase().includes('videocall') || 
-                             section.name.toLowerCase().includes('online') ||
-                             section.name.toLowerCase().includes('βιντεοκλήσεις') ||
-                             section.name.toLowerCase().includes('βιντεοκληση') ||
-                             section.description?.toLowerCase().includes('videocall') ||
-                             section.description?.toLowerCase().includes('online') ||
-                             section.description?.toLowerCase().includes('βιντεοκλήσεις') ||
-                             section.description?.toLowerCase().includes('βιντεοκληση');
-                    } else {
-                      // For gym visits, exclude videocall sections
-                      return !section.name.toLowerCase().includes('videocall') && 
-                             !section.name.toLowerCase().includes('online') &&
-                             !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
-                             !section.name.toLowerCase().includes('βιντεοκληση') &&
-                             !section.description?.toLowerCase().includes('videocall') &&
-                             !section.description?.toLowerCase().includes('online') &&
-                             !section.description?.toLowerCase().includes('βιντεοκλήσεις') &&
-                             !section.description?.toLowerCase().includes('βιντεοκληση');
-                    }
-                  })
-                  .map((section) => (
+               <div className="space-y-2">
+                {sections.map((section) => (
                     <Button
                       key={section.id}
                       variant={selectedSection === section.id ? "default" : "outline"}
