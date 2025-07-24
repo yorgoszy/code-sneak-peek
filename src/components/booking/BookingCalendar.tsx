@@ -138,8 +138,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     return (
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg border border-gray-100">
         <div className="p-6 text-center">
-          <div className="mb-4">
-            <X className="h-8 w-8 text-red-500 mx-auto" />
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-50 mb-4">
+            <X className="h-6 w-6 text-red-500" />
           </div>
           
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
