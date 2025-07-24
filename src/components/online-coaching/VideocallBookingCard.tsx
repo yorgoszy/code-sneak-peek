@@ -61,14 +61,30 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
     if (booking.status === 'rejected') {
       return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Απορρίφθηκε</Badge>;
     }
-    if (isPastMeeting) {
-      return <Badge variant="secondary" className="rounded-none">Ολοκληρωμένη</Badge>;
+    if (booking.status === 'completed') {
+      return (
+        <Badge 
+          variant="secondary" 
+          className={`rounded-none ${isAdmin ? 'cursor-pointer hover:bg-gray-300' : ''}`}
+          onClick={isAdmin ? handleToggleComplete : undefined}
+        >
+          Ολοκληρωμένη
+        </Badge>
+      );
     }
     if (canJoinMeeting && booking.status === 'confirmed') {
       return <Badge className="rounded-none bg-[#00ffba] text-black">Ενεργή</Badge>;
     }
     if (booking.status === 'confirmed') {
-      return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">Εγκεκριμένη</Badge>;
+      return (
+        <Badge 
+          variant="outline" 
+          className={`rounded-none bg-green-50 text-green-700 border-green-200 ${isAdmin ? 'cursor-pointer hover:bg-green-100' : ''}`}
+          onClick={isAdmin ? handleToggleComplete : undefined}
+        >
+          Εγκεκριμένη
+        </Badge>
+      );
     }
     return <Badge variant="outline" className="rounded-none">Προγραμματισμένη</Badge>;
   };
@@ -182,6 +198,31 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
     } catch (error) {
       console.error('Error rejecting booking:', error);
       toast.error('Σφάλμα κατά την απόρριψη της βιντεοκλήσης');
+    }
+  };
+
+  const handleToggleComplete = async () => {
+    if (!isAdmin || booking.status === 'pending' || booking.status === 'rejected') return;
+    
+    try {
+      const newStatus = booking.status === 'confirmed' ? 'completed' : 'confirmed';
+      
+      const { error } = await supabase
+        .from('booking_sessions')
+        .update({ status: newStatus })
+        .eq('id', booking.id);
+
+      if (error) throw error;
+
+      toast.success(
+        newStatus === 'completed' 
+          ? 'Η βιντεοκλήση σημειώθηκε ως ολοκληρωμένη!'
+          : 'Η βιντεοκλήση επαναφέρθηκε σε εγκεκριμένη!'
+      );
+      onRefresh?.();
+    } catch (error) {
+      console.error('Error toggling completion status:', error);
+      toast.error('Σφάλμα κατά την αλλαγή κατάστασης');
     }
   };
 
