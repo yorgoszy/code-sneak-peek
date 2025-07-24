@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2 } from "lucide-react";
+import { Plus, Edit2, Trash2, Eye } from "lucide-react";
 import { OfferCreationDialog } from "./OfferCreationDialog";
+import { OfferEditDialog } from "./OfferEditDialog";
+import { OfferPreviewDialog } from "./OfferPreviewDialog";
 
 export const OffersManagement: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -13,6 +15,9 @@ export const OffersManagement: React.FC = () => {
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState<any>(null);
 
   useEffect(() => {
     checkUserRole();
@@ -253,6 +258,28 @@ export const OffersManagement: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => {
+                        setSelectedOffer(offer);
+                        setIsPreviewDialogOpen(true);
+                      }}
+                      className="rounded-none border-blue-300 text-blue-600 hover:bg-blue-50"
+                    >
+                      <Eye className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedOffer(offer);
+                        setIsEditDialogOpen(true);
+                      }}
+                      className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => deleteOffer(offer)}
                       className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
                     >
@@ -282,6 +309,24 @@ export const OffersManagement: React.FC = () => {
           loadOffers();
           setIsOfferDialogOpen(false);
         }}
+      />
+
+      {/* Offer Edit Dialog */}
+      <OfferEditDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        onSuccess={() => {
+          loadOffers();
+          setIsEditDialogOpen(false);
+        }}
+        offer={selectedOffer}
+      />
+
+      {/* Offer Preview Dialog */}
+      <OfferPreviewDialog
+        isOpen={isPreviewDialogOpen}
+        onClose={() => setIsPreviewDialogOpen(false)}
+        offer={selectedOffer}
       />
     </Card>
   );
