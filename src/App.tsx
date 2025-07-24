@@ -31,6 +31,7 @@ import ShopWithSidebar from "@/pages/ShopWithSidebar";
 import OnlineCoachingWithSidebar from "@/pages/OnlineCoachingWithSidebar";
 import OnlineBookingWithSidebar from "@/pages/Dashboard/OnlineBookingWithSidebar";
 import PaymentSuccess from "@/pages/PaymentSuccess";
+import Offers from "@/pages/Offers";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/dashboard/articles" element={<ArticlesWithSidebar />} />
                 <Route path="/dashboard/results" element={<ResultsWithSidebar />} />
                 <Route path="/dashboard/shop" element={<ShopWithSidebar />} />
+                <Route path="/dashboard/offers" element={<Offers />} />
                 <Route path="/dashboard/online-coaching" element={<OnlineCoachingWithSidebar />} />
                 <Route path="/dashboard/online-booking" element={<OnlineBookingWithSidebar />} />
                 <Route path="/shop" element={<Shop />} />

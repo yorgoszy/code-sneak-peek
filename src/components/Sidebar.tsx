@@ -15,7 +15,8 @@ import {
   TrendingUp,
   BookOpen,
   ShoppingCart,
-  Video
+  Video,
+  Tag
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -23,6 +24,8 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useState } from "react";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -34,7 +37,42 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const location = useLocation();
   const { userProfile } = useRoleCheck();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [availableOffers, setAvailableOffers] = useState(0);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (userProfile?.id) {
+      loadAvailableOffers();
+    }
+  }, [userProfile?.id]);
+
+  const loadAvailableOffers = async () => {
+    if (!userProfile?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('offers')
+        .select('*')
+        .eq('is_active', true)
+        .gte('end_date', new Date().toISOString().split('T')[0])
+        .lte('start_date', new Date().toISOString().split('T')[0]);
+
+      if (error) throw error;
+      
+      // Φιλτράρισμα προσφορών για τον χρήστη
+      const userOffers = data?.filter(offer => {
+        if (offer.visibility === 'all') return true;
+        if (offer.visibility === 'individual' || offer.visibility === 'selected') {
+          return offer.target_users?.includes(userProfile.id);
+        }
+        return false;
+      }) || [];
+      
+      setAvailableOffers(userOffers.length);
+    } catch (error) {
+      console.error('Error loading available offers:', error);
+    }
+  };
 
   const menuItems = [
     { 
@@ -116,6 +154,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: Tag,
+      label: "Προσφορές",
+      path: "/dashboard/offers",
+      badge: availableOffers > 0 ? availableOffers.toString() : null
+    },
+    {
       icon: Video,
       label: "Online Coaching",
       path: "/dashboard/online-coaching",
@@ -183,6 +227,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
               <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
                 item.badge === 'NEW' 
                   ? 'bg-[#00ffba] text-black' 
+                  : /^\d+$/.test(item.badge)
+                  ? 'bg-red-500 text-white'
                   : 'bg-gray-200 text-gray-700'
               }`}>
                 {item.badge}
