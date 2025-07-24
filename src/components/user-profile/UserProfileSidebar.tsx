@@ -9,12 +9,14 @@ import {
   Brain,
   ShoppingCart,
   Video,
-  CalendarDays
+  CalendarDays,
+  Tag
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfileSidebarProps {
   isCollapsed: boolean;
@@ -34,7 +36,42 @@ export const UserProfileSidebar = ({
   stats
 }: UserProfileSidebarProps) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [availableOffers, setAvailableOffers] = useState(0);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (userProfile?.id) {
+      loadAvailableOffers();
+    }
+  }, [userProfile?.id]);
+
+  const loadAvailableOffers = async () => {
+    if (!userProfile?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('offers')
+        .select('*')
+        .eq('is_active', true)
+        .gte('end_date', new Date().toISOString().split('T')[0])
+        .lte('start_date', new Date().toISOString().split('T')[0]);
+
+      if (error) throw error;
+      
+      // Φιλτράρισμα προσφορών για τον χρήστη
+      const userOffers = data?.filter(offer => {
+        if (offer.visibility === 'all') return true;
+        if (offer.visibility === 'individual' || offer.visibility === 'selected') {
+          return offer.target_users?.includes(userProfile.id);
+        }
+        return false;
+      }) || [];
+      
+      setAvailableOffers(userOffers.length);
+    } catch (error) {
+      console.error('Error loading available offers:', error);
+    }
+  };
   
   const menuItems = [
     { 
@@ -72,6 +109,12 @@ export const UserProfileSidebar = ({
       label: "Αγορές",
       key: "shop",
       badge: null
+    },
+    {
+      icon: Tag,
+      label: "Προσφορές",
+      key: "offers",
+      badge: availableOffers > 0 ? availableOffers : null
     },
     {
       icon: Video,

@@ -26,7 +26,7 @@ export default function Offers() {
     
     setLoading(true);
     try {
-      console.log('🔄 Loading offers for user:', userProfile.id);
+      console.log('🔄 Loading offers for user:', userProfile.id, 'Role:', userProfile.role);
       
       const { data, error } = await supabase
         .from('offers')
@@ -45,14 +45,18 @@ export default function Offers() {
       
       console.log('✅ All active offers:', data);
       
-      // Φιλτράρισμα προσφορών για τον χρήστη
-      const userOffers = data?.filter(offer => {
-        if (offer.visibility === 'all') return true;
-        if (offer.visibility === 'individual' || offer.visibility === 'selected') {
-          return offer.target_users?.includes(userProfile.id);
-        }
-        return false;
-      }) || [];
+      let userOffers = data || [];
+      
+      // Αν δεν είναι admin, φιλτράρισμα προσφορών βάσει visibility
+      if (userProfile.role !== 'admin') {
+        userOffers = data?.filter(offer => {
+          if (offer.visibility === 'all') return true;
+          if (offer.visibility === 'individual' || offer.visibility === 'selected') {
+            return offer.target_users?.includes(userProfile.id);
+          }
+          return false;
+        }) || [];
+      }
       
       console.log('✅ User specific offers:', userOffers);
       setOffers(userOffers);
