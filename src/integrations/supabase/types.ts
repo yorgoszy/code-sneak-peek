@@ -2211,6 +2211,7 @@ export type Database = {
           items: Json
           mydata_id: string | null
           mydata_status: string
+          payment_id: string | null
           receipt_number: string
           subtotal: number
           total: number
@@ -2230,6 +2231,7 @@ export type Database = {
           items?: Json
           mydata_id?: string | null
           mydata_status?: string
+          payment_id?: string | null
           receipt_number: string
           subtotal?: number
           total?: number
@@ -2249,6 +2251,7 @@ export type Database = {
           items?: Json
           mydata_id?: string | null
           mydata_status?: string
+          payment_id?: string | null
           receipt_number?: string
           subtotal?: number
           total?: number
@@ -2257,6 +2260,13 @@ export type Database = {
           vat?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "receipts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "receipts_user_id_fkey"
             columns: ["user_id"]
