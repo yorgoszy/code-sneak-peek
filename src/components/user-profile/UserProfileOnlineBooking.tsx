@@ -116,7 +116,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     <div className="space-y-6">
       {/* No visits dialog */}
       <Dialog open={showNoVisitsDialog} onOpenChange={setShowNoVisitsDialog}>
-        <DialogContent className="max-w-md mx-auto rounded-none">
+        <DialogContent className="max-w-md mx-auto rounded-none p-0 border-none [&>button]:hidden">
           <div className="bg-white border border-gray-200 rounded-none" style={{ margin: '0' }}>
             <div className="p-6 text-center">
               <X className="h-6 w-6 text-red-500 mx-auto mb-4" />
