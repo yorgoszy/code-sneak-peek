@@ -151,7 +151,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
         
         <div className="flex gap-3 justify-center">
           <Button 
-            onClick={() => window.location.href = '/dashboard/user-profile/shop'}
+            onClick={() => {
+              const userIdMatch = window.location.pathname.match(/\/user-profile\/([^\/]+)/);
+              if (userIdMatch) {
+                window.location.href = `${window.location.pathname.split('/online-booking')[0]}?tab=shop`;
+              } else {
+                window.location.href = '/dashboard/shop';
+              }
+            }}
             className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
           >
             Πήγαινε στο Shop
