@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -366,6 +366,15 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Βιντεοκλήση</p>
+          </div>
+
+          {/* Ενεργές Προσφορές */}
+          <div className="text-center">
+            <ShoppingBag className={`mx-auto mb-2 animate-pulse ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[#00ffba]`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              <span className="text-[#00ffba] animate-pulse">3</span>
+            </p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Ενεργές Προσφορές</p>
           </div>
         </div>
       </CardContent>
