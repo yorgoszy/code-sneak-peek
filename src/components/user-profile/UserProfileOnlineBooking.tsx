@@ -94,7 +94,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const bookingOptions = [
     {
       id: 'gym_visit',
-      title: 'Επισκέψεις Γυμναστηρίου',
+      title: 'Κύριο Γυμναστήριο',
       description: availability?.type === 'none' 
         ? 'Χρειάζεται αγορά πακέτου για κρατήσεις'
         : 'Κλείσε το ραντεβού σου για προπόνηση',
