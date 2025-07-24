@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { matchesSearchTerm } from "@/lib/utils";
-import { OfferCreationDialog } from "@/components/offers/OfferCreationDialog";
 
 interface SubscriptionType {
   id: string;
@@ -34,11 +33,9 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [roleLoading, setRoleLoading] = useState(true);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [filteredSubscriptionTypes, setFilteredSubscriptionTypes] = useState<SubscriptionType[]>([]);
-  const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<SubscriptionType | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [typeToDelete, setTypeToDelete] = useState<SubscriptionType | null>(null);
@@ -62,7 +59,6 @@ export const SubscriptionTypeManager: React.FC = () => {
   useEffect(() => {
     if (!roleLoading && isAdmin) {
       loadSubscriptionTypes();
-      loadOffers();
     } else if (!roleLoading) {
       setLoading(false);
     }
@@ -144,30 +140,6 @@ export const SubscriptionTypeManager: React.FC = () => {
       toast.error('Σφάλμα κατά τη φόρτωση των τύπων συνδρομών');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadOffers = async () => {
-    try {
-      console.log('🔄 Loading offers...');
-      const { data, error } = await supabase
-        .from('offers')
-        .select(`
-          *,
-          subscription_types(name)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('❌ Error loading offers:', error);
-        throw error;
-      }
-      
-      console.log('✅ Loaded offers:', data);
-      setOffers(data || []);
-    } catch (error) {
-      console.error('💥 Error loading offers:', error);
-      toast.error('Σφάλμα κατά τη φόρτωση των προσφορών');
     }
   };
 
@@ -488,22 +460,13 @@ export const SubscriptionTypeManager: React.FC = () => {
           <div className="flex items-center gap-2">
             <span>Διαχείριση Τύπων Συνδρομών</span>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              onClick={openCreateDialog}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Νέος Τύπος
-            </Button>
-            <Button 
-              onClick={() => setIsOfferDialogOpen(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white rounded-none"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Νέα Προσφορά
-            </Button>
-          </div>
+          <Button 
+            onClick={openCreateDialog}
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Νέος Τύπος
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -625,60 +588,6 @@ export const SubscriptionTypeManager: React.FC = () => {
                 </div>
               </div>
             ))
-          )}
-        </div>
-
-        {/* Offers Section */}
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Ενεργές Προσφορές</h3>
-          {offers.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">
-              <p>Δεν υπάρχουν προσφορές</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {offers.map((offer) => (
-                <div key={offer.id} className="border rounded-none p-4 bg-gradient-to-r from-blue-50 to-purple-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-lg">{offer.name}</h4>
-                        <Badge className={`rounded-none ${offer.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                          {offer.is_active ? 'Ενεργή' : 'Ανενεργή'}
-                        </Badge>
-                        <Badge variant="outline" className="rounded-none bg-purple-100 text-purple-800">
-                          Προσφορά
-                        </Badge>
-                      </div>
-                      {offer.description && (
-                        <p className="text-sm text-gray-600 mb-2">{offer.description}</p>
-                      )}
-                      <div className="text-sm space-y-1">
-                        <div><strong>Τύπος Συνδρομής:</strong> {offer.subscription_types?.name}</div>
-                        <div className="flex items-center gap-4">
-                          <span><strong>Τιμή Προσφοράς:</strong> €{offer.discounted_price}</span>
-                          <span><strong>Ορατότητα:</strong> {
-                            offer.visibility === 'all' ? 'Όλοι' : 
-                            offer.visibility === 'individual' ? 'Μεμονωμένοι χρήστες' :
-                            offer.visibility === 'selected' ? 'Επιλεγμένοι χρήστες' : 'Ομάδες'
-                          }</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span><strong>Έναρξη:</strong> {new Date(offer.start_date).toLocaleDateString('el-GR')}</span>
-                          <span><strong>Λήξη:</strong> {new Date(offer.end_date).toLocaleDateString('el-GR')}</span>
-                        </div>
-                        {offer.target_users && offer.target_users.length > 0 && (
-                          <div><strong>Στοχευμένοι χρήστες:</strong> {offer.target_users.length} χρήστες</div>
-                        )}
-                        {offer.target_groups && offer.target_groups.length > 0 && (
-                          <div><strong>Στοχευμένες ομάδες:</strong> {offer.target_groups.length} ομάδες</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
           )}
         </div>
       </CardContent>
@@ -875,16 +784,6 @@ export const SubscriptionTypeManager: React.FC = () => {
         description={`Είστε σίγουροι ότι θέλετε να διαγράψετε τον τύπο συνδρομής "${typeToDelete?.name}"; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.`}
         confirmText="Διαγραφή"
         cancelText="Ακύρωση"
-      />
-
-      {/* Offer Creation Dialog */}
-      <OfferCreationDialog
-        isOpen={isOfferDialogOpen}
-        onClose={() => setIsOfferDialogOpen(false)}
-        onSuccess={() => {
-          loadOffers();
-          setIsOfferDialogOpen(false);
-        }}
       />
     </Card>
   );
