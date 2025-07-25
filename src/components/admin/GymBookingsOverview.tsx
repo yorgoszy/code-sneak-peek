@@ -15,6 +15,7 @@ interface GymBooking {
   booking_type: string;
   notes?: string;
   user_id: string;
+  created_at?: string;
   section?: {
     name: string;
     description?: string;
@@ -32,6 +33,11 @@ export const GymBookingsOverview = () => {
     // Φορτώνουμε από localStorage κατά την αρχικοποίηση
     const saved = localStorage.getItem('readGymBookingIds');
     return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+  const [lastCheckTimestamp, setLastCheckTimestamp] = useState<number>(() => {
+    // Φορτώνουμε το timestamp της τελευταίας "ενημέρωσης"
+    const saved = localStorage.getItem('lastGymBookingCheck');
+    return saved ? parseInt(saved) : Date.now();
   });
   const [markingAsRead, setMarkingAsRead] = useState(false);
 
@@ -87,10 +93,11 @@ export const GymBookingsOverview = () => {
     return bookingDate >= startOfWeek && bookingDate <= endOfWeek;
   });
   
-  // Νέες κρατήσεις είναι όλες οι κρατήσεις που δεν έχουν "διαβαστεί"
-  const newBookings = bookings.filter(booking => 
-    !readBookingIds.has(booking.id)
-  );
+  // Νέες κρατήσεις είναι μόνο αυτές που δημιουργήθηκαν μετά το τελευταίο check
+  const newBookings = bookings.filter(booking => {
+    const bookingCreatedAt = new Date(booking.created_at || booking.booking_date).getTime();
+    return bookingCreatedAt > lastCheckTimestamp;
+  });
   
   const pastBookings = bookings.filter(booking => 
     (booking.status === 'confirmed' && new Date(`${booking.booking_date} ${booking.booking_time}`) <= new Date()) ||
@@ -101,18 +108,18 @@ export const GymBookingsOverview = () => {
     setMarkingAsRead(true);
     
     try {
-      // Προσθέτουμε όλες τις νέες κρατήσεις στο set των διαβασμένων
-      const newReadIds = new Set([...readBookingIds, ...newBookings.map(b => b.id)]);
-      setReadBookingIds(newReadIds);
+      // Ενημερώνουμε το timestamp της τελευταίας επισκόπησης
+      const currentTimestamp = Date.now();
+      setLastCheckTimestamp(currentTimestamp);
       
       // Αποθηκεύουμε στο localStorage
-      localStorage.setItem('readGymBookingIds', JSON.stringify([...newReadIds]));
+      localStorage.setItem('lastGymBookingCheck', currentTimestamp.toString());
       
       // Ενημερώνουμε το sidebar
       window.dispatchEvent(new CustomEvent('gym-bookings-read'));
       
-      console.log('Marked as read:', [...newReadIds]);
-      toast.success('Όλες οι νέες κρατήσεις μεταφέρθηκαν στο "Ενημερώθηκα"');
+      console.log('Marked as read at:', new Date(currentTimestamp));
+      toast.success('Η λίστα "Νέα" καθαρίστηκε επιτυχώς');
     } catch (error) {
       console.error('Error marking as read:', error);
       toast.error('Σφάλμα κατά την ενημέρωση');
