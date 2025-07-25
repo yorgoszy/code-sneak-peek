@@ -15,7 +15,7 @@ export const useActivePrograms = () => {
         const { data: assignments, error: assignmentsError } = await supabase
           .from('program_assignments')
           .select('*')
-          .eq('status', 'active')
+          .in('status', ['active', 'completed'])
           .gte('end_date', new Date().toISOString().split('T')[0]); // Only get assignments that haven't expired
 
         if (assignmentsError) {
