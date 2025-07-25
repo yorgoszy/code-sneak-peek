@@ -86,18 +86,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     const disabled = new Set<string>();
     const selectedSectionObj = sections.find(s => s.id === selectedSection);
     
-    // Define subscription end date - either from availability or default to 30 days from now
+    // Get subscription end date if it exists
     let subscriptionEndDate: Date | null = null;
     if (availability?.subscription_end_date) {
       subscriptionEndDate = new Date(availability.subscription_end_date);
-    } else if (availability?.type === 'visit_packages') {
-      // For visit packages without expiry date, we need to be more restrictive
-      // Allow booking only for the next 30 days for safety
-      subscriptionEndDate = addDays(new Date(), 30);
+      console.log('🔍 Subscription end date found:', subscriptionEndDate);
+    } else {
+      console.log('🔍 No subscription end date - no date restrictions');
     }
-    
-    console.log('🔍 Subscription end date for calendar filtering:', subscriptionEndDate);
-    console.log('🔍 Availability type:', availability?.type);
     
     // Check the next 60 days for availability
     for (let i = 0; i < 60; i++) {
@@ -106,9 +102,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
       const dayOfWeek = checkDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
       
       try {
-        // Check if date is after subscription expiry
+        // Check if date is after subscription expiry (only if subscription_end_date exists)
         if (subscriptionEndDate && checkDate > subscriptionEndDate) {
-          console.log('🚫 Date disabled due to subscription expiry:', dateStr, 'End date:', subscriptionEndDate);
+          console.log('🚫 Date disabled due to subscription expiry:', dateStr);
           disabled.add(dateStr);
           continue;
         }
@@ -125,7 +121,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
           );
           
           if (!dayHasHours) {
-            console.log('🚫 Date disabled due to no available hours:', dateStr, 'Day:', currentDayName);
+            console.log('🚫 Date disabled due to no available hours on', currentDayName, ':', dateStr);
             disabled.add(dateStr);
             continue;
           }
