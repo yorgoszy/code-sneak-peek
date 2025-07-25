@@ -227,7 +227,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                       <div>
                         <h4 className="font-medium">{booking.section?.name}</h4>
                         <p className="text-sm text-gray-600">
-                          {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time}
+                          {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time.slice(0, 5)}
                         </p>
                         {canCancel ? (
                           <p className="text-xs text-green-600">
