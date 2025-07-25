@@ -39,26 +39,44 @@ const ProgramCards = () => {
     const total = trainingDates.length;
     const today = new Date();
     
+    console.log(`📊 Calculating stats for assignment ${assignment.id}:`, {
+      programName: assignment.programs?.name,
+      userInfo: `${assignment.app_users?.name} (${assignment.app_users?.email})`,
+      status: assignment.status,
+      totalDates: total,
+      completionsFound: assignmentCompletions.length
+    });
+    
     // Για κάθε training date, έλεγξε το status
     for (const date of trainingDates) {
       const completion = assignmentCompletions.find(c => c.scheduled_date === date);
+      const workoutDate = new Date(date);
+      const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
       
       if (completion?.status === 'completed') {
         completed++;
+        console.log(`✅ ${date}: completed`);
+      } else if (isPast || completion?.status === 'missed') {
+        missed++;
+        console.log(`❌ ${date}: missed (isPast: ${isPast}, status: ${completion?.status})`);
       } else {
-        // Έλεγχος αν έχει περάσει η ημερομηνία
-        const workoutDate = new Date(date);
-        const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        
-        if (isPast || completion?.status === 'missed') {
-          missed++;
-        }
+        console.log(`⏳ ${date}: scheduled (isPast: ${isPast}, status: ${completion?.status || 'no completion'})`);
       }
     }
     
     // Το progress υπολογίζεται από completed + missed (όλες οι "ολοκληρωμένες" προπονήσεις)
     const processedWorkouts = completed + missed;
     const progress = total > 0 ? Math.round((processedWorkouts / total) * 100) : 0;
+    
+    console.log(`📊 Final stats for ${assignment.programs?.name}:`, {
+      completed,
+      missed,
+      total,
+      processedWorkouts,
+      progress,
+      assignmentStatus: assignment.status,
+      willBeInCompleted: assignment.status === 'completed' || progress >= 100
+    });
     
     return {
       completed,
