@@ -435,7 +435,9 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Μέρες Συνδρομής</p>
           </div>
           <div className="text-center">
-            <MapPin className={`mx-auto text-blue-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <MapPin className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
+            }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {visitsData ? (
                 <span className="text-gray-900">
@@ -470,7 +472,9 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           </div>
 
           <div className="text-center">
-            <Video className={`mx-auto text-blue-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <Video className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
+            }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {videocallData ? (
                 <span className="text-gray-900">
