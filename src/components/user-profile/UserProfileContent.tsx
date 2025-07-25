@@ -15,8 +15,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserProfileOnlineCoaching } from "./UserProfileOnlineCoaching";
 import { TrainingAnalytics } from "./TrainingAnalytics";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
-import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -46,16 +44,7 @@ export const UserProfileContent = ({
       case "overview":
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Επισκόπηση Προφίλ</h2>
-              <Button
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                RID AI Προπονητής
-              </Button>
-            </div>
+            <h2 className="text-xl font-semibold">Επισκόπηση Προφίλ</h2>
             <UserProfileOverview 
               userProfile={userProfile} 
               stats={stats} 
@@ -69,128 +58,56 @@ export const UserProfileContent = ({
       case "programs":
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Προγράμματα</h2>
-              <Button
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                RID AI Προπονητής
-              </Button>
-            </div>
+            <h2 className="text-xl font-semibold">Προγράμματα</h2>
             <UserProfileProgramCards userProfile={userProfile} />
           </div>
         );
       case "calendar":
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Ημερολόγιο</h2>
-              <Button
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                RID AI Προπονητής
-              </Button>
-            </div>
+            <h2 className="text-xl font-semibold">Ημερολόγιο</h2>
             <UserProfileCalendar user={userProfile} />
           </div>
         );
       case "tests":
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Τεστ & Αξιολογήσεις</h2>
-              <Button
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                RID AI Προπονητής
-              </Button>
-            </div>
+            <h2 className="text-xl font-semibold">Τεστ & Αξιολογήσεις</h2>
             <UserProfileTests tests={tests} />
           </div>
         );
       case "payments":
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Πληρωμές & Συνδρομές</h2>
-              <Button
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                RID AI Προπονητής
-              </Button>
-            </div>
+            <h2 className="text-xl font-semibold">Πληρωμές & Συνδρομές</h2>
             <UserProfilePayments payments={payments} userProfile={userProfile} />
           </div>
         );
       case "shop":
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Αγορές</h2>
-              <Button
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                RID AI Προπονητής
-              </Button>
-            </div>
+            <h2 className="text-xl font-semibold">Αγορές</h2>
             <UserProfileShop userProfile={userProfile} />
           </div>
         );
       case "offers":
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Προσφορές</h2>
-              <Button
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                RID AI Προπονητής
-              </Button>
-            </div>
+            <h2 className="text-xl font-semibold">Προσφορές</h2>
             <UserProfileOffers userProfile={userProfile} onOfferRejected={onOfferRejected} />
           </div>
         );
       case "online-coaching":
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Online Coaching</h2>
-              <Button
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                RID AI Προπονητής
-              </Button>
-            </div>
+            <h2 className="text-xl font-semibold">Online Coaching</h2>
             <UserProfileOnlineCoaching userProfile={userProfile} />
           </div>
         );
       case "online-booking":
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Online Booking</h2>
-              <Button
-                onClick={() => setIsAIChatOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                RID AI Προπονητής
-              </Button>
-            </div>
+            <h2 className="text-xl font-semibold">Online Booking</h2>
             <UserProfileOnlineBooking userProfile={userProfile} />
           </div>
         );
