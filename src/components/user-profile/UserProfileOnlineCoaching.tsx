@@ -516,12 +516,17 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                             <X className="w-3 h-3 mr-1" />
                             Διαγραφή
                           </Button>
-                        ) : canCancelBooking(booking.booking_date, booking.booking_time) && (
+                        ) : (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => cancelBooking(booking.id)}
-                            className="rounded-none"
+                            onClick={() => canCancelBooking(booking.booking_date, booking.booking_time) ? cancelBooking(booking.id) : null}
+                            disabled={!canCancelBooking(booking.booking_date, booking.booking_time)}
+                            className={`rounded-none ${
+                              !canCancelBooking(booking.booking_date, booking.booking_time) 
+                                ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' 
+                                : ''
+                            }`}
                           >
                             <X className="w-3 h-3 mr-1" />
                             Ακύρωση
