@@ -846,7 +846,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const resend = new Resend(resendApiKey)
-    const { type, bookingId, adminEmail, userId, paymentId, offerId }: NotificationRequest = await req.json()
+    const { type, bookingId, adminEmail, userId, paymentId, offerId, bookingDate, bookingTime }: NotificationRequest = await req.json()
 
     console.log(`📧 Αποστολή ${type} notification`)
 

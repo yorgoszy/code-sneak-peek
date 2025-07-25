@@ -100,17 +100,29 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         }
       }
 
-      // Send booking confirmation notification
+      // Send booking notification
       try {
-        await supabase.functions.invoke('send-videocall-notifications', {
-          body: {
-            type: 'booking_created',
-            bookingId: data.id,
-            userId: userProfile.id
-          }
-        });
+        if (type === 'videocall') {
+          // For videocalls, send pending notification to admin
+          await supabase.functions.invoke('send-videocall-notifications', {
+            body: {
+              type: 'booking_pending',
+              bookingId: data.id,
+              adminEmail: 'yorgoszy@gmail.com'
+            }
+          });
+        } else {
+          // For gym visits, send created notification 
+          await supabase.functions.invoke('send-videocall-notifications', {
+            body: {
+              type: 'booking_created',
+              bookingId: data.id,
+              userId: userProfile.id
+            }
+          });
+        }
       } catch (notificationError) {
-        console.error('Error sending booking confirmation notification:', notificationError);
+        console.error('Error sending booking notification:', notificationError);
         // Don't throw error here - booking is already created
       }
       

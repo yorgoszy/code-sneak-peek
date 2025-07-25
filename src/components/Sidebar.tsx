@@ -173,7 +173,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         .from('booking_sessions')
         .select('id')
         .eq('booking_type', 'videocall')
-        .eq('status', 'confirmed')
+        .eq('status', 'pending')
         .gte('booking_date', new Date().toISOString().split('T')[0]);
 
       if (error) throw error;
