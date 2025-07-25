@@ -2662,6 +2662,7 @@ export type Database = {
       }
       subscription_types: {
         Row: {
+          allowed_sections: string[] | null
           available_in_shop: boolean
           created_at: string
           description: string | null
@@ -2677,6 +2678,7 @@ export type Database = {
           visit_expiry_months: number | null
         }
         Insert: {
+          allowed_sections?: string[] | null
           available_in_shop?: boolean
           created_at?: string
           description?: string | null
@@ -2692,6 +2694,7 @@ export type Database = {
           visit_expiry_months?: number | null
         }
         Update: {
+          allowed_sections?: string[] | null
           available_in_shop?: boolean
           created_at?: string
           description?: string | null

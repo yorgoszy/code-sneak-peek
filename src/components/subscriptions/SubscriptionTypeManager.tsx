@@ -26,6 +26,13 @@ interface SubscriptionType {
   visit_expiry_months?: number;
   available_in_shop?: boolean;
   single_purchase?: boolean;
+  allowed_sections?: string[];
+}
+
+interface BookingSection {
+  id: string;
+  name: string;
+  description?: string;
 }
 
 export const SubscriptionTypeManager: React.FC = () => {
@@ -33,6 +40,7 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [roleLoading, setRoleLoading] = useState(true);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [filteredSubscriptionTypes, setFilteredSubscriptionTypes] = useState<SubscriptionType[]>([]);
+  const [bookingSections, setBookingSections] = useState<BookingSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -51,6 +59,7 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [visitCount, setVisitCount] = useState('');
   const [visitExpiryMonths, setVisitExpiryMonths] = useState('');
   const [singlePurchase, setSinglePurchase] = useState(false);
+  const [selectedSections, setSelectedSections] = useState<string[]>([]);
 
   useEffect(() => {
     checkUserRole();
@@ -59,6 +68,7 @@ export const SubscriptionTypeManager: React.FC = () => {
   useEffect(() => {
     if (!roleLoading && isAdmin) {
       loadSubscriptionTypes();
+      loadBookingSections();
     } else if (!roleLoading) {
       setLoading(false);
     }
@@ -118,7 +128,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       console.log('🔄 Loading subscription types...');
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase')
+        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections')
         .order('price');
 
       if (error) {
@@ -143,6 +153,28 @@ export const SubscriptionTypeManager: React.FC = () => {
     }
   };
 
+  const loadBookingSections = async () => {
+    try {
+      console.log('🔄 Loading booking sections...');
+      const { data, error } = await supabase
+        .from('booking_sections')
+        .select('id, name, description')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) {
+        console.error('❌ Error loading booking sections:', error);
+        throw error;
+      }
+      
+      console.log('✅ Loaded booking sections:', data);
+      setBookingSections(data || []);
+    } catch (error) {
+      console.error('💥 Error loading booking sections:', error);
+      toast.error('Σφάλμα κατά τη φόρτωση των τμημάτων');
+    }
+  };
+
   const resetForm = () => {
     setName('');
     setDescription('');
@@ -153,6 +185,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     setVisitCount('');
     setVisitExpiryMonths('');
     setSinglePurchase(false);
+    setSelectedSections([]);
     setEditingType(null);
   };
 
@@ -174,6 +207,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     setVisitCount(type.visit_count?.toString() || '');
     setVisitExpiryMonths(type.visit_expiry_months?.toString() || '');
     setSinglePurchase(type.single_purchase || false);
+    setSelectedSections(type.allowed_sections || []);
     setIsDialogOpen(true);
   };
 
@@ -272,7 +306,8 @@ export const SubscriptionTypeManager: React.FC = () => {
         subscription_mode: subscriptionMode,
         visit_count: (subscriptionMode === 'visit_based' || subscriptionMode === 'videocall') ? numericVisitCount : null,
         visit_expiry_months: (subscriptionMode === 'visit_based' || subscriptionMode === 'videocall') ? numericVisitExpiryMonths : null,
-        single_purchase: singlePurchase
+        single_purchase: singlePurchase,
+        allowed_sections: selectedSections.length > 0 ? selectedSections : null
       };
 
       console.log('💾 Saving subscription type:', typeData);
@@ -731,6 +766,57 @@ export const SubscriptionTypeManager: React.FC = () => {
                 rows={4}
                 disabled={saving}
               />
+            </div>
+            
+            {/* Booking Sections Selection */}
+            <div>
+              <Label htmlFor="bookingSections">Τμήματα (προαιρετικό)</Label>
+              <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-none p-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    id="allSections"
+                    type="checkbox"
+                    checked={selectedSections.length === 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedSections([]);
+                      }
+                    }}
+                    className="h-4 w-4 text-[#00ffba] focus:ring-[#00ffba] border-gray-300 rounded"
+                    disabled={saving}
+                  />
+                  <Label htmlFor="allSections" className="text-sm font-medium">
+                    Όλα τα τμήματα (προεπιλογή)
+                  </Label>
+                </div>
+                {bookingSections.map((section) => (
+                  <div key={section.id} className="flex items-center space-x-2">
+                    <input
+                      id={`section-${section.id}`}
+                      type="checkbox"
+                      checked={selectedSections.includes(section.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedSections([...selectedSections, section.id]);
+                        } else {
+                          setSelectedSections(selectedSections.filter(id => id !== section.id));
+                        }
+                      }}
+                      className="h-4 w-4 text-[#00ffba] focus:ring-[#00ffba] border-gray-300 rounded"
+                      disabled={saving}
+                    />
+                    <Label htmlFor={`section-${section.id}`} className="text-sm">
+                      {section.name}
+                      {section.description && (
+                        <span className="text-gray-500 ml-1">- {section.description}</span>
+                      )}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Αν δεν επιλέξετε κανένα τμήμα, η συνδρομή θα ισχύει για όλα τα τμήματα
+              </p>
             </div>
             
             <div className="flex items-center space-x-2">
