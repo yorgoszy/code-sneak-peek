@@ -393,7 +393,9 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενα Τεστ</p>
           </div>
           <div className="text-center">
-            <CreditCard className={`mx-auto text-orange-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <CreditCard className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              paymentStatus !== null ? 'text-orange-500' : 'text-gray-400'
+            }`} />
             <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {paymentStatus === null ? (
                 <span className="text-gray-400">-</span>
@@ -409,7 +411,9 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             {isPaused ? (
               <Pause className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
             ) : (
-              <Clock className={`mx-auto text-[#00ffba] mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              <Clock className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                subscriptionDays !== null ? 'text-[#00ffba]' : 'text-gray-400'
+              }`} />
             )}
              <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
                {subscriptionDays !== null ? (
