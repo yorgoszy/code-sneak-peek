@@ -9,6 +9,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { useRealtimePrograms } from "@/hooks/useRealtimePrograms";
 import { Sidebar } from "@/components/Sidebar";
+import { 
+  AlertDialog, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 
 const ProgramCards = () => {
   const navigate = useNavigate();
@@ -17,6 +25,10 @@ const ProgramCards = () => {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [workoutCompletions, setWorkoutCompletions] = React.useState<any[]>([]);
   const [realtimeKey, setRealtimeKey] = React.useState(0);
+  const [deleteDialog, setDeleteDialog] = React.useState<{open: boolean, assignmentId: string | null}>({
+    open: false,
+    assignmentId: null
+  });
 
   // Fetch all workout completions - same as calendar
   React.useEffect(() => {
@@ -87,9 +99,14 @@ const ProgramCards = () => {
   };
 
   const handleDeleteProgram = async (assignmentId: string) => {
-    if (!window.confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;')) {
-      return;
-    }
+    setDeleteDialog({ open: true, assignmentId });
+  };
+
+  const confirmDelete = async () => {
+    const assignmentId = deleteDialog.assignmentId;
+    if (!assignmentId) return;
+
+    setDeleteDialog({ open: false, assignmentId: null });
 
     try {
       console.log('🗑️ Διαγραφή assignment:', assignmentId);
@@ -289,6 +306,33 @@ const ProgramCards = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, assignmentId: null })}>
+        <AlertDialogContent className="rounded-none max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center">Επιβεβαίωση Διαγραφής</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-base">
+              Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex justify-center gap-4 mt-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialog({ open: false, assignmentId: null })}
+              className="rounded-none px-8"
+            >
+              Ακύρωση
+            </Button>
+            <Button 
+              onClick={confirmDelete}
+              className="rounded-none px-8 bg-red-600 hover:bg-red-700 text-white"
+            >
+              Διαγραφή
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
