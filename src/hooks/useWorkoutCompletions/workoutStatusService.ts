@@ -104,10 +104,10 @@ export const workoutStatusService = {
             const weekNumber = Math.floor(dateIndex / 7) + 1;
             const dayNumber = (dateIndex % 7) + 1;
 
-            // Δημιούργησε νέο record
+            // Δημιούργησε νέο record με upsert για να αποφύγουμε duplicates
             const { error: insertError } = await supabase
               .from('workout_completions')
-              .insert({
+              .upsert({
                 assignment_id: assignment.id,
                 user_id: assignment.user_id,
                 program_id: assignment.program_id,
@@ -118,6 +118,9 @@ export const workoutStatusService = {
                 status_color: 'red',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
+              }, {
+                onConflict: 'assignment_id,scheduled_date',
+                ignoreDuplicates: false
               });
 
             if (insertError) {

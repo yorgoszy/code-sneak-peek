@@ -9,6 +9,7 @@ import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -23,6 +24,7 @@ const ActivePrograms = () => {
 
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletions();
+  const completionsCache = useWorkoutCompletionsCache();
   
   // Multi-workout management
   const { 
@@ -116,6 +118,19 @@ const ActivePrograms = () => {
           // ΑΜΕΣΗ ανανέωση του realtime key
           setRealtimeKey(Date.now());
           
+          // Clear cache for affected assignment
+          if (payload.new && typeof payload.new === 'object' && 'assignment_id' in payload.new) {
+            completionsCache.invalidateAssignmentCache(payload.new.assignment_id as string);
+          }
+          
+          // Έλεγχος για αυτόματη ολοκλήρωση προγραμμάτων
+          try {
+            const { programCompletionService } = await import('@/hooks/useWorkoutCompletions/programCompletionService');
+            await programCompletionService.checkAndCompleteProgramAssignments();
+          } catch (error) {
+            console.error('Error checking program completions:', error);
+          }
+          
           // Reload completions
           await loadCompletions();
           
@@ -141,6 +156,9 @@ const ActivePrograms = () => {
           
           // ΑΜΕΣΗ ανανέωση του realtime key
           setRealtimeKey(Date.now());
+          
+          // Clear completions cache
+          completionsCache.clearCache();
           
           // Refetch active programs
           refetch();

@@ -61,7 +61,10 @@ export const useRealtimePrograms = ({ onProgramsChange, onAssignmentsChange }: U
         },
         (payload) => {
           console.log('✅ Workout completion change detected:', payload);
-          onAssignmentsChange(); // This affects program status
+          // Force immediate refresh for real-time updates
+          setTimeout(() => {
+            onAssignmentsChange();
+          }, 100);
         }
       )
       .subscribe();

@@ -29,7 +29,9 @@ export const completeWorkout = async (
     completed_date: new Date().toISOString().split('T')[0],
     status: 'completed',
     status_color: 'green',
-    notes
+    notes,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   };
 
   if (startTime) {
@@ -46,7 +48,10 @@ export const completeWorkout = async (
 
   const { data, error } = await supabase
     .from('workout_completions')
-    .insert(workoutData)
+    .upsert(workoutData, {
+      onConflict: 'assignment_id,scheduled_date',
+      ignoreDuplicates: false
+    })
     .select()
     .single();
 
@@ -92,7 +97,7 @@ export const updateWorkoutStatus = async (
 
     const { data, error } = await supabase
       .from('workout_completions')
-      .insert({
+      .upsert({
         assignment_id: assignmentId,
         user_id: userId,
         program_id: programId,
@@ -101,7 +106,12 @@ export const updateWorkoutStatus = async (
         scheduled_date: scheduledDate,
         completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null,
         status: status,
-        status_color: statusColor
+        status_color: statusColor,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'assignment_id,scheduled_date',
+        ignoreDuplicates: false
       })
       .select()
       .single();

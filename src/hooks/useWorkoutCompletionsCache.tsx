@@ -165,12 +165,21 @@ export const useWorkoutCompletionsCache = () => {
     setCompletionsCache(new Map());
   }, []);
 
+  const invalidateAssignmentCache = useCallback((assignmentId: string) => {
+    setCompletionsCache(prev => {
+      const newCache = new Map(prev);
+      newCache.delete(assignmentId);
+      return newCache;
+    });
+  }, []);
+
   return {
     getWorkoutCompletions,
     getAllWorkoutCompletions,
     calculateWorkoutStats,
     fetchMultipleCompletions,
     clearCache,
+    invalidateAssignmentCache,
     loading,
     cacheSize: completionsCache.size
   };
