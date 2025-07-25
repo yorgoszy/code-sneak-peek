@@ -341,6 +341,20 @@ export const useUserBookings = () => {
       }
     }
 
+    // Send cancellation notification
+    try {
+      await supabase.functions.invoke('send-videocall-notifications', {
+        body: {
+          type: 'booking_cancelled',
+          bookingId: bookingId,
+          userId: booking?.user_id
+        }
+      });
+    } catch (notificationError) {
+      console.error('Error sending cancellation notification:', notificationError);
+      // Don't throw error here - booking is already cancelled
+    }
+
     // Refresh data after cancelling
     await Promise.all([fetchAvailability(), fetchBookings()]);
   };
