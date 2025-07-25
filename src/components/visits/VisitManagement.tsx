@@ -902,17 +902,30 @@ export const VisitManagement: React.FC = () => {
                   onChange={(e) => setPackageVisits(e.target.value)}
                   className="rounded-none"
                 />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Ημερομηνία Λήξης (Προαιρετικό)</label>
-                <Input
-                  type="date"
-                  value={packageExpiryDate}
-                  onChange={(e) => setPackageExpiryDate(e.target.value)}
-                  className="rounded-none"
-                />
-              </div>
+               </div>
+               
+               <div>
+                 <label className="block text-sm font-medium mb-2">Ποσό (€)</label>
+                 <Input
+                   type="number"
+                   placeholder="π.χ. 50 (μπορεί να είναι 0)"
+                   value={packagePrice}
+                   onChange={(e) => setPackagePrice(e.target.value)}
+                   className="rounded-none"
+                   min="0"
+                   step="0.01"
+                 />
+               </div>
+               
+               <div>
+                 <label className="block text-sm font-medium mb-2">Ημερομηνία Λήξης (Προαιρετικό)</label>
+                 <Input
+                   type="date"
+                   value={packageExpiryDate}
+                   onChange={(e) => setPackageExpiryDate(e.target.value)}
+                   className="rounded-none"
+                 />
+               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">Τμήματα Πρόσβασης</label>
