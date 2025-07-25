@@ -86,20 +86,31 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     const disabled = new Set<string>();
     const selectedSectionObj = sections.find(s => s.id === selectedSection);
     
-    // Check the next 30 days for availability
-    for (let i = 0; i < 30; i++) {
+    // Define subscription end date - either from availability or default to 30 days from now
+    let subscriptionEndDate: Date | null = null;
+    if (availability?.subscription_end_date) {
+      subscriptionEndDate = new Date(availability.subscription_end_date);
+    } else if (availability?.type === 'visit_packages') {
+      // For visit packages without expiry date, we need to be more restrictive
+      // Allow booking only for the next 30 days for safety
+      subscriptionEndDate = addDays(new Date(), 30);
+    }
+    
+    console.log('🔍 Subscription end date for calendar filtering:', subscriptionEndDate);
+    console.log('🔍 Availability type:', availability?.type);
+    
+    // Check the next 60 days for availability
+    for (let i = 0; i < 60; i++) {
       const checkDate = addDays(new Date(), i);
       const dateStr = format(checkDate, 'yyyy-MM-dd');
       const dayOfWeek = checkDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
       
       try {
         // Check if date is after subscription expiry
-        if (availability?.subscription_end_date) {
-          const subscriptionEndDate = new Date(availability.subscription_end_date);
-          if (checkDate > subscriptionEndDate) {
-            disabled.add(dateStr);
-            continue;
-          }
+        if (subscriptionEndDate && checkDate > subscriptionEndDate) {
+          console.log('🚫 Date disabled due to subscription expiry:', dateStr, 'End date:', subscriptionEndDate);
+          disabled.add(dateStr);
+          continue;
         }
         
         // Check if the section is available on this day of week
@@ -114,6 +125,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
           );
           
           if (!dayHasHours) {
+            console.log('🚫 Date disabled due to no available hours:', dateStr, 'Day:', currentDayName);
             disabled.add(dateStr);
             continue;
           }
@@ -123,14 +135,17 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
         const { available, full } = await getTimeSlotStatus(selectedSection, dateStr, bookingType);
         // If no available slots and no full slots, it means the section is not available that day
         if (available.length === 0 && full.length === 0) {
+          console.log('🚫 Date disabled due to no time slots:', dateStr);
           disabled.add(dateStr);
         }
       } catch (error) {
         // If there's an error, consider the date disabled
+        console.log('🚫 Date disabled due to error:', dateStr, error);
         disabled.add(dateStr);
       }
     }
     
+    console.log('🔍 Total disabled dates:', disabled.size);
     setDisabledDates(disabled);
   };
 
