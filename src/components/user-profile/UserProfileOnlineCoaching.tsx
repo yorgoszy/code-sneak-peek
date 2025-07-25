@@ -568,6 +568,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
             <p>• Δεν χρειάζεται εγκατάσταση - λειτουργεί απευθείας από τον browser</p>
             <p>• Για καλύτερη ποιότητα, χρησιμοποίησε Chrome ή Firefox</p>
             <p>• Βεβαιώσου ότι έχεις ενεργοποιήσει την κάμερα και το μικρόφωνο</p>
+            <p className="text-red-600 font-medium">• Η ακύρωση των βιντεοκλήσεων επιτρέπεται μέχρι 12 ώρες πριν από την προγραμματισμένη ώρα</p>
           </div>
         </CardContent>
       </Card>
