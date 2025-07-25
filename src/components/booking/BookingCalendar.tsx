@@ -84,13 +84,42 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     if (!selectedSection) return;
 
     const disabled = new Set<string>();
+    const selectedSectionObj = sections.find(s => s.id === selectedSection);
     
     // Check the next 30 days for availability
     for (let i = 0; i < 30; i++) {
       const checkDate = addDays(new Date(), i);
       const dateStr = format(checkDate, 'yyyy-MM-dd');
+      const dayOfWeek = checkDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
       
       try {
+        // Check if date is after subscription expiry
+        if (availability?.subscription_end_date) {
+          const subscriptionEndDate = new Date(availability.subscription_end_date);
+          if (checkDate > subscriptionEndDate) {
+            disabled.add(dateStr);
+            continue;
+          }
+        }
+        
+        // Check if the section is available on this day of week
+        const sectionAvailableHours = selectedSectionObj?.available_hours;
+        if (sectionAvailableHours && Array.isArray(sectionAvailableHours)) {
+          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const currentDayName = dayNames[dayOfWeek];
+          
+          // Check if this day has any available hours
+          const dayHasHours = sectionAvailableHours.some((hour: any) => 
+            hour && hour[currentDayName] && Array.isArray(hour[currentDayName]) && hour[currentDayName].length > 0
+          );
+          
+          if (!dayHasHours) {
+            disabled.add(dateStr);
+            continue;
+          }
+        }
+        
+        // Additional check using getTimeSlotStatus for any remaining restrictions
         const { available, full } = await getTimeSlotStatus(selectedSection, dateStr, bookingType);
         // If no available slots and no full slots, it means the section is not available that day
         if (available.length === 0 && full.length === 0) {
