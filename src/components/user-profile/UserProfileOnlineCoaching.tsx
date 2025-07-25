@@ -21,6 +21,7 @@ interface UserAvailability {
   videocall_subscription?: string;
   single_videocall_sessions?: number;
   videocall_packages_available?: number;
+  allowed_sections?: string[];
 }
 
 interface VideocallBooking {

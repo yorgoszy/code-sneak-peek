@@ -30,7 +30,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const [fullSlots, setFullSlots] = useState<string[]>([]);
   const [bookingCounts, setBookingCounts] = useState<{ [time: string]: number }>({});
   const [loading, setLoading] = useState(false);
-  const { sections, getTimeSlotStatus, getTimeSlotBookings } = useBookingSections(bookingType);
+  const { sections, getTimeSlotStatus, getTimeSlotBookings } = useBookingSections(bookingType, availability?.allowed_sections);
 
   // Set default section when sections load
   useEffect(() => {

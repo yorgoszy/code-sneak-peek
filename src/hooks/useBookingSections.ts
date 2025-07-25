@@ -12,7 +12,7 @@ interface BookingSection {
   updated_at: string;
 }
 
-export const useBookingSections = (bookingType?: string) => {
+export const useBookingSections = (bookingType?: string, allowedSections?: string[]) => {
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,8 +52,17 @@ export const useBookingSections = (bookingType?: string) => {
 
       if (error) throw error;
       
-      // Filter sections based on booking type
+      // Filter sections based on booking type and allowed sections
       let filteredData = data || [];
+      
+      // First filter by allowed sections if specified
+      if (allowedSections && allowedSections.length > 0) {
+        filteredData = filteredData.filter(section => 
+          allowedSections.includes(section.id)
+        );
+      }
+      
+      // Then filter by booking type
       if (bookingType) {
         filteredData = filteredData.filter(section => {
           if (bookingType === 'videocall') {

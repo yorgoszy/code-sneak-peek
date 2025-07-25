@@ -16,6 +16,7 @@ interface BookingAvailability {
   single_videocall_sessions?: number;
   videocall_packages_available?: number;
   has_gym_access?: boolean;
+  allowed_sections?: string[];
 }
 
 interface BookingSession {
