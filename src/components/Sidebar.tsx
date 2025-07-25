@@ -52,7 +52,31 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       loadTotalPurchases();
       loadNewGymBookings();
     }
-  }, [userProfile?.id]);
+
+    // Real-time subscription για νέες κρατήσεις γυμναστηρίου
+    if (userProfile?.role === 'admin') {
+      const channel = supabase
+        .channel('gym-bookings-sidebar')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'booking_sessions',
+            filter: 'booking_type=eq.gym_visit'
+          },
+          () => {
+            console.log('Νέα κράτηση γυμναστηρίου - ενημέρωση sidebar');
+            loadNewGymBookings();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [userProfile?.id, userProfile?.role]);
 
   useEffect(() => {
     // Listen για το event που στέλνει το GymBookingsOverview όταν γίνει mark as read
