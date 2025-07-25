@@ -36,11 +36,31 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
         athletesCount = count || 0;
       }
 
-      // Count programs assigned to this specific user (regardless of their role)
-      const { count: programsCount } = await supabase
+      // Count total training days from all assigned programs
+      const { data: assignmentsWithPrograms } = await supabase
         .from('program_assignments')
-        .select('*', { count: 'exact', head: true })
+        .select(`
+          program_id,
+          programs!program_assignments_program_id_fkey(
+            program_weeks(
+              program_days(id)
+            )
+          )
+        `)
         .eq('user_id', user.id);
+
+      let totalTrainingDays = 0;
+      assignmentsWithPrograms?.forEach(assignment => {
+        if (assignment.programs?.program_weeks) {
+          assignment.programs.program_weeks.forEach((week: any) => {
+            if (week.program_days) {
+              totalTrainingDays += week.program_days.length;
+            }
+          });
+        }
+      });
+
+      const programsCount = totalTrainingDays;
 
       // Count tests for any user role
       const { count: testsCount } = await supabase

@@ -378,7 +378,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ανατεθέντα Προγράμματα'}
+              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
             </p>
           </div>
           <div className="text-center">
