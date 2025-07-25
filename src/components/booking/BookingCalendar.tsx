@@ -92,7 +92,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
       subscriptionEndDate = new Date(availability.subscription_end_date);
       console.log('🔍 Subscription end date found:', subscriptionEndDate);
     } else {
-      console.log('🔍 No subscription end date - no date restrictions');
+      console.log('🔍 No subscription end date - no date restrictions for subscription expiry');
     }
     
     // Check the next 365 days for availability
