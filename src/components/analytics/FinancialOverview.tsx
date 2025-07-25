@@ -153,7 +153,7 @@ export const FinancialOverview: React.FC = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#00ffba]">{formatCurrency(currentYearTotal)}</div>
+            <div className="text-2xl font-bold text-blue-600">{formatCurrency(currentYearTotal)}</div>
           </CardContent>
         </Card>
 
@@ -170,14 +170,14 @@ export const FinancialOverview: React.FC = () => {
         <Card className="rounded-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ετήσιο Κέρδος</CardTitle>
-            {currentYearProfit >= 0 ? (
-              <TrendingUp className="h-4 w-4 text-[#00ffba]" />
+             {currentYearProfit >= 0 ? (
+              <TrendingUp className="h-4 w-4 text-blue-600" />
             ) : (
               <TrendingDown className="h-4 w-4 text-red-500" />
             )}
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${currentYearProfit >= 0 ? 'text-[#00ffba]' : 'text-red-500'}`}>
+            <div className={`text-2xl font-bold ${currentYearProfit >= 0 ? 'text-blue-600' : 'text-red-500'}`}>
               {formatCurrency(currentYearProfit)}
             </div>
           </CardContent>
@@ -186,10 +186,10 @@ export const FinancialOverview: React.FC = () => {
         <Card className="rounded-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ετήσιος Τζίρος</CardTitle>
-            <TrendingUp className="h-4 w-4 text-[#00ffba]" />
+            <TrendingUp className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#00ffba]">{formatCurrency(currentYearTotal)}</div>
+            <div className="text-2xl font-bold text-blue-600">{formatCurrency(currentYearTotal)}</div>
           </CardContent>
         </Card>
       </div>
@@ -210,7 +210,7 @@ export const FinancialOverview: React.FC = () => {
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>Έσοδα:</span>
-                    <span className="text-[#00ffba] font-medium">{formatCurrency(month.revenue)}</span>
+                    <span className="text-blue-600 font-medium">{formatCurrency(month.revenue)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Έξοδα:</span>
@@ -218,7 +218,7 @@ export const FinancialOverview: React.FC = () => {
                   </div>
                   <div className="flex justify-between border-t pt-1">
                     <span className="font-medium">Κέρδος:</span>
-                    <span className={`font-bold ${month.profit >= 0 ? 'text-[#00ffba]' : 'text-red-500'}`}>
+                    <span className={`font-bold ${month.profit >= 0 ? 'text-blue-600' : 'text-red-500'}`}>
                       {formatCurrency(month.profit)}
                     </span>
                   </div>
@@ -242,7 +242,7 @@ export const FinancialOverview: React.FC = () => {
                 <div className="flex gap-6 text-sm">
                   <div>
                     <span className="text-gray-600">Έσοδα: </span>
-                    <span className="font-medium text-[#00ffba]">{formatCurrency(year.revenue)}</span>
+                    <span className="font-medium text-blue-600">{formatCurrency(year.revenue)}</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Έξοδα: </span>
@@ -250,7 +250,7 @@ export const FinancialOverview: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-gray-600">Κέρδος: </span>
-                    <span className={`font-bold ${year.profit >= 0 ? 'text-[#00ffba]' : 'text-red-500'}`}>
+                    <span className={`font-bold ${year.profit >= 0 ? 'text-blue-600' : 'text-red-500'}`}>
                       {formatCurrency(year.profit)}
                     </span>
                   </div>

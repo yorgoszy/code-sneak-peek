@@ -267,9 +267,9 @@ export const MyDataIntegration: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Συνολικά Έσοδα</p>
-                        <p className="text-2xl font-bold text-[#00ffba]">€{paymentData.totalRevenue.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-blue-600">€{paymentData.totalRevenue.toLocaleString()}</p>
                       </div>
-                      <Euro className="h-8 w-8 text-[#00ffba]" />
+                      <Euro className="h-8 w-8 text-blue-600" />
                     </div>
                   </div>
                   
@@ -277,9 +277,9 @@ export const MyDataIntegration: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Μηνιαία Έσοδα</p>
-                        <p className="text-2xl font-bold text-[#00ffba]">€{paymentData.monthlyRevenue.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-blue-600">€{paymentData.monthlyRevenue.toLocaleString()}</p>
                       </div>
-                      <Calendar className="h-8 w-8 text-[#00ffba]" />
+                      <Calendar className="h-8 w-8 text-blue-600" />
                     </div>
                   </div>
                   
