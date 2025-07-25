@@ -36,31 +36,37 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
         athletesCount = count || 0;
       }
 
-      // Count total training days from all assigned programs
-      const { data: assignmentsWithPrograms } = await supabase
+      // Calculate remaining training days from active program assignment
+      const { data: activeAssignment } = await supabase
         .from('program_assignments')
         .select(`
-          program_id,
-          programs!program_assignments_program_id_fkey(
-            program_weeks(
-              program_days(id)
-            )
-          )
+          id,
+          training_dates
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
-      let totalTrainingDays = 0;
-      assignmentsWithPrograms?.forEach(assignment => {
-        if (assignment.programs?.program_weeks) {
-          assignment.programs.program_weeks.forEach((week: any) => {
-            if (week.program_days) {
-              totalTrainingDays += week.program_days.length;
-            }
-          });
-        }
-      });
+      let remainingTrainingDays = 0;
+      if (activeAssignment?.training_dates && activeAssignment.training_dates.length > 0) {
+        const totalScheduledDays = activeAssignment.training_dates.length;
+        
+        // Get workout completions for this assignment
+        const { data: completions } = await supabase
+          .from('workout_completions')
+          .select('status')
+          .eq('assignment_id', activeAssignment.id);
 
-      const programsCount = totalTrainingDays;
+        const completedDays = completions?.filter(c => c.status === 'completed').length || 0;
+        const missedDays = completions?.filter(c => c.status === 'missed').length || 0;
+        
+        remainingTrainingDays = totalScheduledDays - (completedDays + missedDays);
+        remainingTrainingDays = Math.max(0, remainingTrainingDays); // Ensure non-negative
+      }
+
+      const programsCount = remainingTrainingDays;
 
       // Count tests for any user role
       const { count: testsCount } = await supabase
