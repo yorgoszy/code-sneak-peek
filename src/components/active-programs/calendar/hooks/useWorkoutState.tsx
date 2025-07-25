@@ -93,13 +93,20 @@ export const useWorkoutState = (
         actual_duration_minutes: actualDurationMinutes
       });
 
-      // Ενημέρωση του workout completion με τη διάρκεια από το χρονόμετρο
+      // Χρήση του service για να γίνει upsert αντί για update μόνο
+      await updateWorkoutStatus(
+        program.id,
+        selectedDateStr,
+        'completed',
+        'green'
+      );
+
+      console.log('🔄 Now updating with duration and end time...');
+      
+      // Τώρα ενημερώνουμε την εγγραφή με τη διάρκεια και το end_time
       const { error } = await supabase
         .from('workout_completions')
         .update({
-          status: 'completed',
-          status_color: 'green',
-          completed_date: selectedDateStr,
           actual_duration_minutes: actualDurationMinutes,
           end_time: new Date().toISOString()
         })
@@ -107,7 +114,7 @@ export const useWorkoutState = (
         .eq('scheduled_date', selectedDateStr);
 
       if (error) {
-        console.error('❌ Error updating workout completion:', error);
+        console.error('❌ Error updating workout completion with duration:', error);
         throw error;
       }
       
