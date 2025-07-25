@@ -111,14 +111,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
         } else {
           // Second check: Does the section work on this day of the week?
           const sectionAvailableHours = selectedSectionObj?.available_hours;
-          if (sectionAvailableHours && Array.isArray(sectionAvailableHours)) {
+          if (sectionAvailableHours && typeof sectionAvailableHours === 'object') {
             const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
             const currentDayName = dayNames[dayOfWeek];
             
             // Check if this day has any available hours
-            const dayHasHours = sectionAvailableHours.some((hour: any) => 
-              hour && hour[currentDayName] && Array.isArray(hour[currentDayName]) && hour[currentDayName].length > 0
-            );
+            const dayHours = sectionAvailableHours[currentDayName];
+            const dayHasHours = dayHours && Array.isArray(dayHours) && dayHours.length > 0;
             
             if (dayHasHours) {
               // Third check: Are there any time slots available?
