@@ -4,6 +4,7 @@ import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfileStatsProps {
   user: any;
@@ -16,6 +17,7 @@ interface UserProfileStatsProps {
 }
 
 export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [subscriptionDays, setSubscriptionDays] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState<boolean>(false);
@@ -433,8 +435,11 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Βιντεοκλήση</p>
           </div>
 
-          {/* Ενεργές Προσφορές */}
-          <div className="text-center">
+          {/* Ενεργές Προσφορές - Clickable */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}/προσφορες`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+          >
             <div className="relative">
               <Tag className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
                 offersData?.available > 0 && !offersData?.accepted 
@@ -456,7 +461,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Ενεργές Προσφορές</p>
-          </div>
+          </button>
         </div>
       </CardContent>
     </Card>
