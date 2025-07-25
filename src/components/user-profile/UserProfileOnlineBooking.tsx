@@ -273,8 +273,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
           <div className="space-y-2 text-gray-600">
             <p>• Δευτέρα - Παρασκευή: 08:00 - 20:00</p>
             <p>• Σαββατοκύριακα: κλειστά</p>
-            <p>• Μπορείς να ακυρώσεις ή να αναβάλεις το ραντεβού σου έως 12 ώρες πριν</p>
             <p>• Για επείγουσες αλλαγές επικοινώνησε τηλεφωνικά</p>
+            <p className="text-red-600">• Μπορείς να ακυρώσεις ή να αναβάλεις το ραντεβού σου έως 12 ώρες πριν</p>
           </div>
         </CardContent>
       </Card>
