@@ -3254,6 +3254,7 @@ export type Database = {
       }
       visit_packages: {
         Row: {
+          allowed_sections: string[] | null
           created_at: string
           expiry_date: string | null
           id: string
@@ -3267,6 +3268,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          allowed_sections?: string[] | null
           created_at?: string
           expiry_date?: string | null
           id?: string
@@ -3280,6 +3282,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          allowed_sections?: string[] | null
           created_at?: string
           expiry_date?: string | null
           id?: string
