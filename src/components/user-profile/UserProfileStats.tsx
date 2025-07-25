@@ -24,8 +24,8 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const [paymentStatus, setPaymentStatus] = useState<boolean | null>(null);
   const [visitsData, setVisitsData] = useState<{used: number, total: number} | null>(null);
   const [videocallData, setVideocallData] = useState<{used: number, total: number} | null>(null);
-  const [upcomingVideocall, setUpcomingVideocall] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number} | null>(null);
-  const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number} | null>(null);
+  const [upcomingVideocall, setUpcomingVideocall] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number} | null>(null);
+  const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number} | null>(null);
   const [offersData, setOffersData] = useState<{available: number, accepted: boolean} | null>(null);
   const [upcomingTests, setUpcomingTests] = useState<{count: number, daysLeft: number} | null>(null);
   
@@ -190,14 +190,15 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           const nextVideocall = videocallBookings[0];
           const bookingDateTime = new Date(`${nextVideocall.booking_date} ${nextVideocall.booking_time}`);
           const diffMs = bookingDateTime.getTime() - now.getTime();
-          const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-          const hoursLeft = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+          const totalMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
           
           setUpcomingVideocall({
             date: nextVideocall.booking_date,
             time: nextVideocall.booking_time,
-            daysLeft: Math.max(0, daysLeft),
-            hoursLeft: Math.max(0, hoursLeft)
+            daysLeft: Math.floor(totalHours / 24),
+            hoursLeft: totalHours % 24,
+            minutesLeft: totalMinutes
           });
         } else {
           setUpcomingVideocall(null);
@@ -219,14 +220,15 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           const nextVisit = visitBookings[0];
           const bookingDateTime = new Date(`${nextVisit.booking_date} ${nextVisit.booking_time}`);
           const diffMs = bookingDateTime.getTime() - now.getTime();
-          const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-          const hoursLeft = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+          const totalMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
           
           setUpcomingVisit({
             date: nextVisit.booking_date,
             time: nextVisit.booking_time,
-            daysLeft: Math.max(0, daysLeft),
-            hoursLeft: Math.max(0, hoursLeft)
+            daysLeft: Math.floor(totalHours / 24),
+            hoursLeft: totalHours % 24,
+            minutesLeft: totalMinutes
           });
         } else {
           setUpcomingVisit(null);
@@ -465,10 +467,12 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVisit ? (
-                upcomingVisit.daysLeft > 0 ? (
+                upcomingVisit.daysLeft >= 1 ? (
                   <span className="text-yellow-600">{upcomingVisit.daysLeft}η {upcomingVisit.hoursLeft}ώ</span>
                 ) : upcomingVisit.hoursLeft > 0 ? (
-                  <span className="text-yellow-600">{upcomingVisit.hoursLeft}ώ</span>
+                  <span className="text-yellow-600">{upcomingVisit.hoursLeft}ώ {upcomingVisit.minutesLeft}λ</span>
+                ) : upcomingVisit.minutesLeft > 0 ? (
+                  <span className="text-yellow-600">{upcomingVisit.minutesLeft}λ</span>
                 ) : (
                   <span className="text-yellow-600">Τώρα!</span>
                 )
@@ -502,10 +506,12 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVideocall ? (
-                upcomingVideocall.daysLeft > 0 ? (
+                upcomingVideocall.daysLeft >= 1 ? (
                   <span className="text-yellow-600">{upcomingVideocall.daysLeft}η {upcomingVideocall.hoursLeft}ώ</span>
                 ) : upcomingVideocall.hoursLeft > 0 ? (
-                  <span className="text-yellow-600">{upcomingVideocall.hoursLeft}ώ</span>
+                  <span className="text-yellow-600">{upcomingVideocall.hoursLeft}ώ {upcomingVideocall.minutesLeft}λ</span>
+                ) : upcomingVideocall.minutesLeft > 0 ? (
+                  <span className="text-yellow-600">{upcomingVideocall.minutesLeft}λ</span>
                 ) : (
                   <span className="text-yellow-600">Τώρα!</span>
                 )
