@@ -13,12 +13,16 @@ interface PasswordResetRequest {
 }
 
 serve(async (req) => {
+  console.log(`🔥 send-password-reset function started - Method: ${req.method}`);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("✅ Handling CORS preflight");
     return new Response(null, { headers: corsHeaders });
   }
 
   if (req.method !== "POST") {
+    console.log("❌ Method not allowed:", req.method);
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -26,31 +30,57 @@ serve(async (req) => {
   }
 
   try {
-    const { email, redirectTo }: PasswordResetRequest = await req.json();
+    const requestBody = await req.json();
+    console.log("📨 Request body:", requestBody);
+    
+    const { email, redirectTo }: PasswordResetRequest = requestBody;
 
     if (!email) {
+      console.log("❌ Email is required");
       return new Response(JSON.stringify({ error: "Email is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    console.log("🔍 Processing password reset for email:", email);
+
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    console.log("🔧 Supabase URL:", supabaseUrl ? "Set" : "Missing");
+    console.log("🔧 Service Key:", supabaseServiceKey ? "Set" : "Missing");
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Missing Supabase configuration");
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check if user exists
+    console.log("👤 Checking if user exists...");
     const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
     
-    if (userError || !user) {
-      console.log("User not found:", email);
-      // Return success even if user doesn't exist for security reasons
+    if (userError) {
+      console.log("❌ Error checking user:", userError);
+      // Return success for security reasons even if user doesn't exist
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    if (!user.user) {
+      console.log("⚠️ User not found:", email);
+      // Return success for security reasons
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log("✅ User found, generating reset link...");
 
     // Generate password reset link using Supabase
     const { data, error } = await supabase.auth.admin.generateLink({
@@ -62,11 +92,25 @@ serve(async (req) => {
     });
 
     if (error) {
+      console.log("❌ Error generating link:", error);
       throw error;
     }
 
+    if (!data.properties?.action_link) {
+      throw new Error("No action link generated");
+    }
+
+    console.log("🔗 Reset link generated successfully");
+
     // Initialize Resend
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    console.log("📧 Resend API Key:", resendApiKey ? "Set" : "Missing");
+    
+    if (!resendApiKey) {
+      throw new Error("Missing RESEND_API_KEY");
+    }
+
+    const resend = new Resend(resendApiKey);
 
     // Send custom email with Resend
     const emailHTML = `
@@ -125,6 +169,8 @@ serve(async (req) => {
       </html>
     `;
 
+    console.log("📤 Sending email via Resend...");
+
     const emailResponse = await resend.emails.send({
       from: "HYPERKIDS <noreply@resend.dev>",
       to: [email],
@@ -132,19 +178,25 @@ serve(async (req) => {
       html: emailHTML,
     });
 
+    console.log("📧 Resend response:", emailResponse);
+
     if (emailResponse.error) {
+      console.log("❌ Resend error:", emailResponse.error);
       throw emailResponse.error;
     }
 
-    console.log("Password reset email sent successfully to:", email);
+    console.log("✅ Password reset email sent successfully to:", email);
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ 
+      success: true,
+      message: "Password reset email sent successfully" 
+    }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (error: any) {
-    console.error("Error in send-password-reset function:", error);
+    console.error("💥 Error in send-password-reset function:", error);
     return new Response(
       JSON.stringify({ 
         error: "Internal server error",
