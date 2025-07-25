@@ -147,6 +147,9 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
       toast.success('Η βιντεοκλήση εγκρίθηκε και δημιουργήθηκε το meeting link!');
       onRefresh?.();
+      
+      // Ενημέρωση του Sidebar bubble
+      window.dispatchEvent(new CustomEvent('videocall-status-changed'));
     } catch (error) {
       console.error('Error approving booking:', error);
       toast.error('Σφάλμα κατά την έγκριση της βιντεοκλήσης');
@@ -219,6 +222,9 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
       toast.success('Η βιντεοκλήση απορρίφθηκε και επιστράφηκε στα διαθέσιμα πακέτα');
       onRefresh?.();
+      
+      // Ενημέρωση του Sidebar bubble
+      window.dispatchEvent(new CustomEvent('videocall-status-changed'));
     } catch (error) {
       console.error('Error rejecting booking:', error);
       toast.error('Σφάλμα κατά την απόρριψη της βιντεοκλήσης');

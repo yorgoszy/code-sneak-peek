@@ -60,11 +60,18 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       // Επαναφορτώνουμε τα bookings για να υπολογίσουμε σωστά τα νέα
       loadNewGymBookings();
     };
+
+    // Listen για το event που στέλνει το VideocallBookingCard όταν γίνει approve/reject
+    const handleVideocallStatusChanged = () => {
+      loadPendingVideocalls();
+    };
     
     window.addEventListener('gym-bookings-read', handleGymBookingsRead);
+    window.addEventListener('videocall-status-changed', handleVideocallStatusChanged);
     
     return () => {
       window.removeEventListener('gym-bookings-read', handleGymBookingsRead);
+      window.removeEventListener('videocall-status-changed', handleVideocallStatusChanged);
     };
   }, [userProfile?.id]); // Προσθέτουμε dependency
 
