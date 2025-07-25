@@ -111,11 +111,11 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
   try {
     console.log('🔄 Fetching active programs from database...');
     
-    // Fetch program assignments first
+    // Fetch program assignments first - include both active and completed programs
     const { data: assignments, error: assignmentsError } = await supabase
       .from('program_assignments')
       .select('*')
-      .eq('status', 'active');
+      .in('status', ['active', 'completed']);
 
     if (assignmentsError) {
       console.error('❌ Error fetching program assignments:', assignmentsError);
