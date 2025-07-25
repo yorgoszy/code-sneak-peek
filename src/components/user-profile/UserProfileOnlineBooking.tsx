@@ -9,6 +9,7 @@ import { useUserBookings } from "@/hooks/useUserBookings";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { UserWaitingLists } from "./bookings/UserWaitingLists";
+import { WeeklyBookingCalendar } from "./bookings/WeeklyBookingCalendar";
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
@@ -195,68 +196,10 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         ))}
       </div>
 
-      {/* Current Bookings Section - Only Gym Visits */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Calendar className="w-5 h-5 mr-2" />
-            Τα Επόμενα Ραντεβού Σου
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {bookings.filter(booking => booking.booking_type !== 'videocall').length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Calendar className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Δεν έχεις επερχόμενα ραντεβού</h3>
-              <p>Κλείσε ένα ραντεβού από την παραπάνω επιλογή</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {bookings
-                .filter(booking => booking.booking_type !== 'videocall')
-                .map((booking) => {
-                const timeRemaining = getTimeRemainingForCancellation(booking.booking_date, booking.booking_time);
-                const canCancel = timeRemaining !== null;
-                
-                return (
-                  <div key={booking.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-none">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center justify-center w-10 h-10 bg-[#00ffba] text-black rounded-none">
-                        <MapPin className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{booking.section?.name}</h4>
-                        <p className="text-sm text-gray-600">
-                          {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time.slice(0, 5)}
-                        </p>
-                        {canCancel ? (
-                          <p className="text-xs text-green-600">
-                            Μπορείς να ακυρώσεις για άλλες {timeRemaining}
-                          </p>
-                        ) : (
-                          <p className="text-xs text-red-600">
-                            Δεν μπορείς να ακυρώσεις (λιγότερο από 12 ώρες)
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={!canCancel}
-                      onClick={() => handleCancelBooking(booking.id)}
-                      className="rounded-none disabled:opacity-50"
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Ακύρωση
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Weekly Booking Calendar */}
+      <WeeklyBookingCalendar 
+        bookings={bookings.filter(booking => booking.booking_type !== 'videocall')}
+      />
 
       {/* Waiting Lists Section */}
       <UserWaitingLists />
