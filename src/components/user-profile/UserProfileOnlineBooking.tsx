@@ -41,7 +41,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
 
   const handleCreateBooking = async (sectionId: string, date: string, time: string, type: string) => {
     try {
-      await createBooking(sectionId, date, time, type);
+      const bookingData = await createBooking(sectionId, date, time, type);
       toast.success('Το ραντεβού δημιουργήθηκε επιτυχώς!');
     } catch (error: any) {
       toast.error(error.message || 'Σφάλμα κατά τη δημιουργία του ραντεβού');
