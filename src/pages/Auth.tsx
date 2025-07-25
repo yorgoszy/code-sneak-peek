@@ -155,14 +155,18 @@ const Auth = () => {
     const email = formData.get("reset-email") as string;
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+      // Use our custom edge function instead of Supabase built-in
+      const { error } = await supabase.functions.invoke('send-password-reset', {
+        body: {
+          email: email,
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        }
       });
 
       if (error) throw error;
 
       toast({
-        title: "Email Στάλθηκε!",
+        title: "Email στάλθηκε!",
         description: "Ελέγξτε το email σας για οδηγίες επαναφοράς κωδικού.",
       });
 
