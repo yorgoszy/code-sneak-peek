@@ -48,10 +48,7 @@ export const completeWorkout = async (
 
   const { data, error } = await supabase
     .from('workout_completions')
-    .upsert(workoutData, {
-      onConflict: 'assignment_id,scheduled_date',
-      ignoreDuplicates: false
-    })
+    .insert(workoutData)
     .select()
     .single();
 
@@ -97,7 +94,7 @@ export const updateWorkoutStatus = async (
 
     const { data, error } = await supabase
       .from('workout_completions')
-      .upsert({
+      .insert({
         assignment_id: assignmentId,
         user_id: userId,
         program_id: programId,
@@ -109,9 +106,6 @@ export const updateWorkoutStatus = async (
         status_color: statusColor,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }, {
-        onConflict: 'assignment_id,scheduled_date',
-        ignoreDuplicates: false
       })
       .select()
       .single();
