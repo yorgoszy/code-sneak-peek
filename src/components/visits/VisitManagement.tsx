@@ -195,6 +195,38 @@ export const VisitManagement: React.FC = () => {
     }
 
     try {
+      // Βρίσκουμε/δημιουργούμε subscription type για visit packages
+      let { data: visitSubscriptionType, error: subscriptionTypeError } = await supabase
+        .from('subscription_types')
+        .select('id')
+        .eq('name', 'Πακέτο Επισκέψεων')
+        .eq('subscription_mode', 'visit_based')
+        .maybeSingle();
+
+      if (subscriptionTypeError) throw subscriptionTypeError;
+
+      // Αν δεν υπάρχει, δημιουργούμε το subscription type
+      if (!visitSubscriptionType) {
+        const { data: newSubscriptionType, error: createTypeError } = await supabase
+          .from('subscription_types')
+          .insert({
+            name: 'Πακέτο Επισκέψεων',
+            description: 'Πακέτο επισκέψεων γυμναστηρίου',
+            price: packagePrice ? parseFloat(packagePrice) : 0,
+            duration_months: 12, // 1 χρόνος διάρκεια
+            subscription_mode: 'visit_based',
+            visit_count: parseInt(packageVisits),
+            is_active: true,
+            allowed_sections: selectedSections.length > 0 ? selectedSections : null
+          })
+          .select('id')
+          .single();
+
+        if (createTypeError) throw createTypeError;
+        visitSubscriptionType = newSubscriptionType;
+      }
+
+      // Δημιουργούμε το visit package
       const { error } = await supabase
         .from('visit_packages')
         .insert({
@@ -208,9 +240,35 @@ export const VisitManagement: React.FC = () => {
 
       if (error) throw error;
 
+      // Δημιουργούμε αυτόματα μια συνδρομή
+      const endDate = packageExpiryDate 
+        ? packageExpiryDate 
+        : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 1 χρόνος από σήμερα
+
+      const { error: subscriptionError } = await supabase
+        .from('user_subscriptions')
+        .insert({
+          user_id: selectedUser,
+          subscription_type_id: visitSubscriptionType.id,
+          start_date: new Date().toISOString().split('T')[0],
+          end_date: endDate,
+          status: 'active',
+          notes: `Αυτόματη δημιουργία από πακέτο ${packageVisits} επισκέψεων`
+        });
+
+      if (subscriptionError) throw subscriptionError;
+
+      // Ενημερώνουμε το subscription_status του χρήστη
+      const { error: userUpdateError } = await supabase
+        .from('app_users')
+        .update({ subscription_status: 'active' })
+        .eq('id', selectedUser);
+
+      if (userUpdateError) throw userUpdateError;
+
       toast({
         title: "Επιτυχία",
-        description: "Το πακέτο επισκέψεων προστέθηκε επιτυχώς!"
+        description: "Το πακέτο επισκέψεων και η συνδρομή δημιουργήθηκαν επιτυχώς!"
       });
       
       // Reset form

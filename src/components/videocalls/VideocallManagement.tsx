@@ -172,6 +172,37 @@ export const VideocallManagement: React.FC = () => {
     }
 
     try {
+      // Βρίσκουμε/δημιουργούμε subscription type για videocall packages
+      let { data: videocallSubscriptionType, error: subscriptionTypeError } = await supabase
+        .from('subscription_types')
+        .select('id')
+        .eq('name', 'Πακέτο Βιντεοκλήσεων')
+        .eq('subscription_mode', 'visit_based')
+        .maybeSingle();
+
+      if (subscriptionTypeError) throw subscriptionTypeError;
+
+      // Αν δεν υπάρχει, δημιουργούμε το subscription type
+      if (!videocallSubscriptionType) {
+        const { data: newSubscriptionType, error: createTypeError } = await supabase
+          .from('subscription_types')
+          .insert({
+            name: 'Πακέτο Βιντεοκλήσεων',
+            description: 'Πακέτο βιντεοκλήσεων coaching',
+            price: 0,
+            duration_months: 12, // 1 χρόνος διάρκεια
+            subscription_mode: 'visit_based',
+            visit_count: parseInt(packageVideocalls),
+            is_active: true
+          })
+          .select('id')
+          .single();
+
+        if (createTypeError) throw createTypeError;
+        videocallSubscriptionType = newSubscriptionType;
+      }
+
+      // Δημιουργούμε το videocall package
       const { error } = await supabase
         .from('videocall_packages')
         .insert({
@@ -183,7 +214,33 @@ export const VideocallManagement: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Το πακέτο βιντεοκλήσεων προστέθηκε επιτυχώς!');
+      // Δημιουργούμε αυτόματα μια συνδρομή
+      const endDate = packageExpiryDate 
+        ? packageExpiryDate 
+        : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 1 χρόνος από σήμερα
+
+      const { error: subscriptionError } = await supabase
+        .from('user_subscriptions')
+        .insert({
+          user_id: selectedUserId,
+          subscription_type_id: videocallSubscriptionType.id,
+          start_date: new Date().toISOString().split('T')[0],
+          end_date: endDate,
+          status: 'active',
+          notes: `Αυτόματη δημιουργία από πακέτο ${packageVideocalls} βιντεοκλήσεων`
+        });
+
+      if (subscriptionError) throw subscriptionError;
+
+      // Ενημερώνουμε το subscription_status του χρήστη
+      const { error: userUpdateError } = await supabase
+        .from('app_users')
+        .update({ subscription_status: 'active' })
+        .eq('id', selectedUserId);
+
+      if (userUpdateError) throw userUpdateError;
+
+      toast.success('Το πακέτο βιντεοκλήσεων και η συνδρομή δημιουργήθηκαν επιτυχώς!');
       
       // Reset form
       setShowAddPackageForm(false);
