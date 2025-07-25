@@ -37,7 +37,8 @@ export const GymBookingsOverview = () => {
   const [lastCheckTimestamp, setLastCheckTimestamp] = useState<number>(() => {
     // Φορτώνουμε το timestamp της τελευταίας "ενημέρωσης"
     const saved = localStorage.getItem('lastGymBookingCheck');
-    return saved ? parseInt(saved) : Date.now();
+    // Αν δεν υπάρχει αποθηκευμένη τιμή, ξεκινάμε από 7 ημέρες πριν
+    return saved ? parseInt(saved) : (Date.now() - 7 * 24 * 60 * 60 * 1000);
   });
   const [markingAsRead, setMarkingAsRead] = useState(false);
 
