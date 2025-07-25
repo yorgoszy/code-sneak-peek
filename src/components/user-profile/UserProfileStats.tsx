@@ -354,6 +354,20 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
       fetchOffersData();
     }
   }, [user?.id]);
+
+  // Συνάρτηση για τον υπολογισμό χρώματος βάσει ημερών
+  const getTimeBasedColor = (daysLeft: number) => {
+    if (daysLeft <= 1) return 'text-red-600';  // 1 ημέρα πριν: κόκκινο
+    if (daysLeft <= 3) return 'text-orange-600';  // 3 ημέρες πριν: πορτοκαλί
+    return 'text-[#00ffba]';  // κανονικά: πράσινο
+  };
+
+  // Συνάρτηση για το χρώμα των labels
+  const getTimeLabelColor = (daysLeft: number) => {
+    if (daysLeft <= 1) return 'text-red-600';
+    if (daysLeft <= 3) return 'text-orange-600';
+    return 'text-[#00ffba]';
+  };
   
   return (
     <Card className="rounded-none">
@@ -474,19 +488,21 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVisit ? (
                 upcomingVisit.daysLeft >= 1 ? (
-                  <span className="text-yellow-600">{upcomingVisit.daysLeft}η {upcomingVisit.hoursLeft}ώ</span>
+                  <span className={getTimeBasedColor(upcomingVisit.daysLeft)}>{upcomingVisit.daysLeft}η {upcomingVisit.hoursLeft}ώ</span>
                 ) : upcomingVisit.hoursLeft > 0 ? (
-                  <span className="text-yellow-600">{upcomingVisit.hoursLeft}ώ {upcomingVisit.minutesLeft}λ</span>
+                  <span className={getTimeBasedColor(0)}>{upcomingVisit.hoursLeft}ώ {upcomingVisit.minutesLeft}λ</span>
                 ) : upcomingVisit.minutesLeft > 0 ? (
-                  <span className="text-yellow-600">{upcomingVisit.minutesLeft}λ</span>
+                  <span className={getTimeBasedColor(0)}>{upcomingVisit.minutesLeft}λ</span>
                 ) : (
-                  <span className="text-yellow-600">Τώρα!</span>
+                  <span className={getTimeBasedColor(0)}>Τώρα!</span>
                 )
               ) : (
                 <span className="text-gray-400">-</span>
               )}
             </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Επίσκεψη</p>
+            <p className={`${isMobile ? 'text-xs' : 'text-sm'} ${
+              upcomingVisit ? getTimeLabelColor(upcomingVisit.daysLeft) : 'text-gray-600'
+            }`}>Επερχόμενη Επίσκεψη</p>
           </div>
 
           <div className="text-center">
@@ -513,19 +529,21 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVideocall ? (
                 upcomingVideocall.daysLeft >= 1 ? (
-                  <span className="text-yellow-600">{upcomingVideocall.daysLeft}η {upcomingVideocall.hoursLeft}ώ</span>
+                  <span className={getTimeBasedColor(upcomingVideocall.daysLeft)}>{upcomingVideocall.daysLeft}η {upcomingVideocall.hoursLeft}ώ</span>
                 ) : upcomingVideocall.hoursLeft > 0 ? (
-                  <span className="text-yellow-600">{upcomingVideocall.hoursLeft}ώ {upcomingVideocall.minutesLeft}λ</span>
+                  <span className={getTimeBasedColor(0)}>{upcomingVideocall.hoursLeft}ώ {upcomingVideocall.minutesLeft}λ</span>
                 ) : upcomingVideocall.minutesLeft > 0 ? (
-                  <span className="text-yellow-600">{upcomingVideocall.minutesLeft}λ</span>
+                  <span className={getTimeBasedColor(0)}>{upcomingVideocall.minutesLeft}λ</span>
                 ) : (
-                  <span className="text-yellow-600">Τώρα!</span>
+                  <span className={getTimeBasedColor(0)}>Τώρα!</span>
                 )
               ) : (
                 <span className="text-gray-400">-</span>
               )}
             </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Βιντεοκλήση</p>
+            <p className={`${isMobile ? 'text-xs' : 'text-sm'} ${
+              upcomingVideocall ? getTimeLabelColor(upcomingVideocall.daysLeft) : 'text-gray-600'
+            }`}>Επερχόμενη Βιντεοκλήση</p>
           </div>
 
           {/* Ενεργές Προσφορές - Clickable */}
