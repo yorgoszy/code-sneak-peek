@@ -355,18 +355,11 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
     }
   }, [user?.id]);
 
-  // Συνάρτηση για τον υπολογισμό χρώματος βάσει ημερών
+  // Συνάρτηση για τον υπολογισμό χρώματος βάσει ημερών (μόνο για αριθμούς)
   const getTimeBasedColor = (daysLeft: number) => {
     if (daysLeft <= 1) return 'text-red-600';  // 1 ημέρα πριν: κόκκινο
     if (daysLeft <= 3) return 'text-orange-600';  // 3 ημέρες πριν: πορτοκαλί
     return 'text-[#00ffba]';  // κανονικά: πράσινο
-  };
-
-  // Συνάρτηση για το χρώμα των labels
-  const getTimeLabelColor = (daysLeft: number) => {
-    if (daysLeft <= 1) return 'text-red-600';
-    if (daysLeft <= 3) return 'text-orange-600';
-    return 'text-[#00ffba]';
   };
   
   return (
@@ -500,9 +493,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </p>
-            <p className={`${isMobile ? 'text-xs' : 'text-sm'} ${
-              upcomingVisit ? getTimeLabelColor(upcomingVisit.daysLeft) : 'text-gray-600'
-            }`}>Επερχόμενη Επίσκεψη</p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Επίσκεψη</p>
           </div>
 
           <div className="text-center">
@@ -541,9 +532,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </p>
-            <p className={`${isMobile ? 'text-xs' : 'text-sm'} ${
-              upcomingVideocall ? getTimeLabelColor(upcomingVideocall.daysLeft) : 'text-gray-600'
-            }`}>Επερχόμενη Βιντεοκλήση</p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Βιντεοκλήση</p>
           </div>
 
           {/* Ενεργές Προσφορές - Clickable */}
