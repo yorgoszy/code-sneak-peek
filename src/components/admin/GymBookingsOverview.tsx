@@ -43,6 +43,41 @@ export const GymBookingsOverview = () => {
 
   useEffect(() => {
     fetchBookings();
+    
+    // Realtime updates για νέες κρατήσεις
+    const channel = supabase
+      .channel('gym-bookings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'booking_sessions',
+          filter: 'booking_type=eq.gym_visit'
+        },
+        (payload) => {
+          console.log('Νέα κράτηση γυμναστηρίου:', payload);
+          fetchBookings(); // Ανανέωση των κρατήσεων
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'booking_sessions',
+          filter: 'booking_type=eq.gym_visit'
+        },
+        (payload) => {
+          console.log('Ενημέρωση κράτησης γυμναστηρίου:', payload);
+          fetchBookings(); // Ανανέωση των κρατήσεων
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchBookings = async () => {
