@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CalendarDays, Clock, User, Plus, Search, QrCode, Edit, Eye, Trash2, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -43,6 +44,7 @@ export const VisitManagement: React.FC = () => {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [visitPackages, setVisitPackages] = useState<VisitPackage[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+  const [bookingSections, setBookingSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [notes, setNotes] = useState('');
@@ -51,6 +53,8 @@ export const VisitManagement: React.FC = () => {
   const [showAddPackageForm, setShowAddPackageForm] = useState(false);
   const [packageVisits, setPackageVisits] = useState<string>('');
   const [packageExpiryDate, setPackageExpiryDate] = useState<string>('');
+  const [packagePrice, setPackagePrice] = useState<string>('');
+  const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [selectedUserForQR, setSelectedUserForQR] = useState<any>(null);
   const [showEditPackageForm, setShowEditPackageForm] = useState(false);
   const [editingPackage, setEditingPackage] = useState<VisitPackage | null>(null);
@@ -66,51 +70,70 @@ export const VisitManagement: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch visits
-      const { data: visitsData, error: visitsError } = await supabase
-        .from('user_visits')
-        .select(`
-          id,
-          user_id,
-          visit_date,
-          visit_time,
-          visit_type,
-          notes,
-          created_at,
-          app_users!fk_user_visits_user_id (name, email)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      // Fetch visits, packages, users, and booking sections in parallel
+      const [visitsResult, packagesResult, usersResult, sectionsResult] = await Promise.all([
+        supabase
+          .from('user_visits')
+          .select(`
+            id,
+            user_id,
+            visit_date,
+            visit_time,
+            visit_type,
+            notes,
+            created_at,
+            app_users!fk_user_visits_user_id (name, email)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(50),
+        
+        supabase
+          .from('visit_packages')
+          .select(`
+            id,
+            user_id,
+            total_visits,
+            remaining_visits,
+            status,
+            purchase_date,
+            expiry_date,
+            app_users!fk_visit_packages_user_id (name, email)
+          `)
+          .order('created_at', { ascending: false }),
+        
+        supabase
+          .from('app_users')
+          .select('*')
+          .order('name'),
+        
+        supabase
+          .from('booking_sections')
+          .select('*')
+          .eq('is_active', true)
+          .order('name')
+      ]);
+
+      const [
+        visitsError,
+        packagesError,
+        usersError,
+        sectionsError
+      ] = [
+        visitsResult.error,
+        packagesResult.error,
+        usersResult.error,
+        sectionsResult.error
+      ];
 
       if (visitsError) throw visitsError;
-      setVisits(visitsData || []);
-
-      // Fetch visit packages
-      const { data: packagesData, error: packagesError } = await supabase
-        .from('visit_packages')
-        .select(`
-          id,
-          user_id,
-          total_visits,
-          remaining_visits,
-          status,
-          purchase_date,
-          expiry_date,
-          app_users!fk_visit_packages_user_id (name, email)
-        `)
-        .order('created_at', { ascending: false });
-
       if (packagesError) throw packagesError;
-      setVisitPackages(packagesData || []);
-
-      // Fetch users
-      const { data: usersData, error: usersError } = await supabase
-        .from('app_users')
-        .select('*')
-        .order('name');
-
       if (usersError) throw usersError;
-      setUsers(usersData || []);
+      if (sectionsError) throw sectionsError;
+
+      setVisits(visitsResult.data || []);
+      setVisitPackages(packagesResult.data || []);
+      setUsers(usersResult.data || []);
+      setBookingSections(sectionsResult.data || []);
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -178,7 +201,9 @@ export const VisitManagement: React.FC = () => {
           user_id: selectedUser,
           total_visits: parseInt(packageVisits),
           remaining_visits: parseInt(packageVisits),
-          expiry_date: packageExpiryDate || null
+          expiry_date: packageExpiryDate || null,
+          price: packagePrice ? parseFloat(packagePrice) : null,
+          allowed_sections: selectedSections.length > 0 ? selectedSections : null
         });
 
       if (error) throw error;
@@ -193,6 +218,8 @@ export const VisitManagement: React.FC = () => {
       setSelectedUser('');
       setPackageVisits('');
       setPackageExpiryDate('');
+      setPackagePrice('');
+      setSelectedSections([]);
       setSearchTerm('');
       fetchData();
       
@@ -828,6 +855,37 @@ export const VisitManagement: React.FC = () => {
                   className="rounded-none"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Τμήματα Πρόσβασης</label>
+                <div className="border rounded-none p-3 max-h-32 overflow-y-auto space-y-2">
+                  {bookingSections.map((section) => (
+                    <div key={section.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={section.id}
+                        checked={selectedSections.includes(section.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedSections([...selectedSections, section.id]);
+                          } else {
+                            setSelectedSections(selectedSections.filter(id => id !== section.id));
+                          }
+                        }}
+                      />
+                      <label htmlFor={section.id} className="text-sm cursor-pointer flex-1">
+                        {section.name}
+                        {section.description && (
+                          <span className="text-gray-500 ml-2">({section.description})</span>
+                        )}
+                      </label>
+                    </div>
+                  ))}
+                  {selectedSections.length === 0 && (
+                    <p className="text-sm text-gray-500">Αν δεν επιλέξεις τμήματα, θα έχει πρόσβαση σε όλα</p>
+                  )}
+                </div>
+              </div>
+              
               
               <div className="flex gap-2">
                 <Button
@@ -836,6 +894,8 @@ export const VisitManagement: React.FC = () => {
                     setSelectedUser('');
                     setPackageVisits('');
                     setPackageExpiryDate('');
+                    setPackagePrice('');
+                    setSelectedSections([]);
                     setSearchTerm('');
                   }}
                   variant="outline"
