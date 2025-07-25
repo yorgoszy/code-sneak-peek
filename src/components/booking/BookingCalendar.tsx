@@ -120,16 +120,18 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
             const dayHasHours = dayHours && Array.isArray(dayHours) && dayHours.length > 0;
             
             if (dayHasHours) {
+              console.log('✅ Section available on', currentDayName, 'for date:', dateStr, 'Hours:', dayHours);
               // Third check: Are there any time slots available?
               const { available, full } = await getTimeSlotStatus(selectedSection, dateStr, bookingType);
+              console.log('🔍 Time slot status for', dateStr, ':', { available, full });
               if (available.length > 0 || full.length > 0) {
                 shouldDisable = false; // This date should be enabled
-                console.log('✅ Date enabled:', dateStr, 'Day:', currentDayName);
+                console.log('✅ Date ENABLED:', dateStr, 'Day:', currentDayName, 'Available slots:', available.length, 'Full slots:', full.length);
               } else {
                 console.log('🚫 Date disabled - no time slots:', dateStr);
               }
             } else {
-              console.log('🚫 Date disabled - section not available on', currentDayName, ':', dateStr);
+              console.log('🚫 Date disabled - section not available on', currentDayName, ':', dateStr, 'Available hours for section:', sectionAvailableHours);
             }
           } else {
             console.log('🚫 Date disabled - no available hours config:', dateStr);
