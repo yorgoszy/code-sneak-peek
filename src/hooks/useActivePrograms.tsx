@@ -11,7 +11,7 @@ export const useActivePrograms = () => {
       console.log('🔄 Fetching active programs from database...');
       
       try {
-        // Fetch program assignments first - filter out expired ones
+        // Fetch program assignments first - include both active and completed programs for historical view
         const { data: assignments, error: assignmentsError } = await supabase
           .from('program_assignments')
           .select('*')
@@ -138,7 +138,7 @@ export const useActivePrograms = () => {
         throw error;
       }
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Force fresh data
     gcTime: 1000 * 60 * 10, // 10 minutes (was cacheTime)
   });
 };
