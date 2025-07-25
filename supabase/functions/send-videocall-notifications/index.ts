@@ -889,6 +889,28 @@ serve(async (req) => {
         userData = user
       }
 
+      // Fetch booking data for booking_created and booking_cancelled
+      if (['booking_created', 'booking_cancelled'].includes(type) && bookingId) {
+        const { data: bookingData } = await supabase
+          .from('booking_sessions')
+          .select(`
+            *,
+            section:booking_sections(name, description)
+          `)
+          .eq('id', bookingId)
+          .single()
+        
+        if (bookingData) {
+          userData = { 
+            ...userData, 
+            booking_date: bookingData.booking_date,
+            booking_time: bookingData.booking_time,
+            booking_type: bookingData.booking_type,
+            section_name: bookingData.section?.name
+          }
+        }
+      }
+
       // Fetch additional data based on type
       if (type === 'package_purchased' && paymentId) {
         const { data: payment } = await supabase
