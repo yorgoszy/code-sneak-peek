@@ -439,7 +439,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
             }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {visitsData ? (
+              {visitsData && visitsData.total > 0 ? (
                 <span className="text-gray-900">
                   {Math.max(0, visitsData.used)}/{visitsData.total}
                 </span>
@@ -476,7 +476,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
             }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {videocallData ? (
+              {videocallData && videocallData.total > 0 ? (
                 <span className="text-gray-900">
                   {Math.max(0, videocallData.used)}/{videocallData.total}
                 </span>
