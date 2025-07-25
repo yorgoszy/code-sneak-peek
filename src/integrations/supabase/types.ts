@@ -592,6 +592,7 @@ export type Database = {
         Row: {
           booking_date: string
           booking_time: string
+          booking_type: string | null
           created_at: string
           id: string
           notified_at: string | null
@@ -604,6 +605,7 @@ export type Database = {
         Insert: {
           booking_date: string
           booking_time: string
+          booking_type?: string | null
           created_at?: string
           id?: string
           notified_at?: string | null
@@ -616,6 +618,7 @@ export type Database = {
         Update: {
           booking_date?: string
           booking_time?: string
+          booking_type?: string | null
           created_at?: string
           id?: string
           notified_at?: string | null
@@ -3449,29 +3452,52 @@ export type Database = {
         Returns: boolean
       }
       join_waiting_list: {
-        Args: {
-          p_user_id: string
-          p_section_id: string
-          p_booking_date: string
-          p_booking_time: string
-        }
+        Args:
+          | {
+              p_user_id: string
+              p_section_id: string
+              p_booking_date: string
+              p_booking_time: string
+            }
+          | {
+              p_user_id: string
+              p_section_id: string
+              p_booking_date: string
+              p_booking_time: string
+              p_booking_type?: string
+            }
         Returns: string
       }
       leave_waiting_list: {
-        Args: {
-          p_user_id: string
-          p_section_id: string
-          p_booking_date: string
-          p_booking_time: string
-        }
+        Args:
+          | {
+              p_user_id: string
+              p_section_id: string
+              p_booking_date: string
+              p_booking_time: string
+            }
+          | {
+              p_user_id: string
+              p_section_id: string
+              p_booking_date: string
+              p_booking_time: string
+              p_booking_type?: string
+            }
         Returns: boolean
       }
       notify_next_in_waiting_list: {
-        Args: {
-          p_section_id: string
-          p_booking_date: string
-          p_booking_time: string
-        }
+        Args:
+          | {
+              p_section_id: string
+              p_booking_date: string
+              p_booking_time: string
+            }
+          | {
+              p_section_id: string
+              p_booking_date: string
+              p_booking_time: string
+              p_booking_type?: string
+            }
         Returns: string
       }
       pause_subscription: {

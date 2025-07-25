@@ -49,7 +49,8 @@ export const useWaitingList = () => {
   const joinWaitingList = async (
     sectionId: string, 
     bookingDate: string, 
-    bookingTime: string
+    bookingTime: string,
+    bookingType: string = 'gym_visit'
   ): Promise<boolean> => {
     if (!userProfile) {
       toast({
@@ -66,7 +67,8 @@ export const useWaitingList = () => {
         p_user_id: userProfile.id,
         p_section_id: sectionId,
         p_booking_date: bookingDate,
-        p_booking_time: bookingTime
+        p_booking_time: bookingTime,
+        p_booking_type: bookingType
       });
 
       if (error) {
@@ -104,7 +106,8 @@ export const useWaitingList = () => {
   const leaveWaitingList = async (
     sectionId: string, 
     bookingDate: string, 
-    bookingTime: string
+    bookingTime: string,
+    bookingType: string = 'gym_visit'
   ): Promise<boolean> => {
     if (!userProfile) {
       toast({
@@ -121,7 +124,8 @@ export const useWaitingList = () => {
         p_user_id: userProfile.id,
         p_section_id: sectionId,
         p_booking_date: bookingDate,
-        p_booking_time: bookingTime
+        p_booking_time: bookingTime,
+        p_booking_type: bookingType
       });
 
       if (error) {
@@ -166,7 +170,8 @@ export const useWaitingList = () => {
   const getWaitingListStatus = async (
     sectionId: string, 
     bookingDate: string, 
-    bookingTime: string
+    bookingTime: string,
+    bookingType: string = 'gym_visit'
   ): Promise<WaitingListStats> => {
     if (!userProfile) {
       return { position: null, total_waiting: 0, is_waiting: false };
@@ -181,6 +186,7 @@ export const useWaitingList = () => {
         .eq('section_id', sectionId)
         .eq('booking_date', bookingDate)
         .eq('booking_time', bookingTime)
+        .eq('booking_type', bookingType)
         .eq('status', 'waiting')
         .single();
 
@@ -191,6 +197,7 @@ export const useWaitingList = () => {
         .eq('section_id', sectionId)
         .eq('booking_date', bookingDate)
         .eq('booking_time', bookingTime)
+        .eq('booking_type', bookingType)
         .eq('status', 'waiting');
 
       return {

@@ -8,6 +8,7 @@ interface WaitingListButtonProps {
   bookingDate: string;
   bookingTime: string;
   isTimeSlotFull: boolean;
+  bookingType?: string;
   onStatusChange?: () => void;
 }
 
@@ -16,6 +17,7 @@ export const WaitingListButton: React.FC<WaitingListButtonProps> = ({
   bookingDate,
   bookingTime,
   isTimeSlotFull,
+  bookingType = 'gym_visit',
   onStatusChange
 }) => {
   const { loading, joinWaitingList, leaveWaitingList, getWaitingListStatus } = useWaitingList();
@@ -32,12 +34,12 @@ export const WaitingListButton: React.FC<WaitingListButtonProps> = ({
   }, [sectionId, bookingDate, bookingTime, isTimeSlotFull]);
 
   const fetchWaitingStatus = async () => {
-    const status = await getWaitingListStatus(sectionId, bookingDate, bookingTime);
+    const status = await getWaitingListStatus(sectionId, bookingDate, bookingTime, bookingType);
     setWaitingStatus(status);
   };
 
   const handleJoinWaitingList = async () => {
-    const success = await joinWaitingList(sectionId, bookingDate, bookingTime);
+    const success = await joinWaitingList(sectionId, bookingDate, bookingTime, bookingType);
     if (success) {
       await fetchWaitingStatus();
       onStatusChange?.();
@@ -45,7 +47,7 @@ export const WaitingListButton: React.FC<WaitingListButtonProps> = ({
   };
 
   const handleLeaveWaitingList = async () => {
-    const success = await leaveWaitingList(sectionId, bookingDate, bookingTime);
+    const success = await leaveWaitingList(sectionId, bookingDate, bookingTime, bookingType);
     if (success) {
       await fetchWaitingStatus();
       onStatusChange?.();

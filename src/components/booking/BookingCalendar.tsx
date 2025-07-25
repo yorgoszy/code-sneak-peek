@@ -341,13 +341,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                               </div>
                             </div>
                             
-                            {/* Waiting List Button - only for gym bookings, not videocalls */}
-                            {bookingType !== 'videocall' && selectedDate && (
+                            {/* Waiting List Button - for both gym and videocall bookings */}
+                            {selectedDate && (
                               <WaitingListButton
                                 sectionId={selectedSection}
                                 bookingDate={format(selectedDate, 'yyyy-MM-dd')}
                                 bookingTime={time}
                                 isTimeSlotFull={true}
+                                bookingType={bookingType}
                                 onStatusChange={updateAvailableSlots}
                               />
                             )}

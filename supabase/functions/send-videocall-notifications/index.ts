@@ -760,24 +760,29 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
 
     // Waiting list availability notification
     case 'waiting_list_available':
+      const isVideocall = userData?.bookingType === 'videocall';
+      const activityType = isVideocall ? 'Videocall' : 'Γυμναστήριο';
+      const emoji = isVideocall ? '📹' : '🏃‍♂️';
+      const linkPath = isVideocall ? 'online-coaching' : 'online-booking';
+      
       return `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
-          <title>Διαθέσιμη Θέση στο Γυμναστήριο! - HYPERKIDS</title>
+          <title>Διαθέσιμη Θέση ${isVideocall ? 'για Videocall' : 'στο Γυμναστήριο'}! - HYPERKIDS</title>
           ${baseStyle}
         </head>
         <body>
           <div class="container">
             <div class="header">
               <div class="logo">HYPERKIDS</div>
-              <p>Καλά Νέα! Διαθέσιμη Θέση στο Γυμναστήριο! 🎉</p>
+              <p>Καλά Νέα! Διαθέσιμη Θέση ${isVideocall ? 'για Videocall' : 'στο Γυμναστήριο'}! 🎉</p>
             </div>
             
             <div class="content">
               <h2>🚨 Επείγον: Διαθέσιμη Θέση!</h2>
-              <p>Μόλις ελευθερώθηκε μια θέση για την ώρα που είχατε επιλέξει στη λίστα αναμονής:</p>
+              <p>Μόλις ελευθερώθηκε μια θέση για ${isVideocall ? 'videocall' : 'την επίσκεψη στο γυμναστήριο'} που είχατε επιλέξει στη λίστα αναμονής:</p>
               
               <div class="booking-info">
                 <div class="info-row">
@@ -789,15 +794,15 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
                   <span class="value">${userData?.bookingTime ? formatTime(userData.bookingTime) : 'N/A'}</span>
                 </div>
                 <div class="info-row">
-                  <span class="label">Τμήμα:</span>
-                  <span class="value">Γυμναστήριο</span>
+                  <span class="label">Τύπος:</span>
+                  <span class="value">${activityType}</span>
                 </div>
               </div>
               
               <p><strong>⏰ Προσοχή:</strong> Έχετε περιορισμένο χρόνο για να κλείσετε αυτή τη θέση. Αν δεν κάνετε κράτηση σύντομα, η θέση θα δοθεί στον επόμενο στη λίστα αναμονής.</p>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://www.hyperkids.gr/dashboard/user-profile/online-booking" class="button" style="font-size: 18px; padding: 15px 30px;">🏃‍♂️ Κλείστε τη Θέση Τώρα!</a>
+                <a href="https://www.hyperkids.gr/dashboard/user-profile/${linkPath}" class="button" style="font-size: 18px; padding: 15px 30px;">${emoji} Κλείστε τη Θέση Τώρα!</a>
               </div>
               
               <p style="text-align: center; color: #666; font-size: 14px;">
@@ -905,12 +910,13 @@ serve(async (req) => {
 
       // Add booking data for waiting list notification
       if (type === 'waiting_list_available') {
-        const { sectionId, bookingDate, bookingTime } = await req.json()
+        const { sectionId, bookingDate, bookingTime, bookingType } = await req.json()
         userData = { 
           ...userData, 
           bookingDate, 
           bookingTime,
-          sectionId 
+          sectionId,
+          bookingType
         }
       }
 
@@ -988,7 +994,8 @@ serve(async (req) => {
           subject = `🎁 Νέα Προσφορά για Εσάς - HYPERKIDS`
           break
         case 'waiting_list_available':
-          subject = `🚨 Διαθέσιμη Θέση στο Γυμναστήριο! - HYPERKIDS`
+          const waitingListType = userData?.bookingType === 'videocall' ? 'Videocall' : 'Γυμναστήριο';
+          subject = `🚨 Διαθέσιμη Θέση για ${waitingListType}! - HYPERKIDS`
           break
         default:
           subject = `HYPERKIDS - Ενημέρωση`
