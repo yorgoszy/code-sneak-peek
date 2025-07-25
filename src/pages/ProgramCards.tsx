@@ -7,25 +7,27 @@ import { useAllPrograms } from "@/hooks/useAllPrograms";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
+import { useRealtimePrograms } from "@/hooks/useRealtimePrograms";
 import { Sidebar } from "@/components/Sidebar";
 
 const ProgramCards = () => {
   const navigate = useNavigate();
   const { data: activePrograms = [], isLoading, error, refetch } = useAllPrograms();
-  const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
+  const completionsCache = useWorkoutCompletionsCache();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [workoutCompletions, setWorkoutCompletions] = React.useState<any[]>([]);
+  const [realtimeKey, setRealtimeKey] = React.useState(0);
 
   // Fetch all workout completions - same as calendar
   React.useEffect(() => {
     const loadCompletions = async () => {
       if (activePrograms.length > 0) {
-        const allCompletions = await getAllWorkoutCompletions();
+        const allCompletions = await completionsCache.getAllWorkoutCompletions();
         setWorkoutCompletions(allCompletions);
       }
     };
     loadCompletions();
-  }, [activePrograms, getAllWorkoutCompletions]);
+  }, [activePrograms, completionsCache, realtimeKey]);
 
   // Calculate stats the same way as UserProfileProgramCards but with better completion logic
   const calculateProgramStats = (assignment: any) => {
@@ -113,6 +115,31 @@ const ProgramCards = () => {
       alert('Σφάλμα κατά τη διαγραφή του προγράμματος');
     }
   };
+
+  // Realtime subscriptions for immediate updates
+  useRealtimePrograms({
+    onProgramsChange: () => {
+      console.log('📡 ProgramCards: Programs changed - refetching...');
+      completionsCache.clearCache();
+      setRealtimeKey(prev => prev + 1);
+      refetch();
+    },
+    onAssignmentsChange: async () => {
+      console.log('📡 ProgramCards: Assignments changed - refetching...');
+      completionsCache.clearCache();
+      setRealtimeKey(prev => prev + 1);
+      
+      // Έλεγχος για αυτόματη ολοκλήρωση προγραμμάτων
+      try {
+        const { programCompletionService } = await import('@/hooks/useWorkoutCompletions/programCompletionService');
+        await programCompletionService.checkAndCompleteProgramAssignments();
+      } catch (error) {
+        console.error('Error checking program completions:', error);
+      }
+      
+      refetch();
+    }
+  });
 
   // Calculate stats for each program
   const programsWithStats = activePrograms.map(assignment => ({
