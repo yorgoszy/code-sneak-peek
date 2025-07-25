@@ -226,6 +226,20 @@ export const useUserBookings = () => {
       }
     }
 
+    // Send booking confirmation notification
+    try {
+      await supabase.functions.invoke('send-videocall-notifications', {
+        body: {
+          type: 'booking_created',
+          bookingId: data.id,
+          userId: userProfile.id
+        }
+      });
+    } catch (notificationError) {
+      console.error('Error sending booking confirmation notification:', notificationError);
+      // Don't throw error here - booking is already created
+    }
+
     // Refresh data after creating booking
     await Promise.all([fetchAvailability(), fetchBookings()]);
     
