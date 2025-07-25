@@ -27,6 +27,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const [upcomingVideocall, setUpcomingVideocall] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number} | null>(null);
   const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number} | null>(null);
   const [offersData, setOffersData] = useState<{available: number, accepted: boolean} | null>(null);
+  const [upcomingTests, setUpcomingTests] = useState<{count: number, daysLeft: number} | null>(null);
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -238,6 +239,47 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
       }
     };
 
+    const fetchUpcomingTests = async () => {
+      try {
+        const now = new Date();
+        
+        // Φόρτωση επερχόμενων τεστ
+        const { data: scheduledTests, error } = await supabase
+          .from('tests')
+          .select('scheduled_date')
+          .eq('user_id', user.id)
+          .eq('status', 'scheduled')
+          .gte('scheduled_date', now.toISOString().split('T')[0])
+          .order('scheduled_date', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching upcoming tests:', error);
+          setUpcomingTests(null);
+          return;
+        }
+
+        if (!scheduledTests || scheduledTests.length === 0) {
+          setUpcomingTests(null);
+          return;
+        }
+
+        // Βρες το πρώτο επερχόμενο τεστ
+        const nextTest = scheduledTests[0];
+        const testDate = new Date(nextTest.scheduled_date);
+        const diffMs = testDate.getTime() - now.getTime();
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+        setUpcomingTests({
+          count: scheduledTests.length,
+          daysLeft: Math.max(0, daysLeft)
+        });
+
+      } catch (error) {
+        console.error('Error fetching upcoming tests:', error);
+        setUpcomingTests(null);
+      }
+    };
+
     const fetchOffersData = async () => {
       try {
         // Φόρτωση ενεργών προσφορών για τον χρήστη
@@ -306,6 +348,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
       fetchVisitsData();
       fetchVideocallData();
       fetchUpcomingBookings();
+      fetchUpcomingTests();
       fetchOffersData();
     }
   }, [user?.id]);
@@ -332,8 +375,20 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           </div>
           <div className="text-center">
             <Calendar className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.testsCount}</p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Τεστ</p>
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {upcomingTests ? (
+                upcomingTests.daysLeft === 0 ? (
+                  <span className="text-red-600">Σήμερα!</span>
+                ) : upcomingTests.daysLeft <= 3 ? (
+                  <span className="text-orange-600">{upcomingTests.daysLeft}η</span>
+                ) : (
+                  <span className="text-purple-600">{upcomingTests.daysLeft}η</span>
+                )
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενα Τεστ</p>
           </div>
           <div className="text-center">
             <CreditCard className={`mx-auto text-orange-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />

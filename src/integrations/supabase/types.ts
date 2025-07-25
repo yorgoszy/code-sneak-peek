@@ -2936,6 +2936,8 @@ export type Database = {
           date: string
           id: string
           notes: string | null
+          scheduled_date: string | null
+          status: string | null
           test_type: string | null
           test_type_id: string | null
           updated_at: string | null
@@ -2947,6 +2949,8 @@ export type Database = {
           date: string
           id?: string
           notes?: string | null
+          scheduled_date?: string | null
+          status?: string | null
           test_type?: string | null
           test_type_id?: string | null
           updated_at?: string | null
@@ -2958,6 +2962,8 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          scheduled_date?: string | null
+          status?: string | null
           test_type?: string | null
           test_type_id?: string | null
           updated_at?: string | null
