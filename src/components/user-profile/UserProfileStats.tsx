@@ -437,7 +437,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Ενεργές Προσφορές - Clickable */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}/προσφορες`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=offers`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
           >
             <div className="relative">

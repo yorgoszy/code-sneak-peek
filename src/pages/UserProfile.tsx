@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { LogOut, ArrowLeft, Menu } from "lucide-react";
@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const UserProfile = () => {
   const { userId } = useParams();
+  const location = useLocation();
   const { user: currentUser, loading, signOut, isAuthenticated } = useAuth();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -21,6 +22,15 @@ const UserProfile = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
   const sidebarRef = useRef<{ refreshOffers: () => void }>(null);
+
+  // Handle tab query parameter
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
 
   const { stats, programs, tests, payments, visits } = useUserProfileData(userProfile, !!userProfile);
 
