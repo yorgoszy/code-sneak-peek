@@ -143,18 +143,23 @@ export const GymBookingsOverview = () => {
     setMarkingAsRead(true);
     
     try {
+      // Παίρνουμε όλα τα booking IDs και τα σημειώνουμε ως διαβασμένα
+      const allBookingIds = bookings.map(b => b.id);
+      localStorage.setItem('readGymBookingIds', JSON.stringify(allBookingIds));
+      
       // Ενημερώνουμε το timestamp της τελευταίας επισκόπησης
       const currentTimestamp = Date.now();
       setLastCheckTimestamp(currentTimestamp);
-      
-      // Αποθηκεύουμε στο localStorage
       localStorage.setItem('lastGymBookingCheck', currentTimestamp.toString());
       
-      // Ενημερώνουμε το sidebar
+      // Καθαρισμός του sidebar count άμεσα
+      window.dispatchEvent(new CustomEvent('clear-gym-bookings-count'));
+      
+      // Ενημερώνουμε και το sidebar για πλήρη ανανέωση
       window.dispatchEvent(new CustomEvent('gym-bookings-read'));
       
-      console.log('Marked as read at:', new Date(currentTimestamp));
-      toast.success('Η λίστα "Νέα" καθαρίστηκε επιτυχώς');
+      console.log('Marked all bookings as read');
+      toast.success('Όλες οι κρατήσεις σημειώθηκαν ως διαβασμένες');
     } catch (error) {
       console.error('Error marking as read:', error);
       toast.error('Σφάλμα κατά την ενημέρωση');
@@ -175,20 +180,36 @@ export const GymBookingsOverview = () => {
           <p className="text-gray-600">Διαχείριση όλων των κρατήσεων για το γυμναστήριο</p>
         </div>
         
-        {newBookings.length > 0 && (
+        <div className="flex gap-2">
           <Button
-            onClick={handleMarkAsRead}
-            disabled={markingAsRead}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            onClick={fetchBookings}
+            disabled={loading}
+            variant="outline"
+            className="rounded-none"
           >
-            {markingAsRead ? (
+            {loading ? (
               <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
             ) : (
-              <Check className="w-4 h-4 mr-2" />
+              <RefreshCw className="w-4 h-4 mr-2" />
             )}
-            Ενημερώθηκα
+            Ανανέωση
           </Button>
-        )}
+          
+          {newBookings.length > 0 && (
+            <Button
+              onClick={handleMarkAsRead}
+              disabled={markingAsRead}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              {markingAsRead ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4 mr-2" />
+              )}
+              Ενημερώθηκα
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Summary Statistics */}

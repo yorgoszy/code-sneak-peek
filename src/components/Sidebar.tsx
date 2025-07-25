@@ -236,6 +236,23 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     }
   };
 
+  const clearNewGymBookingsCount = () => {
+    setNewGymBookings(0);
+  };
+
+  // Προσθέτουμε event listener για καθαρισμό του count άμεσα
+  useEffect(() => {
+    const handleClearBookingsCount = () => {
+      clearNewGymBookingsCount();
+    };
+
+    window.addEventListener('clear-gym-bookings-count', handleClearBookingsCount);
+    
+    return () => {
+      window.removeEventListener('clear-gym-bookings-count', handleClearBookingsCount);
+    };
+  }, []);
+
   const menuItems = [
     { 
       icon: Home, 
