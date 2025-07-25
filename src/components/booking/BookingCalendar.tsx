@@ -30,6 +30,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const [fullSlots, setFullSlots] = useState<string[]>([]);
   const [bookingCounts, setBookingCounts] = useState<{ [time: string]: number }>({});
   const [loading, setLoading] = useState(false);
+  const [disabledDates, setDisabledDates] = useState<Set<string>>(new Set());
   const { sections, getTimeSlotStatus, getTimeSlotBookings } = useBookingSections(bookingType, availability?.allowed_sections);
 
   // Set default section when sections load
@@ -38,6 +39,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
       setSelectedSection(sections[0].id);
     }
   }, [sections, selectedSection]);
+
+  // Update disabled dates when section changes
+  useEffect(() => {
+    if (selectedSection) {
+      updateDisabledDates();
+    }
+  }, [selectedSection]);
 
   // Update available slots when date or section changes
   useEffect(() => {
@@ -71,6 +79,31 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
       supabase.removeChannel(channel);
     };
   }, [selectedDate, selectedSection]);
+
+  const updateDisabledDates = async () => {
+    if (!selectedSection) return;
+
+    const disabled = new Set<string>();
+    
+    // Check the next 30 days for availability
+    for (let i = 0; i < 30; i++) {
+      const checkDate = addDays(new Date(), i);
+      const dateStr = format(checkDate, 'yyyy-MM-dd');
+      
+      try {
+        const { available, full } = await getTimeSlotStatus(selectedSection, dateStr, bookingType);
+        // If no available slots and no full slots, it means the section is not available that day
+        if (available.length === 0 && full.length === 0) {
+          disabled.add(dateStr);
+        }
+      } catch (error) {
+        // If there's an error, consider the date disabled
+        disabled.add(dateStr);
+      }
+    }
+    
+    setDisabledDates(disabled);
+  };
 
   const updateAvailableSlots = async () => {
     if (!selectedDate || !selectedSection) return;
@@ -217,7 +250,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
               disabled={(date) => {
                 if (date < addDays(new Date(), 0)) return true;
                 
-                // TODO: Προσθήκη περιορισμού μέχρι την ημερομηνία λήξης συνδρομής
+                // Check if this date is disabled for the selected section
+                const dateStr = format(date, 'yyyy-MM-dd');
+                if (disabledDates.has(dateStr)) return true;
+                
                 return false;
               }}
               className={cn("w-full pointer-events-auto")}
