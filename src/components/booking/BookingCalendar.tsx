@@ -95,53 +95,58 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
       console.log('🔍 No subscription end date - no date restrictions');
     }
     
-    // Check the next 60 days for availability
-    for (let i = 0; i < 60; i++) {
+    // Check the next 365 days for availability
+    for (let i = 0; i < 365; i++) {
       const checkDate = addDays(new Date(), i);
       const dateStr = format(checkDate, 'yyyy-MM-dd');
       const dayOfWeek = checkDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
       
+      let shouldDisable = true; // Start with disabled by default
+      
       try {
-        // Check if date is after subscription expiry (only if subscription_end_date exists)
+        // First check: Is this date after subscription expiry?
         if (subscriptionEndDate && checkDate > subscriptionEndDate) {
           console.log('🚫 Date disabled due to subscription expiry:', dateStr);
-          disabled.add(dateStr);
-          continue;
-        }
-        
-        // Check if the section is available on this day of week
-        const sectionAvailableHours = selectedSectionObj?.available_hours;
-        if (sectionAvailableHours && Array.isArray(sectionAvailableHours)) {
-          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-          const currentDayName = dayNames[dayOfWeek];
-          
-          // Check if this day has any available hours
-          const dayHasHours = sectionAvailableHours.some((hour: any) => 
-            hour && hour[currentDayName] && Array.isArray(hour[currentDayName]) && hour[currentDayName].length > 0
-          );
-          
-          if (!dayHasHours) {
-            console.log('🚫 Date disabled due to no available hours on', currentDayName, ':', dateStr);
-            disabled.add(dateStr);
-            continue;
+          shouldDisable = true;
+        } else {
+          // Second check: Does the section work on this day of the week?
+          const sectionAvailableHours = selectedSectionObj?.available_hours;
+          if (sectionAvailableHours && Array.isArray(sectionAvailableHours)) {
+            const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const currentDayName = dayNames[dayOfWeek];
+            
+            // Check if this day has any available hours
+            const dayHasHours = sectionAvailableHours.some((hour: any) => 
+              hour && hour[currentDayName] && Array.isArray(hour[currentDayName]) && hour[currentDayName].length > 0
+            );
+            
+            if (dayHasHours) {
+              // Third check: Are there any time slots available?
+              const { available, full } = await getTimeSlotStatus(selectedSection, dateStr, bookingType);
+              if (available.length > 0 || full.length > 0) {
+                shouldDisable = false; // This date should be enabled
+                console.log('✅ Date enabled:', dateStr, 'Day:', currentDayName);
+              } else {
+                console.log('🚫 Date disabled - no time slots:', dateStr);
+              }
+            } else {
+              console.log('🚫 Date disabled - section not available on', currentDayName, ':', dateStr);
+            }
+          } else {
+            console.log('🚫 Date disabled - no available hours config:', dateStr);
           }
         }
-        
-        // Additional check using getTimeSlotStatus for any remaining restrictions
-        const { available, full } = await getTimeSlotStatus(selectedSection, dateStr, bookingType);
-        // If no available slots and no full slots, it means the section is not available that day
-        if (available.length === 0 && full.length === 0) {
-          console.log('🚫 Date disabled due to no time slots:', dateStr);
-          disabled.add(dateStr);
-        }
       } catch (error) {
-        // If there's an error, consider the date disabled
         console.log('🚫 Date disabled due to error:', dateStr, error);
+        shouldDisable = true;
+      }
+      
+      if (shouldDisable) {
         disabled.add(dateStr);
       }
     }
     
-    console.log('🔍 Total disabled dates:', disabled.size);
+    console.log('🔍 Total disabled dates:', disabled.size, 'out of 365');
     setDisabledDates(disabled);
   };
 
