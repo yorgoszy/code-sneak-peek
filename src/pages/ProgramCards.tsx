@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CreditCard, CheckCircle, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAllPrograms } from "@/hooks/useAllPrograms";
+import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
@@ -12,7 +12,7 @@ import { Sidebar } from "@/components/Sidebar";
 
 const ProgramCards = () => {
   const navigate = useNavigate();
-  const { data: activePrograms = [], isLoading, error, refetch } = useAllPrograms();
+  const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
   const completionsCache = useWorkoutCompletionsCache();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [workoutCompletions, setWorkoutCompletions] = React.useState<any[]>([]);
