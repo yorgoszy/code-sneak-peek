@@ -36,18 +36,6 @@ export const FinancialOverview: React.FC = () => {
   const fetchFinancialData = async () => {
     setLoading(true);
     try {
-      // Fetch active subscriptions for selected year with their types
-      const { data: activeSubscriptions, error: subscriptionsError } = await supabase
-        .from('user_subscriptions')
-        .select(`
-          *,
-          subscription_types (price)
-        `)
-        .eq('status', 'active')
-        .lte('start_date', `${selectedYear}-12-31`)
-        .gte('end_date', `${selectedYear}-01-01`);
-
-      if (subscriptionsError) throw subscriptionsError;
 
       // Fetch monthly expenses for selected year
       const { data: monthlyExpenses, error: expensesError } = await supabase
@@ -65,26 +53,21 @@ export const FinancialOverview: React.FC = () => {
         monthlyExpMap.set(month, (monthlyExpMap.get(month) || 0) + Number(expense.amount));
       });
 
-      // Calculate monthly revenue from active subscriptions
+      // Fetch payments (receipts) for selected year to calculate monthly revenue
+      const { data: monthlyPayments, error: paymentsError } = await supabase
+        .from('payments')
+        .select('amount, payment_date')
+        .eq('status', 'completed')
+        .gte('payment_date', `${selectedYear}-01-01`)
+        .lt('payment_date', `${selectedYear + 1}-01-01`);
+
+      if (paymentsError) throw paymentsError;
+
+      // Calculate monthly revenue based on payment date (receipt issue date)
       const monthlyRevMap = new Map<string, number>();
-      activeSubscriptions?.forEach(subscription => {
-        if (subscription.is_paused) return; // Skip paused subscriptions
-        
-        const startDate = new Date(subscription.start_date);
-        const endDate = new Date(subscription.end_date);
-        const price = subscription.subscription_types?.price || 0;
-        
-        // Add revenue for each month the subscription is active
-        for (let month = 1; month <= 12; month++) {
-          const monthStart = new Date(selectedYear, month - 1, 1);
-          const monthEnd = new Date(selectedYear, month, 0);
-          
-          // Check if subscription is active during this month
-          if (startDate <= monthEnd && endDate >= monthStart) {
-            const monthKey = `${selectedYear}-${month.toString().padStart(2, '0')}`;
-            monthlyRevMap.set(monthKey, (monthlyRevMap.get(monthKey) || 0) + price);
-          }
-        }
+      monthlyPayments?.forEach(payment => {
+        const month = format(new Date(payment.payment_date), 'yyyy-MM');
+        monthlyRevMap.set(month, (monthlyRevMap.get(month) || 0) + Number(payment.amount));
       });
 
       // Create monthly data with both revenue and expenses
@@ -106,16 +89,13 @@ export const FinancialOverview: React.FC = () => {
       // Fetch yearly data
       const yearlyResults = [];
       for (const year of years) {
-        // Get active subscriptions for the year
-        const { data: yearSubscriptions } = await supabase
-          .from('user_subscriptions')
-          .select(`
-            *,
-            subscription_types (price)
-          `)
-          .eq('status', 'active')
-          .lte('start_date', `${year}-12-31`)
-          .gte('end_date', `${year}-01-01`);
+        // Get payments (receipts) for the year
+        const { data: yearPayments } = await supabase
+          .from('payments')
+          .select('amount')
+          .eq('status', 'completed')
+          .gte('payment_date', `${year}-01-01`)
+          .lt('payment_date', `${year + 1}-01-01`);
 
         const { data: yearExpenses } = await supabase
           .from('expenses')
@@ -123,10 +103,8 @@ export const FinancialOverview: React.FC = () => {
           .gte('expense_date', `${year}-01-01`)
           .lt('expense_date', `${year + 1}-01-01`);
 
-        // Calculate revenue from active subscriptions (not paused)
-        const revenue = (yearSubscriptions || [])
-          .filter(s => !s.is_paused)
-          .reduce((sum, s) => sum + (s.subscription_types?.price || 0), 0);
+        // Calculate revenue from payments (receipt issue date)
+        const revenue = yearPayments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
         
         const expenses = yearExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
         yearlyResults.push({
