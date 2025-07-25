@@ -442,22 +442,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         </div>
       )}
 
-      {/* Videocall Waiting Lists Component - only show if user has no videocalls available */}
-      {((availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)) === 0 && (
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Λίστα Αναμονής Videocalls
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <VideocallWaitingLists userProfile={userProfile} />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Upcoming Videocall Bookings */}
+      {/* Upcoming Videocall Bookings - First Card */}
       {videocallBookings.length > 0 && (
         <Card className="rounded-none">
           <CardHeader>
@@ -480,7 +465,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                         </div>
                         <div>
                           <div className="font-medium text-sm">
-                            {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time}
+                            {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time.slice(0, 5)}
                           </div>
                           <div className="text-xs text-gray-500">
                             {booking.section?.name || 'Videocall Session'}
@@ -548,6 +533,21 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                 );
               })}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Videocall Waiting Lists Component - Second Card - only show if user has no videocalls available */}
+      {((availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)) === 0 && (
+        <Card className="rounded-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              Λίστα Αναμονής Videocalls
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <VideocallWaitingLists userProfile={userProfile} />
           </CardContent>
         </Card>
       )}
