@@ -51,14 +51,6 @@ const ProgramCards = () => {
     const total = trainingDates.length;
     const today = new Date();
     
-    console.log(`📊 Calculating stats for assignment ${assignment.id}:`, {
-      programName: assignment.programs?.name,
-      userInfo: `${assignment.app_users?.name} (${assignment.app_users?.email})`,
-      status: assignment.status,
-      totalDates: total,
-      completionsFound: assignmentCompletions.length
-    });
-    
     // Για κάθε training date, έλεγξε το status
     for (const date of trainingDates) {
       const completion = assignmentCompletions.find(c => c.scheduled_date === date);
@@ -67,28 +59,14 @@ const ProgramCards = () => {
       
       if (completion?.status === 'completed') {
         completed++;
-        console.log(`✅ ${date}: completed`);
       } else if (isPast || completion?.status === 'missed') {
         missed++;
-        console.log(`❌ ${date}: missed (isPast: ${isPast}, status: ${completion?.status})`);
-      } else {
-        console.log(`⏳ ${date}: scheduled (isPast: ${isPast}, status: ${completion?.status || 'no completion'})`);
       }
     }
     
     // Το progress υπολογίζεται από completed + missed (όλες οι "ολοκληρωμένες" προπονήσεις)
     const processedWorkouts = completed + missed;
     const progress = total > 0 ? Math.round((processedWorkouts / total) * 100) : 0;
-    
-    console.log(`📊 Final stats for ${assignment.programs?.name}:`, {
-      completed,
-      missed,
-      total,
-      processedWorkouts,
-      progress,
-      assignmentStatus: assignment.status,
-      willBeInCompleted: assignment.status === 'completed' || progress >= 100
-    });
     
     return {
       completed,
@@ -189,6 +167,20 @@ const ProgramCards = () => {
   const completedPrograms = programsWithStats.filter(item => 
     item.assignment.status === 'completed' || item.stats.progress >= 100
   );
+
+  // Debug για να δούμε τι συμβαίνει με το φιλτράρισμα
+  console.log('🔍 Program filtering results:', {
+    totalPrograms: programsWithStats.length,
+    activeIncomplete: activeIncompletePrograms.length,
+    completed: completedPrograms.length,
+    programsDetails: programsWithStats.map(item => ({
+      id: item.assignment.id,
+      name: item.assignment.programs?.name,
+      status: item.assignment.status,
+      progress: item.stats.progress,
+      category: item.assignment.status === 'completed' || item.stats.progress >= 100 ? 'completed' : 'active'
+    }))
+  });
 
   if (isLoading) {
     return (
