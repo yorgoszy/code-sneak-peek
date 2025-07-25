@@ -315,9 +315,9 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
     const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     
     if (days > 0) {
-      return `${days} μέρα${days > 1 ? 'ες' : ''} ${hours} ώρα${hours !== 1 ? 'ες' : ''}`;
+      return `${days}μ και ${hours}ω`;
     } else {
-      return `${hours} ώρα${hours !== 1 ? 'ες' : ''}`;
+      return `${hours}ω`;
     }
   };
 
