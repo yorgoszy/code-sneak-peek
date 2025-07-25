@@ -374,7 +374,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {stats.programsCount > 0 ? (
-                stats.programsCount
+                <span className={
+                  stats.programsCount === 1 ? 'text-red-600' :
+                  stats.programsCount <= 3 ? 'text-orange-600' :
+                  'text-green-600'
+                }>
+                  {stats.programsCount}
+                </span>
               ) : (
                 <span className="text-gray-400">-</span>
               )}
