@@ -247,10 +247,10 @@ export const useUserBookings = () => {
   };
 
   const cancelBooking = async (bookingId: string) => {
-    // First get the booking details
+    // First get the booking details with all required fields
     const { data: booking } = await supabase
       .from('booking_sessions')
-      .select('booking_type, user_id, status')
+      .select('booking_type, user_id, status, booking_date, booking_time')
       .eq('id', bookingId)
       .single();
 
@@ -262,6 +262,14 @@ export const useUserBookings = () => {
       throw new Error('Cannot cancel booking within 12 hours of the scheduled time');
     }
 
+    // Store booking data before deletion for notification
+    const bookingDataForNotification = {
+      booking_date: booking?.booking_date,
+      booking_time: booking?.booking_time,
+      booking_type: booking?.booking_type,
+      user_id: booking?.user_id
+    };
+
     // Delete the booking instead of updating status
     const { error } = await supabase
       .from('booking_sessions')
@@ -269,6 +277,22 @@ export const useUserBookings = () => {
       .eq('id', bookingId);
 
     if (error) throw error;
+
+    // Send cancellation notification with stored booking data
+    try {
+      await supabase.functions.invoke('send-videocall-notifications', {
+        body: {
+          type: 'booking_cancelled',
+          bookingId: bookingId,
+          userId: booking?.user_id,
+          bookingDate: bookingDataForNotification.booking_date,
+          bookingTime: bookingDataForNotification.booking_time
+        }
+      });
+    } catch (notificationError) {
+      console.error('Error sending cancellation notification:', notificationError);
+      // Don't throw error here - booking is already cancelled
+    }
 
     // If it's a gym visit, return the visit to the package
     if (booking?.booking_type === 'gym_visit' && booking?.user_id) {
@@ -355,19 +379,6 @@ export const useUserBookings = () => {
       }
     }
 
-    // Send cancellation notification
-    try {
-      await supabase.functions.invoke('send-videocall-notifications', {
-        body: {
-          type: 'booking_cancelled',
-          bookingId: bookingId,
-          userId: booking?.user_id
-        }
-      });
-    } catch (notificationError) {
-      console.error('Error sending cancellation notification:', notificationError);
-      // Don't throw error here - booking is already cancelled
-    }
 
     // Refresh data after cancelling
     await Promise.all([fetchAvailability(), fetchBookings()]);

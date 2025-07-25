@@ -891,22 +891,33 @@ serve(async (req) => {
 
       // Fetch booking data for booking_created and booking_cancelled
       if (['booking_created', 'booking_cancelled'].includes(type) && bookingId) {
-        const { data: bookingData } = await supabase
-          .from('booking_sessions')
-          .select(`
-            *,
-            section:booking_sections(name, description)
-          `)
-          .eq('id', bookingId)
-          .single()
-        
-        if (bookingData) {
+        if (type === 'booking_cancelled' && bookingDate && bookingTime) {
+          // For cancellations, use the data passed directly since booking might be deleted
           userData = { 
             ...userData, 
-            booking_date: bookingData.booking_date,
-            booking_time: bookingData.booking_time,
-            booking_type: bookingData.booking_type,
-            section_name: bookingData.section?.name
+            booking_date: bookingDate,
+            booking_time: bookingTime,
+            booking_type: 'gym_visit' // Assume gym visit for now
+          }
+        } else {
+          // For other types, fetch from database
+          const { data: bookingData } = await supabase
+            .from('booking_sessions')
+            .select(`
+              *,
+              section:booking_sections(name, description)
+            `)
+            .eq('id', bookingId)
+            .single()
+          
+          if (bookingData) {
+            userData = { 
+              ...userData, 
+              booking_date: bookingData.booking_date,
+              booking_time: bookingData.booking_time,
+              booking_type: bookingData.booking_type,
+              section_name: bookingData.section?.name
+            }
           }
         }
       }
