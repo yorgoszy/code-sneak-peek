@@ -78,9 +78,13 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     stats: calculateProgramStats(assignment)
   }));
 
-  // Διαχωρισμός προγραμμάτων σε ενεργά και ολοκληρωμένα βάσει progress
-  const activeIncompletePrograms = programsWithStats.filter(item => item.stats?.progress < 100);
-  const completedPrograms = programsWithStats.filter(item => item.stats?.progress >= 100);
+  // Διαχωρισμός προγραμμάτων σε ενεργά και ολοκληρωμένα βάσει status και progress
+  const activeIncompletePrograms = programsWithStats.filter(item => 
+    item.assignment.status === 'active' && item.stats?.progress < 100
+  );
+  const completedPrograms = programsWithStats.filter(item => 
+    item.assignment.status === 'completed' || item.stats?.progress >= 100
+  );
 
   const handleDelete = async (assignmentId: string) => {
     // Regular users typically cannot delete programs

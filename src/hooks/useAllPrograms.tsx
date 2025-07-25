@@ -9,11 +9,11 @@ export const useAllPrograms = () => {
       console.log('🔄 Fetching ALL programs from database...');
       
       try {
-        // Fetch ALL program assignments (not just active ones)
+        // Fetch ALL program assignments (both active and completed)
         const { data: assignments, error: assignmentsError } = await supabase
           .from('program_assignments')
           .select('*')
-          .eq('status', 'active'); // Keep only active status, but don't filter by end_date
+          .in('status', ['active', 'completed']); // Include both active and completed
 
         if (assignmentsError) {
           console.error('❌ Error fetching program assignments:', assignmentsError);
