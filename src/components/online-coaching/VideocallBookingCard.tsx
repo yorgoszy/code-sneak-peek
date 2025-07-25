@@ -98,9 +98,9 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
     const minutes = differenceInMinutes(bookingDateTime, now) % 60;
     
     if (days > 0) {
-      return `${days} ημέρ${days === 1 ? 'α' : 'ες'}, ${hours} ώρ${hours === 1 ? 'α' : 'ες'}`;
+      return `${days}μ και ${hours}ω`;
     } else if (hours > 0) {
-      return `${hours} ώρ${hours === 1 ? 'α' : 'ες'}, ${minutes} λεπτά`;
+      return `${hours}ω και ${minutes} λεπτά`;
     } else if (minutes > 0) {
       return `${minutes} λεπτά`;
     } else {
