@@ -374,7 +374,9 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </p>
           </div>
           <div className="text-center">
-            <Calendar className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <Calendar className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              upcomingTests ? 'text-purple-500' : 'text-gray-400'
+            }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingTests ? (
                 upcomingTests.daysLeft === 0 ? (
@@ -444,7 +446,9 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Επερχόμενη Επίσκεψη */}
           <div className="text-center">
-            <MapPin className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <MapPin className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              upcomingVisit ? 'text-purple-500' : 'text-gray-400'
+            }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVisit ? (
                 upcomingVisit.daysLeft > 0 ? (
@@ -477,7 +481,9 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           
           {/* Επερχόμενη Βιντεοκλήση */}
           <div className="text-center">
-            <Video className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <Video className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
+            }`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVideocall ? (
                 upcomingVideocall.daysLeft > 0 ? (
