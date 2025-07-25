@@ -367,8 +367,16 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           )}
           <div className="text-center">
-            <Dumbbell className={`mx-auto text-green-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.programsCount}</p>
+            <Dumbbell className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
+            }`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {stats.programsCount > 0 ? (
+                stats.programsCount
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
               {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ανατεθέντα Προγράμματα'}
             </p>
