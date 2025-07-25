@@ -90,7 +90,13 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
   };
 
   const getTimeRemaining = () => {
-    if (isPastMeeting || booking.status !== 'confirmed') return null;
+    // For admin, show time remaining for pending and confirmed bookings
+    if (isAdmin) {
+      if (isPastMeeting || (booking.status !== 'confirmed' && booking.status !== 'pending')) return null;
+    } else {
+      // For users, only show for confirmed bookings
+      if (isPastMeeting || booking.status !== 'confirmed') return null;
+    }
     
     const now = new Date();
     const days = differenceInDays(bookingDateTime, now);
@@ -348,6 +354,13 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
                     Απομένουν: {getTimeRemaining()}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Time remaining for admin panel (for all confirmed/pending bookings) */}
+            {isAdmin && booking.status !== 'rejected' && booking.status !== 'completed' && getTimeRemaining() && !booking.meeting_link && (
+              <div className="text-xs text-gray-500 text-center">
+                Απομένουν: {getTimeRemaining()}
               </div>
             )}
           </div>
