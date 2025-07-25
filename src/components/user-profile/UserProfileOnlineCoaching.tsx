@@ -99,6 +99,20 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
           // Don't throw error, booking was created successfully
         }
       }
+
+      // Send booking confirmation notification
+      try {
+        await supabase.functions.invoke('send-videocall-notifications', {
+          body: {
+            type: 'booking_created',
+            bookingId: data.id,
+            userId: userProfile.id
+          }
+        });
+      } catch (notificationError) {
+        console.error('Error sending booking confirmation notification:', notificationError);
+        // Don't throw error here - booking is already created
+      }
       
       toast.success('Το ραντεβού δημιουργήθηκε επιτυχώς!');
       fetchVideocallBookings();
@@ -186,10 +200,10 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
         return;
       }
 
-      // Get booking details before deletion
+      // Get booking details before deletion for notification
       const { data: bookingDetails } = await supabase
         .from('booking_sessions')
-        .select('status')
+        .select('status, booking_date, booking_time, booking_type, user_id')
         .eq('id', bookingId)
         .single();
 
@@ -251,6 +265,22 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
 
       } catch (packageError) {
         console.error('Error returning videocall to package:', packageError);
+      }
+
+      // Send cancellation notification
+      try {
+        await supabase.functions.invoke('send-videocall-notifications', {
+          body: {
+            type: 'booking_cancelled',
+            bookingId: bookingId,
+            userId: bookingDetails?.user_id,
+            bookingDate: bookingDetails?.booking_date,
+            bookingTime: bookingDetails?.booking_time
+          }
+        });
+      } catch (notificationError) {
+        console.error('Error sending cancellation notification:', notificationError);
+        // Don't throw error here - booking is already cancelled
       }
 
       toast.success('Το ραντεβού ακυρώθηκε επιτυχώς');
