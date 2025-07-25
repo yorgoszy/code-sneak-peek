@@ -133,6 +133,18 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
       if (error) throw error;
 
+      // Send approval notification
+      try {
+        await supabase.functions.invoke('send-videocall-notifications', {
+          body: {
+            type: 'booking_approved',
+            bookingId: booking.id
+          }
+        });
+      } catch (notificationError) {
+        console.error('Error sending approval notification:', notificationError);
+      }
+
       toast.success('Η βιντεοκλήση εγκρίθηκε και δημιουργήθηκε το meeting link!');
       onRefresh?.();
     } catch (error) {
@@ -149,6 +161,18 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
         .eq('id', booking.id);
 
       if (error) throw error;
+
+      // Send rejection notification
+      try {
+        await supabase.functions.invoke('send-videocall-notifications', {
+          body: {
+            type: 'booking_rejected',
+            bookingId: booking.id
+          }
+        });
+      } catch (notificationError) {
+        console.error('Error sending rejection notification:', notificationError);
+      }
 
       // Return videocall to user's available packages
       try {
