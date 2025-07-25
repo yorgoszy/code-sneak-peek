@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -404,7 +404,11 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Πληρωμές</p>
           </div>
           <div className="text-center">
-            <Clock className={`mx-auto text-[#00ffba] mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            {isPaused ? (
+              <Pause className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            ) : (
+              <Clock className={`mx-auto text-[#00ffba] mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            )}
              <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
                {subscriptionDays !== null ? (
                  isPaused ? (
@@ -440,7 +444,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Επερχόμενη Επίσκεψη */}
           <div className="text-center">
-            <MapPin className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <MapPin className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVisit ? (
                 upcomingVisit.daysLeft > 0 ? (
@@ -458,7 +462,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           </div>
 
           <div className="text-center">
-            <Video className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <Video className={`mx-auto text-blue-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {videocallData ? (
                 <span className="text-gray-900">
@@ -473,7 +477,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           
           {/* Επερχόμενη Βιντεοκλήση */}
           <div className="text-center">
-            <Video className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            <Video className={`mx-auto text-purple-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVideocall ? (
                 upcomingVideocall.daysLeft > 0 ? (
