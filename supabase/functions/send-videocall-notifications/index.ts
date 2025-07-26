@@ -46,7 +46,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
       body { font-family: 'Robert Pro', Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
       .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 0; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
       .header { background: #00ffba; color: black; padding: 30px; text-align: center; }
-      .logo { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+      .logo { margin-bottom: 10px; }
+      .logo img { max-height: 60px; height: auto; }
       .content { padding: 30px; }
       .booking-info { background: #f8f9fa; padding: 20px; margin: 20px 0; border-left: 4px solid #00ffba; }
       .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
@@ -70,7 +71,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HYPERKIDS</div>
+              <div class="logo"><img src="/lovable-uploads/fd2ae6ca-a84b-40f1-b2e2-a78280bb374f.png" alt="HYPERGYM" /></div>
               <p>Νέα Κράτηση Βιντεοκλήσης Εκκρεμεί</p>
             </div>
             
@@ -113,8 +114,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
             </div>
             
             <div class="footer">
-              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
-              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+              <p><strong>HYPERGYM</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hypergym.gr | www.hypergym.gr</p>
             </div>
           </div>
         </body>
@@ -133,7 +134,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HYPERKIDS</div>
+              <div class="logo"><img src="/lovable-uploads/fd2ae6ca-a84b-40f1-b2e2-a78280bb374f.png" alt="HYPERGYM" /></div>
               <p>Η Βιντεοκλήση σας Εγκρίθηκε! ✅</p>
             </div>
             
@@ -168,8 +169,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
             </div>
             
             <div class="footer">
-              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
-              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+              <p><strong>HYPERGYM</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hypergym.gr | www.hypergym.gr</p>
             </div>
           </div>
         </body>
@@ -188,7 +189,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HYPERKIDS</div>
+              <div class="logo"><img src="/lovable-uploads/fd2ae6ca-a84b-40f1-b2e2-a78280bb374f.png" alt="HYPERGYM" /></div>
               <p>Σχετικά με την Κράτηση Βιντεοκλήσης</p>
             </div>
             
@@ -221,8 +222,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
             </div>
             
             <div class="footer">
-              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
-              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+              <p><strong>HYPERGYM</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hypergym.gr | www.hypergym.gr</p>
               <p>Για περισσότερες πληροφορίες επικοινωνήστε μαζί μας</p>
             </div>
           </div>
@@ -242,7 +243,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HYPERKIDS</div>
+              <div class="logo"><img src="/lovable-uploads/fd2ae6ca-a84b-40f1-b2e2-a78280bb374f.png" alt="HYPERGYM" /></div>
               <p>Υπενθύμιση: Βιντεοκλήση Αύριο! ⏰</p>
             </div>
             
@@ -282,8 +283,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
             </div>
             
             <div class="footer">
-              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
-              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+              <p><strong>HYPERGYM</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hypergym.gr | www.hypergym.gr</p>
             </div>
           </div>
         </body>
@@ -302,7 +303,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HYPERKIDS</div>
+              <div class="logo"><img src="/lovable-uploads/fd2ae6ca-a84b-40f1-b2e2-a78280bb374f.png" alt="HYPERGYM" /></div>
               <p>Η Βιντεοκλήση σας Ξεκινάει σε 1 Ώρα! ⏰</p>
             </div>
             
@@ -339,8 +340,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
             </div>
             
             <div class="footer">
-              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
-              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+              <p><strong>HYPERGYM</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hypergym.gr | www.hypergym.gr</p>
             </div>
           </div>
         </body>
@@ -359,7 +360,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HYPERKIDS</div>
+              <div class="logo"><img src="/lovable-uploads/fd2ae6ca-a84b-40f1-b2e2-a78280bb374f.png" alt="HYPERGYM" /></div>
               <p>🚨 Η Βιντεοκλήση σας Ξεκινάει σε 15 Λεπτά!</p>
             </div>
             
@@ -390,8 +391,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
             </div>
             
             <div class="footer">
-              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
-              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+              <p><strong>HYPERGYM</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hypergym.gr | www.hypergym.gr</p>
             </div>
           </div>
         </body>
@@ -503,7 +504,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HYPERKIDS</div>
+              <div class="logo"><img src="/lovable-uploads/fd2ae6ca-a84b-40f1-b2e2-a78280bb374f.png" alt="HYPERGYM" /></div>
               <p>Ακύρωση Βιντεοκλήσης</p>
             </div>
             
@@ -536,8 +537,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
             </div>
             
             <div class="footer">
-              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
-              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+              <p><strong>HYPERGYM</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hypergym.gr | www.hypergym.gr</p>
             </div>
           </div>
         </body>
@@ -556,7 +557,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HYPERKIDS</div>
+              <div class="logo"><img src="/lovable-uploads/fd2ae6ca-a84b-40f1-b2e2-a78280bb374f.png" alt="HYPERGYM" /></div>
               <p>Ακύρωση Βιντεοκλήσης</p>
             </div>
             
@@ -597,8 +598,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
             </div>
             
             <div class="footer">
-              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
-              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+              <p><strong>HYPERGYM</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hypergym.gr | www.hypergym.gr</p>
             </div>
           </div>
         </body>
