@@ -8,8 +8,9 @@ const corsHeaders = {
 }
 
 interface NotificationRequest {
-  type: 'booking_pending' | 'booking_approved' | 'booking_rejected' | 'reminder_24h' | 'reminder_1h' | 'reminder_15min' | 
-        'booking_created' | 'booking_cancelled' | 'offer_accepted' | 'offer_rejected' | 
+  type: 'booking_pending' | 'booking_approved' | 'booking_rejected' | 'booking_cancelled' | 'booking_cancelled_admin' | 
+        'reminder_24h' | 'reminder_1h' | 'reminder_15min' | 
+        'booking_created' | 'offer_accepted' | 'offer_rejected' | 
         'package_purchased' | 'user_welcome' | 'user_welcome_admin' | 'booking_admin_notification' | 
         'package_purchase_admin' | 'package_receipt' | 'offer_notification' | 'waiting_list_available'
   bookingId?: string
@@ -496,28 +497,32 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <html>
         <head>
           <meta charset="utf-8">
-          <title>Κράτηση Ακυρώθηκε - HYPERKIDS</title>
+          <title>Βιντεοκλήση Ακυρώθηκε - HYPERKIDS</title>
           ${baseStyle}
         </head>
         <body>
           <div class="container">
             <div class="header">
               <div class="logo">HYPERKIDS</div>
-              <p>Ακύρωση Κράτησης</p>
+              <p>Ακύρωση Βιντεοκλήσης</p>
             </div>
             
             <div class="content">
-              <h2>❌ Κράτηση Ακυρώθηκε</h2>
-              <p>Η κράτησή σας έχει ακυρωθεί επιτυχώς:</p>
+              <h2>❌ Βιντεοκλήση Ακυρώθηκε</h2>
+              <p>Η κράτηση βιντεοκλήσης σας έχει ακυρωθεί επιτυχώς:</p>
               
               <div class="booking-info">
                 <div class="info-row">
+                  <span class="label">Τύπος Συνεδρίας:</span>
+                  <span class="value">${booking?.booking_type || 'βιντεοκλήση'}</span>
+                </div>
+                <div class="info-row">
                   <span class="label">Ημερομηνία:</span>
-                  <span class="value">${userData?.booking_date ? formatDate(userData.booking_date) : 'TBD'}</span>
+                  <span class="value">${booking ? formatDate(booking.booking_date) : formatDate(userData?.booking_date || new Date().toISOString())}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Ώρα:</span>
-                  <span class="value">${userData?.booking_time ? formatTime(userData.booking_time) : 'TBD'}</span>
+                  <span class="value">${booking ? formatTime(booking.booking_time) : formatTime(userData?.booking_time || '00:00')}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Κατάσταση:</span>
@@ -525,9 +530,70 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
                 </div>
               </div>
               
-              <p>Η επίσκεψη έχει επιστραφεί στο πακέτο σας. Μπορείτε να κάνετε νέα κράτηση όποτε θέλετε.</p>
+              <p>Η βιντεοκλήση έχει επιστραφεί στο πακέτο σας. Μπορείτε να κάνετε νέα κράτηση επιλέγοντας άλλη ημερομηνία και ώρα.</p>
               
-              <a href="https://www.hyperkids.gr/bookings" class="button">Κάντε Νέα Κράτηση</a>
+              <a href="https://www.hyperkids.gr/dashboard/user-profile/online-coaching" class="button">Κάντε Νέα Κράτηση</a>
+            </div>
+            
+            <div class="footer">
+              <p><strong>HYPERKIDS</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hyperkids.gr | www.hyperkids.gr</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+    case 'booking_cancelled_admin':
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Βιντεοκλήση Ακυρώθηκε - Admin Notification - HYPERKIDS</title>
+          ${baseStyle}
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">HYPERKIDS</div>
+              <p>Ακύρωση Βιντεοκλήσης</p>
+            </div>
+            
+            <div class="content">
+              <h2>🔔 Βιντεοκλήση Ακυρώθηκε</h2>
+              <p>Ενημέρωση: Μια βιντεοκλήση ακυρώθηκε από τον χρήστη:</p>
+              
+              <div class="booking-info">
+                <div class="info-row">
+                  <span class="label">Χρήστης:</span>
+                  <span class="value">${booking?.app_users?.name || 'Άγνωστος'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Email:</span>
+                  <span class="value">${booking?.app_users?.email || 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Τύπος Συνεδρίας:</span>
+                  <span class="value">${booking?.booking_type || 'βιντεοκλήση'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Ημερομηνία:</span>
+                  <span class="value">${booking ? formatDate(booking.booking_date) : 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Ώρα:</span>
+                  <span class="value">${booking ? formatTime(booking.booking_time) : 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Κατάσταση:</span>
+                  <span class="value" style="color: #dc3545;">Ακυρωμένη</span>
+                </div>
+              </div>
+              
+              <p>Η βιντεοκλήση έχει επιστραφεί στο πακέτο του χρήστη.</p>
+              
+              <a href="https://www.hyperkids.gr/dashboard/online-coaching" class="button">Διαχείριση Κρατήσεων</a>
             </div>
             
             <div class="footer">
@@ -855,7 +921,7 @@ serve(async (req) => {
     let emailHTML = ''
 
     // Handle videocall notifications
-    if (['booking_pending', 'booking_approved', 'booking_rejected', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
+    if (['booking_pending', 'booking_approved', 'booking_rejected', 'booking_cancelled', 'booking_cancelled_admin', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
       const { data: bookingData, error } = await supabase
         .from('booking_sessions')
         .select(`
@@ -962,8 +1028,11 @@ serve(async (req) => {
     
     if (type === 'booking_pending') {
       recipient = adminEmail || 'yorgoszy@gmail.com'
-      subject = `🔔 Νέα Κράτηση Βιντεοκλήσης - ${booking.app_users.full_name}`
-    } else if (['booking_approved', 'booking_rejected', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
+      subject = `🔔 Νέα Κράτηση Βιντεοκλήσης - ${booking.app_users.name}`
+    } else if (type === 'booking_cancelled_admin') {
+      recipient = adminEmail || 'yorgoszy@gmail.com'
+      subject = `❌ Βιντεοκλήση Ακυρώθηκε - ${booking.app_users.name}`
+    } else if (['booking_approved', 'booking_rejected', 'booking_cancelled', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
       recipient = booking.app_users.email
       switch (type) {
         case 'booking_approved':
@@ -971,6 +1040,9 @@ serve(async (req) => {
           break
         case 'booking_rejected':
           subject = `📋 Ενημέρωση για την Κράτηση Βιντεοκλήσης`
+          break
+        case 'booking_cancelled':
+          subject = `❌ Βιντεοκλήση Ακυρώθηκε - ${booking.booking_type}`
           break
         case 'reminder_24h':
           subject = `⏰ Υπενθύμιση: Βιντεοκλήση Αύριο - ${booking.booking_type}`
