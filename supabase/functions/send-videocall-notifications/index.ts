@@ -860,7 +860,7 @@ serve(async (req) => {
         .from('booking_sessions')
         .select(`
           *,
-          app_users!booking_sessions_user_id_fkey (full_name, email)
+          app_users!user_id (name, email)
         `)
         .eq('id', bookingId)
         .single()
