@@ -29,11 +29,6 @@ interface GymBooking {
 export const GymBookingsOverview = () => {
   const [bookings, setBookings] = useState<GymBooking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [readBookingIds, setReadBookingIds] = useState<Set<string>>(() => {
-    // Φορτώνουμε από localStorage κατά την αρχικοποίηση
-    const saved = localStorage.getItem('readGymBookingIds');
-    return saved ? new Set(JSON.parse(saved)) : new Set();
-  });
   const [lastCheckTimestamp, setLastCheckTimestamp] = useState<number>(() => {
     // Φορτώνουμε το timestamp της τελευταίας "ενημέρωσης"
     const saved = localStorage.getItem('lastGymBookingCheck');
@@ -41,6 +36,11 @@ export const GymBookingsOverview = () => {
     return saved ? parseInt(saved) : (Date.now() - 7 * 24 * 60 * 60 * 1000);
   });
   const [markingAsRead, setMarkingAsRead] = useState(false);
+
+  useEffect(() => {
+    // Καθαρίζουμε παλιά localStorage entries που δεν χρησιμοποιούνται πια
+    localStorage.removeItem('readGymBookingIds');
+  }, []);
 
   useEffect(() => {
     fetchBookings();

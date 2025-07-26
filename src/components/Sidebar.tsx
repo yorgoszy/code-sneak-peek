@@ -236,24 +236,27 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     if (!userProfile?.id || userProfile.role !== 'admin') return;
     
     try {
+      // Φορτώνουμε το timestamp της τελευταίας "ενημέρωσης" - ίδια λογική με GymBookingsOverview
+      const lastCheckStr = localStorage.getItem('lastGymBookingCheck');
+      const lastCheckTimestamp = lastCheckStr ? parseInt(lastCheckStr) : (Date.now() - 7 * 24 * 60 * 60 * 1000);
+      
       // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου
       const { data, error } = await supabase
         .from('booking_sessions')
-        .select('id, created_at')
+        .select('id, created_at, booking_date')
         .eq('booking_type', 'gym_visit')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Φορτώνουμε τα διαβασμένα booking IDs από localStorage
-      const readBookingIdsStr = localStorage.getItem('readGymBookingIds');
-      const readBookingIds = readBookingIdsStr ? new Set(JSON.parse(readBookingIdsStr)) : new Set();
-      
-      // Υπολογίζουμε τα νέα bookings (όσα δεν έχουν διαβαστεί)
+      // Υπολογίζουμε τα νέα bookings - όσα δημιουργήθηκαν μετά το τελευταίο check
       const allBookings = data || [];
-      const newBookingsCount = allBookings.filter(booking => !readBookingIds.has(booking.id)).length;
+      const newBookingsCount = allBookings.filter(booking => {
+        const bookingCreatedAt = new Date(booking.created_at || booking.booking_date).getTime();
+        return bookingCreatedAt > lastCheckTimestamp;
+      }).length;
       
-      console.log('Total bookings:', allBookings.length, 'Read bookings:', readBookingIds.size, 'New bookings:', newBookingsCount);
+      console.log('Total bookings:', allBookings.length, 'Last check:', new Date(lastCheckTimestamp), 'New bookings:', newBookingsCount);
       setNewGymBookings(newBookingsCount);
     } catch (error) {
       console.error('Error loading new gym bookings:', error);
