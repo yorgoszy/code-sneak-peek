@@ -25,7 +25,7 @@ interface NotificationRequest {
 interface VideocallBooking {
   id: string
   app_users: {
-    full_name: string
+    name: string
     email: string
   }
   booking_date: string
@@ -79,8 +79,8 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               
               <div class="booking-info">
                 <div class="info-row">
-                  <span class="label">Αθλητής:</span>
-                  <span class="value">${booking.app_users.full_name}</span>
+                  <span class="label">Χρήστης:</span>
+                  <span class="value">${booking.app_users.name}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">Email:</span>
