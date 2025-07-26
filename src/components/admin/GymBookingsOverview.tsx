@@ -258,12 +258,27 @@ export const GymBookingsOverview = () => {
             </Card>
           ) : (
             newBookings.map((booking) => (
-              <GymBookingCard
-                key={booking.id}
-                booking={booking}
-                isAdmin={true}
-                onRefresh={fetchBookings}
-              />
+              <Card key={booking.id} className="rounded-none border-l-4 border-l-[#00ffba]">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-900">
+                        📅 Νέα κράτηση από {booking.app_users?.name || 'Άγνωστος χρήστης'}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(booking.booking_date).toLocaleDateString('el-GR')} στις {booking.booking_time}
+                        {booking.section?.name && ` - ${booking.section.name}`}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        Δημιουργήθηκε: {new Date(booking.created_at || booking.booking_date).toLocaleString('el-GR')}
+                      </div>
+                    </div>
+                    <div className="text-xs text-[#00ffba] font-medium">
+                      ΝΈΑ
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))
           )}
         </TabsContent>
