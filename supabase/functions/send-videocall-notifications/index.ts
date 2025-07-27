@@ -71,7 +71,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="https://i.imgur.com/hypergym-logo.png" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Νέα Κράτηση Βιντεοκλήσης Εκκρεμεί</p>
             </div>
             
@@ -134,7 +134,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="https://i.imgur.com/hypergym-logo.png" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Η Βιντεοκλήση σας Εγκρίθηκε! ✅</p>
             </div>
             
@@ -189,7 +189,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="https://i.imgur.com/hypergym-logo.png" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Σχετικά με την Κράτηση Βιντεοκλήσης</p>
             </div>
             
@@ -243,7 +243,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="https://i.imgur.com/hypergym-logo.png" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Υπενθύμιση: Βιντεοκλήση Αύριο! ⏰</p>
             </div>
             
@@ -303,7 +303,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="https://i.imgur.com/hypergym-logo.png" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Η Βιντεοκλήση σας Ξεκινάει σε 1 Ώρα! ⏰</p>
             </div>
             
@@ -360,7 +360,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="https://i.imgur.com/hypergym-logo.png" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>🚨 Η Βιντεοκλήση σας Ξεκινάει σε 15 Λεπτά!</p>
             </div>
             
@@ -504,7 +504,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="https://i.imgur.com/hypergym-logo.png" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Ακύρωση Βιντεοκλήσης</p>
             </div>
             
@@ -557,7 +557,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="https://i.imgur.com/hypergym-logo.png" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Ακύρωση Βιντεοκλήσης</p>
             </div>
             
