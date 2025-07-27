@@ -458,24 +458,24 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                 const timeRemaining = getTimeRemainingForCancellation(booking.booking_date, booking.booking_time);
                 
                 return (
-                  <div key={booking.id} className="border border-gray-200 rounded-none p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center justify-center w-8 h-8 bg-[#00ffba] text-black rounded-none">
-                          <Video className="w-4 h-4" />
+                  <div key={booking.id} className="border border-gray-200 rounded-none p-2 md:p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
+                        <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-[#00ffba] text-black rounded-none flex-shrink-0">
+                          <Video className="w-3 h-3 md:w-4 md:h-4" />
                         </div>
-                        <div>
-                          <div className="font-medium text-sm">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-xs md:text-sm truncate">
                             {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time.slice(0, 5)}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 truncate">
                             {booking.section?.name || 'Videocall Session'}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
                         {booking.status !== 'rejected' && (
-                          <span className="text-xs text-red-600 font-medium">
+                          <span className="text-xs text-red-600 font-medium hidden sm:block">
                             Απομένουν: {timeRemaining}
                           </span>
                         )}
@@ -501,10 +501,10 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                               const meetingUrl = `${booking.meeting_link}#userInfo.displayName="${userName}"&config.prejoinPageEnabled=false&config.startWithVideoMuted=false&config.startWithAudioMuted=false`;
                               window.open(meetingUrl, '_blank');
                             }}
-                            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black px-2 md:px-3"
                           >
-                            <Video className="w-3 h-3 mr-1" />
-                            Συμμετοχή
+                            <Video className="w-3 h-3" />
+                            <span className="hidden md:inline ml-1">Συμμετοχή</span>
                           </Button>
                         )}
                         {booking.status === 'rejected' ? (
@@ -512,10 +512,10 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                             variant="outline"
                             size="sm"
                             onClick={() => deleteRejectedBooking(booking.id)}
-                            className="rounded-none"
+                            className="rounded-none px-2 md:px-3"
                           >
-                            <X className="w-3 h-3 mr-1" />
-                            Διαγραφή
+                            <X className="w-3 h-3" />
+                            <span className="hidden md:inline ml-1">Διαγραφή</span>
                           </Button>
                         ) : (
                           <Button
@@ -523,14 +523,14 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                             size="sm"
                             onClick={() => canCancelBooking(booking.booking_date, booking.booking_time) ? cancelBooking(booking.id) : null}
                             disabled={!canCancelBooking(booking.booking_date, booking.booking_time)}
-                            className={`rounded-none ${
+                            className={`rounded-none px-2 md:px-3 ${
                               !canCancelBooking(booking.booking_date, booking.booking_time) 
                                 ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' 
                                 : ''
                             }`}
                           >
-                            <X className="w-3 h-3 mr-1" />
-                            Ακύρωση
+                            <X className="w-3 h-3" />
+                            <span className="hidden md:inline ml-1">Ακύρωση</span>
                           </Button>
                         )}
                       </div>
