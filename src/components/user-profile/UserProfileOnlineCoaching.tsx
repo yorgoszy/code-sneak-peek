@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { el } from "date-fns/locale";
 import { BookingCalendar } from "@/components/booking/BookingCalendar";
 
 interface UserProfileOnlineCoachingProps {
@@ -466,7 +467,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-xs md:text-sm truncate">
-                            {format(new Date(booking.booking_date), 'dd/MM/yyyy')} στις {booking.booking_time.slice(0, 5)}
+                            {format(new Date(booking.booking_date), 'EEEE, d MMMM yyyy', { locale: el })} στις {booking.booking_time.slice(0, 5)}
                           </div>
                           <div className="text-xs text-gray-500 truncate">
                             {booking.section?.name || 'Videocall Session'}
