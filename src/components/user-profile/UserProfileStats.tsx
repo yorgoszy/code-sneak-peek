@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +24,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const [paymentStatus, setPaymentStatus] = useState<boolean | null>(null);
   const [visitsData, setVisitsData] = useState<{used: number, total: number} | null>(null);
   const [videocallData, setVideocallData] = useState<{used: number, total: number} | null>(null);
-  const [upcomingVideocall, setUpcomingVideocall] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number} | null>(null);
+  const [upcomingVideocall, setUpcomingVideocall] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number, room_url?: string} | null>(null);
   const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number} | null>(null);
   const [offersData, setOffersData] = useState<{available: number, accepted: boolean} | null>(null);
   const [upcomingTests, setUpcomingTests] = useState<{count: number, daysLeft: number} | null>(null);
@@ -366,7 +366,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
     <Card className="rounded-none">
       <CardContent className={isMobile ? "pt-4" : "pt-6"}>
         <div className={`grid gap-4 ${
-          isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-9'
+          isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-10'
         }`}>
           {user.role === 'trainer' && (
             <div className="text-center">
@@ -375,7 +375,12 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Αθλητές</p>
             </div>
           )}
-          <div className="text-center">
+
+          {/* Ημέρες Προπόνησης - Clickable */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}/ημερολογιο`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+          >
             <Dumbbell className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
               stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
             }`} />
@@ -395,8 +400,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
               {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
             </p>
-          </div>
-          <div className="text-center">
+          </button>
+
+          {/* Επερχόμενα Τεστ - Clickable */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}/τεστ`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+          >
             <Calendar className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
               upcomingTests ? 'text-purple-500' : 'text-gray-400'
             }`} />
@@ -414,8 +424,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενα Τεστ</p>
-          </div>
-          <div className="text-center">
+          </button>
+
+          {/* Πληρωμές - Clickable */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}/πληρωμες`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+          >
             <CreditCard className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
               paymentStatus !== null ? 'text-orange-500' : 'text-gray-400'
             }`} />
@@ -429,7 +444,8 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </div>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Πληρωμές</p>
-          </div>
+          </button>
+
           <div className="text-center">
             {isPaused ? (
               <Pause className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
@@ -457,7 +473,12 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
              </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Μέρες Συνδρομής</p>
           </div>
-          <div className="text-center">
+
+          {/* Επισκέψεις - Clickable */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}/online-booking`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+          >
             <MapPin className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
               visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
             }`} />
@@ -471,9 +492,9 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επισκέψεις</p>
-          </div>
+          </button>
 
-          {/* Επερχόμενη Επίσκεψη */}
+          {/* Επερχόμενη Επίσκεψη - Non-clickable (just displays info) */}
           <div className="text-center">
             <MapPin className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
               upcomingVisit ? 'text-purple-500' : 'text-gray-400'
@@ -496,7 +517,11 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Επίσκεψη</p>
           </div>
 
-          <div className="text-center">
+          {/* Βιντεοκλήσεις - Clickable */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}/online-coaching`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+          >
             <Video className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
               videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
             }`} />
@@ -510,10 +535,20 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Βιντεοκλήσεις</p>
-          </div>
+          </button>
           
-          {/* Επερχόμενη Βιντεοκλήση */}
-          <div className="text-center">
+          {/* Επερχόμενη Βιντεοκλήση - Clickable */}
+          <button 
+            onClick={() => {
+              if (upcomingVideocall) {
+                // Για τώρα θα οδηγεί στο online-coaching
+                // Μπορεί στο μέλλον να οδηγεί στο room URL
+                navigate(`/dashboard/user-profile/${user.id}/online-coaching`);
+              }
+            }}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed"
+            disabled={!upcomingVideocall}
+          >
             <Video className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
               upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
             }`} />
@@ -533,7 +568,19 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               )}
             </p>
             <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Βιντεοκλήση</p>
-          </div>
+          </button>
+
+          {/* Αγορές - Νέο εικονάκι - Clickable */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}/shop`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+          >
+            <ShoppingBag className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[#00ffba]`} />
+            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              <span className="text-[#00ffba]">🛍️</span>
+            </p>
+            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Αγορές</p>
+          </button>
 
           {/* Ενεργές Προσφορές - Clickable */}
           <button 
