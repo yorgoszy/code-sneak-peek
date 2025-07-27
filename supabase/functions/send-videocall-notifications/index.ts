@@ -41,9 +41,6 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('el-GR')
   const formatTime = (timeStr: string) => timeStr.slice(0, 5)
   
-  // Base64 encoded logo - HYPERGYM logo
-  const logoBase64 = "data:image/png;base64,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"
-  
   const baseStyle = `
     <style>
       body { font-family: 'Robert Pro', Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
@@ -74,7 +71,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="${logoBase64}" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Νέα Κράτηση Βιντεοκλήσης Εκκρεμεί</p>
             </div>
             
@@ -137,7 +134,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="${logoBase64}" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Η Βιντεοκλήση σας Εγκρίθηκε! ✅</p>
             </div>
             
@@ -192,7 +189,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="${logoBase64}" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Σχετικά με την Κράτηση Βιντεοκλήσης</p>
             </div>
             
@@ -246,7 +243,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="${logoBase64}" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Υπενθύμιση: Βιντεοκλήση Αύριο! ⏰</p>
             </div>
             
@@ -306,7 +303,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="${logoBase64}" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Η Βιντεοκλήση σας Ξεκινάει σε 1 Ώρα! ⏰</p>
             </div>
             
@@ -363,7 +360,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="${logoBase64}" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>🚨 Η Βιντεοκλήση σας Ξεκινάει σε 15 Λεπτά!</p>
             </div>
             
@@ -507,7 +504,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="${logoBase64}" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Ακύρωση Βιντεοκλήσης</p>
             </div>
             
@@ -560,7 +557,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo"><img src="${logoBase64}" alt="HYPERGYM" /></div>
+              <div class="logo"><img src="https://dicwdviufetibnafzipa.lovable.app/hypergym-logo.png" alt="HYPERGYM" /></div>
               <p>Ακύρωση Βιντεοκλήσης</p>
             </div>
             
