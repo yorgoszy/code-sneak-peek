@@ -153,9 +153,6 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0 flex-1 flex flex-col">
-                  {product.description && (
-                    <p className="text-gray-600 text-sm mb-4">{product.description}</p>
-                  )}
 
                   <div className="space-y-3 mb-6 flex-1">
                     {product.subscription_mode === 'visit_based' ? (
