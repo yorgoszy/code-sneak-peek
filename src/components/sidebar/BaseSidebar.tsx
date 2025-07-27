@@ -65,7 +65,7 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <nav className="p-4">
+      <nav className="p-4 flex-1 overflow-y-auto">
         {navigationContent}
       </nav>
 
