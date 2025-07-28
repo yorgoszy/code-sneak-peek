@@ -201,11 +201,8 @@ export const MagicBoxGame: React.FC = () => {
           description: data.message,
         });
         
-        // Refresh user participations and campaigns
-        await Promise.all([
-          fetchUserParticipations(),
-          fetchCampaigns()
-        ]);
+        // Refresh user participations only for this user
+        await fetchUserParticipations();
       } else {
         console.log(`😞 User ${currentUserId} got:`, data.message);
         toast({
