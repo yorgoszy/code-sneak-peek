@@ -740,6 +740,13 @@ export type Database = {
             referencedRelation: "magic_box_campaigns"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_campaign_prizes_subscription_types"
+            columns: ["subscription_type_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
         ]
       }
       discount_coupons: {
