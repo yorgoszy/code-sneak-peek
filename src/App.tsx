@@ -29,7 +29,7 @@ import Shop from "@/pages/Shop";
 import AdminShopWithSidebar from "@/pages/Dashboard/AdminShopWithSidebar";
 import OnlineCoaching from "@/pages/OnlineCoaching";
 import MeetingRoom from "@/pages/MeetingRoom";
-import ShopWithSidebar from "@/pages/ShopWithSidebar";
+import ShopWithSidebar from "@/pages/Dashboard/ShopWithSidebar";
 import OnlineCoachingWithSidebar from "@/pages/OnlineCoachingWithSidebar";
 import OnlineBookingWithSidebar from "@/pages/Dashboard/OnlineBookingWithSidebar";
 import BookingSectionsWithSidebar from "@/pages/Dashboard/BookingSectionsWithSidebar";
@@ -73,7 +73,7 @@ function App() {
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/user/:userId" element={<UserProfile />} />
                 <Route path="/dashboard/user-profile/:userId" element={<UserProfile />} />
-                <Route path="/dashboard/user-profile/:userId/shop" element={<Shop />} />
+                <Route path="/dashboard/user-profile/:userId/shop" element={<ShopWithSidebar />} />
                 <Route path="/program-builder" element={<ProgramBuilder />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
