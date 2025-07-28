@@ -200,19 +200,18 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         ))}
       </div>
 
-      {/* Section Booking Calendars - Mirroring: Show only sections where user has bookings */}
-      <div className="px-4 md:px-0">
+      {/* All Section Booking Calendars - Show sections user has access to */}
+      <div className="px-4 md:px-0 space-y-6">
         {sections
           .filter(section => {
-            // Show only sections where user has bookings (true mirroring)
-            const hasBookings = bookings.some(booking => booking.section_id === section.id);
-            return hasBookings;
+            // Show sections user has access to based on their subscription/packages
+            const hasAccess = availability?.allowed_sections && availability.allowed_sections.includes(section.id);
+            return hasAccess;
           })
           .map(section => {
             const sectionBookings = bookings.filter(booking => 
               booking.section_id === section.id
             );
-            
             
             return (
               <SectionBookingCalendar
@@ -222,16 +221,16 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 availableHours={section.available_hours}
                 bookings={sectionBookings}
                 onCancelBooking={handleCancelBooking}
+                onCreateBooking={handleCreateBooking}
               />
             );
           })
         }
         
-        {/* Show message if user has no access to any sections AND no upcoming bookings */}
+        {/* Show message if user has no access to any sections */}
         {sections.filter(section => {
           const hasAccess = availability?.allowed_sections && availability.allowed_sections.includes(section.id);
-          const hasUpcomingBookings = bookings.some(booking => booking.section_id === section.id);
-          return hasAccess || hasUpcomingBookings;
+          return hasAccess;
         }).length === 0 && (
           <Card className="rounded-none">
             <CardContent className="p-6 text-center">

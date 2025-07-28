@@ -28,6 +28,7 @@ interface SectionBookingCalendarProps {
   availableHours: any;
   bookings: BookingSession[];
   onCancelBooking?: (bookingId: string) => Promise<void>;
+  onCreateBooking?: (sectionId: string, date: string, time: string, type: string) => Promise<void>;
 }
 
 export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({ 
@@ -35,24 +36,10 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   sectionName,
   availableHours,
   bookings,
-  onCancelBooking 
+  onCancelBooking,
+  onCreateBooking
 }) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
-
-  // Debug για Body Transformation available hours
-  if (sectionName.includes('Body Transformation')) {
-    console.log('🔍 Body Transformation Available Hours:', {
-      sectionName,
-      availableHours,
-      monday: availableHours?.monday,
-      tuesday: availableHours?.tuesday,
-      wednesday: availableHours?.wednesday,
-      thursday: availableHours?.thursday,
-      friday: availableHours?.friday,
-      saturday: availableHours?.saturday,
-      sunday: availableHours?.sunday
-    });
-  }
 
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -238,7 +225,15 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                             </div>
                           </div>
                         ) : (
-                          <div className="w-full h-full"></div>
+                          // Available slot - show booking button
+                          <button
+                            onClick={() => onCreateBooking?.(sectionId, format(day, 'yyyy-MM-dd'), timeSlot, 'gym_visit')}
+                            className="w-full h-full bg-gray-50 hover:bg-[#00ffba]/20 transition-colors text-xs text-gray-600 hover:text-black flex items-center justify-center"
+                            title="Κλείσε ραντεβού"
+                            disabled={isPast(day)}
+                          >
+                            +
+                          </button>
                         )}
                       </div>
                     );
