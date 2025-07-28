@@ -111,9 +111,9 @@ serve(async (req) => {
 
     console.log(`✅ User ${appUser.id} can participate in campaign ${campaign_id}`);
 
-    // Get all available prizes for this campaign from magic_box_subscription_prizes
+    // Get all available prizes for this campaign from campaign_prizes
     const { data: prizes, error: prizesError } = await supabaseClient
-      .from('magic_box_subscription_prizes')
+      .from('campaign_prizes')
       .select(`
         *,
         subscription_types (
@@ -123,8 +123,8 @@ serve(async (req) => {
           duration_months
         )
       `)
-      .eq('magic_box_id', campaign_id)
-      .gt('quantity', 0);
+      .eq('campaign_id', campaign_id)
+      .gt('remaining_quantity', 0);
 
     console.log(`🎁 Found ${prizes?.length || 0} available prizes for campaign ${campaign_id}`);
     
@@ -144,36 +144,52 @@ serve(async (req) => {
       });
     }
 
-    // Simple random selection since magic_box_subscription_prizes doesn't have weight
-    // Use quantity as weight - prizes with more quantity are more likely to be won
+    // Use weight from campaign_prizes for proper weighted random selection
     let totalWeight = 0;
-    const weightedPrizes = [];
     
     for (const prize of prizes) {
-      // Add prize multiple times based on its quantity (as weight)
-      for (let i = 0; i < Math.min(prize.quantity, 100); i++) { // Cap at 100 to avoid huge arrays
-        weightedPrizes.push(prize);
-        totalWeight++;
+      totalWeight += (prize.weight || 1);
+    }
+    
+    // Generate weighted random selection
+    const randomWeight = Math.floor(Math.random() * totalWeight);
+    let currentWeight = 0;
+    let wonPrize = null;
+    
+    for (const prize of prizes) {
+      currentWeight += (prize.weight || 1);
+      if (randomWeight < currentWeight) {
+        wonPrize = prize;
+        break;
       }
     }
+    
+    // Fallback to first prize if selection fails
+    if (!wonPrize) {
+      wonPrize = prizes[0];
+    }
 
-    // Generate cryptographically secure random number
-    const randomArray = new Uint32Array(1);
-    crypto.getRandomValues(randomArray);
-    const randomIndex = randomArray[0] % totalWeight;
-    const wonPrize = weightedPrizes[randomIndex];
+    console.log(`🎲 Random selection: ${randomWeight}/${totalWeight}, Won Prize: ${wonPrize.prize_type}, ID: ${wonPrize.id}`);
 
-    console.log(`🎲 Random selection: ${randomIndex}/${totalWeight}, Prize: subscription`);
-
-    // No discount code needed for subscription prizes - they're direct subscriptions
+    // Generate discount code if needed
     let discountCode = null;
+    if (wonPrize.prize_type === 'discount_coupon') {
+      // Generate a unique discount code
+      discountCode = `MAGIC${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    }
+
+    // Determine result type based on prize type
+    let resultType = wonPrize.prize_type;
+    if (wonPrize.prize_type === 'discount_coupon') {
+      resultType = 'discount';
+    }
 
     // Record the participation
     const participationData = {
       user_id: appUser.id,
       campaign_id: campaign_id,
       prize_id: wonPrize.id,
-      result_type: 'subscription', // All magic box prizes are subscriptions
+      result_type: resultType,
       subscription_type_id: wonPrize.subscription_type_id,
       discount_percentage: wonPrize.discount_percentage,
       discount_code: discountCode,
@@ -192,9 +208,9 @@ serve(async (req) => {
 
     // Update remaining quantity for the won prize
     const { error: updatePrizeError } = await supabaseClient
-      .from('magic_box_subscription_prizes')
+      .from('campaign_prizes')
       .update({ 
-        quantity: wonPrize.quantity - 1,
+        remaining_quantity: wonPrize.remaining_quantity - 1,
         updated_at: new Date().toISOString()
       })
       .eq('id', wonPrize.id);
@@ -203,8 +219,8 @@ serve(async (req) => {
       console.error('Error updating prize quantity:', updatePrizeError);
     }
 
-    // Handle subscription creation (all magic box prizes are subscriptions)
-    if (wonPrize.subscription_type_id) {
+    // Handle different prize types
+    if (wonPrize.prize_type === 'subscription' && wonPrize.subscription_type_id) {
       // Automatically create subscription for the user
       const { data: subscriptionType } = await supabaseClient
         .from('subscription_types')
@@ -241,17 +257,44 @@ serve(async (req) => {
             .eq('id', participation.id);
         }
       }
+    } else if (wonPrize.prize_type === 'discount_coupon') {
+      // Create discount coupon
+      const { error: couponError } = await supabaseClient
+        .from('discount_coupons')
+        .insert({
+          code: discountCode,
+          discount_percentage: wonPrize.discount_percentage,
+          user_id: appUser.id,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+          is_active: true,
+          max_uses: 1,
+          current_uses: 0
+        });
+
+      if (couponError) {
+        console.error('Error creating discount coupon:', couponError);
+      }
     }
 
-    // Prepare response (all magic box prizes are subscriptions)
+    // Prepare response based on prize type
     let result = {
       success: true,
-      prize_type: 'subscription',
-      discount_percentage: wonPrize.discount_percentage,
-      message: `Συγχαρητήρια! Κέρδισες συνδρομή ${wonPrize.subscription_types?.name}!`,
-      subscription_name: wonPrize.subscription_types?.name,
-      subscription_description: wonPrize.subscription_types?.description
+      prize_type: wonPrize.prize_type,
+      discount_percentage: wonPrize.discount_percentage
     };
+
+    if (wonPrize.prize_type === 'subscription') {
+      result.message = `Συγχαρητήρια! Κέρδισες συνδρομή ${wonPrize.subscription_types?.name}!`;
+      result.subscription_name = wonPrize.subscription_types?.name;
+      result.subscription_description = wonPrize.subscription_types?.description;
+    } else if (wonPrize.prize_type === 'discount_coupon') {
+      result.message = `Συγχαρητήρια! Κέρδισες κουπόνι έκπτωσης ${wonPrize.discount_percentage}%!`;
+      result.discount_code = discountCode;
+    } else if (wonPrize.prize_type === 'try_again') {
+      result.message = 'Δοκίμασε ξανά!';
+    } else if (wonPrize.prize_type === 'nothing') {
+      result.message = 'Δυστυχώς, δεν κέρδισες τίποτα αυτή τη φορά.';
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
