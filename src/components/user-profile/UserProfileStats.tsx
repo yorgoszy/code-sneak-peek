@@ -407,7 +407,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <div className="h-10 flex items-center justify-center">
               <Tag className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 offersData?.hasMagicBox 
-                  ? 'text-magic-box animate-pulse' 
+                  ? 'animate-offer-blink' 
                   : offersData?.available > 0 && !offersData?.accepted 
                   ? 'text-[#00ffba]' 
                   : offersData?.accepted 
@@ -420,12 +420,12 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 offersData.accepted ? (
                   <Check className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
                 ) : (
-                  <span className={`${offersData?.hasMagicBox ? 'text-magic-box animate-pulse' : 'text-[#00ffba]'}`}>
+                  <span className={`${offersData?.hasMagicBox ? 'animate-offer-blink' : 'text-[#00ffba]'}`}>
                     {offersData.available}
                   </span>
                 )
               ) : offersData?.hasMagicBox ? (
-                <Gift className={`text-magic-box animate-pulse ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+                <Gift className={`animate-offer-blink ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               ) : (
                 <span className="text-gray-400">-</span>
               )}
