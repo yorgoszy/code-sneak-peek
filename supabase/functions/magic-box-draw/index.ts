@@ -93,9 +93,9 @@ serve(async (req) => {
       });
     }
 
-    // Get all available prizes for this campaign
+    // Get all available prizes for this campaign from magic_box_subscription_prizes
     const { data: prizes, error: prizesError } = await supabaseClient
-      .from('campaign_prizes')
+      .from('magic_box_subscription_prizes')
       .select(`
         *,
         subscription_types (
@@ -105,8 +105,8 @@ serve(async (req) => {
           duration_months
         )
       `)
-      .eq('campaign_id', campaign_id)
-      .gt('remaining_quantity', 0);
+      .eq('magic_box_id', campaign_id)
+      .gt('quantity', 0);
 
     if (prizesError || !prizes || prizes.length === 0) {
       return new Response(JSON.stringify({ 
@@ -118,13 +118,14 @@ serve(async (req) => {
       });
     }
 
-    // Implement weighted random selection
+    // Simple random selection since magic_box_subscription_prizes doesn't have weight
+    // Use quantity as weight - prizes with more quantity are more likely to be won
     let totalWeight = 0;
     const weightedPrizes = [];
     
     for (const prize of prizes) {
-      // Add prize multiple times based on its weight
-      for (let i = 0; i < prize.weight; i++) {
+      // Add prize multiple times based on its quantity (as weight)
+      for (let i = 0; i < Math.min(prize.quantity, 100); i++) { // Cap at 100 to avoid huge arrays
         weightedPrizes.push(prize);
         totalWeight++;
       }
@@ -136,21 +137,17 @@ serve(async (req) => {
     const randomIndex = randomArray[0] % totalWeight;
     const wonPrize = weightedPrizes[randomIndex];
 
-    console.log(`🎲 Random selection: ${randomIndex}/${totalWeight}, Prize: ${wonPrize.prize_type}`);
+    console.log(`🎲 Random selection: ${randomIndex}/${totalWeight}, Prize: subscription`);
 
-    // Generate unique discount code if needed
+    // No discount code needed for subscription prizes - they're direct subscriptions
     let discountCode = null;
-    if (wonPrize.prize_type === 'discount_coupon') {
-      const { data: couponCodeData } = await supabaseClient.rpc('generate_coupon_code');
-      discountCode = couponCodeData;
-    }
 
     // Record the participation
     const participationData = {
       user_id: appUser.id,
       campaign_id: campaign_id,
       prize_id: wonPrize.id,
-      result_type: wonPrize.prize_type,
+      result_type: 'subscription', // All magic box prizes are subscriptions
       subscription_type_id: wonPrize.subscription_type_id,
       discount_percentage: wonPrize.discount_percentage,
       discount_code: discountCode,
@@ -169,9 +166,9 @@ serve(async (req) => {
 
     // Update remaining quantity for the won prize
     const { error: updatePrizeError } = await supabaseClient
-      .from('campaign_prizes')
+      .from('magic_box_subscription_prizes')
       .update({ 
-        remaining_quantity: wonPrize.remaining_quantity - 1,
+        quantity: wonPrize.quantity - 1,
         updated_at: new Date().toISOString()
       })
       .eq('id', wonPrize.id);
@@ -180,8 +177,8 @@ serve(async (req) => {
       console.error('Error updating prize quantity:', updatePrizeError);
     }
 
-    // Handle different prize types
-    if (wonPrize.prize_type === 'subscription' && wonPrize.subscription_type_id) {
+    // Handle subscription creation (all magic box prizes are subscriptions)
+    if (wonPrize.subscription_type_id) {
       // Automatically create subscription for the user
       const { data: subscriptionType } = await supabaseClient
         .from('subscription_types')
@@ -218,61 +215,17 @@ serve(async (req) => {
             .eq('id', participation.id);
         }
       }
-    } else if (wonPrize.prize_type === 'discount_coupon' && discountCode) {
-      // Create discount coupon
-      const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + 3); // 3 months expiry
-
-      const { error: couponError } = await supabaseClient
-        .from('user_discount_coupons')
-        .insert({
-          user_id: appUser.id,
-          participation_id: participation.id,
-          code: discountCode,
-          discount_percentage: wonPrize.discount_percentage,
-          expires_at: expiryDate.toISOString()
-        });
-
-      if (couponError) {
-        console.error('Error creating coupon:', couponError);
-      } else {
-        // Mark participation as claimed
-        await supabaseClient
-          .from('user_campaign_participations')
-          .update({ 
-            is_claimed: true, 
-            claimed_at: new Date().toISOString() 
-          })
-          .eq('id', participation.id);
-      }
     }
 
-    // Prepare response based on prize type
+    // Prepare response (all magic box prizes are subscriptions)
     let result = {
       success: true,
-      prize_type: wonPrize.prize_type,
-      discount_percentage: wonPrize.discount_percentage
+      prize_type: 'subscription',
+      discount_percentage: wonPrize.discount_percentage,
+      message: `Συγχαρητήρια! Κέρδισες συνδρομή ${wonPrize.subscription_types?.name}!`,
+      subscription_name: wonPrize.subscription_types?.name,
+      subscription_description: wonPrize.subscription_types?.description
     };
-
-    switch (wonPrize.prize_type) {
-      case 'subscription':
-        result.message = `Συγχαρητήρια! Κέρδισες συνδρομή ${wonPrize.subscription_types?.name}!`;
-        result.subscription_name = wonPrize.subscription_types?.name;
-        result.subscription_description = wonPrize.subscription_types?.description;
-        break;
-      case 'discount_coupon':
-        result.message = `Συγχαρητήρια! Κέρδισες κουπόνι έκπτωσης ${wonPrize.discount_percentage}%!`;
-        result.discount_code = discountCode;
-        break;
-      case 'try_again':
-        result.message = 'Δοκίμασε ξανά! Η τύχη θα σου χαμογελάσει σύντομα!';
-        break;
-      case 'nothing':
-        result.message = 'Δυστυχώς δεν κέρδισες κάτι αυτή τη φορά. Καλή τύχη την επόμενη!';
-        break;
-      default:
-        result.message = 'Συγχαρητήρια! Κέρδισες κάτι ειδικό!';
-    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
