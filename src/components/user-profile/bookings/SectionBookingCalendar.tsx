@@ -150,7 +150,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
       <CardContent className="p-3 md:p-6 pt-0">
         <div className="flex gap-2 overflow-x-auto">
           {/* Available Hours List */}
-          <div className="flex-shrink-0 w-11 md:w-14">
+          <div className="flex-shrink-0 w-10 md:w-12">
             <div className="space-y-1">
               <div className="h-12 flex items-center justify-center text-xs font-medium text-gray-700 border-b">
                 Ώρες
