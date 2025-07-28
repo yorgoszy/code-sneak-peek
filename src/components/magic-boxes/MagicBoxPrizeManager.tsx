@@ -15,11 +15,18 @@ interface SubscriptionType {
   price: number;
 }
 
-interface SubscriptionPrize {
+interface CampaignPrize {
   id: string;
+  campaign_id: string;
   subscription_type_id: string;
   quantity: number;
+  remaining_quantity: number;
   discount_percentage: number;
+  prize_type: string;
+  weight: number;
+  description: string;
+  created_at: string;
+  updated_at: string;
   subscription_types?: SubscriptionType | null;
 }
 
@@ -38,7 +45,7 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
   magicBoxId,
   onBack
 }) => {
-  const [subscriptionPrizes, setSubscriptionPrizes] = useState<SubscriptionPrize[]>([]);
+  const [subscriptionPrizes, setSubscriptionPrizes] = useState<CampaignPrize[]>([]);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -53,7 +60,7 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
   const fetchSubscriptionPrizes = async () => {
     try {
       const { data, error } = await supabase
-        .from('magic_box_subscription_prizes')
+        .from('campaign_prizes')
         .select(`
           *,
           subscription_types (
@@ -63,11 +70,11 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
             price
           )
         `)
-        .eq('magic_box_id', magicBoxId)
+        .eq('campaign_id', magicBoxId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSubscriptionPrizes((data || []) as SubscriptionPrize[]);
+      setSubscriptionPrizes((data as any) || []);
     } catch (error) {
       console.error('Error fetching subscription prizes:', error);
       toast({
@@ -146,22 +153,26 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
     try {
       // Διαγραφή παλιών συνδρομών του μαγικού κουτιού
       const { error: deleteError } = await supabase
-        .from('magic_box_subscription_prizes')
+        .from('campaign_prizes')
         .delete()
-        .eq('magic_box_id', magicBoxId);
+        .eq('campaign_id', magicBoxId);
 
       if (deleteError) throw deleteError;
 
       // Προσθήκη νέων συνδρομών
       const subscriptionData = selectedSubscriptions.map(item => ({
-        magic_box_id: magicBoxId,
+        campaign_id: magicBoxId,
         subscription_type_id: item.subscription_type_id,
         quantity: item.quantity,
-        discount_percentage: item.discount_percentage
+        remaining_quantity: item.quantity,
+        discount_percentage: item.discount_percentage,
+        prize_type: 'subscription',
+        weight: item.quantity,
+        description: ''
       }));
 
       const { error: insertError } = await supabase
-        .from('magic_box_subscription_prizes')
+        .from('campaign_prizes')
         .insert(subscriptionData);
 
       if (insertError) throw insertError;
@@ -193,7 +204,7 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
 
     try {
       const { error } = await supabase
-        .from('magic_box_subscription_prizes')
+        .from('campaign_prizes')
         .delete()
         .eq('id', id);
 
