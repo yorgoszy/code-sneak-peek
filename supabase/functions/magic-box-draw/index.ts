@@ -102,7 +102,8 @@ serve(async (req) => {
       const { data: wonCount, error: wonCountError } = await supabaseClient
         .from('user_magic_box_wins')
         .select('id')
-        .eq('prize_id', prize.id);
+        .eq('subscription_type_id', prize.subscription_type_id)
+        .eq('magic_box_id', magic_box_id);
 
       if (wonCountError) {
         console.error('Error counting won prizes:', wonCountError);
