@@ -32,9 +32,16 @@ export const MagicBoxGame: React.FC = () => {
   const [userParticipations, setUserParticipations] = useState<UserParticipation[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [playingStates, setPlayingStates] = useState<Record<string, string>>({});
-  const [showResults, setShowResults] = useState<Record<string, any>>({});
+  const [sessionId] = useState<string>(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [forceRender, setForceRender] = useState(0);
   const { toast } = useToast();
+
+  // Session-specific state keys
+  const getPlayingStateKey = (campaignId: string) => `playing_${sessionId}_${currentUserId}_${campaignId}`;
+  const getResultStateKey = (campaignId: string) => `result_${sessionId}_${currentUserId}_${campaignId}`;
+
+  // Force re-render function
+  const triggerRender = () => setForceRender(prev => prev + 1);
 
   useEffect(() => {
     initializeUser();
@@ -129,18 +136,12 @@ export const MagicBoxGame: React.FC = () => {
       return;
     }
 
-    // Δημιουργούμε unique key για αυτόν τον χρήστη και campaign
-    const userCampaignKey = `${currentUserId}-${campaignId}`;
+    // Χρησιμοποιούμε sessionStorage για session-specific state
+    const playingKey = getPlayingStateKey(campaignId);
+    sessionStorage.setItem(playingKey, 'true');
     
-    setPlayingStates(prev => ({
-      ...prev,
-      [userCampaignKey]: campaignId
-    }));
-    
-    setShowResults(prev => ({
-      ...prev,
-      [userCampaignKey]: null
-    }));
+    // Trigger re-render by updating force render state
+    triggerRender();
 
     try {
       const { data, error } = await supabase.functions.invoke('magic-box-draw', {
@@ -150,10 +151,8 @@ export const MagicBoxGame: React.FC = () => {
       if (error) throw error;
 
       if (data.success) {
-        setShowResults(prev => ({
-          ...prev,
-          [userCampaignKey]: data
-        }));
+        const resultKey = getResultStateKey(campaignId);
+        sessionStorage.setItem(resultKey, JSON.stringify(data));
         
         toast({
           title: 'Συγχαρητήρια! 🎉',
@@ -180,33 +179,31 @@ export const MagicBoxGame: React.FC = () => {
         variant: 'destructive'
       });
     } finally {
-      setPlayingStates(prev => {
-        const newState = { ...prev };
-        delete newState[userCampaignKey];
-        return newState;
-      });
+      sessionStorage.removeItem(playingKey);
+      // Trigger re-render
+      triggerRender();
     }
   };
 
   const isPlayingCampaign = (campaignId: string) => {
     if (!currentUserId) return false;
-    const userCampaignKey = `${currentUserId}-${campaignId}`;
-    return playingStates[userCampaignKey] === campaignId;
+    const playingKey = getPlayingStateKey(campaignId);
+    return sessionStorage.getItem(playingKey) === 'true';
   };
 
   const getUserCampaignResult = (campaignId: string) => {
     if (!currentUserId) return null;
-    const userCampaignKey = `${currentUserId}-${campaignId}`;
-    return showResults[userCampaignKey];
+    const resultKey = getResultStateKey(campaignId);
+    const stored = sessionStorage.getItem(resultKey);
+    return stored ? JSON.parse(stored) : null;
   };
 
   const hideResult = (campaignId: string) => {
     if (!currentUserId) return;
-    const userCampaignKey = `${currentUserId}-${campaignId}`;
-    setShowResults(prev => ({
-      ...prev,
-      [userCampaignKey]: null
-    }));
+    const resultKey = getResultStateKey(campaignId);
+    sessionStorage.removeItem(resultKey);
+    // Trigger re-render
+    triggerRender();
   };
 
   const hasPlayedCampaign = (campaignId: string) => {
