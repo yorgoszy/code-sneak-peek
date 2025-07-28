@@ -73,6 +73,7 @@ function App() {
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/user/:userId" element={<UserProfile />} />
                 <Route path="/dashboard/user-profile/:userId" element={<UserProfile />} />
+                <Route path="/dashboard/user-profile/:userId/shop" element={<Shop />} />
                 <Route path="/program-builder" element={<ProgramBuilder />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
