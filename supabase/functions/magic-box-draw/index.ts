@@ -111,7 +111,7 @@ serve(async (req) => {
 
     console.log(`✅ User ${appUser.id} can participate in campaign ${campaign_id}`);
 
-    // Get all available prizes for this campaign from campaign_prizes
+    // Get all available prizes for this campaign
     const { data: prizes, error: prizesError } = await supabaseClient
       .from('campaign_prizes')
       .select(`
@@ -144,14 +144,12 @@ serve(async (req) => {
       });
     }
 
-    // Use weight from campaign_prizes for proper weighted random selection
+    // Calculate weighted random selection
     let totalWeight = 0;
-    
     for (const prize of prizes) {
       totalWeight += (prize.weight || 1);
     }
     
-    // Generate weighted random selection
     const randomWeight = Math.floor(Math.random() * totalWeight);
     let currentWeight = 0;
     let wonPrize = null;
@@ -174,24 +172,17 @@ serve(async (req) => {
     // Generate discount code if needed
     let discountCode = null;
     if (wonPrize.prize_type === 'discount_coupon') {
-      // Generate a unique discount code
       discountCode = `MAGIC${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     }
 
-    // Determine result type based on prize type
-    let resultType = wonPrize.prize_type;
-    if (wonPrize.prize_type === 'discount_coupon') {
-      resultType = 'discount';
-    }
-
-    // Record the participation
+    // Record the participation FIRST
     const participationData = {
       user_id: appUser.id,
       campaign_id: campaign_id,
       prize_id: wonPrize.id,
-      result_type: resultType,
+      result_type: wonPrize.prize_type,
       subscription_type_id: wonPrize.subscription_type_id,
-      discount_percentage: wonPrize.discount_percentage,
+      discount_percentage: wonPrize.discount_percentage || 0,
       discount_code: discountCode,
     };
 
@@ -206,6 +197,8 @@ serve(async (req) => {
       throw new Error('Failed to record participation');
     }
 
+    console.log('✅ Participation recorded:', participation.id);
+
     // Update remaining quantity for the won prize
     const { error: updatePrizeError } = await supabaseClient
       .from('campaign_prizes')
@@ -219,44 +212,51 @@ serve(async (req) => {
       console.error('Error updating prize quantity:', updatePrizeError);
     }
 
-    // Handle different prize types
+    // Handle different prize types and create rewards
+    let result = {
+      success: true,
+      prize_type: wonPrize.prize_type,
+      discount_percentage: wonPrize.discount_percentage || 0
+    };
+
     if (wonPrize.prize_type === 'subscription' && wonPrize.subscription_type_id) {
-      // Automatically create subscription for the user
-      const { data: subscriptionType } = await supabaseClient
-        .from('subscription_types')
-        .select('*')
-        .eq('id', wonPrize.subscription_type_id)
-        .single();
-
-      if (subscriptionType) {
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + subscriptionType.duration_months);
-
-        const { error: subscriptionError } = await supabaseClient
-          .from('user_subscriptions')
-          .insert({
-            user_id: appUser.id,
-            subscription_type_id: wonPrize.subscription_type_id,
-            start_date: startDate.toISOString().split('T')[0],
-            end_date: endDate.toISOString().split('T')[0],
-            status: 'active',
-            is_paid: false
-          });
-
-        if (subscriptionError) {
-          console.error('Error creating subscription:', subscriptionError);
-        } else {
-          // Mark participation as claimed
-          await supabaseClient
-            .from('user_campaign_participations')
-            .update({ 
-              is_claimed: true, 
-              claimed_at: new Date().toISOString() 
-            })
-            .eq('id', participation.id);
-        }
+      // Create subscription for the user
+      const startDate = new Date();
+      const endDate = new Date();
+      if (wonPrize.subscription_types?.duration_months) {
+        endDate.setMonth(endDate.getMonth() + wonPrize.subscription_types.duration_months);
+      } else {
+        endDate.setMonth(endDate.getMonth() + 1); // Default 1 month
       }
+
+      const { error: subscriptionError } = await supabaseClient
+        .from('user_subscriptions')
+        .insert({
+          user_id: appUser.id,
+          subscription_type_id: wonPrize.subscription_type_id,
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
+          status: 'active',
+          is_paid: false
+        });
+
+      if (subscriptionError) {
+        console.error('Error creating subscription:', subscriptionError);
+      } else {
+        // Mark participation as claimed
+        await supabaseClient
+          .from('user_campaign_participations')
+          .update({ 
+            is_claimed: true, 
+            claimed_at: new Date().toISOString() 
+          })
+          .eq('id', participation.id);
+      }
+
+      result.message = `Συγχαρητήρια! Κέρδισες συνδρομή ${wonPrize.subscription_types?.name || 'Premium'}!`;
+      result.subscription_name = wonPrize.subscription_types?.name;
+      result.subscription_description = wonPrize.subscription_types?.description;
+
     } else if (wonPrize.prize_type === 'discount_coupon') {
       // Create discount coupon
       const { error: couponError } = await supabaseClient
@@ -274,26 +274,32 @@ serve(async (req) => {
       if (couponError) {
         console.error('Error creating discount coupon:', couponError);
       }
-    }
 
-    // Prepare response based on prize type
-    let result = {
-      success: true,
-      prize_type: wonPrize.prize_type,
-      discount_percentage: wonPrize.discount_percentage
-    };
-
-    if (wonPrize.prize_type === 'subscription') {
-      result.message = `Συγχαρητήρια! Κέρδισες συνδρομή ${wonPrize.subscription_types?.name}!`;
-      result.subscription_name = wonPrize.subscription_types?.name;
-      result.subscription_description = wonPrize.subscription_types?.description;
-    } else if (wonPrize.prize_type === 'discount_coupon') {
       result.message = `Συγχαρητήρια! Κέρδισες κουπόνι έκπτωσης ${wonPrize.discount_percentage}%!`;
       result.discount_code = discountCode;
+
     } else if (wonPrize.prize_type === 'try_again') {
       result.message = 'Δοκίμασε ξανά!';
+
     } else if (wonPrize.prize_type === 'nothing') {
-      result.message = 'Δυστυχώς, δεν κέρδισες τίποτα αυτή τη φορά.';
+      // Give user a free visit as consolation prize
+      const { error: visitError } = await supabaseClient
+        .from('visit_packages')
+        .insert({
+          user_id: appUser.id,
+          total_visits: 1,
+          remaining_visits: 1,
+          purchase_date: new Date().toISOString().split('T')[0],
+          price: 0,
+          status: 'active'
+        });
+
+      if (visitError) {
+        console.error('Error creating consolation visit:', visitError);
+      }
+
+      result.message = 'Λυπούμαστε που δεν κέρδισες αυτή τη φορά! Σας κάνουμε δώρο μια επίσκεψη στο γυμναστήριο!';
+      result.consolation_prize = 'free_visit';
     }
 
     return new Response(JSON.stringify(result), {
