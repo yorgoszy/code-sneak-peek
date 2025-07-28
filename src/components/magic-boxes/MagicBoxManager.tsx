@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Edit, Trash2, Gift, Settings, Power, Users, Calendar } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -772,14 +773,38 @@ export const MagicBoxManager: React.FC = () => {
                   <Edit className="w-4 h-4 mr-1" />
                   Επεξ.
                 </Button>
-                <Button
-                  onClick={() => handleDelete(campaign.id)}
-                  size="sm"
-                  variant="destructive"
-                  className="rounded-none"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="rounded-none"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-none max-w-md mx-auto">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-center">
+                        Επιβεβαίωση Διαγραφής
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-center">
+                        Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το campaign;
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex justify-center gap-4">
+                      <AlertDialogCancel className="rounded-none">
+                        Ακύρωση
+                      </AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => handleDelete(campaign.id)}
+                        className="rounded-none bg-destructive hover:bg-destructive/90"
+                      >
+                        Διαγραφή
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
