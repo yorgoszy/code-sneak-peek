@@ -476,7 +476,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Επισκέψεις - Clickable */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}/online-booking`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
           >
             <MapPin className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
