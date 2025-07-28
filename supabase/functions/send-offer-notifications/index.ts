@@ -8,11 +8,13 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  offerId: string;
-  offerName: string;
-  visibility: string;
+  type: string;
+  offerId?: string;
+  offerName?: string;
+  visibility?: string;
   targetUsers?: string[];
   targetGroups?: string[];
+  magic_box_id?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -37,8 +39,99 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { offerId, offerName, visibility, targetUsers, targetGroups }: NotificationRequest = await req.json();
-    console.log("📧 Processing offer notification:", { offerId, offerName, visibility });
+    const { type, offerId, offerName, visibility, targetUsers, targetGroups, magic_box_id }: NotificationRequest = await req.json();
+    console.log("📧 Processing notification:", { type, offerId, offerName, visibility, magic_box_id });
+
+    // Handle magic box activation notifications
+    if (type === 'magic_box_activated' && magic_box_id) {
+      // Λήψη στοιχείων του magic box
+      const { data: magicBox, error: magicBoxError } = await supabaseClient
+        .from('magic_boxes')
+        .select('*')
+        .eq('id', magic_box_id)
+        .single();
+
+      if (magicBoxError || !magicBox) {
+        throw new Error('Magic box not found');
+      }
+
+      // Λήψη όλων των ενεργών χρηστών
+      const { data: users, error: usersError } = await supabaseClient
+        .from('app_users')
+        .select('id, name, email')
+        .not('email', 'is', null);
+
+      if (usersError) throw usersError;
+
+      console.log("📧 Sending magic box emails to:", users?.length, "users");
+
+      // Send email to each user
+      const emailPromises = users?.map(async (user) => {
+        try {
+          const emailResponse = await resend.emails.send({
+            from: "HyperGym <noreply@hypergym.gr>",
+            to: [user.email],
+            subject: `🎁 Νέο Μαγικό Κουτί: ${magicBox.name}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #00ffba, #00d4aa); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                  <h1 style="color: #000; margin: 0; font-size: 28px;">🎁 Μαγικό Κουτί Ενεργοποιήθηκε!</h1>
+                </div>
+                
+                <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-radius: 0 0 10px 10px;">
+                  <h2 style="color: #333; margin-bottom: 20px;">Γεια σας ${user.name}!</h2>
+                  
+                  <p style="color: #666; font-size: 16px; line-height: 1.6;">
+                    Ένα νέο μαγικό κουτί είναι τώρα διαθέσιμο! Δοκιμάστε την τύχη σας και κερδίστε υπέροχα δώρα!
+                  </p>
+                  
+                  <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00ffba;">
+                    <h3 style="color: #333; margin: 0 0 10px 0;">✨ ${magicBox.name}</h3>
+                    <p style="color: #666; margin: 0;">${magicBox.description}</p>
+                  </div>
+                  
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${Deno.env.get("SITE_URL") || "https://hypergym.gr"}/dashboard/user-profile?tab=offers" 
+                       style="display: inline-block; background: #00ffba; color: #000; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                      Παίξε Τώρα!
+                    </a>
+                  </div>
+                  
+                  <p style="color: #888; font-size: 14px; text-align: center; margin-top: 30px;">
+                    Έχετε μόνο μία προσπάθεια! Μην τη χάσετε!
+                  </p>
+                </div>
+              </div>
+            `,
+          });
+
+          console.log(`✅ Magic box email sent to ${user.email}:`, emailResponse.id);
+          return { success: true, userId: user.id, email: user.email };
+        } catch (error) {
+          console.error(`❌ Failed to send magic box email to ${user.email}:`, error);
+          return { success: false, userId: user.id, email: user.email, error: error.message };
+        }
+      }) || [];
+
+      const results = await Promise.all(emailPromises);
+      const successful = results.filter(r => r.success).length;
+      const failed = results.filter(r => !r.success).length;
+
+      console.log(`📊 Magic box email results: ${successful} sent, ${failed} failed`);
+
+      return new Response(JSON.stringify({
+        message: "Magic box activation notifications sent",
+        results: {
+          total: results.length,
+          successful,
+          failed,
+          details: results
+        }
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
     let usersToNotify: string[] = [];
 

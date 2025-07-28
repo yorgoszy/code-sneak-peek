@@ -123,6 +123,7 @@ export const MagicBoxGame: React.FC = () => {
   };
 
   const hasPlayedBox = (boxId: string) => {
+    // Κάθε χρήστης έχει μόνο μία προσπάθεια ανά ενεργό magic box
     return userWins.some(win => win.magic_box_id === boxId);
   };
 

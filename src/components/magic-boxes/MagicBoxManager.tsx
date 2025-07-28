@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Gift, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, Gift, Settings, Power } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { MagicBoxPrizeManager } from './MagicBoxPrizeManager';
 
@@ -156,6 +156,55 @@ export const MagicBoxManager: React.FC = () => {
     }
   };
 
+  const handleToggleStatus = async (id: string, isActive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('magic_boxes')
+        .update({ is_active: isActive })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Αν ενεργοποιείται, αρχικοποίηση προσπαθειών και αποστολή notifications
+      if (isActive) {
+        // Διαγραφή παλιών νικητών για να μπορούν να παίξουν ξανά
+        const { error: deleteError } = await supabase
+          .from('user_magic_box_wins')
+          .delete()
+          .eq('magic_box_id', id);
+
+        if (deleteError) {
+          console.error('Error clearing old wins:', deleteError);
+        }
+
+        // Αποστολή email notifications
+        const { error: notifyError } = await supabase.functions.invoke('send-offer-notifications', {
+          body: {
+            type: 'magic_box_activated',
+            magic_box_id: id
+          }
+        });
+
+        if (notifyError) {
+          console.error('Error sending notifications:', notifyError);
+        }
+      }
+
+      toast({
+        title: 'Επιτυχία',
+        description: `Μαγικό κουτί ${isActive ? 'ενεργοποιήθηκε' : 'απενεργοποιήθηκε'} επιτυχώς`
+      });
+      fetchMagicBoxes();
+    } catch (error) {
+      console.error('Error toggling status:', error);
+      toast({
+        title: 'Σφάλμα',
+        description: 'Σφάλμα κατά την αλλαγή κατάστασης',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const resetForm = () => {
     setFormData({ name: '', description: '', is_active: true, is_free: true });
     setEditingBox(null);
@@ -289,6 +338,15 @@ export const MagicBoxManager: React.FC = () => {
                 >
                   <Settings className="w-4 h-4 mr-1" />
                   Δώρα
+                </Button>
+                <Button
+                  onClick={() => handleToggleStatus(box.id, !box.is_active)}
+                  size="sm"
+                  variant={box.is_active ? "outline" : "default"}
+                  className="rounded-none"
+                >
+                  <Power className="w-4 h-4 mr-1" />
+                  {box.is_active ? 'Απενεργ.' : 'Ενεργ.'}
                 </Button>
                 <Button
                   onClick={() => handleEdit(box)}
