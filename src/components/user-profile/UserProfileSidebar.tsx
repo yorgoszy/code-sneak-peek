@@ -10,7 +10,8 @@ import {
   ShoppingCart,
   Video,
   CalendarDays,
-  Tag
+  Tag,
+  ArrowLeft
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -173,6 +174,17 @@ export const UserProfileSidebar = forwardRef<
 
   const navigationContent = (
     <div className="space-y-1 md:space-y-2">
+      {/* Back to Overview Button - Only show when not on overview */}
+      {activeTab !== 'overview' && (
+        <button
+          onClick={() => setActiveTab('overview')}
+          className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 rounded-none border-b border-gray-200 mb-2 pb-4"
+        >
+          <ArrowLeft className="h-5 w-5 flex-shrink-0" />
+          {(!isCollapsed || isMobile) && <span className="truncate">Επιστροφή στην Επισκόπηση</span>}
+        </button>
+      )}
+      
       {menuItems.map((item) => {
         const isActive = activeTab === item.key;
         return (
