@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -366,79 +366,55 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
     <Card className="rounded-none">
       <CardContent className={isMobile ? "pt-4" : "pt-6"}>
         <div className={`grid gap-4 ${
-          isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-6 lg:grid-cols-10'
+          isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-6 lg:grid-cols-12'
         }`}>
-          {user.role === 'trainer' && (
-            <div className="text-center flex flex-col min-w-0">
-              <div className="h-10 flex items-center justify-center">
-                <Users className={`text-blue-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
-              </div>
-              <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-                {stats.athletesCount}
-              </div>
-              <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-                Αθλητές
-              </div>
-            </div>
-          )}
-
-          {/* Ημέρες Προπόνησης - Clickable */}
+          {/* Αγορές - Πρώτο */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=shop`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <Dumbbell className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
-                stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
-              }`} />
+              <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {stats.programsCount > 0 ? (
-                <span className={
-                  stats.programsCount === 1 ? 'text-red-600' :
-                  stats.programsCount <= 3 ? 'text-orange-600' :
-                  'text-green-600'
-                }>
-                  {stats.programsCount}
-                </span>
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
+              <span className="text-[#00ffba]">🛍️</span>
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
+              Αγορές
             </div>
           </button>
 
-          {/* Επερχόμενα Τεστ - Clickable */}
+          {/* Ενεργές Προσφορές - Δεύτερο */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=tests`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=offers`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <Calendar className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
-                upcomingTests ? 'text-purple-500' : 'text-gray-400'
-              }`} />
+              <Tag className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+                offersData?.available > 0 && !offersData?.accepted 
+                  ? 'animate-offer-blink' 
+                  : offersData?.accepted 
+                  ? 'text-[#00ffba]' 
+                  : 'text-gray-400'
+              } transition-all duration-300`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
-              {upcomingTests ? (
-                upcomingTests.daysLeft === 0 ? (
-                  <span className="text-red-600">Σήμερα!</span>
-                ) : upcomingTests.daysLeft <= 3 ? (
-                  <span className="text-orange-600">{upcomingTests.daysLeft}η</span>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {offersData?.available > 0 ? (
+                offersData.accepted ? (
+                  <Check className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
                 ) : (
-                  <span className="text-purple-600">{upcomingTests.daysLeft}η</span>
+                  <span className="animate-offer-blink">{offersData.available}</span>
                 )
               ) : (
                 <span className="text-gray-400">-</span>
               )}
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Επερχόμενα Τεστ
+              Ενεργές Προσφορές
             </div>
           </button>
 
-          {/* Πληρωμές - Clickable */}
+          {/* Πληρωμές - Τρίτο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=payments`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
@@ -462,6 +438,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
+          {/* Μέρες Συνδρομής - Τέταρτο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=payments`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
@@ -497,7 +474,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          {/* Επισκέψεις - Clickable */}
+          {/* Επισκέψεις - Πέμπτο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
@@ -521,7 +498,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          {/* Επερχόμενη Επίσκεψη - Clickable */}
+          {/* Επερχόμενη Επίσκεψη - Έκτο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
@@ -551,7 +528,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          {/* Βιντεοκλήσεις - Clickable */}
+          {/* Βιντεοκλήσεις - Έβδομο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
@@ -575,12 +552,10 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
           
-          {/* Επερχόμενη Βιντεοκλήση - Clickable */}
+          {/* Επερχόμενη Βιντεοκλήση - Όγδοο */}
           <button 
             onClick={() => {
               if (upcomingVideocall) {
-                // Για τώρα θα οδηγεί στο online-coaching
-                // Μπορεί στο μέλλον να οδηγεί στο room URL
                 navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
               }
             }}
@@ -612,49 +587,108 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          {/* Αγορές - Νέο εικονάκι - Clickable */}
+          {/* Προφίλ - Ένατο (νέο) */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=shop`)}
+            onClick={() => navigate(`/dashboard/edit-profile`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+              <User className={`text-blue-600 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              <span className="text-[#00ffba]">🛍️</span>
+              <span className="text-blue-600">👤</span>
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Αγορές
+              Προφίλ
             </div>
           </button>
 
-          {/* Ενεργές Προσφορές - Clickable */}
+          {/* Ridai Προπονητής - Δέκατο (νέο) */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=offers`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=ai-trainer`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <Tag className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
-                offersData?.available > 0 && !offersData?.accepted 
-                  ? 'animate-offer-blink' 
-                  : offersData?.accepted 
-                  ? 'text-[#00ffba]' 
-                  : 'text-gray-400'
-              } transition-all duration-300`} />
+              <MessageCircle className={`text-purple-600 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {offersData?.available > 0 ? (
-                offersData.accepted ? (
-                  <Check className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+              <span className="text-purple-600">🤖</span>
+            </div>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+              Ridai Προπονητής
+            </div>
+          </button>
+
+          {user.role === 'trainer' && (
+            <button 
+              onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
+              className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            >
+              <div className="h-10 flex items-center justify-center">
+                <Users className={`text-blue-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+              </div>
+              <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+                {stats.athletesCount}
+              </div>
+              <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+                Αθλητές
+              </div>
+            </button>
+          )}
+
+          {/* Ημέρες Προπόνησης / Προγράμματα - Για όλους τους ρόλους */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+          >
+            <div className="h-10 flex items-center justify-center">
+              <Dumbbell className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+                stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {stats.programsCount > 0 ? (
+                <span className={
+                  stats.programsCount === 1 ? 'text-red-600' :
+                  stats.programsCount <= 3 ? 'text-orange-600' :
+                  'text-green-600'
+                }>
+                  {stats.programsCount}
+                </span>
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </div>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
+            </div>
+          </button>
+
+          {/* Επερχόμενα Τεστ */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=tests`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+          >
+            <div className="h-10 flex items-center justify-center">
+              <Calendar className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+                upcomingTests ? 'text-purple-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
+              {upcomingTests ? (
+                upcomingTests.daysLeft === 0 ? (
+                  <span className="text-red-600">Σήμερα!</span>
+                ) : upcomingTests.daysLeft <= 3 ? (
+                  <span className="text-orange-600">{upcomingTests.daysLeft}η</span>
                 ) : (
-                  <span className="animate-offer-blink">{offersData.available}</span>
+                  <span className="text-purple-600">{upcomingTests.daysLeft}η</span>
                 )
               ) : (
                 <span className="text-gray-400">-</span>
               )}
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Ενεργές Προσφορές
+              Επερχόμενα Τεστ
             </div>
           </button>
         </div>
