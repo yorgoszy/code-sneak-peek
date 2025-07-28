@@ -528,7 +528,63 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          {/* Βιντεοκλήσεις - Έβδομο */}
+          {/* Ημέρες Προπόνησης / Προγράμματα - Έβδομο (μετακινημένο) */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+          >
+            <div className="h-10 flex items-center justify-center">
+              <Dumbbell className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+                stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {stats.programsCount > 0 ? (
+                <span className={
+                  stats.programsCount === 1 ? 'text-red-600' :
+                  stats.programsCount <= 3 ? 'text-orange-600' :
+                  'text-green-600'
+                }>
+                  {stats.programsCount}
+                </span>
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </div>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
+            </div>
+          </button>
+
+          {/* Επερχόμενα Τεστ - Όγδοο (μετακινημένο) */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=tests`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+          >
+            <div className="h-10 flex items-center justify-center">
+              <Calendar className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+                upcomingTests ? 'text-purple-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
+              {upcomingTests ? (
+                upcomingTests.daysLeft === 0 ? (
+                  <span className="text-red-600">Σήμερα!</span>
+                ) : upcomingTests.daysLeft <= 3 ? (
+                  <span className="text-orange-600">{upcomingTests.daysLeft}η</span>
+                ) : (
+                  <span className="text-purple-600">{upcomingTests.daysLeft}η</span>
+                )
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </div>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+              Επερχόμενα Τεστ
+            </div>
+          </button>
+
+          {/* Βιντεοκλήσεις - Ένατο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
@@ -552,7 +608,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
           
-          {/* Επερχόμενη Βιντεοκλήση - Όγδοο */}
+          {/* Επερχόμενη Βιντεοκλήση - Δέκατο */}
           <button 
             onClick={() => {
               if (upcomingVideocall) {
@@ -587,7 +643,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          {/* Προφίλ - Ένατο (νέο) */}
+          {/* Προφίλ - Ενδέκατο (χωρίς emoji) */}
           <button 
             onClick={() => navigate(`/dashboard/edit-profile`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
@@ -596,14 +652,14 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               <User className={`text-blue-600 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              <span className="text-blue-600">👤</span>
+              <span className="text-blue-600"> </span>
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Προφίλ
             </div>
           </button>
 
-          {/* Ridai Προπονητής - Δέκατο (νέο) */}
+          {/* RidAi Προπονητής - Δωδέκατο (χωρίς emoji, με κεφαλαίο A) */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=ai-trainer`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
@@ -612,10 +668,10 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               <MessageCircle className={`text-purple-600 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              <span className="text-purple-600">🤖</span>
+              <span className="text-purple-600"> </span>
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Ridai Προπονητής
+              RidAi Προπονητής
             </div>
           </button>
 
@@ -635,62 +691,6 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               </div>
             </button>
           )}
-
-          {/* Ημέρες Προπόνησης / Προγράμματα - Για όλους τους ρόλους */}
-          <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
-          >
-            <div className="h-10 flex items-center justify-center">
-              <Dumbbell className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
-                stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
-              }`} />
-            </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {stats.programsCount > 0 ? (
-                <span className={
-                  stats.programsCount === 1 ? 'text-red-600' :
-                  stats.programsCount <= 3 ? 'text-orange-600' :
-                  'text-green-600'
-                }>
-                  {stats.programsCount}
-                </span>
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
-            </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
-            </div>
-          </button>
-
-          {/* Επερχόμενα Τεστ */}
-          <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=tests`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
-          >
-            <div className="h-10 flex items-center justify-center">
-              <Calendar className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
-                upcomingTests ? 'text-purple-500' : 'text-gray-400'
-              }`} />
-            </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
-              {upcomingTests ? (
-                upcomingTests.daysLeft === 0 ? (
-                  <span className="text-red-600">Σήμερα!</span>
-                ) : upcomingTests.daysLeft <= 3 ? (
-                  <span className="text-orange-600">{upcomingTests.daysLeft}η</span>
-                ) : (
-                  <span className="text-purple-600">{upcomingTests.daysLeft}η</span>
-                )
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
-            </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Επερχόμενα Τεστ
-            </div>
-          </button>
         </div>
       </CardContent>
     </Card>
