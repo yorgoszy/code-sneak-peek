@@ -220,42 +220,80 @@ serve(async (req) => {
         .eq('id', wonPrize.subscription_type_id)
         .single();
 
-      // Create subscription for the user
-      const startDate = new Date();
-      const endDate = new Date();
-      if (subscriptionType?.duration_months) {
-        endDate.setMonth(endDate.getMonth() + subscriptionType.duration_months);
+      if (subscriptionType?.visit_count && subscriptionType.visit_count > 0) {
+        // This is a visit-based subscription - create visit package instead
+        const { error: visitPackageError } = await supabaseClient
+          .from('visit_packages')
+          .insert({
+            user_id: appUser.id,
+            total_visits: subscriptionType.visit_count,
+            remaining_visits: subscriptionType.visit_count,
+            purchase_date: new Date().toISOString().split('T')[0],
+            price: 0, // Free from magic box
+            allowed_sections: subscriptionType.allowed_sections || null,
+            status: 'active'
+          });
+
+        if (visitPackageError) {
+          console.error('Error creating visit package:', visitPackageError);
+        } else {
+          console.log(`✅ Created visit package with ${subscriptionType.visit_count} visits for user ${appUser.id}`);
+          
+          // Mark participation as claimed
+          await supabaseClient
+            .from('user_campaign_participations')
+            .update({ 
+              is_claimed: true, 
+              claimed_at: new Date().toISOString() 
+            })
+            .eq('id', participation.id);
+        }
+
+        result.message = `Συγχαρητήρια! Κέρδισες ${subscriptionType.visit_count} επισκέψεις στο γυμναστήριο!`;
+        result.visit_count = subscriptionType.visit_count;
+        result.subscription_name = subscriptionType.name;
+        result.subscription_description = subscriptionType.description;
+
       } else {
-        endDate.setMonth(endDate.getMonth() + 1); // Default 1 month
+        // This is a time-based subscription - create user subscription
+        const startDate = new Date();
+        const endDate = new Date();
+        if (subscriptionType?.duration_months) {
+          endDate.setMonth(endDate.getMonth() + subscriptionType.duration_months);
+        } else {
+          endDate.setMonth(endDate.getMonth() + 1); // Default 1 month
+        }
+
+        const { error: subscriptionError } = await supabaseClient
+          .from('user_subscriptions')
+          .insert({
+            user_id: appUser.id,
+            subscription_type_id: wonPrize.subscription_type_id,
+            start_date: startDate.toISOString().split('T')[0],
+            end_date: endDate.toISOString().split('T')[0],
+            status: 'active',
+            is_paid: false
+          });
+
+        if (subscriptionError) {
+          console.error('Error creating subscription:', subscriptionError);
+        } else {
+          console.log(`✅ Created time-based subscription for user ${appUser.id}`);
+          
+          // Mark participation as claimed
+          await supabaseClient
+            .from('user_campaign_participations')
+            .update({ 
+              is_claimed: true, 
+              claimed_at: new Date().toISOString() 
+            })
+            .eq('id', participation.id);
+        }
+
+        result.message = `Συγχαρητήρια! Κέρδισες συνδρομή ${subscriptionType?.name || 'Premium'}!`;
+        result.subscription_name = subscriptionType?.name;
+        result.subscription_description = subscriptionType?.description;
       }
-
-      const { error: subscriptionError } = await supabaseClient
-        .from('user_subscriptions')
-        .insert({
-          user_id: appUser.id,
-          subscription_type_id: wonPrize.subscription_type_id,
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0],
-          status: 'active',
-          is_paid: false
-        });
-
-      if (subscriptionError) {
-        console.error('Error creating subscription:', subscriptionError);
-      } else {
-        // Mark participation as claimed
-        await supabaseClient
-          .from('user_campaign_participations')
-          .update({ 
-            is_claimed: true, 
-            claimed_at: new Date().toISOString() 
-          })
-          .eq('id', participation.id);
-      }
-
-      result.message = `Συγχαρητήρια! Κέρδισες συνδρομή ${subscriptionType?.name || 'Premium'}!`;
-      result.subscription_name = subscriptionType?.name;
-      result.subscription_description = subscriptionType?.description;
 
     } else if (wonPrize.prize_type === 'discount_coupon') {
       // Create discount coupon
