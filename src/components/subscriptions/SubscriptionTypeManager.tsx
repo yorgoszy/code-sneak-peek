@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video, Dumbbell } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { matchesSearchTerm } from "@/lib/utils";
 
@@ -21,15 +21,22 @@ interface SubscriptionType {
   duration_months: number;
   features: any;
   is_active: boolean;
-  subscription_mode: 'time_based' | 'visit_based' | 'videocall';
+  subscription_mode: 'time_based' | 'visit_based' | 'videocall' | 'program';
   visit_count?: number;
   visit_expiry_months?: number;
   available_in_shop?: boolean;
   single_purchase?: boolean;
   allowed_sections?: string[];
+  program_id?: string;
 }
 
 interface BookingSection {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+interface DraftProgram {
   id: string;
   name: string;
   description?: string;
@@ -55,11 +62,13 @@ export const SubscriptionTypeManager: React.FC = () => {
   const [price, setPrice] = useState('');
   const [durationMonths, setDurationMonths] = useState('');
   const [features, setFeatures] = useState('');
-  const [subscriptionMode, setSubscriptionMode] = useState<'time_based' | 'visit_based' | 'videocall'>('time_based');
+  const [subscriptionMode, setSubscriptionMode] = useState<'time_based' | 'visit_based' | 'videocall' | 'program'>('time_based');
   const [visitCount, setVisitCount] = useState('');
   const [visitExpiryMonths, setVisitExpiryMonths] = useState('');
   const [singlePurchase, setSinglePurchase] = useState(false);
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
+  const [draftPrograms, setDraftPrograms] = useState<DraftProgram[]>([]);
+  const [selectedProgram, setSelectedProgram] = useState('');
 
   useEffect(() => {
     checkUserRole();
@@ -69,6 +78,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     if (!roleLoading && isAdmin) {
       loadSubscriptionTypes();
       loadBookingSections();
+      loadDraftPrograms();
     } else if (!roleLoading) {
       setLoading(false);
     }
@@ -139,7 +149,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       console.log('✅ Loaded subscription types:', data);
       const typedData = (data || []).map(item => ({
         ...item,
-        subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based' | 'videocall',
+        subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based' | 'videocall' | 'program',
         available_in_shop: item.available_in_shop || false,
         single_purchase: item.single_purchase || false
       })) as SubscriptionType[];
@@ -175,6 +185,36 @@ export const SubscriptionTypeManager: React.FC = () => {
     }
   };
 
+  const loadDraftPrograms = async () => {
+    try {
+      console.log('🔄 Loading draft programs...');
+      const { data, error } = await supabase
+        .from('programs')
+        .select('id, name, description, program_assignments!left(id)')
+        .order('name');
+
+      if (error) {
+        console.error('❌ Error loading programs:', error);
+        throw error;
+      }
+      
+      // Filter για draft προγράμματα (χωρίς assignments)
+      const draftPrograms = (data || [])
+        .filter(program => !program.program_assignments || program.program_assignments.length === 0)
+        .map(program => ({
+          id: program.id,
+          name: program.name,
+          description: program.description
+        }));
+      
+      console.log('✅ Loaded draft programs:', draftPrograms);
+      setDraftPrograms(draftPrograms);
+    } catch (error) {
+      console.error('💥 Error loading draft programs:', error);
+      toast.error('Σφάλμα κατά τη φόρτωση των προγραμμάτων');
+    }
+  };
+
   const resetForm = () => {
     setName('');
     setDescription('');
@@ -186,6 +226,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     setVisitExpiryMonths('');
     setSinglePurchase(false);
     setSelectedSections([]);
+    setSelectedProgram('');
     setEditingType(null);
   };
 
@@ -208,6 +249,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     setVisitExpiryMonths(type.visit_expiry_months?.toString() || '');
     setSinglePurchase(type.single_purchase || false);
     setSelectedSections(type.allowed_sections || []);
+    setSelectedProgram(type.program_id || '');
     setIsDialogOpen(true);
   };
 
@@ -242,6 +284,12 @@ export const SubscriptionTypeManager: React.FC = () => {
     // Validation για videocall subscriptions
     if (subscriptionMode === 'videocall' && !visitCount) {
       toast.error('Ο αριθμός κλήσεων είναι απαραίτητος για videocall συνδρομές');
+      return;
+    }
+
+    // Validation για program subscriptions
+    if (subscriptionMode === 'program' && !selectedProgram) {
+      toast.error('Η επιλογή προγράμματος είναι απαραίτητη για συνδρομές προγράμματος');
       return;
     }
 
@@ -307,7 +355,8 @@ export const SubscriptionTypeManager: React.FC = () => {
         visit_count: (subscriptionMode === 'visit_based' || subscriptionMode === 'videocall') ? numericVisitCount : null,
         visit_expiry_months: (subscriptionMode === 'visit_based' || subscriptionMode === 'videocall') ? numericVisitExpiryMonths : null,
         single_purchase: singlePurchase,
-        allowed_sections: selectedSections.length > 0 ? selectedSections : null
+        allowed_sections: selectedSections.length > 0 ? selectedSections : null,
+        program_id: subscriptionMode === 'program' ? selectedProgram : null
       };
 
       console.log('💾 Saving subscription type:', typeData);
@@ -552,31 +601,38 @@ export const SubscriptionTypeManager: React.FC = () => {
                             <MapPin className="w-3 h-3 mr-1" />
                             Επισκέψεις
                           </Badge>
-                        ) : type.subscription_mode === 'videocall' ? (
-                          <Badge variant="outline" className="rounded-none bg-purple-50 text-purple-600">
-                            <Video className="w-3 h-3 mr-1" />
-                            Videocall
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="rounded-none bg-green-50 text-green-600">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            Χρονική
-                          </Badge>
-                        )}
+                         ) : type.subscription_mode === 'videocall' ? (
+                           <Badge variant="outline" className="rounded-none bg-purple-50 text-purple-600">
+                             <Video className="w-3 h-3 mr-1" />
+                             Videocall
+                           </Badge>
+                         ) : type.subscription_mode === 'program' ? (
+                           <Badge variant="outline" className="rounded-none bg-orange-50 text-orange-600">
+                             <Dumbbell className="w-3 h-3 mr-1" />
+                             Πρόγραμμα
+                           </Badge>
+                         ) : (
+                           <Badge variant="outline" className="rounded-none bg-green-50 text-green-600">
+                             <Calendar className="w-3 h-3 mr-1" />
+                             Χρονική
+                           </Badge>
+                         )}
                       </div>
                       {type.subscription_mode === 'visit_based' ? (
                         <>
                           <div><strong>Επισκέψεις:</strong> {type.visit_count} επισκέψεις</div>
                           <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
                         </>
-                      ) : type.subscription_mode === 'videocall' ? (
-                        <>
-                          <div><strong>Κλήσεις:</strong> {type.visit_count} κλήσεις</div>
-                          <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
-                        </>
-                      ) : (
-                        <div><strong>Διάρκεια:</strong> {type.duration_months} μήνες</div>
-                      )}
+                       ) : type.subscription_mode === 'videocall' ? (
+                         <>
+                           <div><strong>Κλήσεις:</strong> {type.visit_count} κλήσεις</div>
+                           <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
+                         </>
+                       ) : type.subscription_mode === 'program' ? (
+                         <div><strong>Πρόγραμμα:</strong> {type.program_id ? draftPrograms.find(p => p.id === type.program_id)?.name || 'Άγνωστο' : 'Δεν έχει οριστεί'}</div>
+                       ) : (
+                         <div><strong>Διάρκεια:</strong> {type.duration_months} μήνες</div>
+                       )}
                       {type.features && Object.keys(type.features).length > 0 && (
                         <div><strong>Χαρακτηριστικά:</strong> {Object.keys(type.features).join(', ')}</div>
                       )}
@@ -666,7 +722,7 @@ export const SubscriptionTypeManager: React.FC = () => {
               <Label htmlFor="subscriptionMode">Τύπος Συνδρομής*</Label>
               <Select
                 value={subscriptionMode}
-                onValueChange={(value: 'time_based' | 'visit_based' | 'videocall') => setSubscriptionMode(value)}
+                onValueChange={(value: 'time_based' | 'visit_based' | 'videocall' | 'program') => setSubscriptionMode(value)}
                 disabled={saving}
               >
                 <SelectTrigger className="rounded-none">
@@ -689,6 +745,12 @@ export const SubscriptionTypeManager: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <Video className="w-4 h-4" />
                       VIDEOCALL
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="program">
+                    <div className="flex items-center gap-2">
+                      <Dumbbell className="w-4 h-4" />
+                      Πρόγραμμα
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -753,6 +815,36 @@ export const SubscriptionTypeManager: React.FC = () => {
                   placeholder={subscriptionMode === 'videocall' ? "Προαιρετικό - Αφήστε κενό για αόριστη διάρκεια" : "Προαιρετικό - Αφήστε κενό για αόριστη διάρκεια"}
                   disabled={saving}
                 />
+              </div>
+            )}
+
+            {subscriptionMode === 'program' && (
+              <div>
+                <Label htmlFor="programSelect">Επιλογή Προγράμματος*</Label>
+                <Select
+                  value={selectedProgram}
+                  onValueChange={setSelectedProgram}
+                  disabled={saving}
+                >
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Επιλέξτε πρόγραμμα" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {draftPrograms.map((program) => (
+                      <SelectItem key={program.id} value={program.id}>
+                        <div>
+                          <div className="font-medium">{program.name}</div>
+                          {program.description && (
+                            <div className="text-xs text-gray-500">{program.description}</div>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Εμφανίζονται μόνο τα draft προγράμματα (χωρίς αναθέσεις)
+                </p>
               </div>
             )}
             <div>
