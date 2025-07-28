@@ -218,9 +218,21 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         }).length === 0 && (
           <Card className="rounded-none">
             <CardContent className="p-6 text-center">
-              <p className="text-gray-600">
-                Δεν έχεις πρόσβαση σε κάποιο τμήμα. Επικοινώνησε με τη διοίκηση για περισσότερες πληροφορίες.
+              <p className="text-gray-600 mb-4">
+                {availability?.type === 'none' 
+                  ? "Δεν έχεις διαθέσιμες επισκέψεις για κρατήσεις."
+                  : "Δεν έχεις πρόσβαση σε κάποιο τμήμα. Επικοινώνησε με τη διοίκηση για περισσότερες πληροφορίες."
+                }
               </p>
+              {availability?.type === 'none' && (
+                <Button 
+                  onClick={() => navigate(`/dashboard/user-profile/${userProfile?.id}/shop`)}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Αγόρασε επίσκεψη
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
