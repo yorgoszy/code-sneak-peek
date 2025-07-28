@@ -60,10 +60,10 @@ serve(async (req) => {
 
     // Check if user exists
     console.log("👤 Checking if user exists...");
-    const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+    const { data: users, error: userError } = await supabase.auth.admin.listUsers();
     
     if (userError) {
-      console.log("❌ Error checking user:", userError);
+      console.log("❌ Error listing users:", userError);
       // Return success for security reasons even if user doesn't exist
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
@@ -71,7 +71,8 @@ serve(async (req) => {
       });
     }
 
-    if (!user.user) {
+    const user = users.users.find(u => u.email === email);
+    if (!user) {
       console.log("⚠️ User not found:", email);
       // Return success for security reasons
       return new Response(JSON.stringify({ success: true }), {
