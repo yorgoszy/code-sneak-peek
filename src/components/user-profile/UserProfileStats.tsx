@@ -369,22 +369,30 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-10'
         }`}>
           {user.role === 'trainer' && (
-            <div className="text-center">
-              <Users className={`mx-auto text-blue-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-              <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.athletesCount}</p>
-              <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Αθλητές</p>
+            <div className="text-center flex flex-col">
+              <div className="h-10 flex items-center justify-center">
+                <Users className={`text-blue-500 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              </div>
+              <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+                {stats.athletesCount}
+              </div>
+              <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                Αθλητές
+              </div>
             </div>
           )}
 
           {/* Ημέρες Προπόνησης - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/ημερολογιο`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
           >
-            <Dumbbell className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
-              stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
-            }`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className="h-10 flex items-center justify-center">
+              <Dumbbell className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {stats.programsCount > 0 ? (
                 <span className={
                   stats.programsCount === 1 ? 'text-red-600' :
@@ -396,21 +404,23 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               ) : (
                 <span className="text-gray-400">-</span>
               )}
-            </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            </div>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
               {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
-            </p>
+            </div>
           </button>
 
           {/* Επερχόμενα Τεστ - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/τεστ`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
           >
-            <Calendar className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
-              upcomingTests ? 'text-purple-500' : 'text-gray-400'
-            }`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className="h-10 flex items-center justify-center">
+              <Calendar className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                upcomingTests ? 'text-purple-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingTests ? (
                 upcomingTests.daysLeft === 0 ? (
                   <span className="text-red-600">Σήμερα!</span>
@@ -422,67 +432,79 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               ) : (
                 <span className="text-gray-400">-</span>
               )}
-            </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενα Τεστ</p>
+            </div>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Επερχόμενα Τεστ
+            </div>
           </button>
 
           {/* Πληρωμές - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/πληρωμες`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
           >
-            <CreditCard className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
-              paymentStatus !== null ? 'text-orange-500' : 'text-gray-400'
-            }`} />
-            <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className="h-10 flex items-center justify-center">
+              <CreditCard className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                paymentStatus !== null ? 'text-orange-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {paymentStatus === null ? (
                 <span className="text-gray-400">-</span>
               ) : paymentStatus ? (
-                <Check className={`mx-auto text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <Check className={`text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
               ) : (
-                <X className={`mx-auto text-red-500 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <X className={`text-red-500 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
               )}
             </div>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Πληρωμές</p>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Πληρωμές
+            </div>
           </button>
 
-          <div className="text-center">
-            {isPaused ? (
-              <Pause className={`mx-auto text-yellow-500 mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-            ) : (
-              <Clock className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
-                subscriptionDays !== null ? 'text-[#00ffba]' : 'text-gray-400'
-              }`} />
-            )}
-             <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-               {subscriptionDays !== null ? (
-                 isPaused ? (
-                   <span className="text-orange-600">{subscriptionDays}</span>
-                 ) : subscriptionDays < 0 ? (
-                   <span className="text-red-600">Έληξε</span>
-                 ) : subscriptionDays === 0 ? (
-                   <span className="text-orange-600">Σήμερα</span>
-                 ) : subscriptionDays <= 7 ? (
-                   <span className="text-orange-600">{subscriptionDays}</span>
-                 ) : (
-                   <span className="text-green-600">{subscriptionDays}</span>
-                 )
-               ) : (
-                 <span className="text-gray-400">-</span>
-               )}
-             </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Μέρες Συνδρομής</p>
+          <div className="text-center flex flex-col">
+            <div className="h-10 flex items-center justify-center">
+              {isPaused ? (
+                <Pause className={`text-yellow-500 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              ) : (
+                <Clock className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                  subscriptionDays !== null ? 'text-[#00ffba]' : 'text-gray-400'
+                }`} />
+              )}
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {subscriptionDays !== null ? (
+                isPaused ? (
+                  <span className="text-orange-600">{subscriptionDays}</span>
+                ) : subscriptionDays < 0 ? (
+                  <span className="text-red-600">Έληξε</span>
+                ) : subscriptionDays === 0 ? (
+                  <span className="text-orange-600">Σήμερα</span>
+                ) : subscriptionDays <= 7 ? (
+                  <span className="text-orange-600">{subscriptionDays}</span>
+                ) : (
+                  <span className="text-green-600">{subscriptionDays}</span>
+                )
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </div>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Μέρες Συνδρομής
+            </div>
           </div>
 
           {/* Επισκέψεις - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
           >
-            <MapPin className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
-              visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
-            }`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className="h-10 flex items-center justify-center">
+              <MapPin className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {visitsData && visitsData.total > 0 ? (
                 <span className="text-gray-900">
                   {Math.max(0, visitsData.used)}/{visitsData.total}
@@ -490,16 +512,20 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               ) : (
                 <span className="text-gray-400">-</span>
               )}
-            </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επισκέψεις</p>
+            </div>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Επισκέψεις
+            </div>
           </button>
 
           {/* Επερχόμενη Επίσκεψη - Non-clickable (just displays info) */}
-          <div className="text-center">
-            <MapPin className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
-              upcomingVisit ? 'text-purple-500' : 'text-gray-400'
-            }`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+          <div className="text-center flex flex-col">
+            <div className="h-10 flex items-center justify-center">
+              <MapPin className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                upcomingVisit ? 'text-purple-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVisit ? (
                 upcomingVisit.daysLeft >= 1 ? (
                   <span className={getTimeBasedColor(upcomingVisit.daysLeft)}>{upcomingVisit.daysLeft}η {upcomingVisit.hoursLeft}ώ</span>
@@ -513,19 +539,23 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               ) : (
                 <span className="text-gray-400">-</span>
               )}
-            </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Επίσκεψη</p>
+            </div>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Επερχόμενη Επίσκεψη
+            </div>
           </div>
 
           {/* Βιντεοκλήσεις - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/online-coaching`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
           >
-            <Video className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
-              videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
-            }`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className="h-10 flex items-center justify-center">
+              <Video className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {videocallData && videocallData.total > 0 ? (
                 <span className="text-gray-900">
                   {Math.max(0, videocallData.used)}/{videocallData.total}
@@ -533,8 +563,10 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               ) : (
                 <span className="text-gray-400">-</span>
               )}
-            </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Βιντεοκλήσεις</p>
+            </div>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Βιντεοκλήσεις
+            </div>
           </button>
           
           {/* Επερχόμενη Βιντεοκλήση - Clickable */}
@@ -546,13 +578,15 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 navigate(`/dashboard/user-profile/${user.id}/online-coaching`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col"
             disabled={!upcomingVideocall}
           >
-            <Video className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
-              upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
-            }`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className="h-10 flex items-center justify-center">
+              <Video className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {upcomingVideocall ? (
                 upcomingVideocall.daysLeft >= 1 ? (
                   <span className={getTimeBasedColor(upcomingVideocall.daysLeft)}>{upcomingVideocall.daysLeft}η {upcomingVideocall.hoursLeft}ώ</span>
@@ -566,29 +600,35 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               ) : (
                 <span className="text-gray-400">-</span>
               )}
-            </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Επερχόμενη Βιντεοκλήση</p>
+            </div>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Επερχόμενη Βιντεοκλήση
+            </div>
           </button>
 
           {/* Αγορές - Νέο εικονάκι - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/shop`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
           >
-            <ShoppingBag className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-[#00ffba]`} />
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className="h-10 flex items-center justify-center">
+              <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               <span className="text-[#00ffba]">🛍️</span>
-            </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Αγορές</p>
+            </div>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Αγορές
+            </div>
           </button>
 
           {/* Ενεργές Προσφορές - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=offers`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
           >
-            <div className="relative">
-              <Tag className={`mx-auto mb-2 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+            <div className="h-10 flex items-center justify-center">
+              <Tag className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
                 offersData?.available > 0 && !offersData?.accepted 
                   ? 'animate-offer-blink' 
                   : offersData?.accepted 
@@ -596,18 +636,20 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                   : 'text-gray-400'
               } transition-all duration-300`} />
             </div>
-            <p className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {offersData?.available > 0 ? (
                 offersData.accepted ? (
-                  <Check className={`mx-auto text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                  <Check className={`text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
                 ) : (
                   <span className="animate-offer-blink">{offersData.available}</span>
                 )
               ) : (
                 <span className="text-gray-400">-</span>
               )}
-            </p>
-            <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Ενεργές Προσφορές</p>
+            </div>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Ενεργές Προσφορές
+            </div>
           </button>
         </div>
       </CardContent>
