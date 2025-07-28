@@ -200,17 +200,13 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         ))}
       </div>
 
-      {/* Section Booking Calendars - Show sections user has access to OR has upcoming bookings */}
+      {/* Section Booking Calendars - Mirroring: Show only sections where user has bookings */}
       <div className="px-4 md:px-0">
         {sections
           .filter(section => {
-            // Show sections the user has access to
-            const hasAccess = availability?.allowed_sections && availability.allowed_sections.includes(section.id);
-            
-            // OR show sections where user has upcoming bookings (even if no current access)
-            const hasUpcomingBookings = bookings.some(booking => booking.section_id === section.id);
-            
-            return hasAccess || hasUpcomingBookings;
+            // Show only sections where user has bookings (true mirroring)
+            const hasBookings = bookings.some(booking => booking.section_id === section.id);
+            return hasBookings;
           })
           .map(section => (
             <SectionBookingCalendar
