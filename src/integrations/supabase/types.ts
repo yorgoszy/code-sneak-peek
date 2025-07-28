@@ -701,6 +701,7 @@ export type Database = {
           id: string
           is_used: boolean
           used_at: string | null
+          used_in_payment_id: string | null
           user_id: string
         }
         Insert: {
@@ -711,6 +712,7 @@ export type Database = {
           id?: string
           is_used?: boolean
           used_at?: string | null
+          used_in_payment_id?: string | null
           user_id: string
         }
         Update: {
@@ -721,6 +723,7 @@ export type Database = {
           id?: string
           is_used?: boolean
           used_at?: string | null
+          used_in_payment_id?: string | null
           user_id?: string
         }
         Relationships: [

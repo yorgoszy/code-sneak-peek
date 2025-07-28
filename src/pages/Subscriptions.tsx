@@ -11,6 +11,7 @@ import { ExpenseManagement } from "@/components/expenses/ExpenseManagement";
 import { AdminBookingManagement } from "@/components/admin/AdminBookingManagement";
 import { VideocallManagement } from "@/components/videocalls/VideocallManagement";
 import { OffersManagement } from "@/components/offers/OffersManagement";
+import { MagicBoxManager } from "@/components/magic-boxes/MagicBoxManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sidebar } from "@/components/Sidebar";
 import { useState } from "react";
@@ -29,7 +30,7 @@ export default function Subscriptions() {
         </div>
         
         <Tabs defaultValue="management" className="w-full">
-          <TabsList className="grid w-full grid-cols-12 mb-6 rounded-none">
+          <TabsList className="grid w-full grid-cols-13 mb-6 rounded-none">
             <TabsTrigger value="management" className="rounded-none">Συνδρομές</TabsTrigger>
             <TabsTrigger value="booking" className="rounded-none">Booking</TabsTrigger>
             <TabsTrigger value="videocalls" className="rounded-none">Βιντεοκλήσεις</TabsTrigger>
@@ -39,6 +40,7 @@ export default function Subscriptions() {
             <TabsTrigger value="financial" className="rounded-none">Έσοδα-Έξοδα</TabsTrigger>
             <TabsTrigger value="types" className="rounded-none">Τύποι</TabsTrigger>
             <TabsTrigger value="offers" className="rounded-none">Ενεργές Προσφορές</TabsTrigger>
+            <TabsTrigger value="magic-boxes" className="rounded-none">Μαγικά Κουτιά</TabsTrigger>
             <TabsTrigger value="history" className="rounded-none">Ιστορικό</TabsTrigger>
             <TabsTrigger value="certificates" className="rounded-none">Certificates</TabsTrigger>
             <TabsTrigger value="mydata" className="rounded-none">Banking</TabsTrigger>
@@ -62,6 +64,10 @@ export default function Subscriptions() {
 
           <TabsContent value="offers">
             <OffersManagement />
+          </TabsContent>
+
+          <TabsContent value="magic-boxes">
+            <MagicBoxManager />
           </TabsContent>
 
           <TabsContent value="history">
