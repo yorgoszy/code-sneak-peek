@@ -194,6 +194,7 @@ const UserProfile = () => {
         <div className="flex-1 p-3 md:p-6">
           <UserProfileContent
             activeTab={activeTab}
+            setActiveTab={setActiveTab}
             userProfile={userProfile}
             stats={stats}
             programs={programs}

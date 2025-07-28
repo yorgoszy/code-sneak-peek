@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
 import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
@@ -25,6 +26,7 @@ interface UserProfileContentProps {
   payments: any[];
   visits: any[];
   onOfferRejected?: () => void;
+  setActiveTab?: (tab: string) => void;
 }
 
 export const UserProfileContent = ({
@@ -35,9 +37,22 @@ export const UserProfileContent = ({
   tests,
   payments,
   visits,
-  onOfferRejected
+  onOfferRejected,
+  setActiveTab
 }: UserProfileContentProps) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+
+  const BackButton = () => (
+    setActiveTab && activeTab !== 'overview' && (
+      <button
+        onClick={() => setActiveTab('overview')}
+        className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors mb-4"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="text-sm">Επιστροφή στην Επισκόπηση</span>
+      </button>
+    )
+  );
 
   const renderContent = () => {
     switch (activeTab) {
@@ -58,6 +73,7 @@ export const UserProfileContent = ({
       case "programs":
         return (
           <div className="space-y-4">
+            <BackButton />
             <h2 className="text-xl font-semibold">Προγράμματα</h2>
             <UserProfileProgramCards userProfile={userProfile} />
           </div>
@@ -65,6 +81,7 @@ export const UserProfileContent = ({
       case "calendar":
         return (
           <div className="space-y-4">
+            <BackButton />
             <h2 className="text-xl font-semibold">Ημερολόγιο</h2>
             <UserProfileCalendar user={userProfile} />
           </div>
@@ -72,6 +89,7 @@ export const UserProfileContent = ({
       case "tests":
         return (
           <div className="space-y-4">
+            <BackButton />
             <h2 className="text-xl font-semibold">Τεστ & Αξιολογήσεις</h2>
             <UserProfileTests tests={tests} />
           </div>
@@ -79,6 +97,7 @@ export const UserProfileContent = ({
       case "payments":
         return (
           <div className="space-y-4">
+            <BackButton />
             <h2 className="text-xl font-semibold">Πληρωμές & Συνδρομές</h2>
             <UserProfilePayments payments={payments} userProfile={userProfile} />
           </div>
@@ -86,6 +105,7 @@ export const UserProfileContent = ({
       case "shop":
         return (
           <div className="space-y-4">
+            <BackButton />
             <h2 className="text-xl font-semibold">Αγορές</h2>
             <UserProfileShop userProfile={userProfile} />
           </div>
@@ -93,6 +113,7 @@ export const UserProfileContent = ({
       case "offers":
         return (
           <div className="space-y-4">
+            <BackButton />
             <h2 className="text-xl font-semibold">Προσφορές</h2>
             <UserProfileOffers userProfile={userProfile} onOfferRejected={onOfferRejected} />
           </div>
@@ -100,6 +121,7 @@ export const UserProfileContent = ({
       case "online-coaching":
         return (
           <div className="space-y-4">
+            <BackButton />
             <h2 className="text-xl font-semibold">Online Coaching</h2>
             <UserProfileOnlineCoaching userProfile={userProfile} />
           </div>
@@ -107,6 +129,7 @@ export const UserProfileContent = ({
       case "online-booking":
         return (
           <div className="space-y-4">
+            <BackButton />
             <h2 className="text-xl font-semibold">Online Booking</h2>
             <UserProfileOnlineBooking userProfile={userProfile} />
           </div>
