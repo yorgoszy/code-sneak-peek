@@ -564,20 +564,16 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 upcomingVisit ? 'text-purple-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {upcomingVisit ? (
-                upcomingVisit.daysLeft >= 1 ? (
-                  <span className={getTimeBasedColor(upcomingVisit.daysLeft)}>{upcomingVisit.daysLeft}η {upcomingVisit.hoursLeft}ώ</span>
-                ) : upcomingVisit.hoursLeft > 0 ? (
-                  <span className={getTimeBasedColor(0)}>{upcomingVisit.hoursLeft}ώ {upcomingVisit.minutesLeft}λ</span>
-                ) : upcomingVisit.minutesLeft > 0 ? (
-                  <span className={getTimeBasedColor(0)}>{upcomingVisit.minutesLeft}λ</span>
-                ) : (
-                  <span className={getTimeBasedColor(0)}>Τώρα!</span>
-                )
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
+             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+               {upcomingVisit ? (
+                 upcomingVisit.daysLeft >= 1 ? (
+                   <span className={getTimeBasedColor(upcomingVisit.daysLeft)}>{upcomingVisit.daysLeft}μ</span>
+                 ) : (
+                   <span className={getTimeBasedColor(0)}>{upcomingVisit.hoursLeft}ώ</span>
+                 )
+               ) : (
+                 <span className="text-gray-400">-</span>
+               )}
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενη Επίσκεψη
@@ -624,20 +620,16 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {upcomingVideocall ? (
-                upcomingVideocall.daysLeft >= 1 ? (
-                  <span className={getTimeBasedColor(upcomingVideocall.daysLeft)}>{upcomingVideocall.daysLeft}η {upcomingVideocall.hoursLeft}ώ</span>
-                ) : upcomingVideocall.hoursLeft > 0 ? (
-                  <span className={getTimeBasedColor(0)}>{upcomingVideocall.hoursLeft}ώ {upcomingVideocall.minutesLeft}λ</span>
-                ) : upcomingVideocall.minutesLeft > 0 ? (
-                  <span className={getTimeBasedColor(0)}>{upcomingVideocall.minutesLeft}λ</span>
-                ) : (
-                  <span className={getTimeBasedColor(0)}>Τώρα!</span>
-                )
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
+             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+               {upcomingVideocall ? (
+                 upcomingVideocall.daysLeft >= 1 ? (
+                   <span className={getTimeBasedColor(upcomingVideocall.daysLeft)}>{upcomingVideocall.daysLeft}μ</span>
+                 ) : (
+                   <span className={getTimeBasedColor(0)}>{upcomingVideocall.hoursLeft}ώ</span>
+                 )
+               ) : (
+                 <span className="text-gray-400">-</span>
+               )}
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενη Βιντεοκλήση
