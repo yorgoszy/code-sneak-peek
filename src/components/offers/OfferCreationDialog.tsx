@@ -178,7 +178,30 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
 
       console.log('Offer created successfully:', data);
 
-      toast.success('Η προσφορά δημιουργήθηκε επιτυχώς!');
+      // Αποστολή email notifications
+      try {
+        const notificationResponse = await supabase.functions.invoke('send-offer-notifications', {
+          body: {
+            offerId: data[0].id,
+            offerName: name.trim(),
+            visibility,
+            targetUsers: visibility === 'individual' || visibility === 'selected' ? selectedUsers : [],
+            targetGroups: visibility === 'groups' ? selectedGroups : []
+          }
+        });
+
+        if (notificationResponse.error) {
+          console.error('Notification error:', notificationResponse.error);
+          toast.error('Η προσφορά δημιουργήθηκε αλλά υπήρξε πρόβλημα με τα emails');
+        } else {
+          console.log('Notifications sent:', notificationResponse.data);
+          toast.success('Η προσφορά δημιουργήθηκε και στάλθηκαν τα emails!');
+        }
+      } catch (notificationError) {
+        console.error('Notification sending failed:', notificationError);
+        toast.success('Η προσφορά δημιουργήθηκε επιτυχώς!');
+      }
+
       onSuccess();
       handleClose();
     } catch (error) {
