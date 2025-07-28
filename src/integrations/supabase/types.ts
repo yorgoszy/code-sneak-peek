@@ -1659,6 +1659,7 @@ export type Database = {
           end_date: string
           id: string
           is_active: boolean | null
+          is_free: boolean | null
           name: string
           start_date: string
           subscription_type_id: string | null
@@ -1675,6 +1676,7 @@ export type Database = {
           end_date: string
           id?: string
           is_active?: boolean | null
+          is_free?: boolean | null
           name: string
           start_date: string
           subscription_type_id?: string | null
@@ -1691,6 +1693,7 @@ export type Database = {
           end_date?: string
           id?: string
           is_active?: boolean | null
+          is_free?: boolean | null
           name?: string
           start_date?: string
           subscription_type_id?: string | null

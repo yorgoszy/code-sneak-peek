@@ -100,6 +100,31 @@ export default function Offers() {
     try {
       console.log('✅ Accepting offer:', offer.name);
       
+      // Αν είναι δωρεάν προσφορά, ενημέρωση απευθείας του προφίλ
+      if (offer.is_free) {
+        console.log('✅ Processing free offer directly');
+        
+        const { error } = await supabase
+          .from('payments')
+          .insert({
+            user_id: userProfile.id,
+            subscription_type_id: offer.subscription_type_id,
+            amount: 0,
+            status: 'completed',
+            payment_method: 'free_offer',
+            payment_date: new Date().toISOString()
+          });
+
+        if (error) {
+          console.error('❌ Error processing free offer:', error);
+          throw error;
+        }
+
+        toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε!`);
+        loadUserOffers();
+        return;
+      }
+      
       // Δημιουργία Stripe checkout session για την προσφορά
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -233,10 +258,10 @@ export default function Offers() {
                         {userProfile?.role === 'admin' ? 'ΑΠΟΔΕΚΤΗ' : 'ΕΙΔΙΚΗ ΠΡΟΣΦΟΡΑ'}
                       </Badge>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-[#00ffba]">
-                        €{userProfile?.role === 'admin' ? offer.amount : offer.discounted_price}
-                      </div>
+                     <div className="text-right">
+                       <div className="text-2xl font-bold text-[#00ffba]">
+                         {offer.is_free ? 'ΔΩΡΕΑΝ' : `€${userProfile?.role === 'admin' ? offer.amount : offer.discounted_price}`}
+                       </div>
                       {userProfile?.role === 'admin' && offer.subscription_types?.price && (
                         <div className="text-sm text-gray-500 line-through">
                           €{offer.subscription_types.price}
@@ -309,33 +334,37 @@ export default function Offers() {
                         </div>
                       ) : (
                         <>
-                          <div className="bg-gray-50 rounded-none p-4 mb-4">
-                            <h5 className="font-semibold text-gray-900 mb-2">Εξοικονόμηση</h5>
-                            {offer.subscription_types?.price && (
-                              <div className="text-2xl font-bold text-green-600">
-                                €{(offer.subscription_types.price - offer.discounted_price).toFixed(2)}
-                              </div>
-                            )}
-                            <p className="text-sm text-gray-600">από την κανονική τιμή</p>
-                          </div>
+                           <div className="bg-gray-50 rounded-none p-4 mb-4">
+                             <h5 className="font-semibold text-gray-900 mb-2">Εξοικονόμηση</h5>
+                             {offer.is_free ? (
+                               <div className="text-2xl font-bold text-green-600">ΔΩΡΕΑΝ</div>
+                             ) : offer.subscription_types?.price ? (
+                               <div className="text-2xl font-bold text-green-600">
+                                 €{(offer.subscription_types.price - offer.discounted_price).toFixed(2)}
+                               </div>
+                             ) : null}
+                             <p className="text-sm text-gray-600">
+                               {offer.is_free ? 'Καμία χρέωση' : 'από την κανονική τιμή'}
+                             </p>
+                           </div>
                           
                           <div className="flex gap-3">
-                            <Button
-                              onClick={() => handleAcceptOffer(offer)}
-                              disabled={processingOffer === offer.id}
-                              className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                            >
-                              {processingOffer === offer.id ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
-                                  Επεξεργασία...
-                                </>
-                              ) : (
-                                <>
-                                  <Check className="w-4 h-4 mr-2" />
-                                  Αποδοχή
-                                </>
-                              )}
+                             <Button
+                               onClick={() => handleAcceptOffer(offer)}
+                               disabled={processingOffer === offer.id}
+                               className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                             >
+                               {processingOffer === offer.id ? (
+                                 <>
+                                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                                   Επεξεργασία...
+                                 </>
+                               ) : (
+                                 <>
+                                   <Check className="w-4 h-4 mr-2" />
+                                   {offer.is_free ? 'Ενεργοποίηση' : 'Αποδοχή'}
+                                 </>
+                               )}
                             </Button>
                             <Button
                               onClick={() => handleRejectOffer(offer)}
