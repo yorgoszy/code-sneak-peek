@@ -29,7 +29,6 @@ interface UserParticipation {
 
 export const MagicBoxGame: React.FC = () => {
   const [campaigns, setCampaigns] = useState<MagicBoxCampaign[]>([]);
-  const [userParticipations, setUserParticipations] = useState<UserParticipation[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [sessionId] = useState<string>(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
@@ -37,12 +36,14 @@ export const MagicBoxGame: React.FC = () => {
   // User-specific state maps - κάθε χρήστης έχει το δικό του state
   const [userPlayingStates, setUserPlayingStates] = useState<Record<string, Record<string, boolean>>>({});
   const [userResults, setUserResults] = useState<Record<string, Record<string, any>>>({});
+  const [userParticipationsMap, setUserParticipationsMap] = useState<Record<string, UserParticipation[]>>({});
   
   const { toast } = useToast();
 
   // Helper functions για user-specific state
   const getUserPlayingStates = (userId: string) => userPlayingStates[userId] || {};
   const getUserResults = (userId: string) => userResults[userId] || {};
+  const getUserParticipations = (userId: string) => userParticipationsMap[userId] || [];
   
   const setUserPlayingState = (userId: string, campaignId: string, isPlaying: boolean) => {
     setUserPlayingStates(prev => ({
@@ -61,6 +62,13 @@ export const MagicBoxGame: React.FC = () => {
         ...prev[userId],
         [campaignId]: result
       }
+    }));
+  };
+  
+  const setUserParticipations = (userId: string, participations: UserParticipation[]) => {
+    setUserParticipationsMap(prev => ({
+      ...prev,
+      [userId]: participations
     }));
   };
 
@@ -131,7 +139,7 @@ export const MagicBoxGame: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUserParticipations((data || []) as UserParticipation[]);
+      setUserParticipations(userIdToUse, (data || []) as UserParticipation[]);
     } catch (error) {
       console.error('Error fetching user participations:', error);
     }
@@ -139,7 +147,8 @@ export const MagicBoxGame: React.FC = () => {
 
   const playCampaign = async (campaignId: string) => {
     console.log(`🎯 Starting playCampaign for user ${currentUserId}, campaign ${campaignId}`);
-    console.log(`📊 Current userParticipations:`, userParticipations);
+    const userParticipations = getUserParticipations(currentUserId || '');
+    console.log(`📊 Current userParticipations for ${currentUserId}:`, userParticipations);
     console.log(`🔍 Has played campaign:`, hasPlayedCampaign(campaignId));
     
     if (!currentUserId) {
@@ -238,6 +247,7 @@ export const MagicBoxGame: React.FC = () => {
   const hasPlayedCampaign = (campaignId: string) => {
     // Έλεγχος αν υπάρχει αποτέλεσμα στο local state ή στη βάση
     const userResults = getUserResults(currentUserId || '');
+    const userParticipations = getUserParticipations(currentUserId || '');
     return userResults[campaignId] !== undefined || userParticipations.some(participation => participation.campaign_id === campaignId);
   };
 
@@ -367,11 +377,11 @@ export const MagicBoxGame: React.FC = () => {
       })}
 
       {/* User's Participations History */}
-      {userParticipations.length > 0 && (
+      {currentUserId && getUserParticipations(currentUserId).length > 0 && (
         <div>
           <h3 className="text-xl font-bold mb-4">Οι Συμμετοχές Μου</h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {userParticipations.map((participation) => (
+            {getUserParticipations(currentUserId).map((participation) => (
               <Card key={participation.id} className="rounded-none">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between text-sm">
