@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle, Gift } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -425,7 +425,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                   </span>
                 )
               ) : offersData?.hasMagicBox ? (
-                <span className="text-magic-box animate-pulse">🎁</span>
+                <Gift className={`text-magic-box animate-pulse ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               ) : (
                 <span className="text-gray-400">-</span>
               )}
