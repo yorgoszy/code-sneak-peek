@@ -369,14 +369,14 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-10'
         }`}>
           {user.role === 'trainer' && (
-            <div className="text-center flex flex-col">
+            <div className="text-center flex flex-col min-w-0">
               <div className="h-10 flex items-center justify-center">
-                <Users className={`text-blue-500 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <Users className={`text-blue-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               </div>
-              <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
                 {stats.athletesCount}
               </div>
-              <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} whitespace-nowrap`}>
                 Αθλητές
               </div>
             </div>
@@ -385,14 +385,14 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Ημέρες Προπόνησης - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/ημερολογιο`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <Dumbbell className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              <Dumbbell className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
               {stats.programsCount > 0 ? (
                 <span className={
                   stats.programsCount === 1 ? 'text-red-600' :
@@ -405,7 +405,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} whitespace-nowrap`}>
               {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
             </div>
           </button>
@@ -413,14 +413,14 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Επερχόμενα Τεστ - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/τεστ`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <Calendar className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              <Calendar className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 upcomingTests ? 'text-purple-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
               {upcomingTests ? (
                 upcomingTests.daysLeft === 0 ? (
                   <span className="text-red-600">Σήμερα!</span>
