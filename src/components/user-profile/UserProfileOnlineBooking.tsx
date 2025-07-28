@@ -219,12 +219,12 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
           <Card className="rounded-none">
             <CardContent className="p-6 text-center">
               <p className="text-gray-600 mb-4">
-                {availability?.type === 'none' 
+                {!availability?.has_gym_access 
                   ? "Δεν έχεις διαθέσιμες επισκέψεις για κρατήσεις."
                   : "Δεν έχεις πρόσβαση σε κάποιο τμήμα. Επικοινώνησε με τη διοίκηση για περισσότερες πληροφορίες."
                 }
               </p>
-              {availability?.type === 'none' && (
+              {!availability?.has_gym_access && (
                 <Button 
                   onClick={() => navigate(`/dashboard/user-profile/${userProfile?.id}/shop`)}
                   className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
