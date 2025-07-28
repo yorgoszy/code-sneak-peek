@@ -31,14 +31,43 @@ export const MagicBoxGame: React.FC = () => {
   const [campaigns, setCampaigns] = useState<MagicBoxCampaign[]>([]);
   const [userParticipations, setUserParticipations] = useState<UserParticipation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [playingCampaign, setPlayingCampaign] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState<any>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [playingStates, setPlayingStates] = useState<Record<string, string>>({});
+  const [showResults, setShowResults] = useState<Record<string, any>>({});
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchCampaigns();
-    fetchUserParticipations();
+    initializeUser();
   }, []);
+
+  const initializeUser = async () => {
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      // Βρίσκουμε το app_users record του χρήστη
+      const { data: appUser, error: appUserError } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', userData.user.id)
+        .single();
+
+      if (appUserError || !appUser) {
+        console.error('App user not found');
+        return;
+      }
+
+      setCurrentUserId(appUser.id);
+      fetchCampaigns();
+      fetchUserParticipations(appUser.id);
+    } catch (error) {
+      console.error('Error initializing user:', error);
+      setLoading(false);
+    }
+  };
 
   const fetchCampaigns = async () => {
     try {
@@ -62,31 +91,15 @@ export const MagicBoxGame: React.FC = () => {
     }
   };
 
-  const fetchUserParticipations = async () => {
+  const fetchUserParticipations = async (userId?: string) => {
     try {
-      // Φέρνουμε μόνο τις συμμετοχές του τρέχοντος χρήστη
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) {
-        console.error('User not authenticated');
-        return;
-      }
-
-      // Βρίσκουμε το app_users record του χρήστη
-      const { data: appUser, error: appUserError } = await supabase
-        .from('app_users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-
-      if (appUserError || !appUser) {
-        console.error('App user not found');
-        return;
-      }
+      const userIdToUse = userId || currentUserId;
+      if (!userIdToUse) return;
 
       const { data, error } = await supabase
         .from('user_campaign_participations')
         .select('*')
-        .eq('user_id', appUser.id)  // Φέρνουμε μόνο τις συμμετοχές αυτού του χρήστη
+        .eq('user_id', userIdToUse)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -97,6 +110,15 @@ export const MagicBoxGame: React.FC = () => {
   };
 
   const playCampaign = async (campaignId: string) => {
+    if (!currentUserId) {
+      toast({
+        title: 'Σφάλμα',
+        description: 'Δεν είστε συνδεδεμένοι',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     // Έλεγχος αν ο χρήστης έχει ήδη παίξει σε αυτή την εκστρατεία
     if (hasPlayedCampaign(campaignId)) {
       toast({
@@ -107,8 +129,18 @@ export const MagicBoxGame: React.FC = () => {
       return;
     }
 
-    setPlayingCampaign(campaignId);
-    setShowResult(null);
+    // Δημιουργούμε unique key για αυτόν τον χρήστη και campaign
+    const userCampaignKey = `${currentUserId}-${campaignId}`;
+    
+    setPlayingStates(prev => ({
+      ...prev,
+      [userCampaignKey]: campaignId
+    }));
+    
+    setShowResults(prev => ({
+      ...prev,
+      [userCampaignKey]: null
+    }));
 
     try {
       const { data, error } = await supabase.functions.invoke('magic-box-draw', {
@@ -118,7 +150,11 @@ export const MagicBoxGame: React.FC = () => {
       if (error) throw error;
 
       if (data.success) {
-        setShowResult(data);
+        setShowResults(prev => ({
+          ...prev,
+          [userCampaignKey]: data
+        }));
+        
         toast({
           title: 'Συγχαρητήρια! 🎉',
           description: data.message,
@@ -144,8 +180,33 @@ export const MagicBoxGame: React.FC = () => {
         variant: 'destructive'
       });
     } finally {
-      setPlayingCampaign(null);
+      setPlayingStates(prev => {
+        const newState = { ...prev };
+        delete newState[userCampaignKey];
+        return newState;
+      });
     }
+  };
+
+  const isPlayingCampaign = (campaignId: string) => {
+    if (!currentUserId) return false;
+    const userCampaignKey = `${currentUserId}-${campaignId}`;
+    return playingStates[userCampaignKey] === campaignId;
+  };
+
+  const getUserCampaignResult = (campaignId: string) => {
+    if (!currentUserId) return null;
+    const userCampaignKey = `${currentUserId}-${campaignId}`;
+    return showResults[userCampaignKey];
+  };
+
+  const hideResult = (campaignId: string) => {
+    if (!currentUserId) return;
+    const userCampaignKey = `${currentUserId}-${campaignId}`;
+    setShowResults(prev => ({
+      ...prev,
+      [userCampaignKey]: null
+    }));
   };
 
   const hasPlayedCampaign = (campaignId: string) => {
@@ -199,10 +260,10 @@ export const MagicBoxGame: React.FC = () => {
                 
                 <Button
                   onClick={() => playCampaign(campaign.id)}
-                  disabled={playingCampaign === campaign.id || alreadyPlayed}
+                  disabled={isPlayingCampaign(campaign.id) || alreadyPlayed}
                   className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
                 >
-                  {playingCampaign === campaign.id ? (
+                  {isPlayingCampaign(campaign.id) ? (
                     <>
                       <Sparkles className="w-4 h-4 mr-2 animate-spin" />
                       Παίζω...
@@ -222,50 +283,60 @@ export const MagicBoxGame: React.FC = () => {
         })}
       </div>
 
-      {/* Win Result Modal */}
-      {showResult && (
-        <Card className="rounded-none border-2 border-[#00ffba] bg-gradient-to-r from-green-50 to-blue-50">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-              <Trophy className="w-8 h-8 text-[#00ffba]" />
-              Συγχαρητήρια!
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-lg mb-4">{showResult.message}</p>
-            
-            {showResult.prize_type === 'subscription' && showResult.subscription_name && (
-              <div className="bg-white p-4 rounded-lg border mb-4">
-                <h3 className="font-bold text-lg">{showResult.subscription_name}</h3>
-                <p className="text-gray-600">{showResult.subscription_description}</p>
-                {showResult.discount_percentage > 0 && (
-                  <Badge className="bg-[#00ffba] text-black rounded-none mt-2">
-                    {showResult.discount_percentage}% έκπτωση
-                  </Badge>
-                )}
-              </div>
-            )}
-            
-            {showResult.prize_type === 'discount_coupon' && (
-              <div className="bg-white p-4 rounded-lg border mb-4">
-                <Ticket className="w-8 h-8 mx-auto mb-2 text-[#00ffba]" />
-                <h3 className="font-bold text-lg">Κουπόνι Έκπτωσης</h3>
-                <p className="text-2xl font-bold text-[#00ffba]">{showResult.discount_percentage}% OFF</p>
-                <p className="text-sm text-gray-600 mt-2">
-                  Χρησιμοποίησε το στις αγορές σου!
-                </p>
-              </div>
-            )}
-            
-            <Button
-              onClick={() => setShowResult(null)}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              Τέλεια!
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {/* Win Result Modals - Per Campaign */}
+      {campaigns.map(campaign => {
+        const showResult = getUserCampaignResult(campaign.id);
+        if (!showResult) return null;
+        
+        return (
+          <Card key={`result-${campaign.id}`} className="rounded-none border-2 border-[#00ffba] bg-gradient-to-r from-green-50 to-blue-50">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+                <Trophy className="w-8 h-8 text-[#00ffba]" />
+                Συγχαρητήρια!
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-lg mb-4">{showResult.message}</p>
+              
+              {showResult.prize_type === 'subscription' && showResult.subscription_name && (
+                <div className="bg-white p-4 rounded-lg border mb-4">
+                  <h3 className="font-bold text-lg">{showResult.subscription_name}</h3>
+                  <p className="text-gray-600">{showResult.subscription_description}</p>
+                  {showResult.visit_count && (
+                    <Badge className="bg-[#00ffba] text-black rounded-none mt-2">
+                      {showResult.visit_count} επισκέψεις
+                    </Badge>
+                  )}
+                  {showResult.discount_percentage > 0 && (
+                    <Badge className="bg-[#00ffba] text-black rounded-none mt-2">
+                      {showResult.discount_percentage}% έκπτωση
+                    </Badge>
+                  )}
+                </div>
+              )}
+              
+              {showResult.prize_type === 'discount_coupon' && (
+                <div className="bg-white p-4 rounded-lg border mb-4">
+                  <Ticket className="w-8 h-8 mx-auto mb-2 text-[#00ffba]" />
+                  <h3 className="font-bold text-lg">Κουπόνι Έκπτωσης</h3>
+                  <p className="text-2xl font-bold text-[#00ffba]">{showResult.discount_percentage}% OFF</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Χρησιμοποίησε το στις αγορές σου!
+                  </p>
+                </div>
+              )}
+              
+              <Button
+                onClick={() => hideResult(campaign.id)}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                Τέλεια!
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      })}
 
       {/* User's Participations History */}
       {userParticipations.length > 0 && (
