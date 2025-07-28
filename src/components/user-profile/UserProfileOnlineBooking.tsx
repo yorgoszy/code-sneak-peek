@@ -10,6 +10,8 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { UserWaitingLists } from "./bookings/UserWaitingLists";
 import { WeeklyBookingCalendar } from "./bookings/WeeklyBookingCalendar";
+import { SectionBookingCalendar } from "./bookings/SectionBookingCalendar";
+import { useBookingSections } from "@/hooks/useBookingSections";
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
@@ -22,6 +24,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const [selectedBookingType, setSelectedBookingType] = useState<string>('');
   const [showNoVisitsDialog, setShowNoVisitsDialog] = useState(false);
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
+  const { sections } = useBookingSections();
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -197,12 +200,41 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         ))}
       </div>
 
-      {/* Weekly Booking Calendar */}
+      {/* Section Booking Calendars - Only show sections user has access to */}
       <div className="px-4 md:px-0">
-        <WeeklyBookingCalendar 
-          bookings={bookings.filter(booking => booking.booking_type !== 'videocall')}
-          onCancelBooking={handleCancelBooking}
-        />
+        {sections
+          .filter(section => {
+            // Only show sections the user has access to
+            if (!availability?.allowed_sections || availability.allowed_sections.length === 0) {
+              return false; // No access to any sections
+            }
+            return availability.allowed_sections.includes(section.id);
+          })
+          .map(section => (
+            <SectionBookingCalendar
+              key={section.id}
+              sectionId={section.id}
+              sectionName={section.name}
+              availableHours={section.available_hours}
+              bookings={bookings.filter(booking => 
+                booking.booking_type !== 'videocall' && 
+                booking.section_id === section.id
+              )}
+              onCancelBooking={handleCancelBooking}
+            />
+          ))
+        }
+        
+        {/* Show message if user has no access to any sections */}
+        {(!availability?.allowed_sections || availability.allowed_sections.length === 0) && (
+          <Card className="rounded-none">
+            <CardContent className="p-6 text-center">
+              <p className="text-gray-600">
+                Δεν έχεις πρόσβαση σε κάποιο τμήμα. Επικοινώνησε με τη διοίκηση για περισσότερες πληροφορίες.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Waiting Lists Section */}
