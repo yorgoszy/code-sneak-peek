@@ -165,40 +165,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:gap-6 px-4 md:px-0">
-        {bookingOptions.map((option) => (
-          <Card key={option.id} className="rounded-none hover:shadow-lg transition-shadow">
-            <CardHeader className="text-center p-4 md:p-6">
-              <div className={`flex items-center justify-center w-10 h-10 md:w-12 md:h-12 ${option.color} rounded-none mx-auto mb-4`}>
-                <option.icon className="w-5 h-5 md:w-6 md:h-6" />
-              </div>
-              <CardTitle className="text-lg md:text-xl">{option.title}</CardTitle>
-              <p className="text-sm md:text-base text-gray-600">{option.description}</p>
-              {!option.available && (
-                <Badge variant="secondary" className="rounded-none text-xs">
-                  Χρειάζεται Αγορά
-                </Badge>
-              )}
-            </CardHeader>
-            
-            <CardContent className="text-center p-4 md:p-6 pt-0">
-              <Button 
-                disabled={!option.available && !option.requiresPurchase}
-                onClick={() => handleBookingTypeClick(option.id, option.requiresPurchase)}
-                className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none disabled:bg-gray-300 disabled:text-gray-500 text-sm md:text-base"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                {option.requiresPurchase ? 'Αγόρασε Πακέτο' : 
-                 option.available ? 
-                   (option.availableVisits > 0 ? 
-                     `${option.availableVisits} Διαθέσιμες Επισκέψεις` : 
-                     'Κλείσε Ραντεβού') : 
-                   'Χρειάζεται Αγορά'}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
       {/* All Section Booking Calendars - Show sections user has access to */}
       <div className="px-4 md:px-0 space-y-6">
@@ -222,6 +188,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 bookings={sectionBookings}
                 onCancelBooking={handleCancelBooking}
                 onCreateBooking={handleCreateBooking}
+                availability={availability}
               />
             );
           })

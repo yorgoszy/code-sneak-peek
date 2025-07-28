@@ -29,6 +29,7 @@ interface SectionBookingCalendarProps {
   bookings: BookingSession[];
   onCancelBooking?: (bookingId: string) => Promise<void>;
   onCreateBooking?: (sectionId: string, date: string, time: string, type: string) => Promise<void>;
+  availability?: any;
 }
 
 export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({ 
@@ -37,7 +38,8 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   availableHours,
   bookings,
   onCancelBooking,
-  onCreateBooking
+  onCreateBooking,
+  availability
 }) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
 
@@ -122,10 +124,26 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
     <Card className="rounded-none mb-6">
       <CardHeader className="p-3 md:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <CardTitle className="flex items-center text-sm md:text-lg">
-            <Clock className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-            {sectionName} - Εβδομαδιαίο Πρόγραμμα
-          </CardTitle>
+          <div className="flex flex-col gap-2">
+            <CardTitle className="flex items-center text-sm md:text-lg">
+              <Clock className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+              {sectionName}
+            </CardTitle>
+            {availability && (
+              <div className="flex flex-wrap gap-2">
+                {availability.type === 'hypergym' && (
+                  <Badge variant="outline" className="rounded-none text-xs">
+                    Επισκέψεις: {availability.available_monthly}/{availability.total_monthly} διαθέσιμες αυτό το μήνα
+                  </Badge>
+                )}
+                {availability.type === 'visit_packages' && (
+                  <Badge variant="outline" className="rounded-none text-xs">
+                    Επισκέψεις: {availability.available_visits} διαθέσιμες
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
