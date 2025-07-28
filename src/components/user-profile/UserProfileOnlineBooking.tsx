@@ -217,7 +217,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
               sectionName={section.name}
               availableHours={section.available_hours}
               bookings={bookings.filter(booking => 
-                booking.booking_type !== 'videocall' && 
                 booking.section_id === section.id
               )}
               onCancelBooking={handleCancelBooking}
