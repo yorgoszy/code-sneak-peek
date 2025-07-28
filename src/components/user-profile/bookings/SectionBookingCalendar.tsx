@@ -30,6 +30,8 @@ interface SectionBookingCalendarProps {
   onCancelBooking?: (bookingId: string) => Promise<void>;
   onCreateBooking?: (sectionId: string, date: string, time: string, type: string) => Promise<void>;
   availability?: any;
+  maxCapacity?: number;
+  allSectionBookings?: BookingSession[]; // All bookings for this section, not just user's
 }
 
 export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({ 
@@ -39,7 +41,9 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   bookings,
   onCancelBooking,
   onCreateBooking,
-  availability
+  availability,
+  maxCapacity = 1,
+  allSectionBookings = []
 }) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
 
@@ -77,6 +81,17 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
       booking.booking_date === dateStr && 
       booking.booking_time.slice(0, 5) === time && 
       booking.section_id === sectionId
+    );
+  };
+
+  // Get all bookings for specific date and time slot (for capacity counting)
+  const getAllBookingsForSlot = (date: Date, time: string) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return allSectionBookings.filter(booking => 
+      booking.booking_date === dateStr && 
+      booking.booking_time.slice(0, 5) === time && 
+      booking.section_id === sectionId &&
+      booking.status === 'confirmed'
     );
   };
 
@@ -178,7 +193,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                 Ώρες
               </div>
               {timeSlotsList.map((timeSlot) => (
-                <div key={timeSlot} className="h-8 flex items-center justify-center text-xs text-gray-600 px-1">
+                <div key={timeSlot} className="h-12 flex items-center justify-center text-xs text-gray-600 px-1">
                   {timeSlot.slice(0, 5)}
                 </div>
               ))}
@@ -203,59 +218,88 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
               {/* Time slots grid */}
               {timeSlotsList.map((timeSlot) => (
                 <React.Fragment key={timeSlot}>
-                  {weekDays.map((day, dayIndex) => {
-                    const dayHours = getAvailableHoursForDay(dayIndex);
-                    const isTimeAvailable = dayHours.includes(timeSlot);
-                    const booking = getBookingForSlot(day, timeSlot);
-                    
-                    if (!isTimeAvailable) {
-                      return (
-                        <div key={`${timeSlot}-${dayIndex}`} className="h-8 bg-white border border-gray-100 rounded-none"></div>
-                      );
-                    }
-                    
-                    return (
-                      <div key={`${timeSlot}-${dayIndex}`} className="h-8 border border-gray-200 bg-white rounded-none flex items-center justify-center relative group">
-                        {booking ? (
-                          <div className="flex items-center justify-center w-full h-full">
-                            <div className="relative flex items-center justify-center w-full h-full">
-                              <div className={getBookingStatusIcon(booking).color}>
-                                {getBookingStatusIcon(booking).icon}
-                              </div>
-                              
-                              {/* Cancel button - only show on hover for cancellable bookings */}
-                              {canCancelBooking(booking.booking_date, booking.booking_time) && onCancelBooking && (
-                                <button
-                                  onClick={() => handleCancelBooking(booking.id)}
-                                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                  title="Ακύρωση ραντεβού"
-                                >
-                                  <X className="w-2 h-2" />
-                                </button>
-                              )}
-                              
-                              {/* Tooltip with booking details */}
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                                {booking.booking_time.slice(0, 5)} - {sectionName}
-                                {!canCancelBooking(booking.booking_date, booking.booking_time) && isPast(new Date(`${booking.booking_date} ${booking.booking_time}`)) && (
-                                  <div className="text-gray-300">Δεν μπορεί να ακυρωθεί</div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          // Available slot - show booking button
-                          <button
-                            onClick={() => onCreateBooking?.(sectionId, format(day, 'yyyy-MM-dd'), timeSlot, 'gym_visit')}
-                            className="w-full h-full bg-gray-50 hover:bg-[#00ffba]/20 transition-colors text-xs text-gray-600 hover:text-black flex items-center justify-center"
-                            title="Κλείσε ραντεβού"
-                            disabled={isPast(day)}
-                          >
-                            +
-                          </button>
-                        )}
-                      </div>
-                    );
+                   {weekDays.map((day, dayIndex) => {
+                     const dayHours = getAvailableHoursForDay(dayIndex);
+                     const isTimeAvailable = dayHours.includes(timeSlot);
+                     const booking = getBookingForSlot(day, timeSlot);
+                     const allBookingsInSlot = getAllBookingsForSlot(day, timeSlot);
+                     const currentBookings = allBookingsInSlot.length;
+                     const isFull = currentBookings >= maxCapacity;
+                     
+                     if (!isTimeAvailable) {
+                       return (
+                         <div key={`${timeSlot}-${dayIndex}`} className="h-12 bg-white border border-gray-100 rounded-none"></div>
+                       );
+                     }
+                     
+                     return (
+                       <div key={`${timeSlot}-${dayIndex}`} className="h-12 border border-gray-200 bg-white rounded-none flex flex-col items-center justify-center relative group p-1">
+                         {booking ? (
+                           <div className="flex flex-col items-center justify-center w-full h-full">
+                             <div className="relative flex items-center justify-center">
+                               <div className={getBookingStatusIcon(booking).color}>
+                                 {getBookingStatusIcon(booking).icon}
+                               </div>
+                               
+                               {/* Cancel button - only show on hover for cancellable bookings */}
+                               {canCancelBooking(booking.booking_date, booking.booking_time) && onCancelBooking && (
+                                 <button
+                                   onClick={() => handleCancelBooking(booking.id)}
+                                   className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                   title="Ακύρωση ραντεβού"
+                                 >
+                                   <X className="w-2 h-2" />
+                                 </button>
+                               )}
+                               
+                               {/* Tooltip with booking details */}
+                               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+                                 {booking.booking_time.slice(0, 5)} - {sectionName}
+                                 {!canCancelBooking(booking.booking_date, booking.booking_time) && isPast(new Date(`${booking.booking_date} ${booking.booking_time}`)) && (
+                                   <div className="text-gray-300">Δεν μπορεί να ακυρωθεί</div>
+                                 )}
+                               </div>
+                             </div>
+                             
+                             {/* Capacity info */}
+                             <div className="text-[10px] text-gray-500 mt-1">
+                               {currentBookings}/{maxCapacity}
+                             </div>
+                           </div>
+                         ) : (
+                           // Available slot - show booking button with capacity
+                           <button
+                             onClick={() => !isFull && onCreateBooking?.(sectionId, format(day, 'yyyy-MM-dd'), timeSlot, 'gym_visit')}
+                             className={`w-full h-full transition-colors text-[10px] flex flex-col items-center justify-center ${
+                               isPast(day) 
+                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                 : isFull 
+                                   ? 'bg-red-50 text-red-600 cursor-not-allowed' 
+                                   : 'bg-gray-50 hover:bg-[#00ffba]/20 text-gray-600 hover:text-black cursor-pointer'
+                             }`}
+                             title={isPast(day) ? 'Παρελθόν' : isFull ? 'Γεμάτο' : 'Κλείσε ραντεβού'}
+                             disabled={isPast(day) || isFull}
+                           >
+                             {isPast(day) ? (
+                               <>
+                                 <span className="text-xs">-</span>
+                                 <span>{currentBookings}/{maxCapacity}</span>
+                               </>
+                             ) : isFull ? (
+                               <>
+                                 <span className="text-xs">Γεμάτο</span>
+                                 <span>{currentBookings}/{maxCapacity}</span>
+                               </>
+                             ) : (
+                               <>
+                                 <span className="text-xs">+</span>
+                                 <span>{currentBookings}/{maxCapacity}</span>
+                               </>
+                             )}
+                           </button>
+                         )}
+                       </div>
+                     );
                   })}
                 </React.Fragment>
               ))}
