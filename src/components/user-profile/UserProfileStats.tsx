@@ -384,7 +384,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Ημέρες Προπόνησης - Clickable */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}/ημερολογιο`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -412,7 +412,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Επερχόμενα Τεστ - Clickable */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}/τεστ`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=tests`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -440,7 +440,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Πληρωμές - Clickable */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}/πληρωμες`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=payments`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -547,7 +547,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Βιντεοκλήσεις - Clickable */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}/online-coaching`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -575,7 +575,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               if (upcomingVideocall) {
                 // Για τώρα θα οδηγεί στο online-coaching
                 // Μπορεί στο μέλλον να οδηγεί στο room URL
-                navigate(`/dashboard/user-profile/${user.id}/online-coaching`);
+                navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
               }
             }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col min-w-0"
@@ -608,7 +608,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Αγορές - Νέο εικονάκι - Clickable */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}/shop`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=shop`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
