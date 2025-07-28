@@ -1729,13 +1729,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "magic_box_prizes_magic_box_id_fkey"
-            columns: ["magic_box_id"]
-            isOneToOne: false
-            referencedRelation: "magic_boxes"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "magic_box_prizes_subscription_type_id_fkey"
             columns: ["subscription_type_id"]
             isOneToOne: false
@@ -1743,87 +1736,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      magic_box_subscription_prizes: {
-        Row: {
-          created_at: string
-          discount_percentage: number
-          id: string
-          magic_box_id: string
-          quantity: number
-          subscription_type_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          discount_percentage?: number
-          id?: string
-          magic_box_id: string
-          quantity?: number
-          subscription_type_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          discount_percentage?: number
-          id?: string
-          magic_box_id?: string
-          quantity?: number
-          subscription_type_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "magic_box_subscription_prizes_magic_box_id_fkey"
-            columns: ["magic_box_id"]
-            isOneToOne: false
-            referencedRelation: "magic_boxes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "magic_box_subscription_prizes_subscription_type_id_fkey"
-            columns: ["subscription_type_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_types"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      magic_boxes: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          description: string | null
-          id: string
-          is_active: boolean
-          is_free: boolean
-          name: string
-          target_users: string[] | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          is_free?: boolean
-          name: string
-          target_users?: string[] | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          is_free?: boolean
-          name?: string
-          target_users?: string[] | null
-          updated_at?: string
-        }
-        Relationships: []
       }
       mas_tests: {
         Row: {
@@ -3370,74 +3282,6 @@ export type Database = {
           },
           {
             foreignKeyName: "user_discount_coupons_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_magic_box_wins: {
-        Row: {
-          claimed_at: string | null
-          discount_percentage: number | null
-          id: string
-          is_claimed: boolean
-          magic_box_id: string
-          prize_id: string | null
-          prize_type: string
-          subscription_type_id: string | null
-          user_id: string
-          won_at: string
-        }
-        Insert: {
-          claimed_at?: string | null
-          discount_percentage?: number | null
-          id?: string
-          is_claimed?: boolean
-          magic_box_id: string
-          prize_id?: string | null
-          prize_type: string
-          subscription_type_id?: string | null
-          user_id: string
-          won_at?: string
-        }
-        Update: {
-          claimed_at?: string | null
-          discount_percentage?: number | null
-          id?: string
-          is_claimed?: boolean
-          magic_box_id?: string
-          prize_id?: string | null
-          prize_type?: string
-          subscription_type_id?: string | null
-          user_id?: string
-          won_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_magic_box_wins_magic_box_id_fkey"
-            columns: ["magic_box_id"]
-            isOneToOne: false
-            referencedRelation: "magic_boxes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_magic_box_wins_prize_id_fkey"
-            columns: ["prize_id"]
-            isOneToOne: false
-            referencedRelation: "magic_box_prizes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_magic_box_wins_subscription_type_id_fkey"
-            columns: ["subscription_type_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_types"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_magic_box_wins_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"

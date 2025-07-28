@@ -64,9 +64,29 @@ export const MagicBoxGame: React.FC = () => {
 
   const fetchUserParticipations = async () => {
     try {
+      // Φέρνουμε μόνο τις συμμετοχές του τρέχοντος χρήστη
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      // Βρίσκουμε το app_users record του χρήστη
+      const { data: appUser, error: appUserError } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', userData.user.id)
+        .single();
+
+      if (appUserError || !appUser) {
+        console.error('App user not found');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('user_campaign_participations')
         .select('*')
+        .eq('user_id', appUser.id)  // Φέρνουμε μόνο τις συμμετοχές αυτού του χρήστη
         .order('created_at', { ascending: false });
 
       if (error) throw error;
