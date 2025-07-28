@@ -149,7 +149,7 @@ export const MagicBoxGame: React.FC = () => {
     console.log(`🎯 Starting playCampaign for user ${currentUserId}, campaign ${campaignId}`);
     const userParticipations = getUserParticipations(currentUserId || '');
     console.log(`📊 Current userParticipations for ${currentUserId}:`, userParticipations);
-    console.log(`🔍 Has played campaign:`, hasPlayedCampaign(campaignId));
+    console.log(`🔍 Has played campaign:`, hasPlayedCampaign(campaignId, currentUserId));
     
     if (!currentUserId) {
       toast({
@@ -161,7 +161,7 @@ export const MagicBoxGame: React.FC = () => {
     }
 
     // Έλεγχος αν ο χρήστης έχει ήδη παίξει σε αυτή την εκστρατεία (double check)
-    if (hasPlayedCampaign(campaignId)) {
+    if (hasPlayedCampaign(campaignId, currentUserId)) {
       console.log(`❌ User ${currentUserId} has already played campaign ${campaignId}`);
       toast({
         title: 'Ωχ!',
@@ -241,10 +241,11 @@ export const MagicBoxGame: React.FC = () => {
     setUserResult(currentUserId, campaignId, null);
   };
 
-  const hasPlayedCampaign = (campaignId: string) => {
-    // Έλεγχος αν υπάρχει αποτέλεσμα στο local state ή στη βάση
-    const userResults = getUserResults(currentUserId || '');
-    const userParticipations = getUserParticipations(currentUserId || '');
+  const hasPlayedCampaign = (campaignId: string, userId?: string) => {
+    // Έλεγχος αν υπάρχει αποτέλεσμα στο local state ή στη βάση για συγκεκριμένο χρήστη
+    const targetUserId = userId || currentUserId || '';
+    const userResults = getUserResults(targetUserId);
+    const userParticipations = getUserParticipations(targetUserId);
     return userResults[campaignId] !== undefined || userParticipations.some(participation => participation.campaign_id === campaignId);
   };
 
@@ -276,7 +277,7 @@ export const MagicBoxGame: React.FC = () => {
       {/* Available Campaigns */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {campaigns.map((campaign) => {
-          const alreadyPlayed = hasPlayedCampaign(campaign.id);
+          const alreadyPlayed = hasPlayedCampaign(campaign.id, currentUserId);
           return (
             <Card key={campaign.id} className="rounded-none relative overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
