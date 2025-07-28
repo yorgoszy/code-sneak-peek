@@ -173,7 +173,7 @@ serve(async (req) => {
     console.log("📤 Sending email via Resend...");
 
     const emailResponse = await resend.emails.send({
-      from: "HYPERKIDS <noreply@resend.dev>",
+      from: "HYPERKIDS <noreply@hyperkids.gr>",
       to: [email],
       subject: "Επαναφορά Κωδικού Πρόσβασης - HYPERKIDS",
       html: emailHTML,
