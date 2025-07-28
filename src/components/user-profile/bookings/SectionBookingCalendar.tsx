@@ -188,7 +188,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                     
                     if (!isTimeAvailable) {
                       return (
-                        <div key={`${timeSlot}-${dayIndex}`} className="h-8 bg-gray-100 rounded-none"></div>
+                        <div key={`${timeSlot}-${dayIndex}`} className="h-8 bg-white border border-gray-100 rounded-none"></div>
                       );
                     }
                     

@@ -200,15 +200,17 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         ))}
       </div>
 
-      {/* Section Booking Calendars - Only show sections user has access to */}
+      {/* Section Booking Calendars - Show sections user has access to OR has upcoming bookings */}
       <div className="px-4 md:px-0">
         {sections
           .filter(section => {
-            // Only show sections the user has access to
-            if (!availability?.allowed_sections || availability.allowed_sections.length === 0) {
-              return false; // No access to any sections
-            }
-            return availability.allowed_sections.includes(section.id);
+            // Show sections the user has access to
+            const hasAccess = availability?.allowed_sections && availability.allowed_sections.includes(section.id);
+            
+            // OR show sections where user has upcoming bookings (even if no current access)
+            const hasUpcomingBookings = bookings.some(booking => booking.section_id === section.id);
+            
+            return hasAccess || hasUpcomingBookings;
           })
           .map(section => (
             <SectionBookingCalendar
@@ -224,8 +226,12 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
           ))
         }
         
-        {/* Show message if user has no access to any sections */}
-        {(!availability?.allowed_sections || availability.allowed_sections.length === 0) && (
+        {/* Show message if user has no access to any sections AND no upcoming bookings */}
+        {sections.filter(section => {
+          const hasAccess = availability?.allowed_sections && availability.allowed_sections.includes(section.id);
+          const hasUpcomingBookings = bookings.some(booking => booking.section_id === section.id);
+          return hasAccess || hasUpcomingBookings;
+        }).length === 0 && (
           <Card className="rounded-none">
             <CardContent className="p-6 text-center">
               <p className="text-gray-600">
