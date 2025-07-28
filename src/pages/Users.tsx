@@ -57,6 +57,7 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [subscriptionFilter, setSubscriptionFilter] = useState("all");
   const [hasInitialized, setHasInitialized] = useState(false);
   
   // Dialog states
@@ -222,8 +223,9 @@ const Users = () => {
                           matchesSearchTerm(user.email, searchTerm);
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     const matchesStatus = statusFilter === "all" || user.user_status === statusFilter;
+    const matchesSubscription = subscriptionFilter === "all" || user.subscription_status === subscriptionFilter;
     
-    return matchesSearch && matchesRole && matchesStatus;
+    return matchesSearch && matchesRole && matchesStatus && matchesSubscription;
   });
 
   const handleSignOut = async () => {
@@ -334,7 +336,7 @@ const Users = () => {
               </div>
               
               {/* Search and Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-4 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 mt-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -361,15 +363,28 @@ const Users = () => {
                 </Select>
                 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="text-sm sm:col-span-2 lg:col-span-1">
+                  <SelectTrigger className="text-sm">
                     <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Φίλτρο κατάστασης" />
+                    <SelectValue placeholder="Κατάσταση χρήστη" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Όλες οι καταστάσεις</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={subscriptionFilter} onValueChange={setSubscriptionFilter}>
+                  <SelectTrigger className="text-sm sm:col-span-2 lg:col-span-1">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Κατάσταση συνδρομής" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Όλες οι συνδρομές</SelectItem>
+                    <SelectItem value="Ενεργή">Ενεργή</SelectItem>
+                    <SelectItem value="Ανενεργή">Ανενεργή</SelectItem>
+                    <SelectItem value="Παύση">Παύση</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -382,7 +397,7 @@ const Users = () => {
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-600">
-                    {searchTerm || roleFilter !== "all" || statusFilter !== "all"
+                    {searchTerm || roleFilter !== "all" || statusFilter !== "all" || subscriptionFilter !== "all"
                       ? "Δεν βρέθηκαν χρήστες με τα επιλεγμένα κριτήρια" 
                       : "Δεν βρέθηκαν χρήστες"}
                   </p>
