@@ -308,20 +308,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           console.error('Error fetching magic box campaigns:', magicBoxError);
         }
 
-        // Έλεγχος αν ο χρήστης έχει ήδη συμμετάσχει σε κάποια campaign
-        let hasMagicBox = false;
-        if (!magicBoxError && magicBoxCampaigns && magicBoxCampaigns.length > 0) {
-          const { data: userParticipations, error: participationsError } = await supabase
-            .from('user_campaign_participations')
-            .select('campaign_id')
-            .eq('user_id', user.id);
-
-          if (!participationsError) {
-            const participatedCampaignIds = new Set(userParticipations?.map(p => p.campaign_id) || []);
-            // Υπάρχει magic box μόνο αν υπάρχει τουλάχιστον μία campaign που δεν έχει παίξει
-            hasMagicBox = magicBoxCampaigns.some(campaign => !participatedCampaignIds.has(campaign.id));
-          }
-        }
+        const hasMagicBox = !magicBoxError && magicBoxCampaigns && magicBoxCampaigns.length > 0;
 
         // Φόρτωση απορριμμένων προσφορών
         const { data: rejectedOffers, error: rejectedError } = await supabase
