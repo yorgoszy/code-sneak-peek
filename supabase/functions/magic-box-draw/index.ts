@@ -57,68 +57,54 @@ serve(async (req) => {
       throw new Error('Campaign ID is required');
     }
 
-    console.log('🎲 Processing campaign:', campaign_id);
+    console.log('🎲 Processing magic box:', campaign_id);
 
-    // Get campaign and verify it's active
-    const { data: campaign, error: campaignError } = await supabaseClient
-      .from('magic_box_campaigns')
+    // Get magic box and verify it's active
+    const { data: magicBox, error: magicBoxError } = await supabaseClient
+      .from('magic_boxes')
       .select('*')
       .eq('id', campaign_id)
       .eq('is_active', true)
       .single();
 
-    if (campaignError || !campaign) {
-      throw new Error('Campaign not found or inactive');
+    if (magicBoxError || !magicBox) {
+      console.error('Magic box error:', magicBoxError);
+      throw new Error('Magic box not found or inactive');
     }
 
-    // Check if campaign is within date range
-    const now = new Date();
-    const startDate = new Date(campaign.start_date);
-    const endDate = campaign.end_date ? new Date(campaign.end_date) : null;
-    
-    if (now < startDate || (endDate && now > endDate)) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'Η εκστρατεία δεν είναι ενεργή αυτή τη στιγμή!' 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
-    }
-
-    // Check if user already participated in this campaign
-    const { data: existingParticipation, error: participationError } = await supabaseClient
-      .from('user_campaign_participations')
+    // Check if user already participated in this magic box using user_magic_box_wins
+    const { data: existingWin, error: winError } = await supabaseClient
+      .from('user_magic_box_wins')
       .select('id')
       .eq('user_id', appUser.id)
-      .eq('campaign_id', campaign_id)
+      .eq('magic_box_id', campaign_id)
       .maybeSingle();
 
-    if (participationError) {
-      console.error('Error checking existing participations:', participationError);
+    if (winError) {
+      console.error('Error checking existing wins:', winError);
       throw new Error('Error checking existing participations');
     }
 
-    if (existingParticipation) {
+    if (existingWin) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'Έχεις ήδη συμμετάσχει σε αυτή την εκστρατεία!' 
+        message: 'Έχεις ήδη συμμετάσχει σε αυτό το Magic Box!' 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
     }
 
-    console.log(`✅ User ${appUser.id} can participate in campaign ${campaign_id}`);
+    console.log(`✅ User ${appUser.id} can participate in magic box ${campaign_id}`);
 
-    // Get all available prizes for this campaign
+    // Get all available prizes for this magic box
     const { data: prizes, error: prizesError } = await supabaseClient
-      .from('campaign_prizes')
+      .from('magic_box_subscription_prizes')
       .select('*')
-      .eq('campaign_id', campaign_id)
-      .gt('remaining_quantity', 0);
+      .eq('magic_box_id', campaign_id)
+      .gt('quantity', 0);
 
-    console.log(`🎁 Found ${prizes?.length || 0} available prizes for campaign ${campaign_id}`);
+    console.log(`🎁 Found ${prizes?.length || 0} available prizes for magic box ${campaign_id}`);
     
     if (prizesError) {
       console.error('Error fetching prizes:', prizesError);
@@ -126,20 +112,20 @@ serve(async (req) => {
     }
 
     if (!prizes || prizes.length === 0) {
-      console.log(`❌ No available prizes found for campaign ${campaign_id}`);
+      console.log(`❌ No available prizes found for magic box ${campaign_id}`);
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'Δεν υπάρχουν διαθέσιμα δώρα στην εκστρατεία!' 
+        message: 'Δεν υπάρχουν διαθέσιμα δώρα στο Magic Box!' 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
     }
 
-    // Calculate weighted random selection
+    // Use quantity as weight for random selection
     let totalWeight = 0;
     for (const prize of prizes) {
-      totalWeight += (prize.weight || 1);
+      totalWeight += prize.quantity;
     }
     
     const randomWeight = Math.floor(Math.random() * totalWeight);
@@ -147,7 +133,7 @@ serve(async (req) => {
     let wonPrize = null;
     
     for (const prize of prizes) {
-      currentWeight += (prize.weight || 1);
+      currentWeight += prize.quantity;
       if (randomWeight < currentWeight) {
         wonPrize = prize;
         break;
@@ -159,43 +145,37 @@ serve(async (req) => {
       wonPrize = prizes[0];
     }
 
-    console.log(`🎲 Random selection: ${randomWeight}/${totalWeight}, Won Prize: ${wonPrize.prize_type}, ID: ${wonPrize.id}`);
+    console.log(`🎲 Random selection: ${randomWeight}/${totalWeight}, Won Prize: subscription, ID: ${wonPrize.id}`);
 
-    // Generate discount code if needed
-    let discountCode = null;
-    if (wonPrize.prize_type === 'discount_coupon') {
-      discountCode = `MAGIC${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-    }
-
-    // Record the participation FIRST
-    const participationData = {
+    // Record the win FIRST in user_magic_box_wins
+    const winData = {
       user_id: appUser.id,
-      campaign_id: campaign_id,
+      magic_box_id: campaign_id,
       prize_id: wonPrize.id,
-      result_type: wonPrize.prize_type,
       subscription_type_id: wonPrize.subscription_type_id,
-      discount_percentage: wonPrize.discount_percentage || 0,
-      discount_code: discountCode,
+      discount_percentage: wonPrize.discount_percentage,
+      prize_type: 'subscription', // All magic box prizes are subscriptions
+      won_at: new Date().toISOString(),
     };
 
-    const { data: participation, error: participationInsertError } = await supabaseClient
-      .from('user_campaign_participations')
-      .insert(participationData)
+    const { data: winRecord, error: winInsertError } = await supabaseClient
+      .from('user_magic_box_wins')
+      .insert(winData)
       .select('*')
       .single();
 
-    if (participationInsertError) {
-      console.error('Error recording participation:', participationInsertError);
-      throw new Error('Failed to record participation');
+    if (winInsertError) {
+      console.error('Error recording win:', winInsertError);
+      throw new Error('Failed to record win');
     }
 
-    console.log('✅ Participation recorded:', participation.id);
+    console.log('✅ Win recorded:', winRecord.id);
 
-    // Update remaining quantity for the won prize
+    // Update quantity for the won prize
     const { error: updatePrizeError } = await supabaseClient
-      .from('campaign_prizes')
+      .from('magic_box_subscription_prizes')
       .update({ 
-        remaining_quantity: wonPrize.remaining_quantity - 1,
+        quantity: wonPrize.quantity - 1,
         updated_at: new Date().toISOString()
       })
       .eq('id', wonPrize.id);
@@ -204,102 +184,57 @@ serve(async (req) => {
       console.error('Error updating prize quantity:', updatePrizeError);
     }
 
-    // Handle different prize types and create rewards
-    let result = {
-      success: true,
-      prize_type: wonPrize.prize_type,
-      discount_percentage: wonPrize.discount_percentage || 0
-    };
+    // Get subscription type details
+    const { data: subscriptionType } = await supabaseClient
+      .from('subscription_types')
+      .select('*')
+      .eq('id', wonPrize.subscription_type_id)
+      .single();
 
-    if (wonPrize.prize_type === 'subscription' && wonPrize.subscription_type_id) {
-      // Get subscription type details
-      const { data: subscriptionType } = await supabaseClient
-        .from('subscription_types')
-        .select('*')
-        .eq('id', wonPrize.subscription_type_id)
-        .single();
-
-      // Create subscription for the user
-      const startDate = new Date();
-      const endDate = new Date();
-      if (subscriptionType?.duration_months) {
-        endDate.setMonth(endDate.getMonth() + subscriptionType.duration_months);
-      } else {
-        endDate.setMonth(endDate.getMonth() + 1); // Default 1 month
-      }
-
-      const { error: subscriptionError } = await supabaseClient
-        .from('user_subscriptions')
-        .insert({
-          user_id: appUser.id,
-          subscription_type_id: wonPrize.subscription_type_id,
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0],
-          status: 'active',
-          is_paid: false
-        });
-
-      if (subscriptionError) {
-        console.error('Error creating subscription:', subscriptionError);
-      } else {
-        // Mark participation as claimed
-        await supabaseClient
-          .from('user_campaign_participations')
-          .update({ 
-            is_claimed: true, 
-            claimed_at: new Date().toISOString() 
-          })
-          .eq('id', participation.id);
-      }
-
-      result.message = `Συγχαρητήρια! Κέρδισες συνδρομή ${subscriptionType?.name || 'Premium'}!`;
-      result.subscription_name = subscriptionType?.name;
-      result.subscription_description = subscriptionType?.description;
-
-    } else if (wonPrize.prize_type === 'discount_coupon') {
-      // Create discount coupon
-      const { error: couponError } = await supabaseClient
-        .from('discount_coupons')
-        .insert({
-          code: discountCode,
-          discount_percentage: wonPrize.discount_percentage,
-          user_id: appUser.id,
-          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-          is_active: true,
-          max_uses: 1,
-          current_uses: 0
-        });
-
-      if (couponError) {
-        console.error('Error creating discount coupon:', couponError);
-      }
-
-      result.message = `Συγχαρητήρια! Κέρδισες κουπόνι έκπτωσης ${wonPrize.discount_percentage}%!`;
-      result.discount_code = discountCode;
-
-    } else if (wonPrize.prize_type === 'try_again') {
-      result.message = 'Δοκίμασε ξανά!';
-
-    } else if (wonPrize.prize_type === 'nothing') {
-      // Give user a free visit as consolation prize
-      const { error: visitError } = await supabaseClient
-        .from('visit_packages')
-        .insert({
-          user_id: appUser.id,
-          total_visits: 1,
-          remaining_visits: 1,
-          purchase_date: new Date().toISOString().split('T')[0],
-          price: 0,
-          status: 'active'
-        });
-
-      if (visitError) {
-        console.error('Error creating consolation visit:', visitError);
-      }
-
-      result.message = 'Λυπούμαστε που δεν κέρδισες αυτή τη φορά! Σας κάνουμε δώρο μια επίσκεψη στο γυμναστήριο!';
-      result.consolation_prize = 'free_visit';
+    if (!subscriptionType) {
+      console.error('Subscription type not found:', wonPrize.subscription_type_id);
+      throw new Error('Subscription type not found');
     }
+
+    // Create subscription for the user (all magic box prizes are free subscriptions)
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + subscriptionType.duration_months);
+
+    const { error: subscriptionError } = await supabaseClient
+      .from('user_subscriptions')
+      .insert({
+        user_id: appUser.id,
+        subscription_type_id: wonPrize.subscription_type_id,
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+        status: 'active',
+        is_paid: false // Magic box prizes are free
+      });
+
+    if (subscriptionError) {
+      console.error('Error creating subscription:', subscriptionError);
+    } else {
+      // Mark win as claimed
+      await supabaseClient
+        .from('user_magic_box_wins')
+        .update({ 
+          is_claimed: true, 
+          claimed_at: new Date().toISOString() 
+        })
+        .eq('id', winRecord.id);
+
+      console.log('✅ Subscription created and win marked as claimed');
+    }
+
+    const result = {
+      success: true,
+      prize_type: 'subscription',
+      discount_percentage: wonPrize.discount_percentage,
+      message: `Συγχαρητήρια! Κέρδισες συνδρομή ${subscriptionType.name}!`,
+      subscription_name: subscriptionType.name,
+      subscription_description: subscriptionType.description
+    };
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
