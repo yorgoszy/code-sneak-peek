@@ -25,10 +25,6 @@ interface UserParticipation {
   is_claimed: boolean;
   created_at: string;
   campaign_id: string;
-  subscription_types?: {
-    name?: string;
-    description?: string;
-  } | null;
 }
 
 export const MagicBoxGame: React.FC = () => {
@@ -70,13 +66,7 @@ export const MagicBoxGame: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('user_campaign_participations')
-        .select(`
-          *,
-          subscription_types (
-            name,
-            description
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -277,10 +267,9 @@ export const MagicBoxGame: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {participation.subscription_types && (
+                  {participation.subscription_type_id && (
                     <div className="mb-2">
-                      <p className="font-medium text-sm">{participation.subscription_types.name}</p>
-                      <p className="text-xs text-gray-600">{participation.subscription_types.description}</p>
+                      <p className="font-medium text-sm">Συνδρομή ID: {participation.subscription_type_id}</p>
                     </div>
                   )}
                   

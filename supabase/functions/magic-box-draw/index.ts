@@ -12,6 +12,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🎯 Magic box draw request received');
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -20,12 +22,19 @@ serve(async (req) => {
 
     // Get user from auth token
     const authHeader = req.headers.get('Authorization')!;
+    if (!authHeader) {
+      throw new Error('Authorization header is required');
+    }
+    
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
+      console.error('Auth error:', authError);
       throw new Error('User not authenticated');
     }
+
+    console.log('✅ User authenticated:', user.id);
 
     // Get user's app_user record
     const { data: appUser, error: appUserError } = await supabaseClient
@@ -35,14 +44,20 @@ serve(async (req) => {
       .single();
 
     if (appUserError || !appUser) {
+      console.error('App user error:', appUserError);
       throw new Error('User profile not found');
     }
 
-    const { campaign_id } = await req.json();
+    console.log('✅ App user found:', appUser.id);
+
+    const body = await req.json();
+    const { campaign_id } = body;
 
     if (!campaign_id) {
       throw new Error('Campaign ID is required');
     }
+
+    console.log('🎲 Processing campaign:', campaign_id);
 
     // Get campaign and verify it's active
     const { data: campaign, error: campaignError } = await supabaseClient
