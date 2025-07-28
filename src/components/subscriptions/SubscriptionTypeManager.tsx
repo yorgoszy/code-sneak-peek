@@ -190,22 +190,10 @@ export const SubscriptionTypeManager: React.FC = () => {
     try {
       console.log('🔄 Loading draft programs...');
       
-      // Φόρτωση προγραμμάτων με στοιχεία εβδομάδων και ημερών
+      // Απλό query για προγράμματα πρώτα
       const { data: programs, error } = await supabase
         .from('programs')
-        .select(`
-          id, 
-          name, 
-          description,
-          program_weeks!inner(
-            id,
-            week_number,
-            program_days!inner(
-              id,
-              day_number
-            )
-          )
-        `)
+        .select('id, name, description')
         .order('name');
 
       if (error) {
@@ -227,35 +215,70 @@ export const SubscriptionTypeManager: React.FC = () => {
 
       const assignedProgramIds = new Set(assignments?.map(a => a.program_id) || []);
       
-      // Filter και υπολογισμός στοιχείων για draft προγράμματα (χωρίς assignments)
-      const draftPrograms = (programs || [])
-        .filter(program => !assignedProgramIds.has(program.id))
-        .map(program => {
-          const weeks = program.program_weeks || [];
-          const weeksCount = weeks.length;
-          
-          // Υπολογισμός μέγιστου αριθμού ημερών ανά εβδομάδα
-          let maxDaysPerWeek = 0;
-          weeks.forEach(week => {
-            const daysCount = (week.program_days || []).length;
-            if (daysCount > maxDaysPerWeek) {
-              maxDaysPerWeek = daysCount;
+      // Filter για draft προγράμματα (χωρίς assignments)
+      const unassignedPrograms = (programs || [])
+        .filter(program => !assignedProgramIds.has(program.id));
+
+      // Τώρα φόρτωση weeks/days για κάθε unassigned πρόγραμμα ξεχωριστά
+      const draftPrograms = await Promise.all(
+        unassignedPrograms.map(async (program) => {
+          try {
+            const { data: weeks, error: weeksError } = await supabase
+              .from('program_weeks')
+              .select(`
+                id,
+                week_number,
+                program_days(
+                  id,
+                  day_number
+                )
+              `)
+              .eq('program_id', program.id);
+
+            if (weeksError) {
+              console.warn(`⚠️ Error loading weeks for program ${program.name}:`, weeksError);
+              return {
+                id: program.id,
+                name: program.name,
+                description: program.description,
+                weeks_count: 0,
+                days_per_week: 0
+              };
             }
-          });
-          
-          console.log(`📈 Program "${program.name}": ${weeksCount} weeks, ${maxDaysPerWeek} max days/week`, {
-            weeks: weeks,
-            program_weeks: program.program_weeks
-          });
-          
-          return {
-            id: program.id,
-            name: program.name,
-            description: program.description,
-            weeks_count: weeksCount,
-            days_per_week: maxDaysPerWeek
-          };
-        });
+
+            const weeksCount = weeks?.length || 0;
+            let maxDaysPerWeek = 0;
+            
+            if (weeks) {
+              weeks.forEach(week => {
+                const daysCount = (week.program_days || []).length;
+                if (daysCount > maxDaysPerWeek) {
+                  maxDaysPerWeek = daysCount;
+                }
+              });
+            }
+            
+            console.log(`📈 Program "${program.name}": ${weeksCount} weeks, ${maxDaysPerWeek} max days/week`);
+            
+            return {
+              id: program.id,
+              name: program.name,
+              description: program.description,
+              weeks_count: weeksCount,
+              days_per_week: maxDaysPerWeek
+            };
+          } catch (error) {
+            console.warn(`⚠️ Error processing program ${program.name}:`, error);
+            return {
+              id: program.id,
+              name: program.name,
+              description: program.description,
+              weeks_count: 0,
+              days_per_week: 0
+            };
+          }
+        })
+      );
       
       console.log('✅ Loaded draft programs with stats:', draftPrograms);
       setDraftPrograms(draftPrograms);
