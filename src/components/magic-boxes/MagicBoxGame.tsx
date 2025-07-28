@@ -138,6 +138,10 @@ export const MagicBoxGame: React.FC = () => {
   };
 
   const playCampaign = async (campaignId: string) => {
+    console.log(`🎯 Starting playCampaign for user ${currentUserId}, campaign ${campaignId}`);
+    console.log(`📊 Current userParticipations:`, userParticipations);
+    console.log(`🔍 Has played campaign:`, hasPlayedCampaign(campaignId));
+    
     if (!currentUserId) {
       toast({
         title: 'Σφάλμα',
@@ -149,6 +153,7 @@ export const MagicBoxGame: React.FC = () => {
 
     // Έλεγχος αν ο χρήστης έχει ήδη παίξει σε αυτή την εκστρατεία (double check)
     if (hasPlayedCampaign(campaignId)) {
+      console.log(`❌ User ${currentUserId} has already played campaign ${campaignId}`);
       toast({
         title: 'Ωχ!',
         description: 'Έχεις ήδη συμμετάσχει σε αυτή την εκστρατεία!',
@@ -160,7 +165,7 @@ export const MagicBoxGame: React.FC = () => {
     // Έλεγχος αν αυτός ο χρήστης παίζει ήδη αυτή την εκστρατεία
     const userPlayingStates = getUserPlayingStates(currentUserId);
     if (userPlayingStates[campaignId]) {
-      console.log(`User ${currentUserId} is already playing campaign ${campaignId}`);
+      console.log(`⏳ User ${currentUserId} is already playing campaign ${campaignId}`);
       return;
     }
 
