@@ -6,56 +6,59 @@ import { Badge } from '@/components/ui/badge';
 import { Gift, Sparkles, Trophy, Ticket } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface MagicBox {
+interface MagicBoxCampaign {
   id: string;
   name: string;
   description: string;
+  start_date: string;
+  end_date: string | null;
   is_active: boolean;
-  is_free: boolean;
+  max_participations_per_user: number;
 }
 
-interface UserWin {
+interface UserParticipation {
   id: string;
-  prize_type: string;
+  result_type: string;
   discount_percentage: number;
   subscription_type_id: string | null;
+  discount_code: string | null;
   is_claimed: boolean;
-  won_at: string;
-  magic_box_id: string;
+  created_at: string;
+  campaign_id: string;
   subscription_types?: {
-    name: string;
-    description: string;
+    name?: string;
+    description?: string;
   } | null;
 }
 
 export const MagicBoxGame: React.FC = () => {
-  const [magicBoxes, setMagicBoxes] = useState<MagicBox[]>([]);
-  const [userWins, setUserWins] = useState<UserWin[]>([]);
+  const [campaigns, setCampaigns] = useState<MagicBoxCampaign[]>([]);
+  const [userParticipations, setUserParticipations] = useState<UserParticipation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [playingBox, setPlayingBox] = useState<string | null>(null);
+  const [playingCampaign, setPlayingCampaign] = useState<string | null>(null);
   const [showResult, setShowResult] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchMagicBoxes();
-    fetchUserWins();
+    fetchCampaigns();
+    fetchUserParticipations();
   }, []);
 
-  const fetchMagicBoxes = async () => {
+  const fetchCampaigns = async () => {
     try {
       const { data, error } = await supabase
-        .from('magic_boxes')
+        .from('magic_box_campaigns')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setMagicBoxes(data || []);
+      setCampaigns(data || []);
     } catch (error) {
-      console.error('Error fetching magic boxes:', error);
+      console.error('Error fetching campaigns:', error);
       toast({
         title: 'Σφάλμα',
-        description: 'Αποτυχία φόρτωσης μαγικών κουτιών',
+        description: 'Αποτυχία φόρτωσης εκστρατειών',
         variant: 'destructive'
       });
     } finally {
@@ -63,10 +66,10 @@ export const MagicBoxGame: React.FC = () => {
     }
   };
 
-  const fetchUserWins = async () => {
+  const fetchUserParticipations = async () => {
     try {
       const { data, error } = await supabase
-        .from('user_magic_box_wins')
+        .from('user_campaign_participations')
         .select(`
           *,
           subscription_types (
@@ -74,22 +77,22 @@ export const MagicBoxGame: React.FC = () => {
             description
           )
         `)
-        .order('won_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUserWins((data || []) as UserWin[]);
+      setUserParticipations((data || []) as UserParticipation[]);
     } catch (error) {
-      console.error('Error fetching user wins:', error);
+      console.error('Error fetching user participations:', error);
     }
   };
 
-  const playMagicBox = async (magicBoxId: string) => {
-    setPlayingBox(magicBoxId);
+  const playCampaign = async (campaignId: string) => {
+    setPlayingCampaign(campaignId);
     setShowResult(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('magic-box-draw', {
-        body: { magic_box_id: magicBoxId }
+        body: { campaign_id: campaignId }
       });
 
       if (error) throw error;
@@ -101,8 +104,8 @@ export const MagicBoxGame: React.FC = () => {
           description: data.message,
         });
         
-        // Refresh user wins
-        fetchUserWins();
+        // Refresh user participations
+        fetchUserParticipations();
       } else {
         toast({
           title: 'Ωχ!',
@@ -111,23 +114,22 @@ export const MagicBoxGame: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Error playing magic box:', error);
+      console.error('Error playing campaign:', error);
       toast({
         title: 'Σφάλμα',
         description: 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.',
         variant: 'destructive'
       });
     } finally {
-      setPlayingBox(null);
+      setPlayingCampaign(null);
     }
   };
 
-  const hasPlayedBox = (boxId: string) => {
-    // Κάθε χρήστης έχει μόνο μία προσπάθεια ανά ενεργό magic box
-    return userWins.some(win => win.magic_box_id === boxId);
+  const hasPlayedCampaign = (campaignId: string) => {
+    return userParticipations.some(participation => participation.campaign_id === campaignId);
   };
 
-  const formatWinDate = (dateString: string) => {
+  const formatParticipationDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('el-GR', {
       day: '2-digit',
       month: '2-digit',
@@ -152,44 +154,42 @@ export const MagicBoxGame: React.FC = () => {
         <p className="text-gray-600">Δοκίμασε την τύχη σου και κέρδισε υπέροχα δώρα!</p>
       </div>
 
-      {/* Available Magic Boxes */}
+      {/* Available Campaigns */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {magicBoxes.map((box) => {
-          const alreadyPlayed = hasPlayedBox(box.id);
+        {campaigns.map((campaign) => {
+          const alreadyPlayed = hasPlayedCampaign(campaign.id);
           return (
-            <Card key={box.id} className="rounded-none relative overflow-hidden">
+            <Card key={campaign.id} className="rounded-none relative overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Gift className="w-6 h-6" />
-                    {box.name}
+                    {campaign.name}
                   </div>
-                  {box.is_free && (
-                    <Badge className="bg-[#00ffba] text-black rounded-none">
-                      ΔΩΡΕΑΝ
-                    </Badge>
-                  )}
+                  <Badge className="bg-[#00ffba] text-black rounded-none">
+                    ΔΩΡΕΑΝ
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <p className="text-gray-600 mb-4">{box.description}</p>
+                <p className="text-gray-600 mb-4">{campaign.description}</p>
                 
                 <Button
-                  onClick={() => playMagicBox(box.id)}
-                  disabled={playingBox === box.id || alreadyPlayed}
+                  onClick={() => playCampaign(campaign.id)}
+                  disabled={playingCampaign === campaign.id || alreadyPlayed}
                   className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
                 >
-                  {playingBox === box.id ? (
+                  {playingCampaign === campaign.id ? (
                     <>
                       <Sparkles className="w-4 h-4 mr-2 animate-spin" />
                       Παίζω...
                     </>
                   ) : alreadyPlayed ? (
-                    'Έχεις ήδη παίξει'
+                    'Έχεις ήδη συμμετάσχει'
                   ) : (
                     <>
                       <Gift className="w-4 h-4 mr-2" />
-                      Παίξε Τώρα!
+                      Συμμετοχή!
                     </>
                   )}
                 </Button>
@@ -244,24 +244,28 @@ export const MagicBoxGame: React.FC = () => {
         </Card>
       )}
 
-      {/* User's Wins History */}
-      {userWins.length > 0 && (
+      {/* User's Participations History */}
+      {userParticipations.length > 0 && (
         <div>
-          <h3 className="text-xl font-bold mb-4">Τα Δώρα Μου</h3>
+          <h3 className="text-xl font-bold mb-4">Οι Συμμετοχές Μου</h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {userWins.map((win) => (
-              <Card key={win.id} className="rounded-none">
+            {userParticipations.map((participation) => (
+              <Card key={participation.id} className="rounded-none">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      {win.prize_type === 'subscription' ? (
+                      {participation.result_type === 'subscription' ? (
                         <Gift className="w-4 h-4" />
-                      ) : (
+                      ) : participation.result_type === 'discount_coupon' ? (
                         <Ticket className="w-4 h-4" />
+                      ) : (
+                        <Sparkles className="w-4 h-4" />
                       )}
-                      {win.prize_type === 'subscription' ? 'Συνδρομή' : 'Κουπόνι'}
+                      {participation.result_type === 'subscription' ? 'Συνδρομή' : 
+                       participation.result_type === 'discount_coupon' ? 'Κουπόνι' : 
+                       participation.result_type === 'try_again' ? 'Δοκίμασε ξανά' : 'Δώρο'}
                     </div>
-                    {win.is_claimed ? (
+                    {participation.is_claimed ? (
                       <Badge className="bg-[#00ffba] text-black rounded-none text-xs">
                         Ενεργοποιημένο
                       </Badge>
@@ -273,23 +277,29 @@ export const MagicBoxGame: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {win.subscription_types && (
+                  {participation.subscription_types && (
                     <div className="mb-2">
-                      <p className="font-medium text-sm">{win.subscription_types.name}</p>
-                      <p className="text-xs text-gray-600">{win.subscription_types.description}</p>
+                      <p className="font-medium text-sm">{participation.subscription_types.name}</p>
+                      <p className="text-xs text-gray-600">{participation.subscription_types.description}</p>
                     </div>
                   )}
                   
-                  {win.discount_percentage > 0 && (
+                  {participation.discount_percentage > 0 && (
                     <div className="mb-2">
                       <Badge className="bg-[#00ffba] text-black rounded-none text-xs">
-                        {win.discount_percentage}% έκπτωση
+                        {participation.discount_percentage}% έκπτωση
                       </Badge>
+                    </div>
+                  )}
+
+                  {participation.discount_code && (
+                    <div className="mb-2">
+                      <p className="text-xs text-gray-600">Κωδικός: <span className="font-mono">{participation.discount_code}</span></p>
                     </div>
                   )}
                   
                   <p className="text-xs text-gray-500">
-                    Κέρδισες: {formatWinDate(win.won_at)}
+                    Συμμετοχή: {formatParticipationDate(participation.created_at)}
                   </p>
                 </CardContent>
               </Card>
@@ -298,11 +308,11 @@ export const MagicBoxGame: React.FC = () => {
         </div>
       )}
 
-      {magicBoxes.length === 0 && (
+      {campaigns.length === 0 && (
         <Card className="rounded-none">
           <CardContent className="text-center py-8">
             <Gift className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-500">Δεν υπάρχουν διαθέσιμα μαγικά κουτιά αυτή τη στιγμή</p>
+            <p className="text-gray-500">Δεν υπάρχουν διαθέσιμες εκστρατείες αυτή τη στιγμή</p>
           </CardContent>
         </Card>
       )}

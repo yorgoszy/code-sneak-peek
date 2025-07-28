@@ -692,6 +692,56 @@ export type Database = {
           },
         ]
       }
+      campaign_prizes: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          description: string | null
+          discount_percentage: number | null
+          id: string
+          prize_type: string
+          quantity: number
+          remaining_quantity: number
+          subscription_type_id: string | null
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          prize_type: string
+          quantity?: number
+          remaining_quantity?: number
+          subscription_type_id?: string | null
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          prize_type?: string
+          quantity?: number
+          remaining_quantity?: number
+          subscription_type_id?: string | null
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_prizes_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "magic_box_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_coupons: {
         Row: {
           code: string
@@ -1609,6 +1659,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      magic_box_campaigns: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean
+          max_participations_per_user: number | null
+          name: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          max_participations_per_user?: number | null
+          name: string
+          start_date?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          max_participations_per_user?: number | null
+          name?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       magic_box_prizes: {
         Row: {
@@ -3166,6 +3255,121 @@ export type Database = {
           },
           {
             foreignKeyName: "tests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_campaign_participations: {
+        Row: {
+          campaign_id: string
+          claimed_at: string | null
+          created_at: string
+          discount_code: string | null
+          discount_percentage: number | null
+          id: string
+          is_claimed: boolean
+          prize_id: string | null
+          result_type: string
+          subscription_type_id: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          claimed_at?: string | null
+          created_at?: string
+          discount_code?: string | null
+          discount_percentage?: number | null
+          id?: string
+          is_claimed?: boolean
+          prize_id?: string | null
+          result_type: string
+          subscription_type_id?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          claimed_at?: string | null
+          created_at?: string
+          discount_code?: string | null
+          discount_percentage?: number | null
+          id?: string
+          is_claimed?: boolean
+          prize_id?: string | null
+          result_type?: string
+          subscription_type_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_campaign_participations_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "magic_box_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_campaign_participations_prize_id_fkey"
+            columns: ["prize_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_prizes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_campaign_participations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_discount_coupons: {
+        Row: {
+          code: string
+          created_at: string
+          discount_percentage: number
+          expires_at: string | null
+          id: string
+          is_used: boolean
+          participation_id: string | null
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_percentage: number
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean
+          participation_id?: string | null
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_percentage?: number
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean
+          participation_id?: string | null
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_discount_coupons_participation_id_fkey"
+            columns: ["participation_id"]
+            isOneToOne: false
+            referencedRelation: "user_campaign_participations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_discount_coupons_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
