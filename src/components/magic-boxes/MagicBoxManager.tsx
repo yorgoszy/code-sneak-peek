@@ -7,7 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Gift, Settings, Power } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, Edit, Trash2, Gift, Settings, Power, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { MagicBoxPrizeManager } from './MagicBoxPrizeManager';
 
@@ -17,11 +19,13 @@ interface MagicBox {
   description: string;
   is_active: boolean;
   is_free: boolean;
+  target_users: string[] | null;
   created_at: string;
 }
 
 export const MagicBoxManager: React.FC = () => {
   const [magicBoxes, setMagicBoxes] = useState<MagicBox[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingBox, setEditingBox] = useState<MagicBox | null>(null);
@@ -30,12 +34,14 @@ export const MagicBoxManager: React.FC = () => {
     name: '',
     description: '',
     is_active: true,
-    is_free: true
+    is_free: true,
+    target_users: [] as string[]
   });
   const { toast } = useToast();
 
   useEffect(() => {
     fetchMagicBoxes();
+    fetchUsers();
   }, []);
 
   const fetchMagicBoxes = async () => {
@@ -59,6 +65,21 @@ export const MagicBoxManager: React.FC = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email')
+        .not('email', 'is', null)
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -72,6 +93,7 @@ export const MagicBoxManager: React.FC = () => {
             description: formData.description,
             is_active: formData.is_active,
             is_free: formData.is_free,
+            target_users: formData.target_users.length > 0 ? formData.target_users : null,
             updated_at: new Date().toISOString()
           })
           .eq('id', editingBox.id);
@@ -89,7 +111,8 @@ export const MagicBoxManager: React.FC = () => {
             name: formData.name,
             description: formData.description,
             is_active: formData.is_active,
-            is_free: formData.is_free
+            is_free: formData.is_free,
+            target_users: formData.target_users.length > 0 ? formData.target_users : null
           });
 
         if (error) throw error;
@@ -100,7 +123,7 @@ export const MagicBoxManager: React.FC = () => {
         });
       }
 
-      setFormData({ name: '', description: '', is_active: true, is_free: true });
+      setFormData({ name: '', description: '', is_active: true, is_free: true, target_users: [] });
       setEditingBox(null);
       setShowForm(false);
       fetchMagicBoxes();
@@ -122,7 +145,8 @@ export const MagicBoxManager: React.FC = () => {
       name: box.name,
       description: box.description,
       is_active: box.is_active,
-      is_free: box.is_free
+      is_free: box.is_free,
+      target_users: box.target_users || []
     });
     setShowForm(true);
   };
@@ -206,7 +230,7 @@ export const MagicBoxManager: React.FC = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', is_active: true, is_free: true });
+    setFormData({ name: '', description: '', is_active: true, is_free: true, target_users: [] });
     setEditingBox(null);
     setShowForm(false);
   };
@@ -282,6 +306,50 @@ export const MagicBoxManager: React.FC = () => {
                 <Label htmlFor="is_free">Δωρεάν</Label>
               </div>
 
+              <div>
+                <Label htmlFor="target_users">Επιλογή Χρηστών (προαιρετικό)</Label>
+                <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-md p-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="all_users"
+                      checked={formData.target_users.length === 0}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData({ ...formData, target_users: [] });
+                        }
+                      }}
+                    />
+                    <Label htmlFor="all_users" className="text-sm font-medium">
+                      Όλοι οι χρήστες
+                    </Label>
+                  </div>
+                  {users.map((user) => (
+                    <div key={user.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`user_${user.id}`}
+                        checked={formData.target_users.includes(user.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setFormData({
+                              ...formData,
+                              target_users: [...formData.target_users, user.id]
+                            });
+                          } else {
+                            setFormData({
+                              ...formData,
+                              target_users: formData.target_users.filter(id => id !== user.id)
+                            });
+                          }
+                        }}
+                      />
+                      <Label htmlFor={`user_${user.id}`} className="text-sm">
+                        {user.name} ({user.email})
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex space-x-2">
                 <Button
                   type="submit"
@@ -322,6 +390,12 @@ export const MagicBoxManager: React.FC = () => {
                   {box.is_free && (
                     <Badge variant="secondary" className="rounded-none">
                       Δωρεάν
+                    </Badge>
+                  )}
+                  {box.target_users && box.target_users.length > 0 && (
+                    <Badge variant="outline" className="rounded-none flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      {box.target_users.length} χρήστες
                     </Badge>
                   )}
                 </div>

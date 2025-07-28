@@ -55,18 +55,33 @@ const handler = async (req: Request): Promise<Response> => {
         throw new Error('Magic box not found');
       }
 
-      // Λήψη όλων των ενεργών χρηστών
-      const { data: users, error: usersError } = await supabaseClient
-        .from('app_users')
-        .select('id, name, email')
-        .not('email', 'is', null);
+      let usersToNotify: any[] = [];
 
-      if (usersError) throw usersError;
+      if (magicBox.target_users && magicBox.target_users.length > 0) {
+        // Αποστολή μόνο σε επιλεγμένους χρήστες
+        const { data: targetUsers, error: targetUsersError } = await supabaseClient
+          .from('app_users')
+          .select('id, name, email')
+          .in('id', magicBox.target_users)
+          .not('email', 'is', null);
 
-      console.log("📧 Sending magic box emails to:", users?.length, "users");
+        if (targetUsersError) throw targetUsersError;
+        usersToNotify = targetUsers || [];
+      } else {
+        // Αποστολή σε όλους τους ενεργούς χρήστες
+        const { data: allUsers, error: usersError } = await supabaseClient
+          .from('app_users')
+          .select('id, name, email')
+          .not('email', 'is', null);
+
+        if (usersError) throw usersError;
+        usersToNotify = allUsers || [];
+      }
+
+      console.log("📧 Sending magic box emails to:", usersToNotify.length, "users");
 
       // Send email to each user
-      const emailPromises = users?.map(async (user) => {
+      const emailPromises = usersToNotify.map(async (user) => {
         try {
           const emailResponse = await resend.emails.send({
             from: "HyperGym <noreply@hypergym.gr>",
@@ -111,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
           console.error(`❌ Failed to send magic box email to ${user.email}:`, error);
           return { success: false, userId: user.id, email: user.email, error: error.message };
         }
-      }) || [];
+        }) || [];
 
       const results = await Promise.all(emailPromises);
       const successful = results.filter(r => r.success).length;
