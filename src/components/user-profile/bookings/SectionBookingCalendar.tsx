@@ -193,7 +193,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                     }
                     
                     return (
-                      <div key={`${timeSlot}-${dayIndex}`} className="h-8 border border-gray-200 rounded-none flex items-center justify-center relative group">
+                      <div key={`${timeSlot}-${dayIndex}`} className="h-8 border border-gray-200 bg-white rounded-none flex items-center justify-center relative group">
                         {booking ? (
                           <div className="flex items-center justify-center w-full h-full">
                             <div className="relative flex items-center justify-center w-full h-full">
