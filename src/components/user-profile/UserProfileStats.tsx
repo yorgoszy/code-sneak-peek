@@ -400,9 +400,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Ενεργές Προσφορές - Δεύτερο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=offers`)}
-            className={`text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${
-              offersData?.hasMagicBox ? 'animate-pulse' : ''
-            }`}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
               <Tag className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
