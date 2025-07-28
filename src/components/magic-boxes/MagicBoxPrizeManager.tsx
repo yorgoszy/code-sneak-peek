@@ -4,9 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus, Edit, Trash2, Gift, Percent } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Gift, Percent, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SubscriptionType {
@@ -16,12 +15,11 @@ interface SubscriptionType {
   price: number;
 }
 
-interface Prize {
+interface SubscriptionPrize {
   id: string;
-  subscription_type_id: string | null;
+  subscription_type_id: string;
   quantity: number;
   discount_percentage: number;
-  prize_type: 'subscription' | 'discount_coupon';
   subscription_types?: SubscriptionType | null;
 }
 
@@ -30,32 +28,32 @@ interface MagicBoxPrizeManagerProps {
   onBack: () => void;
 }
 
+interface SelectedSubscription {
+  subscription_type_id: string;
+  quantity: number;
+  discount_percentage: number;
+}
+
 export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
   magicBoxId,
   onBack
 }) => {
-  const [prizes, setPrizes] = useState<Prize[]>([]);
+  const [subscriptionPrizes, setSubscriptionPrizes] = useState<SubscriptionPrize[]>([]);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingPrize, setEditingPrize] = useState<Prize | null>(null);
-  const [formData, setFormData] = useState({
-    prize_type: 'subscription' as 'subscription' | 'discount_coupon',
-    subscription_type_id: '',
-    quantity: 1,
-    discount_percentage: 0
-  });
+  const [selectedSubscriptions, setSelectedSubscriptions] = useState<SelectedSubscription[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchPrizes();
+    fetchSubscriptionPrizes();
     fetchSubscriptionTypes();
   }, [magicBoxId]);
 
-  const fetchPrizes = async () => {
+  const fetchSubscriptionPrizes = async () => {
     try {
       const { data, error } = await supabase
-        .from('magic_box_prizes')
+        .from('magic_box_subscription_prizes')
         .select(`
           *,
           subscription_types (
@@ -69,12 +67,12 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPrizes((data || []) as Prize[]);
+      setSubscriptionPrizes((data || []) as SubscriptionPrize[]);
     } catch (error) {
-      console.error('Error fetching prizes:', error);
+      console.error('Error fetching subscription prizes:', error);
       toast({
         title: 'Σφάλμα',
-        description: 'Αποτυχία φόρτωσης δώρων',
+        description: 'Αποτυχία φόρτωσης συνδρομών',
         variant: 'destructive'
       });
     }
@@ -97,51 +95,90 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
     }
   };
 
+  const addSelectedSubscription = () => {
+    setSelectedSubscriptions([
+      ...selectedSubscriptions,
+      {
+        subscription_type_id: '',
+        quantity: 1,
+        discount_percentage: 0
+      }
+    ]);
+  };
+
+  const updateSelectedSubscription = (index: number, field: keyof SelectedSubscription, value: string | number) => {
+    const updated = [...selectedSubscriptions];
+    updated[index] = { ...updated[index], [field]: value };
+    setSelectedSubscriptions(updated);
+  };
+
+  const removeSelectedSubscription = (index: number) => {
+    setSelectedSubscriptions(selectedSubscriptions.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (selectedSubscriptions.length === 0) {
+      toast({
+        title: 'Σφάλμα',
+        description: 'Προσθέστε τουλάχιστον μία συνδρομή',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const invalidItems = selectedSubscriptions.some(
+      item => !item.subscription_type_id || item.quantity < 1
+    );
+
+    if (invalidItems) {
+      toast({
+        title: 'Σφάλμα',
+        description: 'Συμπληρώστε όλα τα απαιτούμενα πεδία',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const prizeData = {
+      // Διαγραφή παλιών συνδρομών του μαγικού κουτιού
+      const { error: deleteError } = await supabase
+        .from('magic_box_subscription_prizes')
+        .delete()
+        .eq('magic_box_id', magicBoxId);
+
+      if (deleteError) throw deleteError;
+
+      // Προσθήκη νέων συνδρομών
+      const subscriptionData = selectedSubscriptions.map(item => ({
         magic_box_id: magicBoxId,
-        prize_type: formData.prize_type,
-        quantity: formData.quantity,
-        discount_percentage: formData.discount_percentage,
-        subscription_type_id: formData.prize_type === 'subscription' ? formData.subscription_type_id : null
-      };
+        subscription_type_id: item.subscription_type_id,
+        quantity: item.quantity,
+        discount_percentage: item.discount_percentage
+      }));
 
-      if (editingPrize) {
-        const { error } = await supabase
-          .from('magic_box_prizes')
-          .update(prizeData)
-          .eq('id', editingPrize.id);
+      const { error: insertError } = await supabase
+        .from('magic_box_subscription_prizes')
+        .insert(subscriptionData);
 
-        if (error) throw error;
-        
-        toast({
-          title: 'Επιτυχία',
-          description: 'Το δώρο ενημερώθηκε επιτυχώς'
-        });
-      } else {
-        const { error } = await supabase
-          .from('magic_box_prizes')
-          .insert(prizeData);
+      if (insertError) throw insertError;
+      
+      toast({
+        title: 'Επιτυχία',
+        description: 'Οι συνδρομές αποθηκεύτηκαν επιτυχώς'
+      });
 
-        if (error) throw error;
-        
-        toast({
-          title: 'Επιτυχία',
-          description: 'Το δώρο δημιουργήθηκε επιτυχώς'
-        });
-      }
-
-      resetForm();
-      fetchPrizes();
+      setSelectedSubscriptions([]);
+      setShowForm(false);
+      fetchSubscriptionPrizes();
     } catch (error) {
-      console.error('Error saving prize:', error);
+      console.error('Error saving subscription prizes:', error);
       toast({
         title: 'Σφάλμα',
-        description: 'Αποτυχία αποθήκευσης δώρου',
+        description: 'Αποτυχία αποθήκευσης συνδρομών',
         variant: 'destructive'
       });
     } finally {
@@ -149,25 +186,14 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
     }
   };
 
-  const handleEdit = (prize: Prize) => {
-    setEditingPrize(prize);
-    setFormData({
-      prize_type: prize.prize_type,
-      subscription_type_id: prize.subscription_type_id || '',
-      quantity: prize.quantity,
-      discount_percentage: prize.discount_percentage
-    });
-    setShowForm(true);
-  };
-
   const handleDelete = async (id: string) => {
-    if (!confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το δώρο;')) {
+    if (!confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτή τη συνδρομή;')) {
       return;
     }
 
     try {
       const { error } = await supabase
-        .from('magic_box_prizes')
+        .from('magic_box_subscription_prizes')
         .delete()
         .eq('id', id);
 
@@ -175,29 +201,28 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
       
       toast({
         title: 'Επιτυχία',
-        description: 'Το δώρο διαγράφηκε επιτυχώς'
+        description: 'Η συνδρομή διαγράφηκε επιτυχώς'
       });
       
-      fetchPrizes();
+      fetchSubscriptionPrizes();
     } catch (error) {
-      console.error('Error deleting prize:', error);
+      console.error('Error deleting subscription prize:', error);
       toast({
         title: 'Σφάλμα',
-        description: 'Αποτυχία διαγραφής δώρου',
+        description: 'Αποτυχία διαγραφής συνδρομής',
         variant: 'destructive'
       });
     }
   };
 
   const resetForm = () => {
-    setFormData({
-      prize_type: 'subscription',
-      subscription_type_id: '',
-      quantity: 1,
-      discount_percentage: 0
-    });
-    setEditingPrize(null);
+    setSelectedSubscriptions([]);
     setShowForm(false);
+  };
+
+  const getSubscriptionTypeName = (id: string) => {
+    const type = subscriptionTypes.find(t => t.id === id);
+    return type ? `${type.name} - €${type.price}` : '';
   };
 
   return (
@@ -211,91 +236,94 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Πίσω
         </Button>
-        <h2 className="text-2xl font-bold">Δώρα Μαγικού Κουτιού</h2>
+        <h2 className="text-2xl font-bold">Συνδρομές Μαγικού Κουτιού</h2>
         <Button
           onClick={() => setShowForm(true)}
           className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Νέο Δώρο
+          Επιλογή Συνδρομών
         </Button>
       </div>
 
       {showForm && (
         <Card className="rounded-none">
           <CardHeader>
-            <CardTitle>
-              {editingPrize ? 'Επεξεργασία Δώρου' : 'Νέο Δώρο'}
-            </CardTitle>
+            <CardTitle>Επιλογή Συνδρομών για Κλήρωση</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="prize_type">Τύπος Δώρου</Label>
-                <Select
-                  value={formData.prize_type}
-                  onValueChange={(value: 'subscription' | 'discount_coupon') => 
-                    setFormData({ ...formData, prize_type: value })
-                  }
-                >
-                  <SelectTrigger className="rounded-none">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="subscription">Συνδρομή</SelectItem>
-                    <SelectItem value="discount_coupon">Κουπόνι Έκπτωσης</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="space-y-4">
+                {selectedSubscriptions.map((item, index) => (
+                  <div key={index} className="p-4 border rounded-md space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">Συνδρομή #{index + 1}</h4>
+                      <Button
+                        type="button"
+                        onClick={() => removeSelectedSubscription(index)}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-none"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label>Τύπος Συνδρομής</Label>
+                        <select
+                          value={item.subscription_type_id}
+                          onChange={(e) => updateSelectedSubscription(index, 'subscription_type_id', e.target.value)}
+                          className="w-full p-2 border rounded-none"
+                          required
+                        >
+                          <option value="">Επιλέξτε συνδρομή</option>
+                          {subscriptionTypes.map((type) => (
+                            <option key={type.id} value={type.id}>
+                              {type.name} - €{type.price}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <Label>Ποσότητα</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => updateSelectedSubscription(index, 'quantity', parseInt(e.target.value) || 1)}
+                          className="rounded-none"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label>Έκπτωση (%)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={item.discount_percentage}
+                          onChange={(e) => updateSelectedSubscription(index, 'discount_percentage', parseInt(e.target.value) || 0)}
+                          className="rounded-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {formData.prize_type === 'subscription' && (
-                <div>
-                  <Label htmlFor="subscription_type_id">Τύπος Συνδρομής</Label>
-                  <Select
-                    value={formData.subscription_type_id}
-                    onValueChange={(value) => 
-                      setFormData({ ...formData, subscription_type_id: value })
-                    }
-                  >
-                    <SelectTrigger className="rounded-none">
-                      <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {subscriptionTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.name} - €{type.price}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div>
-                <Label htmlFor="quantity">Ποσότητα</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="1"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
-                  className="rounded-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="discount_percentage">Ποσοστό Έκπτωσης (%)</Label>
-                <Input
-                  id="discount_percentage"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.discount_percentage}
-                  onChange={(e) => setFormData({ ...formData, discount_percentage: parseInt(e.target.value) || 0 })}
-                  className="rounded-none"
-                />
-              </div>
+              <Button
+                type="button"
+                onClick={addSelectedSubscription}
+                variant="outline"
+                className="rounded-none"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Προσθήκη Συνδρομής
+              </Button>
 
               <div className="flex space-x-2">
                 <Button
@@ -320,17 +348,13 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {prizes.map((prize) => (
+        {subscriptionPrizes.map((prize) => (
           <Card key={prize.id} className="rounded-none">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {prize.prize_type === 'subscription' ? (
-                    <Gift className="w-5 h-5" />
-                  ) : (
-                    <Percent className="w-5 h-5" />
-                  )}
-                  {prize.prize_type === 'subscription' ? 'Συνδρομή' : 'Κουπόνι'}
+                  <Gift className="w-5 h-5" />
+                  Συνδρομή
                 </div>
                 <Badge variant="secondary" className="rounded-none">
                   x{prize.quantity}
@@ -338,7 +362,7 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {prize.prize_type === 'subscription' && prize.subscription_types && (
+              {prize.subscription_types && (
                 <div className="mb-2">
                   <p className="font-medium">{prize.subscription_types.name}</p>
                   <p className="text-sm text-gray-600">{prize.subscription_types.description}</p>
@@ -356,15 +380,6 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
               
               <div className="flex space-x-2">
                 <Button
-                  onClick={() => handleEdit(prize)}
-                  size="sm"
-                  variant="outline"
-                  className="rounded-none"
-                >
-                  <Edit className="w-4 h-4 mr-1" />
-                  Επεξ.
-                </Button>
-                <Button
                   onClick={() => handleDelete(prize.id)}
                   size="sm"
                   variant="destructive"
@@ -378,11 +393,11 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
         ))}
       </div>
 
-      {!loading && prizes.length === 0 && (
+      {!loading && subscriptionPrizes.length === 0 && (
         <Card className="rounded-none">
           <CardContent className="text-center py-8">
             <Gift className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-500">Δεν υπάρχουν δώρα σε αυτό το μαγικό κουτί</p>
+            <p className="text-gray-500">Δεν υπάρχουν συνδρομές σε αυτό το μαγικό κουτί</p>
           </CardContent>
         </Card>
       )}

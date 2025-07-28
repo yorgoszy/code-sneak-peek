@@ -1655,6 +1655,51 @@ export type Database = {
           },
         ]
       }
+      magic_box_subscription_prizes: {
+        Row: {
+          created_at: string
+          discount_percentage: number
+          id: string
+          magic_box_id: string
+          quantity: number
+          subscription_type_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          magic_box_id: string
+          quantity?: number
+          subscription_type_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          magic_box_id?: string
+          quantity?: number
+          subscription_type_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "magic_box_subscription_prizes_magic_box_id_fkey"
+            columns: ["magic_box_id"]
+            isOneToOne: false
+            referencedRelation: "magic_boxes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "magic_box_subscription_prizes_subscription_type_id_fkey"
+            columns: ["subscription_type_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       magic_boxes: {
         Row: {
           created_at: string
