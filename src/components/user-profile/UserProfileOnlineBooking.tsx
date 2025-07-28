@@ -213,17 +213,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
               booking.section_id === section.id
             );
             
-            // Debug για Body Transformation
-            if (section.name.includes('Body Transformation')) {
-              console.log('🔍 UserProfile - Body Transformation Data:', {
-                sectionId: section.id,
-                sectionName: section.name,
-                availableHours: section.available_hours,
-                allBookings: bookings.length,
-                sectionBookings: sectionBookings.length,
-                sectionBookingsDetails: sectionBookings
-              });
-            }
             
             return (
               <SectionBookingCalendar
