@@ -473,11 +473,11 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
                  </div>
                  <div class="info-row">
                    <span class="label">Ημερομηνία:</span>
-                   <span class="value">${userData?.booking_date ? formatDate(userData.booking_date) : 'N/A'}</span>
+                   <span class="value">${userData?.booking_date ? formatDate(userData.booking_date) : new Date().toLocaleDateString('el-GR')}</span>
                  </div>
                  <div class="info-row">
                    <span class="label">Ώρα:</span>
-                   <span class="value">${userData?.booking_time ? formatTime(userData.booking_time) : 'N/A'}</span>
+                   <span class="value">${userData?.booking_time ? formatTime(userData.booking_time) : new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })}</span>
                  </div>
                  <div class="info-row">
                    <span class="label">Τύπος:</span>

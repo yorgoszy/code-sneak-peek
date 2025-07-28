@@ -146,7 +146,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       </Dialog>
       
       <div className="text-center px-4 md:px-0">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Online Booking</h2>
         <p className="text-sm md:text-base text-gray-600">Κλείσε online τα ραντεβού σου για προπονήσεις και συνεδρίες</p>
         
         {availability && availability.type !== 'none' && (
