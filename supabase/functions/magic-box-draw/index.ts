@@ -114,15 +114,7 @@ serve(async (req) => {
     // Get all available prizes for this campaign
     const { data: prizes, error: prizesError } = await supabaseClient
       .from('campaign_prizes')
-      .select(`
-        *,
-        subscription_types (
-          id,
-          name,
-          description,
-          duration_months
-        )
-      `)
+      .select('*')
       .eq('campaign_id', campaign_id)
       .gt('remaining_quantity', 0);
 
@@ -220,11 +212,18 @@ serve(async (req) => {
     };
 
     if (wonPrize.prize_type === 'subscription' && wonPrize.subscription_type_id) {
+      // Get subscription type details
+      const { data: subscriptionType } = await supabaseClient
+        .from('subscription_types')
+        .select('*')
+        .eq('id', wonPrize.subscription_type_id)
+        .single();
+
       // Create subscription for the user
       const startDate = new Date();
       const endDate = new Date();
-      if (wonPrize.subscription_types?.duration_months) {
-        endDate.setMonth(endDate.getMonth() + wonPrize.subscription_types.duration_months);
+      if (subscriptionType?.duration_months) {
+        endDate.setMonth(endDate.getMonth() + subscriptionType.duration_months);
       } else {
         endDate.setMonth(endDate.getMonth() + 1); // Default 1 month
       }
@@ -253,9 +252,9 @@ serve(async (req) => {
           .eq('id', participation.id);
       }
 
-      result.message = `Συγχαρητήρια! Κέρδισες συνδρομή ${wonPrize.subscription_types?.name || 'Premium'}!`;
-      result.subscription_name = wonPrize.subscription_types?.name;
-      result.subscription_description = wonPrize.subscription_types?.description;
+      result.message = `Συγχαρητήρια! Κέρδισες συνδρομή ${subscriptionType?.name || 'Premium'}!`;
+      result.subscription_name = subscriptionType?.name;
+      result.subscription_description = subscriptionType?.description;
 
     } else if (wonPrize.prize_type === 'discount_coupon') {
       // Create discount coupon
