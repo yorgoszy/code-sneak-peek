@@ -69,7 +69,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
     const dateStr = format(date, 'yyyy-MM-dd');
     return bookings.find(booking => 
       booking.booking_date === dateStr && 
-      booking.booking_time === time && 
+      booking.booking_time.slice(0, 5) === time && 
       booking.section_id === sectionId
     );
   };
