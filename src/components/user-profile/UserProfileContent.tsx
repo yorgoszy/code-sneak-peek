@@ -46,10 +46,10 @@ export const UserProfileContent = ({
     setActiveTab && activeTab !== 'overview' && (
       <button
         onClick={() => setActiveTab('overview')}
-        className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors mb-4"
+        className="flex items-center space-x-2 text-gray-700 hover:text-black transition-colors mb-4 font-medium"
       >
-        <ArrowLeft className="h-4 w-4" />
-        <span className="text-sm">Επιστροφή στην Επισκόπηση</span>
+        <ArrowLeft className="h-5 w-5 font-bold stroke-2" />
+        <span className="text-sm font-medium">Επιστροφή στην αρχική</span>
       </button>
     )
   );
