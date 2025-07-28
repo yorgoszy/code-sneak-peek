@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Calendar, Clock, Users, MapPin, X } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, X, ShoppingCart } from "lucide-react";
 import { BookingCalendar } from "@/components/booking/BookingCalendar";
 import { useUserBookings } from "@/hooks/useUserBookings";
 import { format } from "date-fns";
@@ -12,6 +12,7 @@ import { UserWaitingLists } from "./bookings/UserWaitingLists";
 import { WeeklyBookingCalendar } from "./bookings/WeeklyBookingCalendar";
 import { SectionBookingCalendar } from "./bookings/SectionBookingCalendar";
 import { useBookingSections } from "@/hooks/useBookingSections";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
@@ -25,6 +26,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const [showNoVisitsDialog, setShowNoVisitsDialog] = useState(false);
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
   const { sections } = useBookingSections();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -134,12 +136,26 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 Για να κλείσεις ραντεβού, χρειάζεται να αγοράσεις επισκέψεις από τις αγορές
               </p>
               
-              <Button 
-                onClick={() => setShowNoVisitsDialog(false)}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-none"
-              >
-                Κλείσε
-              </Button>
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => {
+                    setShowNoVisitsDialog(false);
+                    navigate(`/dashboard/user-profile/${userProfile?.id}/shop`);
+                  }}
+                  className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Αγόρασε επίσκεψη
+                </Button>
+                
+                <Button 
+                  onClick={() => setShowNoVisitsDialog(false)}
+                  variant="outline"
+                  className="w-full rounded-none"
+                >
+                  Κλείσε
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
