@@ -140,7 +140,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 <Button 
                   onClick={() => {
                     setShowNoVisitsDialog(false);
-                    navigate(`/dashboard/user-profile/${userProfile?.id}/shop`);
+                    navigate(`/dashboard/user-profile/shop`);
                   }}
                   className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
                 >
@@ -226,7 +226,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
               </p>
               {!availability?.has_gym_access && (
                 <Button 
-                  onClick={() => navigate(`/dashboard/user-profile/${userProfile?.id}/shop`)}
+                  onClick={() => navigate(`/dashboard/user-profile/shop`)}
                   className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
