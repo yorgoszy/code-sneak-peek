@@ -67,6 +67,25 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   // Get booking for specific date and time
   const getBookingForSlot = (date: Date, time: string) => {
     const dateStr = format(date, 'yyyy-MM-dd');
+    
+    // Debug logging για το Body Transformation section
+    if (sectionName.includes('Body Transformation')) {
+      console.log('🔍 Body Transformation Debug:', {
+        sectionId,
+        sectionName,
+        dateStr,
+        time,
+        totalBookings: bookings.length,
+        bookings: bookings.map(b => ({
+          id: b.id,
+          section_id: b.section_id,
+          booking_date: b.booking_date,
+          booking_time: b.booking_time,
+          matches: b.booking_date === dateStr && b.booking_time.slice(0, 5) === time && b.section_id === sectionId
+        }))
+      });
+    }
+    
     return bookings.find(booking => 
       booking.booking_date === dateStr && 
       booking.booking_time.slice(0, 5) === time && 
