@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Plus, Edit, Trash2, Gift, Percent, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface SubscriptionType {
   id: string;
@@ -50,6 +51,8 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedSubscriptions, setSelectedSubscriptions] = useState<SelectedSubscription[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [prizeToDelete, setPrizeToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -197,22 +200,25 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτή τη συνδρομή;')) {
-      return;
-    }
+  const handleDeleteClick = (id: string) => {
+    setPrizeToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!prizeToDelete) return;
 
     try {
       const { error } = await supabase
         .from('campaign_prizes')
         .delete()
-        .eq('id', id);
+        .eq('id', prizeToDelete);
 
       if (error) throw error;
       
       toast({
         title: 'Επιτυχία',
-        description: 'Η συνδρομή διαγράφηκε επιτυχώς'
+        description: 'Το βραβείο διαγράφηκε επιτυχώς'
       });
       
       fetchSubscriptionPrizes();
@@ -220,9 +226,11 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
       console.error('Error deleting subscription prize:', error);
       toast({
         title: 'Σφάλμα',
-        description: 'Αποτυχία διαγραφής συνδρομής',
+        description: 'Αποτυχία διαγραφής βραβείου',
         variant: 'destructive'
       });
+    } finally {
+      setPrizeToDelete(null);
     }
   };
 
@@ -391,7 +399,15 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
               
               <div className="flex space-x-2">
                 <Button
-                  onClick={() => handleDelete(prize.id)}
+                  onClick={() => {/* TODO: Implement edit functionality */}}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-none"
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => handleDeleteClick(prize.id)}
                   size="sm"
                   variant="destructive"
                   className="rounded-none"
@@ -412,6 +428,14 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
           </CardContent>
         </Card>
       )}
+
+      <ConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleConfirmDelete}
+        description="Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το βραβείο;"
+        confirmText="Διαγραφή"
+      />
     </div>
   );
 };
