@@ -390,7 +390,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              <span className="text-gray-400">-</span>
+              <span className="text-gray-400"></span>
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Αγορές
