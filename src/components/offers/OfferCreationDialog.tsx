@@ -9,11 +9,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, matchesSearchTerm } from "@/lib/utils";
 
 interface SubscriptionType {
   id: string;
@@ -63,6 +64,8 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
   const [visibility, setVisibility] = useState<'all' | 'individual' | 'selected' | 'groups'>('all');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [isFree, setIsFree] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -110,6 +113,8 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
     setVisibility('all');
     setSelectedUsers([]);
     setSelectedGroups([]);
+    setIsFree(false);
+    setUserSearchTerm('');
   };
 
   const handleClose = () => {
@@ -118,13 +123,13 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
   };
 
   const handleSave = async () => {
-    if (!name.trim() || !subscriptionTypeId || !discountedPrice || !startDate || !endDate) {
+    if (!name.trim() || !subscriptionTypeId || (!isFree && !discountedPrice) || !startDate || !endDate) {
       toast.error('Συμπληρώστε όλα τα απαιτούμενα πεδία');
       return;
     }
 
-    const price = parseFloat(discountedPrice);
-    if (isNaN(price) || price <= 0) {
+    const price = isFree ? 0 : parseFloat(discountedPrice);
+    if (!isFree && (isNaN(price) || price <= 0)) {
       toast.error('Η τιμή πρέπει να είναι θετικός αριθμός');
       return;
     }
@@ -149,6 +154,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
         description: description.trim() || null,
         subscription_type_id: subscriptionTypeId,
         discounted_price: price,
+        is_free: isFree,
         start_date: format(startDate, 'yyyy-MM-dd'),
         end_date: format(endDate, 'yyyy-MM-dd'),
         visibility,
@@ -214,7 +220,25 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
                 onChange={(e) => setDiscountedPrice(e.target.value)}
                 placeholder="0.00"
                 className="rounded-none"
+                disabled={isFree}
               />
+              <div className="flex items-center space-x-2 mt-2">
+                <Checkbox
+                  id="isFree"
+                  checked={isFree}
+                  onCheckedChange={(checked) => {
+                    setIsFree(!!checked);
+                    if (checked) {
+                      setDiscountedPrice('0');
+                    } else {
+                      setDiscountedPrice('');
+                    }
+                  }}
+                />
+                <Label htmlFor="isFree" className="text-sm cursor-pointer">
+                  Δωρεάν προσφορά
+                </Label>
+              </div>
             </div>
           </div>
 
@@ -337,26 +361,39 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
           {(visibility === 'individual' || visibility === 'selected') && (
             <div>
               <Label>Επιλογή Χρηστών</Label>
+              <Input
+                type="text"
+                placeholder="Αναζήτηση χρηστών..."
+                value={userSearchTerm}
+                onChange={(e) => setUserSearchTerm(e.target.value)}
+                className="rounded-none mb-2"
+              />
               <div className="border border-gray-200 rounded-none p-2 max-h-32 overflow-y-auto">
-                {users.map((user) => (
-                  <div key={user.id} className="flex items-center space-x-2 py-1">
-                    <input
-                      type="checkbox"
-                      id={`user-${user.id}`}
-                      checked={selectedUsers.includes(user.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedUsers([...selectedUsers, user.id]);
-                        } else {
-                          setSelectedUsers(selectedUsers.filter(id => id !== user.id));
-                        }
-                      }}
-                    />
-                    <label htmlFor={`user-${user.id}`} className="text-sm cursor-pointer">
-                      {user.name} ({user.email})
-                    </label>
-                  </div>
-                ))}
+                {users
+                  .filter(user => 
+                    !userSearchTerm || 
+                    matchesSearchTerm(user.name, userSearchTerm) || 
+                    matchesSearchTerm(user.email, userSearchTerm)
+                  )
+                  .map((user) => (
+                    <div key={user.id} className="flex items-center space-x-2 py-1">
+                      <input
+                        type="checkbox"
+                        id={`user-${user.id}`}
+                        checked={selectedUsers.includes(user.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedUsers([...selectedUsers, user.id]);
+                          } else {
+                            setSelectedUsers(selectedUsers.filter(id => id !== user.id));
+                          }
+                        }}
+                      />
+                      <label htmlFor={`user-${user.id}`} className="text-sm cursor-pointer w-full">
+                        {user.name} ({user.email})
+                      </label>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
