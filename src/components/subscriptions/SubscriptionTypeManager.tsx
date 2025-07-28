@@ -40,6 +40,8 @@ interface DraftProgram {
   id: string;
   name: string;
   description?: string;
+  weeks_count?: number;
+  days_per_week?: number;
 }
 
 export const SubscriptionTypeManager: React.FC = () => {
@@ -187,9 +189,23 @@ export const SubscriptionTypeManager: React.FC = () => {
   const loadDraftPrograms = async () => {
     try {
       console.log('🔄 Loading draft programs...');
-      const { data, error } = await supabase
+      
+      // Φόρτωση προγραμμάτων με στοιχεία εβδομάδων και ημερών
+      const { data: programs, error } = await supabase
         .from('programs')
-        .select('id, name, description')
+        .select(`
+          id, 
+          name, 
+          description,
+          program_weeks(
+            id,
+            week_number,
+            program_days(
+              id,
+              day_number
+            )
+          )
+        `)
         .order('name');
 
       if (error) {
@@ -209,16 +225,25 @@ export const SubscriptionTypeManager: React.FC = () => {
 
       const assignedProgramIds = new Set(assignments?.map(a => a.program_id) || []);
       
-      // Filter για draft προγράμματα (χωρίς assignments)
-      const draftPrograms = (data || [])
+      // Filter και υπολογισμός στοιχείων για draft προγράμματα (χωρίς assignments)
+      const draftPrograms = (programs || [])
         .filter(program => !assignedProgramIds.has(program.id))
-        .map(program => ({
-          id: program.id,
-          name: program.name,
-          description: program.description
-        }));
+        .map(program => {
+          const weeks = program.program_weeks || [];
+          const weeksCount = weeks.length;
+          const daysPerWeek = weeks.length > 0 ? 
+            Math.max(...weeks.map(week => (week.program_days || []).length)) : 0;
+          
+          return {
+            id: program.id,
+            name: program.name,
+            description: program.description,
+            weeks_count: weeksCount,
+            days_per_week: daysPerWeek
+          };
+        });
       
-      console.log('✅ Loaded draft programs:', draftPrograms);
+      console.log('✅ Loaded draft programs with stats:', draftPrograms);
       setDraftPrograms(draftPrograms);
     } catch (error) {
       console.error('💥 Error loading draft programs:', error);
@@ -852,22 +877,27 @@ export const SubscriptionTypeManager: React.FC = () => {
                   <SelectTrigger className="rounded-none">
                     <SelectValue placeholder="Επιλέξτε πρόγραμμα" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {draftPrograms.map((program) => (
-                      <SelectItem key={program.id} value={program.id}>
-                        <div>
-                          <div className="font-medium">{program.name}</div>
-                          {program.description && (
-                            <div className="text-xs text-gray-500">{program.description}</div>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500 mt-1">
-                  Εμφανίζονται μόνο τα draft προγράμματα (χωρίς αναθέσεις)
-                </p>
+                   <SelectContent>
+                     {draftPrograms.map((program) => (
+                       <SelectItem key={program.id} value={program.id}>
+                         <div>
+                           <div className="font-medium">{program.name}</div>
+                           <div className="text-xs text-gray-500 flex items-center gap-2">
+                             {program.description && (
+                               <span>{program.description}</span>
+                             )}
+                             <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-xs">
+                               {program.weeks_count || 0} εβδομάδες · {program.days_per_week || 0} ημέρες/εβδομάδα
+                             </span>
+                           </div>
+                         </div>
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+                 <p className="text-xs text-gray-500 mt-1">
+                   Εμφανίζονται μόνο τα draft προγράμματα (χωρίς αναθέσεις)
+                 </p>
               </div>
             )}
             <div>
