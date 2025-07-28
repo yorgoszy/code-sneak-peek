@@ -24,7 +24,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     weekProgress,
     handleDateSelect,
     handleClearAllDates,
-    handleRemoveDate,
     isDateSelected,
     isDateDisabled
   } = useCalendarLogic(program, totalDays, onTrainingDatesChange);
@@ -43,7 +42,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
             currentWeekInfo={currentWeekInfo}
             onDateSelect={handleDateSelect}
             onClearAllDates={handleClearAllDates}
-            onRemoveDate={handleRemoveDate}
             isDateSelected={isDateSelected}
             isDateDisabled={isDateDisabled}
           />

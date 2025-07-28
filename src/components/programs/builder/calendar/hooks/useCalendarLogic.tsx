@@ -82,7 +82,7 @@ export const useCalendarLogic = (
   const currentWeekInfo = useMemo(() => getCurrentWeekBeingFilled(), [selectedDatesAsStrings, weekStructure]);
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (!date || !currentWeekInfo) return;
+    if (!date) return;
     
     // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τη νέα function για σωστή μετατροπή
     const dateString = formatDateForStorage(date);
@@ -95,11 +95,11 @@ export const useCalendarLogic = (
     });
     
     if (currentDates.includes(dateString)) {
-      // Remove date if already selected
+      // Remove date if already selected (αποεπιλογή)
       const newDates = currentDates.filter(d => d !== dateString);
       const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
       onTrainingDatesChange(datesAsObjects);
-    } else if (currentWeekInfo.remainingForThisWeek > 0) {
+    } else if (currentWeekInfo && currentWeekInfo.remainingForThisWeek > 0) {
       // Add date if there's still room in the current program week
       const newDates = [...currentDates, dateString].sort();
       const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
@@ -111,13 +111,6 @@ export const useCalendarLogic = (
     onTrainingDatesChange([]);
   };
 
-  const handleRemoveDate = (date: Date) => {
-    const dateString = formatDateForStorage(date);
-    const currentDates = selectedDatesAsStrings.slice();
-    const newDates = currentDates.filter(d => d !== dateString);
-    const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
-    onTrainingDatesChange(datesAsObjects);
-  };
 
   const isDateSelected = (date: Date) => {
     const dateString = formatDateForStorage(date);
@@ -168,7 +161,6 @@ export const useCalendarLogic = (
     weekProgress,
     handleDateSelect,
     handleClearAllDates,
-    handleRemoveDate,
     isDateSelected,
     isDateDisabled
   };
