@@ -37,6 +37,8 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
   const [prizes, setPrizes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [prizeToDelete, setPrizeToDelete] = useState<string | null>(null);
   const [subscriptionTypes, setSubscriptionTypes] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     prize_type: 'subscription',
@@ -141,16 +143,19 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
     }
   };
 
-  const handleDelete = async (prizeId: string) => {
-    if (!confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το βραβείο;')) {
-      return;
-    }
+  const handleDeleteClick = (prizeId: string) => {
+    setPrizeToDelete(prizeId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!prizeToDelete) return;
 
     try {
       const { error } = await supabase
         .from('campaign_prizes')
         .delete()
-        .eq('id', prizeId);
+        .eq('id', prizeToDelete);
 
       if (error) throw error;
 
@@ -167,6 +172,9 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
         description: 'Αποτυχία διαγραφής βραβείου',
         variant: 'destructive'
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setPrizeToDelete(null);
     }
   };
 
@@ -349,7 +357,7 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
                   </div>
                 </div>
                 <Button
-                  onClick={() => handleDelete(prize.id)}
+                  onClick={() => handleDeleteClick(prize.id)}
                   size="sm"
                   variant="destructive"
                   className="rounded-none"
@@ -370,6 +378,30 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
           </CardContent>
         </Card>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none max-w-md mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center">
+              Επιβεβαίωση Διαγραφής
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το βραβείο;
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex justify-center gap-4">
+            <AlertDialogCancel className="rounded-none">
+              Ακύρωση
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="rounded-none bg-destructive hover:bg-destructive/90"
+            >
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
