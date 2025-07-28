@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye, Mail } from "lucide-react";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
   Table,
@@ -29,6 +29,8 @@ import { EditUserDialog } from "@/components/EditUserDialog";
 import { DeleteUserDialog } from "@/components/DeleteUserDialog";
 import { UserProfileDialog } from "@/components/UserProfileDialog";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { testPasswordReset } from "@/utils/testPasswordReset";
+import { toast } from "sonner";
 
 interface AppUser {
   id: string;
@@ -189,6 +191,29 @@ const Users = () => {
   const handleUserDeleted = () => {
     console.log('✅ User deleted, refreshing list');
     fetchUsers();
+  };
+
+  const handleTestPasswordReset = async (user: AppUser) => {
+    console.log('🧪 Testing password reset for:', user.email);
+    toast.loading('Δοκιμή αποστολής email reset...', { id: 'password-reset-test' });
+    
+    try {
+      const result = await testPasswordReset(user.email);
+      
+      if (result.success) {
+        toast.success(`✅ Email reset στάλθηκε επιτυχώς στο ${user.email}`, { 
+          id: 'password-reset-test' 
+        });
+      } else {
+        toast.error(`❌ Σφάλμα: ${result.error}`, { 
+          id: 'password-reset-test' 
+        });
+      }
+    } catch (error: any) {
+      toast.error(`💥 Εξαίρεση: ${error.message}`, { 
+        id: 'password-reset-test' 
+      });
+    }
   };
 
   // Filter users based on search term and filters
@@ -406,12 +431,13 @@ const Users = () => {
                             </TableCell>
                             <TableCell>{formatDate(user.created_at)}</TableCell>
                             <TableCell>
-                              <div className="flex space-x-2">
+                              <div className="flex space-x-1">
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
                                   className="rounded-none"
                                   onClick={() => handleViewUser(user)}
+                                  title="Προβολή προφίλ"
                                 >
                                   <Eye className="h-3 w-3" />
                                 </Button>
@@ -420,14 +446,25 @@ const Users = () => {
                                   size="sm" 
                                   className="rounded-none"
                                   onClick={() => handleEditUser(user)}
+                                  title="Επεξεργασία χρήστη"
                                 >
                                   <Edit className="h-3 w-3" />
                                 </Button>
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
+                                  className="rounded-none text-blue-600 hover:text-blue-700"
+                                  onClick={() => handleTestPasswordReset(user)}
+                                  title="Test Password Reset"
+                                >
+                                  <Mail className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
                                   className="rounded-none text-red-600 hover:text-red-700"
                                   onClick={() => handleDeleteUser(user)}
+                                  title="Διαγραφή χρήστη"
                                 >
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
@@ -473,6 +510,7 @@ const Users = () => {
                               size="sm" 
                               className="rounded-none p-2"
                               onClick={() => handleViewUser(user)}
+                              title="Προβολή προφίλ"
                             >
                               <Eye className="h-3 w-3" />
                             </Button>
@@ -481,14 +519,25 @@ const Users = () => {
                               size="sm" 
                               className="rounded-none p-2"
                               onClick={() => handleEditUser(user)}
+                              title="Επεξεργασία χρήστη"
                             >
                               <Edit className="h-3 w-3" />
                             </Button>
                             <Button 
                               variant="outline" 
                               size="sm" 
+                              className="rounded-none text-blue-600 hover:text-blue-700 p-2"
+                              onClick={() => handleTestPasswordReset(user)}
+                              title="Test Password Reset"
+                            >
+                              <Mail className="h-3 w-3" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
                               className="rounded-none text-red-600 hover:text-red-700 p-2"
                               onClick={() => handleDeleteUser(user)}
+                              title="Διαγραφή χρήστη"
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
