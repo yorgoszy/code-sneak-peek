@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Trash2 } from "lucide-react";
+import { CalendarIcon, Trash2, X } from "lucide-react";
 import { parseISO, addMonths, subMonths } from "date-fns";
 import { el } from "date-fns/locale";
 
@@ -15,6 +15,7 @@ interface CalendarDisplayProps {
   onClearAllDates: () => void;
   isDateSelected: (date: Date) => boolean;
   isDateDisabled: (date: Date) => boolean;
+  onRemoveDate?: (date: Date) => void;
 }
 
 export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
@@ -24,7 +25,8 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   onDateSelect,
   onClearAllDates,
   isDateSelected,
-  isDateDisabled
+  isDateDisabled,
+  onRemoveDate
 }) => {
   const calendarRef = useRef<HTMLDivElement>(null);
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
@@ -76,6 +78,32 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
       </CardHeader>
       
       <CardContent>
+        {/* Selected Dates List with Remove Option */}
+        {selectedDatesAsStrings.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-sm font-medium mb-2">Επιλεγμένες Ημερομηνίες:</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-32 overflow-y-auto">
+              {selectedDatesAsStrings.map((dateStr) => {
+                const date = parseISO(dateStr);
+                return (
+                  <div key={dateStr} className="flex items-center justify-between bg-[#00ffba] text-black px-2 py-1 rounded-none text-xs">
+                    <span>{date.toLocaleDateString('el-GR')}</span>
+                    {onRemoveDate && (
+                      <button
+                        onClick={() => onRemoveDate(date)}
+                        className="ml-1 hover:bg-black hover:text-[#00ffba] rounded-full p-0.5"
+                        title="Αφαίρεση ημερομηνίας"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-center">
           <div ref={calendarRef} className="cursor-pointer">
             <Calendar

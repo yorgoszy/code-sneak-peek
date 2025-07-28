@@ -2675,6 +2675,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           price: number
+          program_id: string | null
           single_purchase: boolean | null
           subscription_mode: string
           visit_count: number | null
@@ -2691,6 +2692,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           price: number
+          program_id?: string | null
           single_purchase?: boolean | null
           subscription_mode?: string
           visit_count?: number | null
@@ -2707,12 +2709,21 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           price?: number
+          program_id?: string | null
           single_purchase?: boolean | null
           subscription_mode?: string
           visit_count?: number | null
           visit_expiry_months?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscription_types_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       test_categories: {
         Row: {

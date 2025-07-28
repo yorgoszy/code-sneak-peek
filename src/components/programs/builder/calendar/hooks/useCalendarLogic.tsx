@@ -111,6 +111,14 @@ export const useCalendarLogic = (
     onTrainingDatesChange([]);
   };
 
+  const handleRemoveDate = (date: Date) => {
+    const dateString = formatDateForStorage(date);
+    const currentDates = selectedDatesAsStrings.slice();
+    const newDates = currentDates.filter(d => d !== dateString);
+    const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
+    onTrainingDatesChange(datesAsObjects);
+  };
+
   const isDateSelected = (date: Date) => {
     const dateString = formatDateForStorage(date);
     return selectedDatesAsStrings.includes(dateString);
@@ -160,6 +168,7 @@ export const useCalendarLogic = (
     weekProgress,
     handleDateSelect,
     handleClearAllDates,
+    handleRemoveDate,
     isDateSelected,
     isDateDisabled
   };
