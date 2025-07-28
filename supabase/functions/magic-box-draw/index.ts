@@ -88,9 +88,11 @@ serve(async (req) => {
     }
 
     // Check if user already participated in this campaign
+    console.log(`🔍 Checking if user ${appUser.id} already participated in campaign ${campaign_id}`);
+    
     const { data: existingParticipation, error: participationError } = await supabaseClient
       .from('user_campaign_participations')
-      .select('id')
+      .select('id, created_at')
       .eq('user_id', appUser.id)
       .eq('campaign_id', campaign_id)
       .maybeSingle();
@@ -101,6 +103,7 @@ serve(async (req) => {
     }
 
     if (existingParticipation) {
+      console.log(`❌ User ${appUser.id} already participated at ${existingParticipation.created_at}`);
       return new Response(JSON.stringify({ 
         success: false, 
         message: 'Έχεις ήδη συμμετάσχει σε αυτή την εκστρατεία!' 

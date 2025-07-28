@@ -126,13 +126,19 @@ export const MagicBoxGame: React.FC = () => {
       return;
     }
 
-    // Έλεγχος αν ο χρήστης έχει ήδη παίξει σε αυτή την εκστρατεία
+    // Έλεγχος αν ο χρήστης έχει ήδη παίξει σε αυτή την εκστρατεία (double check)
     if (hasPlayedCampaign(campaignId)) {
       toast({
         title: 'Ωχ!',
         description: 'Έχεις ήδη συμμετάσχει σε αυτή την εκστρατεία!',
         variant: 'destructive'
       });
+      return;
+    }
+
+    // Έλεγχος αν το κουμπί είναι ήδη disabled (prevent double clicks)
+    if (isPlayingCampaign(campaignId)) {
+      console.log('Already playing this campaign, ignoring click');
       return;
     }
 
