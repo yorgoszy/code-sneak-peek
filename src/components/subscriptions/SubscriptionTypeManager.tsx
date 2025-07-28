@@ -197,10 +197,10 @@ export const SubscriptionTypeManager: React.FC = () => {
           id, 
           name, 
           description,
-          program_weeks(
+          program_weeks!inner(
             id,
             week_number,
-            program_days(
+            program_days!inner(
               id,
               day_number
             )
@@ -212,6 +212,8 @@ export const SubscriptionTypeManager: React.FC = () => {
         console.error('❌ Error loading programs:', error);
         throw error;
       }
+
+      console.log('📊 Raw programs data:', programs);
 
       // Φόρτωση assignments ξεχωριστά
       const { data: assignments, error: assignmentsError } = await supabase
@@ -231,15 +233,27 @@ export const SubscriptionTypeManager: React.FC = () => {
         .map(program => {
           const weeks = program.program_weeks || [];
           const weeksCount = weeks.length;
-          const daysPerWeek = weeks.length > 0 ? 
-            Math.max(...weeks.map(week => (week.program_days || []).length)) : 0;
+          
+          // Υπολογισμός μέγιστου αριθμού ημερών ανά εβδομάδα
+          let maxDaysPerWeek = 0;
+          weeks.forEach(week => {
+            const daysCount = (week.program_days || []).length;
+            if (daysCount > maxDaysPerWeek) {
+              maxDaysPerWeek = daysCount;
+            }
+          });
+          
+          console.log(`📈 Program "${program.name}": ${weeksCount} weeks, ${maxDaysPerWeek} max days/week`, {
+            weeks: weeks,
+            program_weeks: program.program_weeks
+          });
           
           return {
             id: program.id,
             name: program.name,
             description: program.description,
             weeks_count: weeksCount,
-            days_per_week: daysPerWeek
+            days_per_week: maxDaysPerWeek
           };
         });
       
