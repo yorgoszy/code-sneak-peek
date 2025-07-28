@@ -80,6 +80,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (participationError) {
+      console.error('Error checking existing participations:', participationError);
       throw new Error('Error checking existing participations');
     }
 
@@ -92,6 +93,8 @@ serve(async (req) => {
         status: 400,
       });
     }
+
+    console.log(`✅ User ${appUser.id} can participate in campaign ${campaign_id}`);
 
     // Get all available prizes for this campaign from magic_box_subscription_prizes
     const { data: prizes, error: prizesError } = await supabaseClient
@@ -108,7 +111,15 @@ serve(async (req) => {
       .eq('magic_box_id', campaign_id)
       .gt('quantity', 0);
 
-    if (prizesError || !prizes || prizes.length === 0) {
+    console.log(`🎁 Found ${prizes?.length || 0} available prizes for campaign ${campaign_id}`);
+    
+    if (prizesError) {
+      console.error('Error fetching prizes:', prizesError);
+      throw new Error('Error fetching prizes');
+    }
+
+    if (!prizes || prizes.length === 0) {
+      console.log(`❌ No available prizes found for campaign ${campaign_id}`);
       return new Response(JSON.stringify({ 
         success: false, 
         message: 'Δεν υπάρχουν διαθέσιμα δώρα στην εκστρατεία!' 
