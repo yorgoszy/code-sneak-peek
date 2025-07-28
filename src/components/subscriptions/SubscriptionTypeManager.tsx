@@ -228,7 +228,7 @@ export const SubscriptionTypeManager: React.FC = () => {
               .select(`
                 id,
                 week_number,
-                program_days(
+                program_days!fk_program_days_week_id(
                   id,
                   day_number
                 )
