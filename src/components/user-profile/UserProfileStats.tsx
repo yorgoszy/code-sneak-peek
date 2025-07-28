@@ -462,7 +462,10 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          <div className="text-center flex flex-col min-w-0">
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=payments`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+          >
             <div className="h-10 flex items-center justify-center">
               {isPaused ? (
                 <Pause className={`text-yellow-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
@@ -492,7 +495,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Μέρες Συνδρομής
             </div>
-          </div>
+          </button>
 
           {/* Επισκέψεις - Clickable */}
           <button 
@@ -518,8 +521,11 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          {/* Επερχόμενη Επίσκεψη - Non-clickable (just displays info) */}
-          <div className="text-center flex flex-col min-w-0">
+          {/* Επερχόμενη Επίσκεψη - Clickable */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+          >
             <div className="h-10 flex items-center justify-center">
               <MapPin className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 upcomingVisit ? 'text-purple-500' : 'text-gray-400'
@@ -543,7 +549,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενη Επίσκεψη
             </div>
-          </div>
+          </button>
 
           {/* Βιντεοκλήσεις - Clickable */}
           <button 
