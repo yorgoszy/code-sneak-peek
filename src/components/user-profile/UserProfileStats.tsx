@@ -474,7 +474,35 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          {/* Επισκέψεις - Πέμπτο */}
+          {/* Ημέρες Προπόνησης / Προγράμματα - Πέμπτο (δεξιά από Μέρες Συνδρομής) */}
+          <button 
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+          >
+            <div className="h-10 flex items-center justify-center">
+              <Dumbbell className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+                stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              {stats.programsCount > 0 ? (
+                <span className={
+                  stats.programsCount === 1 ? 'text-red-600' :
+                  stats.programsCount <= 3 ? 'text-orange-600' :
+                  'text-green-600'
+                }>
+                  {stats.programsCount}
+                </span>
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </div>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
+            </div>
+          </button>
+
+          {/* Επισκέψεις - Έκτο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
@@ -528,35 +556,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             </div>
           </button>
 
-          {/* Ημέρες Προπόνησης / Προγράμματα - Έβδομο (μετακινημένο) */}
-          <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
-          >
-            <div className="h-10 flex items-center justify-center">
-              <Dumbbell className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
-                stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
-              }`} />
-            </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {stats.programsCount > 0 ? (
-                <span className={
-                  stats.programsCount === 1 ? 'text-red-600' :
-                  stats.programsCount <= 3 ? 'text-orange-600' :
-                  'text-green-600'
-                }>
-                  {stats.programsCount}
-                </span>
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
-            </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
-            </div>
-          </button>
-
-          {/* Επερχόμενα Τεστ - Όγδοο (μετακινημένο) */}
+          {/* Επερχόμενα Τεστ - Όγδοο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=tests`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
