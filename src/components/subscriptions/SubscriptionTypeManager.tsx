@@ -237,6 +237,7 @@ export const SubscriptionTypeManager: React.FC = () => {
 
             if (weeksError) {
               console.warn(`⚠️ Error loading weeks for program ${program.name}:`, weeksError);
+              console.log('📊 Full error details:', JSON.stringify(weeksError, null, 2));
               return {
                 id: program.id,
                 name: program.name,
@@ -249,9 +250,12 @@ export const SubscriptionTypeManager: React.FC = () => {
             const weeksCount = weeks?.length || 0;
             let maxDaysPerWeek = 0;
             
+            console.log(`📊 Raw weeks data for program ${program.name}:`, weeks);
+            
             if (weeks) {
               weeks.forEach(week => {
                 const daysCount = (week.program_days || []).length;
+                console.log(`  📅 Week ${week.week_number}: ${daysCount} days`, week.program_days);
                 if (daysCount > maxDaysPerWeek) {
                   maxDaysPerWeek = daysCount;
                 }
