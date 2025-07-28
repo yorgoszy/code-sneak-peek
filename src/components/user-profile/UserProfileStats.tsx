@@ -26,7 +26,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
   const [videocallData, setVideocallData] = useState<{used: number, total: number} | null>(null);
   const [upcomingVideocall, setUpcomingVideocall] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number, room_url?: string} | null>(null);
   const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number} | null>(null);
-  const [offersData, setOffersData] = useState<{available: number, accepted: boolean} | null>(null);
+  const [offersData, setOffersData] = useState<{available: number, accepted: boolean, hasMagicBox: boolean} | null>(null);
   const [upcomingTests, setUpcomingTests] = useState<{count: number, daysLeft: number} | null>(null);
   
   useEffect(() => {
@@ -298,6 +298,18 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return;
         }
 
+        // Φόρτωση ενεργών magic box campaigns
+        const { data: magicBoxCampaigns, error: magicBoxError } = await supabase
+          .from('magic_box_campaigns')
+          .select('*')
+          .eq('is_active', true);
+
+        if (magicBoxError) {
+          console.error('Error fetching magic box campaigns:', magicBoxError);
+        }
+
+        const hasMagicBox = !magicBoxError && magicBoxCampaigns && magicBoxCampaigns.length > 0;
+
         // Φόρτωση απορριμμένων προσφορών
         const { data: rejectedOffers, error: rejectedError } = await supabase
           .from('offer_rejections')
@@ -336,7 +348,8 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
         setOffersData({
           available: filteredOffers.length,
-          accepted: hasRecentPayment
+          accepted: hasRecentPayment,
+          hasMagicBox: hasMagicBox
         });
 
       } catch (error) {
@@ -387,12 +400,16 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Ενεργές Προσφορές - Δεύτερο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=offers`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0 animate-pulse"
+            className={`text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${
+              offersData?.hasMagicBox ? 'animate-pulse' : ''
+            }`}
           >
             <div className="h-10 flex items-center justify-center">
               <Tag className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
-                offersData?.available > 0 && !offersData?.accepted 
+                offersData?.hasMagicBox 
                   ? 'text-[#00ffba] animate-pulse' 
+                  : offersData?.available > 0 && !offersData?.accepted 
+                  ? 'text-[#00ffba]' 
                   : offersData?.accepted 
                   ? 'text-[#00ffba]' 
                   : 'text-gray-400'
@@ -403,8 +420,12 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 offersData.accepted ? (
                   <Check className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
                 ) : (
-                  <span className="text-[#00ffba] animate-pulse">{offersData.available}</span>
+                  <span className={`text-[#00ffba] ${offersData?.hasMagicBox ? 'animate-pulse' : ''}`}>
+                    {offersData.available}
+                  </span>
                 )
+              ) : offersData?.hasMagicBox ? (
+                <span className="text-[#00ffba] animate-pulse">🎁</span>
               ) : (
                 <span className="text-gray-400">-</span>
               )}
