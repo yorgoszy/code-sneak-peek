@@ -320,7 +320,25 @@ serve(async (req) => {
       result.discount_code = discountCode;
 
     } else if (wonPrize.prize_type === 'try_again') {
-      result.message = 'Δοκίμασε ξανά!';
+      // Create a visit package for the user with 1 free visit
+      const { error: visitPackageError } = await supabaseClient
+        .from('visit_packages')
+        .insert({
+          user_id: appUser.id,
+          total_visits: 1,
+          remaining_visits: 1,
+          purchase_date: new Date().toISOString().split('T')[0],
+          price: 0,
+          status: 'active'
+        });
+
+      if (visitPackageError) {
+        console.error('Error creating visit package for try_again:', visitPackageError);
+      } else {
+        console.log('✅ Free visit package created for try_again result');
+      }
+      
+      result.message = 'Συγχαρητήρια! Κέρδισες μια δωρεάν επίσκεψη! 🎉';
 
     } else if (wonPrize.prize_type === 'nothing') {
       // Give user a free visit as consolation prize
