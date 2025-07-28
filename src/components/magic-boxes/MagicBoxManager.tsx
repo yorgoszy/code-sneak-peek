@@ -412,6 +412,8 @@ export const MagicBoxManager: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<MagicBoxCampaign | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+  const [campaignDeleteDialogOpen, setCampaignDeleteDialogOpen] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -528,29 +530,32 @@ export const MagicBoxManager: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το campaign;')) {
-      return;
-    }
+  const handleCampaignDeleteClick = (id: string) => {
+    setCampaignToDelete(id);
+    setCampaignDeleteDialogOpen(true);
+  };
+
+  const handleCampaignDelete = async () => {
+    if (!campaignToDelete) return;
 
     try {
       // Διαγραφή των prizes πρώτα
       await supabase
         .from('campaign_prizes')
         .delete()
-        .eq('campaign_id', id);
+        .eq('campaign_id', campaignToDelete);
 
       // Διαγραφή των participations
       await supabase
         .from('user_campaign_participations')
         .delete()
-        .eq('campaign_id', id);
+        .eq('campaign_id', campaignToDelete);
 
       // Διαγραφή του campaign
       const { error } = await supabase
         .from('magic_box_campaigns')
         .delete()
-        .eq('id', id);
+        .eq('id', campaignToDelete);
 
       if (error) throw error;
       
@@ -567,6 +572,9 @@ export const MagicBoxManager: React.FC = () => {
         description: 'Αποτυχία διαγραφής campaign',
         variant: 'destructive'
       });
+    } finally {
+      setCampaignDeleteDialogOpen(false);
+      setCampaignToDelete(null);
     }
   };
 
@@ -805,38 +813,14 @@ export const MagicBoxManager: React.FC = () => {
                   <Edit className="w-4 h-4 mr-1" />
                   Επεξ.
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="rounded-none"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-none max-w-md mx-auto">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-center">
-                        Επιβεβαίωση Διαγραφής
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-center">
-                        Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το campaign;
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="flex justify-center gap-4">
-                      <AlertDialogCancel className="rounded-none">
-                        Ακύρωση
-                      </AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={() => handleDelete(campaign.id)}
-                        className="rounded-none bg-destructive hover:bg-destructive/90"
-                      >
-                        Διαγραφή
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  onClick={() => handleCampaignDeleteClick(campaign.id)}
+                  size="sm"
+                  variant="destructive"
+                  className="rounded-none"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -851,6 +835,30 @@ export const MagicBoxManager: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      <AlertDialog open={campaignDeleteDialogOpen} onOpenChange={setCampaignDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none max-w-md mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center">
+              Επιβεβαίωση Διαγραφής
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το campaign;
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex justify-center gap-4">
+            <AlertDialogCancel className="rounded-none">
+              Ακύρωση
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleCampaignDelete}
+              className="rounded-none bg-destructive hover:bg-destructive/90"
+            >
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
