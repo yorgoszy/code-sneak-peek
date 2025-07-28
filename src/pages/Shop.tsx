@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Clock, Users, MapPin, Calendar, Dumbbell } from "lucide-react";
+import { ShoppingCart, Clock, Users, MapPin, Calendar, Dumbbell, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface SubscriptionType {
   id: string;
@@ -23,6 +24,8 @@ const Shop = () => {
   const [loading, setLoading] = useState<string | null>(null);
   const [products, setProducts] = useState<SubscriptionType[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const navigate = useNavigate();
+  const { userId } = useParams();
 
   useEffect(() => {
     fetchProducts();
@@ -92,6 +95,18 @@ const Shop = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
+        {/* Back Button for Mobile/Tablet */}
+        <div className="md:hidden mb-4">
+          <Button
+            onClick={() => navigate(userId ? `/dashboard/user-profile/${userId}` : `/dashboard/user-profile`)}
+            variant="ghost"
+            className="flex items-center text-gray-600 hover:text-gray-900 p-0 h-auto"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Επιστροφή στους Χρήστες
+          </Button>
+        </div>
+        
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Αγορές</h1>
           <p className="text-lg text-gray-600">
