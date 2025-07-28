@@ -30,20 +30,20 @@ export default function Subscriptions() {
         </div>
         
         <Tabs defaultValue="management" className="w-full">
-          <TabsList className="grid w-full grid-cols-13 mb-6 rounded-none">
-            <TabsTrigger value="management" className="rounded-none">Συνδρομές</TabsTrigger>
-            <TabsTrigger value="booking" className="rounded-none">Booking</TabsTrigger>
-            <TabsTrigger value="videocalls" className="rounded-none">Βιντεοκλήσεις</TabsTrigger>
-            <TabsTrigger value="visits" className="rounded-none">Επισκέψεις</TabsTrigger>
-            <TabsTrigger value="receipts" className="rounded-none">Αποδείξεις</TabsTrigger>
-            <TabsTrigger value="expenses" className="rounded-none">Έξοδα</TabsTrigger>
-            <TabsTrigger value="financial" className="rounded-none">Έσοδα-Έξοδα</TabsTrigger>
-            <TabsTrigger value="types" className="rounded-none">Τύποι</TabsTrigger>
-            <TabsTrigger value="offers" className="rounded-none">Ενεργές Προσφορές</TabsTrigger>
-            <TabsTrigger value="magic-boxes" className="rounded-none">Μαγικά Κουτιά</TabsTrigger>
-            <TabsTrigger value="history" className="rounded-none">Ιστορικό</TabsTrigger>
-            <TabsTrigger value="certificates" className="rounded-none">Certificates</TabsTrigger>
-            <TabsTrigger value="mydata" className="rounded-none">Banking</TabsTrigger>
+          <TabsList className="flex w-full justify-start mb-6 rounded-none h-auto flex-wrap">
+            <TabsTrigger value="management" className="rounded-none whitespace-nowrap">Συνδρομές</TabsTrigger>
+            <TabsTrigger value="booking" className="rounded-none whitespace-nowrap">Booking</TabsTrigger>
+            <TabsTrigger value="videocalls" className="rounded-none whitespace-nowrap">Βιντεοκλήσεις</TabsTrigger>
+            <TabsTrigger value="visits" className="rounded-none whitespace-nowrap">Επισκέψεις</TabsTrigger>
+            <TabsTrigger value="receipts" className="rounded-none whitespace-nowrap">Αποδείξεις</TabsTrigger>
+            <TabsTrigger value="expenses" className="rounded-none whitespace-nowrap">Έξοδα</TabsTrigger>
+            <TabsTrigger value="financial" className="rounded-none whitespace-nowrap">Έσοδα-Έξοδα</TabsTrigger>
+            <TabsTrigger value="types" className="rounded-none whitespace-nowrap">Τύποι</TabsTrigger>
+            <TabsTrigger value="offers" className="rounded-none whitespace-nowrap">Ενεργές Προσφορές</TabsTrigger>
+            <TabsTrigger value="magic-boxes" className="rounded-none whitespace-nowrap">Μαγικά Κουτιά</TabsTrigger>
+            <TabsTrigger value="history" className="rounded-none whitespace-nowrap">Ιστορικό</TabsTrigger>
+            <TabsTrigger value="certificates" className="rounded-none whitespace-nowrap">Certificates</TabsTrigger>
+            <TabsTrigger value="mydata" className="rounded-none whitespace-nowrap">Banking</TabsTrigger>
           </TabsList>
           
           <TabsContent value="management">
