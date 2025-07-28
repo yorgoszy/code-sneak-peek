@@ -366,17 +366,17 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
     <Card className="rounded-none">
       <CardContent className={isMobile ? "pt-4" : "pt-6"}>
         <div className={`grid gap-4 ${
-          isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-10'
+          isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-6 lg:grid-cols-10'
         }`}>
           {user.role === 'trainer' && (
             <div className="text-center flex flex-col min-w-0">
               <div className="h-10 flex items-center justify-center">
                 <Users className={`text-blue-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               </div>
-              <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
+              <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
                 {stats.athletesCount}
               </div>
-              <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} whitespace-nowrap`}>
+              <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
                 Αθλητές
               </div>
             </div>
@@ -392,7 +392,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
+            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {stats.programsCount > 0 ? (
                 <span className={
                   stats.programsCount === 1 ? 'text-red-600' :
@@ -405,7 +405,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} whitespace-nowrap`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
             </div>
           </button>
@@ -433,7 +433,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενα Τεστ
             </div>
           </button>
@@ -441,10 +441,10 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Πληρωμές - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/πληρωμες`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <CreditCard className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              <CreditCard className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 paymentStatus !== null ? 'text-orange-500' : 'text-gray-400'
               }`} />
             </div>
@@ -452,22 +452,22 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               {paymentStatus === null ? (
                 <span className="text-gray-400">-</span>
               ) : paymentStatus ? (
-                <Check className={`text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <Check className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               ) : (
-                <X className={`text-red-500 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <X className={`text-red-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Πληρωμές
             </div>
           </button>
 
-          <div className="text-center flex flex-col">
+          <div className="text-center flex flex-col min-w-0">
             <div className="h-10 flex items-center justify-center">
               {isPaused ? (
-                <Pause className={`text-yellow-500 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <Pause className={`text-yellow-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               ) : (
-                <Clock className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+                <Clock className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                   subscriptionDays !== null ? 'text-[#00ffba]' : 'text-gray-400'
                 }`} />
               )}
@@ -489,7 +489,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Μέρες Συνδρομής
             </div>
           </div>
@@ -497,10 +497,10 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Επισκέψεις - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <MapPin className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              <MapPin className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
               }`} />
             </div>
@@ -513,15 +513,15 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επισκέψεις
             </div>
           </button>
 
           {/* Επερχόμενη Επίσκεψη - Non-clickable (just displays info) */}
-          <div className="text-center flex flex-col">
+          <div className="text-center flex flex-col min-w-0">
             <div className="h-10 flex items-center justify-center">
-              <MapPin className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              <MapPin className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 upcomingVisit ? 'text-purple-500' : 'text-gray-400'
               }`} />
             </div>
@@ -540,7 +540,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενη Επίσκεψη
             </div>
           </div>
@@ -548,10 +548,10 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Βιντεοκλήσεις - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/online-coaching`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <Video className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              <Video className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
               }`} />
             </div>
@@ -564,7 +564,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Βιντεοκλήσεις
             </div>
           </button>
@@ -578,11 +578,11 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 navigate(`/dashboard/user-profile/${user.id}/online-coaching`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col min-w-0"
             disabled={!upcomingVideocall}
           >
             <div className="h-10 flex items-center justify-center">
-              <Video className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              <Video className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
               }`} />
             </div>
@@ -601,7 +601,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενη Βιντεοκλήση
             </div>
           </button>
@@ -609,15 +609,15 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Αγορές - Νέο εικονάκι - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}/shop`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               <span className="text-[#00ffba]">🛍️</span>
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Αγορές
             </div>
           </button>
@@ -625,10 +625,10 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Ενεργές Προσφορές - Clickable */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=offers`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
-              <Tag className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} ${
+              <Tag className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 offersData?.available > 0 && !offersData?.accepted 
                   ? 'animate-offer-blink' 
                   : offersData?.accepted 
@@ -639,7 +639,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {offersData?.available > 0 ? (
                 offersData.accepted ? (
-                  <Check className={`text-[#00ffba] ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                  <Check className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
                 ) : (
                   <span className="animate-offer-blink">{offersData.available}</span>
                 )
@@ -647,7 +647,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Ενεργές Προσφορές
             </div>
           </button>
