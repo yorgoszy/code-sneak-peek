@@ -150,7 +150,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
       <CardContent className="p-3 md:p-6 pt-0">
         <div className="flex gap-2 overflow-x-auto">
           {/* Available Hours List */}
-          <div className="flex-shrink-0 w-10 md:w-12">
+          <div className="flex-shrink-0 w-8 md:w-10">
             <div className="space-y-1">
               <div className="h-12 flex items-center justify-center text-xs font-medium text-gray-700 border-b">
                 Ώρες
@@ -168,11 +168,11 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
             <div className="grid grid-cols-7 gap-1">
               {/* Day headers */}
               {weekDays.map((day, index) => (
-                <div key={index} className="text-center">
-                  <div className={`font-medium text-xs p-2 ${isToday(day) ? 'bg-[#00ffba] text-black rounded-none' : 'text-gray-700'}`}>
+                <div key={index} className="text-center flex flex-col items-center justify-center">
+                  <div className={`font-medium text-xs p-2 w-full text-center ${isToday(day) ? 'bg-[#00ffba] text-black rounded-none' : 'text-gray-700'}`}>
                     {dayNames[index]}
                   </div>
-                  <div className={`text-xs ${isToday(day) ? 'font-bold' : 'text-gray-500'}`}>
+                  <div className={`text-xs w-full text-center ${isToday(day) ? 'font-bold' : 'text-gray-500'}`}>
                     {format(day, 'dd')}
                   </div>
                 </div>
