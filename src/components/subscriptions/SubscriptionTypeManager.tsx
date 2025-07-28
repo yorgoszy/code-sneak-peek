@@ -223,16 +223,10 @@ export const SubscriptionTypeManager: React.FC = () => {
       const draftPrograms = await Promise.all(
         unassignedPrograms.map(async (program) => {
           try {
+            // Πρώτα φόρτωση των εβδομάδων
             const { data: weeks, error: weeksError } = await supabase
               .from('program_weeks')
-              .select(`
-                id,
-                week_number,
-                program_days!program_days_week_id_fkey(
-                  id,
-                  day_number
-                )
-              `)
+              .select('id, week_number')
               .eq('program_id', program.id);
 
             if (weeksError) {
@@ -247,19 +241,31 @@ export const SubscriptionTypeManager: React.FC = () => {
               };
             }
 
+            console.log(`📊 Raw weeks data for program ${program.name}:`, weeks);
+
             const weeksCount = weeks?.length || 0;
             let maxDaysPerWeek = 0;
             
-            console.log(`📊 Raw weeks data for program ${program.name}:`, weeks);
-            
-            if (weeks) {
-              weeks.forEach(week => {
-                const daysCount = (week.program_days || []).length;
-                console.log(`  📅 Week ${week.week_number}: ${daysCount} days`, week.program_days);
+            if (weeks && weeks.length > 0) {
+              // Για κάθε εβδομάδα, φόρτωση των ημερών ξεχωριστά
+              for (const week of weeks) {
+                const { data: days, error: daysError } = await supabase
+                  .from('program_days')
+                  .select('id, day_number')
+                  .eq('week_id', week.id);
+
+                if (daysError) {
+                  console.warn(`⚠️ Error loading days for week ${week.week_number}:`, daysError);
+                  continue;
+                }
+
+                const daysCount = days?.length || 0;
+                console.log(`  📅 Week ${week.week_number}: ${daysCount} days`, days);
+                
                 if (daysCount > maxDaysPerWeek) {
                   maxDaysPerWeek = daysCount;
                 }
-              });
+              }
             }
             
             console.log(`📈 Program "${program.name}": ${weeksCount} weeks, ${maxDaysPerWeek} max days/week`);
