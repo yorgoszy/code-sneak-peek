@@ -33,15 +33,36 @@ export const MagicBoxGame: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [sessionId] = useState<string>(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
-  const [forceRender, setForceRender] = useState(0);
+  
+  // User-specific state maps - κάθε χρήστης έχει το δικό του state
+  const [userPlayingStates, setUserPlayingStates] = useState<Record<string, Record<string, boolean>>>({});
+  const [userResults, setUserResults] = useState<Record<string, Record<string, any>>>({});
+  
   const { toast } = useToast();
 
-  // Session-specific state keys
-  const getPlayingStateKey = (campaignId: string) => `playing_${sessionId}_${currentUserId}_${campaignId}`;
-  const getResultStateKey = (campaignId: string) => `result_${sessionId}_${currentUserId}_${campaignId}`;
-
-  // Force re-render function
-  const triggerRender = () => setForceRender(prev => prev + 1);
+  // Helper functions για user-specific state
+  const getUserPlayingStates = (userId: string) => userPlayingStates[userId] || {};
+  const getUserResults = (userId: string) => userResults[userId] || {};
+  
+  const setUserPlayingState = (userId: string, campaignId: string, isPlaying: boolean) => {
+    setUserPlayingStates(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [campaignId]: isPlaying
+      }
+    }));
+  };
+  
+  const setUserResult = (userId: string, campaignId: string, result: any) => {
+    setUserResults(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [campaignId]: result
+      }
+    }));
+  };
 
   useEffect(() => {
     initializeUser();
@@ -136,18 +157,17 @@ export const MagicBoxGame: React.FC = () => {
       return;
     }
 
-    // Έλεγχος αν το κουμπί είναι ήδη disabled (prevent double clicks)
-    if (isPlayingCampaign(campaignId)) {
-      console.log('Already playing this campaign, ignoring click');
+    // Έλεγχος αν αυτός ο χρήστης παίζει ήδη αυτή την εκστρατεία
+    const userPlayingStates = getUserPlayingStates(currentUserId);
+    if (userPlayingStates[campaignId]) {
+      console.log(`User ${currentUserId} is already playing campaign ${campaignId}`);
       return;
     }
 
-    // Χρησιμοποιούμε sessionStorage για session-specific state
-    const playingKey = getPlayingStateKey(campaignId);
-    sessionStorage.setItem(playingKey, 'true');
-    
-    // Trigger re-render by updating force render state
-    triggerRender();
+    console.log(`🎯 User ${currentUserId} starting to play campaign ${campaignId}`);
+
+    // Ορίζουμε ότι αυτός ο χρήστης παίζει αυτή την εκστρατεία
+    setUserPlayingState(currentUserId, campaignId, true);
 
     try {
       const { data, error } = await supabase.functions.invoke('magic-box-draw', {
@@ -157,8 +177,10 @@ export const MagicBoxGame: React.FC = () => {
       if (error) throw error;
 
       if (data.success) {
-        const resultKey = getResultStateKey(campaignId);
-        sessionStorage.setItem(resultKey, JSON.stringify(data));
+        // Αποθηκεύουμε το αποτέλεσμα μόνο για αυτόν τον χρήστη
+        setUserResult(currentUserId, campaignId, data);
+        
+        console.log(`🎉 User ${currentUserId} won:`, data.message);
         
         toast({
           title: 'Συγχαρητήρια! 🎉',
@@ -171,6 +193,7 @@ export const MagicBoxGame: React.FC = () => {
           fetchCampaigns()
         ]);
       } else {
+        console.log(`😞 User ${currentUserId} got:`, data.message);
         toast({
           title: 'Ωχ!',
           description: data.message,
@@ -178,38 +201,33 @@ export const MagicBoxGame: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Error playing campaign:', error);
+      console.error(`Error for user ${currentUserId} playing campaign ${campaignId}:`, error);
       toast({
         title: 'Σφάλμα',
         description: 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.',
         variant: 'destructive'
       });
     } finally {
-      sessionStorage.removeItem(playingKey);
-      // Trigger re-render
-      triggerRender();
+      // Σταματάμε το loading για αυτόν τον χρήστη
+      setUserPlayingState(currentUserId, campaignId, false);
     }
   };
 
   const isPlayingCampaign = (campaignId: string) => {
     if (!currentUserId) return false;
-    const playingKey = getPlayingStateKey(campaignId);
-    return sessionStorage.getItem(playingKey) === 'true';
+    const userPlayingStates = getUserPlayingStates(currentUserId);
+    return userPlayingStates[campaignId] || false;
   };
 
   const getUserCampaignResult = (campaignId: string) => {
     if (!currentUserId) return null;
-    const resultKey = getResultStateKey(campaignId);
-    const stored = sessionStorage.getItem(resultKey);
-    return stored ? JSON.parse(stored) : null;
+    const userResults = getUserResults(currentUserId);
+    return userResults[campaignId] || null;
   };
 
   const hideResult = (campaignId: string) => {
     if (!currentUserId) return;
-    const resultKey = getResultStateKey(campaignId);
-    sessionStorage.removeItem(resultKey);
-    // Trigger re-render
-    triggerRender();
+    setUserResult(currentUserId, campaignId, null);
   };
 
   const hasPlayedCampaign = (campaignId: string) => {
