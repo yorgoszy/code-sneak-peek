@@ -169,7 +169,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
               {/* Day headers */}
               {weekDays.map((day, index) => (
                 <div key={index} className="text-center flex flex-col items-center justify-center">
-                  <div className={`font-medium text-xs p-2 w-full text-center ${isToday(day) ? 'bg-[#00ffba] text-black rounded-none' : 'text-gray-700'}`}>
+                  <div className={`font-medium text-xs py-2 w-full text-center ${isToday(day) ? 'bg-[#00ffba] text-black rounded-none' : 'text-gray-700'}`}>
                     {dayNames[index]}
                   </div>
                   <div className={`text-xs w-full text-center ${isToday(day) ? 'font-bold' : 'text-gray-500'}`}>
