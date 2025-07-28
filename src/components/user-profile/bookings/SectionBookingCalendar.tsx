@@ -49,7 +49,8 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
 
   // Get available time slots for each day
   const getAvailableHoursForDay = (dayIndex: number) => {
-    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    // Since weekStartsOn: 1 (Monday), dayIndex 0 = Monday, 1 = Tuesday, etc.
+    const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     const dayName = dayNames[dayIndex];
     return availableHours?.[dayName] || [];
   };
