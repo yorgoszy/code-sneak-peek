@@ -189,6 +189,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                 onCancelBooking={handleCancelBooking}
                 onCreateBooking={handleCreateBooking}
                 availability={availability}
+                maxCapacity={section.max_capacity}
+                allSectionBookings={bookings}
               />
             );
           })

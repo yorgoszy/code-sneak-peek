@@ -466,20 +466,24 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               <h2>📅 Κράτηση Επιβεβαιώθηκε</h2>
               <p>Η κράτηση για το γυμναστήριο σας έχει επιβεβαιωθεί:</p>
               
-              <div class="booking-info">
-                <div class="info-row">
-                  <span class="label">Ημερομηνία:</span>
-                  <span class="value">${userData?.booking_date ? formatDate(userData.booking_date) : 'TBD'}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">Ώρα:</span>
-                  <span class="value">${userData?.booking_time ? formatTime(userData.booking_time) : 'TBD'}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">Τύπος:</span>
-                  <span class="value">Επίσκεψη Γυμναστηρίου</span>
-                </div>
-              </div>
+               <div class="booking-info">
+                 <div class="info-row">
+                   <span class="label">Τμήμα:</span>
+                   <span class="value">${userData?.section_name || 'Γυμναστήριο'}</span>
+                 </div>
+                 <div class="info-row">
+                   <span class="label">Ημερομηνία:</span>
+                   <span class="value">${userData?.booking_date ? formatDate(userData.booking_date) : 'N/A'}</span>
+                 </div>
+                 <div class="info-row">
+                   <span class="label">Ώρα:</span>
+                   <span class="value">${userData?.booking_time ? formatTime(userData.booking_time) : 'N/A'}</span>
+                 </div>
+                 <div class="info-row">
+                   <span class="label">Τύπος:</span>
+                   <span class="value">Επίσκεψη Γυμναστηρίου</span>
+                 </div>
+               </div>
               
               <p>Θα λάβετε υπενθύμιση 24 ώρες πριν την επίσκεψή σας.</p>
               
