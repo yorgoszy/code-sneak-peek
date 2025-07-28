@@ -377,7 +377,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              <span className="text-[#00ffba]">🛍️</span>
+              <span className="text-gray-400">-</span>
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Αγορές
@@ -387,12 +387,12 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           {/* Ενεργές Προσφορές - Δεύτερο */}
           <button 
             onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=offers`)}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0 animate-pulse"
           >
             <div className="h-10 flex items-center justify-center">
               <Tag className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 offersData?.available > 0 && !offersData?.accepted 
-                  ? 'animate-offer-blink' 
+                  ? 'text-[#00ffba] animate-pulse' 
                   : offersData?.accepted 
                   ? 'text-[#00ffba]' 
                   : 'text-gray-400'
@@ -403,7 +403,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                 offersData.accepted ? (
                   <Check className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
                 ) : (
-                  <span className="animate-offer-blink">{offersData.available}</span>
+                  <span className="text-[#00ffba] animate-pulse">{offersData.available}</span>
                 )
               ) : (
                 <span className="text-gray-400">-</span>
