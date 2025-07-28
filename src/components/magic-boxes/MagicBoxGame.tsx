@@ -97,6 +97,16 @@ export const MagicBoxGame: React.FC = () => {
   };
 
   const playCampaign = async (campaignId: string) => {
+    // Έλεγχος αν ο χρήστης έχει ήδη παίξει σε αυτή την εκστρατεία
+    if (hasPlayedCampaign(campaignId)) {
+      toast({
+        title: 'Ωχ!',
+        description: 'Έχεις ήδη συμμετάσχει σε αυτή την εκστρατεία!',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setPlayingCampaign(campaignId);
     setShowResult(null);
 
@@ -114,8 +124,11 @@ export const MagicBoxGame: React.FC = () => {
           description: data.message,
         });
         
-        // Refresh user participations
-        fetchUserParticipations();
+        // Refresh user participations and campaigns
+        await Promise.all([
+          fetchUserParticipations(),
+          fetchCampaigns()
+        ]);
       } else {
         toast({
           title: 'Ωχ!',
