@@ -39,6 +39,21 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
 }) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
 
+  // Debug για Body Transformation available hours
+  if (sectionName.includes('Body Transformation')) {
+    console.log('🔍 Body Transformation Available Hours:', {
+      sectionName,
+      availableHours,
+      monday: availableHours?.monday,
+      tuesday: availableHours?.tuesday,
+      wednesday: availableHours?.wednesday,
+      thursday: availableHours?.thursday,
+      friday: availableHours?.friday,
+      saturday: availableHours?.saturday,
+      sunday: availableHours?.sunday
+    });
+  }
+
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
