@@ -80,7 +80,7 @@ serve(async (req) => {
 
     // Get all available prizes for this magic box
     const { data: prizes, error: prizesError } = await supabaseClient
-      .from('magic_box_prizes')
+      .from('magic_box_subscription_prizes')
       .select(`
         *,
         subscription_types (
@@ -137,36 +137,10 @@ serve(async (req) => {
       user_id: appUser.id,
       magic_box_id: magic_box_id,
       prize_id: wonPrize.id,
-      prize_type: wonPrize.prize_type,
+      prize_type: 'subscription', // Τώρα όλα τα prizes είναι subscription τύπου
+      subscription_type_id: wonPrize.subscription_type_id,
+      discount_percentage: wonPrize.discount_percentage,
     };
-
-    // Handle different prize types
-    if (wonPrize.prize_type === 'subscription') {
-      winRecord.subscription_type_id = wonPrize.subscription_type_id;
-      winRecord.discount_percentage = wonPrize.discount_percentage;
-    } else if (wonPrize.prize_type === 'discount_coupon') {
-      winRecord.discount_percentage = wonPrize.discount_percentage;
-      
-      // Generate a discount coupon
-      const { data: couponCode } = await supabaseClient.rpc('generate_coupon_code');
-      
-      const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + 3); // 3 months expiry
-      
-      const { error: couponError } = await supabaseClient
-        .from('discount_coupons')
-        .insert({
-          user_id: appUser.id,
-          code: couponCode,
-          discount_percentage: wonPrize.discount_percentage,
-          expires_at: expiryDate.toISOString()
-        });
-
-      if (couponError) {
-        console.error('Error creating coupon:', couponError);
-        throw new Error('Failed to create discount coupon');
-      }
-    }
 
     // Record the win
     const { data: win, error: winError } = await supabaseClient
@@ -179,62 +153,55 @@ serve(async (req) => {
       throw new Error('Failed to record win');
     }
 
-    // If it's a subscription prize, automatically apply it to the user
-    if (wonPrize.prize_type === 'subscription' && wonPrize.subscription_type_id) {
-      const { data: subscriptionType } = await supabaseClient
-        .from('subscription_types')
-        .select('*')
-        .eq('id', wonPrize.subscription_type_id)
-        .single();
+    // Automatically apply the subscription to the user
+    const { data: subscriptionType } = await supabaseClient
+      .from('subscription_types')
+      .select('*')
+      .eq('id', wonPrize.subscription_type_id)
+      .single();
 
-      if (subscriptionType) {
-        // Calculate dates for the subscription
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + subscriptionType.duration_months);
+    if (subscriptionType) {
+      // Calculate dates for the subscription
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + subscriptionType.duration_months);
 
-        // Create the subscription for the user
-        const { error: subscriptionError } = await supabaseClient
-          .from('user_subscriptions')
-          .insert({
-            user_id: appUser.id,
-            subscription_type_id: wonPrize.subscription_type_id,
-            start_date: startDate.toISOString().split('T')[0],
-            end_date: endDate.toISOString().split('T')[0],
-            status: 'active',
-            is_paid: false // Since it's a free prize
-          });
+      // Create the subscription for the user
+      const { error: subscriptionError } = await supabaseClient
+        .from('user_subscriptions')
+        .insert({
+          user_id: appUser.id,
+          subscription_type_id: wonPrize.subscription_type_id,
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
+          status: 'active',
+          is_paid: false // Since it's a free prize
+        });
 
-        if (subscriptionError) {
-          console.error('Error creating subscription:', subscriptionError);
-          // Don't throw error here, the win is still recorded
-        }
-
-        // Mark win as claimed
-        await supabaseClient
-          .from('user_magic_box_wins')
-          .update({ 
-            is_claimed: true, 
-            claimed_at: new Date().toISOString() 
-          })
-          .eq('id', win.id);
+      if (subscriptionError) {
+        console.error('Error creating subscription:', subscriptionError);
+        // Don't throw error here, the win is still recorded
       }
+
+      // Mark win as claimed
+      await supabaseClient
+        .from('user_magic_box_wins')
+        .update({ 
+          is_claimed: true, 
+          claimed_at: new Date().toISOString() 
+        })
+        .eq('id', win.id);
     }
 
     // Prepare response
     let result: any = {
       success: true,
-      message: 'Συγχαρητήρια! Κέρδισες!',
-      prize_type: wonPrize.prize_type,
-      discount_percentage: wonPrize.discount_percentage
+      message: 'Συγχαρητήρια! Κέρδισες μια συνδρομή!',
+      prize_type: 'subscription',
+      discount_percentage: wonPrize.discount_percentage,
+      subscription_name: wonPrize.subscription_types.name,
+      subscription_description: wonPrize.subscription_types.description
     };
-
-    if (wonPrize.prize_type === 'subscription' && wonPrize.subscription_types) {
-      result.subscription_name = wonPrize.subscription_types.name;
-      result.subscription_description = wonPrize.subscription_types.description;
-    } else if (wonPrize.prize_type === 'discount_coupon') {
-      result.message = `Συγχαρητήρια! Κέρδισες ένα κουπόνι έκπτωσης ${wonPrize.discount_percentage}%!`;
-    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
