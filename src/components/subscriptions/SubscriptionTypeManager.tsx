@@ -78,7 +78,6 @@ export const SubscriptionTypeManager: React.FC = () => {
     if (!roleLoading && isAdmin) {
       loadSubscriptionTypes();
       loadBookingSections();
-      loadDraftPrograms();
     } else if (!roleLoading) {
       setLoading(false);
     }
@@ -190,17 +189,29 @@ export const SubscriptionTypeManager: React.FC = () => {
       console.log('🔄 Loading draft programs...');
       const { data, error } = await supabase
         .from('programs')
-        .select('id, name, description, program_assignments!left(id)')
+        .select('id, name, description')
         .order('name');
 
       if (error) {
         console.error('❌ Error loading programs:', error);
         throw error;
       }
+
+      // Φόρτωση assignments ξεχωριστά
+      const { data: assignments, error: assignmentsError } = await supabase
+        .from('program_assignments')
+        .select('program_id');
+
+      if (assignmentsError) {
+        console.error('❌ Error loading assignments:', assignmentsError);
+        throw assignmentsError;
+      }
+
+      const assignedProgramIds = new Set(assignments?.map(a => a.program_id) || []);
       
       // Filter για draft προγράμματα (χωρίς assignments)
       const draftPrograms = (data || [])
-        .filter(program => !program.program_assignments || program.program_assignments.length === 0)
+        .filter(program => !assignedProgramIds.has(program.id))
         .map(program => ({
           id: program.id,
           name: program.name,
@@ -250,6 +261,12 @@ export const SubscriptionTypeManager: React.FC = () => {
     setSinglePurchase(type.single_purchase || false);
     setSelectedSections(type.allowed_sections || []);
     setSelectedProgram(type.program_id || '');
+    
+    // Φόρτωση προγραμμάτων αν ο τύπος είναι program
+    if (type.subscription_mode === 'program') {
+      loadDraftPrograms();
+    }
+    
     setIsDialogOpen(true);
   };
 
@@ -722,7 +739,13 @@ export const SubscriptionTypeManager: React.FC = () => {
               <Label htmlFor="subscriptionMode">Τύπος Συνδρομής*</Label>
               <Select
                 value={subscriptionMode}
-                onValueChange={(value: 'time_based' | 'visit_based' | 'videocall' | 'program') => setSubscriptionMode(value)}
+                onValueChange={(value: 'time_based' | 'visit_based' | 'videocall' | 'program') => {
+                  setSubscriptionMode(value);
+                  // Φόρτωση προγραμμάτων όταν επιλέγεται program mode
+                  if (value === 'program' && draftPrograms.length === 0) {
+                    loadDraftPrograms();
+                  }
+                }}
                 disabled={saving}
               >
                 <SelectTrigger className="rounded-none">
