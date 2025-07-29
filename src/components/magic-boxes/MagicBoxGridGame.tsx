@@ -232,6 +232,9 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
                       flex items-center justify-center
                     `}
                   >
+                    {!box.isOpened && (
+                      <Gift className="w-4 h-4 text-[#00ffba]" />
+                    )}
                     {box.isOpened && box.isWinning && (
                       <Gift className="w-3 h-3 text-black" />
                     )}
