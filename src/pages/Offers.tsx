@@ -100,30 +100,58 @@ export default function Offers() {
     try {
       console.log('✅ Accepting offer:', offer.name);
       
-      // Αν είναι δωρεάν προσφορά, ενημέρωση απευθείας του προφίλ
-      if (offer.is_free) {
-        console.log('✅ Processing free offer directly');
-        
-        const { error } = await supabase
-          .from('payments')
-          .insert({
-            user_id: userProfile.id,
-            subscription_type_id: offer.subscription_type_id,
-            amount: 0,
-            status: 'completed',
-            payment_method: 'free_offer',
-            payment_date: new Date().toISOString()
-          });
+       // Αν είναι δωρεάν προσφορά, ενημέρωση απευθείας του προφίλ
+       if (offer.is_free) {
+         console.log('✅ Processing free offer directly');
+         
+         // Δημιουργία payment record για τη δωρεάν προσφορά
+         const { error: paymentError } = await supabase
+           .from('payments')
+           .insert({
+             user_id: userProfile.id,
+             subscription_type_id: offer.subscription_type_id,
+             amount: 0,
+             status: 'completed',
+             payment_method: 'free_offer',
+             payment_date: new Date().toISOString(),
+             offer_id: offer.id
+           });
 
-        if (error) {
-          console.error('❌ Error processing free offer:', error);
-          throw error;
-        }
+         if (paymentError) {
+           console.error('❌ Error processing free offer payment:', paymentError);
+           throw paymentError;
+         }
 
-        toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε!`);
-        loadUserOffers();
-        return;
-      }
+          // Δημιουργία απόδειξης για τη δωρεάν προσφορά
+          const receiptNumber = `FREE-${Date.now()}`;
+          const { error: receiptError } = await supabase
+            .from('receipts')
+            .insert({
+              receipt_number: receiptNumber,
+              customer_name: userProfile.name || 'Χρήστης',
+              customer_email: userProfile.email || '',
+              items: [{
+                name: offer.subscription_types.name,
+                quantity: 1,
+                unit_price: 0,
+                total: 0
+              }],
+              subtotal: 0,
+              vat: 0,
+              total: 0,
+              issue_date: new Date().toISOString().split('T')[0],
+              mydata_status: 'not_required'
+            });
+
+         if (receiptError) {
+           console.error('❌ Error creating receipt for free offer:', receiptError);
+           // Δεν σταματάμε τη διαδικασία αν η απόδειξη αποτύχει
+         }
+
+         toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε!`);
+         loadUserOffers();
+         return;
+       }
       
       // Δημιουργία Stripe checkout session για την προσφορά
       const { data, error } = await supabase.functions.invoke('create-checkout', {

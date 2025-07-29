@@ -79,6 +79,61 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
 
     setProcessingOffer(offer.id);
     try {
+      console.log('✅ Accepting offer:', offer.name, 'is_free:', offer.is_free);
+      
+      // Αν είναι δωρεάν προσφορά, ενημέρωση απευθείας του προφίλ
+      if (offer.is_free) {
+        console.log('✅ Processing free offer directly');
+        
+        // Δημιουργία payment record για τη δωρεάν προσφορά
+        const { error: paymentError } = await supabase
+          .from('payments')
+          .insert({
+            user_id: userProfile.id,
+            subscription_type_id: offer.subscription_type_id,
+            amount: 0,
+            status: 'completed',
+            payment_method: 'free_offer',
+            payment_date: new Date().toISOString(),
+            offer_id: offer.id
+          });
+
+        if (paymentError) {
+          console.error('❌ Error processing free offer payment:', paymentError);
+          throw paymentError;
+        }
+
+        // Δημιουργία απόδειξης για τη δωρεάν προσφορά
+        const receiptNumber = `FREE-${Date.now()}`;
+        const { error: receiptError } = await supabase
+          .from('receipts')
+          .insert({
+            receipt_number: receiptNumber,
+            customer_name: userProfile.name || 'Χρήστης',
+            customer_email: userProfile.email || '',
+            items: [{
+              name: offer.subscription_types.name,
+              quantity: 1,
+              unit_price: 0,
+              total: 0
+            }],
+            subtotal: 0,
+            vat: 0,
+            total: 0,
+            issue_date: new Date().toISOString().split('T')[0],
+            mydata_status: 'not_required'
+          });
+
+        if (receiptError) {
+          console.error('❌ Error creating receipt for free offer:', receiptError);
+          // Δεν σταματάμε τη διαδικασία αν η απόδειξη αποτύχει
+        }
+
+        toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε!`);
+        loadUserOffers();
+        return;
+      }
+
       // Πάρε το auth token για authentication
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -192,11 +247,11 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
                       </Badge>
                     </div>
                   </div>
-                  <div className="text-right">
+                 <div className="text-right">
                     <div className="text-2xl font-bold text-[#00ffba]">
-                      €{offer.discounted_price}
+                      {offer.is_free ? 'ΔΩΡΕΑΝ' : `€${offer.discounted_price}`}
                     </div>
-                    {offer.subscription_types?.price && (
+                    {offer.subscription_types?.price && !offer.is_free && (
                       <div className="text-sm text-gray-500 line-through">
                         €{offer.subscription_types.price}
                       </div>
@@ -223,18 +278,23 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
                   </div>
                 )}
 
-                <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>Ισχύει έως: {new Date(offer.end_date).toLocaleDateString('el-GR')}</span>
-                  </div>
-                  {offer.subscription_types?.price && (
-                    <div className="flex items-center gap-1">
-                      <Euro className="h-4 w-4" />
-                      <span>Εξοικονόμηση: €{(offer.subscription_types.price - offer.discounted_price).toFixed(2)}</span>
-                    </div>
-                  )}
-                </div>
+                 <div className="flex items-center gap-4 text-sm text-gray-600">
+                   <div className="flex items-center gap-1">
+                     <Calendar className="h-4 w-4" />
+                     <span>Ισχύει έως: {new Date(offer.end_date).toLocaleDateString('el-GR')}</span>
+                   </div>
+                   {offer.is_free ? (
+                     <div className="flex items-center gap-1">
+                       <Gift className="h-4 w-4" />
+                       <span>Δωρεάν προσφορά</span>
+                     </div>
+                   ) : offer.subscription_types?.price ? (
+                     <div className="flex items-center gap-1">
+                       <Euro className="h-4 w-4" />
+                       <span>Εξοικονόμηση: €{(offer.subscription_types.price - offer.discounted_price).toFixed(2)}</span>
+                     </div>
+                   ) : null}
+                 </div>
 
                 <div className="flex items-center gap-3 pt-4">
                   <Button
@@ -247,7 +307,7 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
                     ) : (
                       <ShoppingCart className="w-4 h-4 mr-2" />
                     )}
-                    {processingOffer === offer.id ? 'Επεξεργασία...' : 'Αποδοχή'}
+                    {processingOffer === offer.id ? 'Επεξεργασία...' : (offer.is_free ? 'Ενεργοποίηση' : 'Αποδοχή')}
                   </Button>
                   <Button
                     onClick={() => handleRejectOffer(offer)}
