@@ -219,9 +219,8 @@ export const MagicBoxGame: React.FC = () => {
   };
 
   const hasPlayedCampaign = (campaignId: string) => {
-    // Έλεγχος αν υπάρχει αποτέλεσμα στο local state ή στη βάση
-    return results[campaignId] !== undefined || 
-           participations.some(participation => participation.campaign_id === campaignId);
+    // Έλεγχος μόνο στη βάση - όχι στο local state που μπορεί να είναι null
+    return participations.some(participation => participation.campaign_id === campaignId);
   };
 
   const formatParticipationDate = (dateString: string) => {
