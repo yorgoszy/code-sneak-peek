@@ -90,6 +90,7 @@ export const MagicBoxGameV2: React.FC = () => {
       if (error) throw error;
       setUserMagicBoxes(data || []);
       console.log('🔧 User magic boxes loaded:', data?.length);
+      console.log('📦 Magic boxes data:', data);
     } catch (error) {
       console.error('Error loading magic boxes:', error);
       toast({
