@@ -143,21 +143,32 @@ export const OffersManagement: React.FC = () => {
       // Πρώτα ελέγχουμε αν υπάρχουν πληρωμές που αναφέρονται σε αυτή την προσφορά
       const { data: relatedPayments, error: checkError } = await supabase
         .from('payments')
-        .select('id')
-        .eq('offer_id', offerToDelete.id)
-        .limit(1);
+        .select('id, status')
+        .eq('offer_id', offerToDelete.id);
 
       if (checkError) {
         console.error('❌ Error checking related payments:', checkError);
         throw checkError;
       }
 
+      // Αν υπάρχουν πληρωμές, ενημερώνουμε τα offer_id σε null αντί να μπλοκάρουμε τη διαγραφή
       if (relatedPayments && relatedPayments.length > 0) {
-        toast.error('Δεν μπορείτε να διαγράψετε αυτή την προσφορά γιατί έχει χρησιμοποιηθεί σε πληρωμές. Μπορείτε να την απενεργοποιήσετε αντί για διαγραφή.');
-        setIsDeleteDialogOpen(false);
-        return;
+        console.log('📝 Updating payments to remove offer reference before deletion');
+        
+        const { error: updateError } = await supabase
+          .from('payments')
+          .update({ offer_id: null })
+          .eq('offer_id', offerToDelete.id);
+
+        if (updateError) {
+          console.error('❌ Error updating payments:', updateError);
+          throw updateError;
+        }
+
+        console.log('✅ Successfully updated payments to remove offer reference');
       }
       
+      // Τώρα μπορούμε να διαγράψουμε την προσφορά
       const { error } = await supabase
         .from('offers')
         .delete()
