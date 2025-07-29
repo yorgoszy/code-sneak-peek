@@ -66,6 +66,10 @@ const Users = () => {
   const [userProfileDialogOpen, setUserProfileDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
 
+  // New registrations state
+  const [newRegistrations, setNewRegistrations] = useState<UserWithSubscription[]>([]);
+  const [allUsers, setAllUsers] = useState<UserWithSubscription[]>([]);
+
   const fetchUsers = async () => {
     if (loadingUsers) return; // Prevent multiple simultaneous requests
     
@@ -112,12 +116,47 @@ const Users = () => {
       );
 
       console.log('✅ Users fetched:', usersWithSubscription.length);
-      setUsers(usersWithSubscription);
+      
+      // Separate new registrations from all users
+      const acknowledgedUserIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
+      const acknowledgedUserIdsSet = new Set(acknowledgedUserIds);
+      
+      const newUsers = usersWithSubscription.filter(user => 
+        !acknowledgedUserIdsSet.has(user.id)
+      );
+      const acknowledgedUsers = usersWithSubscription.filter(user => 
+        acknowledgedUserIdsSet.has(user.id)
+      );
+      
+      setNewRegistrations(newUsers);
+      setAllUsers(acknowledgedUsers);
+      setUsers(usersWithSubscription); // Keep for backward compatibility
+      
+      // Trigger sidebar update
+      window.dispatchEvent(new CustomEvent('users-updated'));
+      
     } catch (error) {
       console.error('💥 Error:', error);
     } finally {
       setLoadingUsers(false);
     }
+  };
+
+  const handleAcknowledgeUsers = () => {
+    const newUserIds = newRegistrations.map(user => user.id);
+    const existingAcknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
+    const updatedAcknowledgedIds = [...existingAcknowledgedIds, ...newUserIds];
+    
+    localStorage.setItem('acknowledgedUsers', JSON.stringify(updatedAcknowledgedIds));
+    
+    // Move new registrations to all users
+    setAllUsers(prev => [...prev, ...newRegistrations]);
+    setNewRegistrations([]);
+    
+    // Trigger sidebar update
+    window.dispatchEvent(new CustomEvent('users-acknowledged'));
+    
+    toast.success('Νέες εγγραφές ενημερώθηκαν');
   };
 
   useEffect(() => {
@@ -217,7 +256,7 @@ const Users = () => {
   };
 
   // Filter users based on search term and filters
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = allUsers.filter(user => {
     const matchesSearch = matchesSearchTerm(user.name, searchTerm) ||
                           matchesSearchTerm(user.email, searchTerm);
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
@@ -317,12 +356,93 @@ const Users = () => {
         </nav>
 
         {/* Users Content */}
-        <div className="flex-1 p-2 lg:p-6">
+        <div className="flex-1 p-2 lg:p-6 space-y-6">
+          {/* New Registrations Card */}
+          {newRegistrations.length > 0 && (
+            <Card>
+              <CardHeader className="pb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <CardTitle className="text-base lg:text-lg font-semibold text-[#00ffba]">
+                    Νέες Εγγραφές ({newRegistrations.length})
+                  </CardTitle>
+                  <Button 
+                    className="rounded-none text-xs lg:text-sm px-3 lg:px-4 w-full sm:w-auto bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                    onClick={handleAcknowledgeUsers}
+                  >
+                    Ενημερώθηκα
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {newRegistrations.map((user) => (
+                    <Card key={user.id} className="p-4 border border-[#00ffba]/20 bg-[#00ffba]/5">
+                      <div className="flex items-start justify-between">
+                        {/* User Info */}
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          <Avatar className="w-10 h-10 flex-shrink-0">
+                            <AvatarImage src={user.photo_url} alt={user.name} />
+                            <AvatarFallback>
+                              {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-medium text-sm text-gray-900 truncate">{user.name}</h3>
+                            <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
+                                {user.role}
+                              </span>
+                              <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
+                                {user.subscription_status}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex space-x-1 ml-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none p-2"
+                            onClick={() => handleViewUser(user)}
+                            title="Προβολή προφίλ"
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none p-2"
+                            onClick={() => handleEditUser(user)}
+                            title="Επεξεργασία χρήστη"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Additional Info */}
+                      <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-600">
+                        <div className="flex justify-between">
+                          <span>Τηλέφωνο: {user.phone || '-'}</span>
+                          <span>Εγγραφή: {formatDate(user.created_at)}</span>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* All Users Card */}
           <Card>
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <CardTitle className="text-base lg:text-lg font-semibold">
-                  Όλοι οι Χρήστες ({filteredUsers.length})
+                  Όλοι οι Χρήστες ({allUsers.length})
                 </CardTitle>
                 <Button 
                   className="rounded-none text-xs lg:text-sm px-3 lg:px-4 w-full sm:w-auto"

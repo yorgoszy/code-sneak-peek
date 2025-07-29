@@ -43,6 +43,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [totalPurchases, setTotalPurchases] = useState(0);
   const [newGymBookings, setNewGymBookings] = useState(0);
   const [newPurchases, setNewPurchases] = useState(0);
+  const [newUsers, setNewUsers] = useState(0);
   const isMobile = useIsMobile();
 
   const loadNewPurchases = async () => {
@@ -73,6 +74,33 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     }
   };
 
+  const loadNewUsers = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      // Παίρνουμε όλους τους χρήστες
+      const { data: allUsers, error } = await supabase
+        .from('app_users')
+        .select('id, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Παίρνουμε τα acknowledged user IDs από localStorage
+      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
+      const acknowledgedUserIds = new Set(acknowledgedIds);
+
+      // Υπολογίζουμε τους νέους χρήστες (όσους δεν έχουν επισημανθεί ως "ενημερώθηκα")
+      const newUsersData = allUsers?.filter(user => 
+        !acknowledgedUserIds.has(user.id)
+      ) || [];
+      
+      setNewUsers(newUsersData.length);
+    } catch (error) {
+      console.error('Error loading new users:', error);
+    }
+  };
+
   useEffect(() => {
     if (userProfile?.id) {
       loadAvailableOffers();
@@ -81,6 +109,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       loadTotalPurchases();
       loadNewGymBookings();
       loadNewPurchases();
+      loadNewUsers();
     }
 
     // Real-time subscription για νέες κρατήσεις γυμναστηρίου
@@ -131,9 +160,27 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         )
         .subscribe();
 
+      // Real-time subscription για νέους χρήστες
+      const usersChannel = supabase
+        .channel('users-sidebar')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'app_users'
+          },
+          () => {
+            console.log('Νέος χρήστης - ενημέρωση sidebar');
+            loadNewUsers();
+          }
+        )
+        .subscribe();
+
       return () => {
         supabase.removeChannel(gymBookingsChannel);
         supabase.removeChannel(paymentsChannel);
+        supabase.removeChannel(usersChannel);
       };
     }
   }, [userProfile?.id, userProfile?.role]);
@@ -159,17 +206,24 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     const handleOffersAcknowledged = () => {
       loadAvailableOffers();
     };
+
+    // Listen για το event που στέλνει το Users page όταν γίνει "Ενημερώθηκα"
+    const handleUsersAcknowledged = () => {
+      loadNewUsers();
+    };
     
     window.addEventListener('gym-bookings-read', handleGymBookingsRead);
     window.addEventListener('videocall-status-changed', handleVideocallStatusChanged);
     window.addEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
     window.addEventListener('offers-acknowledged', handleOffersAcknowledged);
+    window.addEventListener('users-acknowledged', handleUsersAcknowledged);
     
     return () => {
       window.removeEventListener('gym-bookings-read', handleGymBookingsRead);
       window.removeEventListener('videocall-status-changed', handleVideocallStatusChanged);
       window.removeEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
       window.removeEventListener('offers-acknowledged', handleOffersAcknowledged);
+      window.removeEventListener('users-acknowledged', handleUsersAcknowledged);
     };
   }, [userProfile?.id]);
 
@@ -348,7 +402,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Users, 
       label: "Χρήστες", 
       path: "/dashboard/users",
-      badge: null
+      badge: userProfile?.role === 'admin' && newUsers > 0 ? newUsers.toString() : null
     },
     { 
       icon: UsersIcon, 
