@@ -15,19 +15,25 @@ serve(async (req) => {
   try {
     console.log('🎯 Magic box open request received');
 
-    // Initialize Supabase client
+    // Initialize Supabase client without auth check first
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // Authenticate user
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    // Get Authorization header for user identification
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('❌ No Authorization header provided');
+      return new Response(
+        JSON.stringify({ success: false, message: 'Authorization header required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse JWT token to get user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !user) {
       console.error('❌ Authentication failed:', userError);
       return new Response(
