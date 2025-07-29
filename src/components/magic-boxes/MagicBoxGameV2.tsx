@@ -7,6 +7,7 @@ import { Gift, Sparkles, Trophy, Ticket } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ProgramCalendarDialog } from "@/components/programs/ProgramCalendarDialog";
 import { useProgramCalendarDialog } from "@/hooks/useProgramCalendarDialog";
+import { MagicBoxGridGame } from './MagicBoxGridGame';
 
 interface MagicBoxCampaign {
   id: string;
@@ -33,6 +34,8 @@ export const MagicBoxGameV2: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [openingBoxId, setOpeningBoxId] = useState<string | null>(null);
   const [showResult, setShowResult] = useState<any>(null);
+  const [selectedBoxForGame, setSelectedBoxForGame] = useState<UserMagicBox | null>(null);
+  const [showGridGame, setShowGridGame] = useState(false);
   
   const { toast } = useToast();
   const {
@@ -266,21 +269,15 @@ export const MagicBoxGameV2: React.FC = () => {
                 </div>
               ) : (
                 <Button
-                  onClick={() => openMagicBox(box.id)}
+                  onClick={() => {
+                    setSelectedBoxForGame(box);
+                    setShowGridGame(true);
+                  }}
                   disabled={openingBoxId === box.id}
                   className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
                 >
-                  {openingBoxId === box.id ? (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                      Άνοιγμα...
-                    </>
-                  ) : (
-                    <>
-                      <Gift className="w-4 h-4 mr-2" />
-                      Άνοιξε το Κουτί!
-                    </>
-                  )}
+                  <Gift className="w-4 h-4 mr-2" />
+                  Παίξε το Παιχνίδι!
                 </Button>
               )}
             </CardContent>
@@ -367,6 +364,30 @@ export const MagicBoxGameV2: React.FC = () => {
         onClose={closeProgramCalendar}
         programId={programId}
         onComplete={() => loadUserMagicBoxes(currentUserId!)}
+      />
+
+      <MagicBoxGridGame
+        isOpen={showGridGame}
+        onClose={() => {
+          setShowGridGame(false);
+          setSelectedBoxForGame(null);
+        }}
+        magicBox={selectedBoxForGame}
+        onPrizeWon={(prize) => {
+          setShowResult({
+            success: true,
+            message: `Συγχαρητήρια! Κερδίσατε: ${prize.name}!`,
+            prize_name: prize.name,
+            prize_description: prize.description,
+            prize_type: 'custom'
+          });
+          setShowGridGame(false);
+          setSelectedBoxForGame(null);
+          // Ανανέωση των magic boxes
+          if (currentUserId) {
+            loadUserMagicBoxes(currentUserId);
+          }
+        }}
       />
     </div>
   );
