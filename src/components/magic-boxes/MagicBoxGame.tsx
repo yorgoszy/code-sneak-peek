@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Gift, Sparkles, Trophy, Ticket } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ProgramCalendarDialog } from "@/components/programs/ProgramCalendarDialog";
+import { useProgramCalendarDialog } from "@/hooks/useProgramCalendarDialog";
 
 interface MagicBoxCampaign {
   id: string;
@@ -39,6 +41,12 @@ export const MagicBoxGame: React.FC = () => {
   const [userParticipationsMap, setUserParticipationsMap] = useState<Record<string, UserParticipation[]>>({});
   
   const { toast } = useToast();
+  const {
+    isOpen: showProgramCalendar,
+    programId,
+    checkAndShowProgramCalendar,
+    close: closeProgramCalendar
+  } = useProgramCalendarDialog();
 
   // Helper functions για user-specific state
   const getUserPlayingStates = (userId: string) => userPlayingStates[userId] || {};
@@ -195,6 +203,12 @@ export const MagicBoxGame: React.FC = () => {
         setUserResult(currentUserId, campaignId, data);
         
         console.log(`🎉 User ${currentUserId} won:`, data.message);
+        
+        // Έλεγχος αν κέρδισε συνδρομή με πρόγραμμα
+        if (data.prize_type === 'subscription' && data.subscription_type_id) {
+          const participation = data.participation || {};
+          await checkAndShowProgramCalendar(participation.subscription_type_id || data.subscription_type_id);
+        }
         
         toast({
           title: 'Συγχαρητήρια! 🎉',
@@ -445,6 +459,13 @@ export const MagicBoxGame: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      <ProgramCalendarDialog
+        isOpen={showProgramCalendar}
+        onClose={closeProgramCalendar}
+        programId={programId}
+        onComplete={() => fetchUserParticipations()}
+      />
     </div>
   );
 };

@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Tag, Calendar, Euro, ShoppingCart, X, Plus, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { MagicBoxGame } from "@/components/magic-boxes/MagicBoxGame";
+import { ProgramCalendarDialog } from "@/components/programs/ProgramCalendarDialog";
+import { useProgramCalendarDialog } from "@/hooks/useProgramCalendarDialog";
 
 interface UserProfileOffersProps {
   userProfile: any;
@@ -16,6 +18,13 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingOffer, setProcessingOffer] = useState<string | null>(null);
+  
+  const {
+    isOpen: showProgramCalendar,
+    programId,
+    checkAndShowProgramCalendar,
+    close: closeProgramCalendar
+  } = useProgramCalendarDialog();
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -138,6 +147,9 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
           console.error('❌ Error creating receipt for free offer:', receiptError);
           // Δεν σταματάμε τη διαδικασία αν η απόδειξη αποτύχει
         }
+
+        // Έλεγχος αν είναι συνδρομή με πρόγραμμα
+        await checkAndShowProgramCalendar(offer.subscription_type_id);
 
         toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε!`);
         loadUserOffers();
@@ -334,6 +346,13 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
           ))}
         </div>
       )}
+
+      <ProgramCalendarDialog
+        isOpen={showProgramCalendar}
+        onClose={closeProgramCalendar}
+        programId={programId}
+        onComplete={loadUserOffers}
+      />
     </div>
   );
 };
