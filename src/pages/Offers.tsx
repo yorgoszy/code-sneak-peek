@@ -169,9 +169,10 @@ export default function Offers() {
            // Δεν σταματάμε τη διαδικασία αν η απόδειξη αποτύχει
          }
 
-         toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε!`);
-         loadUserOffers();
-         return;
+          toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε!`);
+          console.log('🔄 Reloading offers after free offer activation');
+          loadUserOffers();
+          return;
        }
       
       // Δημιουργία Stripe checkout session για την προσφορά
@@ -263,131 +264,7 @@ export default function Offers() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex">
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-        <div className="flex-1 p-6">
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ffba] mx-auto"></div>
-            <p className="mt-2 text-gray-600">Φορτώνω τις προσφορές...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      
-      <div className="flex-1 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Tag className="w-6 h-6 text-[#00ffba]" />
-              {userProfile?.role === 'admin' ? 'Αποδεκτές Προσφορές' : 'Διαθέσιμες Προσφορές'}
-            </h1>
-            <p className="text-gray-600">
-              {userProfile?.role === 'admin' 
-                ? 'Προβολή όλων των προσφορών που έχουν αποδεχθεί οι χρήστες'
-                : 'Δείτε και αποδεχτείτε τις ειδικές προσφορές που είναι διαθέσιμες για εσάς'
-              }
-            </p>
-          </div>
-          
-          {userProfile?.role === 'admin' && newOffers.length > 0 && (
-            <Button
-              onClick={handleMarkAsRead}
-              disabled={markingAsRead}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              {markingAsRead ? (
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Check className="w-4 h-4 mr-2" />
-              )}
-              Ενημερώθηκα
-            </Button>
-          )}
-        </div>
-        
-        {userProfile?.role === 'admin' ? (
-          // Admin view με tabs
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-none">
-              <TabsTrigger value="new" className="rounded-none">
-                Νέες Αποδεκτές Προσφορές ({newOffers.length})
-              </TabsTrigger>
-              <TabsTrigger value="read" className="rounded-none">
-                Ενημερώθηκα ({readOffers.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="new" className="mt-6">
-              <div className="space-y-6">
-                {newOffers.length === 0 ? (
-                  <Card className="rounded-none">
-                    <CardContent className="p-8 text-center text-gray-500">
-                      <Tag className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium mb-2">Δεν υπάρχουν νέες αποδεκτές προσφορές</h3>
-                      <p>Δεν υπάρχουν νέες προσφορές που έχουν αποδεχθεί οι χρήστες.</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  newOffers.map((offer) => renderOfferCard(offer))
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="read" className="mt-6">
-              <div className="space-y-6">
-                {readOffers.length === 0 ? (
-                  <Card className="rounded-none">
-                    <CardContent className="p-8 text-center text-gray-500">
-                      <Check className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium mb-2">Ενημερώθηκα</h3>
-                      <p>Εδώ θα εμφανίζονται οι προσφορές που έχεις δει.</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  readOffers.map((offer) => renderOfferCard(offer))
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
-        ) : (
-          // User view χωρίς tabs
-          newOffers.length === 0 ? (
-            <Card className="rounded-none">
-              <CardContent className="p-8 text-center">
-                <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Δεν υπάρχουν διαθέσιμες προσφορές
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Δεν υπάρχουν ενεργές προσφορές για εσάς αυτή τη στιγμή.
-                </p>
-                <Button 
-                  onClick={() => window.location.href = '/dashboard/shop'}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Δείτε τις Αγορές
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {newOffers.map((offer) => renderOfferCard(offer))}
-            </div>
-          )
-        )}
-      </div>
-    </div>
-  );
-
-  function renderOfferCard(offer: any) {
+  const renderOfferCard = (offer: any) => {
     return (
       <Card key={offer.id} className="rounded-none overflow-hidden border-l-4 border-l-[#00ffba]">
         <CardHeader className="bg-gradient-to-r from-[#00ffba]/10 to-transparent">
@@ -528,5 +405,130 @@ export default function Offers() {
         </CardContent>
       </Card>
     );
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex">
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        <div className="flex-1 p-6">
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ffba] mx-auto"></div>
+            <p className="mt-2 text-gray-600">Φορτώνω τις προσφορές...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      
+      <div className="flex-1 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Tag className="w-6 h-6 text-[#00ffba]" />
+              {userProfile?.role === 'admin' ? 'Αποδεκτές Προσφορές' : 'Διαθέσιμες Προσφορές'}
+            </h1>
+            <p className="text-gray-600">
+              {userProfile?.role === 'admin' 
+                ? 'Προβολή όλων των προσφορών που έχουν αποδεχθεί οι χρήστες'
+                : 'Δείτε και αποδεχτείτε τις ειδικές προσφορές που είναι διαθέσιμες για εσάς'
+              }
+            </p>
+          </div>
+          
+          {userProfile?.role === 'admin' && newOffers.length > 0 && (
+            <Button
+              onClick={handleMarkAsRead}
+              disabled={markingAsRead}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              {markingAsRead ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4 mr-2" />
+              )}
+              Ενημερώθηκα
+            </Button>
+          )}
+        </div>
+        
+        {userProfile?.role === 'admin' ? (
+          // Admin view με tabs
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 rounded-none">
+              <TabsTrigger value="new" className="rounded-none">
+                Νέες Αποδεκτές Προσφορές ({newOffers.length})
+              </TabsTrigger>
+              <TabsTrigger value="read" className="rounded-none">
+                Ενημερώθηκα ({readOffers.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="new" className="mt-6">
+              <div className="space-y-6">
+                {newOffers.length === 0 ? (
+                  <Card className="rounded-none">
+                    <CardContent className="p-8 text-center text-gray-500">
+                      <Tag className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium mb-2">Δεν υπάρχουν νέες αποδεκτές προσφορές</h3>
+                      <p>Δεν υπάρχουν νέες προσφορές που έχουν αποδεχθεί οι χρήστες.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  newOffers.map((offer) => renderOfferCard(offer))
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="read" className="mt-6">
+              <div className="space-y-6">
+                {readOffers.length === 0 ? (
+                  <Card className="rounded-none">
+                    <CardContent className="p-8 text-center text-gray-500">
+                      <Check className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium mb-2">Ενημερώθηκα</h3>
+                      <p>Εδώ θα εμφανίζονται οι προσφορές που έχεις δει.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  readOffers.map((offer) => renderOfferCard(offer))
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          // User view χωρίς tabs
+          newOffers.length === 0 ? (
+            <Card className="rounded-none">
+              <CardContent className="p-8 text-center">
+                <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Δεν υπάρχουν διαθέσιμες προσφορές
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Δεν υπάρχουν ενεργές προσφορές για εσάς αυτή τη στιγμή.
+                </p>
+                <Button 
+                  onClick={() => window.location.href = '/dashboard/shop'}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Δείτε τις Αγορές
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {newOffers.map((offer) => renderOfferCard(offer))}
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
+
 }
