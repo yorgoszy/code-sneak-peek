@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Tag, Calendar, Euro, ShoppingCart, X, Plus, Gift } from "lucide-react";
 import { toast } from "sonner";
-import { MagicBoxGame } from "@/components/magic-boxes/MagicBoxGame";
+import { MagicBoxGameV2 } from "@/components/magic-boxes/MagicBoxGameV2";
 import { ProgramCalendarDialog } from "@/components/programs/ProgramCalendarDialog";
 import { useProgramCalendarDialog } from "@/hooks/useProgramCalendarDialog";
 
@@ -239,7 +239,7 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
     <div className="space-y-6">
       {/* Magic Box Section */}
       <div className="mb-6">
-        <MagicBoxGame />
+        <MagicBoxGameV2 />
       </div>
       
       {offers.length === 0 ? (
