@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tag, Check, X, ShoppingCart, RefreshCw } from "lucide-react";
@@ -10,10 +11,12 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 export default function Offers() {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [offers, setOffers] = useState<any[]>([]);
+  const [newOffers, setNewOffers] = useState<any[]>([]);
+  const [readOffers, setReadOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingOffer, setProcessingOffer] = useState<string | null>(null);
   const [markingAsRead, setMarkingAsRead] = useState(false);
+  const [activeTab, setActiveTab] = useState("new");
   const { userProfile } = useRoleCheck();
 
   useEffect(() => {
@@ -47,7 +50,22 @@ export default function Offers() {
         }
         
         console.log('✅ Accepted offers for admin:', acceptedOffers);
-        setOffers(acceptedOffers || []);
+        
+        // Παίρνουμε τα acknowledged offer IDs από localStorage
+        const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
+        const acknowledgedOfferIds = new Set(acknowledgedIds);
+
+        // Διαχωρισμός προσφορών με βάση το αν έχουν επισημανθεί ως "ενημερώθηκα"
+        const allOffers = acceptedOffers || [];
+        const newOffersData = allOffers.filter(offer => 
+          !acknowledgedOfferIds.has(offer.id)
+        );
+        const readOffersData = allOffers.filter(offer => 
+          acknowledgedOfferIds.has(offer.id)
+        );
+        
+        setNewOffers(newOffersData);
+        setReadOffers(readOffersData);
       } else {
         // Για χρήστες, φορτώνουμε τις διαθέσιμες προσφορές
         const { data, error } = await supabase
@@ -86,7 +104,9 @@ export default function Offers() {
         const availableOffers = userOffers.filter(offer => !rejectedOfferIds.has(offer.id));
         
         console.log('✅ User specific offers:', availableOffers);
-        setOffers(availableOffers);
+        // Για χρήστες βάζουμε όλες τις προσφορές στο newOffers
+        setNewOffers(availableOffers);
+        setReadOffers([]);
       }
     } catch (error) {
       console.error('💥 Error loading offers:', error);
@@ -217,17 +237,24 @@ export default function Offers() {
       // Παίρνουμε τα υπάρχοντα acknowledged offer IDs από localStorage
       const existingAcknowledged = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
       
-      // Προσθέτουμε τα IDs των τρέχουσων αποδεκτών προσφορών
-      const currentOfferIds = offers.map(offer => offer.id);
-      const updatedAcknowledged = [...existingAcknowledged, ...currentOfferIds];
+      // Προσθέτουμε τα IDs των νέων αποδεκτών προσφορών
+      const newOfferIds = newOffers.map(offer => offer.id);
+      const updatedAcknowledged = [...existingAcknowledged, ...newOfferIds];
       
       // Αποθηκεύουμε στο localStorage
       localStorage.setItem('acknowledgedOffers', JSON.stringify(updatedAcknowledged));
       
+      // Μεταφορά νέων προσφορών στο "Ενημερώθηκα"
+      setReadOffers(prev => [...prev, ...newOffers]);
+      setNewOffers([]);
+      
+      // Αλλάζουμε στο tab "Ενημερώθηκα"
+      setActiveTab("read");
+      
       // Στέλνουμε event για το sidebar
       window.dispatchEvent(new CustomEvent('offers-acknowledged'));
       
-      toast.success('Όλες οι αποδεκτές προσφορές επισημάνθηκαν ως ενημερωμένες');
+      toast.success('Όλες οι αποδεκτές προσφορές μεταφέρθηκαν στο "Ενημερώθηκα"');
     } catch (error) {
       console.error('Error marking offers as read:', error);
       toast.error('Σφάλμα κατά την ενημέρωση');
@@ -269,7 +296,7 @@ export default function Offers() {
             </p>
           </div>
           
-          {userProfile?.role === 'admin' && offers.length > 0 && (
+          {userProfile?.role === 'admin' && newOffers.length > 0 && (
             <Button
               onClick={handleMarkAsRead}
               disabled={markingAsRead}
@@ -285,23 +312,62 @@ export default function Offers() {
           )}
         </div>
         
-        {offers.length === 0 ? (
-          <Card className="rounded-none">
-            <CardContent className="p-8 text-center">
-              <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {userProfile?.role === 'admin' 
-                  ? 'Δεν υπάρχουν αποδεκτές προσφορές' 
-                  : 'Δεν υπάρχουν διαθέσιμες προσφορές'
-                }
-              </h3>
-              <p className="text-gray-600 mb-4">
-                {userProfile?.role === 'admin'
-                  ? 'Δεν έχει γίνει αποδοχή προσφορών από χρήστες ακόμα.'
-                  : 'Δεν υπάρχουν ενεργές προσφορές για εσάς αυτή τη στιγμή.'
-                }
-              </p>
-              {userProfile?.role !== 'admin' && (
+        {userProfile?.role === 'admin' ? (
+          // Admin view με tabs
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 rounded-none">
+              <TabsTrigger value="new" className="rounded-none">
+                Νέες Αποδεκτές Προσφορές ({newOffers.length})
+              </TabsTrigger>
+              <TabsTrigger value="read" className="rounded-none">
+                Ενημερώθηκα ({readOffers.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="new" className="mt-6">
+              <div className="space-y-6">
+                {newOffers.length === 0 ? (
+                  <Card className="rounded-none">
+                    <CardContent className="p-8 text-center text-gray-500">
+                      <Tag className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium mb-2">Δεν υπάρχουν νέες αποδεκτές προσφορές</h3>
+                      <p>Δεν υπάρχουν νέες προσφορές που έχουν αποδεχθεί οι χρήστες.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  newOffers.map((offer) => renderOfferCard(offer))
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="read" className="mt-6">
+              <div className="space-y-6">
+                {readOffers.length === 0 ? (
+                  <Card className="rounded-none">
+                    <CardContent className="p-8 text-center text-gray-500">
+                      <Check className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium mb-2">Ενημερώθηκα</h3>
+                      <p>Εδώ θα εμφανίζονται οι προσφορές που έχεις δει.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  readOffers.map((offer) => renderOfferCard(offer))
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          // User view χωρίς tabs
+          newOffers.length === 0 ? (
+            <Card className="rounded-none">
+              <CardContent className="p-8 text-center">
+                <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Δεν υπάρχουν διαθέσιμες προσφορές
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Δεν υπάρχουν ενεργές προσφορές για εσάς αυτή τη στιγμή.
+                </p>
                 <Button 
                   onClick={() => window.location.href = '/dashboard/shop'}
                   className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
@@ -309,154 +375,158 @@ export default function Offers() {
                   <ShoppingCart className="w-4 h-4 mr-2" />
                   Δείτε τις Αγορές
                 </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {offers.map((offer) => (
-              <Card key={offer.id} className="rounded-none overflow-hidden border-l-4 border-l-[#00ffba]">
-                <CardHeader className="bg-gradient-to-r from-[#00ffba]/10 to-transparent">
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Tag className="w-5 h-5 text-[#00ffba]" />
-                      <span className="text-xl">
-                        {userProfile?.role === 'admin' 
-                          ? offer.subscription_types?.name 
-                          : offer.name
-                        }
-                      </span>
-                      <Badge className="bg-[#00ffba] text-black rounded-none">
-                        {userProfile?.role === 'admin' ? 'ΑΠΟΔΕΚΤΗ' : 'ΕΙΔΙΚΗ ΠΡΟΣΦΟΡΑ'}
-                      </Badge>
-                    </div>
-                     <div className="text-right">
-                       <div className="text-2xl font-bold text-[#00ffba]">
-                         {offer.is_free ? 'ΔΩΡΕΑΝ' : `€${userProfile?.role === 'admin' ? offer.amount : offer.discounted_price}`}
-                       </div>
-                      {userProfile?.role === 'admin' && offer.subscription_types?.price && (
-                        <div className="text-sm text-gray-500 line-through">
-                          €{offer.subscription_types.price}
-                        </div>
-                      )}
-                      {userProfile?.role !== 'admin' && offer.subscription_types?.price && (
-                        <div className="text-sm text-gray-500 line-through">
-                          €{offer.subscription_types.price}
-                        </div>
-                      )}
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      {userProfile?.role === 'admin' ? (
-                        <>
-                          <h4 className="font-semibold text-gray-900 mb-2">Στοιχεία Χρήστη</h4>
-                          <p className="text-gray-800 font-medium">{offer.app_users?.name}</p>
-                          <p className="text-gray-600 text-sm">{offer.app_users?.email}</p>
-                          
-                          <h4 className="font-semibold text-gray-900 mb-2 mt-4">Τύπος Συνδρομής</h4>
-                          <p className="text-gray-800 font-medium">{offer.subscription_types?.name}</p>
-                          {offer.subscription_types?.description && (
-                            <p className="text-gray-600 text-sm mt-1">{offer.subscription_types.description}</p>
-                          )}
-                          
-                          <div className="mt-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-4">
-                              <span><strong>Ημερομηνία Αποδοχής:</strong> {new Date(offer.payment_date).toLocaleDateString('el-GR')}</span>
-                              <span><strong>Κατάσταση:</strong> {offer.status === 'completed' ? 'Ολοκληρωμένη' : 'Εκκρεμής'}</span>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <h4 className="font-semibold text-gray-900 mb-2">Περιγραφή Προσφοράς</h4>
-                          {offer.description && (
-                            <p className="text-gray-600 mb-4">{offer.description}</p>
-                          )}
-                          
-                          <h4 className="font-semibold text-gray-900 mb-2">Τύπος Συνδρομής</h4>
-                          <p className="text-gray-800 font-medium">{offer.subscription_types?.name}</p>
-                          {offer.subscription_types?.description && (
-                            <p className="text-gray-600 text-sm mt-1">{offer.subscription_types.description}</p>
-                          )}
-                          
-                          <div className="mt-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-4">
-                              <span><strong>Έναρξη:</strong> {new Date(offer.start_date).toLocaleDateString('el-GR')}</span>
-                              <span><strong>Λήξη:</strong> {new Date(offer.end_date).toLocaleDateString('el-GR')}</span>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    
-                    <div className="flex flex-col justify-center">
-                      {userProfile?.role === 'admin' ? (
-                        <div className="bg-gray-50 rounded-none p-4">
-                          <h5 className="font-semibold text-gray-900 mb-2">Λεπτομέρειες Πληρωμής</h5>
-                          <div className="space-y-2 text-sm">
-                            <div><strong>Αναγνωριστικό:</strong> {offer.transaction_id || 'N/A'}</div>
-                            <div><strong>Μέθοδος:</strong> {offer.payment_method || 'N/A'}</div>
-                            {offer.last_four && (
-                              <div><strong>Κάρτα:</strong> ****{offer.last_four}</div>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                           <div className="bg-gray-50 rounded-none p-4 mb-4">
-                             <h5 className="font-semibold text-gray-900 mb-2">Εξοικονόμηση</h5>
-                             {offer.is_free ? (
-                               <div className="text-2xl font-bold text-green-600">ΔΩΡΕΑΝ</div>
-                             ) : offer.subscription_types?.price ? (
-                               <div className="text-2xl font-bold text-green-600">
-                                 €{(offer.subscription_types.price - offer.discounted_price).toFixed(2)}
-                               </div>
-                             ) : null}
-                             <p className="text-sm text-gray-600">
-                               {offer.is_free ? 'Καμία χρέωση' : 'από την κανονική τιμή'}
-                             </p>
-                           </div>
-                          
-                          <div className="flex gap-3">
-                             <Button
-                               onClick={() => handleAcceptOffer(offer)}
-                               disabled={processingOffer === offer.id}
-                               className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                             >
-                               {processingOffer === offer.id ? (
-                                 <>
-                                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
-                                   Επεξεργασία...
-                                 </>
-                               ) : (
-                                 <>
-                                   <Check className="w-4 h-4 mr-2" />
-                                   {offer.is_free ? 'Ενεργοποίηση' : 'Αποδοχή'}
-                                 </>
-                               )}
-                            </Button>
-                            <Button
-                              onClick={() => handleRejectOffer(offer)}
-                              variant="outline"
-                              className="flex-1 rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                            >
-                              <X className="w-4 h-4 mr-2" />
-                              Απόρριψη
-                            </Button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {newOffers.map((offer) => renderOfferCard(offer))}
+            </div>
+          )
         )}
       </div>
     </div>
   );
+
+  function renderOfferCard(offer: any) {
+    return (
+      <Card key={offer.id} className="rounded-none overflow-hidden border-l-4 border-l-[#00ffba]">
+        <CardHeader className="bg-gradient-to-r from-[#00ffba]/10 to-transparent">
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Tag className="w-5 h-5 text-[#00ffba]" />
+              <span className="text-xl">
+                {userProfile?.role === 'admin' 
+                  ? offer.subscription_types?.name 
+                  : offer.name
+                }
+              </span>
+              <Badge className="bg-[#00ffba] text-black rounded-none">
+                {userProfile?.role === 'admin' ? 'ΑΠΟΔΕΚΤΗ' : 'ΕΙΔΙΚΗ ΠΡΟΣΦΟΡΑ'}
+              </Badge>
+            </div>
+             <div className="text-right">
+               <div className="text-2xl font-bold text-[#00ffba]">
+                 {offer.is_free ? 'ΔΩΡΕΑΝ' : `€${userProfile?.role === 'admin' ? offer.amount : offer.discounted_price}`}
+               </div>
+              {userProfile?.role === 'admin' && offer.subscription_types?.price && (
+                <div className="text-sm text-gray-500 line-through">
+                  €{offer.subscription_types.price}
+                </div>
+              )}
+              {userProfile?.role !== 'admin' && offer.subscription_types?.price && (
+                <div className="text-sm text-gray-500 line-through">
+                  €{offer.subscription_types.price}
+                </div>
+              )}
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              {userProfile?.role === 'admin' ? (
+                <>
+                  <h4 className="font-semibold text-gray-900 mb-2">Στοιχεία Χρήστη</h4>
+                  <p className="text-gray-800 font-medium">{offer.app_users?.name}</p>
+                  <p className="text-gray-600 text-sm">{offer.app_users?.email}</p>
+                  
+                  <h4 className="font-semibold text-gray-900 mb-2 mt-4">Τύπος Συνδρομής</h4>
+                  <p className="text-gray-800 font-medium">{offer.subscription_types?.name}</p>
+                  {offer.subscription_types?.description && (
+                    <p className="text-gray-600 text-sm mt-1">{offer.subscription_types.description}</p>
+                  )}
+                  
+                  <div className="mt-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-4">
+                      <span><strong>Ημερομηνία Αποδοχής:</strong> {new Date(offer.payment_date).toLocaleDateString('el-GR')}</span>
+                      <span><strong>Κατάσταση:</strong> {offer.status === 'completed' ? 'Ολοκληρωμένη' : 'Εκκρεμής'}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h4 className="font-semibold text-gray-900 mb-2">Περιγραφή Προσφοράς</h4>
+                  {offer.description && (
+                    <p className="text-gray-600 mb-4">{offer.description}</p>
+                  )}
+                  
+                  <h4 className="font-semibold text-gray-900 mb-2">Τύπος Συνδρομής</h4>
+                  <p className="text-gray-800 font-medium">{offer.subscription_types?.name}</p>
+                  {offer.subscription_types?.description && (
+                    <p className="text-gray-600 text-sm mt-1">{offer.subscription_types.description}</p>
+                  )}
+                  
+                  <div className="mt-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-4">
+                      <span><strong>Έναρξη:</strong> {new Date(offer.start_date).toLocaleDateString('el-GR')}</span>
+                      <span><strong>Λήξη:</strong> {new Date(offer.end_date).toLocaleDateString('el-GR')}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            
+            <div className="flex flex-col justify-center">
+              {userProfile?.role === 'admin' ? (
+                <div className="bg-gray-50 rounded-none p-4">
+                  <h5 className="font-semibold text-gray-900 mb-2">Λεπτομέρειες Πληρωμής</h5>
+                  <div className="space-y-2 text-sm">
+                    <div><strong>Αναγνωριστικό:</strong> {offer.transaction_id || 'N/A'}</div>
+                    <div><strong>Μέθοδος:</strong> {offer.payment_method || 'N/A'}</div>
+                    {offer.last_four && (
+                      <div><strong>Κάρτα:</strong> ****{offer.last_four}</div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+                   <div className="bg-gray-50 rounded-none p-4 mb-4">
+                     <h5 className="font-semibold text-gray-900 mb-2">Εξοικονόμηση</h5>
+                     {offer.is_free ? (
+                       <div className="text-2xl font-bold text-green-600">ΔΩΡΕΑΝ</div>
+                     ) : offer.subscription_types?.price ? (
+                       <div className="text-2xl font-bold text-green-600">
+                         €{(offer.subscription_types.price - offer.discounted_price).toFixed(2)}
+                       </div>
+                     ) : null}
+                     <p className="text-sm text-gray-600">
+                       {offer.is_free ? 'Καμία χρέωση' : 'από την κανονική τιμή'}
+                     </p>
+                   </div>
+                  
+                  <div className="flex gap-3">
+                     <Button
+                       onClick={() => handleAcceptOffer(offer)}
+                       disabled={processingOffer === offer.id}
+                       className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                     >
+                       {processingOffer === offer.id ? (
+                         <>
+                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                           Επεξεργασία...
+                         </>
+                       ) : (
+                         <>
+                           <Check className="w-4 h-4 mr-2" />
+                           {offer.is_free ? 'Ενεργοποίηση' : 'Αποδοχή'}
+                         </>
+                       )}
+                    </Button>
+                    <Button
+                      onClick={() => handleRejectOffer(offer)}
+                      variant="outline"
+                      className="flex-1 rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Απόρριψη
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 }
