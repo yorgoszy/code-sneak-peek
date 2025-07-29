@@ -251,12 +251,6 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
                   >
                     Παίξε Ξανά
                   </Button>
-                  <Button
-                    onClick={handleClose}
-                    className="ml-2 rounded-none"
-                  >
-                    Κλείσιμο
-                  </Button>
                 </div>
               )}
             </div>
