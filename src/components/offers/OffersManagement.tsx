@@ -140,6 +140,24 @@ export const OffersManagement: React.FC = () => {
     try {
       console.log('🗑️ Deleting offer:', offerToDelete.name);
       
+      // Πρώτα ελέγχουμε αν υπάρχουν πληρωμές που αναφέρονται σε αυτή την προσφορά
+      const { data: relatedPayments, error: checkError } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('offer_id', offerToDelete.id)
+        .limit(1);
+
+      if (checkError) {
+        console.error('❌ Error checking related payments:', checkError);
+        throw checkError;
+      }
+
+      if (relatedPayments && relatedPayments.length > 0) {
+        toast.error('Δεν μπορείτε να διαγράψετε αυτή την προσφορά γιατί έχει χρησιμοποιηθεί σε πληρωμές. Μπορείτε να την απενεργοποιήσετε αντί για διαγραφή.');
+        setIsDeleteDialogOpen(false);
+        return;
+      }
+      
       const { error } = await supabase
         .from('offers')
         .delete()
@@ -153,6 +171,7 @@ export const OffersManagement: React.FC = () => {
       console.log('✅ Offer deleted successfully');
       toast.success('Η προσφορά διαγράφηκε επιτυχώς!');
       await loadOffers();
+      setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error('💥 Error deleting offer:', error);
       toast.error('Σφάλμα κατά τη διαγραφή: ' + (error as Error).message);
