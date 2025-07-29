@@ -148,11 +148,17 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
           // Δεν σταματάμε τη διαδικασία αν η απόδειξη αποτύχει
         }
 
-        // Έλεγχος αν είναι συνδρομή με πρόγραμμα
-        await checkAndShowProgramCalendar(offer.subscription_type_id);
-
         toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε!`);
+        
+        // Ανανέωση των προσφορών και ενημέρωση του sidebar
         loadUserOffers();
+        onOfferRejected?.(); // Ανανέωση του sidebar
+        
+        // Έλεγχος αν είναι συνδρομή με πρόγραμμα μετά την ανανέωση
+        const hasProgram = await checkAndShowProgramCalendar(offer.subscription_type_id);
+        if (!hasProgram) {
+          console.log('✅ Offer processed successfully - no program calendar needed');
+        }
         return;
       }
 
@@ -181,6 +187,8 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
       }
 
       if (data?.url) {
+        // Ανανέωση του sidebar πριν την ανακατεύθυνση
+        onOfferRejected?.();
         window.location.href = data.url;
       } else {
         throw new Error('Δεν ελήφθη URL checkout');
@@ -351,7 +359,10 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
         isOpen={showProgramCalendar}
         onClose={closeProgramCalendar}
         programId={programId}
-        onComplete={loadUserOffers}
+        onComplete={() => {
+          loadUserOffers();
+          onOfferRejected?.(); // Ενημέρωση του sidebar και μετά το κλείσιμο του calendar
+        }}
       />
     </div>
   );
