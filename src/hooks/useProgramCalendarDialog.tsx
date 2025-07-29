@@ -20,10 +20,15 @@ export const useProgramCalendarDialog = () => {
           )
         `)
         .eq('id', subscriptionTypeId)
-        .single();
+        .maybeSingle();
 
-      if (error || !subscriptionType) {
-        console.log('No subscription type found or error:', error);
+      if (error) {
+        console.error('❌ Error fetching subscription type:', error);
+        return false;
+      }
+
+      if (!subscriptionType) {
+        console.log('No subscription type found for ID:', subscriptionTypeId);
         return false;
       }
 
@@ -59,10 +64,15 @@ export const useProgramCalendarDialog = () => {
           )
         `)
         .eq('id', paymentId)
-        .single();
+        .maybeSingle();
 
-      if (paymentError || !payment) {
-        console.log('No payment found or error:', paymentError);
+      if (paymentError) {
+        console.error('❌ Error fetching payment:', paymentError);
+        return false;
+      }
+
+      if (!payment) {
+        console.log('No payment found for ID:', paymentId);
         return false;
       }
 

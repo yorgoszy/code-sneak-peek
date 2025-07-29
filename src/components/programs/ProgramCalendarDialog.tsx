@@ -42,6 +42,7 @@ export const ProgramCalendarDialog: React.FC<ProgramCalendarDialogProps> = ({
   const fetchProgramData = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching program data for ID:', programId);
       
       const { data: program, error } = await supabase
         .from('programs')
@@ -61,12 +62,19 @@ export const ProgramCalendarDialog: React.FC<ProgramCalendarDialogProps> = ({
           )
         `)
         .eq('id', programId)
-        .single();
+        .maybeSingle();
 
-      if (error || !program) {
-        throw new Error('Program not found');
+      if (error) {
+        console.error('❌ Error fetching program:', error);
+        throw new Error(`Database error: ${error.message}`);
       }
 
+      if (!program) {
+        console.error('❌ Program not found with ID:', programId);
+        throw new Error('Το πρόγραμμα δεν βρέθηκε');
+      }
+
+      console.log('✅ Program data fetched:', program);
       setProgramData(program);
       
       // Μετατροπή σε ProgramStructure format
@@ -82,6 +90,8 @@ export const ProgramCalendarDialog: React.FC<ProgramCalendarDialogProps> = ({
         })) || []
       })) || [];
 
+      console.log('✅ Processed weeks:', weeks);
+
       setCalendarProgram({
         id: program.id,
         name: program.name,
@@ -93,8 +103,8 @@ export const ProgramCalendarDialog: React.FC<ProgramCalendarDialogProps> = ({
         weeks: weeks
       });
     } catch (error) {
-      console.error('Error fetching program data:', error);
-      toast.error('Σφάλμα κατά τη φόρτωση του προγράμματος');
+      console.error('💥 Error fetching program data:', error);
+      toast.error('Σφάλμα κατά τη φόρτωση του προγράμματος: ' + (error as Error).message);
     } finally {
       setLoading(false);
     }
