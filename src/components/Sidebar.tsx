@@ -45,6 +45,34 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [newPurchases, setNewPurchases] = useState(0);
   const isMobile = useIsMobile();
 
+  const loadNewPurchases = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      // Παίρνουμε όλες τις ολοκληρωμένες πληρωμές
+      const { data: allPayments, error } = await supabase
+        .from('payments')
+        .select('id, created_at')
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Παίρνουμε τα acknowledged payment IDs από localStorage (ίδια λογική με AdminShop)
+      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
+      const acknowledgedPaymentIds = new Set(acknowledgedIds);
+
+      // Υπολογίζουμε τις νέες αγορές (όσες δεν έχουν επισημανθεί ως "ενημερώθηκα")
+      const newPurchasesData = allPayments?.filter(payment => 
+        !acknowledgedPaymentIds.has(payment.id)
+      ) || [];
+      
+      setNewPurchases(newPurchasesData.length);
+    } catch (error) {
+      console.error('Error loading new purchases:', error);
+    }
+  };
+
   useEffect(() => {
     if (userProfile?.id) {
       loadAvailableOffers();
@@ -302,33 +330,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     }
   };
 
-  const loadNewPurchases = async () => {
-    if (!userProfile?.id || userProfile.role !== 'admin') return;
-    
-    try {
-      // Παίρνουμε όλες τις ολοκληρωμένες πληρωμές
-      const { data: allPayments, error } = await supabase
-        .from('payments')
-        .select('id, created_at')
-        .eq('status', 'completed')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Παίρνουμε τα acknowledged payment IDs από localStorage (ίδια λογική με AdminShop)
-      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
-      const acknowledgedPaymentIds = new Set(acknowledgedIds);
-
-      // Υπολογίζουμε τις νέες αγορές (όσες δεν έχουν επισημανθεί ως "ενημερώθηκα")
-      const newPurchasesData = allPayments?.filter(payment => 
-        !acknowledgedPaymentIds.has(payment.id)
-      ) || [];
-      
-      setNewPurchases(newPurchasesData.length);
-    } catch (error) {
-      console.error('Error loading new purchases:', error);
-    }
-  };
 
   const menuItems = [
     { 
