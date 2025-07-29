@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Tag, Check, X, ShoppingCart } from "lucide-react";
+import { Tag, Check, X, ShoppingCart, RefreshCw } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 
@@ -13,6 +13,7 @@ export default function Offers() {
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingOffer, setProcessingOffer] = useState<string | null>(null);
+  const [markingAsRead, setMarkingAsRead] = useState(false);
   const { userProfile } = useRoleCheck();
 
   useEffect(() => {
@@ -209,6 +210,32 @@ export default function Offers() {
     }
   };
 
+  const handleMarkAsRead = async () => {
+    setMarkingAsRead(true);
+    
+    try {
+      // Παίρνουμε τα υπάρχοντα acknowledged offer IDs από localStorage
+      const existingAcknowledged = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
+      
+      // Προσθέτουμε τα IDs των τρέχουσων αποδεκτών προσφορών
+      const currentOfferIds = offers.map(offer => offer.id);
+      const updatedAcknowledged = [...existingAcknowledged, ...currentOfferIds];
+      
+      // Αποθηκεύουμε στο localStorage
+      localStorage.setItem('acknowledgedOffers', JSON.stringify(updatedAcknowledged));
+      
+      // Στέλνουμε event για το sidebar
+      window.dispatchEvent(new CustomEvent('offers-acknowledged'));
+      
+      toast.success('Όλες οι αποδεκτές προσφορές επισημάνθηκαν ως ενημερωμένες');
+    } catch (error) {
+      console.error('Error marking offers as read:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση');
+    } finally {
+      setMarkingAsRead(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex">
@@ -228,17 +255,34 @@ export default function Offers() {
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       
       <div className="flex-1 p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Tag className="w-6 h-6 text-[#00ffba]" />
-            {userProfile?.role === 'admin' ? 'Αποδεκτές Προσφορές' : 'Διαθέσιμες Προσφορές'}
-          </h1>
-          <p className="text-gray-600">
-            {userProfile?.role === 'admin' 
-              ? 'Προβολή όλων των προσφορών που έχουν αποδεχθεί οι χρήστες'
-              : 'Δείτε και αποδεχτείτε τις ειδικές προσφορές που είναι διαθέσιμες για εσάς'
-            }
-          </p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Tag className="w-6 h-6 text-[#00ffba]" />
+              {userProfile?.role === 'admin' ? 'Αποδεκτές Προσφορές' : 'Διαθέσιμες Προσφορές'}
+            </h1>
+            <p className="text-gray-600">
+              {userProfile?.role === 'admin' 
+                ? 'Προβολή όλων των προσφορών που έχουν αποδεχθεί οι χρήστες'
+                : 'Δείτε και αποδεχτείτε τις ειδικές προσφορές που είναι διαθέσιμες για εσάς'
+              }
+            </p>
+          </div>
+          
+          {userProfile?.role === 'admin' && offers.length > 0 && (
+            <Button
+              onClick={handleMarkAsRead}
+              disabled={markingAsRead}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              {markingAsRead ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4 mr-2" />
+              )}
+              Ενημερώθηκα
+            </Button>
+          )}
         </div>
         
         {offers.length === 0 ? (

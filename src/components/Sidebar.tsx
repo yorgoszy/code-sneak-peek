@@ -154,15 +154,22 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     const handlePurchasesAcknowledged = () => {
       loadNewPurchases();
     };
+
+    // Listen για το event που στέλνει το Offers page όταν γίνει "Ενημερώθηκα"
+    const handleOffersAcknowledged = () => {
+      loadAvailableOffers();
+    };
     
     window.addEventListener('gym-bookings-read', handleGymBookingsRead);
     window.addEventListener('videocall-status-changed', handleVideocallStatusChanged);
     window.addEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
+    window.addEventListener('offers-acknowledged', handleOffersAcknowledged);
     
     return () => {
       window.removeEventListener('gym-bookings-read', handleGymBookingsRead);
       window.removeEventListener('videocall-status-changed', handleVideocallStatusChanged);
       window.removeEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
+      window.removeEventListener('offers-acknowledged', handleOffersAcknowledged);
     };
   }, [userProfile?.id]);
 
@@ -180,26 +187,25 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       if (error) throw error;
       
       if (userProfile.role === 'admin') {
-        // Για admin: υπολογίζουμε πόσες από τις τρέχουσες προσφορές έχουν γίνει δεκτές
-        const allActiveOffers = offers || [];
-        
-        if (allActiveOffers.length === 0) {
-          setAvailableOffers(0);
-          return;
-        }
-        
-        // Βρίσκουμε τις αποδεκτές προσφορές από payments
+        // Για admin: υπολογίζουμε πόσες αποδεκτές προσφορές δεν έχουν επισημανθεί ως "ενημερώθηκα"
         const { data: acceptedOffers, error: paymentsError } = await supabase
           .from('payments')
-          .select('subscription_type_id')
+          .select('id, offer_id')
           .not('subscription_type_id', 'is', null)
           .gte('payment_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Τελευταίες 30 ημέρες
 
         if (paymentsError) throw paymentsError;
         
-        // Υπολογίζουμε πόσες προσφορές έχουν γίνει δεκτές
-        const acceptedOffersCount = acceptedOffers?.length || 0;
-        setAvailableOffers(acceptedOffersCount);
+        // Παίρνουμε τα acknowledged offer IDs από localStorage
+        const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
+        const acknowledgedOfferIds = new Set(acknowledgedIds);
+        
+        // Υπολογίζουμε πόσες αποδεκτές προσφορές δεν έχουν επισημανθεί
+        const newAcceptedOffers = acceptedOffers?.filter(offer => 
+          !acknowledgedOfferIds.has(offer.id)
+        ) || [];
+        
+        setAvailableOffers(newAcceptedOffers.length);
       } else {
         // Για χρήστες: φιλτράρισμα προσφορών βάσει visibility
         const userOffers = offers?.filter(offer => {
