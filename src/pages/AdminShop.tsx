@@ -105,18 +105,20 @@ const AdminShop = () => {
         }
       }));
 
-      // Νέα πακέτα είναι αυτά των τελευταίων 7 ημερών
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      // Παίρνουμε τα acknowledged payment IDs από localStorage
+      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
+      const acknowledgedPaymentIds = new Set(acknowledgedIds);
+
+      // Διαχωρισμός αγορών με βάση το αν έχουν επισημανθεί ως "ενημερώθηκα"
       const newPurchasesData = formattedPurchases.filter(purchase => 
-        new Date(purchase.created_at) >= sevenDaysAgo
+        !acknowledgedPaymentIds.has(purchase.id)
       );
       setNewPurchases(newPurchasesData);
       
-      // Όλες οι υπόλοιπες αγορές πάνε στο "Ενημερώθηκα"
-      const olderPurchases = formattedPurchases.filter(purchase => 
-        new Date(purchase.created_at) < sevenDaysAgo
+      const acknowledgedPurchases = formattedPurchases.filter(purchase => 
+        acknowledgedPaymentIds.has(purchase.id)
       );
-      setReadPurchases(olderPurchases);
+      setReadPurchases(acknowledgedPurchases);
       
     } catch (error) {
       console.error('Error fetching purchases:', error);
@@ -130,9 +132,23 @@ const AdminShop = () => {
     setMarkingAsRead(true);
     
     try {
+      // Παίρνουμε τα υπάρχοντα acknowledged payment IDs
+      const existingAcknowledged = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
+      
+      // Προσθέτουμε τα IDs των νέων αγορών
+      const newAcknowledgedIds = newPurchases.map(purchase => purchase.id);
+      const updatedAcknowledged = [...existingAcknowledged, ...newAcknowledgedIds];
+      
+      // Αποθηκεύουμε στο localStorage
+      localStorage.setItem('acknowledgedPayments', JSON.stringify(updatedAcknowledged));
+      
       // Μεταφορά νέων αγορών στο "Ενημερώθηκα"
       setReadPurchases(prev => [...prev, ...newPurchases]);
       setNewPurchases([]);
+      
+      // Αλλάζουμε στο tab "Ενημερώθηκα"
+      setActiveTab("read");
+      
       toast.success('Όλες οι νέες αγορές μεταφέρθηκαν στο "Ενημερώθηκα"');
     } catch (error) {
       console.error('Error marking as read:', error);
