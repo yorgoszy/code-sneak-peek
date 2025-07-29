@@ -21,6 +21,7 @@ export const OffersManagement: React.FC = () => {
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [offerToDelete, setOfferToDelete] = useState<any>(null);
+  const [acknowledgedOffers, setAcknowledgedOffers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     checkUserRole();
@@ -78,7 +79,8 @@ export const OffersManagement: React.FC = () => {
         .from('offers')
         .select(`
           *,
-          subscription_types(name)
+          subscription_types(name),
+          payments!offer_id(id, created_at, user_id, app_users!inner(name, email))
         `)
         .order('created_at', { ascending: false });
 
@@ -157,6 +159,15 @@ export const OffersManagement: React.FC = () => {
       console.error('💥 Error deleting offer:', error);
       toast.error('Σφάλμα κατά τη διαγραφή: ' + (error as Error).message);
     }
+  };
+
+  const handleAcknowledgeOffer = (offerId: string) => {
+    setAcknowledgedOffers(prev => new Set([...prev, offerId]));
+    toast.success('Ενημερώθηκα για την προσφορά');
+  };
+
+  const getNewPurchases = (offer: any) => {
+    return offer.payments?.filter((payment: any) => !acknowledgedOffers.has(offer.id)) || [];
   };
 
   if (roleLoading) {
@@ -257,6 +268,16 @@ export const OffersManagement: React.FC = () => {
                       {offer.target_groups && offer.target_groups.length > 0 && (
                         <div><strong>Στοχευμένες ομάδες:</strong> {offer.target_groups.length} ομάδες</div>
                       )}
+                      {offer.payments && offer.payments.length > 0 && (
+                        <div className="mt-2">
+                          <strong>Αγορές:</strong> {offer.payments.length} συνολικά
+                          {getNewPurchases(offer).length > 0 && (
+                            <Badge className="ml-2 bg-red-100 text-red-800 rounded-none">
+                              {getNewPurchases(offer).length} νέες
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -298,6 +319,16 @@ export const OffersManagement: React.FC = () => {
                     >
                       {offer.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
                     </Button>
+                    {getNewPurchases(offer).length > 0 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleAcknowledgeOffer(offer.id)}
+                        className="rounded-none border-blue-300 text-blue-600 hover:bg-blue-50"
+                      >
+                        Ενημερώθηκα ({getNewPurchases(offer).length})
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

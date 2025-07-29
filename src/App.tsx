@@ -20,6 +20,7 @@ import Tests from "@/pages/Tests";
 import Results from "@/pages/Results";
 import UserProfile from "@/pages/UserProfile";
 import ProgramBuilder from "@/pages/ProgramBuilder";
+import ShopManagement from "@/pages/ShopManagement";
 import NotFound from "@/pages/NotFound";
 import Subscriptions from "@/pages/Subscriptions";
 import Analytics from "@/pages/Analytics";
@@ -62,7 +63,8 @@ function App() {
                 <Route path="/dashboard/analytics" element={<Analytics />} />
                 <Route path="/dashboard/articles" element={<ArticlesWithSidebar />} />
                 <Route path="/dashboard/results" element={<ResultsWithSidebar />} />
-                <Route path="/dashboard/shop" element={<AdminShopWithSidebar />} />
+                <Route path="/dashboard/admin-shop" element={<AdminShopWithSidebar />} />
+                <Route path="/dashboard/shop" element={<ShopManagement />} />
                 <Route path="/dashboard/offers" element={<Offers />} />
                 <Route path="/dashboard/online-coaching" element={<OnlineCoachingWithSidebar />} />
                 <Route path="/dashboard/online-booking" element={<OnlineBookingWithSidebar />} />
