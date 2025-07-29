@@ -8,6 +8,7 @@ import { Plus, Edit2, Trash2, Eye } from "lucide-react";
 import { OfferCreationDialog } from "./OfferCreationDialog";
 import { OfferEditDialog } from "./OfferEditDialog";
 import { OfferPreviewDialog } from "./OfferPreviewDialog";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 export const OffersManagement: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -18,6 +19,8 @@ export const OffersManagement: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [offerToDelete, setOfferToDelete] = useState<any>(null);
 
   useEffect(() => {
     checkUserRole();
@@ -122,23 +125,25 @@ export const OffersManagement: React.FC = () => {
     }
   };
 
-  const deleteOffer = async (offer: any) => {
+  const handleDeleteClick = (offer: any) => {
     if (!isAdmin) {
       toast.error('Δεν έχετε δικαιώματα διαχειριστή');
       return;
     }
+    setOfferToDelete(offer);
+    setIsDeleteDialogOpen(true);
+  };
 
-    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε την προσφορά "${offer.name}";`)) {
-      return;
-    }
+  const deleteOffer = async () => {
+    if (!offerToDelete) return;
 
     try {
-      console.log('🗑️ Deleting offer:', offer.name);
+      console.log('🗑️ Deleting offer:', offerToDelete.name);
       
       const { error } = await supabase
         .from('offers')
         .delete()
-        .eq('id', offer.id);
+        .eq('id', offerToDelete.id);
 
       if (error) {
         console.error('❌ Error deleting offer:', error);
@@ -280,7 +285,7 @@ export const OffersManagement: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => deleteOffer(offer)}
+                      onClick={() => handleDeleteClick(offer)}
                       className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -327,6 +332,15 @@ export const OffersManagement: React.FC = () => {
         isOpen={isPreviewDialogOpen}
         onClose={() => setIsPreviewDialogOpen(false)}
         offer={selectedOffer}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={deleteOffer}
+        description="Είστε σίγουροι ότι θέλετε να διαγράψετε την προσφορά;"
+        confirmText="Διαγραφή"
       />
     </Card>
   );
