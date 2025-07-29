@@ -813,24 +813,6 @@ export const MagicBoxManager: React.FC = () => {
                   Βραβεία
                 </Button>
                 <Button
-                  onClick={async () => {
-                    try {
-                      await supabase.functions.invoke('create-magic-boxes', {
-                        body: { campaign_id: campaign.id }
-                      });
-                      toast({ title: 'Επιτυχία', description: 'Μαγικά κουτιά δημιουργήθηκαν!' });
-                    } catch (error) {
-                      toast({ title: 'Σφάλμα', description: 'Αποτυχία δημιουργίας', variant: 'destructive' });
-                    }
-                  }}
-                  size="sm"
-                  variant="secondary"
-                  className="rounded-none"
-                >
-                  <Users className="w-4 h-4 mr-1" />
-                  Κουτιά
-                </Button>
-                <Button
                   onClick={() => handleToggleStatus(campaign.id, !campaign.is_active)}
                   size="sm"
                   variant={campaign.is_active ? "outline" : "default"}
