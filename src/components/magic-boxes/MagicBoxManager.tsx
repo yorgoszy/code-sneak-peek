@@ -9,11 +9,13 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Edit, Trash2, Gift, Settings, Power, Users, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Gift, Settings, Power, Users, Calendar, Send } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { MagicBoxGameV2 } from './MagicBoxGameV2';
+import { MagicBoxCampaignForm } from './MagicBoxCampaignForm';
+import { MagicBoxDistribution } from './MagicBoxDistribution';
 
 interface MagicBoxCampaign {
   id: string;
@@ -415,15 +417,8 @@ export const MagicBoxManager: React.FC = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [campaignDeleteDialogOpen, setCampaignDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'admin'>('admin');
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    start_date: new Date().toISOString().split('T')[0],
-    end_date: '',
-    is_active: true,
-    max_participations_per_user: 1
-  });
+  const [activeTab, setActiveTab] = useState<'admin' | 'user' | 'distribution'>('admin');
+  const [distributionCampaign, setDistributionCampaign] = useState<{ id: string; name: string } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -451,84 +446,19 @@ export const MagicBoxManager: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleFormSuccess = () => {
+    setShowForm(false);
+    setEditingCampaign(null);
+    fetchCampaigns();
+  };
 
-    try {
-      if (editingCampaign) {
-        const { error } = await supabase
-          .from('magic_box_campaigns')
-          .update({
-            name: formData.name,
-            description: formData.description,
-            start_date: formData.start_date,
-            end_date: formData.end_date || null,
-            is_active: formData.is_active,
-            max_participations_per_user: formData.max_participations_per_user,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingCampaign.id);
-
-        if (error) throw error;
-        
-        toast({
-          title: 'Επιτυχία',
-          description: 'Το campaign ενημερώθηκε επιτυχώς'
-        });
-      } else {
-        const { error } = await supabase
-          .from('magic_box_campaigns')
-          .insert({
-            name: formData.name,
-            description: formData.description,
-            start_date: formData.start_date,
-            end_date: formData.end_date || null,
-            is_active: formData.is_active,
-            max_participations_per_user: formData.max_participations_per_user
-          });
-
-        if (error) throw error;
-        
-        toast({
-          title: 'Επιτυχία',
-          description: 'Το campaign δημιουργήθηκε επιτυχώς'
-        });
-      }
-
-      setFormData({ 
-        name: '', 
-        description: '', 
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: '',
-        is_active: true, 
-        max_participations_per_user: 1 
-      });
-      setEditingCampaign(null);
-      setShowForm(false);
-      fetchCampaigns();
-    } catch (error) {
-      console.error('Error saving campaign:', error);
-      toast({
-        title: 'Σφάλμα',
-        description: 'Αποτυχία αποθήκευσης campaign',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setEditingCampaign(null);
   };
 
   const handleEdit = (campaign: MagicBoxCampaign) => {
     setEditingCampaign(campaign);
-    setFormData({
-      name: campaign.name,
-      description: campaign.description,
-      start_date: campaign.start_date,
-      end_date: campaign.end_date || '',
-      is_active: campaign.is_active,
-      max_participations_per_user: campaign.max_participations_per_user
-    });
     setShowForm(true);
   };
 
@@ -541,7 +471,13 @@ export const MagicBoxManager: React.FC = () => {
     if (!campaignToDelete) return;
 
     try {
-      // Διαγραφή των prizes πρώτα
+      // Διαγραφή των magic boxes πρώτα
+      await supabase
+        .from('user_magic_boxes')
+        .delete()
+        .eq('campaign_id', campaignToDelete);
+
+      // Διαγραφή των prizes
       await supabase
         .from('campaign_prizes')
         .delete()
@@ -563,7 +499,7 @@ export const MagicBoxManager: React.FC = () => {
       
       toast({
         title: 'Επιτυχία',
-        description: 'Το campaign διαγράφηκε επιτυχώς'
+        description: 'Η καμπάνια διαγράφηκε επιτυχώς'
       });
       
       fetchCampaigns();
@@ -571,7 +507,7 @@ export const MagicBoxManager: React.FC = () => {
       console.error('Error deleting campaign:', error);
       toast({
         title: 'Σφάλμα',
-        description: 'Αποτυχία διαγραφής campaign',
+        description: 'Αποτυχία διαγραφής καμπάνιας',
         variant: 'destructive'
       });
     } finally {
@@ -603,7 +539,7 @@ export const MagicBoxManager: React.FC = () => {
 
       toast({
         title: 'Επιτυχία',
-        description: `Campaign ${isActive ? 'ενεργοποιήθηκε' : 'απενεργοποιήθηκε'} επιτυχώς`
+        description: `Καμπάνια ${isActive ? 'ενεργοποιήθηκε' : 'απενεργοποιήθηκε'} επιτυχώς`
       });
       fetchCampaigns();
     } catch (error) {
@@ -616,17 +552,9 @@ export const MagicBoxManager: React.FC = () => {
     }
   };
 
-  const resetForm = () => {
-    setFormData({ 
-      name: '', 
-      description: '', 
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: '',
-      is_active: true, 
-      max_participations_per_user: 1 
-    });
-    setEditingCampaign(null);
-    setShowForm(false);
+  const handleDistribute = (campaign: MagicBoxCampaign) => {
+    setDistributionCampaign({ id: campaign.id, name: campaign.name });
+    setActiveTab('distribution');
   };
 
   if (selectedCampaign) {
@@ -634,6 +562,20 @@ export const MagicBoxManager: React.FC = () => {
       <CampaignPrizeManager 
         campaign_id={selectedCampaign} 
         onBack={() => setSelectedCampaign(null)} 
+      />
+    );
+  }
+
+  // Distribution view
+  if (activeTab === 'distribution' && distributionCampaign) {
+    return (
+      <MagicBoxDistribution
+        campaignId={distributionCampaign.id}
+        campaignName={distributionCampaign.name}
+        onBack={() => {
+          setActiveTab('admin');
+          setDistributionCampaign(null);
+        }}
       />
     );
   }
@@ -656,114 +598,22 @@ export const MagicBoxManager: React.FC = () => {
 
       <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold">Διαχείριση Campaigns</h3>
+            <h3 className="text-xl font-semibold">Διαχείριση Καμπανιών Magic Box</h3>
             <Button
               onClick={() => setShowForm(true)}
               className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Νέο Campaign
+              Νέα Καμπάνια
             </Button>
           </div>
 
       {showForm && (
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle>
-              {editingCampaign ? 'Επεξεργασία Campaign' : 'Νέο Campaign'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Όνομα</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="rounded-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Περιγραφή</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="rounded-none"
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="start_date">Ημερομηνία Έναρξης</Label>
-                  <Input
-                    id="start_date"
-                    type="date"
-                    value={formData.start_date}
-                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                    className="rounded-none"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="end_date">Ημερομηνία Λήξης (προαιρετικό)</Label>
-                  <Input
-                    id="end_date"
-                    type="date"
-                    value={formData.end_date}
-                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                    className="rounded-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="max_participations">Μέγιστες Συμμετοχές ανά Χρήστη</Label>
-                <Input
-                  id="max_participations"
-                  type="number"
-                  value={formData.max_participations_per_user}
-                  onChange={(e) => setFormData({ ...formData, max_participations_per_user: parseInt(e.target.value) })}
-                  className="rounded-none"
-                  min="1"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                />
-                <Label htmlFor="is_active">Ενεργό</Label>
-              </div>
-
-              <div className="flex space-x-2">
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                >
-                  {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
-                </Button>
-                <Button
-                  type="button"
-                  onClick={resetForm}
-                  variant="outline"
-                  className="rounded-none"
-                >
-                  Ακύρωση
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        <MagicBoxCampaignForm
+          onSuccess={handleFormSuccess}
+          onCancel={handleFormCancel}
+          editingCampaign={editingCampaign}
+        />
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -807,10 +657,18 @@ export const MagicBoxManager: React.FC = () => {
                 <Button
                   onClick={() => setSelectedCampaign(campaign.id)}
                   size="sm"
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-none"
                 >
                   <Settings className="w-4 h-4 mr-1" />
                   Βραβεία
+                </Button>
+                <Button
+                  onClick={() => handleDistribute(campaign)}
+                  size="sm"
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  <Send className="w-4 h-4 mr-1" />
+                  Διανομή
                 </Button>
                 <Button
                   onClick={() => handleToggleStatus(campaign.id, !campaign.is_active)}
