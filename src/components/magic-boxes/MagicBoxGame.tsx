@@ -238,6 +238,8 @@ export const MagicBoxGame: React.FC = () => {
           description: data.message,
           variant: 'destructive'
         });
+        // Refresh participations και για unsuccessful attempts
+        await fetchUserParticipations();
       }
     } catch (error) {
       console.error(`Error for user ${currentUserId} playing campaign ${campaignId}:`, error);
