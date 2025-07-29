@@ -322,7 +322,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
         const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
 
-        // Φιλτράρισμα προσφορών βάσει visibility και απόρριψης
+        // Φιλτράρισμα προσφορών βάσει visibility και απόρριψης (μόνο ενεργές προσφορές)
         const filteredOffers = offers?.filter(offer => {
           // Αποκλεισμός απορριμμένων προσφορών
           if (rejectedOfferIds.has(offer.id)) return false;
@@ -334,21 +334,9 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return false;
         }) || [];
 
-        // Έλεγχος αν έχει αποδεχτεί προσφορά (θα ελέγξουμε τις πληρωμές)
-        const { data: recentPayments, error: paymentsError } = await supabase
-          .from('payments')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('status', 'completed')
-          .gte('payment_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Τελευταίες 30 ημέρες
-          .order('payment_date', { ascending: false })
-          .limit(1);
-
-        const hasRecentPayment = !paymentsError && recentPayments && recentPayments.length > 0;
-
         setOffersData({
           available: filteredOffers.length,
-          accepted: hasRecentPayment,
+          accepted: false, // Δεν χρειαζόμαστε πλέον αυτό το flag
           hasMagicBox: hasMagicBox
         });
 
@@ -406,22 +394,16 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
               <Tag className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
                 offersData?.hasMagicBox 
                   ? 'animate-offer-blink' 
-                  : offersData?.available > 0 && !offersData?.accepted 
-                  ? 'text-[#00ffba]' 
-                  : offersData?.accepted 
+                  : offersData?.available > 0 
                   ? 'text-[#00ffba]' 
                   : 'text-gray-400'
               } transition-all duration-300`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {offersData?.available > 0 ? (
-                offersData.accepted ? (
-                  <Check className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
-                ) : (
-                  <span className={`${offersData?.hasMagicBox ? 'animate-offer-blink' : 'text-[#00ffba]'}`}>
-                    {offersData.available}
-                  </span>
-                )
+                <span className={`${offersData?.hasMagicBox ? 'animate-offer-blink' : 'text-[#00ffba]'}`}>
+                  {offersData.available}
+                </span>
               ) : offersData?.hasMagicBox ? (
                 <Gift className={`animate-offer-blink ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               ) : (
