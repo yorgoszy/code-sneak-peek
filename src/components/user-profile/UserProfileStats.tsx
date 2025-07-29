@@ -322,10 +322,26 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
         const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
 
-        // Φιλτράρισμα προσφορών βάσει visibility και απόρριψης (μόνο ενεργές προσφορές)
+        // Φόρτωση αποδεκτών προσφορών από payments
+        const { data: acceptedPayments, error: paymentsError } = await supabase
+          .from('payments')
+          .select('offer_id')
+          .eq('user_id', user.id)
+          .not('offer_id', 'is', null);
+
+        if (paymentsError) {
+          console.error('Error fetching accepted offers:', paymentsError);
+        }
+
+        const acceptedOfferIds = new Set(acceptedPayments?.map(p => p.offer_id).filter(Boolean) || []);
+
+        // Φιλτράρισμα προσφορών βάσει visibility, απόρριψης και αποδοχής (μόνο ενεργές προσφορές)
         const filteredOffers = offers?.filter(offer => {
           // Αποκλεισμός απορριμμένων προσφορών
           if (rejectedOfferIds.has(offer.id)) return false;
+          
+          // Αποκλεισμός αποδεκτών προσφορών
+          if (acceptedOfferIds.has(offer.id)) return false;
           
           if (offer.visibility === 'all') return true;
           if (offer.visibility === 'individual' || offer.visibility === 'selected') {
@@ -336,7 +352,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
         setOffersData({
           available: filteredOffers.length,
-          accepted: false, // Δεν χρειαζόμαστε πλέον αυτό το flag
+          accepted: false,
           hasMagicBox: hasMagicBox
         });
 
