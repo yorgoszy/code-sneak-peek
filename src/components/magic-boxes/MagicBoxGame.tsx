@@ -33,12 +33,11 @@ export const MagicBoxGame: React.FC = () => {
   const [campaigns, setCampaigns] = useState<MagicBoxCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [sessionId] = useState<string>(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   
-  // User-specific state maps - κάθε χρήστης έχει το δικό του state
-  const [userPlayingStates, setUserPlayingStates] = useState<Record<string, Record<string, boolean>>>({});
-  const [userResults, setUserResults] = useState<Record<string, Record<string, any>>>({});
-  const [userParticipationsMap, setUserParticipationsMap] = useState<Record<string, UserParticipation[]>>({});
+  // Απλό state για τον τρέχοντα χρήστη μόνο - χωρίς maps
+  const [playingStates, setPlayingStates] = useState<Record<string, boolean>>({});
+  const [results, setResults] = useState<Record<string, any>>({});
+  const [participations, setParticipations] = useState<UserParticipation[]>([]);
   
   const { toast } = useToast();
   const {
@@ -47,38 +46,6 @@ export const MagicBoxGame: React.FC = () => {
     checkAndShowProgramCalendar,
     close: closeProgramCalendar
   } = useProgramCalendarDialog();
-
-  // Helper functions για user-specific state
-  const getUserPlayingStates = (userId: string) => userPlayingStates[userId] || {};
-  const getUserResults = (userId: string) => userResults[userId] || {};
-  const getUserParticipations = (userId: string) => userParticipationsMap[userId] || [];
-  
-  const setUserPlayingState = (userId: string, campaignId: string, isPlaying: boolean) => {
-    setUserPlayingStates(prev => ({
-      ...prev,
-      [userId]: {
-        ...prev[userId],
-        [campaignId]: isPlaying
-      }
-    }));
-  };
-  
-  const setUserResult = (userId: string, campaignId: string, result: any) => {
-    setUserResults(prev => ({
-      ...prev,
-      [userId]: {
-        ...prev[userId],
-        [campaignId]: result
-      }
-    }));
-  };
-  
-  const setUserParticipations = (userId: string, participations: UserParticipation[]) => {
-    setUserParticipationsMap(prev => ({
-      ...prev,
-      [userId]: participations
-    }));
-  };
 
   useEffect(() => {
     initializeUser();
@@ -104,9 +71,10 @@ export const MagicBoxGame: React.FC = () => {
         return;
       }
 
+      console.log('🔧 Current user initialized:', appUser.id);
       setCurrentUserId(appUser.id);
-      fetchCampaigns();
-      fetchUserParticipations(appUser.id);
+      await fetchCampaigns();
+      await fetchUserParticipations(appUser.id);
     } catch (error) {
       console.error('Error initializing user:', error);
       setLoading(false);
@@ -123,6 +91,7 @@ export const MagicBoxGame: React.FC = () => {
 
       if (error) throw error;
       setCampaigns(data || []);
+      console.log('🔧 Campaigns fetched:', data?.length);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
       toast({
@@ -140,6 +109,8 @@ export const MagicBoxGame: React.FC = () => {
       const userIdToUse = userId || currentUserId;
       if (!userIdToUse) return;
 
+      console.log('🔧 Fetching participations for user:', userIdToUse);
+
       const { data, error } = await supabase
         .from('user_campaign_participations')
         .select('*')
@@ -147,7 +118,8 @@ export const MagicBoxGame: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUserParticipations(userIdToUse, (data || []) as UserParticipation[]);
+      setParticipations((data || []) as UserParticipation[]);
+      console.log('🔧 User participations loaded:', data?.length);
     } catch (error) {
       console.error('Error fetching user participations:', error);
     }
@@ -155,9 +127,6 @@ export const MagicBoxGame: React.FC = () => {
 
   const playCampaign = async (campaignId: string) => {
     console.log(`🎯 Starting playCampaign for user ${currentUserId}, campaign ${campaignId}`);
-    const userParticipations = getUserParticipations(currentUserId || '');
-    console.log(`📊 Current userParticipations for ${currentUserId}:`, userParticipations);
-    console.log(`🔍 Has played campaign:`, hasPlayedCampaign(campaignId, currentUserId));
     
     if (!currentUserId) {
       toast({
@@ -168,8 +137,8 @@ export const MagicBoxGame: React.FC = () => {
       return;
     }
 
-    // Έλεγχος αν ο χρήστης έχει ήδη παίξει σε αυτή την εκστρατεία (double check)
-    if (hasPlayedCampaign(campaignId, currentUserId)) {
+    // Έλεγχος αν ο χρήστης έχει ήδη παίξει σε αυτή την εκστρατεία
+    if (hasPlayedCampaign(campaignId)) {
       console.log(`❌ User ${currentUserId} has already played campaign ${campaignId}`);
       toast({
         title: 'Ωχ!',
@@ -179,17 +148,16 @@ export const MagicBoxGame: React.FC = () => {
       return;
     }
 
-    // Έλεγχος αν αυτός ο χρήστης παίζει ήδη αυτή την εκστρατεία
-    const userPlayingStates = getUserPlayingStates(currentUserId);
-    if (userPlayingStates[campaignId]) {
+    // Έλεγχος αν παίζει ήδη αυτή την εκστρατεία
+    if (playingStates[campaignId]) {
       console.log(`⏳ User ${currentUserId} is already playing campaign ${campaignId}`);
       return;
     }
 
     console.log(`🎯 User ${currentUserId} starting to play campaign ${campaignId}`);
 
-    // Ορίζουμε ότι αυτός ο χρήστης παίζει αυτή την εκστρατεία
-    setUserPlayingState(currentUserId, campaignId, true);
+    // Ορίζουμε ότι παίζει αυτή την εκστρατεία
+    setPlayingStates(prev => ({ ...prev, [campaignId]: true }));
 
     try {
       const { data, error } = await supabase.functions.invoke('magic-box-draw', {
@@ -199,8 +167,8 @@ export const MagicBoxGame: React.FC = () => {
       if (error) throw error;
 
       if (data.success) {
-        // Αποθηκεύουμε το αποτέλεσμα μόνο για αυτόν τον χρήστη
-        setUserResult(currentUserId, campaignId, data);
+        // Αποθηκεύουμε το αποτέλεσμα
+        setResults(prev => ({ ...prev, [campaignId]: data }));
         
         console.log(`🎉 User ${currentUserId} won:`, data.message);
         
@@ -215,7 +183,7 @@ export const MagicBoxGame: React.FC = () => {
           description: data.message,
         });
         
-        // Refresh user participations only for this user
+        // Refresh user participations μόνο για αυτόν τον χρήστη
         await fetchUserParticipations();
       } else {
         console.log(`😞 User ${currentUserId} got:`, data.message);
@@ -233,34 +201,27 @@ export const MagicBoxGame: React.FC = () => {
         variant: 'destructive'
       });
     } finally {
-      // Σταματάμε το loading για αυτόν τον χρήστη
-      setUserPlayingState(currentUserId, campaignId, false);
+      // Σταματάμε το loading
+      setPlayingStates(prev => ({ ...prev, [campaignId]: false }));
     }
   };
 
   const isPlayingCampaign = (campaignId: string) => {
-    if (!currentUserId) return false;
-    const userPlayingStates = getUserPlayingStates(currentUserId);
-    return userPlayingStates[campaignId] || false;
+    return playingStates[campaignId] || false;
   };
 
-  const getUserCampaignResult = (campaignId: string) => {
-    if (!currentUserId) return null;
-    const userResults = getUserResults(currentUserId);
-    return userResults[campaignId] || null;
+  const getCampaignResult = (campaignId: string) => {
+    return results[campaignId] || null;
   };
 
   const hideResult = (campaignId: string) => {
-    if (!currentUserId) return;
-    setUserResult(currentUserId, campaignId, null);
+    setResults(prev => ({ ...prev, [campaignId]: null }));
   };
 
-  const hasPlayedCampaign = (campaignId: string, userId?: string) => {
-    // Έλεγχος αν υπάρχει αποτέλεσμα στο local state ή στη βάση για συγκεκριμένο χρήστη
-    const targetUserId = userId || currentUserId || '';
-    const userResults = getUserResults(targetUserId);
-    const userParticipations = getUserParticipations(targetUserId);
-    return userResults[campaignId] !== undefined || userParticipations.some(participation => participation.campaign_id === campaignId);
+  const hasPlayedCampaign = (campaignId: string) => {
+    // Έλεγχος αν υπάρχει αποτέλεσμα στο local state ή στη βάση
+    return results[campaignId] !== undefined || 
+           participations.some(participation => participation.campaign_id === campaignId);
   };
 
   const formatParticipationDate = (dateString: string) => {
@@ -291,7 +252,7 @@ export const MagicBoxGame: React.FC = () => {
       {/* Available Campaigns */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {campaigns.map((campaign) => {
-          const alreadyPlayed = hasPlayedCampaign(campaign.id, currentUserId);
+          const alreadyPlayed = hasPlayedCampaign(campaign.id);
           return (
             <Card key={campaign.id} className="rounded-none relative overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
@@ -335,7 +296,7 @@ export const MagicBoxGame: React.FC = () => {
 
       {/* Win Result Modals - Per Campaign */}
       {campaigns.map(campaign => {
-        const showResult = getUserCampaignResult(campaign.id);
+        const showResult = getCampaignResult(campaign.id);
         if (!showResult) return null;
         
         return (
@@ -389,11 +350,11 @@ export const MagicBoxGame: React.FC = () => {
       })}
 
       {/* User's Participations History */}
-      {currentUserId && getUserParticipations(currentUserId).length > 0 && (
+      {participations.length > 0 && (
         <div>
           <h3 className="text-xl font-bold mb-4">Οι Συμμετοχές Μου</h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {getUserParticipations(currentUserId).map((participation) => (
+            {participations.map((participation) => (
               <Card key={participation.id} className="rounded-none">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between text-sm">
@@ -451,20 +412,20 @@ export const MagicBoxGame: React.FC = () => {
         </div>
       )}
 
+      {/* No campaigns message */}
       {campaigns.length === 0 && (
-        <Card className="rounded-none">
-          <CardContent className="text-center py-8">
-            <Gift className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-500">Δεν υπάρχουν διαθέσιμες εκστρατείες αυτή τη στιγμή</p>
-          </CardContent>
-        </Card>
+        <div className="text-center py-8">
+          <Gift className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+          <h3 className="text-lg font-medium text-gray-600 mb-2">Δεν υπάρχουν ενεργές εκστρατείες</h3>
+          <p className="text-gray-500">Ελέγξτε ξανά σύντομα για νέα μαγικά κουτιά!</p>
+        </div>
       )}
 
       <ProgramCalendarDialog
         isOpen={showProgramCalendar}
         onClose={closeProgramCalendar}
         programId={programId}
-        onComplete={() => fetchUserParticipations()}
+        onComplete={fetchUserParticipations}
       />
     </div>
   );
