@@ -210,9 +210,28 @@ export const MagicBoxGame: React.FC = () => {
         body: { campaign_id: campaignId }
       });
 
-      if (error) throw error;
+      // Έλεγχος για HTTP errors (400, 500, etc.) - το data μπορεί να περιέχει το μήνυμα
+      if (error) {
+        console.error(`Error for user ${currentUserId}:`, error);
+        // Αν έχουμε data με μήνυμα, χρησιμοποιούμε αυτό
+        if (data?.message) {
+          toast({
+            title: 'Ωχ!',
+            description: data.message,
+            variant: 'destructive'
+          });
+        } else {
+          toast({
+            title: 'Σφάλμα',
+            description: 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.',
+            variant: 'destructive'
+          });
+        }
+        await fetchUserParticipations();
+        return;
+      }
 
-      if (data.success) {
+      if (data?.success) {
         // Αποθηκεύουμε το αποτέλεσμα
         setResult(campaignId, data);
         
@@ -232,10 +251,10 @@ export const MagicBoxGame: React.FC = () => {
         // Refresh user participations μόνο για αυτόν τον χρήστη
         await fetchUserParticipations();
       } else {
-        console.log(`😞 User ${currentUserId} got:`, data.message);
+        console.log(`😞 User ${currentUserId} got:`, data?.message);
         toast({
           title: 'Ωχ!',
-          description: data.message,
+          description: data?.message || 'Δεν κέρδισες αυτή τη φορά',
           variant: 'destructive'
         });
         // Refresh participations και για unsuccessful attempts
