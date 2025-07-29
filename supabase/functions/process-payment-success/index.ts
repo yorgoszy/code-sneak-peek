@@ -105,7 +105,6 @@ serve(async (req) => {
       status: 'completed',
       payment_method: 'stripe',
       transaction_id: session.id,
-      offer_id: offer_id || null,
       ...(session.customer_details?.email && { last_four: 'XXXX' }) // Placeholder for card info
     };
 

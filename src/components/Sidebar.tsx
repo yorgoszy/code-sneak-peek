@@ -89,20 +89,13 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     const handleVideocallStatusChanged = () => {
       loadPendingVideocalls();
     };
-
-    // Listen για το event που στέλνει το ShopManagement όταν γίνει acknowledge
-    const handlePaymentsAcknowledged = () => {
-      loadTotalPurchases();
-    };
     
     window.addEventListener('gym-bookings-read', handleGymBookingsRead);
     window.addEventListener('videocall-status-changed', handleVideocallStatusChanged);
-    window.addEventListener('payments-acknowledged', handlePaymentsAcknowledged);
     
     return () => {
       window.removeEventListener('gym-bookings-read', handleGymBookingsRead);
       window.removeEventListener('videocall-status-changed', handleVideocallStatusChanged);
-      window.removeEventListener('payments-acknowledged', handlePaymentsAcknowledged);
     };
   }, [userProfile?.id]); // Προσθέτουμε dependency
 
@@ -225,40 +218,15 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     if (!userProfile?.id || userProfile.role !== 'admin') return;
     
     try {
-      // Φορτώνουμε όλες τις αγορές
-      const { data: allPayments, error: paymentsError } = await supabase
+      const { data, error } = await supabase
         .from('payments')
-        .select('id, created_at')
-        .eq('status', 'completed')
-        .order('created_at', { ascending: false });
-
-      if (paymentsError) throw paymentsError;
-
-      // Φορτώνουμε τις acknowledged αγορές του τρέχοντος admin
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: appUser } = await supabase
-        .from('app_users')
         .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
+        .eq('status', 'completed')
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
 
-      if (!appUser) return;
-
-      const { data: acknowledgedPayments, error: ackError } = await supabase
-        .from('acknowledged_payments')
-        .select('payment_id')
-        .eq('admin_user_id', appUser.id);
-
-      if (ackError) throw ackError;
-
-      const acknowledgedIds = new Set(acknowledgedPayments?.map(a => a.payment_id) || []);
+      if (error) throw error;
       
-      // Υπολογίζουμε τις νέες αγορές (που δεν έχουν acknowledged)
-      const newPaymentsCount = allPayments?.filter(payment => !acknowledgedIds.has(payment.id)).length || 0;
-      
-      setTotalPurchases(newPaymentsCount);
+      setTotalPurchases(data?.length || 0);
     } catch (error) {
       console.error('Error loading total purchases:', error);
     }

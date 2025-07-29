@@ -121,7 +121,6 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
             receipt_number: receiptNumber,
             customer_name: userProfile.name || 'Χρήστης',
             customer_email: userProfile.email || '',
-            user_id: userProfile.id,
             items: [{
               name: offer.subscription_types.name,
               quantity: 1,
@@ -138,17 +137,6 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
         if (receiptError) {
           console.error('❌ Error creating receipt for free offer:', receiptError);
           // Δεν σταματάμε τη διαδικασία αν η απόδειξη αποτύχει
-        }
-
-        // Έλεγχος αν η προσφορά αφορά πρόγραμμα (training program)
-        if (offer.subscription_types.name.toLowerCase().includes('πρόγραμμα') || 
-            offer.subscription_types.name.toLowerCase().includes('program') ||
-            offer.subscription_types.name.toLowerCase().includes('προπόνηση')) {
-          // Ανακατεύθυνση στο program builder για επιλογή ημερομηνιών
-          console.log('✅ Offer includes training program - redirecting to calendar selection');
-          toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε! Παρακαλώ επιλέξτε ημερομηνίες προπόνησης.`);
-          window.location.href = `/dashboard/user-profile/${userProfile.id}?tab=calendar&action=select-training-dates&offer_id=${offer.id}`;
-          return;
         }
 
         toast.success(`Η δωρεάν προσφορά "${offer.name}" ενεργοποιήθηκε!`);
