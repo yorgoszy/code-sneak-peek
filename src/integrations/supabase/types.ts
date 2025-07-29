@@ -3224,6 +3224,7 @@ export type Database = {
           discount_percentage: number | null
           id: string
           is_claimed: boolean
+          magic_box_id: string | null
           prize_id: string | null
           result_type: string
           subscription_type_id: string | null
@@ -3237,6 +3238,7 @@ export type Database = {
           discount_percentage?: number | null
           id?: string
           is_claimed?: boolean
+          magic_box_id?: string | null
           prize_id?: string | null
           result_type: string
           subscription_type_id?: string | null
@@ -3250,6 +3252,7 @@ export type Database = {
           discount_percentage?: number | null
           id?: string
           is_claimed?: boolean
+          magic_box_id?: string | null
           prize_id?: string | null
           result_type?: string
           subscription_type_id?: string | null
@@ -3261,6 +3264,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "magic_box_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_campaign_participations_magic_box_id_fkey"
+            columns: ["magic_box_id"]
+            isOneToOne: false
+            referencedRelation: "user_magic_boxes"
             referencedColumns: ["id"]
           },
           {
@@ -3326,6 +3336,54 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_magic_boxes: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          is_opened: boolean
+          opened_at: string | null
+          updated_at: string
+          user_id: string
+          won_prize_id: string | null
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          is_opened?: boolean
+          opened_at?: string | null
+          updated_at?: string
+          user_id: string
+          won_prize_id?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          is_opened?: boolean
+          opened_at?: string | null
+          updated_at?: string
+          user_id?: string
+          won_prize_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_magic_boxes_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "magic_box_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_magic_boxes_won_prize_id_fkey"
+            columns: ["won_prize_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_prizes"
             referencedColumns: ["id"]
           },
         ]
