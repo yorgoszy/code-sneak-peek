@@ -1933,6 +1933,7 @@ export type Database = {
           id: string
           last_four: string | null
           membership_id: string | null
+          offer_id: string | null
           payment_date: string | null
           payment_method: string | null
           status: string | null
@@ -1948,6 +1949,7 @@ export type Database = {
           id?: string
           last_four?: string | null
           membership_id?: string | null
+          offer_id?: string | null
           payment_date?: string | null
           payment_method?: string | null
           status?: string | null
@@ -1963,6 +1965,7 @@ export type Database = {
           id?: string
           last_four?: string | null
           membership_id?: string | null
+          offer_id?: string | null
           payment_date?: string | null
           payment_method?: string | null
           status?: string | null
@@ -1978,6 +1981,13 @@ export type Database = {
             columns: ["membership_id"]
             isOneToOne: false
             referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
             referencedColumns: ["id"]
           },
           {
