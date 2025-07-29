@@ -13,6 +13,7 @@ import { Plus, Edit, Trash2, Gift, Settings, Power, Users, Calendar } from 'luci
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { MagicBoxGameV2 } from './MagicBoxGameV2';
 
 interface MagicBoxCampaign {
   id: string;
@@ -414,6 +415,7 @@ export const MagicBoxManager: React.FC = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [campaignDeleteDialogOpen, setCampaignDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'game' | 'admin'>('game');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -639,15 +641,41 @@ export const MagicBoxManager: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Διαχείριση Magic Box Campaigns</h2>
-        <Button
-          onClick={() => setShowForm(true)}
-          className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Νέο Campaign
-        </Button>
+        <h2 className="text-2xl font-bold">Μαγικά Κουτιά</h2>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setActiveTab('game')}
+            variant={activeTab === 'game' ? 'default' : 'outline'}
+            className="rounded-none"
+          >
+            <Gift className="w-4 h-4 mr-2" />
+            Παιχνίδι
+          </Button>
+          <Button
+            onClick={() => setActiveTab('admin')}
+            variant={activeTab === 'admin' ? 'default' : 'outline'}
+            className="rounded-none"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Διαχείριση
+          </Button>
+        </div>
       </div>
+
+      {activeTab === 'game' ? (
+        <MagicBoxGameV2 />
+      ) : (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold">Διαχείριση Campaigns</h3>
+            <Button
+              onClick={() => setShowForm(true)}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Νέο Campaign
+            </Button>
+          </div>
 
       {showForm && (
         <Card className="rounded-none">
@@ -796,6 +824,24 @@ export const MagicBoxManager: React.FC = () => {
                   Βραβεία
                 </Button>
                 <Button
+                  onClick={async () => {
+                    try {
+                      await supabase.functions.invoke('create-magic-boxes', {
+                        body: { campaign_id: campaign.id }
+                      });
+                      toast({ title: 'Επιτυχία', description: 'Μαγικά κουτιά δημιουργήθηκαν!' });
+                    } catch (error) {
+                      toast({ title: 'Σφάλμα', description: 'Αποτυχία δημιουργίας', variant: 'destructive' });
+                    }
+                  }}
+                  size="sm"
+                  variant="secondary"
+                  className="rounded-none"
+                >
+                  <Users className="w-4 h-4 mr-1" />
+                  Κουτιά
+                </Button>
+                <Button
                   onClick={() => handleToggleStatus(campaign.id, !campaign.is_active)}
                   size="sm"
                   variant={campaign.is_active ? "outline" : "default"}
@@ -836,29 +882,31 @@ export const MagicBoxManager: React.FC = () => {
         </Card>
       )}
 
-      <AlertDialog open={campaignDeleteDialogOpen} onOpenChange={setCampaignDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-none max-w-md mx-auto">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-center">
-              Επιβεβαίωση Διαγραφής
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center">
-              Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το campaign;
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex justify-center gap-4">
-            <AlertDialogCancel className="rounded-none">
-              Ακύρωση
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleCampaignDelete}
-              className="rounded-none bg-destructive hover:bg-destructive/90"
-            >
-              Διαγραφή
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          <AlertDialog open={campaignDeleteDialogOpen} onOpenChange={setCampaignDeleteDialogOpen}>
+            <AlertDialogContent className="rounded-none max-w-md mx-auto">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-center">
+                  Επιβεβαίωση Διαγραφής
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-center">
+                  Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το campaign;
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex justify-center gap-4">
+                <AlertDialogCancel className="rounded-none">
+                  Ακύρωση
+                </AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleCampaignDelete}
+                  className="rounded-none bg-destructive hover:bg-destructive/90"
+                >
+                  Διαγραφή
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
     </div>
   );
 };
