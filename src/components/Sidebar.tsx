@@ -42,6 +42,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [todayBookings, setTodayBookings] = useState({ total: 0, cancelled: 0 });
   const [totalPurchases, setTotalPurchases] = useState(0);
   const [newGymBookings, setNewGymBookings] = useState(0);
+  const [newPurchases, setNewPurchases] = useState(0);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -51,11 +52,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       loadTodayBookings();
       loadTotalPurchases();
       loadNewGymBookings();
+      loadNewPurchases();
     }
 
     // Real-time subscription για νέες κρατήσεις γυμναστηρίου
     if (userProfile?.role === 'admin') {
-      const channel = supabase
+      const gymBookingsChannel = supabase
         .channel('gym-bookings-sidebar')
         .on(
           'postgres_changes',
@@ -72,8 +74,38 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         )
         .subscribe();
 
+      // Real-time subscription για νέες πληρωμές
+      const paymentsChannel = supabase
+        .channel('payments-sidebar')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'payments'
+          },
+          () => {
+            console.log('Νέα πληρωμή - ενημέρωση sidebar');
+            loadNewPurchases();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'payments'
+          },
+          () => {
+            console.log('Ενημέρωση πληρωμής - ενημέρωση sidebar');
+            loadNewPurchases();
+          }
+        )
+        .subscribe();
+
       return () => {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(gymBookingsChannel);
+        supabase.removeChannel(paymentsChannel);
       };
     }
   }, [userProfile?.id, userProfile?.role]);
@@ -89,15 +121,22 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     const handleVideocallStatusChanged = () => {
       loadPendingVideocalls();
     };
+
+    // Listen για το event που στέλνει το AdminShop όταν γίνει "Ενημερώθηκα"
+    const handlePurchasesAcknowledged = () => {
+      loadNewPurchases();
+    };
     
     window.addEventListener('gym-bookings-read', handleGymBookingsRead);
     window.addEventListener('videocall-status-changed', handleVideocallStatusChanged);
+    window.addEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
     
     return () => {
       window.removeEventListener('gym-bookings-read', handleGymBookingsRead);
       window.removeEventListener('videocall-status-changed', handleVideocallStatusChanged);
+      window.removeEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
     };
-  }, [userProfile?.id]); // Προσθέτουμε dependency
+  }, [userProfile?.id]);
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
@@ -263,6 +302,34 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     }
   };
 
+  const loadNewPurchases = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      // Παίρνουμε όλες τις ολοκληρωμένες πληρωμές
+      const { data: allPayments, error } = await supabase
+        .from('payments')
+        .select('id, created_at')
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Παίρνουμε τα acknowledged payment IDs από localStorage (ίδια λογική με AdminShop)
+      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
+      const acknowledgedPaymentIds = new Set(acknowledgedIds);
+
+      // Υπολογίζουμε τις νέες αγορές (όσες δεν έχουν επισημανθεί ως "ενημερώθηκα")
+      const newPurchasesData = allPayments?.filter(payment => 
+        !acknowledgedPaymentIds.has(payment.id)
+      ) || [];
+      
+      setNewPurchases(newPurchasesData.length);
+    } catch (error) {
+      console.error('Error loading new purchases:', error);
+    }
+  };
+
   const menuItems = [
     { 
       icon: Home, 
@@ -340,7 +407,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: ShoppingCart,
       label: "Αγορές",
       path: "/dashboard/shop",
-      badge: userProfile?.role === 'admin' && totalPurchases > 0 ? totalPurchases.toString() : null
+      badge: userProfile?.role === 'admin' && newPurchases > 0 ? newPurchases.toString() : null
     },
     {
       icon: Tag,

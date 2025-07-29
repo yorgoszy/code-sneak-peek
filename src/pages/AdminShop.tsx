@@ -149,6 +149,9 @@ const AdminShop = () => {
       // Αλλάζουμε στο tab "Ενημερώθηκα"
       setActiveTab("read");
       
+      // Στέλνουμε event για το sidebar
+      window.dispatchEvent(new CustomEvent('purchases-acknowledged'));
+      
       toast.success('Όλες οι νέες αγορές μεταφέρθηκαν στο "Ενημερώθηκα"');
     } catch (error) {
       console.error('Error marking as read:', error);
