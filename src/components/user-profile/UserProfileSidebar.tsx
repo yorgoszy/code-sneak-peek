@@ -75,12 +75,22 @@ export const UserProfileSidebar = forwardRef<
 
       if (rejectedError) throw rejectedError;
 
+      // Φόρτωση αποδεκτών προσφορών (από payments)
+      const { data: acceptedOffers, error: acceptedError } = await supabase
+        .from('payments')
+        .select('offer_id')
+        .eq('user_id', userProfile.id)
+        .not('offer_id', 'is', null);
+
+      if (acceptedError) throw acceptedError;
+
       const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
+      const acceptedOfferIds = new Set(acceptedOffers?.map(p => p.offer_id) || []);
       
       // Φιλτράρισμα προσφορών για τον χρήστη
       const userOffers = data?.filter(offer => {
-        // Αποκλεισμός απορριμμένων προσφορών
-        if (rejectedOfferIds.has(offer.id)) return false;
+        // Αποκλεισμός απορριμμένων και αποδεκτών προσφορών
+        if (rejectedOfferIds.has(offer.id) || acceptedOfferIds.has(offer.id)) return false;
         
         if (offer.visibility === 'all') return true;
         if (offer.visibility === 'individual' || offer.visibility === 'selected') {
