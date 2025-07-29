@@ -448,12 +448,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     { 
-      icon: Dumbbell, 
-      label: "Ασκήσεις", 
-      path: "/dashboard/exercises",
-      badge: null
-    },
-    { 
       icon: Calendar, 
       label: "Προγράμματα", 
       path: "/dashboard/programs",
@@ -475,6 +469,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: FileText, 
       label: "Τεστ", 
       path: "/dashboard/tests",
+      badge: null
+    },
+    { 
+      icon: Dumbbell, 
+      label: "Ασκήσεις", 
+      path: "/dashboard/exercises",
       badge: null
     },
     {
