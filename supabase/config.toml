@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.magic-box-draw]
 verify_jwt = true
+
+[functions.magic-box-open]
+verify_jwt = false
+
+[functions.create-magic-boxes]
+verify_jwt = false
