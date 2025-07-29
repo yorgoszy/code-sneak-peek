@@ -177,7 +177,7 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
               <div className="bg-gradient-to-r from-[#00ffba]/20 to-transparent p-6 rounded-none border border-[#00ffba]/30">
                 <h3 className="text-xl font-semibold mb-2">Καλώς ήρθατε στο Μαγικό Κουτί!</h3>
                 <p className="text-gray-600 mb-4">
-                  Επιλέξτε ένα από τα {GRID_SIZE} κουτιά για να δείτε αν κρύβει βραβείο!
+                  Επιλέξτε ένα από τα {GRID_SIZE} magic box για να δείτε αν κρύβει βραβείο!
                 </p>
                 <p className="text-sm text-gray-500 mb-4">
                   Έχετε μόνο μία προσπάθεια - διαλέξτε προσεκτικά!
