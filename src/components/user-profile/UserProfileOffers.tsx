@@ -49,12 +49,22 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
 
       if (rejectedError) throw rejectedError;
 
+      // Φόρτωση αποδεκτών προσφορών (από payments)
+      const { data: acceptedOffers, error: acceptedError } = await supabase
+        .from('payments')
+        .select('offer_id')
+        .eq('user_id', userProfile.id)
+        .not('offer_id', 'is', null);
+
+      if (acceptedError) throw acceptedError;
+
       const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
+      const acceptedOfferIds = new Set(acceptedOffers?.map(p => p.offer_id) || []);
       
-      // Φιλτράρισμα προσφορών βάσει visibility και απόρριψης
+      // Φιλτράρισμα προσφορών βάσει visibility, απόρριψης και αποδοχής
       const filteredOffers = offers?.filter(offer => {
-        // Αποκλεισμός απορριμμένων προσφορών
-        if (rejectedOfferIds.has(offer.id)) return false;
+        // Αποκλεισμός απορριμμένων και αποδεκτών προσφορών
+        if (rejectedOfferIds.has(offer.id) || acceptedOfferIds.has(offer.id)) return false;
         
         if (offer.visibility === 'all') return true;
         if (offer.visibility === 'individual' || offer.visibility === 'selected') {
