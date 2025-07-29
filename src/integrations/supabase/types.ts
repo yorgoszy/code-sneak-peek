@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      acknowledged_payments: {
+        Row: {
+          acknowledged_at: string
+          admin_user_id: string
+          created_at: string
+          id: string
+          payment_id: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          payment_id: string
+        }
+        Update: {
+          acknowledged_at?: string
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          payment_id?: string
+        }
+        Relationships: []
+      }
       ai_chat_files: {
         Row: {
           created_at: string

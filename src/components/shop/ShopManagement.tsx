@@ -11,7 +11,7 @@ export const ShopManagement: React.FC = () => {
   const [roleLoading, setRoleLoading] = useState(true);
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [acknowledgedSet, setAcknowledgedSet] = useState<Set<string>>(new Set());
+  const [acknowledgedPayments, setAcknowledgedPayments] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     checkUserRole();
@@ -20,6 +20,7 @@ export const ShopManagement: React.FC = () => {
   useEffect(() => {
     if (!roleLoading && isAdmin) {
       loadPayments();
+      loadAcknowledgedPayments();
     } else if (!roleLoading) {
       setLoading(false);
     }
@@ -89,17 +90,125 @@ export const ShopManagement: React.FC = () => {
     }
   };
 
-  const handleAcknowledgePayment = (paymentId: string) => {
-    setAcknowledgedSet(prev => new Set([...prev, paymentId]));
-    toast.success('Ενημερώθηκα για την αγορά');
+  const loadAcknowledgedPayments = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: appUser } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!appUser) return;
+
+      const { data, error } = await supabase
+        .from('acknowledged_payments')
+        .select('payment_id')
+        .eq('admin_user_id', appUser.id);
+
+      if (error) {
+        console.error('Error loading acknowledged payments:', error);
+        return;
+      }
+
+      const acknowledgedIds = new Set(data?.map(a => a.payment_id) || []);
+      setAcknowledgedPayments(acknowledgedIds);
+    } catch (error) {
+      console.error('Error loading acknowledged payments:', error);
+    }
+  };
+
+  const handleAcknowledgePayment = async (paymentId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: appUser } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!appUser) return;
+
+      const { error } = await supabase
+        .from('acknowledged_payments')
+        .insert({
+          admin_user_id: appUser.id,
+          payment_id: paymentId
+        });
+
+      if (error && error.code !== '23505') { // Ignore unique constraint violations
+        console.error('Error acknowledging payment:', error);
+        toast.error('Σφάλμα κατά την ενημέρωση');
+        return;
+      }
+
+      setAcknowledgedPayments(prev => new Set([...prev, paymentId]));
+      toast.success('Ενημερώθηκα για την αγορά');
+
+      // Ενημέρωση sidebar
+      window.dispatchEvent(new CustomEvent('payments-acknowledged'));
+    } catch (error) {
+      console.error('Error acknowledging payment:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση');
+    }
+  };
+
+  const handleAcknowledgeAll = async () => {
+    const newPaymentsList = getNewPayments();
+    if (newPaymentsList.length === 0) {
+      toast.info('Δεν υπάρχουν νέες αγορές για ενημέρωση');
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: appUser } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!appUser) return;
+
+      const acknowledgeData = newPaymentsList.map(payment => ({
+        admin_user_id: appUser.id,
+        payment_id: payment.id
+      }));
+
+      const { error } = await supabase
+        .from('acknowledged_payments')
+        .insert(acknowledgeData);
+
+      if (error) {
+        console.error('Error acknowledging all payments:', error);
+        toast.error('Σφάλμα κατά την ενημέρωση όλων');
+        return;
+      }
+
+      const newAcknowledgedIds = newPaymentsList.map(p => p.id);
+      setAcknowledgedPayments(prev => new Set([...prev, ...newAcknowledgedIds]));
+      toast.success(`Ενημερώθηκα για ${newPaymentsList.length} αγορές`);
+
+      // Ενημέρωση sidebar
+      window.dispatchEvent(new CustomEvent('payments-acknowledged'));
+    } catch (error) {
+      console.error('Error acknowledging all payments:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση όλων');
+    }
   };
 
   const getNewPayments = () => {
-    return payments.filter(payment => !acknowledgedSet.has(payment.id));
+    return payments.filter(payment => !acknowledgedPayments.has(payment.id));
   };
 
-  const getAcknowledgedPayments = () => {
-    return payments.filter(payment => acknowledgedSet.has(payment.id));
+  const getAcknowledgedPaymentsList = () => {
+    return payments.filter(payment => acknowledgedPayments.has(payment.id));
   };
 
   const formatDate = (dateString: string) => {
@@ -177,7 +286,7 @@ export const ShopManagement: React.FC = () => {
   }
 
   const newPayments = getNewPayments();
-  const acknowledgedPaymentsList = getAcknowledgedPayments();
+  const acknowledgedPaymentsList = getAcknowledgedPaymentsList();
 
   return (
     <div className="space-y-6">
@@ -194,9 +303,19 @@ export const ShopManagement: React.FC = () => {
                 </Badge>
               )}
             </div>
+            {newPayments.length > 0 && (
+              <Button
+                size="sm"
+                onClick={handleAcknowledgeAll}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Ενημερώθηκα για όλα
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           {newPayments.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>Δεν υπάρχουν νέες αγορές</p>
@@ -256,7 +375,7 @@ export const ShopManagement: React.FC = () => {
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           {acknowledgedPaymentsList.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>Δεν υπάρχουν ενημερωμένες αγορές</p>
