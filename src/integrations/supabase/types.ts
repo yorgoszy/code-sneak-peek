@@ -723,6 +723,8 @@ export type Database = {
           description: string | null
           discount_percentage: number | null
           id: string
+          is_active: boolean
+          name: string
           prize_type: string
           quantity: number
           remaining_quantity: number
@@ -736,6 +738,8 @@ export type Database = {
           description?: string | null
           discount_percentage?: number | null
           id?: string
+          is_active?: boolean
+          name?: string
           prize_type: string
           quantity?: number
           remaining_quantity?: number
@@ -749,6 +753,8 @@ export type Database = {
           description?: string | null
           discount_percentage?: number | null
           id?: string
+          is_active?: boolean
+          name?: string
           prize_type?: string
           quantity?: number
           remaining_quantity?: number
