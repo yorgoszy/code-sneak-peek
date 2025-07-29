@@ -46,6 +46,169 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [newUsers, setNewUsers] = useState(0);
   const isMobile = useIsMobile();
 
+  const loadAvailableOffers = async () => {
+    if (!userProfile?.id) return;
+    
+    try {
+      const { data: offers, error } = await supabase
+        .from('offers')
+        .select('id, target_users, visibility')
+        .eq('is_active', true)
+        .gte('end_date', new Date().toISOString().split('T')[0])
+        .lte('start_date', new Date().toISOString().split('T')[0]);
+
+      if (error) throw error;
+      
+      if (userProfile.role === 'admin') {
+        // Για admin: υπολογίζουμε πόσες αποδεκτές προσφορές δεν έχουν επισημανθεί ως "ενημερώθηκα"
+        const { data: acceptedOffers, error: paymentsError } = await supabase
+          .from('payments')
+          .select('id, offer_id')
+          .not('subscription_type_id', 'is', null)
+          .gte('payment_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Τελευταίες 30 ημέρες
+
+        if (paymentsError) throw paymentsError;
+        
+        // Παίρνουμε τα acknowledged offer IDs από localStorage
+        const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
+        const acknowledgedOfferIds = new Set(acknowledgedIds);
+        
+        // Υπολογίζουμε πόσες αποδεκτές προσφορές δεν έχουν επισημανθεί
+        const newAcceptedOffers = acceptedOffers?.filter(offer => 
+          !acknowledgedOfferIds.has(offer.id)
+        ) || [];
+        
+        setAvailableOffers(newAcceptedOffers.length);
+      } else {
+        // Για χρήστες: φιλτράρισμα προσφορών βάσει visibility
+        const userOffers = offers?.filter(offer => {
+          if (offer.visibility === 'all') return true;
+          if (offer.visibility === 'individual' || offer.visibility === 'selected') {
+            return offer.target_users?.includes(userProfile.id);
+          }
+          return false;
+        }) || [];
+        
+        // Φιλτράρισμα απορριμμένων προσφορών
+        const { data: rejectedOffers } = await supabase
+          .from('offer_rejections')
+          .select('offer_id')
+          .eq('user_id', userProfile.id);
+        
+        const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
+        const availableUserOffers = userOffers.filter(offer => !rejectedOfferIds.has(offer.id));
+        
+        setAvailableOffers(availableUserOffers.length);
+      }
+    } catch (error) {
+      console.error('Error loading available offers:', error);
+    }
+  };
+
+  const loadTodayBookings = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Bookings που έγιναν σήμερα
+      const { data: newBookings, error: newError } = await supabase
+        .from('booking_sessions')
+        .select('id, status')
+        .gte('created_at', `${today}T00:00:00.000Z`)
+        .lt('created_at', `${today}T23:59:59.999Z`);
+
+      if (newError) throw newError;
+      
+      // Ακυρώσεις που έγιναν σήμερα
+      const { data: cancelledBookings, error: cancelError } = await supabase
+        .from('booking_sessions')
+        .select('id')
+        .eq('status', 'cancelled')
+        .gte('updated_at', `${today}T00:00:00.000Z`)
+        .lt('updated_at', `${today}T23:59:59.999Z`);
+
+      if (cancelError) throw cancelError;
+      
+      const newBookingsCount = newBookings?.length || 0;
+      const cancelledCount = cancelledBookings?.length || 0;
+      
+      setTodayBookings({ 
+        total: newBookingsCount, 
+        cancelled: cancelledCount 
+      });
+    } catch (error) {
+      console.error('Error loading today bookings:', error);
+    }
+  };
+
+  const loadPendingVideocalls = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('booking_sessions')
+        .select('id')
+        .eq('booking_type', 'videocall')
+        .eq('status', 'pending');
+
+      if (error) throw error;
+      
+      setPendingVideocalls(data?.length || 0);
+    } catch (error) {
+      console.error('Error loading pending videocalls:', error);
+    }
+  };
+
+  const loadTotalPurchases = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('status', 'completed')
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+
+      if (error) throw error;
+      
+      setTotalPurchases(data?.length || 0);
+    } catch (error) {
+      console.error('Error loading total purchases:', error);
+    }
+  };
+
+  const loadNewGymBookings = async () => {
+    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    
+    try {
+      // Φορτώνουμε το timestamp της τελευταίας "ενημέρωσης" - ίδια λογική με GymBookingsOverview
+      const lastCheckStr = localStorage.getItem('lastGymBookingCheck');
+      const lastCheckTimestamp = lastCheckStr ? parseInt(lastCheckStr) : (Date.now() - 7 * 24 * 60 * 60 * 1000);
+      
+      // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου
+      const { data, error } = await supabase
+        .from('booking_sessions')
+        .select('id, created_at, booking_date')
+        .eq('booking_type', 'gym_visit')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Υπολογίζουμε τα νέα bookings - όσα δημιουργήθηκαν μετά το τελευταίο check
+      const allBookings = data || [];
+      const newBookingsCount = allBookings.filter(booking => {
+        const bookingCreatedAt = new Date(booking.created_at || booking.booking_date).getTime();
+        return bookingCreatedAt > lastCheckTimestamp;
+      }).length;
+      
+      console.log('Total bookings:', allBookings.length, 'Last check:', new Date(lastCheckTimestamp), 'New bookings:', newBookingsCount);
+      setNewGymBookings(newBookingsCount);
+    } catch (error) {
+      console.error('Error loading new gym bookings:', error);
+    }
+  };
+
   const loadNewPurchases = async () => {
     if (!userProfile?.id || userProfile.role !== 'admin') return;
     
@@ -226,169 +389,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       window.removeEventListener('users-acknowledged', handleUsersAcknowledged);
     };
   }, [userProfile?.id]);
-
-  const loadAvailableOffers = async () => {
-    if (!userProfile?.id) return;
-    
-    try {
-      const { data: offers, error } = await supabase
-        .from('offers')
-        .select('id, target_users, visibility')
-        .eq('is_active', true)
-        .gte('end_date', new Date().toISOString().split('T')[0])
-        .lte('start_date', new Date().toISOString().split('T')[0]);
-
-      if (error) throw error;
-      
-      if (userProfile.role === 'admin') {
-        // Για admin: υπολογίζουμε πόσες αποδεκτές προσφορές δεν έχουν επισημανθεί ως "ενημερώθηκα"
-        const { data: acceptedOffers, error: paymentsError } = await supabase
-          .from('payments')
-          .select('id, offer_id')
-          .not('subscription_type_id', 'is', null)
-          .gte('payment_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Τελευταίες 30 ημέρες
-
-        if (paymentsError) throw paymentsError;
-        
-        // Παίρνουμε τα acknowledged offer IDs από localStorage
-        const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
-        const acknowledgedOfferIds = new Set(acknowledgedIds);
-        
-        // Υπολογίζουμε πόσες αποδεκτές προσφορές δεν έχουν επισημανθεί
-        const newAcceptedOffers = acceptedOffers?.filter(offer => 
-          !acknowledgedOfferIds.has(offer.id)
-        ) || [];
-        
-        setAvailableOffers(newAcceptedOffers.length);
-      } else {
-        // Για χρήστες: φιλτράρισμα προσφορών βάσει visibility
-        const userOffers = offers?.filter(offer => {
-          if (offer.visibility === 'all') return true;
-          if (offer.visibility === 'individual' || offer.visibility === 'selected') {
-            return offer.target_users?.includes(userProfile.id);
-          }
-          return false;
-        }) || [];
-        
-        // Φιλτράρισμα απορριμμένων προσφορών
-        const { data: rejectedOffers } = await supabase
-          .from('offer_rejections')
-          .select('offer_id')
-          .eq('user_id', userProfile.id);
-        
-        const rejectedOfferIds = new Set(rejectedOffers?.map(r => r.offer_id) || []);
-        const availableUserOffers = userOffers.filter(offer => !rejectedOfferIds.has(offer.id));
-        
-        setAvailableOffers(availableUserOffers.length);
-      }
-    } catch (error) {
-      console.error('Error loading available offers:', error);
-    }
-  };
-
-  const loadTodayBookings = async () => {
-    if (!userProfile?.id || userProfile.role !== 'admin') return;
-    
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Bookings που έγιναν σήμερα
-      const { data: newBookings, error: newError } = await supabase
-        .from('booking_sessions')
-        .select('id, status')
-        .gte('created_at', `${today}T00:00:00.000Z`)
-        .lt('created_at', `${today}T23:59:59.999Z`);
-
-      if (newError) throw newError;
-      
-      // Ακυρώσεις που έγιναν σήμερα
-      const { data: cancelledBookings, error: cancelError } = await supabase
-        .from('booking_sessions')
-        .select('id')
-        .eq('status', 'cancelled')
-        .gte('updated_at', `${today}T00:00:00.000Z`)
-        .lt('updated_at', `${today}T23:59:59.999Z`);
-
-      if (cancelError) throw cancelError;
-      
-      const newBookingsCount = newBookings?.length || 0;
-      const cancelledCount = cancelledBookings?.length || 0;
-      
-      setTodayBookings({ 
-        total: newBookingsCount, 
-        cancelled: cancelledCount 
-      });
-    } catch (error) {
-      console.error('Error loading today bookings:', error);
-    }
-  };
-
-  const loadPendingVideocalls = async () => {
-    if (!userProfile?.id || userProfile.role !== 'admin') return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('booking_sessions')
-        .select('id')
-        .eq('booking_type', 'videocall')
-        .eq('status', 'pending');
-
-      if (error) throw error;
-      
-      setPendingVideocalls(data?.length || 0);
-    } catch (error) {
-      console.error('Error loading pending videocalls:', error);
-    }
-  };
-
-  const loadTotalPurchases = async () => {
-    if (!userProfile?.id || userProfile.role !== 'admin') return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('payments')
-        .select('id')
-        .eq('status', 'completed')
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
-
-      if (error) throw error;
-      
-      setTotalPurchases(data?.length || 0);
-    } catch (error) {
-      console.error('Error loading total purchases:', error);
-    }
-  };
-
-  const loadNewGymBookings = async () => {
-    if (!userProfile?.id || userProfile.role !== 'admin') return;
-    
-    try {
-      // Φορτώνουμε το timestamp της τελευταίας "ενημέρωσης" - ίδια λογική με GymBookingsOverview
-      const lastCheckStr = localStorage.getItem('lastGymBookingCheck');
-      const lastCheckTimestamp = lastCheckStr ? parseInt(lastCheckStr) : (Date.now() - 7 * 24 * 60 * 60 * 1000);
-      
-      // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου
-      const { data, error } = await supabase
-        .from('booking_sessions')
-        .select('id, created_at, booking_date')
-        .eq('booking_type', 'gym_visit')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Υπολογίζουμε τα νέα bookings - όσα δημιουργήθηκαν μετά το τελευταίο check
-      const allBookings = data || [];
-      const newBookingsCount = allBookings.filter(booking => {
-        const bookingCreatedAt = new Date(booking.created_at || booking.booking_date).getTime();
-        return bookingCreatedAt > lastCheckTimestamp;
-      }).length;
-      
-      console.log('Total bookings:', allBookings.length, 'Last check:', new Date(lastCheckTimestamp), 'New bookings:', newBookingsCount);
-      setNewGymBookings(newBookingsCount);
-    } catch (error) {
-      console.error('Error loading new gym bookings:', error);
-    }
-  };
 
 
   const menuItems = [
