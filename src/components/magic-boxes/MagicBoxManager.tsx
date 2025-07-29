@@ -415,7 +415,7 @@ export const MagicBoxManager: React.FC = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [campaignDeleteDialogOpen, setCampaignDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'game' | 'admin'>('game');
+  const [activeTab, setActiveTab] = useState<'admin'>('admin');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -644,17 +644,9 @@ export const MagicBoxManager: React.FC = () => {
         <h2 className="text-2xl font-bold">Μαγικά Κουτιά</h2>
         <div className="flex gap-2">
           <Button
-            onClick={() => setActiveTab('game')}
-            variant={activeTab === 'game' ? 'default' : 'outline'}
+            variant="default"
             className="rounded-none"
-          >
-            <Gift className="w-4 h-4 mr-2" />
-            Παιχνίδι
-          </Button>
-          <Button
-            onClick={() => setActiveTab('admin')}
-            variant={activeTab === 'admin' ? 'default' : 'outline'}
-            className="rounded-none"
+            disabled
           >
             <Settings className="w-4 h-4 mr-2" />
             Διαχείριση
@@ -662,10 +654,7 @@ export const MagicBoxManager: React.FC = () => {
         </div>
       </div>
 
-      {activeTab === 'game' ? (
-        <MagicBoxGameV2 />
-      ) : (
-        <div className="space-y-6">
+      <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold">Διαχείριση Campaigns</h3>
             <Button
@@ -906,7 +895,6 @@ export const MagicBoxManager: React.FC = () => {
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      )}
     </div>
   );
 };
