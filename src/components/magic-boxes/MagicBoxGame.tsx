@@ -287,6 +287,7 @@ export const MagicBoxGame: React.FC = () => {
 
   const hasPlayedCampaign = (campaignId: string) => {
     // Έλεγχος μόνο στη βάση - όχι στο local state που μπορεί να είναι null
+    if (!currentUserId) return false;
     return getParticipations().some(participation => participation.campaign_id === campaignId);
   };
 
