@@ -74,9 +74,9 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
-      // Count payments for any user role
+      // Count receipts for any user role
       const { count: paymentsCount } = await supabase
-        .from('payments')
+        .from('receipts')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
@@ -167,14 +167,14 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
   const fetchUserPayments = async () => {
     try {
       const { data } = await supabase
-        .from('payments')
+        .from('receipts')
         .select('*')
         .eq('user_id', user.id)
-        .order('payment_date', { ascending: false });
+        .order('created_at', { ascending: false });
       
       setPayments(data || []);
     } catch (error) {
-      console.error('Error fetching payments:', error);
+      console.error('Error fetching receipts:', error);
     }
   };
 
