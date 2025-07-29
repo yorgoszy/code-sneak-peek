@@ -139,11 +139,15 @@ export const MagicBoxGameV2: React.FC = () => {
     }
 
     setOpeningBoxId(boxId);
+    
+    console.log('🚀 About to call magic-box-open function');
 
     try {
       const { data, error } = await supabase.functions.invoke('magic-box-open', {
         body: { magic_box_id: boxId }
       });
+
+      console.log('📡 Function response:', { data, error });
 
       if (error) {
         console.error(`Error opening box:`, error);
