@@ -416,6 +416,37 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/subscriptions",
       badge: null
     },
+    {
+      icon: ShoppingCart,
+      label: "Αγορές",
+      path: "/dashboard/shop",
+      badge: userProfile?.role === 'admin' && newPurchases > 0 ? newPurchases.toString() : null
+    },
+    {
+      icon: Tag,
+      label: "Προσφορές",
+      path: "/dashboard/offers",
+      badge: availableOffers > 0 ? availableOffers.toString() : null
+    },
+    {
+      icon: Video,
+      label: "Online Coaching",
+      path: "/dashboard/online-coaching",
+      badge: userProfile?.role === 'admin' && pendingVideocalls > 0 ? pendingVideocalls.toString() : null
+    },
+    {
+      icon: Calendar,
+      label: "Online Booking",
+      path: "/dashboard/online-booking",
+      badge: userProfile?.role === 'admin' && newGymBookings > 0 ? newGymBookings.toString() : null,
+      hasCancellation: false
+    },
+    {
+      icon: Settings,
+      label: "Διαχείριση Τμημάτων",
+      path: "/dashboard/booking-sections",
+      badge: null
+    },
     { 
       icon: Dumbbell, 
       label: "Ασκήσεις", 
@@ -462,37 +493,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: BarChart3, 
       label: "Αποτελέσματα", 
       path: "/dashboard/results",
-      badge: null
-    },
-    {
-      icon: ShoppingCart,
-      label: "Αγορές",
-      path: "/dashboard/shop",
-      badge: userProfile?.role === 'admin' && newPurchases > 0 ? newPurchases.toString() : null
-    },
-    {
-      icon: Tag,
-      label: "Προσφορές",
-      path: "/dashboard/offers",
-      badge: availableOffers > 0 ? availableOffers.toString() : null
-    },
-    {
-      icon: Video,
-      label: "Online Coaching",
-      path: "/dashboard/online-coaching",
-      badge: userProfile?.role === 'admin' && pendingVideocalls > 0 ? pendingVideocalls.toString() : null
-    },
-    {
-      icon: Calendar,
-      label: "Online Booking",
-      path: "/dashboard/online-booking",
-      badge: userProfile?.role === 'admin' && newGymBookings > 0 ? newGymBookings.toString() : null,
-      hasCancellation: false
-    },
-    {
-      icon: Settings,
-      label: "Διαχείριση Τμημάτων",
-      path: "/dashboard/booking-sections",
       badge: null
     },
     {
