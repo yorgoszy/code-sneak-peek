@@ -151,10 +151,20 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
             subscription_type_id: result.subscription_type_id
           };
           
-          onPrizeWon?.(compatibleResult);
+          // Κλείσιμο του dialog μετά από 2 δευτερόλεπτα
+          setTimeout(() => {
+            onPrizeWon?.(compatibleResult);
+            handleClose();
+          }, 2000);
         } else {
           // Δεν κέρδισε πραγματικό βραβείο - δείχνουμε το consolation dialog
           setShowConsolationDialog(true);
+          
+          // Κλείσιμο του dialog μετά από 3 δευτερόλεπτα
+          setTimeout(() => {
+            setShowConsolationDialog(false);
+            handleClose();
+          }, 3000);
         }
       } catch (err) {
         console.error('Function call failed:', err);
