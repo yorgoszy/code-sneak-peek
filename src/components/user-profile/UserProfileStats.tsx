@@ -96,15 +96,19 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
     const fetchVisitsData = async () => {
       try {
+        console.log('🔍 Fetching visits data for user:', user.id);
+        
         // Φόρτωση όλων των ενεργών visit packages
         const { data: visitPackages, error: packagesError } = await supabase
           .from('visit_packages')
-          .select('total_visits, remaining_visits, status, expiry_date')
+          .select('total_visits, remaining_visits, status, expiry_date, purchase_date')
           .eq('user_id', user.id)
           .eq('status', 'active')
           .gt('remaining_visits', 0)
           .or('expiry_date.is.null,expiry_date.gte.' + new Date().toISOString().split('T')[0])
           .order('purchase_date', { ascending: false });
+
+        console.log('📦 Visit packages found:', visitPackages);
 
         if (packagesError) {
           console.error('Error fetching visit packages:', packagesError);
@@ -113,6 +117,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
         }
 
         if (!visitPackages || visitPackages.length === 0) {
+          console.log('❌ No active visit packages found');
           setVisitsData({ used: 0, total: 0 });
           return;
         }
@@ -125,6 +130,8 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           totalVisits += pkg.total_visits;
           totalUsed += (pkg.total_visits - pkg.remaining_visits);
         });
+
+        console.log('✅ Visits calculation:', { totalVisits, totalUsed, packages: visitPackages.length });
 
         setVisitsData({
           used: totalUsed,
