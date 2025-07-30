@@ -232,12 +232,12 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Button
           onClick={onBack}
           variant="outline"
-          className="rounded-none"
+          className="rounded-none self-start"
         >
           ← Πίσω στα Campaigns
         </Button>
@@ -311,37 +311,39 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
                 </div>
               )}
 
-              <div>
-                <Label htmlFor="weight">Βάρος (πιθανότητα)</Label>
-                <Input
-                  id="weight"
-                  type="number"
-                  value={formData.weight}
-                  onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
-                  className="rounded-none"
-                  min="1"
-                  required
-                />
-              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="weight">Βάρος (πιθανότητα)</Label>
+                  <Input
+                    id="weight"
+                    type="number"
+                    value={formData.weight}
+                    onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
+                    className="rounded-none"
+                    min="1"
+                    required
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="quantity">Ποσότητα</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  value={formData.quantity}
-                  onChange={(e) => {
-                    const qty = parseInt(e.target.value);
-                    setFormData({ 
-                      ...formData, 
-                      quantity: qty,
-                      remaining_quantity: qty
-                    });
-                  }}
-                  className="rounded-none"
-                  min="1"
-                  required
-                />
+                <div>
+                  <Label htmlFor="quantity">Ποσότητα</Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    value={formData.quantity}
+                    onChange={(e) => {
+                      const qty = parseInt(e.target.value);
+                      setFormData({ 
+                        ...formData, 
+                        quantity: qty,
+                        remaining_quantity: qty
+                      });
+                    }}
+                    className="rounded-none"
+                    min="1"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
@@ -355,11 +357,11 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
                 />
               </div>
 
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none flex-1 sm:flex-none"
                 >
                   {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
                 </Button>
@@ -367,7 +369,7 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
                   type="button"
                   onClick={resetForm}
                   variant="outline"
-                  className="rounded-none"
+                  className="rounded-none flex-1 sm:flex-none"
                 >
                   Ακύρωση
                 </Button>
@@ -383,12 +385,12 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
           return (
             <Card key={prize.id} className="rounded-none">
               <CardContent className="p-3">
-                <div className="flex items-center justify-between gap-4">
-                  {/* Prize Info */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  {/* Prize Info - Mobile: stacked, Desktop: row */}
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Gift className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
                     
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0 flex-1">
                       <span className="font-medium text-sm truncate">
                         {getPrizeTypeLabel(prize.prize_type)}
                       </span>
@@ -398,24 +400,27 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
                         </span>
                       )}
                     </div>
-                    
-                    <Badge variant="outline" className="rounded-none text-xs flex-shrink-0">
+                  </div>
+
+                  {/* Badges - Mobile: wrap, Desktop: row */}
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                    <Badge variant="outline" className="rounded-none text-xs">
                       {prize.remaining_quantity}/{prize.quantity}
                     </Badge>
                     
                     {prize.discount_percentage > 0 && (
-                      <Badge className="bg-[#00ffba] text-black rounded-none text-xs flex-shrink-0">
+                      <Badge className="bg-[#00ffba] text-black rounded-none text-xs">
                         -{prize.discount_percentage}%
                       </Badge>
                     )}
                     
-                    <Badge variant="secondary" className="rounded-none text-xs flex-shrink-0">
+                    <Badge variant="secondary" className="rounded-none text-xs">
                       Βάρος: {prize.weight}
                     </Badge>
                   </div>
 
-                  {/* Probability Bar */}
-                  <div className="flex items-center gap-2 min-w-[120px]">
+                  {/* Probability Bar - Mobile: full width */}
+                  <div className="flex items-center gap-2 min-w-0 sm:min-w-[120px]">
                     <div className="flex-1">
                       <Progress 
                         value={probability} 
@@ -428,12 +433,12 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-1 flex-shrink-0">
+                  <div className="flex gap-1 self-start sm:self-center">
                     <Button
                       onClick={() => handleEditPrize(prize)}
                       size="sm"
                       variant="outline"
-                      className="rounded-none h-7 w-7 p-0"
+                      className="rounded-none h-8 w-8 sm:h-7 sm:w-7 p-0"
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -441,7 +446,7 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
                       onClick={() => handleDeleteClick(prize.id)}
                       size="sm"
                       variant="destructive"
-                      className="rounded-none h-7 w-7 p-0"
+                      className="rounded-none h-8 w-8 sm:h-7 sm:w-7 p-0"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -463,7 +468,7 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
       )}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-none max-w-md mx-auto">
+        <AlertDialogContent className="rounded-none max-w-md mx-auto m-4">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-center">
               Επιβεβαίωση Διαγραφής
@@ -472,7 +477,7 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
               Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το βραβείο;
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex justify-center gap-4">
+          <AlertDialogFooter className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
             <AlertDialogCancel className="rounded-none">
               Ακύρωση
             </AlertDialogCancel>
@@ -661,8 +666,8 @@ export const MagicBoxManager: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl font-bold">Μαγικά Κουτιά</h2>
         <div className="flex gap-2">
           <Button
@@ -677,7 +682,7 @@ export const MagicBoxManager: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <h3 className="text-xl font-semibold">Διαχείριση Καμπανιών Magic Box</h3>
             <Button
               onClick={() => setShowForm(true)}
@@ -696,7 +701,7 @@ export const MagicBoxManager: React.FC = () => {
         />
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {campaigns.map((campaign) => (
           <Card key={campaign.id} className="rounded-none">
             <CardHeader>
@@ -733,11 +738,11 @@ export const MagicBoxManager: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={() => setSelectedCampaign(campaign.id)}
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-none"
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-none flex-1 sm:flex-none"
                 >
                   <Settings className="w-4 h-4 mr-1" />
                   Βραβεία
@@ -745,16 +750,19 @@ export const MagicBoxManager: React.FC = () => {
                 <Button
                   onClick={() => handleDistribute(campaign)}
                   size="sm"
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none flex-1 sm:flex-none"
                 >
                   <Send className="w-4 h-4 mr-1" />
                   Διανομή
                 </Button>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mt-2">
                 <Button
                   onClick={() => handleToggleStatus(campaign.id, !campaign.is_active)}
                   size="sm"
                   variant={campaign.is_active ? "outline" : "default"}
-                  className="rounded-none"
+                  className="rounded-none flex-1 sm:flex-none"
                 >
                   <Power className="w-4 h-4 mr-1" />
                   {campaign.is_active ? 'Απενεργ.' : 'Ενεργ.'}
@@ -763,7 +771,7 @@ export const MagicBoxManager: React.FC = () => {
                   onClick={() => handleEdit(campaign)}
                   size="sm"
                   variant="outline"
-                  className="rounded-none"
+                  className="rounded-none flex-1 sm:flex-none"
                 >
                   <Edit className="w-4 h-4 mr-1" />
                   Επεξ.
@@ -792,7 +800,7 @@ export const MagicBoxManager: React.FC = () => {
       )}
 
           <AlertDialog open={campaignDeleteDialogOpen} onOpenChange={setCampaignDeleteDialogOpen}>
-            <AlertDialogContent className="rounded-none max-w-md mx-auto">
+            <AlertDialogContent className="rounded-none max-w-md mx-auto m-4">
               <AlertDialogHeader>
                 <AlertDialogTitle className="text-center">
                   Επιβεβαίωση Διαγραφής
@@ -801,7 +809,7 @@ export const MagicBoxManager: React.FC = () => {
                   Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το campaign;
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter className="flex justify-center gap-4">
+              <AlertDialogFooter className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
                 <AlertDialogCancel className="rounded-none">
                   Ακύρωση
                 </AlertDialogCancel>
