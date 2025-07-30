@@ -98,35 +98,34 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
       );
       setBoxes(updatedBoxes);
 
-      if (clickedBox.hasPrize && clickedBox.prizeId) {
-        // Κέρδισε βραβείο!
-        const prize = mockPrizes.find(p => p.id === clickedBox.prizeId);
-        setWonPrize(prize);
-        
-        // Καταγραφή του βραβείου στη βάση
-        try {
-          const { error: openError } = await supabase.functions.invoke('magic-box-open', {
-            body: {
-              magicBoxId: magicBox.id,
-              prizeId: clickedBox.prizeId
-            }
-          });
-
-          if (openError) {
-            console.error('Error recording prize:', openError);
-            toast.error('Σφάλμα κατά την καταγραφή του βραβείου');
-          } else {
-            toast.success(`Συγχαρητήρια! Κερδίσατε: ${prize?.name || 'Βραβείο'}!`);
-            onPrizeWon?.(prize);
+      // Πάντα καλούμε το edge function για να μαρκάρουμε το κουτί ως ανοιγμένο
+      try {
+        const { error: openError } = await supabase.functions.invoke('magic-box-open', {
+          body: {
+            magic_box_id: magicBox.id
           }
-        } catch (err) {
-          console.error('Function call failed:', err);
-          // Παρόλα αυτά δείχνουμε το βραβείο
-          toast.success(`Συγχαρητήρια! Κερδίσατε: ${prize?.name || 'Βραβείο'}!`);
+        });
+
+        if (openError) {
+          console.error('Error opening magic box:', openError);
+          toast.error('Σφάλμα κατά το άνοιγμα του κουτιού');
+          return;
         }
-      } else {
-        // Δεν κέρδισε
-        toast.error('Δυστυχώς δεν κερδίσατε βραβείο. Δοκιμάστε ξανά!');
+
+        if (clickedBox.hasPrize && clickedBox.prizeId) {
+          // Κέρδισε βραβείο!
+          const prize = mockPrizes.find(p => p.id === clickedBox.prizeId);
+          setWonPrize(prize);
+          toast.success(`Συγχαρητήρια! Κερδίσατε: ${prize?.name || 'Βραβείο'}!`);
+          onPrizeWon?.(prize);
+        } else {
+          // Δεν κέρδισε - αλλά παίρνει παρηγοριά από το edge function
+          toast.success('Δεν κερδίσατε βραβείο, αλλά πήρατε μια δωρεάν επίσκεψη!');
+        }
+      } catch (err) {
+        console.error('Function call failed:', err);
+        toast.error('Σφάλμα κατά το άνοιγμα του κουτιού');
+        return;
       }
 
       setGameCompleted(true);
