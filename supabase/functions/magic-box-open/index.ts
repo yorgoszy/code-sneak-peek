@@ -307,10 +307,38 @@ serve(async (req) => {
 
       case 'try_again':
         responseMessage = 'Δοκίμασε ξανά! Η τύχη θα σου χαμογελάσει!';
+        // Δώσε μια επίσκεψη ως παρηγοριά
+        const { error: consolationVisitError } = await supabaseClient
+          .from('visit_packages')
+          .insert({
+            user_id: appUser.id,
+            total_visits: 1,
+            remaining_visits: 1,
+            status: 'active'
+          });
+        
+        if (!consolationVisitError) {
+          responseMessage = 'Δοκίμασε ξανά! Πήρες μια δωρεάν επίσκεψη ως παρηγοριά!';
+          additionalData = { consolation_visit: true };
+        }
         break;
 
       case 'nothing':
         responseMessage = 'Δεν κέρδισες αυτή τη φορά, αλλά μην απογοητεύεσαι!';
+        // Δώσε μια επίσκεψη ως παρηγοριά
+        const { error: consolationVisitError2 } = await supabaseClient
+          .from('visit_packages')
+          .insert({
+            user_id: appUser.id,
+            total_visits: 1,
+            remaining_visits: 1,
+            status: 'active'
+          });
+        
+        if (!consolationVisitError2) {
+          responseMessage = 'Δεν κέρδισες αυτή τη φορά, αλλά πήρες μια δωρεάν επίσκεψη!';
+          additionalData = { consolation_visit: true };
+        }
         break;
     }
 
