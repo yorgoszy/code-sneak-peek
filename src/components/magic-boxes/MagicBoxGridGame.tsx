@@ -117,9 +117,14 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
         // Έλεγχος αν κέρδισε πραγματικό βραβείο (όχι "nothing")
         if (result?.prize_type && result.prize_type !== 'nothing') {
           // Κέρδισε πραγματικό βραβείο!
-          const prize = mockPrizes.find(p => p.id === clickedBox.prizeId);
+          const prize = {
+            id: result.prize_id || 'unknown',
+            name: result.prize_name || 'Βραβείο',
+            description: result.prize_description || '',
+            type: result.prize_type
+          };
           setWonPrize(prize);
-          toast.success(`Συγχαρητήρια! Κερδίσατε: ${result.prize_name || 'Βραβείο'}!`);
+          toast.success(`Συγχαρητήρια! Κερδίσατε: ${prize.name}!`);
           onPrizeWon?.(prize);
         } else {
           // Δεν κέρδισε - δείχνουμε το consolation dialog
