@@ -134,6 +134,26 @@ export const UserProfileContent = ({
             <UserProfileOnlineBooking userProfile={userProfile} />
           </div>
         );
+      case "ai-trainer":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <h2 className="text-xl font-semibold">RidAI Προπονητής</h2>
+            <div className="bg-white rounded-none border border-gray-200 p-6">
+              <div className="text-center">
+                <button
+                  onClick={() => setIsAIChatOpen(true)}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black px-6 py-3 rounded-none font-medium transition-colors"
+                >
+                  Άνοιγμα AI Προπονητή
+                </button>
+                <p className="text-gray-600 mt-4">
+                  Συνομιλήστε με τον έξυπνο AI προπονητή για προπόνηση, διατροφή και συμβουλές
+                </p>
+              </div>
+            </div>
+          </div>
+        );
       default:
         return <div>Άγνωστη καρτέλα</div>;
     }
