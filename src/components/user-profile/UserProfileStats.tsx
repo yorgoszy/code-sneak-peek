@@ -198,14 +198,14 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
       try {
         const now = new Date();
         
-        // Φόρτωση επερχόμενων βιντεοκλήσεων
+        // Φόρτωση επερχόμενων βιντεοκλήσεων - βρίσκουμε μόνο μελλοντικές κρατήσεις
         const { data: videocallBookings, error: videocallError } = await supabase
           .from('booking_sessions')
           .select('booking_date, booking_time')
           .eq('user_id', user.id)
           .eq('booking_type', 'videocall')
           .eq('status', 'confirmed')
-          .gte('booking_date', now.toISOString().split('T')[0])
+          .or(`booking_date.gt.${now.toISOString().split('T')[0]},and(booking_date.eq.${now.toISOString().split('T')[0]},booking_time.gt.${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:00)`)
           .order('booking_date', { ascending: true })
           .order('booking_time', { ascending: true })
           .limit(1);
@@ -214,28 +214,34 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           const nextVideocall = videocallBookings[0];
           const bookingDateTime = new Date(`${nextVideocall.booking_date} ${nextVideocall.booking_time}`);
           const diffMs = bookingDateTime.getTime() - now.getTime();
-          const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
-          const totalMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
           
-          setUpcomingVideocall({
-            date: nextVideocall.booking_date,
-            time: nextVideocall.booking_time,
-            daysLeft: Math.floor(totalHours / 24),
-            hoursLeft: totalHours % 24,
-            minutesLeft: totalMinutes
-          });
+          // Μόνο αν η κράτηση είναι στο μέλλον
+          if (diffMs > 0) {
+            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const totalMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            setUpcomingVideocall({
+              date: nextVideocall.booking_date,
+              time: nextVideocall.booking_time,
+              daysLeft: Math.floor(totalHours / 24),
+              hoursLeft: totalHours % 24,
+              minutesLeft: totalMinutes
+            });
+          } else {
+            setUpcomingVideocall(null);
+          }
         } else {
           setUpcomingVideocall(null);
         }
 
-        // Φόρτωση επερχόμενων επισκέψεων
+        // Φόρτωση επερχόμενων επισκέψεων - βρίσκουμε μόνο μελλοντικές κρατήσεις
         const { data: visitBookings, error: visitError } = await supabase
           .from('booking_sessions')
           .select('booking_date, booking_time')
           .eq('user_id', user.id)
           .eq('booking_type', 'gym_visit')
           .eq('status', 'confirmed')
-          .gte('booking_date', now.toISOString().split('T')[0])
+          .or(`booking_date.gt.${now.toISOString().split('T')[0]},and(booking_date.eq.${now.toISOString().split('T')[0]},booking_time.gt.${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:00)`)
           .order('booking_date', { ascending: true })
           .order('booking_time', { ascending: true })
           .limit(1);
@@ -244,16 +250,22 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           const nextVisit = visitBookings[0];
           const bookingDateTime = new Date(`${nextVisit.booking_date} ${nextVisit.booking_time}`);
           const diffMs = bookingDateTime.getTime() - now.getTime();
-          const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
-          const totalMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
           
-          setUpcomingVisit({
-            date: nextVisit.booking_date,
-            time: nextVisit.booking_time,
-            daysLeft: Math.floor(totalHours / 24),
-            hoursLeft: totalHours % 24,
-            minutesLeft: totalMinutes
-          });
+          // Μόνο αν η κράτηση είναι στο μέλλον
+          if (diffMs > 0) {
+            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const totalMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            setUpcomingVisit({
+              date: nextVisit.booking_date,
+              time: nextVisit.booking_time,
+              daysLeft: Math.floor(totalHours / 24),
+              hoursLeft: totalHours % 24,
+              minutesLeft: totalMinutes
+            });
+          } else {
+            setUpcomingVisit(null);
+          }
         } else {
           setUpcomingVisit(null);
         }
@@ -623,13 +635,15 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                {upcomingVisit ? (
                  upcomingVisit.daysLeft >= 1 ? (
                    <span className={getTimeBasedColor(upcomingVisit.daysLeft)}>{upcomingVisit.daysLeft}μ</span>
-                 ) : (
+                 ) : upcomingVisit.hoursLeft >= 0 ? (
                    <span className={getTimeBasedColor(0)}>{upcomingVisit.hoursLeft}ώ</span>
+                 ) : (
+                   <span className="text-gray-400">-</span>
                  )
                ) : (
                  <span className="text-gray-400">-</span>
                )}
-            </div>
+             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενη Επίσκεψη
             </div>
@@ -679,13 +693,15 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
                {upcomingVideocall ? (
                  upcomingVideocall.daysLeft >= 1 ? (
                    <span className={getTimeBasedColor(upcomingVideocall.daysLeft)}>{upcomingVideocall.daysLeft}μ</span>
-                 ) : (
+                 ) : upcomingVideocall.hoursLeft >= 0 ? (
                    <span className={getTimeBasedColor(0)}>{upcomingVideocall.hoursLeft}ώ</span>
+                 ) : (
+                   <span className="text-gray-400">-</span>
                  )
                ) : (
                  <span className="text-gray-400">-</span>
                )}
-            </div>
+             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενη Βιντεοκλήση
             </div>
