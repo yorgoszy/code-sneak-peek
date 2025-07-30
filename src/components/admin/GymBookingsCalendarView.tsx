@@ -236,14 +236,24 @@ export const GymBookingsCalendarView = () => {
 
             return (
               <div key={dateStr} className="min-w-0">
-                <div className="text-center p-2 bg-gray-50 border border-gray-200 rounded-none">
-                  <div className="font-medium text-sm">
-                    {['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'][day.getDay() === 0 ? 6 : day.getDay() - 1]}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {format(day, 'dd/MM')}
-                  </div>
-                </div>
+                {/* Check if day has any bookings */}
+                {(() => {
+                  const dayBookings = weekBookings[dateStr] || [];
+                  const hasBookings = dayBookings.length > 0;
+                  
+                  return (
+                    <div className={`text-center p-2 border border-gray-200 rounded-none ${
+                      hasBookings ? 'bg-[#00ffba]/20' : 'bg-gray-50'
+                    }`}>
+                      <div className="font-medium text-sm">
+                        {['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'][day.getDay() === 0 ? 6 : day.getDay() - 1]}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {format(day, 'dd/MM')}
+                      </div>
+                    </div>
+                  );
+                })()}
                 
                 <div className="space-y-1 mt-2">
                   {availableHours.map((time: string) => {
