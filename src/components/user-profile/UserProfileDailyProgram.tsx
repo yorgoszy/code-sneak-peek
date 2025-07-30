@@ -11,6 +11,7 @@ import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgr
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
+import { useUserBookings } from "@/hooks/useUserBookings";
 
 interface UserProfileDailyProgramProps {
   userProfile: any;
@@ -23,6 +24,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   
   const { data: activePrograms, isLoading } = useActivePrograms();
   const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
+  const { bookings } = useUserBookings();
 
   // Filter programs for the specific user
   const userPrograms = activePrograms?.filter(program => 
@@ -122,8 +124,38 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     (getDayProgram(selectedDate)?.status || 'scheduled') : 
     'no_workout';
 
+  const getBookingStatus = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const dayBookings = bookings.filter(booking => booking.booking_date === dateStr);
+    
+    if (dayBookings.length === 0) return null;
+    
+    // Check if any booking has attendance status
+    const completedBooking = dayBookings.find(b => (b as any).attendance_status === 'completed');
+    const missedBooking = dayBookings.find(b => (b as any).attendance_status === 'missed');
+    
+    if (completedBooking) return 'booking_completed';
+    if (missedBooking) return 'booking_missed';
+    
+    // Check if booking is past and no attendance recorded
+    const today = new Date();
+    const bookingDate = new Date(date);
+    const isPast = bookingDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    if (isPast) return 'booking_missed';
+    
+    return 'booking_scheduled';
+  };
+
   const getDateStatus = (date: Date) => {
     const dayProgram = getDayProgram(date);
+    const bookingStatus = getBookingStatus(date);
+    
+    // If there's a booking, prioritize booking status
+    if (bookingStatus) {
+      return bookingStatus;
+    }
+    
     if (!dayProgram) return null;
     
     // Έλεγχος αν έχει περάσει η ημερομηνία και δεν έχει ολοκληρωθεί
@@ -257,12 +289,18 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
                 modifiers={{
                   scheduled: (date) => getDateStatus(date) === 'scheduled',
                   completed: (date) => getDateStatus(date) === 'completed',
-                  missed: (date) => getDateStatus(date) === 'missed'
+                  missed: (date) => getDateStatus(date) === 'missed',
+                  booking_scheduled: (date) => getDateStatus(date) === 'booking_scheduled',
+                  booking_completed: (date) => getDateStatus(date) === 'booking_completed',
+                  booking_missed: (date) => getDateStatus(date) === 'booking_missed'
                 }}
                 modifiersStyles={{
                   scheduled: { backgroundColor: '#fef3c7', color: '#92400e' },
                   completed: { backgroundColor: '#d1fae5', color: '#065f46' },
-                  missed: { backgroundColor: '#fee2e2', color: '#991b1b' }
+                  missed: { backgroundColor: '#fee2e2', color: '#991b1b' },
+                  booking_scheduled: { backgroundColor: '#dbeafe', color: '#1e40af' },
+                  booking_completed: { backgroundColor: '#00ffba', color: '#000000' },
+                  booking_missed: { backgroundColor: '#fecaca', color: '#dc2626' }
                 }}
               />
             </div>

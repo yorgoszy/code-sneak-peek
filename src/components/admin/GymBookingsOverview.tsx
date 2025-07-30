@@ -94,6 +94,9 @@ export const GymBookingsOverview = () => {
         .order('booking_date', { ascending: true })
         .order('booking_time', { ascending: true });
 
+      // Also mark any past bookings as missed
+      await supabase.rpc('mark_past_bookings_as_missed');
+
       if (error) throw error;
       setBookings((data as any) || []);
     } catch (error) {

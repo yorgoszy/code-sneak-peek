@@ -21,6 +21,9 @@ interface BookingSession {
     description?: string;
   };
   attended?: boolean;
+  attendance_status?: string;
+  completed_at?: string;
+  missed_at?: string;
 }
 
 interface WeeklyBookingCalendarProps {
@@ -72,12 +75,23 @@ export const WeeklyBookingCalendar: React.FC<WeeklyBookingCalendarProps> = ({
     const isPastBooking = isPast(bookingDateTime);
     const canCancel = canCancelBooking(booking.booking_date, booking.booking_time);
 
+    // Check attendance status first
+    if (booking.attendance_status === 'completed') {
+      return { icon: <Check className="w-3 h-3" />, color: 'text-[#00ffba]' };
+    }
+    if (booking.attendance_status === 'missed') {
+      return { icon: <X className="w-3 h-3" />, color: 'text-red-500' };
+    }
+
+    // Legacy check for attended field
     if (isPastBooking) {
       if (booking.attended === true) {
         return { icon: <Check className="w-3 h-3" />, color: 'text-[#00ffba]' };
       } else if (booking.attended === false) {
         return { icon: <X className="w-3 h-3" />, color: 'text-red-500' };
       }
+      // If past and no attendance status, it's missed
+      return { icon: <X className="w-3 h-3" />, color: 'text-red-500' };
     }
     
     if (!canCancel) {

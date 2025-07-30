@@ -47,16 +47,27 @@ export const GymBookingCard: React.FC<GymBookingCardProps> = ({
   };
 
   const getStatusBadge = () => {
+    // Check attendance status first
+    if ((booking as any).attendance_status === 'completed') {
+      return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">Ολοκληρωμένη</Badge>;
+    }
+    if ((booking as any).attendance_status === 'missed') {
+      return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Απουσία</Badge>;
+    }
+    
+    // Then check regular status
     if (booking.status === 'pending') {
       return <Badge variant="outline" className="rounded-none bg-yellow-50 text-yellow-700 border-yellow-200">Εκκρεμεί</Badge>;
     }
     if (booking.status === 'cancelled') {
       return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Ακυρώθηκε</Badge>;
     }
-    if (isPastBooking) {
-      return <Badge variant="secondary" className="rounded-none">Ολοκληρωμένη</Badge>;
-    }
     if (booking.status === 'confirmed') {
+      // If past and no attendance status, mark as missed automatically
+      if (isPastBooking && !(booking as any).attendance_status) {
+        handleMarkMissed();
+        return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Απουσία</Badge>;
+      }
       return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">Εγκεκριμένη</Badge>;
     }
     return <Badge variant="outline" className="rounded-none">Προγραμματισμένη</Badge>;
@@ -139,6 +150,37 @@ export const GymBookingCard: React.FC<GymBookingCardProps> = ({
     }
   };
 
+  const handleMarkCompleted = async () => {
+    try {
+      const { error } = await supabase.rpc('mark_booking_completed', {
+        booking_id: booking.id
+      });
+
+      if (error) throw error;
+
+      toast.success('Η κράτηση σημειώθηκε ως ολοκληρωμένη!');
+      onRefresh?.();
+    } catch (error) {
+      console.error('Error marking booking as completed:', error);
+      toast.error('Σφάλμα κατά τη σήμανση ως ολοκληρωμένη');
+    }
+  };
+
+  const handleMarkMissed = async () => {
+    try {
+      const { error } = await supabase.rpc('mark_booking_missed', {
+        booking_id: booking.id
+      });
+
+      if (error) throw error;
+
+      console.log('Booking marked as missed automatically');
+      onRefresh?.();
+    } catch (error) {
+      console.error('Error marking booking as missed:', error);
+    }
+  };
+
   return (
     <Card className="rounded-none hover:shadow-md transition-shadow">
       <CardContent className="p-4">
@@ -200,6 +242,18 @@ export const GymBookingCard: React.FC<GymBookingCardProps> = ({
                   Ακύρωση
                 </Button>
               </div>
+            )}
+
+            {/* Mark attendance button for confirmed bookings */}
+            {isAdmin && booking.status === 'confirmed' && !(booking as any).attendance_status && (
+              <Button
+                onClick={handleMarkCompleted}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                size="sm"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Παρουσία
+              </Button>
             )}
           </div>
         </div>

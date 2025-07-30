@@ -557,13 +557,16 @@ export type Database = {
       }
       booking_sessions: {
         Row: {
+          attendance_status: string | null
           booking_date: string
           booking_time: string
           booking_type: string
           cancelled_at: string | null
+          completed_at: string | null
           created_at: string
           id: string
           meeting_link: string | null
+          missed_at: string | null
           notes: string | null
           section_id: string
           status: string
@@ -571,13 +574,16 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attendance_status?: string | null
           booking_date: string
           booking_time: string
           booking_type?: string
           cancelled_at?: string | null
+          completed_at?: string | null
           created_at?: string
           id?: string
           meeting_link?: string | null
+          missed_at?: string | null
           notes?: string | null
           section_id: string
           status?: string
@@ -585,13 +591,16 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attendance_status?: string | null
           booking_date?: string
           booking_time?: string
           booking_type?: string
           cancelled_at?: string | null
+          completed_at?: string | null
           created_at?: string
           id?: string
           meeting_link?: string | null
+          missed_at?: string | null
           notes?: string | null
           section_id?: string
           status?: string
@@ -3935,6 +3944,18 @@ export type Database = {
               p_booking_type?: string
             }
         Returns: boolean
+      }
+      mark_booking_completed: {
+        Args: { booking_id: string }
+        Returns: undefined
+      }
+      mark_booking_missed: {
+        Args: { booking_id: string }
+        Returns: undefined
+      }
+      mark_past_bookings_as_missed: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       notify_next_in_waiting_list: {
         Args:
