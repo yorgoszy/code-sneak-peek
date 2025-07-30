@@ -1858,6 +1858,33 @@ export type Database = {
         }
         Relationships: []
       }
+      offer_responses: {
+        Row: {
+          created_at: string
+          id: string
+          offer_id: string
+          response: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          offer_id: string
+          response: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          offer_id?: string
+          response?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           created_at: string | null
