@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Plus, Edit, Trash2, Gift, Percent, X } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
@@ -244,6 +245,13 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
     return type ? `${type.name} - €${type.price}` : '';
   };
 
+  // Calculate probability for each prize
+  const calculateProbability = (prizeWeight: number) => {
+    const totalWeight = subscriptionPrizes.reduce((sum, prize) => sum + prize.weight, 0);
+    if (totalWeight === 0) return 0;
+    return (prizeWeight / totalWeight) * 100;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -366,58 +374,76 @@ export const MagicBoxPrizeManager: React.FC<MagicBoxPrizeManagerProps> = ({
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {subscriptionPrizes.map((prize) => (
-          <Card key={prize.id} className="rounded-none">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Gift className="w-5 h-5" />
-                  Συνδρομή
+      <div className="space-y-2">
+        {subscriptionPrizes.map((prize) => {
+          const probability = calculateProbability(prize.weight);
+          return (
+            <Card key={prize.id} className="rounded-none">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between gap-4">
+                  {/* Prize Info */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Gift className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
+                    
+                    {prize.subscription_types && (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-medium text-sm truncate">
+                          {prize.subscription_types.name}
+                        </span>
+                        <span className="text-xs text-gray-600 flex-shrink-0">
+                          €{prize.subscription_types.price}
+                        </span>
+                      </div>
+                    )}
+                    
+                    <Badge variant="secondary" className="rounded-none text-xs flex-shrink-0">
+                      x{prize.quantity}
+                    </Badge>
+                    
+                    {prize.discount_percentage > 0 && (
+                      <Badge className="bg-[#00ffba] text-black rounded-none text-xs flex-shrink-0">
+                        -{prize.discount_percentage}%
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Probability Bar */}
+                  <div className="flex items-center gap-2 min-w-[120px]">
+                    <div className="flex-1">
+                      <Progress 
+                        value={probability} 
+                        className="h-2 bg-gray-200" 
+                      />
+                    </div>
+                    <span className="text-xs text-gray-600 min-w-[35px] text-right">
+                      {probability.toFixed(1)}%
+                    </span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      onClick={() => {/* TODO: Implement edit functionality */}}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-none h-7 w-7 p-0"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteClick(prize.id)}
+                      size="sm"
+                      variant="destructive"
+                      className="rounded-none h-7 w-7 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
-                <Badge variant="secondary" className="rounded-none">
-                  x{prize.quantity}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {prize.subscription_types && (
-                <div className="mb-2">
-                  <p className="font-medium">{prize.subscription_types.name}</p>
-                  <p className="text-sm text-gray-600">{prize.subscription_types.description}</p>
-                  <p className="text-sm font-medium">€{prize.subscription_types.price}</p>
-                </div>
-              )}
-              
-              {prize.discount_percentage > 0 && (
-                <div className="mb-4">
-                  <Badge className="bg-[#00ffba] text-black rounded-none">
-                    {prize.discount_percentage}% έκπτωση
-                  </Badge>
-                </div>
-              )}
-              
-              <div className="flex space-x-2">
-                <Button
-                  onClick={() => {/* TODO: Implement edit functionality */}}
-                  size="sm"
-                  variant="outline"
-                  className="rounded-none"
-                >
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button
-                  onClick={() => handleDeleteClick(prize.id)}
-                  size="sm"
-                  variant="destructive"
-                  className="rounded-none"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {!loading && subscriptionPrizes.length === 0 && (
