@@ -35,6 +35,7 @@ import OnlineBookingWithSidebar from "@/pages/Dashboard/OnlineBookingWithSidebar
 import BookingSectionsWithSidebar from "@/pages/Dashboard/BookingSectionsWithSidebar";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
+import ProfileEdit from "@/pages/ProfileEdit";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ function App() {
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/user/:userId" element={<UserProfile />} />
                 <Route path="/dashboard/user-profile/:userId" element={<UserProfile />} />
+                <Route path="/dashboard/user-profile/:userId/edit" element={<ProfileEdit />} />
                 <Route path="/dashboard/user-profile/:userId/shop" element={<ShopWithSidebar />} />
                 <Route path="/program-builder" element={<ProgramBuilder />} />
                 <Route path="*" element={<NotFound />} />

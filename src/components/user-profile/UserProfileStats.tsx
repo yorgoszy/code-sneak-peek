@@ -693,7 +693,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Προφίλ - Ενδέκατο (χωρίς emoji) */}
           <button 
-            onClick={() => navigate(`/dashboard/edit-profile`)}
+            onClick={() => navigate(`/dashboard/user-profile/${user.id}/edit`)}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">

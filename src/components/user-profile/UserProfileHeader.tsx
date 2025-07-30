@@ -45,7 +45,7 @@ export const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
           <div className={`flex items-center justify-between ${isMobile ? 'space-x-3' : 'space-x-4'}`}>
             <div className={`flex items-center ${isMobile ? 'space-x-3' : 'space-x-4'}`}>
               <Avatar className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} flex-shrink-0`}>
-                <AvatarImage src={user.photo_url} alt={user.name} />
+                <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
                 <AvatarFallback className={isMobile ? 'text-sm' : ''}>
                   {user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                 </AvatarFallback>

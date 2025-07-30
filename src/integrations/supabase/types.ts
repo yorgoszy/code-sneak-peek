@@ -366,6 +366,7 @@ export type Database = {
       app_users: {
         Row: {
           auth_user_id: string | null
+          avatar_url: string | null
           birth_date: string | null
           category: string | null
           created_at: string | null
@@ -382,6 +383,7 @@ export type Database = {
         }
         Insert: {
           auth_user_id?: string | null
+          avatar_url?: string | null
           birth_date?: string | null
           category?: string | null
           created_at?: string | null
@@ -398,6 +400,7 @@ export type Database = {
         }
         Update: {
           auth_user_id?: string | null
+          avatar_url?: string | null
           birth_date?: string | null
           category?: string | null
           created_at?: string | null
