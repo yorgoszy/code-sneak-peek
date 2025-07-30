@@ -188,8 +188,15 @@ export const MagicBoxGameV2: React.FC<MagicBoxGameV2Props> = ({ userId }) => {
     console.log('🚀 About to call magic-box-open function');
 
     try {
+      const requestBody: any = { magic_box_id: boxId };
+      
+      // Αν παίζουμε για λογαριασμό άλλου χρήστη, περνάμε το target_user_id
+      if (userId && currentUserId !== userId) {
+        requestBody.target_user_id = userId;
+      }
+
       const { data, error } = await supabase.functions.invoke('magic-box-open', {
-        body: { magic_box_id: boxId }
+        body: requestBody
       });
 
       console.log('📡 Function response:', { data, error });
