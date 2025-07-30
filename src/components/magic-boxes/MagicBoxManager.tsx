@@ -10,13 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Edit, Trash2, Gift, Settings, Power, Users, Calendar, Send, Trophy } from 'lucide-react';
+import { Plus, Edit, Trash2, Gift, Settings, Power, Users, Calendar, Trophy } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { MagicBoxGameV2 } from './MagicBoxGameV2';
 import { MagicBoxCampaignForm } from './MagicBoxCampaignForm';
-import { MagicBoxDistribution } from './MagicBoxDistribution';
 
 interface MagicBoxCampaign {
   id: string;
@@ -502,8 +501,7 @@ export const MagicBoxManager: React.FC = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [campaignDeleteDialogOpen, setCampaignDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'admin' | 'user' | 'distribution'>('admin');
-  const [distributionCampaign, setDistributionCampaign] = useState<{ id: string; name: string } | null>(null);
+  const [activeTab, setActiveTab] = useState<'admin' | 'user'>('admin');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -637,10 +635,7 @@ export const MagicBoxManager: React.FC = () => {
     }
   };
 
-  const handleDistribute = (campaign: MagicBoxCampaign) => {
-    setDistributionCampaign({ id: campaign.id, name: campaign.name });
-    setActiveTab('distribution');
-  };
+  // Function no longer needed - distribution happens during campaign creation
 
   if (selectedCampaign) {
     return (
@@ -651,19 +646,6 @@ export const MagicBoxManager: React.FC = () => {
     );
   }
 
-  // Distribution view
-  if (activeTab === 'distribution' && distributionCampaign) {
-    return (
-      <MagicBoxDistribution
-        campaignId={distributionCampaign.id}
-        campaignName={distributionCampaign.name}
-        onBack={() => {
-          setActiveTab('admin');
-          setDistributionCampaign(null);
-        }}
-      />
-    );
-  }
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -746,14 +728,6 @@ export const MagicBoxManager: React.FC = () => {
                   title="Βραβεία"
                 >
                   <Trophy className="w-4 h-4" />
-                </Button>
-                <Button
-                  onClick={() => handleDistribute(campaign)}
-                  size="sm"
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-8 h-8 p-0"
-                  title="Διανομή"
-                >
-                  <Send className="w-4 h-4" />
                 </Button>
                 <Button
                   onClick={() => handleToggleStatus(campaign.id, !campaign.is_active)}
