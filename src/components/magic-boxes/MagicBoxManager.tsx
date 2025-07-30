@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Edit, Trash2, Gift, Settings, Power, Users, Calendar, Send } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -223,6 +224,13 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
     }
   };
 
+  // Calculate probability for each prize
+  const calculateProbability = (prizeWeight: number) => {
+    const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+    if (totalWeight === 0) return 0;
+    return (prizeWeight / totalWeight) * 100;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -369,50 +377,80 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
         </Card>
       )}
 
-      <div className="grid gap-4">
-        {prizes.map((prize) => (
-          <Card key={prize.id} className="rounded-none">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">{getPrizeTypeLabel(prize.prize_type)}</h3>
-                  {prize.subscription_types && (
-                    <p className="text-sm text-gray-600">{prize.subscription_types.name}</p>
-                  )}
-                  {prize.discount_percentage > 0 && (
-                    <p className="text-sm text-gray-600">Έκπτωση: {prize.discount_percentage}%</p>
-                  )}
-                  <div className="flex gap-2 mt-2">
-                    <Badge variant="outline" className="rounded-none">
+      <div className="space-y-2">
+        {prizes.map((prize) => {
+          const probability = calculateProbability(prize.weight);
+          return (
+            <Card key={prize.id} className="rounded-none">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between gap-4">
+                  {/* Prize Info */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Gift className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
+                    
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-medium text-sm truncate">
+                        {getPrizeTypeLabel(prize.prize_type)}
+                      </span>
+                      {prize.subscription_types && (
+                        <span className="text-xs text-gray-600 truncate">
+                          {prize.subscription_types.name}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <Badge variant="outline" className="rounded-none text-xs flex-shrink-0">
+                      {prize.remaining_quantity}/{prize.quantity}
+                    </Badge>
+                    
+                    {prize.discount_percentage > 0 && (
+                      <Badge className="bg-[#00ffba] text-black rounded-none text-xs flex-shrink-0">
+                        -{prize.discount_percentage}%
+                      </Badge>
+                    )}
+                    
+                    <Badge variant="secondary" className="rounded-none text-xs flex-shrink-0">
                       Βάρος: {prize.weight}
                     </Badge>
-                    <Badge variant="outline" className="rounded-none">
-                      Διαθέσιμα: {prize.remaining_quantity}/{prize.quantity}
-                    </Badge>
+                  </div>
+
+                  {/* Probability Bar */}
+                  <div className="flex items-center gap-2 min-w-[120px]">
+                    <div className="flex-1">
+                      <Progress 
+                        value={probability} 
+                        className="h-2 bg-gray-200" 
+                      />
+                    </div>
+                    <span className="text-xs text-gray-600 min-w-[35px] text-right">
+                      {probability.toFixed(1)}%
+                    </span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      onClick={() => handleEditPrize(prize)}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-none h-7 w-7 p-0"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteClick(prize.id)}
+                      size="sm"
+                      variant="destructive"
+                      className="rounded-none h-7 w-7 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleEditPrize(prize)}
-                    size="sm"
-                    variant="outline"
-                    className="rounded-none"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={() => handleDeleteClick(prize.id)}
-                    size="sm"
-                    variant="destructive"
-                    className="rounded-none"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {!loading && prizes.length === 0 && (
