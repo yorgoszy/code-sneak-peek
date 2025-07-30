@@ -158,18 +158,13 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
         return;
       }
 
-      // Create magic boxes for selected users based on max_participations_per_user
-      const magicBoxes = [];
-      for (const userId of targetUsers) {
-        for (let i = 0; i < formData.max_participations_per_user; i++) {
-          magicBoxes.push({
-            user_id: userId,
-            campaign_id: campaignId,
-            is_opened: false,
-            created_at: new Date().toISOString()
-          });
-        }
-      }
+      // Create magic boxes for selected users
+      const magicBoxes = targetUsers.map(userId => ({
+        user_id: userId,
+        campaign_id: campaignId,
+        is_opened: false,
+        created_at: new Date().toISOString()
+      }));
 
       const { error: insertError } = await supabase
         .from('user_magic_boxes')
@@ -179,7 +174,7 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
 
       toast({
         title: 'Επιτυχία',
-        description: `Διανεμήθηκαν ${magicBoxes.length} magic boxes σε ${targetUsers.length} χρήστες (${formData.max_participations_per_user} ανά χρήστη)`
+        description: `Διανεμήθηκαν ${targetUsers.length} magic boxes στους χρήστες`
       });
     } catch (error) {
       console.error('Error distributing magic boxes:', error);
