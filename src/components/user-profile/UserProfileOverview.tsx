@@ -17,6 +17,7 @@ interface UserProfileOverviewProps {
   tests: any[];
   payments: any[];
   visits: any[];
+  setActiveTab?: (tab: string) => void;
 }
 
 export const UserProfileOverview = ({
@@ -25,7 +26,8 @@ export const UserProfileOverview = ({
   programs,
   tests,
   payments,
-  visits
+  visits,
+  setActiveTab
 }: UserProfileOverviewProps) => {
   const isMobile = useIsMobile();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
@@ -36,7 +38,7 @@ export const UserProfileOverview = ({
       <UserProfileHeader user={userProfile} />
       
       {/* General Stats Overview */}
-      <UserProfileStats user={userProfile} stats={stats} />
+      <UserProfileStats user={userProfile} stats={stats} setActiveTab={setActiveTab} />
 
       {/* Workout Stats Tabs Section */}
       <WorkoutStatsTabsSection userId={userProfile.id} />

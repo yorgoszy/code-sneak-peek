@@ -46,6 +46,8 @@ export const UserProfileContent = ({
   useEffect(() => {
     if (activeTab === "ai-trainer") {
       setIsAIChatOpen(true);
+    } else {
+      setIsAIChatOpen(false);
     }
   }, [activeTab]);
 
@@ -74,6 +76,7 @@ export const UserProfileContent = ({
               tests={tests} 
               payments={payments} 
               visits={visits}
+              setActiveTab={setActiveTab}
             />
           </div>
         );

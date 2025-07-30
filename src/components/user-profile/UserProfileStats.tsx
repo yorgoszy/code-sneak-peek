@@ -14,9 +14,10 @@ interface UserProfileStatsProps {
     testsCount: number;
     paymentsCount: number;
   };
+  setActiveTab?: (tab: string) => void;
 }
 
-export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
+export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStatsProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [subscriptionDays, setSubscriptionDays] = useState<number | null>(null);
@@ -437,7 +438,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
         }`}>
           {/* Αγορές - Πρώτο */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=shop`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('shop');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=shop`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -453,7 +460,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Ενεργές Προσφορές - Δεύτερο */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=offers`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('offers');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=offers`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -483,7 +496,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Πληρωμές - Τρίτο */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=payments`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('payments');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=payments`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -507,7 +526,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Μέρες Συνδρομής - Τέταρτο */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=payments`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('payments');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=payments`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -543,7 +568,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Ημέρες Προπόνησης / Προγράμματα - Πέμπτο (δεξιά από Μέρες Συνδρομής) */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('calendar');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=calendar`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -571,7 +602,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Επερχόμενα Τεστ - Έκτο (μετά από Ημέρες Προπόνησης) */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=tests`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('tests');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=tests`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -599,7 +636,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Επισκέψεις - Έβδομο */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('online-booking');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -623,7 +666,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Επερχόμενη Επίσκεψη - Έκτο */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('online-booking');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -652,7 +701,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* Βιντεοκλήσεις - Ένατο */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('online-coaching');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -678,7 +733,11 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           <button 
             onClick={() => {
               if (upcomingVideocall) {
-                navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
+                if (setActiveTab) {
+                  setActiveTab('online-coaching');
+                } else {
+                  navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
+                }
               }
             }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col min-w-0"
@@ -725,7 +784,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {/* RidAi Προπονητής - Δωδέκατο (χωρίς emoji, με κεφαλαίο A) */}
           <button 
-            onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=ai-trainer`)}
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('ai-trainer');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=ai-trainer`);
+              }
+            }}
             className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
           >
             <div className="h-10 flex items-center justify-center">
@@ -741,7 +806,13 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
           {user.role === 'trainer' && (
             <button 
-              onClick={() => navigate(`/dashboard/user-profile/${user.id}?tab=calendar`)}
+              onClick={() => {
+                if (setActiveTab) {
+                  setActiveTab('calendar');
+                } else {
+                  navigate(`/dashboard/user-profile/${user.id}?tab=calendar`);
+                }
+              }}
               className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
             >
               <div className="h-10 flex items-center justify-center">
