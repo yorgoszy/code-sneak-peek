@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
@@ -41,6 +41,13 @@ export const UserProfileContent = ({
   setActiveTab
 }: UserProfileContentProps) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+
+  // Άνοιγμα του AI chat dialog όταν το tab είναι "ai-trainer"
+  useEffect(() => {
+    if (activeTab === "ai-trainer") {
+      setIsAIChatOpen(true);
+    }
+  }, [activeTab]);
 
   const BackButton = () => (
     setActiveTab && activeTab !== 'overview' && (
