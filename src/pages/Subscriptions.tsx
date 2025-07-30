@@ -27,13 +27,13 @@ export default function Subscriptions() {
   return (
     <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       </div>
 
-      {/* Mobile Sidebar Overlay */}
-      {isMobile && showMobileSidebar && (
-        <div className="fixed inset-0 z-50 md:hidden">
+      {/* Mobile/Tablet Sidebar Overlay */}
+      {showMobileSidebar && (
+        <div className="fixed inset-0 z-50 lg:hidden">
           <div 
             className="absolute inset-0 bg-black bg-opacity-50"
             onClick={() => setShowMobileSidebar(false)}
@@ -48,8 +48,8 @@ export default function Subscriptions() {
       )}
       
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile Header with Menu Button */}
-        <div className="md:hidden bg-white border-b p-4 flex items-center justify-between">
+        {/* Mobile/Tablet Header with Menu Button */}
+        <div className="lg:hidden bg-white border-b p-4 flex items-center justify-between">
           <Button
             variant="outline"
             size="sm"
