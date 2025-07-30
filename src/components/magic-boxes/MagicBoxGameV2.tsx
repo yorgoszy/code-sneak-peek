@@ -47,7 +47,11 @@ export const MagicBoxGameV2: React.FC = () => {
 
   useEffect(() => {
     initializeUser();
-    
+  }, []);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+
     // Subscribe to real-time updates for user_magic_boxes
     const subscription = supabase
       .channel('magic_boxes_changes')
@@ -55,14 +59,13 @@ export const MagicBoxGameV2: React.FC = () => {
         { 
           event: 'UPDATE', 
           schema: 'public', 
-          table: 'user_magic_boxes'
+          table: 'user_magic_boxes',
+          filter: `user_id=eq.${currentUserId}`
         }, 
         (payload) => {
-          console.log('🔄 Magic box updated:', payload);
-          // Refresh user magic boxes when any box is updated
-          if (currentUserId) {
-            loadUserMagicBoxes(currentUserId);
-          }
+          console.log('🔄 Magic box updated for current user:', payload);
+          // Only refresh if the update is for the current user
+          loadUserMagicBoxes(currentUserId);
         }
       )
       .subscribe();
