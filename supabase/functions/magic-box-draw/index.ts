@@ -320,7 +320,7 @@ serve(async (req) => {
       result.discount_code = discountCode;
 
     } else if (wonPrize.prize_type === 'try_again') {
-      // Create a visit package for the user with 1 free visit
+      // Create a visit package for the user with 1 free visit and gym access
       const { error: visitPackageError } = await supabaseClient
         .from('visit_packages')
         .insert({
@@ -329,7 +329,11 @@ serve(async (req) => {
           remaining_visits: 1,
           purchase_date: new Date().toISOString().split('T')[0],
           price: 0,
-          status: 'active'
+          status: 'active',
+          allowed_sections: [
+            '509179bd-19d5-4990-888c-d41c4d8cc868', // Κύριο Γυμναστήριο
+            '5f337b61-cad8-4ec4-9c18-df6b0ae97057'  // Body Transformation
+          ]
         });
 
       if (visitPackageError) {
@@ -341,7 +345,7 @@ serve(async (req) => {
       result.message = 'Συγχαρητήρια! Κέρδισες μια δωρεάν επίσκεψη! 🎉';
 
     } else if (wonPrize.prize_type === 'nothing') {
-      // Give user a free visit as consolation prize
+      // Give user a free visit as consolation prize with gym access
       const { error: visitError } = await supabaseClient
         .from('visit_packages')
         .insert({
@@ -350,7 +354,11 @@ serve(async (req) => {
           remaining_visits: 1,
           purchase_date: new Date().toISOString().split('T')[0],
           price: 0,
-          status: 'active'
+          status: 'active',
+          allowed_sections: [
+            '509179bd-19d5-4990-888c-d41c4d8cc868', // Κύριο Γυμναστήριο
+            '5f337b61-cad8-4ec4-9c18-df6b0ae97057'  // Body Transformation
+          ]
         });
 
       if (visitError) {

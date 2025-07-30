@@ -22,13 +22,21 @@ const addConsolationVisit = async (supabaseClient: any, userId: string) => {
   }
 
   if (existingPackages && existingPackages.length > 0) {
-    // Add to existing package
+    // Add to existing package and ensure it has gym access
     const targetPackage = existingPackages[0];
+    
+    // Ensure the package has access to all gym sections
+    const gymSections = [
+      '509179bd-19d5-4990-888c-d41c4d8cc868', // Κύριο Γυμναστήριο
+      '5f337b61-cad8-4ec4-9c18-df6b0ae97057'  // Body Transformation
+    ];
+    
     const { error: updateError } = await supabaseClient
       .from('visit_packages')
       .update({
         total_visits: targetPackage.total_visits + 1,
         remaining_visits: targetPackage.remaining_visits + 1,
+        allowed_sections: targetPackage.allowed_sections || gymSections,
         updated_at: new Date().toISOString()
       })
       .eq('id', targetPackage.id);
