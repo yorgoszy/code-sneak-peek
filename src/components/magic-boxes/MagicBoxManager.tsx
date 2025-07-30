@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Edit, Trash2, Gift, Settings, Power, Users, Calendar, Send } from 'lucide-react';
+import { Plus, Edit, Trash2, Gift, Settings, Power, Users, Calendar, Send, Trophy } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -742,45 +742,43 @@ export const MagicBoxManager: React.FC = () => {
                 <Button
                   onClick={() => setSelectedCampaign(campaign.id)}
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-none flex-1 sm:flex-none"
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-none w-8 h-8 p-0"
+                  title="Βραβεία"
                 >
-                  <Settings className="w-4 h-4 mr-1" />
-                  Βραβεία
+                  <Trophy className="w-4 h-4" />
                 </Button>
                 <Button
                   onClick={() => handleDistribute(campaign)}
                   size="sm"
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none flex-1 sm:flex-none"
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-8 h-8 p-0"
+                  title="Διανομή"
                 >
-                  <Send className="w-4 h-4 mr-1" />
-                  Διανομή
+                  <Send className="w-4 h-4" />
                 </Button>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mt-2">
                 <Button
                   onClick={() => handleToggleStatus(campaign.id, !campaign.is_active)}
                   size="sm"
                   variant={campaign.is_active ? "outline" : "default"}
-                  className="rounded-none flex-1 sm:flex-none"
+                  className="rounded-none w-8 h-8 p-0"
+                  title={campaign.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
                 >
-                  <Power className="w-4 h-4 mr-1" />
-                  {campaign.is_active ? 'Απενεργ.' : 'Ενεργ.'}
+                  <Power className="w-4 h-4" />
                 </Button>
                 <Button
                   onClick={() => handleEdit(campaign)}
                   size="sm"
                   variant="outline"
-                  className="rounded-none flex-1 sm:flex-none"
+                  className="rounded-none w-8 h-8 p-0"
+                  title="Επεξεργασία"
                 >
-                  <Edit className="w-4 h-4 mr-1" />
-                  Επεξ.
+                  <Edit className="w-4 h-4" />
                 </Button>
                 <Button
                   onClick={() => handleCampaignDeleteClick(campaign.id)}
                   size="sm"
                   variant="destructive"
-                  className="rounded-none"
+                  className="rounded-none w-8 h-8 p-0"
+                  title="Διαγραφή"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
