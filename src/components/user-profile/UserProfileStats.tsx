@@ -96,12 +96,14 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
     const fetchVisitsData = async () => {
       try {
-        // Φόρτωση ενεργών visit packages (ίδια λογική με VisitManagement)
+        // Φόρτωση όλων των ενεργών visit packages
         const { data: visitPackages, error: packagesError } = await supabase
           .from('visit_packages')
-          .select('total_visits, remaining_visits, status')
+          .select('total_visits, remaining_visits, status, expiry_date')
           .eq('user_id', user.id)
           .eq('status', 'active')
+          .gt('remaining_visits', 0)
+          .or('expiry_date.is.null,expiry_date.gte.' + new Date().toISOString().split('T')[0])
           .order('purchase_date', { ascending: false });
 
         if (packagesError) {
@@ -110,20 +112,23 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return;
         }
 
-        // Βρες το πιο πρόσφατο ενεργό πακέτο
-        const activePackage = visitPackages?.[0];
-        
-        if (!activePackage) {
+        if (!visitPackages || visitPackages.length === 0) {
           setVisitsData({ used: 0, total: 0 });
           return;
         }
 
-        // Υπολογισμός χρησιμοποιημένων επισκέψεων (ίδια λογική με VisitManagement)
-        const usedVisits = activePackage.total_visits - activePackage.remaining_visits;
+        // Συγκέντρωση όλων των ενεργών πακέτων
+        let totalVisits = 0;
+        let totalUsed = 0;
+
+        visitPackages.forEach(pkg => {
+          totalVisits += pkg.total_visits;
+          totalUsed += (pkg.total_visits - pkg.remaining_visits);
+        });
 
         setVisitsData({
-          used: usedVisits,
-          total: activePackage.total_visits
+          used: totalUsed,
+          total: totalVisits
         });
 
       } catch (error) {
@@ -134,12 +139,14 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
 
     const fetchVideocallData = async () => {
       try {
-        // Φόρτωση ενεργών videocall packages
+        // Φόρτωση όλων των ενεργών videocall packages
         const { data: videocallPackages, error: packagesError } = await supabase
           .from('videocall_packages')
-          .select('total_videocalls, remaining_videocalls, status')
+          .select('total_videocalls, remaining_videocalls, status, expiry_date')
           .eq('user_id', user.id)
           .eq('status', 'active')
+          .gt('remaining_videocalls', 0)
+          .or('expiry_date.is.null,expiry_date.gte.' + new Date().toISOString().split('T')[0])
           .order('purchase_date', { ascending: false });
 
         if (packagesError) {
@@ -148,20 +155,23 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return;
         }
 
-        // Βρες το πιο πρόσφατο ενεργό πακέτο
-        const activePackage = videocallPackages?.[0];
-        
-        if (!activePackage) {
+        if (!videocallPackages || videocallPackages.length === 0) {
           setVideocallData({ used: 0, total: 0 });
           return;
         }
 
-        // Υπολογισμός χρησιμοποιημένων βιντεοκλήσεων (ίδια λογική με VideocallManagement)
-        const usedVideocalls = activePackage.total_videocalls - activePackage.remaining_videocalls;
+        // Συγκέντρωση όλων των ενεργών πακέτων
+        let totalVideocalls = 0;
+        let totalUsed = 0;
+
+        videocallPackages.forEach(pkg => {
+          totalVideocalls += pkg.total_videocalls;
+          totalUsed += (pkg.total_videocalls - pkg.remaining_videocalls);
+        });
 
         setVideocallData({
-          used: usedVideocalls,
-          total: activePackage.total_videocalls
+          used: totalUsed,
+          total: totalVideocalls
         });
 
       } catch (error) {
