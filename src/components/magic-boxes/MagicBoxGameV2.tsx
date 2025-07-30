@@ -28,7 +28,11 @@ interface UserMagicBox {
   magic_box_campaigns: MagicBoxCampaign;
 }
 
-export const MagicBoxGameV2: React.FC = () => {
+interface MagicBoxGameV2Props {
+  userId?: string; // Προαιρετικό, αν δεν δοθεί χρησιμοποιεί τον συνδεδεμένο χρήστη
+}
+
+export const MagicBoxGameV2: React.FC<MagicBoxGameV2Props> = ({ userId }) => {
   const [userMagicBoxes, setUserMagicBoxes] = useState<UserMagicBox[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -47,7 +51,7 @@ export const MagicBoxGameV2: React.FC = () => {
 
   useEffect(() => {
     initializeUser();
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (!currentUserId) return;
@@ -77,6 +81,15 @@ export const MagicBoxGameV2: React.FC = () => {
 
   const initializeUser = async () => {
     try {
+      // Αν έχουμε userId prop, χρησιμοποιούμε αυτό αντί για τον συνδεδεμένο χρήστη
+      if (userId) {
+        console.log('🔧 Using provided userId:', userId);
+        setCurrentUserId(userId);
+        await loadUserMagicBoxes(userId);
+        return;
+      }
+
+      // Αλλιώς χρησιμοποιούμε τον συνδεδεμένο χρήστη
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
         console.error('User not authenticated');

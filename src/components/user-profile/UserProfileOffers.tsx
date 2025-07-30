@@ -239,7 +239,7 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
     <div className="space-y-6">
       {/* Magic Box Section */}
       <div className="mb-6">
-        <MagicBoxGameV2 />
+        <MagicBoxGameV2 userId={userProfile?.id} />
       </div>
       
       {offers.length === 0 ? (
