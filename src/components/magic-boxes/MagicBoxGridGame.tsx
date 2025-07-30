@@ -114,20 +114,46 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
           return;
         }
 
-        // Έλεγχος αν κέρδισε πραγματικό βραβείο (όχι "nothing")
-        if (result?.prize_type && result.prize_type !== 'nothing') {
+        // Έλεγχος αν κέρδισε πραγματικό βραβείο (όχι "nothing" ή "try_again")
+        if (result?.prize_type && result.prize_type !== 'nothing' && result.prize_type !== 'try_again') {
           // Κέρδισε πραγματικό βραβείο!
           const prize = {
             id: result.prize_id || 'unknown',
             name: result.prize_name || 'Βραβείο',
             description: result.prize_description || '',
-            type: result.prize_type
+            type: result.prize_type,
+            // Μεταβίβαση επιπλέον δεδομένων για εμφάνιση
+            visit_count: result.visit_count,
+            videocall_count: result.videocall_count,
+            discount_percentage: result.discount_percentage,
+            discount_code: result.discount_code,
+            merged_with_existing: result.merged_with_existing,
+            total_visits_now: result.total_visits_now,
+            total_videocalls_now: result.total_videocalls_now
           };
           setWonPrize(prize);
           toast.success(`Συγχαρητήρια! Κερδίσατε: ${prize.name}!`);
-          onPrizeWon?.(prize);
+          
+          // Δημιουργία response object που είναι συμβατό με το MagicBoxGameV2
+          const compatibleResult = {
+            success: true,
+            message: result.message,
+            prize_name: result.prize_name,
+            prize_description: result.prize_description,
+            prize_type: result.prize_type,
+            visit_count: result.visit_count,
+            videocall_count: result.videocall_count,
+            discount_percentage: result.discount_percentage,
+            discount_code: result.discount_code,
+            merged_with_existing: result.merged_with_existing,
+            total_visits_now: result.total_visits_now,
+            total_videocalls_now: result.total_videocalls_now,
+            subscription_type_id: result.subscription_type_id
+          };
+          
+          onPrizeWon?.(compatibleResult);
         } else {
-          // Δεν κέρδισε - δείχνουμε το consolation dialog
+          // Δεν κέρδισε πραγματικό βραβείο - δείχνουμε το consolation dialog
           setShowConsolationDialog(true);
         }
       } catch (err) {

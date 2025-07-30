@@ -6,6 +6,57 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to add consolation visit
+const addConsolationVisit = async (supabaseClient: any, userId: string) => {
+  // Check for existing active visit packages first
+  const { data: existingPackages, error: fetchError } = await supabaseClient
+    .from('visit_packages')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .gt('remaining_visits', 0)
+    .order('expiry_date', { ascending: false, nullsFirst: true });
+
+  if (fetchError) {
+    console.error('❌ Error fetching existing visit packages for consolation:', fetchError);
+  }
+
+  if (existingPackages && existingPackages.length > 0) {
+    // Add to existing package
+    const targetPackage = existingPackages[0];
+    const { error: updateError } = await supabaseClient
+      .from('visit_packages')
+      .update({
+        total_visits: targetPackage.total_visits + 1,
+        remaining_visits: targetPackage.remaining_visits + 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', targetPackage.id);
+
+    if (!updateError) {
+      console.log(`✅ Added consolation visit to existing package. New total: ${targetPackage.remaining_visits + 1}`);
+    } else {
+      console.error('❌ Error updating visit package for consolation:', updateError);
+    }
+  } else {
+    // Create new visit package
+    const { error: packageError } = await supabaseClient
+      .from('visit_packages')
+      .insert({
+        user_id: userId,
+        total_visits: 1,
+        remaining_visits: 1,
+        status: 'active'
+      });
+
+    if (!packageError) {
+      console.log('✅ Created new consolation visit package');
+    } else {
+      console.error('❌ Error creating consolation visit package:', packageError);
+    }
+  }
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -249,36 +300,128 @@ serve(async (req) => {
 
       case 'visit_package':
         if (selectedPrize.visit_count > 0) {
-          // Create visit package
-          const { error: packageError } = await supabaseClient
+          // Check for existing active visit packages
+          const { data: existingPackages, error: fetchError } = await supabaseClient
             .from('visit_packages')
-            .insert({
-              user_id: appUser.id,
-              total_visits: selectedPrize.visit_count,
-              remaining_visits: selectedPrize.visit_count,
-              status: 'active'
-            });
+            .select('*')
+            .eq('user_id', appUser.id)
+            .eq('status', 'active')
+            .gt('remaining_visits', 0)
+            .order('expiry_date', { ascending: false, nullsFirst: true });
 
-          if (!packageError) {
-            additionalData = { visit_count: selectedPrize.visit_count };
+          if (fetchError) {
+            console.error('❌ Error fetching existing visit packages:', fetchError);
+          }
+
+          if (existingPackages && existingPackages.length > 0) {
+            // Merge with existing package - add visits to the one with latest expiry date
+            const targetPackage = existingPackages[0];
+            const newTotalVisits = targetPackage.total_visits + selectedPrize.visit_count;
+            const newRemainingVisits = targetPackage.remaining_visits + selectedPrize.visit_count;
+            
+            const { error: updateError } = await supabaseClient
+              .from('visit_packages')
+              .update({
+                total_visits: newTotalVisits,
+                remaining_visits: newRemainingVisits,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', targetPackage.id);
+
+            if (!updateError) {
+              additionalData = { 
+                visit_count: selectedPrize.visit_count,
+                merged_with_existing: true,
+                total_visits_now: newRemainingVisits
+              };
+              console.log(`✅ Added ${selectedPrize.visit_count} visits to existing package. New total: ${newRemainingVisits}`);
+            } else {
+              console.error('❌ Error updating visit package:', updateError);
+            }
+          } else {
+            // Create new visit package
+            const { error: packageError } = await supabaseClient
+              .from('visit_packages')
+              .insert({
+                user_id: appUser.id,
+                total_visits: selectedPrize.visit_count,
+                remaining_visits: selectedPrize.visit_count,
+                status: 'active'
+              });
+
+            if (!packageError) {
+              additionalData = { 
+                visit_count: selectedPrize.visit_count,
+                new_package: true
+              };
+              console.log(`✅ Created new visit package with ${selectedPrize.visit_count} visits`);
+            } else {
+              console.error('❌ Error creating visit package:', packageError);
+            }
           }
         }
         break;
 
       case 'videocall_package':
         if (selectedPrize.videocall_count > 0) {
-          // Create videocall package
-          const { error: packageError } = await supabaseClient
+          // Check for existing active videocall packages
+          const { data: existingPackages, error: fetchError } = await supabaseClient
             .from('videocall_packages')
-            .insert({
-              user_id: appUser.id,
-              total_videocalls: selectedPrize.videocall_count,
-              remaining_videocalls: selectedPrize.videocall_count,
-              status: 'active'
-            });
+            .select('*')
+            .eq('user_id', appUser.id)
+            .eq('status', 'active')
+            .gt('remaining_videocalls', 0)
+            .order('expiry_date', { ascending: false, nullsFirst: true });
 
-          if (!packageError) {
-            additionalData = { videocall_count: selectedPrize.videocall_count };
+          if (fetchError) {
+            console.error('❌ Error fetching existing videocall packages:', fetchError);
+          }
+
+          if (existingPackages && existingPackages.length > 0) {
+            // Merge with existing package
+            const targetPackage = existingPackages[0];
+            const newTotalVideocalls = targetPackage.total_videocalls + selectedPrize.videocall_count;
+            const newRemainingVideocalls = targetPackage.remaining_videocalls + selectedPrize.videocall_count;
+            
+            const { error: updateError } = await supabaseClient
+              .from('videocall_packages')
+              .update({
+                total_videocalls: newTotalVideocalls,
+                remaining_videocalls: newRemainingVideocalls,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', targetPackage.id);
+
+            if (!updateError) {
+              additionalData = { 
+                videocall_count: selectedPrize.videocall_count,
+                merged_with_existing: true,
+                total_videocalls_now: newRemainingVideocalls
+              };
+              console.log(`✅ Added ${selectedPrize.videocall_count} videocalls to existing package. New total: ${newRemainingVideocalls}`);
+            } else {
+              console.error('❌ Error updating videocall package:', updateError);
+            }
+          } else {
+            // Create new videocall package
+            const { error: packageError } = await supabaseClient
+              .from('videocall_packages')
+              .insert({
+                user_id: appUser.id,
+                total_videocalls: selectedPrize.videocall_count,
+                remaining_videocalls: selectedPrize.videocall_count,
+                status: 'active'
+              });
+
+            if (!packageError) {
+              additionalData = { 
+                videocall_count: selectedPrize.videocall_count,
+                new_package: true
+              };
+              console.log(`✅ Created new videocall package with ${selectedPrize.videocall_count} videocalls`);
+            } else {
+              console.error('❌ Error creating videocall package:', packageError);
+            }
           }
         }
         break;
@@ -307,38 +450,18 @@ serve(async (req) => {
 
       case 'try_again':
         responseMessage = 'Δοκίμασε ξανά! Η τύχη θα σου χαμογελάσει!';
-        // Δώσε μια επίσκεψη ως παρηγοριά
-        const { error: consolationVisitError } = await supabaseClient
-          .from('visit_packages')
-          .insert({
-            user_id: appUser.id,
-            total_visits: 1,
-            remaining_visits: 1,
-            status: 'active'
-          });
-        
-        if (!consolationVisitError) {
-          responseMessage = 'Δοκίμασε ξανά! Πήρες μια δωρεάν επίσκεψη ως παρηγοριά!';
-          additionalData = { consolation_visit: true };
-        }
+        // Δώσε μια επίσκεψη ως παρηγοριά - merge with existing if possible
+        await addConsolationVisit(supabaseClient, appUser.id);
+        responseMessage = 'Δοκίμασε ξανά! Πήρες μια δωρεάν επίσκεψη ως παρηγοριά!';
+        additionalData = { consolation_visit: true };
         break;
 
       case 'nothing':
         responseMessage = 'Δεν κέρδισες αυτή τη φορά, αλλά μην απογοητεύεσαι!';
-        // Δώσε μια επίσκεψη ως παρηγοριά
-        const { error: consolationVisitError2 } = await supabaseClient
-          .from('visit_packages')
-          .insert({
-            user_id: appUser.id,
-            total_visits: 1,
-            remaining_visits: 1,
-            status: 'active'
-          });
-        
-        if (!consolationVisitError2) {
-          responseMessage = 'Δεν κέρδισες αυτή τη φορά, αλλά πήρες μια δωρεάν επίσκεψη!';
-          additionalData = { consolation_visit: true };
-        }
+        // Δώσε μια επίσκεψη ως παρηγοριά - merge with existing if possible
+        await addConsolationVisit(supabaseClient, appUser.id);
+        responseMessage = 'Δεν κέρδισες αυτή τη φορά, αλλά πήρες μια δωρεάν επίσκεψη!';
+        additionalData = { consolation_visit: true };
         break;
     }
 

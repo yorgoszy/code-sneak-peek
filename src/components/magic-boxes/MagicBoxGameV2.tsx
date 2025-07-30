@@ -335,23 +335,39 @@ export const MagicBoxGameV2: React.FC = () => {
               </div>
             )}
             
-            {showResult.prize_type === 'visit_package' && showResult.visit_count && (
+            {showResult.prize_type === 'visit_package' && (
               <div className="bg-white p-4 rounded-lg border mb-4">
                 <h3 className="font-bold text-lg">{showResult.prize_name}</h3>
                 <p className="text-gray-600">{showResult.prize_description}</p>
                 <Badge className="bg-[#00ffba] text-black rounded-none mt-2">
                   {showResult.visit_count} επισκέψεις
+                  {showResult.merged_with_existing && (
+                    <span className="ml-2 text-xs">(προστέθηκαν στις υπάρχουσες)</span>
+                  )}
                 </Badge>
+                {showResult.total_visits_now && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Σύνολο διαθέσιμων επισκέψεων: {showResult.total_visits_now}
+                  </p>
+                )}
               </div>
             )}
             
-            {showResult.prize_type === 'videocall_package' && showResult.videocall_count && (
+            {showResult.prize_type === 'videocall_package' && (
               <div className="bg-white p-4 rounded-lg border mb-4">
                 <h3 className="font-bold text-lg">{showResult.prize_name}</h3>
                 <p className="text-gray-600">{showResult.prize_description}</p>
                 <Badge className="bg-[#00ffba] text-black rounded-none mt-2">
                   {showResult.videocall_count} βιντεοκλήσεις
+                  {showResult.merged_with_existing && (
+                    <span className="ml-2 text-xs">(προστέθηκαν στις υπάρχουσες)</span>
+                  )}
                 </Badge>
+                {showResult.total_videocalls_now && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Σύνολο διαθέσιμων βιντεοκλήσεων: {showResult.total_videocalls_now}
+                  </p>
+                )}
               </div>
             )}
             
