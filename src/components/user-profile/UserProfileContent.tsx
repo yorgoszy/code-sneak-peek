@@ -15,6 +15,7 @@ import { UserProfileOffers } from "./UserProfileOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileOnlineCoaching } from "./UserProfileOnlineCoaching";
 import { TrainingAnalytics } from "./TrainingAnalytics";
+import { InlineAIChat } from "@/components/ai-chat/InlineAIChat";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 
 interface UserProfileContentProps {
@@ -42,11 +43,9 @@ export const UserProfileContent = ({
 }: UserProfileContentProps) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
-  // Άνοιγμα του AI chat dialog όταν το tab είναι "ai-trainer"
+  // Άνοιγμα του AI chat dialog όταν το tab είναι "ai-trainer" - χρησιμοποιείται μόνο για άλλα components
   useEffect(() => {
-    if (activeTab === "ai-trainer") {
-      setIsAIChatOpen(true);
-    } else {
+    if (activeTab !== "ai-trainer") {
       setIsAIChatOpen(false);
     }
   }, [activeTab]);
@@ -149,19 +148,11 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <h2 className="text-xl font-semibold">RidAI Προπονητής</h2>
-            <div className="bg-white rounded-none border border-gray-200 p-6">
-              <div className="text-center">
-                <button
-                  onClick={() => setIsAIChatOpen(true)}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black px-6 py-3 rounded-none font-medium transition-colors"
-                >
-                  Άνοιγμα AI Προπονητή
-                </button>
-                <p className="text-gray-600 mt-4">
-                  Συνομιλήστε με τον έξυπνο AI προπονητή για προπόνηση, διατροφή και συμβουλές
-                </p>
-              </div>
-            </div>
+            <InlineAIChat
+              athleteId={userProfile?.id}
+              athleteName={userProfile?.name}
+              athletePhotoUrl={userProfile?.photo_url}
+            />
           </div>
         );
       default:
