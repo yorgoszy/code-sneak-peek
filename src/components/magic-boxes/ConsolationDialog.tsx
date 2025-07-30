@@ -96,7 +96,7 @@ export const ConsolationDialog: React.FC<ConsolationDialogProps> = ({
       if (error) throw error;
 
       toast.success('Η προσφορά έγινε δεκτή! Θα επικοινωνήσουμε μαζί σας σύντομα.');
-      onClose();
+      setTimeout(() => onClose(), 1000); // Κλείσιμο μετά από toast
     } catch (error) {
       console.error('Error accepting offer:', error);
       toast.error('Σφάλμα κατά την αποδοχή της προσφοράς');

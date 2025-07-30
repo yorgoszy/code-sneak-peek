@@ -385,7 +385,13 @@ export const MagicBoxGameV2: React.FC = () => {
             )}
             
             <Button
-              onClick={() => setShowResult(null)}
+              onClick={() => {
+                setShowResult(null);
+                // Ανανέωση magic boxes για να εμφανιστεί η ενημέρωση
+                if (currentUserId) {
+                  loadUserMagicBoxes(currentUserId);
+                }
+              }}
               className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
             >
               Τέλεια!
