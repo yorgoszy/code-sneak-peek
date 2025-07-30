@@ -42,6 +42,7 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
   const [showForm, setShowForm] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [prizeToDelete, setPrizeToDelete] = useState<string | null>(null);
+  const [editingPrize, setEditingPrize] = useState<any | null>(null);
   const [subscriptionTypes, setSubscriptionTypes] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     prize_type: 'subscription',
@@ -108,31 +109,34 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
         discount_percentage: formData.discount_percentage,
         weight: formData.weight,
         quantity: formData.quantity,
-        remaining_quantity: formData.remaining_quantity,
+        remaining_quantity: editingPrize ? formData.remaining_quantity : formData.quantity,
         description: formData.description
       };
 
-      const { error } = await supabase
-        .from('campaign_prizes')
-        .insert(prizeData);
+      let error;
+      if (editingPrize) {
+        // Update existing prize
+        const { error: updateError } = await supabase
+          .from('campaign_prizes')
+          .update(prizeData)
+          .eq('id', editingPrize.id);
+        error = updateError;
+      } else {
+        // Insert new prize
+        const { error: insertError } = await supabase
+          .from('campaign_prizes')
+          .insert(prizeData);
+        error = insertError;
+      }
 
       if (error) throw error;
 
       toast({
         title: 'Επιτυχία',
-        description: 'Το βραβείο δημιουργήθηκε επιτυχώς'
+        description: editingPrize ? 'Το βραβείο ενημερώθηκε επιτυχώς' : 'Το βραβείο δημιουργήθηκε επιτυχώς'
       });
 
-      setFormData({
-        prize_type: 'subscription',
-        subscription_type_id: '',
-        discount_percentage: 0,
-        weight: 1,
-        quantity: 1,
-        remaining_quantity: 1,
-        description: ''
-      });
-      setShowForm(false);
+      resetForm();
       fetchPrizes();
     } catch (error) {
       console.error('Error saving prize:', error);
@@ -144,6 +148,34 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      prize_type: 'subscription',
+      subscription_type_id: '',
+      discount_percentage: 0,
+      weight: 1,
+      quantity: 1,
+      remaining_quantity: 1,
+      description: ''
+    });
+    setShowForm(false);
+    setEditingPrize(null);
+  };
+
+  const handleEditPrize = (prize: any) => {
+    setFormData({
+      prize_type: prize.prize_type,
+      subscription_type_id: prize.subscription_type_id || '',
+      discount_percentage: prize.discount_percentage || 0,
+      weight: prize.weight,
+      quantity: prize.quantity,
+      remaining_quantity: prize.remaining_quantity,
+      description: prize.description || ''
+    });
+    setEditingPrize(prize);
+    setShowForm(true);
   };
 
   const handleDeleteClick = (prizeId: string) => {
@@ -213,7 +245,7 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
       {showForm && (
         <Card className="rounded-none">
           <CardHeader>
-            <CardTitle>Νέο Βραβείο</CardTitle>
+            <CardTitle>{editingPrize ? 'Επεξεργασία Βραβείου' : 'Νέο Βραβείο'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -325,7 +357,7 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
                 </Button>
                 <Button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={resetForm}
                   variant="outline"
                   className="rounded-none"
                 >
@@ -359,14 +391,24 @@ const CampaignPrizeManager: React.FC<CampaignPrizeManagerProps> = ({ campaign_id
                     </Badge>
                   </div>
                 </div>
-                <Button
-                  onClick={() => handleDeleteClick(prize.id)}
-                  size="sm"
-                  variant="destructive"
-                  className="rounded-none"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleEditPrize(prize)}
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    onClick={() => handleDeleteClick(prize.id)}
+                    size="sm"
+                    variant="destructive"
+                    className="rounded-none"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
