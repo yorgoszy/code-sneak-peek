@@ -62,7 +62,7 @@ serve(async (req) => {
     console.log('✅ App user found:', appUser.id);
 
     // Parse request body
-    const { magic_box_id, target_user_id } = await req.json();
+    const { magic_box_id } = await req.json();
     if (!magic_box_id) {
       return new Response(
         JSON.stringify({ success: false, message: 'Απαιτείται ID μαγικού κουτιού' }),
@@ -70,35 +70,14 @@ serve(async (req) => {
       );
     }
 
-    console.log('🎲 Processing magic box:', magic_box_id, 'for target user:', target_user_id || 'same user');
-
-    // Αν έχουμε target_user_id, σημαίνει ότι admin παίζει για λογαριασμό άλλου χρήστη
-    let targetUserId = appUser.id;
-    if (target_user_id) {
-      // Έλεγχος ότι ο χρήστης είναι admin
-      const { data: adminUser, error: adminError } = await supabaseClient
-        .from('app_users')
-        .select('role')
-        .eq('id', appUser.id)
-        .single();
-
-      if (adminError || !adminUser || adminUser.role !== 'admin') {
-        console.error('❌ Only admins can play for other users');
-        return new Response(
-          JSON.stringify({ success: false, message: 'Μόνο οι διαχειριστές μπορούν να παίξουν για λογαριασμό άλλων' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      targetUserId = target_user_id;
-      console.log('🔧 Admin playing for user:', targetUserId);
-    }
+    console.log('🎲 Processing magic box:', magic_box_id);
 
     // Get user's magic box
     const { data: magicBox, error: boxError } = await supabaseClient
       .from('user_magic_boxes')
       .select('*, magic_box_campaigns!inner(*)')
       .eq('id', magic_box_id)
-      .eq('user_id', targetUserId)
+      .eq('user_id', appUser.id)
       .single();
 
     if (boxError || !magicBox) {
@@ -214,7 +193,7 @@ serve(async (req) => {
 
     // Create participation record
     const participationData = {
-      user_id: targetUserId,
+      user_id: appUser.id,
       campaign_id: campaign.id,
       magic_box_id: magic_box_id,
       prize_id: selectedPrize.id,
@@ -250,7 +229,7 @@ serve(async (req) => {
           const { data: subscription, error: subError } = await supabaseClient
             .from('user_subscriptions')
             .insert({
-              user_id: targetUserId,
+              user_id: appUser.id,
               subscription_type_id: selectedPrize.subscription_type_id,
               start_date: new Date().toISOString().split('T')[0],
               end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days
@@ -274,7 +253,7 @@ serve(async (req) => {
           const { error: packageError } = await supabaseClient
             .from('visit_packages')
             .insert({
-              user_id: targetUserId,
+              user_id: appUser.id,
               total_visits: selectedPrize.visit_count,
               remaining_visits: selectedPrize.visit_count,
               status: 'active'
@@ -292,7 +271,7 @@ serve(async (req) => {
           const { error: packageError } = await supabaseClient
             .from('videocall_packages')
             .insert({
-              user_id: targetUserId,
+              user_id: appUser.id,
               total_videocalls: selectedPrize.videocall_count,
               remaining_videocalls: selectedPrize.videocall_count,
               status: 'active'
@@ -312,7 +291,7 @@ serve(async (req) => {
             .insert({
               code: discountCode,
               discount_percentage: selectedPrize.discount_percentage,
-              user_id: targetUserId,
+              user_id: appUser.id,
               is_used: false,
               expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() // 90 days
             });
@@ -332,7 +311,7 @@ serve(async (req) => {
         const { error: consolationVisitError } = await supabaseClient
           .from('visit_packages')
           .insert({
-            user_id: targetUserId,
+            user_id: appUser.id,
             total_visits: 1,
             remaining_visits: 1,
             status: 'active'
@@ -350,7 +329,7 @@ serve(async (req) => {
         const { error: consolationVisitError2 } = await supabaseClient
           .from('visit_packages')
           .insert({
-            user_id: targetUserId,
+            user_id: appUser.id,
             total_visits: 1,
             remaining_visits: 1,
             status: 'active'

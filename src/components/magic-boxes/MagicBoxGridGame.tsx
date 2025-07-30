@@ -10,7 +10,6 @@ interface MagicBoxGridGameProps {
   isOpen: boolean;
   onClose: () => void;
   magicBox: any;
-  targetUserId?: string;
   onPrizeWon?: (prize: any) => void;
 }
 
@@ -26,7 +25,6 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
   isOpen,
   onClose,
   magicBox,
-  targetUserId,
   onPrizeWon
 }) => {
   const [boxes, setBoxes] = useState<BoxPosition[]>([]);
@@ -106,8 +104,7 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
       try {
         const { data: result, error: openError } = await supabase.functions.invoke('magic-box-open', {
           body: {
-            magic_box_id: magicBox.id,
-            ...(targetUserId && { target_user_id: targetUserId })
+            magic_box_id: magicBox.id
           }
         });
 

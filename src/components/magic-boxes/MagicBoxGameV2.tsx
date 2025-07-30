@@ -28,11 +28,7 @@ interface UserMagicBox {
   magic_box_campaigns: MagicBoxCampaign;
 }
 
-interface MagicBoxGameV2Props {
-  userId?: string; // Προαιρετικό, αν δεν δοθεί χρησιμοποιεί τον συνδεδεμένο χρήστη
-}
-
-export const MagicBoxGameV2: React.FC<MagicBoxGameV2Props> = ({ userId }) => {
+export const MagicBoxGameV2: React.FC = () => {
   const [userMagicBoxes, setUserMagicBoxes] = useState<UserMagicBox[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -51,7 +47,7 @@ export const MagicBoxGameV2: React.FC<MagicBoxGameV2Props> = ({ userId }) => {
 
   useEffect(() => {
     initializeUser();
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     if (!currentUserId) return;
@@ -81,15 +77,6 @@ export const MagicBoxGameV2: React.FC<MagicBoxGameV2Props> = ({ userId }) => {
 
   const initializeUser = async () => {
     try {
-      // Αν έχουμε userId prop, χρησιμοποιούμε αυτό αντί για τον συνδεδεμένο χρήστη
-      if (userId) {
-        console.log('🔧 Using provided userId:', userId);
-        setCurrentUserId(userId);
-        await loadUserMagicBoxes(userId);
-        return;
-      }
-
-      // Αλλιώς χρησιμοποιούμε τον συνδεδεμένο χρήστη
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
         console.error('User not authenticated');
@@ -188,15 +175,8 @@ export const MagicBoxGameV2: React.FC<MagicBoxGameV2Props> = ({ userId }) => {
     console.log('🚀 About to call magic-box-open function');
 
     try {
-      const requestBody: any = { magic_box_id: boxId };
-      
-      // Αν παίζουμε για λογαριασμό άλλου χρήστη, περνάμε το target_user_id
-      if (userId && currentUserId !== userId) {
-        requestBody.target_user_id = userId;
-      }
-
       const { data, error } = await supabase.functions.invoke('magic-box-open', {
-        body: requestBody
+        body: { magic_box_id: boxId }
       });
 
       console.log('📡 Function response:', { data, error });
@@ -421,7 +401,6 @@ export const MagicBoxGameV2: React.FC<MagicBoxGameV2Props> = ({ userId }) => {
           setSelectedBoxForGame(null);
         }}
         magicBox={selectedBoxForGame}
-        targetUserId={currentUserId}
         onPrizeWon={(prize) => {
           setShowResult({
             success: true,
