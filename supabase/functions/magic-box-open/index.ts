@@ -39,14 +39,18 @@ const addConsolationVisit = async (supabaseClient: any, userId: string) => {
       console.error('❌ Error updating visit package for consolation:', updateError);
     }
   } else {
-    // Create new visit package
+    // Create new visit package with access to all sections (visitor access)
     const { error: packageError } = await supabaseClient
       .from('visit_packages')
       .insert({
         user_id: userId,
         total_visits: 1,
         remaining_visits: 1,
-        status: 'active'
+        status: 'active',
+        allowed_sections: [
+          '509179bd-19d5-4990-888c-d41c4d8cc868', // Κύριο Γυμναστήριο
+          '5f337b61-cad8-4ec4-9c18-df6b0ae97057'  // Body Transformation
+        ]
       });
 
     if (!packageError) {
