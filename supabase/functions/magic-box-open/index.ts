@@ -489,6 +489,31 @@ serve(async (req) => {
 
     console.log('🎉 Magic box opened successfully:', response);
 
+    // Στείλε email notification για το αποτέλεσμα
+    try {
+      const { error: emailError } = await supabaseClient.functions.invoke('send-videocall-notifications', {
+        body: {
+          type: 'magic_box_result',
+          userId: appUser.id,
+          resultType: selectedPrize.prize_type,
+          prizeWon: selectedPrize.name || null,
+          prizeDescription: selectedPrize.description || null,
+          discountPercentage: selectedPrize.discount_percentage || null,
+          discountCode: discountCode || null,
+          visitCount: selectedPrize.visit_count || null,
+          videocallCount: selectedPrize.videocall_count || null
+        }
+      });
+
+      if (emailError) {
+        console.error('⚠️ Failed to send email notification:', emailError);
+      } else {
+        console.log('📧 Email notification sent successfully');
+      }
+    } catch (emailError) {
+      console.error('⚠️ Email notification failed:', emailError);
+    }
+
     return new Response(
       JSON.stringify(response),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

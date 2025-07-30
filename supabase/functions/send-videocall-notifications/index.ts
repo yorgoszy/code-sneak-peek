@@ -12,7 +12,8 @@ interface NotificationRequest {
         'reminder_24h' | 'reminder_1h' | 'reminder_15min' | 
         'booking_created' | 'offer_accepted' | 'offer_rejected' | 
         'package_purchased' | 'user_welcome' | 'user_welcome_admin' | 'booking_admin_notification' | 
-        'package_purchase_admin' | 'package_receipt' | 'offer_notification' | 'waiting_list_available'
+        'package_purchase_admin' | 'package_receipt' | 'offer_notification' | 'waiting_list_available' |
+        'magic_box_result'
   bookingId?: string
   adminEmail?: string
   userId?: string
@@ -21,6 +22,13 @@ interface NotificationRequest {
   sectionId?: string
   bookingDate?: string
   bookingTime?: string
+  resultType?: string
+  prizeWon?: string
+  prizeDescription?: string
+  discountPercentage?: number
+  discountCode?: string
+  visitCount?: number
+  videocallCount?: number
 }
 
 interface VideocallBooking {
@@ -893,6 +901,109 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
         </html>
       `;
 
+    case 'magic_box_result':
+      const isWin = userData?.resultType !== 'try_again';
+      const prizeEmoji = isWin ? '🎉' : '🎯';
+      const titleColor = isWin ? '#00ffba' : '#ff6b6b';
+      
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${isWin ? 'Συγχαρητήρια! Κερδίσατε' : 'Μαγικό Κουτί - Δοκίμασε Ξανά'} - HYPERKIDS</title>
+          ${baseStyle}
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo"><img src="${logoBase64}" alt="HYPERGYM" /></div>
+              <p>${isWin ? 'Συγχαρητήρια! Κερδίσατε!' : 'Δοκίμασε Ξανά!'} ${prizeEmoji}</p>
+            </div>
+            
+            <div class="content">
+              <h2 style="color: ${titleColor};">${prizeEmoji} ${isWin ? 'Μεγάλα Συγχαρητήρια!' : 'Μη Στεναχωριέστε!'}</h2>
+              
+              ${isWin ? `
+                <p>Το μαγικό κουτί σας χάρισε ένα υπέροχο δώρο!</p>
+                
+                <div class="booking-info" style="background: linear-gradient(135deg, #00ffba, #00e6a8); color: black;">
+                  <div class="info-row">
+                    <span class="label">🎁 Βραβείο:</span>
+                    <span class="value" style="font-weight: bold; font-size: 18px;">${userData?.prizeWon || 'Μυστήριο Δώρο'}</span>
+                  </div>
+                  ${userData?.prizeDescription ? `
+                  <div class="info-row">
+                    <span class="label">📝 Περιγραφή:</span>
+                    <span class="value">${userData.prizeDescription}</span>
+                  </div>
+                  ` : ''}
+                  ${userData?.discountCode ? `
+                  <div class="info-row">
+                    <span class="label">🏷️ Κωδικός Έκπτωσης:</span>
+                    <span class="value" style="background: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; letter-spacing: 2px;">${userData.discountCode}</span>
+                  </div>
+                  ` : ''}
+                  ${userData?.discountPercentage ? `
+                  <div class="info-row">
+                    <span class="label">💰 Έκπτωση:</span>
+                    <span class="value">${userData.discountPercentage}%</span>
+                  </div>
+                  ` : ''}
+                  ${userData?.visitCount ? `
+                  <div class="info-row">
+                    <span class="label">🏃‍♂️ Επισκέψεις Γυμναστηρίου:</span>
+                    <span class="value">${userData.visitCount} ${userData.visitCount === 1 ? 'επίσκεψη' : 'επισκέψεις'}</span>
+                  </div>
+                  ` : ''}
+                  ${userData?.videocallCount ? `
+                  <div class="info-row">
+                    <span class="label">📹 Βιντεοκλήσεις:</span>
+                    <span class="value">${userData.videocallCount} ${userData.videocallCount === 1 ? 'βιντεοκλήση' : 'βιντεοκλήσεις'}</span>
+                  </div>
+                  ` : ''}
+                </div>
+                
+                <p>Το δώρο σας έχει ήδη προστεθεί στον λογαριασμό σας και μπορείτε να το χρησιμοποιήσετε άμεσα!</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="https://www.hyperkids.gr/dashboard/user-profile" class="button" style="font-size: 18px; padding: 15px 30px;">🎉 Δείτε τον Λογαριασμό σας</a>
+                </div>
+              ` : `
+                <p>Δυστυχώς αυτή τη φορά δεν κερδίσατε κάποιο από τα κύρια δώρα, αλλά μη στεναχωριέστε!</p>
+                
+                <div class="booking-info" style="background: linear-gradient(135deg, #ff9999, #ff8080); color: white;">
+                  <div class="info-row">
+                    <span class="label">🎁 Δώρο Παρηγοριάς:</span>
+                    <span class="value" style="font-weight: bold;">1 Δωρεάν Επίσκεψη Γυμναστηρίου!</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">💪 Περιλαμβάνει Πρόσβαση:</span>
+                    <span class="value">Κύριο Γυμναστήριο & Body Transformation</span>
+                  </div>
+                </div>
+                
+                <p>Η δωρεάν επίσκεψη έχει ήδη προστεθεί στον λογαριασμό σας! Επίσης, κρατήστε τα μάτια σας ανοικτά για νέα μαγικά κουτιά στο μέλλον! 🍀</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="https://www.hyperkids.gr/dashboard/user-profile/online-booking" class="button" style="background: #ff6b6b; font-size: 18px; padding: 15px 30px;">🏃‍♂️ Κλείστε την Επίσκεψή σας</a>
+                </div>
+              `}
+              
+              <p style="text-align: center; color: #666; font-size: 14px;">
+                Σας ευχαριστούμε που συμμετείχατε στο παιχνίδι μας!
+              </p>
+            </div>
+            
+            <div class="footer">
+              <p><strong>HYPERGYM</strong> - Προπονητικό Κέντρο</p>
+              <p>Email: info@hypergym.gr | www.hypergym.gr</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
     default:
       return ''
   }
@@ -952,7 +1063,7 @@ serve(async (req) => {
 
     // Handle other notification types
     if (['user_welcome', 'booking_created', 'booking_cancelled', 'package_purchased', 'offer_accepted', 'offer_rejected', 
-          'user_welcome_admin', 'booking_admin_notification', 'package_purchase_admin', 'package_receipt', 'offer_notification', 'waiting_list_available'].includes(type)) {
+          'user_welcome_admin', 'booking_admin_notification', 'package_purchase_admin', 'package_receipt', 'offer_notification', 'waiting_list_available', 'magic_box_result'].includes(type)) {
       // Fetch user data
       if (userId) {
         const { data: user } = await supabase
@@ -1109,6 +1220,12 @@ serve(async (req) => {
         case 'waiting_list_available':
           const waitingListType = userData?.bookingType === 'videocall' ? 'Videocall' : 'Γυμναστήριο';
           subject = `🚨 Διαθέσιμη Θέση για ${waitingListType}! - HYPERKIDS`
+          break
+        case 'magic_box_result':
+          const magicBoxSubject = req.resultType === 'try_again' ? 
+            '🎯 Μαγικό Κουτί - Δοκίμασε Ξανά!' : 
+            '🎉 Μαγικό Κουτί - Συγχαρητήρια!';
+          subject = magicBoxSubject
           break
         default:
           subject = `HYPERKIDS - Ενημέρωση`
