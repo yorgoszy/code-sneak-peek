@@ -421,6 +421,7 @@ export const MagicBoxGameV2: React.FC<MagicBoxGameV2Props> = ({ userId }) => {
           setSelectedBoxForGame(null);
         }}
         magicBox={selectedBoxForGame}
+        targetUserId={currentUserId}
         onPrizeWon={(prize) => {
           setShowResult({
             success: true,
