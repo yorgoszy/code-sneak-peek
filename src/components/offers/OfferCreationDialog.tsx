@@ -61,7 +61,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
   const [discountedPrice, setDiscountedPrice] = useState('');
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [visibility, setVisibility] = useState<'all' | 'individual' | 'selected' | 'groups'>('all');
+  const [visibility, setVisibility] = useState<'all' | 'individual' | 'selected' | 'groups' | 'magic_box_losers'>('all');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [isFree, setIsFree] = useState(false);
@@ -377,6 +377,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
                 <SelectItem value="individual">Μεμονωμένους χρήστες</SelectItem>
                 <SelectItem value="selected">Επιλεγμένους χρήστες</SelectItem>
                 <SelectItem value="groups">Ομάδες</SelectItem>
+                <SelectItem value="magic_box_losers">Σε όσους δεν κέρδισαν στο magic box</SelectItem>
               </SelectContent>
             </Select>
           </div>
