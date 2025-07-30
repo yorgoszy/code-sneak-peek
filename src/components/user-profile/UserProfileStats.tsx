@@ -332,7 +332,21 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           console.error('Error fetching magic box campaigns:', magicBoxError);
         }
 
-        const hasMagicBox = !magicBoxError && magicBoxCampaigns && magicBoxCampaigns.length > 0;
+        let hasMagicBox = false;
+        
+        if (!magicBoxError && magicBoxCampaigns && magicBoxCampaigns.length > 0) {
+          // Ελέγχω αν ο χρήστης έχει ανοιγμένα magic boxes που δεν έχει παίξει ακόμα
+          const { data: userMagicBoxes, error: userBoxesError } = await supabase
+            .from('user_magic_boxes')
+            .select('is_opened')
+            .eq('user_id', user.id)
+            .in('campaign_id', magicBoxCampaigns.map(c => c.id));
+
+          if (!userBoxesError && userMagicBoxes) {
+            // Αν έχει τουλάχιστον ένα magic box που δεν έχει ανοίξει, δείχνουμε το animation
+            hasMagicBox = userMagicBoxes.some(box => !box.is_opened);
+          }
+        }
 
         // Φόρτωση απορριμμένων προσφορών
         const { data: rejectedOffers, error: rejectedError } = await supabase
