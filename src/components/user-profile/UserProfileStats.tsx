@@ -391,7 +391,7 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
         setOffersData({
           available: filteredOffers.length,
           accepted: false,
-          hasMagicBox: hasMagicBox
+          hasMagicBox: hasMagicBox || filteredOffers.length > 0
         });
 
       } catch (error) {
