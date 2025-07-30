@@ -176,7 +176,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               
               <p><strong>Σημαντικό:</strong> Θα λάβετε υπενθυμίσεις 24 ώρες, 1 ώρα και 15 λεπτά πριν τη συνάντηση.</p>
               
-              <a href="https://www.hyperkids.gr/online-coaching" class="button">Δείτε τις Κρατήσεις σας</a>
+              <a href="https://www.hyperkids.gr/dashboard/user-profile/${booking.app_users.id}?tab=online-coaching" class="button">Δείτε τις Κρατήσεις σας</a>
             </div>
             
             <div class="footer">
@@ -229,7 +229,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               
               <p>Η βιντεοκλήση έχει επιστραφεί στο πακέτο σας. Μπορείτε να κάνετε νέα κράτηση επιλέγοντας άλλη ημερομηνία και ώρα.</p>
               
-              <a href="https://www.hyperkids.gr/online-coaching" class="button">Κάντε Νέα Κράτηση</a>
+              <a href="https://www.hyperkids.gr/dashboard/user-profile/${booking.app_users.id}?tab=online-coaching" class="button">Κάντε Νέα Κράτηση</a>
             </div>
             
             <div class="footer">
@@ -290,7 +290,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
                 <li>Βρείτε έναν ήσυχο χώρο για τη συνάντηση</li>
               </ul>
               
-              <a href="${booking.meeting_link || 'https://www.hyperkids.gr/online-coaching'}" class="button">Σύνδεσμος Συνάντησης</a>
+              <a href="${booking.meeting_link || `https://www.hyperkids.gr/dashboard/user-profile/${booking.app_users.id}?tab=online-coaching`}" class="button">Σύνδεσμος Συνάντησης</a>
             </div>
             
             <div class="footer">
@@ -347,7 +347,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
                 <li>✅ Σημειώσεις/ερωτήσεις έτοιμες</li>
               </ul>
               
-              <a href="${booking.meeting_link || 'https://www.hyperkids.gr/online-coaching'}" class="button">Συμμετοχή στη Συνάντηση</a>
+              <a href="${booking.meeting_link || `https://www.hyperkids.gr/dashboard/user-profile/${booking.app_users.id}?tab=online-coaching`}" class="button">Συμμετοχή στη Συνάντηση</a>
             </div>
             
             <div class="footer">
@@ -393,7 +393,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               <p><strong>Είστε έτοιμοι; Κάντε κλικ παρακάτω για να συνδεθείτε:</strong></p>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${booking.meeting_link || 'https://www.hyperkids.gr/online-coaching'}" class="button" style="font-size: 18px; padding: 15px 30px;">🎥 Συνδεθείτε Τώρα</a>
+                <a href="${booking.meeting_link || `https://www.hyperkids.gr/dashboard/user-profile/${booking.app_users.id}?tab=online-coaching`}" class="button" style="font-size: 18px; padding: 15px 30px;">🎥 Συνδεθείτε Τώρα</a>
               </div>
               
               <p style="text-align: center; color: #666; font-size: 14px;">
@@ -495,7 +495,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               
               <p>Θα λάβετε υπενθύμιση 24 ώρες πριν την επίσκεψή σας.</p>
               
-              <a href="https://www.hyperkids.gr/bookings" class="button">Δείτε τις Κρατήσεις σας</a>
+              <a href="https://www.hyperkids.gr/dashboard/user-profile/${booking.app_users.id}?tab=online-booking" class="button">Δείτε τις Κρατήσεις σας</a>
             </div>
             
             <div class="footer">
@@ -548,7 +548,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               
               <p>Η βιντεοκλήση έχει επιστραφεί στο πακέτο σας. Μπορείτε να κάνετε νέα κράτηση επιλέγοντας άλλη ημερομηνία και ώρα.</p>
               
-              <a href="https://www.hyperkids.gr/dashboard/user-profile/online-coaching" class="button">Κάντε Νέα Κράτηση</a>
+              <a href="https://www.hyperkids.gr/dashboard/user-profile/${booking.app_users.id}?tab=online-coaching" class="button">Κάντε Νέα Κράτηση</a>
             </div>
             
             <div class="footer">
@@ -658,7 +658,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               
               <p>Μπορείτε πλέον να κλείσετε ραντεβού και να χρησιμοποιήσετε τις υπηρεσίες του πακέτου σας!</p>
               
-              <a href="https://www.hyperkids.gr/bookings" class="button">Κλείστε Ραντεβού</a>
+              <a href="https://www.hyperkids.gr/dashboard/user-profile/${booking.app_users.id}?tab=online-booking" class="button">Κλείστε Ραντεβού</a>
             </div>
             
             <div class="footer">
@@ -884,7 +884,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               <p><strong>⏰ Προσοχή:</strong> Έχετε περιορισμένο χρόνο για να κλείσετε αυτή τη θέση. Αν δεν κάνετε κράτηση σύντομα, η θέση θα δοθεί στον επόμενο στη λίστα αναμονής.</p>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://www.hyperkids.gr/dashboard/user-profile/${linkPath}" class="button" style="font-size: 18px; padding: 15px 30px;">${emoji} Κλείστε τη Θέση Τώρα!</a>
+                <a href="https://www.hyperkids.gr/dashboard/user-profile/${userData?.userId}?tab=${linkPath}" class="button" style="font-size: 18px; padding: 15px 30px;">${emoji} Κλείστε τη Θέση Τώρα!</a>
               </div>
               
               <p style="text-align: center; color: #666; font-size: 14px;">
@@ -986,7 +986,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
                 <p>Η δωρεάν επίσκεψη έχει ήδη προστεθεί στον λογαριασμό σας! Επίσης, κρατήστε τα μάτια σας ανοικτά για νέα μαγικά κουτιά στο μέλλον! 🍀</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="https://www.hyperkids.gr/dashboard/user-profile/online-booking" class="button" style="background: #ff6b6b; font-size: 18px; padding: 15px 30px;">🏃‍♂️ Κλείστε την Επίσκεψή σας</a>
+                  <a href="https://www.hyperkids.gr/dashboard/user-profile/${userData?.userId}?tab=online-booking" class="button" style="background: #ff6b6b; font-size: 18px; padding: 15px 30px;">🏃‍♂️ Κλείστε την Επίσκεψή σας</a>
                 </div>
               `}
               
