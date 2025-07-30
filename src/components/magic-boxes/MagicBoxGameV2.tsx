@@ -83,6 +83,8 @@ export const MagicBoxGameV2: React.FC = () => {
         return;
       }
 
+      console.log('🔧 Auth user ID:', userData.user.id);
+
       // Βρίσκουμε το app_users record του χρήστη
       const { data: appUser, error: appUserError } = await supabase
         .from('app_users')
@@ -91,7 +93,7 @@ export const MagicBoxGameV2: React.FC = () => {
         .single();
 
       if (appUserError || !appUser) {
-        console.error('App user not found');
+        console.error('App user not found:', appUserError);
         return;
       }
 
