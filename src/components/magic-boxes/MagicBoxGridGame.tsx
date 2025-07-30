@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Gift, Sparkles, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ConsolationDialog } from './ConsolationDialog';
 
 interface MagicBoxGridGameProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
   const [gameCompleted, setGameCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [wonPrize, setWonPrize] = useState<any>(null);
+  const [showConsolationDialog, setShowConsolationDialog] = useState(false);
 
   const GRID_SIZE = 100; // 10x10 grid
 
@@ -100,7 +102,7 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
 
       // Πάντα καλούμε το edge function για να μαρκάρουμε το κουτί ως ανοιγμένο
       try {
-        const { error: openError } = await supabase.functions.invoke('magic-box-open', {
+        const { data: result, error: openError } = await supabase.functions.invoke('magic-box-open', {
           body: {
             magic_box_id: magicBox.id
           }
@@ -112,15 +114,16 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
           return;
         }
 
-        if (clickedBox.hasPrize && clickedBox.prizeId) {
-          // Κέρδισε βραβείο!
+        // Έλεγχος αν κέρδισε πραγματικό βραβείο (όχι "nothing")
+        if (result?.prize_type && result.prize_type !== 'nothing') {
+          // Κέρδισε πραγματικό βραβείο!
           const prize = mockPrizes.find(p => p.id === clickedBox.prizeId);
           setWonPrize(prize);
-          toast.success(`Συγχαρητήρια! Κερδίσατε: ${prize?.name || 'Βραβείο'}!`);
+          toast.success(`Συγχαρητήρια! Κερδίσατε: ${result.prize_name || 'Βραβείο'}!`);
           onPrizeWon?.(prize);
         } else {
-          // Δεν κέρδισε - αλλά παίρνει παρηγοριά από το edge function
-          toast.success('Δεν κερδίσατε βραβείο, αλλά πήρατε μια δωρεάν επίσκεψη!');
+          // Δεν κέρδισε - δείχνουμε το consolation dialog
+          setShowConsolationDialog(true);
         }
       } catch (err) {
         console.error('Function call failed:', err);
@@ -258,6 +261,11 @@ export const MagicBoxGridGame: React.FC<MagicBoxGridGameProps> = ({
             </div>
           )}
         </div>
+        
+        <ConsolationDialog
+          isOpen={showConsolationDialog}
+          onClose={() => setShowConsolationDialog(false)}
+        />
       </DialogContent>
     </Dialog>
   );
