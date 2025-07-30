@@ -64,29 +64,36 @@ export const UserProfileStats = ({ user, stats }: UserProfileStatsProps) => {
           return;
         }
 
-        // Βρες την συνδρομή με τις λιγότερες ημέρες
-        let minDays = Infinity;
+        // Υπολογισμός συνολικών ημερών από όλες τις ενεργές συνδρομές
+        let totalDays = 0;
         let isPausedStatus = false;
+        let hasActiveSubscription = false;
 
         activeSubscriptions.forEach(subscription => {
           if (subscription.is_paused && subscription.paused_days_remaining) {
-            if (subscription.paused_days_remaining < minDays) {
-              minDays = subscription.paused_days_remaining;
-              isPausedStatus = true;
-            }
+            totalDays += subscription.paused_days_remaining;
+            isPausedStatus = true;
+            hasActiveSubscription = true;
           } else if (!subscription.is_paused) {
             const today = new Date();
             const endDate = new Date(subscription.end_date);
             const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
             
-            if (remainingDays < minDays) {
-              minDays = remainingDays;
-              isPausedStatus = false;
+            if (remainingDays > 0) {
+              totalDays += remainingDays;
+              hasActiveSubscription = true;
             }
           }
         });
 
-        setSubscriptionDays(minDays === Infinity ? null : minDays);
+        console.log('💳 Subscription calculation:', { 
+          activeSubscriptions: activeSubscriptions.length, 
+          totalDays, 
+          isPausedStatus,
+          hasActiveSubscription
+        });
+
+        setSubscriptionDays(hasActiveSubscription ? totalDays : null);
         setIsPaused(isPausedStatus);
       } catch (error) {
         console.error('Error fetching subscription data:', error);
