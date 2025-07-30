@@ -58,7 +58,7 @@ export const UserProfileContent = ({
         className="flex items-center space-x-2 text-gray-700 hover:text-black transition-colors mb-4 font-medium"
       >
         <ArrowLeft className="h-5 w-5 font-bold stroke-2" />
-        <span className="text-sm font-medium">Επιστροφή στην αρχική</span>
+        <span className="text-sm font-medium">Επιστροφή στην επισκόπηση</span>
       </button>
     )
   );
