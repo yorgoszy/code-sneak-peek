@@ -295,11 +295,14 @@ serve(async (req) => {
             .eq('id', selectedPrize.subscription_type_id)
             .single();
 
-          if (typeError) {
+          if (typeError || !subscriptionType) {
             console.error('❌ Failed to get subscription type:', typeError);
+            console.error('❌ Subscription type data:', subscriptionType);
+            console.error('❌ Looking for subscription_type_id:', selectedPrize.subscription_type_id);
             break;
           }
 
+          console.log('✅ Subscription type found:', subscriptionType);
           const durationMonths = subscriptionType.duration_months || 1;
           const endDate = new Date();
           endDate.setMonth(endDate.getMonth() + durationMonths);
