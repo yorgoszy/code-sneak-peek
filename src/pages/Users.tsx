@@ -4,7 +4,8 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye, Mail } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye, Mail, Menu } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
   Table,
@@ -52,6 +53,9 @@ const Users = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const isMobile = useIsMobile();
   const [users, setUsers] = useState<UserWithSubscription[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,6 +73,18 @@ const Users = () => {
   // New registrations state
   const [newRegistrations, setNewRegistrations] = useState<UserWithSubscription[]>([]);
   const [allUsers, setAllUsers] = useState<UserWithSubscription[]>([]);
+
+  // Check for tablet size
+  useEffect(() => {
+    const checkTabletSize = () => {
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+    
+    checkTabletSize();
+    window.addEventListener('resize', checkTabletSize);
+    
+    return () => window.removeEventListener('resize', checkTabletSize);
+  }, []);
 
   const fetchUsers = async () => {
     if (loadingUsers) return; // Prevent multiple simultaneous requests
@@ -319,43 +335,92 @@ const Users = () => {
   console.log('👑 Rendering Users page for admin');
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar - Hidden on mobile */}
-      <div className="hidden lg:block">
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">Users</h1>
-              <p className="text-xs lg:text-sm text-gray-600 hidden sm:block">
-                Διαχείριση χρηστών συστήματος
-              </p>
-            </div>
-            <div className="flex items-center space-x-2 lg:space-x-4">
-              <div className="hidden md:flex items-center text-xs lg:text-sm text-gray-600">
-                <span className="truncate max-w-32 lg:max-w-none">
-                  {userProfile?.name || user?.email}
-                </span>
-                <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>
-              </div>
-              <Button 
-                variant="outline" 
-                className="rounded-none text-xs lg:text-sm px-2 lg:px-4"
-                onClick={handleSignOut}
-              >
-                <LogOut className="h-3 w-3 lg:h-4 lg:w-4 lg:mr-2" />
-                <span className="hidden lg:inline">Αποσύνδεση</span>
-              </Button>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Sidebar - Large screens only */}
+        <div className="hidden lg:block">
+          <Sidebar
+            isCollapsed={isCollapsed}
+            setIsCollapsed={setIsCollapsed}
+          />
+        </div>
+        
+        {/* Mobile/Tablet Sidebar Overlay */}
+        {showMobileSidebar && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-50"
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <div className="absolute left-0 top-0 h-full bg-white shadow-xl">
+              <Sidebar
+                isCollapsed={false}
+                setIsCollapsed={() => {}}
+              />
             </div>
           </div>
-        </nav>
+        )}
+        
+        {/* Main Content */}
+        <div className="flex-1 overflow-auto">
+          {/* Mobile/Tablet header with menu button */}
+          {(isMobile || isTablet) && (
+            <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-3 py-4 shadow-sm lg:hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="rounded-none"
+                    onClick={() => setShowMobileSidebar(true)}
+                  >
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                  <h1 className="ml-4 text-lg font-semibold text-gray-900">Users</h1>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="rounded-none"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            </nav>
+          )}
+          
+          {/* Desktop Top Navigation */}
+          {!(isMobile || isTablet) && (
+            <nav className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
+              <div className="flex justify-between items-center">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">Users</h1>
+                  <p className="text-xs lg:text-sm text-gray-600 hidden sm:block">
+                    Διαχείριση χρηστών συστήματος
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2 lg:space-x-4">
+                  <div className="hidden md:flex items-center text-xs lg:text-sm text-gray-600">
+                    <span className="truncate max-w-32 lg:max-w-none">
+                      {userProfile?.name || user?.email}
+                    </span>
+                    <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="rounded-none text-xs lg:text-sm px-2 lg:px-4"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="h-3 w-3 lg:h-4 lg:w-4 lg:mr-2" />
+                    <span className="hidden lg:inline">Αποσύνδεση</span>
+                  </Button>
+                </div>
+              </div>
+            </nav>
+          )}
 
-        {/* Users Content */}
+          {/* Users Content */}
         <div className="flex-1 p-2 lg:p-6 space-y-6">
           {/* New Registrations Card */}
           {newRegistrations.length > 0 && (
@@ -678,6 +743,7 @@ const Users = () => {
               )}
             </CardContent>
           </Card>
+        </div>
         </div>
       </div>
 
