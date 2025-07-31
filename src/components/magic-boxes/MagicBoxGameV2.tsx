@@ -360,6 +360,9 @@ export const MagicBoxGameV2: React.FC = () => {
             {showResult.prize_type === 'visit_package' && (
               <div className="bg-white p-4 rounded-lg border mb-4">
                 <h3 className="font-bold text-lg">{showResult.prize_name}</h3>
+                {showResult.visit_expiry_months > 0 && (
+                  <p className="text-sm text-gray-500">{showResult.visit_expiry_months} μήνες</p>
+                )}
                 <p className="text-gray-600">{showResult.prize_description}</p>
                 <Badge className="bg-[#00ffba] text-black rounded-none mt-2">
                   {showResult.visit_count} επισκέψεις
