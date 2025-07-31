@@ -4,7 +4,8 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Users, Search, Eye } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Users, Search, Eye, Menu } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
   Table,
@@ -54,6 +55,9 @@ const Groups = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const isMobile = useIsMobile();
   const [users, setUsers] = useState<AppUser[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -112,6 +116,17 @@ const Groups = () => {
       setLoadingGroups(false);
     }
   };
+
+  // Tablet detection
+  useEffect(() => {
+    const checkTablet = () => {
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+    
+    checkTablet();
+    window.addEventListener('resize', checkTablet);
+    return () => window.removeEventListener('resize', checkTablet);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -273,13 +288,50 @@ const Groups = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      </div>
+
+      {/* Mobile/Tablet Sidebar Overlay */}
+      {(isMobile || isTablet) && showMobileSidebar && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowMobileSidebar(false)} />
+          <div className="fixed top-0 left-0 h-full">
+            <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile/Tablet Header */}
+        {(isMobile || isTablet) && (
+          <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileSidebar(true)}
+                className="rounded-none"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <h1 className="text-lg font-semibold text-gray-900">Groups</h1>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="rounded-none"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Desktop Top Navigation */}
+        <nav className="hidden lg:block bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Groups</h1>
@@ -305,7 +357,7 @@ const Groups = () => {
         </nav>
 
         {/* Groups Content */}
-        <div className="flex-1 p-6 space-y-6">
+        <div className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 overflow-hidden">
           {/* Existing Groups */}
           <Card>
             <CardHeader>
@@ -325,55 +377,63 @@ const Groups = () => {
                   <p className="text-gray-600">Δεν βρέθηκαν ομάδες</p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Όνομα</TableHead>
-                      <TableHead>Περιγραφή</TableHead>
-                      <TableHead>Δημιουργία</TableHead>
-                      <TableHead>Ενέργειες</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {groups.map((group) => (
-                      <TableRow key={group.id}>
-                        <TableCell className="font-medium">
-                          {group.name}
-                        </TableCell>
-                        <TableCell>{group.description || '-'}</TableCell>
-                        <TableCell>{formatDate(group.created_at)}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none"
-                              onClick={() => handleViewGroup(group)}
-                            >
-                              <Eye className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none"
-                              onClick={() => handleEditGroup(group)}
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none text-red-600 hover:text-red-700"
-                              onClick={() => handleDeleteGroup(group)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Όνομα</TableHead>
+                        <TableHead className="hidden md:table-cell">Περιγραφή</TableHead>
+                        <TableHead className="hidden lg:table-cell">Δημιουργία</TableHead>
+                        <TableHead>Ενέργειες</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {groups.map((group) => (
+                        <TableRow key={group.id}>
+                          <TableCell className="font-medium">
+                            <div>
+                              <div>{group.name}</div>
+                              <div className="md:hidden text-xs text-gray-500 mt-1">
+                                {group.description && `${group.description} • `}
+                                {formatDate(group.created_at)}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">{group.description || '-'}</TableCell>
+                          <TableCell className="hidden lg:table-cell">{formatDate(group.created_at)}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-1 lg:space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="rounded-none"
+                                onClick={() => handleViewGroup(group)}
+                              >
+                                <Eye className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="rounded-none"
+                                onClick={() => handleEditGroup(group)}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="rounded-none text-red-600 hover:text-red-700"
+                                onClick={() => handleDeleteGroup(group)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>
