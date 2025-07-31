@@ -72,7 +72,8 @@ const Users = () => {
   const [allUsers, setAllUsers] = useState<UserWithSubscription[]>([]);
   
   // Persistent notifications
-  const { markAsAcknowledged, isAcknowledged } = usePersistentNotifications();
+  const { markAsAcknowledged, isAcknowledged, refreshAcknowledged } = usePersistentNotifications();
+  const [notificationsLoaded, setNotificationsLoaded] = useState(false);
 
   const fetchUsers = async () => {
     if (loadingUsers) return; // Prevent multiple simultaneous requests
@@ -121,17 +122,8 @@ const Users = () => {
 
       console.log('✅ Users fetched:', usersWithSubscription.length);
       
-      // Separate new registrations from all users using persistent notifications
-      const newUsers = usersWithSubscription.filter(user => 
-        !isAcknowledged('new_users', user.id)
-      );
-      const acknowledgedUsers = usersWithSubscription.filter(user => 
-        isAcknowledged('new_users', user.id)
-      );
-      
-      setNewRegistrations(newUsers);
-      setAllUsers(acknowledgedUsers);
-      setUsers(usersWithSubscription); // Keep for backward compatibility
+      // Store all users (filtering will happen in useEffect)
+      setUsers(usersWithSubscription);
       
       // Trigger sidebar update
       window.dispatchEvent(new CustomEvent('users-updated'));
@@ -144,38 +136,69 @@ const Users = () => {
   };
 
   const handleAcknowledgeUsers = async () => {
+    if (newRegistrations.length === 0) return;
+    
     const newUserIds = newRegistrations.map(user => user.id);
+    console.log('✅ Acknowledging users:', newUserIds);
     
-    // Mark as acknowledged in the database
-    await markAsAcknowledged('new_users', newUserIds);
-    
-    // Move new registrations to all users
-    setAllUsers(prev => [...prev, ...newRegistrations]);
-    setNewRegistrations([]);
-    
-    // Trigger sidebar update
-    window.dispatchEvent(new CustomEvent('users-acknowledged'));
-    
-    toast.success('Νέες εγγραφές ενημερώθηκαν');
+    try {
+      // Mark as acknowledged in the database
+      await markAsAcknowledged('new_users', newUserIds);
+      
+      // Move new registrations to all users
+      setAllUsers(prev => [...prev, ...newRegistrations]);
+      setNewRegistrations([]);
+      
+      // Trigger sidebar update
+      window.dispatchEvent(new CustomEvent('users-acknowledged'));
+      
+      toast.success(`${newUserIds.length} νέες εγγραφές ενημερώθηκαν`);
+    } catch (error) {
+      console.error('❌ Error acknowledging users:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση');
+    }
   };
 
+  // Load notifications first, then users
   useEffect(() => {
-    console.log('👥 Users page useEffect:', {
-      isAdminResult: isAdmin(),
-      rolesLoading,
-      userProfile: userProfile?.id,
-      hasInitialized
-    });
-
-    // Only initialize once when roles are loaded and user is admin
-    if (!rolesLoading && !hasInitialized) {
-      if (isAdmin()) {
-        console.log('👑 Admin confirmed, fetching users');
-        fetchUsers();
+    const loadNotificationsAndUsers = async () => {
+      if (!rolesLoading && !hasInitialized && isAdmin()) {
+        console.log('👑 Admin confirmed, loading notifications and users');
+        
+        // First, refresh acknowledged notifications from database
+        await refreshAcknowledged();
+        setNotificationsLoaded(true);
+        
+        // Then fetch users
+        await fetchUsers();
+        setHasInitialized(true);
       }
-      setHasInitialized(true);
-    }
+    };
+
+    loadNotificationsAndUsers();
   }, [isAdmin, rolesLoading, hasInitialized]);
+
+  // Re-run user filtering when notifications are loaded
+  useEffect(() => {
+    if (notificationsLoaded && users.length > 0) {
+      console.log('🔄 Re-filtering users with loaded notifications');
+      
+      const newUsers = users.filter(user => 
+        !isAcknowledged('new_users', user.id)
+      );
+      const acknowledgedUsers = users.filter(user => 
+        isAcknowledged('new_users', user.id)
+      );
+      
+      setNewRegistrations(newUsers);
+      setAllUsers(acknowledgedUsers);
+      
+      console.log('📊 Users separated:', { 
+        newUsers: newUsers.length, 
+        acknowledgedUsers: acknowledgedUsers.length 
+      });
+    }
+  }, [notificationsLoaded, users, isAcknowledged]);
 
   if (loading || rolesLoading) {
     console.log('⏳ Users page loading:', { loading, rolesLoading });
