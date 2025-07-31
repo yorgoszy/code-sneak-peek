@@ -245,7 +245,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
       // Υπολογίζουμε τους νέους χρήστες (όσους δεν έχουν επισημανθεί ως "ενημερώθηκα")
       const newUsersData = allUsers?.filter(user => 
-        !isAcknowledged('user', user.id)
+        !isAcknowledged('new_users', user.id)
       ) || [];
       
       setNewUsers(newUsersData.length);
