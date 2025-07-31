@@ -283,20 +283,9 @@ export const MagicBoxGameV2: React.FC = () => {
         {userMagicBoxes.map((box) => (
           <Card key={box.id} className="rounded-none relative overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Gift className="w-6 h-6" />
-                  {box.magic_box_campaigns.name}
-                </div>
-                {box.is_opened ? (
-                  <Badge className="bg-[#00ffba] text-black rounded-none">
-                    ΑΝΟΙΓΜΕΝΟ
-                  </Badge>
-                ) : (
-                  <Badge className="bg-orange-500 text-white rounded-none">
-                    ΚΛΕΙΣΤΟ
-                  </Badge>
-                )}
+              <CardTitle className="flex items-center gap-2">
+                <Gift className="w-6 h-6" />
+                {box.magic_box_campaigns.name}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
