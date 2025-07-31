@@ -195,53 +195,49 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
 
   const renderPurchaseCard = (purchase: Purchase) => (
     <Card key={purchase.id} className="rounded-none hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
+      <CardContent className="p-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-[#00ffba]/10 p-2 rounded-full">
-              <Package className="w-5 h-5 text-[#00ffba]" />
+          {/* Αριστερό μέρος - Εικονίδιο και Όνομα */}
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
+            <div className="bg-[#00ffba]/10 p-2 rounded-full flex-shrink-0">
+              <Package className="w-4 h-4 text-[#00ffba]" />
             </div>
-            <div>
-              <CardTitle className="text-lg">{purchase.subscription_type.name}</CardTitle>
+            <div className="min-w-0">
+              <h4 className="font-medium text-sm truncate">{purchase.subscription_type.name}</h4>
               {purchase.offer_id && (
-                <p className="text-sm text-[#00ffba] font-medium">Προσφορά</p>
+                <span className="text-xs text-[#00ffba] font-medium">Προσφορά</span>
               )}
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xl font-bold text-[#00ffba]">€{purchase.amount}</p>
-            <p className="text-sm text-gray-500">
+
+          {/* Κεντρικό μέρος - Στοιχεία */}
+          <div className="flex items-center space-x-4 text-xs text-gray-600 flex-shrink-0">
+            <div className="flex items-center space-x-1">
+              <CreditCard className="w-3 h-3" />
+              <span>{purchase.payment_method || 'Stripe'}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Calendar className="w-3 h-3" />
+              <span>
+                {purchase.subscription_type.subscription_mode === 'visit_based' 
+                  ? `${purchase.subscription_type.visit_count} επισκ.`
+                  : `${purchase.subscription_type.duration_months} μήν.`
+                }
+              </span>
+            </div>
+            <Badge variant="secondary" className="rounded-none text-xs">
+              {purchase.status === 'completed' ? 'Ολοκληρ.' : purchase.status}
+            </Badge>
+          </div>
+
+          {/* Δεξιό μέρος - Ποσό και Ημερομηνία */}
+          <div className="text-right flex-shrink-0 ml-4">
+            <p className="text-lg font-bold text-[#00ffba]">€{purchase.amount}</p>
+            <p className="text-xs text-gray-500">
               {format(new Date(purchase.payment_date), 'dd/MM/yyyy')}
             </p>
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <CreditCard className="w-4 h-4 text-gray-500" />
-            <span>{purchase.payment_method || 'Stripe'}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-4 h-4 text-gray-500" />
-            <span>
-              {purchase.subscription_type.subscription_mode === 'visit_based' 
-                ? `${purchase.subscription_type.visit_count} επισκέψεις`
-                : `${purchase.subscription_type.duration_months} μήνες`
-              }
-            </span>
-          </div>
-          <div className="col-span-2">
-            <Badge variant="secondary" className="rounded-none">
-              {purchase.status === 'completed' ? 'Ολοκληρωμένη' : purchase.status}
-            </Badge>
-          </div>
-        </div>
-        {purchase.subscription_type.description && (
-          <p className="text-sm text-gray-600 mt-3 p-3 bg-gray-50 rounded-none">
-            {purchase.subscription_type.description}
-          </p>
-        )}
       </CardContent>
     </Card>
   );
