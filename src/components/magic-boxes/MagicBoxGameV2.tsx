@@ -347,9 +347,12 @@ export const MagicBoxGameV2: React.FC = () => {
             {showResult.prize_type === 'subscription' && showResult.subscription_type_id && (
               <div className="bg-white p-4 rounded-lg border mb-4">
                 <h3 className="font-bold text-lg">{showResult.subscription_name || showResult.prize_name}</h3>
+                {showResult.duration_months > 0 && (
+                  <p className="text-sm text-gray-500">{showResult.duration_months} μήνες</p>
+                )}
                 <p className="text-gray-600">{showResult.prize_description}</p>
                 <Badge className="bg-[#00ffba] text-black rounded-none mt-2">
-                  {showResult.duration_months > 0 ? `${showResult.duration_months} μήνες` : 'Συνδρομή'}
+                  Συνδρομή
                 </Badge>
               </div>
             )}
