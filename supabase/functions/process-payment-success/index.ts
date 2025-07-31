@@ -165,44 +165,57 @@ serve(async (req) => {
       logStep("Offer acceptance processed", { offer_id, removed_rejection: !rejectionError });
     }
 
-    // Δημιουργία συνδρομής αν είναι time-based
+    // Δημιουργία συνδρομής για όλους τους τύπους
+    const startDate = new Date();
+    let endDate = new Date(startDate);
+    
     if (subscriptionType.subscription_mode === 'time_based') {
-      const startDate = new Date();
-      const endDate = new Date(startDate);
       endDate.setMonth(endDate.getMonth() + (subscriptionType.duration_months || 1));
       endDate.setDate(endDate.getDate() - 1); // Τελευταία ημέρα του μήνα
-
-      const subscriptionData = {
-        user_id: appUser.id,
-        subscription_type_id: subscription_type_id,
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-        payment_id: savedPayment.id,
-        status: 'active',
-        is_paid: true
-      };
-
-      const { data: savedSubscription, error: subscriptionError } = await supabaseClient
-        .from('user_subscriptions')
-        .insert(subscriptionData)
-        .select()
-        .single();
-
-      if (subscriptionError) {
-        logStep("Subscription insert error", subscriptionError);
-        throw new Error(`Failed to create subscription: ${subscriptionError.message}`);
-      }
-      logStep("Subscription created successfully", savedSubscription);
-
-      // Ενημέρωση user status
-      await supabaseClient
-        .from('app_users')
-        .update({ subscription_status: 'active' })
-        .eq('id', appUser.id);
+    } else if (subscriptionType.subscription_mode === 'visit_based') {
+      // Για visit-based, η συνδρομή λήγει μετά από visit_expiry_months
+      endDate.setMonth(endDate.getMonth() + (subscriptionType.visit_expiry_months || 12));
+      endDate.setDate(endDate.getDate() - 1);
     }
 
+    const subscriptionData = {
+      user_id: appUser.id,
+      subscription_type_id: subscription_type_id,
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
+      payment_id: savedPayment.id,
+      status: 'active',
+      is_paid: true
+    };
+
+    const { data: savedSubscription, error: subscriptionError } = await supabaseClient
+      .from('user_subscriptions')
+      .insert(subscriptionData)
+      .select()
+      .single();
+
+    if (subscriptionError) {
+      logStep("Subscription insert error", subscriptionError);
+      throw new Error(`Failed to create subscription: ${subscriptionError.message}`);
+    }
+    logStep("Subscription created successfully", savedSubscription);
+
+    // Ενημέρωση user status
+    await supabaseClient
+      .from('app_users')
+      .update({ subscription_status: 'active' })
+      .eq('id', appUser.id);
+
     // Αν είναι visit-based, δημιουργούμε visit package
+    logStep("Checking if visit package should be created", {
+      subscription_mode: subscriptionType.subscription_mode,
+      visit_count: subscriptionType.visit_count,
+      shouldCreate: subscriptionType.subscription_mode === 'visit_based' && subscriptionType.visit_count
+    });
+    
     if (subscriptionType.subscription_mode === 'visit_based' && subscriptionType.visit_count) {
+      logStep("Creating visit package for visit-based subscription");
+      
       const expiryDate = new Date();
       expiryDate.setMonth(expiryDate.getMonth() + (subscriptionType.visit_expiry_months || 12));
 
@@ -214,8 +227,11 @@ serve(async (req) => {
         expiry_date: expiryDate.toISOString().split('T')[0],
         price: finalAmount,
         payment_id: savedPayment.id,
+        allowed_sections: subscriptionType.allowed_sections,
         status: 'active'
       };
+      
+      logStep("Visit package data to insert", visitPackageData);
 
       const { data: savedVisitPackage, error: visitPackageError } = await supabaseClient
         .from('visit_packages')
@@ -228,6 +244,8 @@ serve(async (req) => {
         throw new Error(`Failed to create visit package: ${visitPackageError.message}`);
       }
       logStep("Visit package created successfully", savedVisitPackage);
+    } else {
+      logStep("Visit package NOT created because conditions not met");
     }
 
     // Αν είναι videocall subscription, δημιουργούμε videocall package

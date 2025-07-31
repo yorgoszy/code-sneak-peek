@@ -161,24 +161,34 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
         }
 
         // Δημιουργία visit package αν είναι visit-based συνδρομή
+        console.log('🔍 Checking if visit package should be created:', {
+          subscription_mode: offer.subscription_types.subscription_mode,
+          visit_count: offer.subscription_types.visit_count,
+          shouldCreate: offer.subscription_types.subscription_mode === 'visit_based' && offer.subscription_types.visit_count
+        });
+        
         if (offer.subscription_types.subscription_mode === 'visit_based' && offer.subscription_types.visit_count) {
           console.log('✅ Creating visit package for visit-based subscription');
           
           const visitExpiryDate = new Date();
           visitExpiryDate.setMonth(visitExpiryDate.getMonth() + (offer.subscription_types.visit_expiry_months || 3));
           
+          const visitPackageData = {
+            user_id: userProfile.id,
+            total_visits: offer.subscription_types.visit_count,
+            remaining_visits: offer.subscription_types.visit_count,
+            purchase_date: startDate,
+            expiry_date: visitExpiryDate.toISOString().split('T')[0],
+            price: 0,
+            allowed_sections: offer.subscription_types.allowed_sections,
+            status: 'active'
+          };
+          
+          console.log('🔍 Visit package data to insert:', visitPackageData);
+
           const { error: visitPackageError } = await supabase
             .from('visit_packages')
-            .insert({
-              user_id: userProfile.id,
-              total_visits: offer.subscription_types.visit_count,
-              remaining_visits: offer.subscription_types.visit_count,
-              purchase_date: startDate,
-              expiry_date: visitExpiryDate.toISOString().split('T')[0],
-              price: 0,
-              allowed_sections: offer.subscription_types.allowed_sections,
-              status: 'active'
-            });
+            .insert(visitPackageData);
 
           if (visitPackageError) {
             console.error('❌ Error creating visit package:', visitPackageError);
@@ -186,6 +196,8 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
           } else {
             console.log('✅ Visit package created successfully');
           }
+        } else {
+          console.log('❌ Visit package NOT created because conditions not met');
         }
 
         // Δημιουργία videocall package αν περιέχει "videocall" στο όνομα
