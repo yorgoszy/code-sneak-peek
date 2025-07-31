@@ -95,21 +95,61 @@ const Auth = () => {
     const password = formData.get("password") as string;
 
     try {
+      console.log('🔐 Attempting login for:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('🔐 Auth error:', error);
+        
+        // Βελτιωμένα μηνύματα σφάλματος
+        let errorMessage = "Λάθος email ή κωδικός πρόσβασης.";
+        
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "Λάθος email ή κωδικός πρόσβασης. Βεβαιωθείτε ότι έχετε εισάγει τα σωστά στοιχεία.";
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = "Πρέπει να επιβεβαιώσετε το email σας πρώτα. Ελέγξτε τα εισερχόμενά σας.";
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = "Πολλές προσπάθειες σύνδεσης. Δοκιμάστε ξανά σε λίγα λεπτά.";
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      console.log('🔐 Auth successful, checking user profile for:', data.user.id);
 
       // Check if user has an app_users profile
-      const { data: userProfile } = await supabase
+      const { data: userProfile, error: profileError } = await supabase
         .from('app_users')
         .select('*')
         .eq('auth_user_id', data.user.id)
         .single();
 
+      if (profileError) {
+        console.error('🔐 Profile fetch error:', profileError);
+        
+        if (profileError.code === 'PGRST116') {
+          toast({
+            title: "Πρόβλημα με το προφίλ",
+            description: "Δεν βρέθηκε το προφίλ χρήστη. Επικοινωνήστε με έναν διαχειριστή.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Σφάλμα βάσης δεδομένων",
+            description: "Πρόβλημα κατά την ανάκτηση του προφίλ. Δοκιμάστε ξανά.",
+            variant: "destructive",
+          });
+        }
+        await supabase.auth.signOut();
+        return;
+      }
+
       if (!userProfile) {
+        console.error('🔐 No user profile found for:', data.user.id);
         toast({
           title: "Λογαριασμός μη ενεργοποιημένος",
           description: "Ο λογαριασμός σας δεν έχει ενεργοποιηθεί ακόμη. Επικοινωνήστε με έναν διαχειριστή.",
@@ -118,17 +158,25 @@ const Auth = () => {
         await supabase.auth.signOut();
         return;
       }
+
+      console.log('🔐 User profile found:', userProfile.user_status);
 
       if (userProfile.user_status !== 'active') {
+        const statusMessage = userProfile.user_status === 'pending' 
+          ? "Ο λογαριασμός σας εκκρεμεί έγκριση από έναν διαχειριστή." 
+          : "Ο λογαριασμός σας δεν είναι ενεργός.";
+          
         toast({
           title: "Λογαριασμός μη ενεργοποιημένος",
-          description: "Ο λογαριασμός σας δεν έχει ενεργοποιηθεί ακόμη. Επικοινωνήστε με έναν διαχειριστή.",
+          description: statusMessage + " Επικοινωνήστε με έναν διαχειριστή.",
           variant: "destructive",
         });
         await supabase.auth.signOut();
         return;
       }
 
+      console.log('🔐 Login successful, redirecting to dashboard');
+      
       toast({
         title: "Επιτυχία!",
         description: "Συνδεθήκατε επιτυχώς.",
@@ -136,10 +184,10 @@ const Auth = () => {
 
       navigate("/dashboard");
     } catch (error: any) {
-      console.error('Signin error:', error);
+      console.error('🔐 Login process error:', error);
       toast({
-        title: "Σφάλμα",
-        description: error.message || "Λάθος email ή κωδικός πρόσβασης.",
+        title: "Σφάλμα σύνδεσης",
+        description: error.message || "Υπήρξε πρόβλημα κατά τη σύνδεση. Δοκιμάστε ξανά.",
         variant: "destructive",
       });
     } finally {
