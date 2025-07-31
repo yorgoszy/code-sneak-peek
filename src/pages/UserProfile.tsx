@@ -20,8 +20,21 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [profileLoading, setProfileLoading] = useState(true);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const isMobile = useIsMobile();
   const sidebarRef = useRef<{ refreshOffers: () => void }>(null);
+
+  // Check for tablet size
+  useEffect(() => {
+    const checkTabletSize = () => {
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+    
+    checkTabletSize();
+    window.addEventListener('resize', checkTabletSize);
+    
+    return () => window.removeEventListener('resize', checkTabletSize);
+  }, []);
 
   // Handle tab query parameter
   useEffect(() => {
@@ -40,12 +53,12 @@ const UserProfile = () => {
     }
   }, [userId]);
 
-  // Close mobile sidebar when tab changes
+  // Close mobile/tablet sidebar when tab changes
   useEffect(() => {
-    if (isMobile) {
+    if (isMobile || isTablet) {
       setShowMobileSidebar(false);
     }
-  }, [activeTab]);
+  }, [activeTab, isMobile, isTablet]);
 
   const fetchUserProfile = async () => {
     try {
@@ -105,8 +118,8 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+      {/* Desktop Sidebar - Large screens only */}
+      <div className="hidden lg:block">
         <UserProfileSidebar 
           ref={sidebarRef}
           isCollapsed={isCollapsed} 
@@ -118,9 +131,9 @@ const UserProfile = () => {
         />
       </div>
 
-      {/* Mobile Sidebar Overlay */}
-      {isMobile && showMobileSidebar && (
-        <div className="fixed inset-0 z-50 md:hidden">
+      {/* Mobile/Tablet Sidebar Overlay */}
+      {showMobileSidebar && (
+        <div className="fixed inset-0 z-50 lg:hidden">
           <div 
             className="absolute inset-0 bg-black bg-opacity-50"
             onClick={() => setShowMobileSidebar(false)}
@@ -144,12 +157,12 @@ const UserProfile = () => {
         <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-3 md:px-6 py-4 shadow-sm">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2 md:space-x-4 min-w-0">
-              {/* Mobile menu button */}
-              {isMobile && (
+              {/* Mobile/Tablet menu button */}
+              {(isMobile || isTablet) && (
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="rounded-none md:hidden"
+                  className="rounded-none lg:hidden"
                   onClick={() => setShowMobileSidebar(true)}
                 >
                   <Menu className="h-4 w-4" />
