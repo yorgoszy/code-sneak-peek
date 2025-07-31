@@ -46,7 +46,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [newPurchases, setNewPurchases] = useState(0);
   const [newUsers, setNewUsers] = useState(0);
   const isMobile = useIsMobile();
-  const { isAcknowledged } = usePersistentNotifications();
+  const { isAcknowledged, refreshAcknowledged } = usePersistentNotifications();
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
@@ -235,6 +235,9 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     if (!userProfile?.id || userProfile.role !== 'admin') return;
     
     try {
+      // Πρώτα φορτώνουμε τα acknowledged notifications από τη βάση
+      await refreshAcknowledged();
+      
       // Παίρνουμε όλους τους χρήστες
       const { data: allUsers, error } = await supabase
         .from('app_users')
@@ -248,6 +251,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         !isAcknowledged('new_users', user.id)
       ) || [];
       
+      console.log('🔢 Sidebar: Total users:', allUsers?.length, 'New users:', newUsersData.length);
       setNewUsers(newUsersData.length);
     } catch (error) {
       console.error('Error loading new users:', error);
