@@ -196,6 +196,18 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
   };
 
   // Έλεγχος αν ο χρήστης μπορεί να επεξεργαστεί το προφίλ
+  console.log('🔍 UserProfileEdit Debug:', {
+    currentUser: currentUser,
+    userProfile: userProfile,
+    currentUserId: currentUser?.id,
+    userProfileAuthId: userProfile?.auth_user_id,
+    currentUserEmail: currentUser?.email,
+    userProfileEmail: userProfile?.email,
+    isIdMatch: currentUser?.id === userProfile?.auth_user_id,
+    isAdmin: currentUser?.email === 'yorgoszy@gmail.com',
+    userMetadata: currentUser?.user_metadata
+  });
+
   const canEdit = (currentUser && userProfile && currentUser.id === userProfile.auth_user_id) || 
                   (currentUser && userProfile && currentUser.email === 'yorgoszy@gmail.com') ||
                   (currentUser && userProfile && currentUser.user_metadata?.role === 'admin');
