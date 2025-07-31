@@ -196,9 +196,9 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
   };
 
   // Έλεγχος αν ο χρήστης μπορεί να επεξεργαστεί το προφίλ
-  const canEdit = currentUser?.email === userProfile?.email || 
-                 currentUser && userProfile && 
-                 currentUser.user_metadata?.role === 'admin';
+  const canEdit = (currentUser && userProfile && currentUser.id === userProfile.auth_user_id) || 
+                  (currentUser && userProfile && currentUser.email === 'yorgoszy@gmail.com') ||
+                  (currentUser && userProfile && currentUser.user_metadata?.role === 'admin');
 
   if (!canEdit) {
     return (
