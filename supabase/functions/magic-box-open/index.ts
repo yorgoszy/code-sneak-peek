@@ -291,7 +291,7 @@ serve(async (req) => {
           // Get subscription type details to determine duration
           const { data: subscriptionType, error: typeError } = await supabaseClient
             .from('subscription_types')
-            .select('duration_months')
+            .select('name, duration_months')
             .eq('id', selectedPrize.subscription_type_id)
             .single();
 
@@ -318,9 +318,14 @@ serve(async (req) => {
             .single();
 
           if (!subError) {
+            // Update response message with subscription details
+            responseMessage = `Συγχαρητήρια! Κέρδισες: ${subscriptionType.name} (${durationMonths} μήνες)`;
+            
             additionalData = {
               subscription_id: subscription.id,
-              subscription_type_id: selectedPrize.subscription_type_id
+              subscription_type_id: selectedPrize.subscription_type_id,
+              subscription_name: subscriptionType.name,
+              duration_months: durationMonths
             };
           }
         }
