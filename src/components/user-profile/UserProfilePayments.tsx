@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Receipt, FileText, Eye, Package, User, Calendar, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -244,89 +245,90 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
 
   return (
     <>
-      <div className="space-y-6">
-        {/* Ιστορικό Αγορών */}
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Ιστορικό Αγορών
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Φόρτωση αγορών...</p>
-              </div>
-            ) : purchases.length === 0 ? (
-              <div className="text-center py-8">
-                <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">Δεν υπάρχουν αγορές για αυτόν τον χρήστη</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {purchases.map(renderPurchaseCard)}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="purchases" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 rounded-none">
+          <TabsTrigger value="purchases" className="rounded-none">
+            <Package className="w-4 h-4 mr-2" />
+            Αγορές ({purchases.length})
+          </TabsTrigger>
+          <TabsTrigger value="receipts" className="rounded-none">
+            <Receipt className="w-4 h-4 mr-2" />
+            Αποδείξεις ({receipts.length})
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Ιστορικό Αποδείξεων που έχουν κοπεί */}
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
-              Ιστορικό Αποδείξεων
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Φόρτωση αποδείξεων...</p>
-              </div>
-            ) : receipts.length === 0 ? (
-              <div className="text-center py-8">
-                <Receipt className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">Δεν υπάρχουν αποδείξεις για αυτόν τον χρήστη</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {receipts.map((receipt) => (
-                  <div key={receipt.id} className="border border-gray-200 p-4 rounded-none hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-medium">{receipt.receipt_number}</h4>
-                          <Badge className={`text-xs ${getStatusColor(receipt.mydata_status)}`}>
-                            {getStatusText(receipt.mydata_status)}
-                          </Badge>
+        <TabsContent value="purchases" className="mt-4">
+          <Card className="rounded-none">
+            <CardContent className="p-6">
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Φόρτωση αγορών...</p>
+                </div>
+              ) : purchases.length === 0 ? (
+                <div className="text-center py-8">
+                  <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500">Δεν υπάρχουν αγορές για αυτόν τον χρήστη</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {purchases.map(renderPurchaseCard)}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="receipts" className="mt-4">
+          <Card className="rounded-none">
+            <CardContent className="p-6">
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Φόρτωση αποδείξεων...</p>
+                </div>
+              ) : receipts.length === 0 ? (
+                <div className="text-center py-8">
+                  <Receipt className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500">Δεν υπάρχουν αποδείξεις για αυτόν τον χρήστη</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {receipts.map((receipt) => (
+                    <div key={receipt.id} className="border border-gray-200 p-4 rounded-none hover:bg-gray-50">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-medium">{receipt.receipt_number}</h4>
+                            <Badge className={`text-xs ${getStatusColor(receipt.mydata_status)}`}>
+                              {getStatusText(receipt.mydata_status)}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600">{receipt.customer_name}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Ημερομηνία: {formatDate(receipt.issue_date)}
+                          </p>
+                          <p className="text-lg font-bold text-[#00ffba] mt-2">
+                            €{receipt.total.toFixed(2)}
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-600">{receipt.customer_name}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Ημερομηνία: {formatDate(receipt.issue_date)}
-                        </p>
-                        <p className="text-lg font-bold text-[#00ffba] mt-2">
-                          €{receipt.total.toFixed(2)}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewReceipt(receipt)}
-                          className="rounded-none"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewReceipt(receipt)}
+                            className="rounded-none"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Receipt Preview Dialog */}
       <ReceiptPreviewDialog
