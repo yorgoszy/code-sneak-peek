@@ -594,40 +594,44 @@ export const VisitManagement: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-2 sm:p-4 lg:p-6">
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-2">
         <Button
           onClick={() => setActiveTab('packages')}
           variant={activeTab === 'packages' ? 'default' : 'outline'}
-          className="rounded-none"
+          className="rounded-none text-xs sm:text-sm"
         >
-          <CalendarDays className="h-4 w-4 mr-2" />
-          Πακέτα Επισκέψεων
+          <CalendarDays className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Πακέτα Επισκέψεων</span>
+          <span className="sm:hidden">Πακέτα</span>
         </Button>
         <Button
           onClick={() => setActiveTab('manual')}
           variant={activeTab === 'manual' ? 'default' : 'outline'}
-          className="rounded-none"
+          className="rounded-none text-xs sm:text-sm"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Χειροκίνητη Καταγραφή
+          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Χειροκίνητη Καταγραφή</span>
+          <span className="sm:hidden">Χειροκίνητη</span>
         </Button>
         <Button
           onClick={() => setActiveTab('scanner')}
           variant={activeTab === 'scanner' ? 'default' : 'outline'}
-          className="rounded-none"
+          className="rounded-none text-xs sm:text-sm"
         >
-          <QrCode className="h-4 w-4 mr-2" />
-          QR Scanner
+          <QrCode className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">QR Scanner</span>
+          <span className="sm:hidden">Scanner</span>
         </Button>
         <Button
           onClick={() => setActiveTab('history')}
           variant={activeTab === 'history' ? 'default' : 'outline'}
-          className="rounded-none"
+          className="rounded-none text-xs sm:text-sm"
         >
-          <Clock className="h-4 w-4 mr-2" />
-          Ιστορικό
+          <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Ιστορικό</span>
+          <span className="sm:hidden">Ιστορικό</span>
         </Button>
       </div>
 
@@ -745,23 +749,122 @@ export const VisitManagement: React.FC = () => {
       {/* Visit Packages Tab */}
       {activeTab === 'packages' && (
         <Card className="rounded-none">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Πακέτα Επισκέψεων</CardTitle>
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <CardTitle className="text-lg sm:text-xl">Πακέτα Επισκέψεων</CardTitle>
             <Button
               onClick={() => setShowAddPackageForm(true)}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
               Προσθήκη Πακέτου
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6">
             <div className="space-y-4">
               {visitPackages.map((pkg) => {
                 const usedVisits = pkg.total_visits - pkg.remaining_visits;
                 return (
-                  <div key={pkg.id} className="border rounded-none p-4">
-                    <div className="flex justify-between items-start">
+                  <div key={pkg.id} className="border rounded-none p-3 sm:p-4">
+                    {/* Mobile & Tablet Layout */}
+                    <div className="block lg:hidden space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-sm md:text-base">{pkg.app_users.name}</h4>
+                          <p className="text-xs md:text-sm text-gray-600">{pkg.app_users.email}</p>
+                        </div>
+                        <Badge 
+                          variant={pkg.status === 'active' ? 'default' : 'secondary'}
+                          className="rounded-none text-xs"
+                        >
+                          {pkg.status === 'active' ? 'Ενεργό' : 
+                           pkg.status === 'used' ? 'Εξαντλημένο' : 'Λήξη'}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs md:text-sm">
+                        <div>
+                          <span className="font-medium text-[#00ffba]">
+                            {usedVisits}/{pkg.total_visits} επισκέψεις
+                          </span>
+                        </div>
+                        <div>
+                          <span>Υπόλοιπο: {pkg.remaining_visits}</span>
+                        </div>
+                        <div>
+                          <span>Αγορά: {new Date(pkg.purchase_date).toLocaleDateString('el-GR')}</span>
+                        </div>
+                        {pkg.expiry_date && (
+                          <div>
+                            <span className="text-orange-600">
+                              Λήξη: {new Date(pkg.expiry_date).toLocaleDateString('el-GR')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Visit Control Section Mobile */}
+                      <div className="flex items-center justify-center gap-2 bg-gray-50 p-2 rounded-none">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none w-7 h-7 p-0"
+                          onClick={() => removeVisitFromPackage(pkg.user_id)}
+                          disabled={usedVisits === 0}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        
+                        <span className="text-xs md:text-sm font-medium px-2">
+                          {usedVisits}/{pkg.total_visits}
+                        </span>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none w-7 h-7 p-0"
+                          onClick={() => addVisitToPackage(pkg.id, pkg.user_id)}
+                          disabled={pkg.remaining_visits === 0}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      
+                      {/* Action Buttons Mobile */}
+                      <div className="flex items-center justify-center gap-2 pt-2 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none h-7 w-7 p-0"
+                          onClick={() => viewPackageVisits(pkg)}
+                          title="Προβολή επισκέψεων"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none h-7 w-7 p-0"
+                          onClick={() => editPackage(pkg)}
+                          title="Επεξεργασία πακέτου"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none h-7 w-7 p-0 text-red-600 hover:bg-red-50"
+                          onClick={() => deletePackage(pkg.id)}
+                          title="Διαγραφή πακέτου"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden lg:flex justify-between items-start">
                       <div className="flex-1">
                         <h4 className="font-medium">{pkg.app_users.name}</h4>
                         <p className="text-sm text-gray-600">{pkg.app_users.email}</p>
