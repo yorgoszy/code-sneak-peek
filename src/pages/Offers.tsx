@@ -5,12 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Tag, Check, X, ShoppingCart, RefreshCw } from "lucide-react";
+import { Tag, Check, X, ShoppingCart, RefreshCw, Menu } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Offers() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [newOffers, setNewOffers] = useState<any[]>([]);
   const [readOffers, setReadOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +20,7 @@ export default function Offers() {
   const [markingAsRead, setMarkingAsRead] = useState(false);
   const [activeTab, setActiveTab] = useState("new");
   const { userProfile } = useRoleCheck();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -266,138 +269,77 @@ export default function Offers() {
 
   const renderOfferCard = (offer: any) => {
     return (
-      <Card key={offer.id} className="rounded-none overflow-hidden border-l-4 border-l-[#00ffba]">
-        <CardHeader className="bg-gradient-to-r from-[#00ffba]/10 to-transparent">
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Tag className="w-5 h-5 text-[#00ffba]" />
-              <span className="text-xl">
-                {userProfile?.role === 'admin' 
-                  ? offer.subscription_types?.name 
-                  : offer.name
-                }
-              </span>
-              <Badge className="bg-[#00ffba] text-black rounded-none">
-                {userProfile?.role === 'admin' ? 'ΑΠΟΔΕΚΤΗ' : 'ΕΙΔΙΚΗ ΠΡΟΣΦΟΡΑ'}
-              </Badge>
+      <Card key={offer.id} className="rounded-none overflow-hidden border-l-4 border-l-[#00ffba] h-16">
+        <CardContent className="p-3 h-full">
+          <div className="flex items-center justify-between h-full">
+            {/* Left section - Offer info */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <Tag className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-sm truncate">
+                    {userProfile?.role === 'admin' 
+                      ? offer.subscription_types?.name 
+                      : offer.name
+                    }
+                  </span>
+                  <Badge className="bg-[#00ffba] text-black rounded-none text-xs px-1 py-0 flex-shrink-0">
+                    {userProfile?.role === 'admin' ? 'ΑΠΟΔΕΚΤΗ' : 'ΠΡΟΣΦΟΡΑ'}
+                  </Badge>
+                </div>
+                {userProfile?.role === 'admin' ? (
+                  <p className="text-xs text-gray-600 truncate">{offer.app_users?.name}</p>
+                ) : (
+                  <p className="text-xs text-gray-600 truncate">
+                    Έως {new Date(offer.end_date).toLocaleDateString('el-GR')}
+                  </p>
+                )}
+              </div>
             </div>
-             <div className="text-right">
-               <div className="text-2xl font-bold text-[#00ffba]">
-                 {offer.is_free ? 'ΔΩΡΕΑΝ' : `€${userProfile?.role === 'admin' ? offer.amount : offer.discounted_price}`}
-               </div>
-              {userProfile?.role === 'admin' && offer.subscription_types?.price && (
-                <div className="text-sm text-gray-500 line-through">
+
+            {/* Center section - Price */}
+            <div className="text-center mx-4 flex-shrink-0">
+              <div className="text-lg font-bold text-[#00ffba]">
+                {offer.is_free ? 'ΔΩΡΕΑΝ' : `€${userProfile?.role === 'admin' ? offer.amount : offer.discounted_price}`}
+              </div>
+              {offer.subscription_types?.price && !offer.is_free && (
+                <div className="text-xs text-gray-500 line-through">
                   €{offer.subscription_types.price}
                 </div>
               )}
-              {userProfile?.role !== 'admin' && offer.subscription_types?.price && (
-                <div className="text-sm text-gray-500 line-through">
-                  €{offer.subscription_types.price}
-                </div>
-              )}
             </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
+
+            {/* Right section - Actions */}
+            <div className="flex items-center gap-2 flex-shrink-0">
               {userProfile?.role === 'admin' ? (
-                <>
-                  <h4 className="font-semibold text-gray-900 mb-2">Στοιχεία Χρήστη</h4>
-                  <p className="text-gray-800 font-medium">{offer.app_users?.name}</p>
-                  <p className="text-gray-600 text-sm">{offer.app_users?.email}</p>
-                  
-                  <h4 className="font-semibold text-gray-900 mb-2 mt-4">Τύπος Συνδρομής</h4>
-                  <p className="text-gray-800 font-medium">{offer.subscription_types?.name}</p>
-                  {offer.subscription_types?.description && (
-                    <p className="text-gray-600 text-sm mt-1">{offer.subscription_types.description}</p>
-                  )}
-                  
-                  <div className="mt-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-4">
-                      <span><strong>Ημερομηνία Αποδοχής:</strong> {new Date(offer.payment_date).toLocaleDateString('el-GR')}</span>
-                      <span><strong>Κατάσταση:</strong> {offer.status === 'completed' ? 'Ολοκληρωμένη' : 'Εκκρεμής'}</span>
-                    </div>
-                  </div>
-                </>
+                <Badge className={`rounded-none text-xs ${offer.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                  {offer.status === 'completed' ? 'Ολοκληρωμένη' : 'Εκκρεμής'}
+                </Badge>
               ) : (
                 <>
-                  <h4 className="font-semibold text-gray-900 mb-2">Περιγραφή Προσφοράς</h4>
-                  {offer.description && (
-                    <p className="text-gray-600 mb-4">{offer.description}</p>
-                  )}
-                  
-                  <h4 className="font-semibold text-gray-900 mb-2">Τύπος Συνδρομής</h4>
-                  <p className="text-gray-800 font-medium">{offer.subscription_types?.name}</p>
-                  {offer.subscription_types?.description && (
-                    <p className="text-gray-600 text-sm mt-1">{offer.subscription_types.description}</p>
-                  )}
-                  
-                  <div className="mt-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-4">
-                      <span><strong>Έναρξη:</strong> {new Date(offer.start_date).toLocaleDateString('el-GR')}</span>
-                      <span><strong>Λήξη:</strong> {new Date(offer.end_date).toLocaleDateString('el-GR')}</span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            
-            <div className="flex flex-col justify-center">
-              {userProfile?.role === 'admin' ? (
-                <div className="bg-gray-50 rounded-none p-4">
-                  <h5 className="font-semibold text-gray-900 mb-2">Λεπτομέρειες Πληρωμής</h5>
-                  <div className="space-y-2 text-sm">
-                    <div><strong>Αναγνωριστικό:</strong> {offer.transaction_id || 'N/A'}</div>
-                    <div><strong>Μέθοδος:</strong> {offer.payment_method || 'N/A'}</div>
-                    {offer.last_four && (
-                      <div><strong>Κάρτα:</strong> ****{offer.last_four}</div>
+                  <Button
+                    onClick={() => handleAcceptOffer(offer)}
+                    disabled={processingOffer === offer.id}
+                    size="sm"
+                    className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none px-3 py-1 text-xs"
+                  >
+                    {processingOffer === offer.id ? (
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-black"></div>
+                    ) : (
+                      <>
+                        <Check className="w-3 h-3 mr-1" />
+                        {offer.is_free ? 'Ενεργοποίηση' : 'Αποδοχή'}
+                      </>
                     )}
-                  </div>
-                </div>
-              ) : (
-                <>
-                   <div className="bg-gray-50 rounded-none p-4 mb-4">
-                     <h5 className="font-semibold text-gray-900 mb-2">Εξοικονόμηση</h5>
-                     {offer.is_free ? (
-                       <div className="text-2xl font-bold text-green-600">ΔΩΡΕΑΝ</div>
-                     ) : offer.subscription_types?.price ? (
-                       <div className="text-2xl font-bold text-green-600">
-                         €{(offer.subscription_types.price - offer.discounted_price).toFixed(2)}
-                       </div>
-                     ) : null}
-                     <p className="text-sm text-gray-600">
-                       {offer.is_free ? 'Καμία χρέωση' : 'από την κανονική τιμή'}
-                     </p>
-                   </div>
-                  
-                  <div className="flex gap-3">
-                     <Button
-                       onClick={() => handleAcceptOffer(offer)}
-                       disabled={processingOffer === offer.id}
-                       className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                     >
-                       {processingOffer === offer.id ? (
-                         <>
-                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
-                           Επεξεργασία...
-                         </>
-                       ) : (
-                         <>
-                           <Check className="w-4 h-4 mr-2" />
-                           {offer.is_free ? 'Ενεργοποίηση' : 'Αποδοχή'}
-                         </>
-                       )}
-                    </Button>
-                    <Button
-                      onClick={() => handleRejectOffer(offer)}
-                      variant="outline"
-                      className="flex-1 rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Απόρριψη
-                    </Button>
-                  </div>
+                  </Button>
+                  <Button
+                    onClick={() => handleRejectOffer(offer)}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-none border-red-300 text-red-600 hover:bg-red-50 px-3 py-1 text-xs"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
                 </>
               )}
             </div>
@@ -409,12 +351,52 @@ export default function Offers() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex">
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-        <div className="flex-1 p-6">
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ffba] mx-auto"></div>
-            <p className="mt-2 text-gray-600">Φορτώνω τις προσφορές...</p>
+      <div className="min-h-screen bg-gray-50 flex w-full">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block">
+          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        </div>
+
+        {/* Mobile Sidebar Overlay */}
+        {isMobile && showMobileSidebar && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-50"
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <div className="relative w-64 h-full">
+              <Sidebar 
+                isCollapsed={false} 
+                setIsCollapsed={setIsCollapsed}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0">
+          {/* Mobile Header */}
+          {isMobile && (
+            <div className="bg-white border-b px-4 py-3 flex items-center justify-between md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileSidebar(true)}
+                className="p-2"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <h1 className="text-lg font-semibold">
+                {userProfile?.role === 'admin' ? 'Αποδεκτές Προσφορές' : 'Προσφορές'}
+              </h1>
+              <div className="w-9" />
+            </div>
+          )}
+
+          <div className="p-4 md:p-6">
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ffba] mx-auto"></div>
+              <p className="mt-2 text-gray-600">Φορτώνω τις προσφορές...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -422,111 +404,159 @@ export default function Offers() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      
-      <div className="flex-1 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Tag className="w-6 h-6 text-[#00ffba]" />
-              {userProfile?.role === 'admin' ? 'Αποδεκτές Προσφορές' : 'Διαθέσιμες Προσφορές'}
-            </h1>
-            <p className="text-gray-600">
-              {userProfile?.role === 'admin' 
-                ? 'Προβολή όλων των προσφορών που έχουν αποδεχθεί οι χρήστες'
-                : 'Δείτε και αποδεχτείτε τις ειδικές προσφορές που είναι διαθέσιμες για εσάς'
-              }
-            </p>
+    <div className="min-h-screen bg-gray-50 flex w-full">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobile && showMobileSidebar && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowMobileSidebar(false)}
+          />
+          <div className="relative w-64 h-full">
+            <Sidebar 
+              isCollapsed={false} 
+              setIsCollapsed={setIsCollapsed}
+            />
           </div>
-          
-          {userProfile?.role === 'admin' && newOffers.length > 0 && (
-            <Button
-              onClick={handleMarkAsRead}
-              disabled={markingAsRead}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              {markingAsRead ? (
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Check className="w-4 h-4 mr-2" />
-              )}
-              Ενημερώθηκα
-            </Button>
-          )}
         </div>
-        
-        {userProfile?.role === 'admin' ? (
-          // Admin view με tabs
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-none">
-              <TabsTrigger value="new" className="rounded-none">
-                Νέες Αποδεκτές Προσφορές ({newOffers.length})
-              </TabsTrigger>
-              <TabsTrigger value="read" className="rounded-none">
-                Ενημερώθηκα ({readOffers.length})
-              </TabsTrigger>
-            </TabsList>
+      )}
 
-            <TabsContent value="new" className="mt-6">
-              <div className="space-y-6">
-                {newOffers.length === 0 ? (
-                  <Card className="rounded-none">
-                    <CardContent className="p-8 text-center text-gray-500">
-                      <Tag className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium mb-2">Δεν υπάρχουν νέες αποδεκτές προσφορές</h3>
-                      <p>Δεν υπάρχουν νέες προσφορές που έχουν αποδεχθεί οι χρήστες.</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  newOffers.map((offer) => renderOfferCard(offer))
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="read" className="mt-6">
-              <div className="space-y-6">
-                {readOffers.length === 0 ? (
-                  <Card className="rounded-none">
-                    <CardContent className="p-8 text-center text-gray-500">
-                      <Check className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium mb-2">Ενημερώθηκα</h3>
-                      <p>Εδώ θα εμφανίζονται οι προσφορές που έχεις δει.</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  readOffers.map((offer) => renderOfferCard(offer))
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
-        ) : (
-          // User view χωρίς tabs
-          newOffers.length === 0 ? (
-            <Card className="rounded-none">
-              <CardContent className="p-8 text-center">
-                <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Δεν υπάρχουν διαθέσιμες προσφορές
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Δεν υπάρχουν ενεργές προσφορές για εσάς αυτή τη στιγμή.
-                </p>
-                <Button 
-                  onClick={() => window.location.href = '/dashboard/shop'}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Δείτε τις Αγορές
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {newOffers.map((offer) => renderOfferCard(offer))}
-            </div>
-          )
+      <div className="flex-1 min-w-0">
+        {/* Mobile Header */}
+        {isMobile && (
+          <div className="bg-white border-b px-4 py-3 flex items-center justify-between md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMobileSidebar(true)}
+              className="p-2"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-semibold">
+              {userProfile?.role === 'admin' ? 'Αποδεκτές Προσφορές' : 'Προσφορές'}
+            </h1>
+            <div className="w-9" />
+          </div>
         )}
+
+        <div className="p-4 md:p-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Desktop Header */}
+            <div className="hidden md:flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {userProfile?.role === 'admin' ? 'Αποδεκτές Προσφορές' : 'Προσφορές'}
+              </h1>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={loadUserOffers}
+                  variant="outline"
+                  className="rounded-none"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Ανανέωση
+                </Button>
+                {userProfile?.role === 'admin' && newOffers.length > 0 && (
+                  <Button
+                    onClick={handleMarkAsRead}
+                    disabled={markingAsRead}
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-none"
+                  >
+                    {markingAsRead ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Επεξεργασία...
+                      </>
+                    ) : (
+                      'Επισήμανση ως "Ενημερώθηκα"'
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Actions */}
+            <div className="md:hidden mb-4 space-y-2">
+              <Button
+                onClick={loadUserOffers}
+                variant="outline"
+                className="w-full rounded-none"
+                size="sm"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Ανανέωση
+              </Button>
+              {userProfile?.role === 'admin' && newOffers.length > 0 && (
+                <Button
+                  onClick={handleMarkAsRead}
+                  disabled={markingAsRead}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-none"
+                  size="sm"
+                >
+                  {markingAsRead ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Επεξεργασία...
+                    </>
+                  ) : (
+                    'Επισήμανση ως "Ενημερώθηκα"'
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {userProfile?.role === 'admin' ? (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 rounded-none">
+                  <TabsTrigger value="new" className="rounded-none text-sm">
+                    Νέες ({newOffers.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="read" className="rounded-none text-sm">
+                    Ενημερώθηκα ({readOffers.length})
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="new" className="space-y-2 mt-4">
+                  {newOffers.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <ShoppingCart className="mx-auto h-12 w-12 mb-4" />
+                      <p className="text-sm">Δεν υπάρχουν νέες αποδεκτές προσφορές</p>
+                    </div>
+                  ) : (
+                    newOffers.map(renderOfferCard)
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="read" className="space-y-2 mt-4">
+                  {readOffers.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <ShoppingCart className="mx-auto h-12 w-12 mb-4" />
+                      <p className="text-sm">Δεν έχετε επισημάνει κάποιες προσφορές ως "Ενημερώθηκα"</p>
+                    </div>
+                  ) : (
+                    readOffers.map(renderOfferCard)
+                  )}
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <div className="space-y-2">
+                {newOffers.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <ShoppingCart className="mx-auto h-12 w-12 mb-4" />
+                    <p className="text-sm">Δεν υπάρχουν διαθέσιμες προσφορές</p>
+                  </div>
+                ) : (
+                  newOffers.map(renderOfferCard)
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

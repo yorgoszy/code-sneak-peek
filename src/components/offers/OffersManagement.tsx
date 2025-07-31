@@ -250,46 +250,29 @@ export const OffersManagement: React.FC = () => {
             <p className="text-sm">Κάντε κλικ στο κουμπί "Νέα Προσφορά" για να δημιουργήσετε μία</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {offers.map((offer) => (
-              <div key={offer.id} className="border rounded-none p-4 bg-gradient-to-r from-blue-50 to-purple-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-semibold text-lg">{offer.name}</h4>
-                      <Badge className={`rounded-none ${offer.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {offer.is_active ? 'Ενεργή' : 'Ανενεργή'}
-                      </Badge>
-                      <Badge variant="outline" className="rounded-none bg-purple-100 text-purple-800">
-                        Προσφορά
-                      </Badge>
-                    </div>
-                    {offer.description && (
-                      <p className="text-sm text-gray-600 mb-2">{offer.description}</p>
-                    )}
-                    <div className="text-sm space-y-1">
-                      <div><strong>Τύπος Συνδρομής:</strong> {offer.subscription_types?.name}</div>
-                      <div className="flex items-center gap-4">
-                        <span><strong>Τιμή Προσφοράς:</strong> €{offer.discounted_price}</span>
-                        <span><strong>Ορατότητα:</strong> {
-                          offer.visibility === 'all' ? 'Όλοι' : 
-                          offer.visibility === 'individual' ? 'Μεμονωμένοι χρήστες' :
-                          offer.visibility === 'selected' ? 'Επιλεγμένοι χρήστες' : 'Ομάδες'
-                        }</span>
+              <div key={offer.id} className="border rounded-none p-3 bg-gradient-to-r from-blue-50 to-purple-50 h-16">
+                <div className="flex items-center justify-between h-full">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold text-sm truncate">{offer.name}</h4>
+                        <Badge className={`rounded-none text-xs px-1 py-0 ${offer.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {offer.is_active ? 'Ενεργή' : 'Ανενεργή'}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span><strong>Έναρξη:</strong> {new Date(offer.start_date).toLocaleDateString('el-GR')}</span>
-                        <span><strong>Λήξη:</strong> {new Date(offer.end_date).toLocaleDateString('el-GR')}</span>
+                      <div className="flex items-center gap-3 text-xs text-gray-600">
+                        <span className="truncate">{offer.subscription_types?.name}</span>
+                        <span>€{offer.discounted_price}</span>
+                        <span className="hidden sm:inline">
+                          {new Date(offer.start_date).toLocaleDateString('el-GR')} - {new Date(offer.end_date).toLocaleDateString('el-GR')}
+                        </span>
                       </div>
-                      {offer.target_users && offer.target_users.length > 0 && (
-                        <div><strong>Στοχευμένοι χρήστες:</strong> {offer.target_users.length} χρήστες</div>
-                      )}
-                      {offer.target_groups && offer.target_groups.length > 0 && (
-                        <div><strong>Στοχευμένες ομάδες:</strong> {offer.target_groups.length} ομάδες</div>
-                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <Button
                       size="sm"
                       variant="outline"
@@ -297,7 +280,7 @@ export const OffersManagement: React.FC = () => {
                         setSelectedOffer(offer);
                         setIsPreviewDialogOpen(true);
                       }}
-                      className="rounded-none border-blue-300 text-blue-600 hover:bg-blue-50"
+                      className="rounded-none border-blue-300 text-blue-600 hover:bg-blue-50 h-8 w-8 p-0"
                     >
                       <Eye className="w-3 h-3" />
                     </Button>
@@ -308,7 +291,7 @@ export const OffersManagement: React.FC = () => {
                         setSelectedOffer(offer);
                         setIsEditDialogOpen(true);
                       }}
-                      className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+                      className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10 h-8 w-8 p-0"
                     >
                       <Edit2 className="w-3 h-3" />
                     </Button>
@@ -316,7 +299,7 @@ export const OffersManagement: React.FC = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => handleDeleteClick(offer)}
-                      className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                      className="rounded-none border-red-300 text-red-600 hover:bg-red-50 h-8 w-8 p-0"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -324,9 +307,9 @@ export const OffersManagement: React.FC = () => {
                       size="sm"
                       variant={offer.is_active ? "destructive" : "default"}
                       onClick={() => toggleActiveStatus(offer)}
-                      className="rounded-none"
+                      className="rounded-none text-xs px-2 h-8"
                     >
-                      {offer.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
+                      {offer.is_active ? 'Απενεργ.' : 'Ενεργ.'}
                     </Button>
                   </div>
                 </div>
