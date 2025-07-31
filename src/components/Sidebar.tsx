@@ -26,7 +26,6 @@ import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog"
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -46,7 +45,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [newPurchases, setNewPurchases] = useState(0);
   const [newUsers, setNewUsers] = useState(0);
   const isMobile = useIsMobile();
-  const { isAcknowledged, refreshAcknowledged } = usePersistentNotifications();
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
@@ -71,9 +69,13 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
         if (paymentsError) throw paymentsError;
         
+        // Παίρνουμε τα acknowledged offer IDs από localStorage
+        const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
+        const acknowledgedOfferIds = new Set(acknowledgedIds);
+        
         // Υπολογίζουμε πόσες αποδεκτές προσφορές δεν έχουν επισημανθεί
         const newAcceptedOffers = acceptedOffers?.filter(offer => 
-          !isAcknowledged('offer', offer.id)
+          !acknowledgedOfferIds.has(offer.id)
         ) || [];
         
         setAvailableOffers(newAcceptedOffers.length);
@@ -220,9 +222,13 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
       if (error) throw error;
 
+      // Παίρνουμε τα acknowledged payment IDs από localStorage (ίδια λογική με AdminShop)
+      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
+      const acknowledgedPaymentIds = new Set(acknowledgedIds);
+
       // Υπολογίζουμε τις νέες αγορές (όσες δεν έχουν επισημανθεί ως "ενημερώθηκα")
       const newPurchasesData = allPayments?.filter(payment => 
-        !isAcknowledged('purchase', payment.id)
+        !acknowledgedPaymentIds.has(payment.id)
       ) || [];
       
       setNewPurchases(newPurchasesData.length);
@@ -234,8 +240,28 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const loadNewUsers = async () => {
     if (!userProfile?.id || userProfile.role !== 'admin') return;
     
-    // Δεν κάνουμε τίποτα εδώ - περιμένουμε event από τη σελίδα Users
-    console.log('🔢 Sidebar: Waiting for new users count from Users page');
+    try {
+      // Παίρνουμε όλους τους χρήστες
+      const { data: allUsers, error } = await supabase
+        .from('app_users')
+        .select('id, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Παίρνουμε τα acknowledged user IDs από localStorage
+      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
+      const acknowledgedUserIds = new Set(acknowledgedIds);
+
+      // Υπολογίζουμε τους νέους χρήστες (όσους δεν έχουν επισημανθεί ως "ενημερώθηκα")
+      const newUsersData = allUsers?.filter(user => 
+        !acknowledgedUserIds.has(user.id)
+      ) || [];
+      
+      setNewUsers(newUsersData.length);
+    } catch (error) {
+      console.error('Error loading new users:', error);
+    }
   };
 
   useEffect(() => {
@@ -346,14 +372,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
     // Listen για το event που στέλνει το Users page όταν γίνει "Ενημερώθηκα"
     const handleUsersAcknowledged = () => {
-      // Δεν χρειάζεται να κάνουμε τίποτα - το νέο count θα έρθει από το new-users-count event
-    };
-
-    // Listen για το event που στέλνει το Users page με τον αριθμό νέων χρηστών
-    const handleNewUsersCount = (event: CustomEvent) => {
-      const { count } = event.detail;
-      console.log('🔢 Sidebar: Received new users count from Users page:', count);
-      setNewUsers(count);
+      loadNewUsers();
     };
     
     window.addEventListener('gym-bookings-read', handleGymBookingsRead);
@@ -361,7 +380,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     window.addEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
     window.addEventListener('offers-acknowledged', handleOffersAcknowledged);
     window.addEventListener('users-acknowledged', handleUsersAcknowledged);
-    window.addEventListener('new-users-count', handleNewUsersCount as EventListener);
     
     return () => {
       window.removeEventListener('gym-bookings-read', handleGymBookingsRead);
@@ -369,7 +387,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       window.removeEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
       window.removeEventListener('offers-acknowledged', handleOffersAcknowledged);
       window.removeEventListener('users-acknowledged', handleUsersAcknowledged);
-      window.removeEventListener('new-users-count', handleNewUsersCount as EventListener);
     };
   }, [userProfile?.id]);
 

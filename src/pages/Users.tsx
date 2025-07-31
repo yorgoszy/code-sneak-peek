@@ -31,7 +31,6 @@ import { UserProfileDialog } from "@/components/UserProfileDialog";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { testPasswordReset } from "@/utils/testPasswordReset";
 import { toast } from "sonner";
-import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 interface AppUser {
   id: string;
@@ -70,10 +69,6 @@ const Users = () => {
   // New registrations state
   const [newRegistrations, setNewRegistrations] = useState<UserWithSubscription[]>([]);
   const [allUsers, setAllUsers] = useState<UserWithSubscription[]>([]);
-  
-  // Persistent notifications
-  const { markAsAcknowledged, isAcknowledged, refreshAcknowledged } = usePersistentNotifications();
-  const [notificationsLoaded, setNotificationsLoaded] = useState(false);
 
   const fetchUsers = async () => {
     if (loadingUsers) return; // Prevent multiple simultaneous requests
@@ -122,8 +117,20 @@ const Users = () => {
 
       console.log('✅ Users fetched:', usersWithSubscription.length);
       
-      // Store all users (filtering will happen in useEffect)
-      setUsers(usersWithSubscription);
+      // Separate new registrations from all users
+      const acknowledgedUserIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
+      const acknowledgedUserIdsSet = new Set(acknowledgedUserIds);
+      
+      const newUsers = usersWithSubscription.filter(user => 
+        !acknowledgedUserIdsSet.has(user.id)
+      );
+      const acknowledgedUsers = usersWithSubscription.filter(user => 
+        acknowledgedUserIdsSet.has(user.id)
+      );
+      
+      setNewRegistrations(newUsers);
+      setAllUsers(acknowledgedUsers);
+      setUsers(usersWithSubscription); // Keep for backward compatibility
       
       // Trigger sidebar update
       window.dispatchEvent(new CustomEvent('users-updated'));
@@ -135,78 +142,40 @@ const Users = () => {
     }
   };
 
-  const handleAcknowledgeUsers = async () => {
-    if (newRegistrations.length === 0) return;
-    
+  const handleAcknowledgeUsers = () => {
     const newUserIds = newRegistrations.map(user => user.id);
-    console.log('✅ Acknowledging users:', newUserIds);
+    const existingAcknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
+    const updatedAcknowledgedIds = [...existingAcknowledgedIds, ...newUserIds];
     
-    try {
-      // Mark as acknowledged in the database
-      await markAsAcknowledged('new_users', newUserIds);
-      
-      // Move new registrations to all users
-      setAllUsers(prev => [...prev, ...newRegistrations]);
-      setNewRegistrations([]);
-      
-      // Trigger sidebar update με το νέο count (0)
-      window.dispatchEvent(new CustomEvent('users-acknowledged'));
-      window.dispatchEvent(new CustomEvent('new-users-count', { 
-        detail: { count: 0 }
-      }));
-      
-      toast.success(`${newUserIds.length} νέες εγγραφές ενημερώθηκαν`);
-    } catch (error) {
-      console.error('❌ Error acknowledging users:', error);
-      toast.error('Σφάλμα κατά την ενημέρωση');
-    }
+    localStorage.setItem('acknowledgedUsers', JSON.stringify(updatedAcknowledgedIds));
+    
+    // Move new registrations to all users
+    setAllUsers(prev => [...prev, ...newRegistrations]);
+    setNewRegistrations([]);
+    
+    // Trigger sidebar update
+    window.dispatchEvent(new CustomEvent('users-acknowledged'));
+    
+    toast.success('Νέες εγγραφές ενημερώθηκαν');
   };
 
-  // Load notifications first, then users
   useEffect(() => {
-    const loadNotificationsAndUsers = async () => {
-      if (!rolesLoading && !hasInitialized && isAdmin()) {
-        console.log('👑 Admin confirmed, loading notifications and users');
-        
-        // First, refresh acknowledged notifications from database
-        await refreshAcknowledged();
-        setNotificationsLoaded(true);
-        
-        // Then fetch users
-        await fetchUsers();
-        setHasInitialized(true);
+    console.log('👥 Users page useEffect:', {
+      isAdminResult: isAdmin(),
+      rolesLoading,
+      userProfile: userProfile?.id,
+      hasInitialized
+    });
+
+    // Only initialize once when roles are loaded and user is admin
+    if (!rolesLoading && !hasInitialized) {
+      if (isAdmin()) {
+        console.log('👑 Admin confirmed, fetching users');
+        fetchUsers();
       }
-    };
-
-    loadNotificationsAndUsers();
-  }, [isAdmin, rolesLoading, hasInitialized]);
-
-  // Re-run user filtering when notifications are loaded
-  useEffect(() => {
-    if (notificationsLoaded && users.length > 0) {
-      console.log('🔄 Re-filtering users with loaded notifications');
-      
-      const newUsers = users.filter(user => 
-        !isAcknowledged('new_users', user.id)
-      );
-      const acknowledgedUsers = users.filter(user => 
-        isAcknowledged('new_users', user.id)
-      );
-      
-      setNewRegistrations(newUsers);
-      setAllUsers(acknowledgedUsers);
-      
-      console.log('📊 Users separated:', { 
-        newUsers: newUsers.length, 
-        acknowledgedUsers: acknowledgedUsers.length 
-      });
-      
-      // Στέλνω event στο sidebar με τον σωστό αριθμό νέων χρηστών
-      window.dispatchEvent(new CustomEvent('new-users-count', { 
-        detail: { count: newUsers.length }
-      }));
+      setHasInitialized(true);
     }
-  }, [notificationsLoaded, users, isAcknowledged]);
+  }, [isAdmin, rolesLoading, hasInitialized]);
 
   if (loading || rolesLoading) {
     console.log('⏳ Users page loading:', { loading, rolesLoading });

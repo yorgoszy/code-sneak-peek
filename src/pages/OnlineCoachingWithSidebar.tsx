@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 const OnlineCoachingWithSidebar: React.FC = () => {
   // For admin view - show all videocall bookings
@@ -277,14 +276,14 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                         {pendingBookings.map((booking) => (
-                           <VideocallBookingCard 
-                             key={booking.id} 
-                             booking={booking} 
-                             isAdmin={true} 
-                             onRefresh={() => fetchBookings()}
-                           />
-                         ))}
+                        {pendingBookings.map((booking) => (
+                          <VideocallBookingCard 
+                            key={booking.id} 
+                            booking={booking} 
+                            isAdmin={true} 
+                            onRefresh={() => fetchBookings()}
+                          />
+                        ))}
                       </div>
                     )}
                   </TabsContent>

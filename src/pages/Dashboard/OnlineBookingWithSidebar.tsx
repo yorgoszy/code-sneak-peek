@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingSessionsOverview } from "@/components/admin/BookingSessionsOverview";
 import { GymBookingsOverview } from "@/components/admin/GymBookingsOverview";
 import { GymBookingsCalendarView } from "@/components/admin/GymBookingsCalendarView";
-import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 const OnlineBookingWithSidebar = () => {
   const { user, signOut } = useAuth();

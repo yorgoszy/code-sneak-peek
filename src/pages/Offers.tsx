@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { Tag, Check, X, ShoppingCart, RefreshCw } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 export default function Offers() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -19,7 +18,6 @@ export default function Offers() {
   const [markingAsRead, setMarkingAsRead] = useState(false);
   const [activeTab, setActiveTab] = useState("new");
   const { userProfile } = useRoleCheck();
-  const { markAsAcknowledged, isAcknowledged } = usePersistentNotifications();
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -60,10 +58,10 @@ export default function Offers() {
         // Διαχωρισμός προσφορών με βάση το αν έχουν επισημανθεί ως "ενημερώθηκα"
         const allOffers = acceptedOffers || [];
         const newOffersData = allOffers.filter(offer => 
-          !isAcknowledged('offer', offer.id)
+          !acknowledgedOfferIds.has(offer.id)
         );
         const readOffersData = allOffers.filter(offer => 
-          isAcknowledged('offer', offer.id)
+          acknowledgedOfferIds.has(offer.id)
         );
         
         setNewOffers(newOffersData);
@@ -237,9 +235,15 @@ export default function Offers() {
     setMarkingAsRead(true);
     
     try {
-      // Προσθέτουμε τα IDs των νέων αποδεκτών προσφορών στη βάση δεδομένων
+      // Παίρνουμε τα υπάρχοντα acknowledged offer IDs από localStorage
+      const existingAcknowledged = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
+      
+      // Προσθέτουμε τα IDs των νέων αποδεκτών προσφορών
       const newOfferIds = newOffers.map(offer => offer.id);
-      await markAsAcknowledged('offer', newOfferIds);
+      const updatedAcknowledged = [...existingAcknowledged, ...newOfferIds];
+      
+      // Αποθηκεύουμε στο localStorage
+      localStorage.setItem('acknowledgedOffers', JSON.stringify(updatedAcknowledged));
       
       // Μεταφορά νέων προσφορών στο "Ενημερώθηκα"
       setReadOffers(prev => [...prev, ...newOffers]);
