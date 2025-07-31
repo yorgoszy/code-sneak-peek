@@ -234,28 +234,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const loadNewUsers = async () => {
     if (!userProfile?.id || userProfile.role !== 'admin') return;
     
-    try {
-      // Πρώτα φορτώνουμε τα acknowledged notifications από τη βάση
-      await refreshAcknowledged();
-      
-      // Παίρνουμε όλους τους χρήστες
-      const { data: allUsers, error } = await supabase
-        .from('app_users')
-        .select('id, created_at')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Υπολογίζουμε τους νέους χρήστες (όσους δεν έχουν επισημανθεί ως "ενημερώθηκα")
-      const newUsersData = allUsers?.filter(user => 
-        !isAcknowledged('new_users', user.id)
-      ) || [];
-      
-      console.log('🔢 Sidebar: Total users:', allUsers?.length, 'New users:', newUsersData.length);
-      setNewUsers(newUsersData.length);
-    } catch (error) {
-      console.error('Error loading new users:', error);
-    }
+    // Δεν κάνουμε τίποτα εδώ - περιμένουμε event από τη σελίδα Users
+    console.log('🔢 Sidebar: Waiting for new users count from Users page');
   };
 
   useEffect(() => {
@@ -366,7 +346,14 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
     // Listen για το event που στέλνει το Users page όταν γίνει "Ενημερώθηκα"
     const handleUsersAcknowledged = () => {
-      loadNewUsers();
+      // Δεν χρειάζεται να κάνουμε τίποτα - το νέο count θα έρθει από το new-users-count event
+    };
+
+    // Listen για το event που στέλνει το Users page με τον αριθμό νέων χρηστών
+    const handleNewUsersCount = (event: CustomEvent) => {
+      const { count } = event.detail;
+      console.log('🔢 Sidebar: Received new users count from Users page:', count);
+      setNewUsers(count);
     };
     
     window.addEventListener('gym-bookings-read', handleGymBookingsRead);
@@ -374,6 +361,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     window.addEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
     window.addEventListener('offers-acknowledged', handleOffersAcknowledged);
     window.addEventListener('users-acknowledged', handleUsersAcknowledged);
+    window.addEventListener('new-users-count', handleNewUsersCount as EventListener);
     
     return () => {
       window.removeEventListener('gym-bookings-read', handleGymBookingsRead);
@@ -381,6 +369,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       window.removeEventListener('purchases-acknowledged', handlePurchasesAcknowledged);
       window.removeEventListener('offers-acknowledged', handleOffersAcknowledged);
       window.removeEventListener('users-acknowledged', handleUsersAcknowledged);
+      window.removeEventListener('new-users-count', handleNewUsersCount as EventListener);
     };
   }, [userProfile?.id]);
 

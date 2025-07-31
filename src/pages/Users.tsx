@@ -149,8 +149,11 @@ const Users = () => {
       setAllUsers(prev => [...prev, ...newRegistrations]);
       setNewRegistrations([]);
       
-      // Trigger sidebar update
+      // Trigger sidebar update με το νέο count (0)
       window.dispatchEvent(new CustomEvent('users-acknowledged'));
+      window.dispatchEvent(new CustomEvent('new-users-count', { 
+        detail: { count: 0 }
+      }));
       
       toast.success(`${newUserIds.length} νέες εγγραφές ενημερώθηκαν`);
     } catch (error) {
@@ -197,6 +200,11 @@ const Users = () => {
         newUsers: newUsers.length, 
         acknowledgedUsers: acknowledgedUsers.length 
       });
+      
+      // Στέλνω event στο sidebar με τον σωστό αριθμό νέων χρηστών
+      window.dispatchEvent(new CustomEvent('new-users-count', { 
+        detail: { count: newUsers.length }
+      }));
     }
   }, [notificationsLoaded, users, isAcknowledged]);
 
