@@ -93,46 +93,6 @@ export const UserProfileOverview = ({
         </Card>
       </div>
 
-      {/* Additional Info */}
-      <Card className="rounded-none">
-        <CardHeader className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-row items-center justify-between'} ${isMobile ? "pb-3" : ""}`}>
-          <CardTitle className={isMobile ? 'text-base' : ''}>Στοιχεία Λογαριασμού</CardTitle>
-          <Button
-            onClick={() => setIsPasswordDialogOpen(true)}
-            variant="outline"
-            size={isMobile ? "sm" : "default"}
-            className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
-          >
-            <Key className="w-4 h-4 mr-2" />
-            Αλλαγή Κωδικού
-          </Button>
-        </CardHeader>
-        <CardContent className={isMobile ? "pt-0" : ""}>
-          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
-            <div>
-              <label className={`font-medium text-gray-600 ${isMobile ? 'text-sm' : 'text-sm'}`}>Email</label>
-              <p className={`${isMobile ? 'text-sm' : 'text-sm'} break-all`}>{userProfile.email}</p>
-            </div>
-            <div>
-              <label className={`font-medium text-gray-600 ${isMobile ? 'text-sm' : 'text-sm'}`}>Ρόλος</label>
-              <p className={`capitalize ${isMobile ? 'text-sm' : 'text-sm'}`}>{userProfile.role}</p>
-            </div>
-            <div>
-              <label className={`font-medium text-gray-600 ${isMobile ? 'text-sm' : 'text-sm'}`}>Δημιουργήθηκε</label>
-              <p className={isMobile ? 'text-sm' : 'text-sm'}>
-                {new Date(userProfile.created_at).toLocaleDateString('el-GR')}
-              </p>
-            </div>
-            <div>
-              <label className={`font-medium text-gray-600 ${isMobile ? 'text-sm' : 'text-sm'}`}>Τελευταία Ενημέρωση</label>
-              <p className={isMobile ? 'text-sm' : 'text-sm'}>
-                {new Date(userProfile.updated_at).toLocaleDateString('el-GR')}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Tabs για λεπτομερείς προβολές */}
       <Card className="rounded-none">
         <CardHeader>
