@@ -122,6 +122,102 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
           throw paymentError;
         }
 
+        console.log('✅ Creating user subscription for offer:', offer.subscription_types);
+        
+        // Δημιουργία συνδρομής
+        const startDate = new Date().toISOString().split('T')[0];
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + (offer.subscription_types.duration_months || 1));
+        const endDateStr = endDate.toISOString().split('T')[0];
+
+        const { data: subscriptionData, error: subscriptionError } = await supabase
+          .from('user_subscriptions')
+          .insert({
+            user_id: userProfile.id,
+            subscription_type_id: offer.subscription_type_id,
+            start_date: startDate,
+            end_date: endDateStr,
+            status: 'active'
+          })
+          .select()
+          .single();
+
+        if (subscriptionError) {
+          console.error('❌ Error creating subscription:', subscriptionError);
+          throw subscriptionError;
+        }
+
+        console.log('✅ Subscription created:', subscriptionData);
+
+        // Ενημέρωση του user status
+        const { error: userUpdateError } = await supabase
+          .from('app_users')
+          .update({ subscription_status: 'active' })
+          .eq('id', userProfile.id);
+
+        if (userUpdateError) {
+          console.error('❌ Error updating user status:', userUpdateError);
+          // Δεν σταματάμε τη διαδικασία αν η ενημέρωση του user αποτύχει
+        }
+
+        // Δημιουργία visit package αν είναι visit-based συνδρομή
+        if (offer.subscription_types.subscription_mode === 'visit_based' && offer.subscription_types.visit_count) {
+          console.log('✅ Creating visit package for visit-based subscription');
+          
+          const visitExpiryDate = new Date();
+          visitExpiryDate.setMonth(visitExpiryDate.getMonth() + (offer.subscription_types.visit_expiry_months || 3));
+          
+          const { error: visitPackageError } = await supabase
+            .from('visit_packages')
+            .insert({
+              user_id: userProfile.id,
+              total_visits: offer.subscription_types.visit_count,
+              remaining_visits: offer.subscription_types.visit_count,
+              purchase_date: startDate,
+              expiry_date: visitExpiryDate.toISOString().split('T')[0],
+              price: 0,
+              allowed_sections: offer.subscription_types.allowed_sections,
+              status: 'active'
+            });
+
+          if (visitPackageError) {
+            console.error('❌ Error creating visit package:', visitPackageError);
+            // Δεν σταματάμε τη διαδικασία αν το visit package αποτύχει
+          } else {
+            console.log('✅ Visit package created successfully');
+          }
+        }
+
+        // Δημιουργία videocall package αν περιέχει "videocall" στο όνομα
+        if (offer.subscription_types.name && offer.subscription_types.name.toLowerCase().includes('videocall')) {
+          console.log('✅ Creating videocall package for videocall subscription');
+          
+          // Υπολογισμός αριθμού βιντεοκλήσεων (μπορεί να είναι 1 για single ή περισσότερες για πακέτα)
+          const videocallCount = offer.subscription_types.visit_count || 1;
+          
+          const videocallExpiryDate = new Date();
+          videocallExpiryDate.setMonth(videocallExpiryDate.getMonth() + (offer.subscription_types.duration_months || 1));
+          
+          const { error: videocallPackageError } = await supabase
+            .from('videocall_packages')
+            .insert({
+              user_id: userProfile.id,
+              total_videocalls: videocallCount,
+              remaining_videocalls: videocallCount,
+              purchase_date: startDate,
+              expiry_date: videocallExpiryDate.toISOString().split('T')[0],
+              price: 0,
+              status: 'active'
+            });
+
+          if (videocallPackageError) {
+            console.error('❌ Error creating videocall package:', videocallPackageError);
+            // Δεν σταματάμε τη διαδικασία αν το videocall package αποτύχει
+          } else {
+            console.log('✅ Videocall package created successfully');
+          }
+        }
+
         // Δημιουργία απόδειξης για τη δωρεάν προσφορά
         const receiptNumber = `FREE-${Date.now()}`;
         const { error: receiptError } = await supabase

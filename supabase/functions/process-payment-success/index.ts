@@ -230,7 +230,43 @@ serve(async (req) => {
       logStep("Visit package created successfully", savedVisitPackage);
     }
 
-    return new Response(JSON.stringify({ 
+    // Αν είναι videocall subscription, δημιουργούμε videocall package
+    if (subscriptionType.name && subscriptionType.name.toLowerCase().includes('videocall')) {
+      logStep("Creating videocall package for videocall subscription");
+      
+      // Υπολογισμός αριθμού βιντεοκλήσεων (μπορεί να είναι 1 για single ή περισσότερες για πακέτα)
+      const videocallCount = subscriptionType.visit_count || 1;
+      
+      const expiryDate = new Date();
+      expiryDate.setMonth(expiryDate.getMonth() + (subscriptionType.duration_months || 1));
+
+      const videocallPackageData = {
+        user_id: appUser.id,
+        total_videocalls: videocallCount,
+        remaining_videocalls: videocallCount,
+        purchase_date: new Date().toISOString().split('T')[0],
+        expiry_date: expiryDate.toISOString().split('T')[0],
+        price: finalAmount,
+        payment_id: savedPayment.id,
+        status: 'active'
+      };
+
+      const { data: savedVideocallPackage, error: videocallPackageError } = await supabaseClient
+        .from('videocall_packages')
+        .insert(videocallPackageData)
+        .select()
+        .single();
+
+      if (videocallPackageError) {
+        logStep("Videocall package insert error", videocallPackageError);
+        // Δεν σταματάμε τη διαδικασία αν το videocall package αποτύχει
+        logStep("Warning: Failed to create videocall package", videocallPackageError);
+      } else {
+        logStep("Videocall package created successfully", savedVideocallPackage);
+      }
+    }
+
+    return new Response(JSON.stringify({
       success: true, 
       payment_id: savedPayment.id,
       receipt_id: savedReceipt.id,
