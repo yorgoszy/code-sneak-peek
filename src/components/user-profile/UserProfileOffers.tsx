@@ -27,6 +27,7 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
   } = useProgramCalendarDialog();
 
   useEffect(() => {
+    console.log('🔍 UserProfileOffers mounted with userProfile:', userProfile?.id);
     if (userProfile?.id) {
       loadUserOffers();
     }
