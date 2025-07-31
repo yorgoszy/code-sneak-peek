@@ -171,9 +171,43 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
   };
 
   const renderPurchaseCard = (purchase: Purchase) => (
-    <Card key={purchase.id} className="rounded-none hover:shadow-md transition-shadow h-16">
-      <CardContent className="p-3 h-full">
-        <div className="flex items-center justify-between h-full">
+    <Card key={purchase.id} className="rounded-none hover:shadow-md transition-shadow">
+      <CardContent className="p-3">
+        {/* Mobile layout - stacked */}
+        <div className="sm:hidden space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 min-w-0 flex-1">
+              <div className="bg-[#00ffba]/10 p-1.5 rounded-full flex-shrink-0">
+                <Package className="w-4 h-4 text-[#00ffba]" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold text-gray-900 truncate">{purchase.subscription_type.name}</h3>
+                <p className="text-xs text-gray-600 truncate">{purchase.user.name}</p>
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <p className="text-sm font-bold text-[#00ffba]">€{purchase.amount}</p>
+              <Badge variant="secondary" className="rounded-none text-xs px-1 py-0.5 mt-1">
+                <Check className="w-3 h-3" />
+              </Badge>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center space-x-1">
+              <Calendar className="w-3 h-3" />
+              <span>
+                {purchase.subscription_type.subscription_mode === 'visit_based' 
+                  ? `${purchase.subscription_type.visit_count} επισκέψεις`
+                  : `${purchase.subscription_type.duration_months}μ`
+                }
+              </span>
+            </div>
+            <span>{format(new Date(purchase.payment_date), 'dd/MM/yyyy')}</span>
+          </div>
+        </div>
+
+        {/* Desktop/Tablet layout - horizontal */}
+        <div className="hidden sm:flex items-center justify-between h-10">
           {/* Left section - Icon, Name, User */}
           <div className="flex items-center space-x-3 min-w-0 flex-1">
             <div className="bg-[#00ffba]/10 p-1.5 rounded-full flex-shrink-0">
@@ -186,7 +220,7 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
           </div>
 
           {/* Center section - Duration/Visits */}
-          <div className="hidden sm:flex items-center space-x-1 text-xs text-gray-500 px-4">
+          <div className="flex items-center space-x-1 text-xs text-gray-500 px-4">
             <Calendar className="w-3 h-3" />
             <span>
               {purchase.subscription_type.subscription_mode === 'visit_based' 
@@ -225,22 +259,23 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
   }
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+        {/* Mobile/Tablet responsive header */}
+        <div className="space-y-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Αγορές</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Αγορές</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
               Διαχείριση όλων των αγορών πακέτων ({newPurchases.length + readPurchases.length} σύνολο)
             </p>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
             {newPurchases.length > 0 && (
               <Button
                 onClick={handleMarkAsRead}
                 disabled={markingAsRead}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
               >
                 {markingAsRead ? (
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -252,14 +287,14 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
             )}
             
             {userProfile && onSignOut && (
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
-                  {userProfile?.name || userEmail}
-                  {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <span className="text-sm text-gray-600 flex flex-col sm:flex-row sm:items-center">
+                  <span>{userProfile?.name || userEmail}</span>
+                  {isAdmin() && <span className="mt-1 sm:mt-0 sm:ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded w-fit">Admin</span>}
                 </span>
                 <Button 
                   variant="outline" 
-                  className="rounded-none"
+                  className="rounded-none w-full sm:w-auto"
                   onClick={onSignOut}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
