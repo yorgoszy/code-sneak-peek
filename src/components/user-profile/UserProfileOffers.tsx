@@ -171,21 +171,9 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
           // Δεν σταματάμε τη διαδικασία αν η ενημέρωση του user αποτύχει
         }
 
-        // Δημιουργία visit package αν η συνδρομή είναι visit-based ή έχει visit_count
-        const shouldCreateVisitPackage = subscriptionData.subscription_type_id && (
-          offer.subscription_types.subscription_mode === 'visit_based' || 
-          offer.subscription_types.visit_count > 0
-        );
-        
-        console.log('🔍 Checking if visit package should be created:', {
-          subscription_mode: offer.subscription_types.subscription_mode,
-          visit_count: offer.subscription_types.visit_count,
-          subscription_name: offer.subscription_types.name,
-          shouldCreate: shouldCreateVisitPackage
-        });
-        
-        if (shouldCreateVisitPackage) {
-          console.log('✅ Creating visit package for subscription');
+        // Δημιουργία visit package για visit-based συνδρομές
+        if (offer.subscription_types.subscription_mode === 'visit_based' && offer.subscription_types.visit_count > 0) {
+          console.log('✅ Creating visit package for visit-based subscription');
           
           const visitExpiryDate = new Date();
           visitExpiryDate.setMonth(visitExpiryDate.getMonth() + (offer.subscription_types.visit_expiry_months || 3));
@@ -213,8 +201,6 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
           } else {
             console.log('✅ Visit package created successfully');
           }
-        } else {
-          console.log('❌ Visit package NOT created because conditions not met');
         }
 
         // Δημιουργία videocall package αν περιέχει "videocall" στο όνομα
