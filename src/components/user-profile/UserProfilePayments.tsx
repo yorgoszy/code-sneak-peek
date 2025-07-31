@@ -197,8 +197,8 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   const renderPurchaseCard = (purchase: Purchase) => (
     <Card key={purchase.id} className="rounded-none hover:shadow-md transition-shadow">
       <CardContent className="p-3">
-        {/* Desktop Layout - Horizontal */}
-        <div className="hidden md:flex items-center justify-between">
+        {/* Desktop Layout - Large screens */}
+        <div className="hidden lg:flex items-center justify-between">
           {/* Αριστερό μέρος - Εικονίδιο και Όνομα */}
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             <div className="bg-[#00ffba]/10 p-2 rounded-full flex-shrink-0">
@@ -241,8 +241,82 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
           </div>
         </div>
 
-        {/* Mobile/Tablet Layout - Vertical */}
-        <div className="md:hidden space-y-3">
+        {/* Tablet Layout - Medium screens */}
+        <div className="hidden md:flex lg:hidden items-center justify-between">
+          {/* Αριστερό μέρος - Εικονίδιο και Όνομα */}
+          <div className="flex items-center space-x-2 flex-1 min-w-0">
+            <div className="bg-[#00ffba]/10 p-1.5 rounded-full flex-shrink-0">
+              <Package className="w-4 h-4 text-[#00ffba]" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="font-medium text-sm truncate">{purchase.subscription_type.name}</h4>
+              {purchase.offer_id && (
+                <span className="text-xs text-[#00ffba] font-medium">Προσφορά</span>
+              )}
+            </div>
+          </div>
+
+          {/* Κεντρικό μέρος - Συμπιεσμένα Στοιχεία */}
+          <div className="flex items-center space-x-2 text-xs text-gray-600 flex-shrink-0">
+            <div className="flex items-center space-x-1">
+              <Calendar className="w-3 h-3" />
+              <span>
+                {purchase.subscription_type.subscription_mode === 'visit_based' 
+                  ? `${purchase.subscription_type.visit_count}επ`
+                  : `${purchase.subscription_type.duration_months}μ`
+                }
+              </span>
+            </div>
+            <Badge variant="secondary" className="rounded-none text-xs px-1">
+              {purchase.status === 'completed' ? '✓' : purchase.status}
+            </Badge>
+          </div>
+
+          {/* Δεξιό μέρος - Ποσό και Ημερομηνία */}
+          <div className="text-right flex-shrink-0 ml-3">
+            <p className="text-base font-bold text-[#00ffba]">€{purchase.amount}</p>
+            <p className="text-xs text-gray-500">
+              {format(new Date(purchase.payment_date), 'dd/MM')}
+            </p>
+          </div>
+        </div>
+
+        {/* Small Tablet Layout */}
+        <div className="hidden sm:flex md:hidden">
+          <div className="flex items-center justify-between w-full">
+            {/* Αριστερό μέρος */}
+            <div className="flex items-center space-x-2 flex-1 min-w-0">
+              <div className="bg-[#00ffba]/10 p-1.5 rounded-full flex-shrink-0">
+                <Package className="w-3 h-3 text-[#00ffba]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="font-medium text-sm truncate">{purchase.subscription_type.name}</h4>
+                <div className="flex items-center space-x-2 text-xs text-gray-600">
+                  {purchase.offer_id && (
+                    <span className="text-[#00ffba] font-medium">Προσφορά</span>
+                  )}
+                  <span>
+                    {purchase.subscription_type.subscription_mode === 'visit_based' 
+                      ? `${purchase.subscription_type.visit_count} επισκ.`
+                      : `${purchase.subscription_type.duration_months} μήν.`
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Δεξιό μέρος */}
+            <div className="text-right flex-shrink-0">
+              <p className="text-base font-bold text-[#00ffba]">€{purchase.amount}</p>
+              <p className="text-xs text-gray-500">
+                {format(new Date(purchase.payment_date), 'dd/MM/yy')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Layout - Small screens */}
+        <div className="sm:hidden space-y-3">
           {/* Πρώτη γραμμή - Όνομα και Ποσό */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 flex-1 min-w-0">
@@ -265,11 +339,6 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
           <div className="flex items-center justify-between text-xs text-gray-600">
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-1">
-                <CreditCard className="w-3 h-3" />
-                <span className="hidden sm:inline">{purchase.payment_method || 'Stripe'}</span>
-                <span className="sm:hidden">Κάρτα</span>
-              </div>
-              <div className="flex items-center space-x-1">
                 <Calendar className="w-3 h-3" />
                 <span>
                   {purchase.subscription_type.subscription_mode === 'visit_based' 
@@ -279,7 +348,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
                 </span>
               </div>
               <Badge variant="secondary" className="rounded-none text-xs">
-                {purchase.status === 'completed' ? 'Ολοκληρ.' : purchase.status}
+                ✓
               </Badge>
             </div>
             <div className="text-xs text-gray-500">
