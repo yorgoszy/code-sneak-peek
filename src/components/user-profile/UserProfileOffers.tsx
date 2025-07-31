@@ -127,7 +127,11 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
         // Δημιουργία συνδρομής
         const startDate = new Date().toISOString().split('T')[0];
         const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + (offer.subscription_types.duration_months || 1));
+        // Για visit-based συνδρομές χρησιμοποιούμε visit_expiry_months
+        const subscriptionDuration = offer.subscription_types.subscription_mode === 'visit_based' 
+          ? (offer.subscription_types.visit_expiry_months || 3)
+          : (offer.subscription_types.duration_months || 1);
+        endDate.setMonth(endDate.getMonth() + subscriptionDuration);
         const endDateStr = endDate.toISOString().split('T')[0];
 
         const { data: subscriptionData, error: subscriptionError } = await supabase
