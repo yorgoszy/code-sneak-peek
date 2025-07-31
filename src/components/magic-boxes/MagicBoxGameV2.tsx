@@ -26,6 +26,14 @@ interface UserMagicBox {
   opened_at: string | null;
   won_prize_id: string | null;
   magic_box_campaigns: MagicBoxCampaign;
+  campaign_prizes?: {
+    prize_type: string;
+    subscription_type_id: string | null;
+    subscription_types?: {
+      name: string;
+      duration_months: number;
+    };
+  };
 }
 
 export const MagicBoxGameV2: React.FC = () => {
@@ -112,7 +120,15 @@ export const MagicBoxGameV2: React.FC = () => {
         .from('user_magic_boxes')
         .select(`
           *,
-          magic_box_campaigns!inner(*)
+          magic_box_campaigns!inner(*),
+          campaign_prizes(
+            prize_type,
+            subscription_type_id,
+            subscription_types(
+              name,
+              duration_months
+            )
+          )
         `)
         .eq('user_id', userId)
         .eq('magic_box_campaigns.is_active', true)
@@ -287,10 +303,25 @@ export const MagicBoxGameV2: React.FC = () => {
               <p className="text-gray-600 mb-4">{box.magic_box_campaigns.description}</p>
               
               {box.is_opened ? (
-                <div className="text-center">
+                <div className="text-center space-y-3">
                   <p className="text-sm text-gray-500 mb-2">
                     Άνοιξε στις: {formatDate(box.opened_at!)}
                   </p>
+                  
+                  {/* Εμφάνιση δώρου μέσα στο κουτί */}
+                  {box.campaign_prizes?.subscription_types && (
+                    <div className="bg-[#00ffba]/10 border border-[#00ffba] p-3 rounded-none">
+                      <div className="font-bold text-[#00ffba]">
+                        {box.campaign_prizes.subscription_types.name}
+                      </div>
+                      {box.campaign_prizes.subscription_types.duration_months > 0 && (
+                        <div className="text-sm text-gray-600">
+                          {box.campaign_prizes.subscription_types.duration_months} μήνες
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
                   <Badge variant="secondary" className="rounded-none">
                     Ολοκληρωμένο
                   </Badge>
