@@ -13,6 +13,7 @@ import { useEffect } from "react";
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isResettingPasswords, setIsResettingPasswords] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
@@ -231,6 +232,34 @@ const Auth = () => {
     }
   };
 
+  const handleResetAllPasswords = async () => {
+    setIsResettingPasswords(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('reset-all-passwords', {
+        body: {
+          adminKey: 'HYPERKIDS_ADMIN_RESET_2025'
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία!",
+        description: `Επαναφορά ολοκληρώθηκε! ${data.successful}/${data.total} χρήστες.`,
+      });
+    } catch (error: any) {
+      console.error('Reset all passwords error:', error);
+      toast({
+        title: "Σφάλμα",
+        description: error.message || "Παρουσιάστηκε σφάλμα κατά την επαναφορά.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResettingPasswords(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -353,6 +382,22 @@ const Auth = () => {
                 </TabsContent>
               </Tabs>
             )}
+
+            {/* Admin Emergency Reset Button */}
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-xs text-red-600 mb-2 text-center">🚨 ADMIN EMERGENCY 🚨</p>
+              <Button 
+                onClick={handleResetAllPasswords}
+                disabled={isResettingPasswords}
+                variant="destructive"
+                className="w-full rounded-none text-xs"
+              >
+                {isResettingPasswords ? "Επαναφορά όλων των κωδικών..." : "Reset All User Passwords"}
+              </Button>
+              <p className="text-xs text-red-500 mt-1 text-center">
+                Θα στείλει password reset σε όλους τους χρήστες
+              </p>
+            </div>
 
             <div className="mt-6 text-center">
               <Link to="/" className="text-sm text-blue-600 hover:underline">
