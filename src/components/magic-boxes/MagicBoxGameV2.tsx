@@ -32,6 +32,9 @@ interface UserMagicBox {
     subscription_types?: {
       name: string;
       duration_months: number;
+      visit_expiry_months?: number;
+      videocall_expiry_months?: number;
+      subscription_mode?: string;
     };
   };
 }
@@ -126,7 +129,10 @@ export const MagicBoxGameV2: React.FC = () => {
             subscription_type_id,
             subscription_types(
               name,
-              duration_months
+              duration_months,
+              visit_expiry_months,
+              videocall_expiry_months,
+              subscription_mode
             )
           )
         `)
@@ -135,7 +141,7 @@ export const MagicBoxGameV2: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUserMagicBoxes(data || []);
+      setUserMagicBoxes((data as any) || []);
       console.log('🔧 User magic boxes loaded:', data?.length);
       console.log('📦 Magic boxes data:', data);
     } catch (error) {
@@ -303,11 +309,29 @@ export const MagicBoxGameV2: React.FC = () => {
                       <div className="font-bold text-[#00ffba]">
                         {box.campaign_prizes.subscription_types.name}
                       </div>
-                      {box.campaign_prizes.subscription_types.duration_months > 0 && (
-                        <div className="text-sm text-gray-600">
-                          {box.campaign_prizes.subscription_types.duration_months} μήνες
-                        </div>
-                      )}
+                      {(() => {
+                        const subType = box.campaign_prizes.subscription_types;
+                        if (subType.subscription_mode === 'visit_based' && subType.visit_expiry_months) {
+                          return (
+                            <div className="text-sm text-gray-600">
+                              Λήξη σε {subType.visit_expiry_months} μήνες
+                            </div>
+                          );
+                        } else if (subType.subscription_mode === 'videocall_based' && subType.videocall_expiry_months) {
+                          return (
+                            <div className="text-sm text-gray-600">
+                              Λήξη σε {subType.videocall_expiry_months} μήνες
+                            </div>
+                          );
+                        } else if (subType.duration_months && subType.duration_months > 0) {
+                          return (
+                            <div className="text-sm text-gray-600">
+                              {subType.duration_months} μήνες
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   )}
                   
