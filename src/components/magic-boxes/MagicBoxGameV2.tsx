@@ -343,7 +343,6 @@ export const MagicBoxGameV2: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-lg mb-4">{showResult.message}</p>
             
             {showResult.prize_type === 'subscription' && showResult.subscription_type_id && (
               <div className="bg-white p-4 rounded-lg border mb-4">
