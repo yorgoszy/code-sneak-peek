@@ -40,6 +40,8 @@ interface UserMagicBox {
 }
 
 export const MagicBoxGameV2: React.FC = () => {
+  console.log('🎯 MagicBoxGameV2 component is rendering...');
+  
   const [userMagicBoxes, setUserMagicBoxes] = useState<UserMagicBox[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -87,14 +89,16 @@ export const MagicBoxGameV2: React.FC = () => {
   }, [currentUserId]);
 
   const initializeUser = async () => {
+    console.log('🔧 MagicBox: Starting user initialization...');
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
-        console.error('User not authenticated');
+        console.error('🔧 MagicBox: User not authenticated', userError);
+        setLoading(false);
         return;
       }
 
-      console.log('🔧 Auth user ID:', userData.user.id);
+      console.log('🔧 MagicBox: Auth user ID:', userData.user.id);
 
       // Βρίσκουμε το app_users record του χρήστη
       const { data: appUser, error: appUserError } = await supabase
@@ -104,21 +108,23 @@ export const MagicBoxGameV2: React.FC = () => {
         .single();
 
       if (appUserError || !appUser) {
-        console.error('App user not found:', appUserError);
+        console.error('🔧 MagicBox: App user not found:', appUserError);
+        setLoading(false);
         return;
       }
 
-      console.log('🔧 Current user initialized:', appUser.id);
+      console.log('🔧 MagicBox: Current user initialized:', appUser.id);
       setCurrentUserId(appUser.id);
       await loadUserMagicBoxes(appUser.id);
     } catch (error) {
-      console.error('Error initializing user:', error);
+      console.error('🔧 MagicBox: Error initializing user:', error);
       setLoading(false);
     }
   };
 
   const loadUserMagicBoxes = async (userId: string) => {
     try {
+      console.log('📦 Starting to load magic boxes for user:', userId);
       const { data, error } = await supabase
         .from('user_magic_boxes')
         .select(`
@@ -140,7 +146,11 @@ export const MagicBoxGameV2: React.FC = () => {
         .eq('magic_box_campaigns.is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('📦 Magic boxes query result:', { data, error });
+      if (error) {
+        console.error('📦 Error loading magic boxes:', error);
+        throw error;
+      }
       setUserMagicBoxes((data as any) || []);
       console.log('🔧 User magic boxes loaded:', data?.length);
       console.log('📦 Magic boxes data:', data);
