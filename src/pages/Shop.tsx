@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Clock, Users, MapPin, Calendar, Dumbbell, ArrowLeft } from "lucide-react";
+import { ShoppingCart, Clock, Users, MapPin, Calendar, Dumbbell, ArrowLeft, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface SubscriptionType {
   id: string;
@@ -20,12 +21,19 @@ interface SubscriptionType {
   available_in_shop?: boolean;
 }
 
-const Shop = () => {
+interface ShopProps {
+  userProfile?: any;
+  userEmail?: string;
+  onSignOut?: () => void;
+}
+
+const Shop = ({ userProfile, userEmail, onSignOut }: ShopProps = {}) => {
   const [loading, setLoading] = useState<string | null>(null);
   const [products, setProducts] = useState<SubscriptionType[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const navigate = useNavigate();
   const { userId } = useParams();
+  const { isAdmin } = useRoleCheck();
 
   useEffect(() => {
     fetchProducts();
@@ -107,11 +115,30 @@ const Shop = () => {
           </Button>
         </div>
         
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Αγορές</h1>
-          <p className="text-lg text-gray-600">
-            Αγόρασε πακέτα επισκέψεων, συνδρομές και άλλες υπηρεσίες
-          </p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Αγορές</h1>
+            <p className="text-lg text-gray-600">
+              Αγόρασε πακέτα επισκέψεων, συνδρομές και άλλες υπηρεσίες
+            </p>
+          </div>
+          
+          {userProfile && onSignOut && (
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">
+                {userProfile?.name || userEmail}
+                {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+              </span>
+              <Button 
+                variant="outline" 
+                className="rounded-none"
+                onClick={onSignOut}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Αποσύνδεση
+              </Button>
+            </div>
+          )}
         </div>
 
         {products.length === 0 ? (

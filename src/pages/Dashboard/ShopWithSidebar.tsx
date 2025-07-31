@@ -42,17 +42,9 @@ const ShopWithSidebar = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navigation */}
-        <DashboardHeader
-          userProfile={dashboardUserProfile}
-          userEmail={user?.email}
-          onSignOut={handleSignOut}
-          onMobileMenuClick={() => setShowMobileSidebar(true)}
-        />
-
         {/* Shop Content */}
         <div className="flex-1 overflow-auto">
-          <Shop />
+          <Shop userProfile={dashboardUserProfile} userEmail={user?.email} onSignOut={handleSignOut} />
         </div>
       </div>
     </div>
