@@ -34,9 +34,6 @@ export const UserProfileOverview = ({
   
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* User Header */}
-      <UserProfileHeader user={userProfile} />
-      
       {/* General Stats Overview */}
       <UserProfileStats user={userProfile} stats={stats} setActiveTab={setActiveTab} />
 
