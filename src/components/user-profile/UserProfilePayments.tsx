@@ -3,10 +3,11 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Receipt, FileText, Eye } from "lucide-react";
+import { Receipt, FileText, Eye, Package, User, Calendar, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
+import { format } from "date-fns";
 
 interface UserProfilePaymentsProps {
   payments: any[];
@@ -29,8 +30,31 @@ interface ReceiptData {
   invoice_mark?: string;
 }
 
+interface Purchase {
+  id: string;
+  amount: number;
+  payment_date: string;
+  status: string;
+  subscription_type_id: string;
+  user_id: string;
+  transaction_id: string;
+  payment_method: string;
+  created_at: string;
+  offer_id?: string;
+  subscription_type: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    duration_months: number;
+    subscription_mode: string;
+    visit_count?: number;
+  };
+}
+
 export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymentsProps) => {
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -38,6 +62,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   useEffect(() => {
     if (userProfile?.id) {
       loadUserReceipts();
+      loadUserPurchases();
     }
   }, [userProfile?.id]);
 
@@ -82,6 +107,57 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
     }
   };
 
+  const loadUserPurchases = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .select(`
+          *,
+          subscription_types!subscription_type_id (
+            id,
+            name,
+            description,
+            price,
+            duration_months,
+            subscription_mode,
+            visit_count
+          )
+        `)
+        .eq('user_id', userProfile.id)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedPurchases: Purchase[] = (data || []).map(item => ({
+        id: item.id,
+        amount: item.amount,
+        payment_date: item.payment_date,
+        status: item.status,
+        subscription_type_id: item.subscription_type_id,
+        user_id: item.user_id,
+        transaction_id: item.transaction_id,
+        payment_method: item.payment_method,
+        created_at: item.created_at,
+        offer_id: item.offer_id,
+        subscription_type: {
+          id: item.subscription_types?.id || '',
+          name: item.subscription_types?.name || 'Άγνωστο πακέτο',
+          description: item.subscription_types?.description || '',
+          price: item.subscription_types?.price || 0,
+          duration_months: item.subscription_types?.duration_months || 0,
+          subscription_mode: item.subscription_types?.subscription_mode || '',
+          visit_count: item.subscription_types?.visit_count
+        }
+      }));
+
+      setPurchases(formattedPurchases);
+    } catch (error) {
+      console.error('Error loading purchases:', error);
+      toast.error('Σφάλμα κατά τη φόρτωση των αγορών');
+    }
+  };
+
   const handleViewReceipt = (receipt: ReceiptData) => {
     setSelectedReceipt(receipt);
     setIsPreviewOpen(true);
@@ -117,9 +193,88 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
     }
   };
 
+  const renderPurchaseCard = (purchase: Purchase) => (
+    <Card key={purchase.id} className="rounded-none hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-[#00ffba]/10 p-2 rounded-full">
+              <Package className="w-5 h-5 text-[#00ffba]" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">{purchase.subscription_type.name}</CardTitle>
+              {purchase.offer_id && (
+                <p className="text-sm text-[#00ffba] font-medium">Προσφορά</p>
+              )}
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-xl font-bold text-[#00ffba]">€{purchase.amount}</p>
+            <p className="text-sm text-gray-500">
+              {format(new Date(purchase.payment_date), 'dd/MM/yyyy')}
+            </p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center space-x-2">
+            <CreditCard className="w-4 h-4 text-gray-500" />
+            <span>{purchase.payment_method || 'Stripe'}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <span>
+              {purchase.subscription_type.subscription_mode === 'visit_based' 
+                ? `${purchase.subscription_type.visit_count} επισκέψεις`
+                : `${purchase.subscription_type.duration_months} μήνες`
+              }
+            </span>
+          </div>
+          <div className="col-span-2">
+            <Badge variant="secondary" className="rounded-none">
+              {purchase.status === 'completed' ? 'Ολοκληρωμένη' : purchase.status}
+            </Badge>
+          </div>
+        </div>
+        {purchase.subscription_type.description && (
+          <p className="text-sm text-gray-600 mt-3 p-3 bg-gray-50 rounded-none">
+            {purchase.subscription_type.description}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   return (
     <>
       <div className="space-y-6">
+        {/* Ιστορικό Αγορών */}
+        <Card className="rounded-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Ιστορικό Αγορών
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Φόρτωση αγορών...</p>
+              </div>
+            ) : purchases.length === 0 ? (
+              <div className="text-center py-8">
+                <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                <p className="text-gray-500">Δεν υπάρχουν αγορές για αυτόν τον χρήστη</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {purchases.map(renderPurchaseCard)}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Ιστορικό Αποδείξεων που έχουν κοπεί */}
         <Card className="rounded-none">
           <CardHeader>
