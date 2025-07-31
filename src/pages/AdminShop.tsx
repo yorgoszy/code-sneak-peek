@@ -171,56 +171,44 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
   };
 
   const renderPurchaseCard = (purchase: Purchase) => (
-    <Card key={purchase.id} className="rounded-none hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-[#00ffba]/10 p-2 rounded-full">
-              <Package className="w-5 h-5 text-[#00ffba]" />
+    <Card key={purchase.id} className="rounded-none hover:shadow-md transition-shadow h-16">
+      <CardContent className="p-3 h-full">
+        <div className="flex items-center justify-between h-full">
+          {/* Left section - Icon, Name, User */}
+          <div className="flex items-center space-x-3 min-w-0 flex-1">
+            <div className="bg-[#00ffba]/10 p-1.5 rounded-full flex-shrink-0">
+              <Package className="w-4 h-4 text-[#00ffba]" />
             </div>
-            <div>
-              <CardTitle className="text-lg">{purchase.subscription_type.name}</CardTitle>
-              <p className="text-sm text-gray-600">{purchase.user.name}</p>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold text-gray-900 truncate">{purchase.subscription_type.name}</h3>
+              <p className="text-xs text-gray-600 truncate">{purchase.user.name} • {purchase.user.email}</p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xl font-bold text-[#00ffba]">€{purchase.amount}</p>
-            <p className="text-sm text-gray-500">
-              {format(new Date(purchase.payment_date), 'dd/MM/yyyy')}
-            </p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <User className="w-4 h-4 text-gray-500" />
-            <span>{purchase.user.email}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <CreditCard className="w-4 h-4 text-gray-500" />
-            <span>{purchase.payment_method || 'Stripe'}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-4 h-4 text-gray-500" />
+
+          {/* Center section - Duration/Visits */}
+          <div className="hidden sm:flex items-center space-x-1 text-xs text-gray-500 px-4">
+            <Calendar className="w-3 h-3" />
             <span>
               {purchase.subscription_type.subscription_mode === 'visit_based' 
                 ? `${purchase.subscription_type.visit_count} επισκέψεις`
-                : `${purchase.subscription_type.duration_months} μήνες`
+                : `${purchase.subscription_type.duration_months}μ`
               }
             </span>
           </div>
-          <div className="flex items-center space-x-2">
-            <Badge variant="secondary" className="rounded-none">
-              {purchase.status === 'completed' ? 'Ολοκληρωμένη' : purchase.status}
+
+          {/* Right section - Price, Date, Status */}
+          <div className="flex items-center space-x-4 flex-shrink-0">
+            <div className="text-right">
+              <p className="text-sm font-bold text-[#00ffba]">€{purchase.amount}</p>
+              <p className="text-xs text-gray-500">
+                {format(new Date(purchase.payment_date), 'dd/MM')}
+              </p>
+            </div>
+            <Badge variant="secondary" className="rounded-none text-xs px-2 py-1">
+              <Check className="w-3 h-3" />
             </Badge>
           </div>
         </div>
-        {purchase.subscription_type.description && (
-          <p className="text-sm text-gray-600 mt-3 p-3 bg-gray-50 rounded-none">
-            {purchase.subscription_type.description}
-          </p>
-        )}
       </CardContent>
     </Card>
   );
