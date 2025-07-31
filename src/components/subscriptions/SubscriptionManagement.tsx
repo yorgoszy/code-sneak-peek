@@ -1500,6 +1500,24 @@ export const SubscriptionManagement: React.FC = () => {
                             >
                               <UserCheck className="w-3 h-3" />
                             </Button>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditDialog(subscription)}
+                              className="rounded-none h-7 w-7 p-0"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => openDeleteDialog(subscription.id)}
+                              className="rounded-none h-7 w-7 p-0"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
                           </div>
                         </div>
                       </div>
