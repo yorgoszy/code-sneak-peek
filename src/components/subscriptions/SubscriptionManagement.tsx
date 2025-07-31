@@ -1384,8 +1384,8 @@ export const SubscriptionManagement: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-2 md:p-6">
-          {/* Mobile: Card Layout */}
-          <div className="block md:hidden space-y-3">
+          {/* Mobile & Tablet: Card Layout */}
+          <div className="block lg:hidden space-y-3">
             {filteredUsersForTable.flatMap((user) => {
               const userSubscriptions_filtered = userSubscriptions.filter(s => s.user_id === user.id);
               const activeSubscriptions = userSubscriptions_filtered.filter(s => s.status === 'active');
@@ -1403,27 +1403,27 @@ export const SubscriptionManagement: React.FC = () => {
                       <div className="space-y-3">
                         <div className="flex items-start justify-between">
                           <div>
-                            <div className={`font-medium text-sm ${subscriptionStatus === 'expired' ? 'text-red-600' : ''}`}>
+                            <div className={`font-medium text-sm md:text-base ${subscriptionStatus === 'expired' ? 'text-red-600' : ''}`}>
                               {user.name} {activeSubscriptions.length > 1 ? `(${index + 1}/${activeSubscriptions.length})` : ''}
                             </div>
-                            <div className="text-xs text-gray-500">{user.email}</div>
+                            <div className="text-xs md:text-sm text-gray-500">{user.email}</div>
                           </div>
-                          <Badge className={`rounded-none text-xs ${getStatusColor(subscriptionStatus)}`}>
+                          <Badge className={`rounded-none text-xs md:text-sm ${getStatusColor(subscriptionStatus)}`}>
                             {subscriptionStatus === 'paused' ? 'Παύση' : 
                              subscriptionStatus === 'expired' ? 'Λήξη' :
                              subscriptionStatus === 'active' ? 'Ενεργή' : 'Ανενεργή'}
                           </Badge>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="grid grid-cols-2 gap-2 text-xs md:text-sm">
                           <div>
                             <span className="font-medium">Συνδρομή:</span>
-                            <div>{subscription.subscription_types?.name}</div>
+                            <div className="text-sm md:text-base">{subscription.subscription_types?.name}</div>
                             <div className="text-gray-500">€{subscription.subscription_types?.price}</div>
                           </div>
                           <div>
                             <span className="font-medium">Λήξη:</span>
-                            <div>{new Date(subscription.end_date).toLocaleDateString('el-GR')}</div>
+                            <div className="text-sm md:text-base">{new Date(subscription.end_date).toLocaleDateString('el-GR')}</div>
                             <div className="text-gray-500">
                               {(() => {
                                 if (subscription.is_paused && subscription.paused_days_remaining) {
@@ -1445,78 +1445,78 @@ export const SubscriptionManagement: React.FC = () => {
                         </div>
                         
                         <div className="flex justify-between items-center pt-2 border-t">
-                          <div className="text-xs">
+                          <div className="text-xs md:text-sm">
                             <Badge 
                               variant={subscription.is_paid ? "default" : "destructive"}
-                              className="rounded-none"
+                              className="rounded-none text-xs"
                             >
                               {subscription.is_paid ? 'Πληρωμένη' : 'Απλήρωτη'}
                             </Badge>
                           </div>
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 md:gap-2">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => togglePaymentStatus(subscription.id, subscription.is_paid)}
-                              className={`rounded-none h-7 w-7 p-0 ${subscription.is_paid 
+                              className={`rounded-none h-7 w-7 md:h-8 md:w-8 p-0 ${subscription.is_paid 
                                 ? 'border-[#00ffba] text-[#00ffba]' 
                                 : 'border-red-300 text-red-600'}`}
                             >
-                              {subscription.is_paid ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                              {subscription.is_paid ? <Check className="w-3 h-3 md:w-4 md:h-4" /> : <X className="w-3 h-3 md:w-4 md:h-4" />}
                             </Button>
 
                             {subscription.is_paused ? (
                               <Button
                                 size="sm"
                                 onClick={() => resumeSubscription(subscription.id)}
-                                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 w-7 p-0"
+                                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 w-7 md:h-8 md:w-8 p-0"
                               >
-                                <Play className="w-3 h-3" />
+                                <Play className="w-3 h-3 md:w-4 md:h-4" />
                               </Button>
                             ) : (
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => pauseSubscription(subscription.id)}
-                                className="rounded-none h-7 w-7 p-0"
+                                className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0"
                               >
-                                <Pause className="w-3 h-3" />
+                                <Pause className="w-3 h-3 md:w-4 md:h-4" />
                               </Button>
                             )}
 
                             <Button
                               size="sm"
                               onClick={() => renewSubscription(subscription.id)}
-                              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 w-7 p-0"
+                              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 w-7 md:h-8 md:w-8 p-0"
                             >
-                              <RotateCcw className="w-3 h-3" />
+                              <RotateCcw className="w-3 h-3 md:w-4 md:h-4" />
                             </Button>
 
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => toggleUserStatus(user.id, user.user_status)}
-                              className="rounded-none h-7 w-7 p-0"
+                              className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0"
                             >
-                              <UserCheck className="w-3 h-3" />
+                              <UserCheck className="w-3 h-3 md:w-4 md:h-4" />
                             </Button>
 
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => openEditDialog(subscription)}
-                              className="rounded-none h-7 w-7 p-0"
+                              className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0"
                             >
-                              <Edit2 className="w-3 h-3" />
+                              <Edit2 className="w-3 h-3 md:w-4 md:h-4" />
                             </Button>
 
                             <Button
                               size="sm"
                               variant="destructive"
                               onClick={() => openDeleteDialog(subscription.id)}
-                              className="rounded-none h-7 w-7 p-0"
+                              className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
                             </Button>
                           </div>
                         </div>
@@ -1532,10 +1532,10 @@ export const SubscriptionManagement: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-sm">{user.name}</div>
-                        <div className="text-xs text-gray-500">{user.email}</div>
+                        <div className="font-medium text-sm md:text-base">{user.name}</div>
+                        <div className="text-xs md:text-sm text-gray-500">{user.email}</div>
                       </div>
-                      <Badge variant="secondary" className="rounded-none text-xs">
+                      <Badge variant="secondary" className="rounded-none text-xs md:text-sm">
                         Χωρίς Συνδρομή
                       </Badge>
                     </div>
@@ -1545,9 +1545,9 @@ export const SubscriptionManagement: React.FC = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => toggleUserStatus(user.id, user.user_status)}
-                        className="rounded-none h-7 w-7 p-0"
+                        className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0"
                       >
-                        <UserCheck className="w-3 h-3" />
+                        <UserCheck className="w-3 h-3 md:w-4 md:h-4" />
                       </Button>
                     </div>
                   </div>
@@ -1557,7 +1557,7 @@ export const SubscriptionManagement: React.FC = () => {
           </div>
 
           {/* Desktop: Table Layout */}
-          <div className="hidden md:block overflow-x-auto">
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
