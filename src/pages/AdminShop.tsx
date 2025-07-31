@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 interface Purchase {
   id: string;
@@ -48,6 +49,7 @@ const AdminShop = () => {
   const [loading, setLoading] = useState(true);
   const [markingAsRead, setMarkingAsRead] = useState(false);
   const [activeTab, setActiveTab] = useState("new");
+  const { markAsAcknowledged, isAcknowledged } = usePersistentNotifications();
 
   useEffect(() => {
     fetchPurchases();
@@ -105,18 +107,14 @@ const AdminShop = () => {
         }
       }));
 
-      // Παίρνουμε τα acknowledged payment IDs από localStorage
-      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
-      const acknowledgedPaymentIds = new Set(acknowledgedIds);
-
       // Διαχωρισμός αγορών με βάση το αν έχουν επισημανθεί ως "ενημερώθηκα"
       const newPurchasesData = formattedPurchases.filter(purchase => 
-        !acknowledgedPaymentIds.has(purchase.id)
+        !isAcknowledged('purchase', purchase.id)
       );
       setNewPurchases(newPurchasesData);
       
       const acknowledgedPurchases = formattedPurchases.filter(purchase => 
-        acknowledgedPaymentIds.has(purchase.id)
+        isAcknowledged('purchase', purchase.id)
       );
       setReadPurchases(acknowledgedPurchases);
       
@@ -132,15 +130,9 @@ const AdminShop = () => {
     setMarkingAsRead(true);
     
     try {
-      // Παίρνουμε τα υπάρχοντα acknowledged payment IDs
-      const existingAcknowledged = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
-      
-      // Προσθέτουμε τα IDs των νέων αγορών
+      // Προσθέτουμε τα IDs των νέων αγορών στη βάση δεδομένων
       const newAcknowledgedIds = newPurchases.map(purchase => purchase.id);
-      const updatedAcknowledged = [...existingAcknowledged, ...newAcknowledgedIds];
-      
-      // Αποθηκεύουμε στο localStorage
-      localStorage.setItem('acknowledgedPayments', JSON.stringify(updatedAcknowledged));
+      await markAsAcknowledged('purchase', newAcknowledgedIds);
       
       // Μεταφορά νέων αγορών στο "Ενημερώθηκα"
       setReadPurchases(prev => [...prev, ...newPurchases]);

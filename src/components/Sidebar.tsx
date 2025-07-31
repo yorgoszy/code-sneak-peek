@@ -26,6 +26,7 @@ import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog"
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -45,6 +46,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [newPurchases, setNewPurchases] = useState(0);
   const [newUsers, setNewUsers] = useState(0);
   const isMobile = useIsMobile();
+  const { isAcknowledged } = usePersistentNotifications();
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
@@ -69,13 +71,9 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
         if (paymentsError) throw paymentsError;
         
-        // Παίρνουμε τα acknowledged offer IDs από localStorage
-        const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
-        const acknowledgedOfferIds = new Set(acknowledgedIds);
-        
         // Υπολογίζουμε πόσες αποδεκτές προσφορές δεν έχουν επισημανθεί
         const newAcceptedOffers = acceptedOffers?.filter(offer => 
-          !acknowledgedOfferIds.has(offer.id)
+          !isAcknowledged('offer', offer.id)
         ) || [];
         
         setAvailableOffers(newAcceptedOffers.length);
@@ -222,13 +220,9 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
       if (error) throw error;
 
-      // Παίρνουμε τα acknowledged payment IDs από localStorage (ίδια λογική με AdminShop)
-      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
-      const acknowledgedPaymentIds = new Set(acknowledgedIds);
-
       // Υπολογίζουμε τις νέες αγορές (όσες δεν έχουν επισημανθεί ως "ενημερώθηκα")
       const newPurchasesData = allPayments?.filter(payment => 
-        !acknowledgedPaymentIds.has(payment.id)
+        !isAcknowledged('purchase', payment.id)
       ) || [];
       
       setNewPurchases(newPurchasesData.length);
@@ -249,13 +243,9 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
       if (error) throw error;
 
-      // Παίρνουμε τα acknowledged user IDs από localStorage
-      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
-      const acknowledgedUserIds = new Set(acknowledgedIds);
-
       // Υπολογίζουμε τους νέους χρήστες (όσους δεν έχουν επισημανθεί ως "ενημερώθηκα")
       const newUsersData = allUsers?.filter(user => 
-        !acknowledgedUserIds.has(user.id)
+        !isAcknowledged('user', user.id)
       ) || [];
       
       setNewUsers(newUsersData.length);

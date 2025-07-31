@@ -38,6 +38,33 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notifications: {
+        Row: {
+          acknowledged_at: string
+          admin_user_id: string
+          created_at: string
+          id: string
+          item_id: string
+          notification_type: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          item_id: string
+          notification_type: string
+        }
+        Update: {
+          acknowledged_at?: string
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          notification_type?: string
+        }
+        Relationships: []
+      }
       ai_chat_files: {
         Row: {
           created_at: string
