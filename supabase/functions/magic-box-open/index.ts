@@ -322,7 +322,8 @@ serve(async (req) => {
 
           if (!subError) {
             // Update response message with subscription details
-            responseMessage = `Συγχαρητήρια! Κέρδισες: ${subscriptionType.name} (${durationMonths} μήνες)`;
+            const durationText = durationMonths === 0 ? '' : ` (${durationMonths} μήνες)`;
+            responseMessage = `Συγχαρητήρια! Κέρδισες: ${subscriptionType.name}${durationText}`;
             
             additionalData = {
               subscription_id: subscription.id,
