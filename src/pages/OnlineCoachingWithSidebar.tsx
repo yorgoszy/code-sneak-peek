@@ -17,9 +17,6 @@ const OnlineCoachingWithSidebar: React.FC = () => {
   // For admin view - show all videocall bookings
   const { bookings, loading, fetchBookings } = useVideocallBookings(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  
-  // Persistent notifications for videocall bookings
-  const { markAsAcknowledged, isAcknowledged } = usePersistentNotifications();
 
   // Διαχωρισμός bookings σε επερχόμενα, εκκρεμείς και ιστορικό
   const now = new Date();
@@ -286,8 +283,6 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                              booking={booking} 
                              isAdmin={true} 
                              onRefresh={() => fetchBookings()}
-                             markAsAcknowledged={markAsAcknowledged}
-                             isAcknowledged={isAcknowledged}
                            />
                          ))}
                       </div>

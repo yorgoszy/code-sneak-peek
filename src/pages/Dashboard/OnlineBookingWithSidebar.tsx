@@ -20,9 +20,6 @@ const OnlineBookingWithSidebar = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
   const { userProfile: dashboardUserProfile } = useDashboard();
-  
-  // Persistent notifications for gym bookings  
-  const { markAsAcknowledged, isAcknowledged } = usePersistentNotifications();
 
   const handleSignOut = async () => {
     await signOut();
@@ -89,10 +86,7 @@ const OnlineBookingWithSidebar = () => {
               </TabsList>
 
               <TabsContent value="bookings" className="space-y-6">
-                <GymBookingsOverview 
-                  markAsAcknowledged={markAsAcknowledged}
-                  isAcknowledged={isAcknowledged}
-                />
+                <GymBookingsOverview />
               </TabsContent>
 
               <TabsContent value="calendar" className="space-y-6">
