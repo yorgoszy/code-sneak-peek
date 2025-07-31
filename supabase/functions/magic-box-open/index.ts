@@ -325,14 +325,17 @@ serve(async (req) => {
 
           if (!subError) {
             // Update response message with subscription details
-            const durationText = durationMonths === 0 ? '' : ` (${durationMonths} μήνες)`;
+            const displayDuration = subscriptionType.subscription_mode === 'visit_based' 
+              ? (subscriptionType.visit_expiry_months || 0)
+              : (subscriptionType.duration_months || 0);
+            const durationText = displayDuration === 0 ? '' : ` (${displayDuration} μήνες)`;
             responseMessage = `Συγχαρητήρια! Κέρδισες: ${subscriptionType.name}${durationText}`;
             
             additionalData = {
               subscription_id: subscription.id,
               subscription_type_id: selectedPrize.subscription_type_id,
               subscription_name: subscriptionType.name,
-              duration_months: durationMonths
+              duration_months: displayDuration
             };
           }
         }
