@@ -291,7 +291,7 @@ serve(async (req) => {
           // Get subscription type details to determine duration
           const { data: subscriptionType, error: typeError } = await supabaseClient
             .from('subscription_types')
-            .select('name, duration_months')
+            .select('name, duration_months, visit_expiry_months, subscription_mode')
             .eq('id', selectedPrize.subscription_type_id)
             .single();
 
@@ -303,7 +303,10 @@ serve(async (req) => {
           }
 
           console.log('✅ Subscription type found:', subscriptionType);
-          const durationMonths = subscriptionType.duration_months || 1;
+          // Use visit_expiry_months for visit-based subscriptions, duration_months for time-based
+          const durationMonths = subscriptionType.subscription_mode === 'visit_based' 
+            ? (subscriptionType.visit_expiry_months || 1)
+            : (subscriptionType.duration_months || 1);
           const endDate = new Date();
           endDate.setMonth(endDate.getMonth() + durationMonths);
 
