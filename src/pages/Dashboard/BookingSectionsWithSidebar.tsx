@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Sidebar } from "@/components/Sidebar";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { BookingSectionsManagement } from "@/components/admin/BookingSectionsManagement";
 
 const BookingSectionsWithSidebar = () => {
@@ -12,6 +14,7 @@ const BookingSectionsWithSidebar = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
   const { userProfile: dashboardUserProfile } = useDashboard();
+  const { isAdmin } = useRoleCheck();
 
   const handleSignOut = async () => {
     await signOut();
@@ -42,22 +45,31 @@ const BookingSectionsWithSidebar = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navigation */}
-        <DashboardHeader
-          userProfile={dashboardUserProfile}
-          userEmail={user?.email}
-          onSignOut={handleSignOut}
-          onMobileMenuClick={() => setShowMobileSidebar(true)}
-        />
-
         {/* Booking Sections Management Content */}
         <div className="flex-1 p-3 md:p-6">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">Διαχείριση Τμημάτων</h1>
-              <p className="text-lg text-gray-600">
-                Διαχειριστείτε τα τμήματα και τις ρυθμίσεις κρατήσεων
-              </p>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Διαχείριση Τμημάτων</h1>
+                <p className="text-gray-600">
+                  Διαχειριστείτε τα τμήματα και τις ρυθμίσεις κρατήσεων
+                </p>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">
+                  {dashboardUserProfile?.name || user?.email}
+                  {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                </span>
+                <Button 
+                  variant="outline" 
+                  className="rounded-none"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Αποσύνδεση
+                </Button>
+              </div>
             </div>
 
             <BookingSectionsManagement />

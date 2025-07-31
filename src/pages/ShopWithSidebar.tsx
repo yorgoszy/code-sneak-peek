@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Clock, Users, Dumbbell, MapPin, Calendar } from "lucide-react";
+import { ShoppingCart, Clock, Users, Dumbbell, MapPin, Calendar, LogOut } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -30,6 +30,7 @@ const ShopWithSidebar = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
   const { userProfile: dashboardUserProfile } = useDashboard();
+  const { isAdmin } = useRoleCheck();
   
   const [loading, setLoading] = useState<string | null>(null);
   const [products, setProducts] = useState<SubscriptionType[]>([]);
@@ -208,22 +209,31 @@ const ShopWithSidebar = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navigation */}
-        <DashboardHeader
-          userProfile={dashboardUserProfile}
-          userEmail={user?.email}
-          onSignOut={handleSignOut}
-          onMobileMenuClick={() => setShowMobileSidebar(true)}
-        />
-
         {/* Shop Content */}
         <div className="flex-1 p-3 md:p-6">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">Αγορές</h1>
-              <p className="text-lg text-gray-600">
-                Αγόρασε πακέτα επισκέψεων, personal training και άλλες υπηρεσίες
-              </p>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Αγορές</h1>
+                <p className="text-gray-600">
+                  Αγόρασε πακέτα επισκέψεων, personal training και άλλες υπηρεσίες
+                </p>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">
+                  {dashboardUserProfile?.name || user?.email}
+                  {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                </span>
+                <Button 
+                  variant="outline" 
+                  className="rounded-none"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Αποσύνδεση
+                </Button>
+              </div>
             </div>
 
             {loadingProducts ? (

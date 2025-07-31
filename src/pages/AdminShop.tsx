@@ -10,11 +10,19 @@ import {
   CreditCard, 
   Check,
   RefreshCw,
-  Package
+  Package,
+  LogOut
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+
+interface AdminShopProps {
+  userProfile?: any;
+  userEmail?: string;
+  onSignOut?: () => void;
+}
 
 interface Purchase {
   id: string;
@@ -42,12 +50,13 @@ interface Purchase {
   };
 }
 
-const AdminShop = () => {
+const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) => {
   const [newPurchases, setNewPurchases] = useState<Purchase[]>([]);
   const [readPurchases, setReadPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [markingAsRead, setMarkingAsRead] = useState(false);
   const [activeTab, setActiveTab] = useState("new");
+  const { isAdmin } = useRoleCheck();
 
   useEffect(() => {
     fetchPurchases();
@@ -238,20 +247,39 @@ const AdminShop = () => {
             </p>
           </div>
           
-          {newPurchases.length > 0 && (
-            <Button
-              onClick={handleMarkAsRead}
-              disabled={markingAsRead}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              {markingAsRead ? (
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Check className="w-4 h-4 mr-2" />
-              )}
-              Ενημερώθηκα
-            </Button>
-          )}
+          <div className="flex items-center space-x-4">
+            {newPurchases.length > 0 && (
+              <Button
+                onClick={handleMarkAsRead}
+                disabled={markingAsRead}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                {markingAsRead ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4 mr-2" />
+                )}
+                Ενημερώθηκα
+              </Button>
+            )}
+            
+            {userProfile && onSignOut && (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">
+                  {userProfile?.name || userEmail}
+                  {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                </span>
+                <Button 
+                  variant="outline" 
+                  className="rounded-none"
+                  onClick={onSignOut}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Αποσύνδεση
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
