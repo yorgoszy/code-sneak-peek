@@ -14,7 +14,7 @@ import { OffersManagement } from "@/components/offers/OffersManagement";
 import { MagicBoxManager } from "@/components/magic-boxes/MagicBoxManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sidebar } from "@/components/Sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,19 @@ import { Button } from "@/components/ui/button";
 export default function Subscriptions() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const isMobile = useIsMobile();
+
+  // Tablet detection
+  useEffect(() => {
+    const checkTablet = () => {
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+    
+    checkTablet();
+    window.addEventListener('resize', checkTablet);
+    return () => window.removeEventListener('resize', checkTablet);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex w-full">
@@ -32,17 +44,11 @@ export default function Subscriptions() {
       </div>
 
       {/* Mobile/Tablet Sidebar Overlay */}
-      {showMobileSidebar && (
+      {(isMobile || isTablet) && showMobileSidebar && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div 
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowMobileSidebar(false)}
-          />
-          <div className="relative w-64 h-full">
-            <Sidebar 
-              isCollapsed={false} 
-              setIsCollapsed={setIsCollapsed}
-            />
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowMobileSidebar(false)} />
+          <div className="fixed top-0 left-0 h-full">
+            <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />
           </div>
         </div>
       )}
