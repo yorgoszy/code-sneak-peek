@@ -288,6 +288,22 @@ serve(async (req) => {
     switch (selectedPrize.prize_type) {
       case 'subscription':
         if (selectedPrize.subscription_type_id) {
+          // Get subscription type details to determine duration
+          const { data: subscriptionType, error: typeError } = await supabaseClient
+            .from('subscription_types')
+            .select('duration_months')
+            .eq('id', selectedPrize.subscription_type_id)
+            .single();
+
+          if (typeError) {
+            console.error('❌ Failed to get subscription type:', typeError);
+            break;
+          }
+
+          const durationMonths = subscriptionType.duration_months || 1;
+          const endDate = new Date();
+          endDate.setMonth(endDate.getMonth() + durationMonths);
+
           // Create user subscription
           const { data: subscription, error: subError } = await supabaseClient
             .from('user_subscriptions')
@@ -295,7 +311,7 @@ serve(async (req) => {
               user_id: appUser.id,
               subscription_type_id: selectedPrize.subscription_type_id,
               start_date: new Date().toISOString().split('T')[0],
-              end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days
+              end_date: endDate.toISOString().split('T')[0],
               status: 'active'
             })
             .select()
