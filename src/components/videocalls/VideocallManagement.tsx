@@ -521,37 +521,37 @@ export const VideocallManagement: React.FC = () => {
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Video className="w-5 h-5 text-purple-600" />
-            <span>Διαχείριση Βιντεοκλήσεων</span>
+            <span className="text-lg sm:text-xl">Διαχείριση Βιντεοκλήσεων</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button 
               onClick={() => setActiveTab('packages')}
               variant={activeTab === 'packages' ? 'default' : 'outline'}
-              className="rounded-none"
+              className="rounded-none flex-1 sm:flex-initial text-sm"
             >
               Πακέτα
             </Button>
             <Button 
               onClick={() => setActiveTab('history')}
               variant={activeTab === 'history' ? 'default' : 'outline'}
-              className="rounded-none"
+              className="rounded-none flex-1 sm:flex-initial text-sm"
             >
               Ιστορικό
             </Button>
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 sm:p-6">
         {activeTab === 'packages' && (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h3 className="text-lg font-semibold">Πακέτα Βιντεοκλήσεων</h3>
               <Button 
                 onClick={() => setShowAddPackageForm(!showAddPackageForm)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Νέο Πακέτο
@@ -561,8 +561,8 @@ export const VideocallManagement: React.FC = () => {
             {showAddPackageForm && (
               <Card className="rounded-none border-2 border-dashed">
                 <CardContent className="p-4">
-                  <h4 className="font-medium mb-4">Προσθήκη Νέου Πακέτου</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <h4 className="font-medium mb-4 text-sm sm:text-base">Προσθήκη Νέου Πακέτου</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                       <Input
                         placeholder="Αναζήτηση χρήστη..."
@@ -635,7 +635,78 @@ export const VideocallManagement: React.FC = () => {
               {videocallPackages.map((pkg) => (
                 <Card key={pkg.id} className="rounded-none">
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
+                    {/* Mobile & Tablet Layout */}
+                    <div className="block lg:hidden space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-medium text-sm md:text-base">{pkg.app_users.name}</h4>
+                          <p className="text-xs md:text-sm text-gray-500">{pkg.app_users.email}</p>
+                        </div>
+                        <Badge 
+                          variant={pkg.status === 'active' ? 'default' : 'secondary'}
+                          className="rounded-none text-xs"
+                        >
+                          {pkg.status === 'active' ? 'Ενεργό' : 'Χρησιμοποιημένο'}
+                        </Badge>
+                      </div>
+                      
+                      <div className="text-xs md:text-sm">
+                        <span className="font-medium">Βιντεοκλήσεις:</span> {pkg.total_videocalls - pkg.remaining_videocalls}/{pkg.total_videocalls}
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 pt-2 border-t">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => removeVideocallFromPackage(pkg.user_id)}
+                          disabled={pkg.total_videocalls - pkg.remaining_videocalls === 0}
+                          className="rounded-none h-7 w-7 p-0"
+                          title="Αφαίρεση χρησιμοποιημένης βιντεοκλήσης"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => addVideocallToPackage(pkg.id, pkg.user_id)}
+                          disabled={pkg.remaining_videocalls === 0}
+                          className="rounded-none h-7 w-7 p-0"
+                          title="Προσθήκη χρησιμοποιημένης βιντεοκλήσης"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewPackage(pkg)}
+                          className="rounded-none h-7 w-7 p-0"
+                          title="Προβολή πακέτου"
+                        >
+                          <Eye className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditPackage(pkg)}
+                          className="rounded-none h-7 w-7 p-0"
+                          title="Επεξεργασία πακέτου"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => deleteVideocallPackage(pkg.id)}
+                          className="rounded-none text-red-600 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0"
+                          title="Διαγραφή πακέτου"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden lg:flex items-center justify-between">
                       <div>
                         <h4 className="font-medium">{pkg.app_users.name}</h4>
                         <p className="text-sm text-gray-500">{pkg.app_users.email}</p>
@@ -711,9 +782,9 @@ export const VideocallManagement: React.FC = () => {
 
         {activeTab === 'history' && (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h3 className="text-lg font-semibold">Ιστορικό Βιντεοκλήσεων</h3>
-              <div className="relative">
+              <div className="relative w-full sm:w-auto sm:min-w-[250px]">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Αναζήτηση χρήστη..."
