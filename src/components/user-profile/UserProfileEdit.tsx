@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Save, X } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Camera, Save, X, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,14 +19,20 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
   const { user: currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   
-  // Χωρίζουμε το name σε first και last name
+  // Προφίλ πεδία
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
+
+  // Κωδικός πεδία
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     if (userProfile) {
@@ -118,6 +125,59 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
     }
   };
 
+  const handleChangePassword = async () => {
+    if (!currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()) {
+      toast.error('Παρακαλώ συμπληρώστε όλα τα πεδία κωδικού');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Οι κωδικοί δεν ταιριάζουν');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Ο νέος κωδικός πρέπει να είναι τουλάχιστον 6 χαρακτήρες');
+      return;
+    }
+
+    try {
+      setPasswordLoading(true);
+
+      // Προσπάθεια sign in με τα τρέχοντα στοιχεία για validation
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userProfile.email,
+        password: currentPassword
+      });
+
+      if (signInError) {
+        toast.error('Ο τρέχων κωδικός είναι λάθος');
+        return;
+      }
+
+      // Αλλαγή κωδικού
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      toast.success('Ο κωδικός ενημερώθηκε επιτυχώς!');
+      
+      // Καθαρισμός πεδίων κωδικού
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error('Σφάλμα κατά την αλλαγή κωδικού');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   const handleReset = () => {
     if (userProfile) {
       const nameParts = userProfile.name ? userProfile.name.split(' ') : ['', ''];
@@ -128,6 +188,11 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
       setBirthDate(userProfile.birth_date || '');
       setPhotoUrl(userProfile.photo_url || '');
     }
+    
+    // Καθαρισμός πεδίων κωδικού
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
   };
 
   // Έλεγχος αν ο χρήστης μπορεί να επεξεργαστεί το προφίλ
@@ -244,6 +309,72 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
             />
           </div>
         </div>
+
+        {/* Separator */}
+        <Separator />
+
+        {/* Password Change Section */}
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Lock className="w-5 h-5 text-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Αλλαγή Κωδικού</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Τρέχων Κωδικός *</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Εισάγετε τον τρέχοντα κωδικό"
+                className="rounded-none"
+                disabled={passwordLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">Νέος Κωδικός *</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Εισάγετε νέο κωδικό"
+                className="rounded-none"
+                disabled={passwordLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Επιβεβαίωση Κωδικού *</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Επιβεβαιώστε τον νέο κωδικό"
+                className="rounded-none"
+                disabled={passwordLoading}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              onClick={handleChangePassword}
+              disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              <Lock className="w-4 h-4 mr-2" />
+              {passwordLoading ? 'Αλλαγή...' : 'Αλλαγή Κωδικού'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Separator */}
+        <Separator />
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-4 pt-4">
