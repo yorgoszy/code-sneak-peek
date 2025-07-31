@@ -17,6 +17,7 @@ import { UserProfileOnlineCoaching } from "./UserProfileOnlineCoaching";
 import { TrainingAnalytics } from "./TrainingAnalytics";
 import { InlineAIChat } from "@/components/ai-chat/InlineAIChat";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
+import { UserProfileEdit } from "./UserProfileEdit";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -152,6 +153,19 @@ export const UserProfileContent = ({
               athleteId={userProfile?.id}
               athleteName={userProfile?.name}
               athletePhotoUrl={userProfile?.photo_url}
+            />
+          </div>
+        );
+      case "edit-profile":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <UserProfileEdit 
+              userProfile={userProfile}
+              onProfileUpdated={() => {
+                // Refresh του προφίλ μετά την ενημέρωση
+                window.location.reload();
+              }}
             />
           </div>
         );
