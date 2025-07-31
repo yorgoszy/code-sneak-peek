@@ -32,16 +32,11 @@ interface UserMagicBox {
     subscription_types?: {
       name: string;
       duration_months: number;
-      visit_expiry_months?: number;
-      videocall_expiry_months?: number;
-      subscription_mode?: string;
     };
   };
 }
 
 export const MagicBoxGameV2: React.FC = () => {
-  console.log('🎯 MagicBoxGameV2 component is rendering...');
-  
   const [userMagicBoxes, setUserMagicBoxes] = useState<UserMagicBox[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -89,16 +84,14 @@ export const MagicBoxGameV2: React.FC = () => {
   }, [currentUserId]);
 
   const initializeUser = async () => {
-    console.log('🔧 MagicBox: Starting user initialization...');
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
-        console.error('🔧 MagicBox: User not authenticated', userError);
-        setLoading(false);
+        console.error('User not authenticated');
         return;
       }
 
-      console.log('🔧 MagicBox: Auth user ID:', userData.user.id);
+      console.log('🔧 Auth user ID:', userData.user.id);
 
       // Βρίσκουμε το app_users record του χρήστη
       const { data: appUser, error: appUserError } = await supabase
@@ -108,23 +101,21 @@ export const MagicBoxGameV2: React.FC = () => {
         .single();
 
       if (appUserError || !appUser) {
-        console.error('🔧 MagicBox: App user not found:', appUserError);
-        setLoading(false);
+        console.error('App user not found:', appUserError);
         return;
       }
 
-      console.log('🔧 MagicBox: Current user initialized:', appUser.id);
+      console.log('🔧 Current user initialized:', appUser.id);
       setCurrentUserId(appUser.id);
       await loadUserMagicBoxes(appUser.id);
     } catch (error) {
-      console.error('🔧 MagicBox: Error initializing user:', error);
+      console.error('Error initializing user:', error);
       setLoading(false);
     }
   };
 
   const loadUserMagicBoxes = async (userId: string) => {
     try {
-      console.log('📦 Starting to load magic boxes for user:', userId);
       const { data, error } = await supabase
         .from('user_magic_boxes')
         .select(`
@@ -135,10 +126,7 @@ export const MagicBoxGameV2: React.FC = () => {
             subscription_type_id,
             subscription_types(
               name,
-              duration_months,
-              visit_expiry_months,
-              videocall_expiry_months,
-              subscription_mode
+              duration_months
             )
           )
         `)
@@ -146,12 +134,8 @@ export const MagicBoxGameV2: React.FC = () => {
         .eq('magic_box_campaigns.is_active', true)
         .order('created_at', { ascending: false });
 
-      console.log('📦 Magic boxes query result:', { data, error });
-      if (error) {
-        console.error('📦 Error loading magic boxes:', error);
-        throw error;
-      }
-      setUserMagicBoxes((data as any) || []);
+      if (error) throw error;
+      setUserMagicBoxes(data || []);
       console.log('🔧 User magic boxes loaded:', data?.length);
       console.log('📦 Magic boxes data:', data);
     } catch (error) {
@@ -319,29 +303,11 @@ export const MagicBoxGameV2: React.FC = () => {
                       <div className="font-bold text-[#00ffba]">
                         {box.campaign_prizes.subscription_types.name}
                       </div>
-                      {(() => {
-                        const subType = box.campaign_prizes.subscription_types;
-                        if (subType.subscription_mode === 'visit_based' && subType.visit_expiry_months) {
-                          return (
-                            <div className="text-sm text-gray-600">
-                              Λήξη σε {subType.visit_expiry_months} μήνες
-                            </div>
-                          );
-                        } else if (subType.subscription_mode === 'videocall_based' && subType.videocall_expiry_months) {
-                          return (
-                            <div className="text-sm text-gray-600">
-                              Λήξη σε {subType.videocall_expiry_months} μήνες
-                            </div>
-                          );
-                        } else if (subType.duration_months && subType.duration_months > 0) {
-                          return (
-                            <div className="text-sm text-gray-600">
-                              {subType.duration_months} μήνες
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
+                      {box.campaign_prizes.subscription_types.duration_months > 0 && (
+                        <div className="text-sm text-gray-600">
+                          {box.campaign_prizes.subscription_types.duration_months} μήνες
+                        </div>
+                      )}
                     </div>
                   )}
                   
