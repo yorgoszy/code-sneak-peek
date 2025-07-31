@@ -279,120 +279,57 @@ export const MagicBoxGameV2: React.FC = () => {
       </div>
 
       {/* User's Magic Boxes */}
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {userMagicBoxes.map((box) => (
-          <div key={box.id} className="relative flex justify-center">
-            {/* 3D Magic Box */}
-            <div className="relative">
-              {/* Main Box */}
-              <div 
-                className={`
-                  relative w-48 h-48 cursor-pointer transition-all duration-300 hover:scale-105
-                  ${box.is_opened ? 'transform-gpu' : 'hover:rotate-y-12'}
-                `}
-                style={{
-                  transformStyle: 'preserve-3d',
-                  perspective: '1000px'
-                }}
-              >
-                {/* Front Face */}
-                <div 
-                  className={`
-                    absolute inset-0 w-48 h-48 border-4 flex flex-col items-center justify-center
-                    ${box.is_opened 
-                      ? 'bg-gradient-to-br from-[#00ffba]/20 to-[#00ffba]/40 border-[#00ffba]' 
-                      : 'bg-gradient-to-br from-purple-500 to-pink-500 border-purple-600'
-                    }
-                    rounded-lg shadow-xl transform-gpu
-                  `}
-                  style={{
-                    transform: 'translateZ(24px)'
-                  }}
-                >
-                  <Gift className={`w-12 h-12 mb-3 ${box.is_opened ? 'text-[#00ffba]' : 'text-white'}`} />
-                  <h3 className={`text-lg font-bold text-center px-2 ${box.is_opened ? 'text-[#00ffba]' : 'text-white'}`}>
-                    {box.magic_box_campaigns.name}
-                  </h3>
+          <Card key={box.id} className="rounded-none relative overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+              <CardTitle className="flex items-center gap-2">
+                <Gift className="w-6 h-6" />
+                {box.magic_box_campaigns.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <p className="text-gray-600 mb-4">{box.magic_box_campaigns.description}</p>
+              
+              {box.is_opened ? (
+                <div className="text-center space-y-3">
+                  <p className="text-sm text-gray-500 mb-2">
+                    Άνοιξε στις: {formatDate(box.opened_at!)}
+                  </p>
                   
-                  {/* Prize Content inside opened box */}
-                  {box.is_opened && box.campaign_prizes?.subscription_types && (
-                    <div className="mt-3 text-center">
-                      <div className="bg-white/90 px-3 py-2 rounded border-2 border-[#00ffba]">
-                        <div className="font-bold text-[#00ffba] text-sm">
-                          {box.campaign_prizes.subscription_types.name}
-                        </div>
-                        {box.campaign_prizes.subscription_types.duration_months > 0 && (
-                          <div className="text-xs text-gray-600">
-                            {box.campaign_prizes.subscription_types.duration_months} μήνες
-                          </div>
-                        )}
+                  {/* Εμφάνιση δώρου μέσα στο κουτί */}
+                  {box.campaign_prizes?.subscription_types && (
+                    <div className="bg-[#00ffba]/10 border border-[#00ffba] p-3 rounded-none">
+                      <div className="font-bold text-[#00ffba]">
+                        {box.campaign_prizes.subscription_types.name}
                       </div>
+                      {box.campaign_prizes.subscription_types.duration_months > 0 && (
+                        <div className="text-sm text-gray-600">
+                          {box.campaign_prizes.subscription_types.duration_months} μήνες
+                        </div>
+                      )}
                     </div>
                   )}
+                  
+                  <Badge variant="secondary" className="rounded-none">
+                    Ολοκληρωμένο
+                  </Badge>
                 </div>
-
-                {/* Right Face */}
-                <div 
-                  className={`
-                    absolute top-0 right-0 w-6 h-48 
-                    ${box.is_opened 
-                      ? 'bg-gradient-to-b from-[#00ffba]/30 to-[#00ffba]/50 border-r-2 border-t-2 border-b-2 border-[#00ffba]' 
-                      : 'bg-gradient-to-b from-purple-600 to-purple-700 border-r-2 border-t-2 border-b-2 border-purple-700'
-                    }
-                    rounded-r-lg transform-gpu
-                  `}
-                  style={{
-                    transform: 'rotateY(90deg) translateZ(24px)',
-                    transformOrigin: 'right'
+              ) : (
+                <Button
+                  onClick={() => {
+                    setSelectedBoxForGame(box);
+                    setShowGridGame(true);
                   }}
-                />
-
-                {/* Top Face */}
-                <div 
-                  className={`
-                    absolute top-0 left-0 w-48 h-6 
-                    ${box.is_opened 
-                      ? 'bg-gradient-to-r from-[#00ffba]/40 to-[#00ffba]/60 border-t-2 border-l-2 border-r-2 border-[#00ffba]' 
-                      : 'bg-gradient-to-r from-purple-400 to-purple-500 border-t-2 border-l-2 border-r-2 border-purple-500'
-                    }
-                    rounded-t-lg transform-gpu
-                  `}
-                  style={{
-                    transform: 'rotateX(90deg) translateZ(24px)',
-                    transformOrigin: 'top'
-                  }}
-                />
-              </div>
-
-              {/* Box Info */}
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600 mb-3">{box.magic_box_campaigns.description}</p>
-                
-                {box.is_opened ? (
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-500">
-                      Άνοιξε στις: {formatDate(box.opened_at!)}
-                    </p>
-                    <Badge variant="secondary" className="rounded-none">
-                      Ολοκληρωμένο
-                    </Badge>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={() => {
-                      setSelectedBoxForGame(box);
-                      setShowGridGame(true);
-                    }}
-                    disabled={openingBoxId === box.id}
-                    className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                  >
-                    <Gift className="w-4 h-4 mr-2" />
-                    Παίξε το Παιχνίδι!
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
+                  disabled={openingBoxId === box.id}
+                  className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  <Gift className="w-4 h-4 mr-2" />
+                  Παίξε το Παιχνίδι!
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         ))}
       </div>
 
