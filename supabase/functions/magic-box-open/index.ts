@@ -291,7 +291,7 @@ serve(async (req) => {
           // Get subscription type details to determine duration
           const { data: subscriptionType, error: typeError } = await supabaseClient
             .from('subscription_types')
-            .select('name, duration_months, visit_expiry_months, subscription_mode')
+            .select('name, duration_months, visit_expiry_months, subscription_mode, visit_count')
             .eq('id', selectedPrize.subscription_type_id)
             .single();
 
@@ -331,11 +331,37 @@ serve(async (req) => {
             const durationText = displayDuration === 0 ? '' : ` (${displayDuration} μήνες)`;
             responseMessage = `Συγχαρητήρια! Κέρδισες: ${subscriptionType.name}${durationText}`;
             
+            // For visit-based subscriptions, also create a visit package
+            if (subscriptionType.subscription_mode === 'visit_based' && subscriptionType.visit_count > 0) {
+              console.log(`✅ Creating visit package for visit-based subscription: ${subscriptionType.visit_count} visits`);
+              
+              // Calculate expiry date for visit package
+              const visitExpiryDate = new Date();
+              visitExpiryDate.setMonth(visitExpiryDate.getMonth() + (subscriptionType.visit_expiry_months || 1));
+              
+              const { error: visitPackageError } = await supabaseClient
+                .from('visit_packages')
+                .insert({
+                  user_id: appUser.id,
+                  total_visits: subscriptionType.visit_count,
+                  remaining_visits: subscriptionType.visit_count,
+                  expiry_date: visitExpiryDate.toISOString().split('T')[0],
+                  status: 'active'
+                });
+
+              if (visitPackageError) {
+                console.error('❌ Error creating visit package for subscription:', visitPackageError);
+              } else {
+                console.log(`✅ Created visit package with ${subscriptionType.visit_count} visits for subscription`);
+              }
+            }
+            
             additionalData = {
               subscription_id: subscription.id,
               subscription_type_id: selectedPrize.subscription_type_id,
               subscription_name: subscriptionType.name,
-              duration_months: displayDuration
+              duration_months: displayDuration,
+              visit_count: subscriptionType.subscription_mode === 'visit_based' ? subscriptionType.visit_count : 0
             };
           }
         }
