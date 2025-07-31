@@ -91,6 +91,12 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
   };
 
   const handleAcceptOffer = async (offer: any) => {
+    console.log('🚀 Starting offer acceptance process:', {
+      offerName: offer.name,
+      subscriptionType: offer.subscription_types,
+      isFree: offer.is_free
+    });
+    
     if (!offer?.subscription_types) {
       toast.error('Λάθος δεδομένα προσφοράς');
       return;
