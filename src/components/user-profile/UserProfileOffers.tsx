@@ -43,7 +43,7 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
         .from('offers')
         .select(`
           *,
-          subscription_types(name, description, price)
+          subscription_types(*)
         `)
         .eq('is_active', true)
         .gte('end_date', new Date().toISOString().split('T')[0])
@@ -95,7 +95,10 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
     console.log('🚀 Starting offer acceptance process:', {
       offerName: offer.name,
       subscriptionType: offer.subscription_types,
-      isFree: offer.is_free
+      isFree: offer.is_free,
+      subscription_mode: offer.subscription_types?.subscription_mode,
+      visit_count: offer.subscription_types?.visit_count,
+      visit_expiry_months: offer.subscription_types?.visit_expiry_months
     });
     
     if (!offer?.subscription_types) {
