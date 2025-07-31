@@ -11,11 +11,15 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 const OnlineCoachingWithSidebar: React.FC = () => {
   // For admin view - show all videocall bookings
   const { bookings, loading, fetchBookings } = useVideocallBookings(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  
+  // Persistent notifications for videocall bookings
+  const { markAsAcknowledged, isAcknowledged } = usePersistentNotifications();
 
   // Διαχωρισμός bookings σε επερχόμενα, εκκρεμείς και ιστορικό
   const now = new Date();
@@ -276,14 +280,16 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {pendingBookings.map((booking) => (
-                          <VideocallBookingCard 
-                            key={booking.id} 
-                            booking={booking} 
-                            isAdmin={true} 
-                            onRefresh={() => fetchBookings()}
-                          />
-                        ))}
+                         {pendingBookings.map((booking) => (
+                           <VideocallBookingCard 
+                             key={booking.id} 
+                             booking={booking} 
+                             isAdmin={true} 
+                             onRefresh={() => fetchBookings()}
+                             markAsAcknowledged={markAsAcknowledged}
+                             isAcknowledged={isAcknowledged}
+                           />
+                         ))}
                       </div>
                     )}
                   </TabsContent>

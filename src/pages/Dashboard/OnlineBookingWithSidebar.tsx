@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingSessionsOverview } from "@/components/admin/BookingSessionsOverview";
 import { GymBookingsOverview } from "@/components/admin/GymBookingsOverview";
 import { GymBookingsCalendarView } from "@/components/admin/GymBookingsCalendarView";
+import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 const OnlineBookingWithSidebar = () => {
   const { user, signOut } = useAuth();
@@ -19,6 +20,9 @@ const OnlineBookingWithSidebar = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
   const { userProfile: dashboardUserProfile } = useDashboard();
+  
+  // Persistent notifications for gym bookings  
+  const { markAsAcknowledged, isAcknowledged } = usePersistentNotifications();
 
   const handleSignOut = async () => {
     await signOut();
@@ -85,7 +89,10 @@ const OnlineBookingWithSidebar = () => {
               </TabsList>
 
               <TabsContent value="bookings" className="space-y-6">
-                <GymBookingsOverview />
+                <GymBookingsOverview 
+                  markAsAcknowledged={markAsAcknowledged}
+                  isAcknowledged={isAcknowledged}
+                />
               </TabsContent>
 
               <TabsContent value="calendar" className="space-y-6">

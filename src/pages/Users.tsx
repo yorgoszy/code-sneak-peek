@@ -31,6 +31,7 @@ import { UserProfileDialog } from "@/components/UserProfileDialog";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { testPasswordReset } from "@/utils/testPasswordReset";
 import { toast } from "sonner";
+import { usePersistentNotifications } from "@/hooks/usePersistentNotifications";
 
 interface AppUser {
   id: string;
@@ -69,6 +70,9 @@ const Users = () => {
   // New registrations state
   const [newRegistrations, setNewRegistrations] = useState<UserWithSubscription[]>([]);
   const [allUsers, setAllUsers] = useState<UserWithSubscription[]>([]);
+  
+  // Persistent notifications
+  const { markAsAcknowledged, isAcknowledged } = usePersistentNotifications();
 
   const fetchUsers = async () => {
     if (loadingUsers) return; // Prevent multiple simultaneous requests
@@ -117,15 +121,12 @@ const Users = () => {
 
       console.log('✅ Users fetched:', usersWithSubscription.length);
       
-      // Separate new registrations from all users
-      const acknowledgedUserIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
-      const acknowledgedUserIdsSet = new Set(acknowledgedUserIds);
-      
+      // Separate new registrations from all users using persistent notifications
       const newUsers = usersWithSubscription.filter(user => 
-        !acknowledgedUserIdsSet.has(user.id)
+        !isAcknowledged('new_users', user.id)
       );
       const acknowledgedUsers = usersWithSubscription.filter(user => 
-        acknowledgedUserIdsSet.has(user.id)
+        isAcknowledged('new_users', user.id)
       );
       
       setNewRegistrations(newUsers);
@@ -142,12 +143,11 @@ const Users = () => {
     }
   };
 
-  const handleAcknowledgeUsers = () => {
+  const handleAcknowledgeUsers = async () => {
     const newUserIds = newRegistrations.map(user => user.id);
-    const existingAcknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
-    const updatedAcknowledgedIds = [...existingAcknowledgedIds, ...newUserIds];
     
-    localStorage.setItem('acknowledgedUsers', JSON.stringify(updatedAcknowledgedIds));
+    // Mark as acknowledged in the database
+    await markAsAcknowledged('new_users', newUserIds);
     
     // Move new registrations to all users
     setAllUsers(prev => [...prev, ...newRegistrations]);
