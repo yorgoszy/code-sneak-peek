@@ -171,21 +171,21 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
           // Δεν σταματάμε τη διαδικασία αν η ενημέρωση του user αποτύχει
         }
 
-        // Δημιουργία visit package αν είναι visit-based συνδρομή ή αν το όνομα περιέχει "επισκέψεις"
-        const isVisitBased = offer.subscription_types.subscription_mode === 'visit_based' || 
-                           offer.subscription_types.name.toLowerCase().includes('επισκέψεις') ||
-                           offer.subscription_types.name.toLowerCase().includes('visits');
+        // Δημιουργία visit package αν η συνδρομή είναι visit-based ή έχει visit_count
+        const shouldCreateVisitPackage = subscriptionData.subscription_type_id && (
+          offer.subscription_types.subscription_mode === 'visit_based' || 
+          offer.subscription_types.visit_count > 0
+        );
         
         console.log('🔍 Checking if visit package should be created:', {
           subscription_mode: offer.subscription_types.subscription_mode,
           visit_count: offer.subscription_types.visit_count,
           subscription_name: offer.subscription_types.name,
-          isVisitBased: isVisitBased,
-          shouldCreate: isVisitBased && offer.subscription_types.visit_count
+          shouldCreate: shouldCreateVisitPackage
         });
         
-        if (isVisitBased && offer.subscription_types.visit_count) {
-          console.log('✅ Creating visit package for visit-based subscription');
+        if (shouldCreateVisitPackage) {
+          console.log('✅ Creating visit package for subscription');
           
           const visitExpiryDate = new Date();
           visitExpiryDate.setMonth(visitExpiryDate.getMonth() + (offer.subscription_types.visit_expiry_months || 3));
