@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Users, Calendar, Gift } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MagicBoxCampaignFormProps {
   onSuccess: () => void;
@@ -22,6 +23,7 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
   onCancel,
   editingCampaign
 }) => {
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -196,15 +198,14 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
 
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className={isMobile ? "pb-3" : ""}>
+        <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-lg' : 'text-xl'}`}>
           <Gift className="w-5 h-5 text-[#00ffba]" />
-          {editingCampaign ? 'Επεξεργασία Καμπάνιας' : 'Νέα Καμπάνια Magic Box'}
+          {editingCampaign ? 'Επεξεργασία Καμπάνιας' : (isMobile ? 'Νέα Καμπάνια' : 'Νέα Καμπάνια Magic Box')}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
+      <CardContent className={isMobile ? "p-3" : "p-6"}>
+        <form onSubmit={handleSubmit} className="space-y-6">{/* Basic Information */}
           <div className="space-y-4">
             <div>
               <Label htmlFor="name">Όνομα Καμπάνιας</Label>
@@ -228,7 +229,7 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
               <div>
                 <Label htmlFor="start_date">Ημερομηνία Έναρξης</Label>
                 <Input
@@ -253,7 +254,7 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
               <div>
                 <Label htmlFor="max_participations">Μέγιστες Συμμετοχές ανά Χρήστη</Label>
                 <Input
@@ -267,7 +268,7 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
                 />
               </div>
 
-              <div className="flex items-center space-x-2 pt-8">
+              <div className={`flex items-center space-x-2 ${isMobile ? 'py-2' : 'pt-8'}`}>
                 <Switch
                   id="is_active"
                   checked={formData.is_active}
@@ -306,7 +307,7 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
                       <SelectTrigger className="rounded-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-50 bg-white">
                         <SelectItem value="all">Όλοι οι χρήστες</SelectItem>
                         <SelectItem value="selected">Επιλεγμένοι χρήστες</SelectItem>
                       </SelectContent>
@@ -316,7 +317,7 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
                   {formData.distribution_type === 'selected' && (
                     <div className="space-y-2">
                       <Label>Επιλογή Χρηστών ({selectedUsers.length} επιλεγμένοι)</Label>
-                      <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-none p-4">
+                      <div className={`${isMobile ? 'max-h-48' : 'max-h-60'} overflow-y-auto border border-gray-200 rounded-none p-4`}>
                         {users.map((user) => (
                           <div key={user.id} className="flex items-center space-x-2 py-2">
                             <input
@@ -345,11 +346,11 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
           )}
 
           {/* Actions */}
-          <div className="flex space-x-2 pt-6 border-t">
+          <div className={`flex ${isMobile ? 'flex-col gap-2' : 'space-x-2'} pt-6 border-t`}>
             <Button
               type="submit"
               disabled={loading}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              className={`bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none ${isMobile ? 'order-1' : ''}`}
             >
               {loading ? 'Αποθήκευση...' : (editingCampaign ? 'Ενημέρωση' : 'Δημιουργία')}
             </Button>
@@ -357,7 +358,7 @@ export const MagicBoxCampaignForm: React.FC<MagicBoxCampaignFormProps> = ({
               type="button"
               onClick={onCancel}
               variant="outline"
-              className="rounded-none"
+              className={`rounded-none ${isMobile ? 'order-2' : ''}`}
             >
               Ακύρωση
             </Button>
