@@ -134,7 +134,10 @@ const Index = () => {
           <p className="text-xl text-black max-w-3xl mx-auto mb-8">
             {correctedTranslations.journeyText}
           </p>
-          <button className="bg-black text-[#00ffba] px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors">
+          <button 
+            className="bg-black text-[#00ffba] px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors"
+            onClick={handleGetStarted}
+          >
             {correctedTranslations.startNow}
           </button>
         </div>
