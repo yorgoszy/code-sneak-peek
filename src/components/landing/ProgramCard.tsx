@@ -319,7 +319,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           <h3 className="text-lg font-bold text-gray-900 flex-1" style={{ fontFamily: 'Robert, sans-serif' }}>
             {program.title}
           </h3>
-          {program.id !== "10" && (
+          {program.id !== "10" && program.id !== "11" && (
             <span className="text-lg font-bold text-[#00ffba] ml-2 flex-shrink-0">
               {programData.monthlyPrice}
             </span>
