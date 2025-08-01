@@ -14,7 +14,7 @@ import Users from "@/pages/Users";
 import Groups from "@/pages/Groups";
 import Exercises from "@/pages/Exercises";
 import Programs from "@/pages/Programs";
-import ActiveProgramsWithSidebar from "@/pages/ActiveProgramsWithSidebar";
+import ActivePrograms from "@/pages/ActivePrograms";
 import ProgramCards from "@/pages/ProgramCards";
 import Tests from "@/pages/Tests";
 import Results from "@/pages/Results";
@@ -57,7 +57,7 @@ function App() {
                 <Route path="/dashboard/subscriptions" element={<Subscriptions />} />
                 <Route path="/dashboard/exercises" element={<Exercises />} />
                 <Route path="/dashboard/programs" element={<Programs />} />
-                <Route path="/dashboard/active-programs" element={<ActiveProgramsWithSidebar />} />
+                <Route path="/dashboard/active-programs" element={<ActivePrograms />} />
                 <Route path="/dashboard/program-cards" element={<ProgramCards />} />
                 <Route path="/dashboard/tests" element={<Tests />} />
                 <Route path="/dashboard/analytics" element={<Analytics />} />
