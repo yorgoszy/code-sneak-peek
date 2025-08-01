@@ -19,7 +19,7 @@ export const useTranslations = () => {
       contactBtn: "ΕΠΙΚΟΙΝΩΝΙΑ",
       heroTitle: "Το ταξίδι του πρωταθλητή",
       heroSubtitle: "Ξεκινάει εδώ",
-      explorePrograms: "Εξερεύνηση όλων των υπηρεσιών",
+      explorePrograms: "Υπηρεσίες",
       blogSection: "Άρθρα",
       blogDescription: "Ενημερωθείτε με τα τελευταία άρθρα και συμβουλές από τους ειδικούς μας",
       aboutSection: "Σχετικά με εμάς",
