@@ -314,25 +314,44 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
 
           <TabsContent value="details" className="mt-4 h-[140px]">
             <div className="bg-gray-50 p-3 rounded-none h-full">
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Στοιχεία Προγράμματος</h4>
-              <div className="grid grid-cols-2 gap-y-2 text-xs">
-                <div>
-                  <span className="text-gray-600">Ηλικίες:</span>
-                  <span className="text-gray-900 font-medium ml-2">{programData.ages}</span>
+              {program.id === "10" ? (
+                <div className="text-xs space-y-3">
+                  <div>
+                    <h5 className="font-semibold text-gray-900 mb-1">Κινητική μάθηση:</h5>
+                    <p className="text-gray-700">Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού</p>
+                  </div>
+                  <div>
+                    <h5 className="font-semibold text-gray-900 mb-1">Κινητική ανάπτυξη:</h5>
+                    <p className="text-gray-700">Ανάπτυξη ειδικών αθλητικών δεξιοτήτων</p>
+                  </div>
+                  <div>
+                    <h5 className="font-semibold text-gray-900 mb-1">Κινητική βελτίωση:</h5>
+                    <p className="text-gray-700">Εισαγωγικές τεχνικές δύναμης</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-gray-600">Διάρκεια:</span>
-                  <span className="text-gray-900 font-medium ml-2">{programData.duration}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Συχνότητα:</span>
-                  <span className="text-gray-900 font-medium ml-2">{programData.frequency}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Ημέρες:</span>
-                  <span className="text-gray-900 font-medium ml-2">{programData.schedule}</span>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">Στοιχεία Προγράμματος</h4>
+                  <div className="grid grid-cols-2 gap-y-2 text-xs">
+                    <div>
+                      <span className="text-gray-600">Ηλικίες:</span>
+                      <span className="text-gray-900 font-medium ml-2">{programData.ages}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Διάρκεια:</span>
+                      <span className="text-gray-900 font-medium ml-2">{programData.duration}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Συχνότητα:</span>
+                      <span className="text-gray-900 font-medium ml-2">{programData.frequency}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Ημέρες:</span>
+                      <span className="text-gray-900 font-medium ml-2">{programData.schedule}</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </TabsContent>
 
