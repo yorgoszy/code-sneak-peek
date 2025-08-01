@@ -128,7 +128,7 @@ const Index = () => {
     {
       id: "10",
       title: translations.hyperkids,
-      description: translations.hyperkidsDesc,
+      description: "Χτίζοντας αθλητικές βάσεις για όλα τα σπορ",
       image: "/lovable-uploads/d049bee3-9df6-4a4b-8aff-88a05957d3ba.png",
       color: "#00ffba"
     },
