@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -45,12 +45,38 @@ const BookingSectionsWithSidebar = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
+        {/* Header with mobile menu button */}
+        {(isMobile || window.innerWidth <= 1024) && (
+          <div className="sticky top-0 z-40 bg-white border-b border-gray-200 p-3 md:p-4">
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileSidebar(true)}
+                className="rounded-none"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  className="rounded-none"
+                  onClick={handleSignOut}
+                  size="sm"
+                >
+                  <LogOut className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Booking Sections Management Content */}
-        <div className="flex-1 p-3 md:p-6">
+        <div className={`flex-1 ${isMobile ? 'p-3' : 'p-3 md:p-6'}`}>
           <div className="max-w-7xl mx-auto">
             <div className={`flex items-center justify-between ${isMobile ? 'mb-4' : 'mb-8'}`}>
               <div>
-                <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold text-gray-900 ${isMobile ? 'mb-1' : 'mb-2'}`}>
+                <h1 className={`${isMobile ? 'text-xl' : 'text-2xl lg:text-3xl'} font-bold text-gray-900 ${isMobile ? 'mb-1' : 'mb-2'}`}>
                   {isMobile ? 'Τμήματα' : 'Διαχείριση Τμημάτων'}
                 </h1>
                 {!isMobile && (
@@ -60,23 +86,23 @@ const BookingSectionsWithSidebar = () => {
                 )}
               </div>
               
-              <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
-                {!isMobile && (
+              {/* Desktop header controls */}
+              {!isMobile && window.innerWidth > 1024 && (
+                <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-600">
                     {dashboardUserProfile?.name || user?.email}
                     {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
                   </span>
-                )}
-                <Button 
-                  variant="outline" 
-                  className="rounded-none"
-                  onClick={handleSignOut}
-                  size={isMobile ? "sm" : "default"}
-                >
-                  <LogOut className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${isMobile ? '' : 'mr-2'}`} />
-                  {!isMobile && 'Αποσύνδεση'}
-                </Button>
-              </div>
+                  <Button 
+                    variant="outline" 
+                    className="rounded-none"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Αποσύνδεση
+                  </Button>
+                </div>
+              )}
             </div>
 
             <BookingSectionsManagement />

@@ -288,7 +288,7 @@ export const BookingSectionsManagement = () => {
         </Dialog>
       </div>
 
-      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} ${isMobile ? 'gap-3' : 'gap-6'}`}>
+      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3'} ${isMobile ? 'gap-3' : 'gap-4 lg:gap-6'}`}>
         {sections.map((section) => (
           <Card key={section.id} className={`rounded-none ${!section.is_active ? 'opacity-50' : ''}`}>
             <CardHeader className={isMobile ? 'p-3 pb-2' : ''}>
