@@ -380,6 +380,11 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             </span>
           )}
         </div>
+        {program.id === "12" && (
+          <p className="text-sm font-medium text-[#00ffba] mb-1" style={{ fontFamily: 'Robert, sans-serif' }}>
+            Μέθοδοι Προπόνησης Νέας Γενιάς
+          </p>
+        )}
         <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
           {program.id === "11" ? "Προπονητικά πλάνα βασισμένα στην αξιολόγηση" : program.description}
         </p>
