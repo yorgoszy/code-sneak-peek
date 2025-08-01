@@ -273,6 +273,27 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       };
     }
 
+    if (program.id === "12") {
+      return {
+        ages: "Επαγγελματίες αθλητές",
+        duration: "Προσαρμοζόμενη", 
+        frequency: "Εξατομικευμένη",
+        schedule: "Με ραντεβού",
+        monthlyPrice: "Επικοινωνήστε",
+        benefits: [
+          "Εξατομικευμένη προπόνηση",
+          "Αναλυτική αξιολόγηση",
+          "Επαγγελματική καθοδήγηση", 
+          "Βέλτιστη απόδοση"
+        ],
+        weeklySchedule: [
+          { ageGroup: "Hyperathletes", day: "Με ραντεβού", time: "Εξατομικευμένο πρόγραμμα" }
+        ],
+        scheduleNote: "Εξειδικευμένες υπηρεσίες για επαγγελματίες αθλητές.",
+        description: "Επαγγελματική προπόνηση:\nΕξατομικευμένα προγράμματα\nΑναλυτική αξιολόγηση\n\nΑθλητική απόδοση:\nΒελτιστοποίηση απόδοσης\nΠαρακολούθηση προόδου\n\nΕπαγγελματική καθοδήγηση:\nΕμπειρογνώμονες προπονητές"
+      };
+    }
+
     // Default data for other programs
     return {
       ages: "16+ ετών",
@@ -319,7 +340,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           <h3 className="text-lg font-bold text-gray-900 flex-1" style={{ fontFamily: 'Robert, sans-serif' }}>
             {program.title}
           </h3>
-          {program.id !== "10" && program.id !== "11" && (
+          {program.id !== "10" && program.id !== "11" && program.id !== "12" && (
             <span className="text-lg font-bold text-[#00ffba] ml-2 flex-shrink-0">
               {programData.monthlyPrice}
             </span>
@@ -386,6 +407,23 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                   <div>
                     <h5 className="font-semibold text-gray-900 mb-1">Online coaching:</h5>
                     <p className="text-gray-700">απομακρυσμένη καθοδήγηση</p>
+                  </div>
+                </div>
+              ) : program.id === "12" ? (
+                <div className="text-xs space-y-3">
+                  <div>
+                    <h5 className="font-semibold text-gray-900 mb-1">Επαγγελματική προπόνηση:</h5>
+                    <p className="text-gray-700">Εξατομικευμένα προγράμματα</p>
+                    <p className="text-gray-700">Αναλυτική αξιολόγηση</p>
+                  </div>
+                  <div>
+                    <h5 className="font-semibold text-gray-900 mb-1">Αθλητική απόδοση:</h5>
+                    <p className="text-gray-700">Βελτιστοποίηση απόδοσης</p>
+                    <p className="text-gray-700">Παρακολούθηση προόδου</p>
+                  </div>
+                  <div>
+                    <h5 className="font-semibold text-gray-900 mb-1">Επαγγελματική καθοδήγηση:</h5>
+                    <p className="text-gray-700">Εμπειρογνώμονες προπονητές</p>
                   </div>
                 </div>
               ) : (
