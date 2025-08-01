@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
 
@@ -260,13 +261,52 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[560px] flex flex-col">
-      {/* Header Image */}
+      {/* Header Image Carousel for hyperkids program */}
       <div className="relative h-48 overflow-hidden flex-shrink-0">
-        <img 
-          src={program.image} 
-          alt={program.title}
-          className="w-full h-full object-cover transition-all duration-300 filter grayscale"
-        />
+        {program.id === "10" ? (
+          <Carousel className="w-full h-full">
+            <CarouselContent>
+              <CarouselItem>
+                <div className="relative h-48">
+                  <img 
+                    src="/lovable-uploads/588f9e4c-7c09-485d-b4f3-03d2d3ca6e99.png"
+                    alt="Hyperkids training 1"
+                    className="w-full h-full object-cover transition-all duration-300 filter grayscale"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                </div>
+              </CarouselItem>
+              <CarouselItem>
+                <div className="relative h-48">
+                  <img 
+                    src="/lovable-uploads/d927ce71-2cdb-4230-a8b4-83723f860a48.png"
+                    alt="Hyperkids training 2"
+                    className="w-full h-full object-cover transition-all duration-300 filter grayscale"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                </div>
+              </CarouselItem>
+              <CarouselItem>
+                <div className="relative h-48">
+                  <img 
+                    src="/lovable-uploads/2594ec01-4721-4092-8051-4eb45b419aec.png"
+                    alt="Hyperkids training 3"
+                    className="w-full h-full object-cover transition-all duration-300 filter grayscale"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                </div>
+              </CarouselItem>
+            </CarouselContent>
+            <CarouselPrevious className="left-2" />
+            <CarouselNext className="right-2" />
+          </Carousel>
+        ) : (
+          <img 
+            src={program.image} 
+            alt={program.title}
+            className="w-full h-full object-cover transition-all duration-300 filter grayscale"
+          />
+        )}
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="absolute top-4 left-4">
           <span className="bg-[#00ffba] text-black px-3 py-1 text-sm font-bold rounded">
