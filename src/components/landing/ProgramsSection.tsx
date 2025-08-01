@@ -85,15 +85,17 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             }}
             className="w-full"
           >
-            {/* Navigation buttons positioned absolutely in top right */}
-            <div className="absolute -top-16 right-0 flex gap-2 z-10">
-              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
-                <ChevronLeft className="h-6 w-6" />
-              </CarouselPrevious>
-              <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
-                <ChevronRight className="h-6 w-6" />
-              </CarouselNext>
-            </div>
+            {/* Navigation buttons positioned absolutely in top right - only show if more than 3 programs */}
+            {programs.length > 3 && (
+              <div className="absolute -top-16 right-0 flex gap-2 z-10">
+                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
+                  <ChevronLeft className="h-6 w-6" />
+                </CarouselPrevious>
+                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
+                  <ChevronRight className="h-6 w-6" />
+                </CarouselNext>
+              </div>
+            )}
 
             <CarouselContent className="-ml-4">
               {programs.map((program) => (
