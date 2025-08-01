@@ -179,14 +179,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   return (
     <>
       <Card className="rounded-none">
-        <CardContent>
+        <CardContent className="p-2 sm:p-4 md:p-6">
           <Tabs value={calendarView} onValueChange={(value) => setCalendarView(value as 'monthly' | 'weekly' | 'daily')} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 rounded-none text-xs md:text-base">
-              <TabsTrigger value="monthly" className="rounded-none">Μηνιαία</TabsTrigger>
-              <TabsTrigger value="weekly" className="rounded-none">Εβδομαδιαία</TabsTrigger>
-              <TabsTrigger value="daily" className="rounded-none">Ημερήσια</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 rounded-none text-xs sm:text-sm md:text-base h-8 sm:h-10">
+              <TabsTrigger value="monthly" className="rounded-none text-xs sm:text-sm">Μηνιαία</TabsTrigger>
+              <TabsTrigger value="weekly" className="rounded-none text-xs sm:text-sm">Εβδομαδιαία</TabsTrigger>
+              <TabsTrigger value="daily" className="rounded-none text-xs sm:text-sm">Ημερήσια</TabsTrigger>
             </TabsList>
-            <TabsContent value="monthly" className="mt-2 sm:mt-4">
+            <TabsContent value="monthly" className="mt-1 sm:mt-2 md:mt-4">
               <MonthlyView
                 isMobile={isMobile}
                 weekDays={weekDays}

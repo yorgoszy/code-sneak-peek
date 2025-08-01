@@ -59,23 +59,20 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       key={dateStr}
       className={
         `
-        w-1/7 md:w-full min-w-0
-        h-12 md:h-20
+        min-w-0
+        h-16 sm:h-20 md:h-24 lg:h-28
         flex flex-col relative items-start
         border-b border-gray-200
         ${isTodayDate && !isSelected ? 'bg-yellow-100 border-2 border-yellow-400' : ''}
         ${isSelected ? 'bg-[#ededed] text-black' : (isCurrentMonth ? 'bg-white' : 'bg-gray-50 text-gray-400')}
         `
       }
-      style={{
-        // Ίδιο responsive styling με headers
-      }}
       onClick={() => onDateClick(date)}
     >
       {/* Date Number */}
       <div 
         className={`
-          absolute top-0.5 left-1 text-xs md:text-sm font-medium cursor-pointer z-10
+          absolute top-0.5 left-1 text-xs sm:text-sm font-medium cursor-pointer z-10
           ${isTodayDate && !isSelected ? 'font-bold text-yellow-600' : ''}
         `}
         onClick={(e) => {
@@ -91,8 +88,8 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         {date.getDate()}
       </div>
       {/* User Names */}
-      <div className="h-full flex flex-col items-start justify-center space-y-0.5 px-1 pt-4 pb-1 w-full">
-        {programsForDate.slice(0, 5).map((program, i) => {
+      <div className="h-full flex flex-col items-start justify-center space-y-0.5 px-0.5 sm:px-1 pt-3 sm:pt-4 pb-1 w-full">
+        {programsForDate.slice(0, 4).map((program, i) => {
           const userKey = `${program.assignmentId}-${i}-${realtimeKey}-${program.status}-${Date.now()}`;
           const colorClass = getNameColor(program.status, program.date);
           return (
@@ -105,9 +102,9 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
             </div>
           );
         })}
-        {programsForDate.length > 5 && (
+        {programsForDate.length > 4 && (
           <div className="text-xs text-gray-500 text-left w-full">
-            +{programsForDate.length - 5}
+            +{programsForDate.length - 4}
           </div>
         )}
       </div>

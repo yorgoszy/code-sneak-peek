@@ -9,19 +9,20 @@ export const ActiveProgramsHeader: React.FC = () => {
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         <Button
           variant="outline"
           size="sm"
           onClick={() => navigate('/dashboard')}
           className="rounded-none"
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Επιστροφή
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline ml-2">Επιστροφή</span>
         </Button>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <CalendarCheck className="h-8 w-8 text-[#00ffba]" />
-          Ενεργά Προγράμματα
+        <h1 className="text-lg sm:text-2xl md:text-3xl font-bold flex items-center gap-1 sm:gap-2">
+          <CalendarCheck className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-[#00ffba]" />
+          <span className="hidden xs:inline sm:text-xl md:text-3xl">Ενεργά Προγράμματα</span>
+          <span className="xs:hidden text-sm">Ενεργά</span>
         </h1>
       </div>
     </div>

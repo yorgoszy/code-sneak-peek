@@ -10,10 +10,10 @@ export const CalendarWeekDays: React.FC = () => {
         <div
           key={day}
           className={`
-            w-1/7 md:w-full min-w-0
-            h-8 md:h-12 lg:h-20
+            min-w-0
+            h-6 sm:h-8 md:h-12 lg:h-20
             flex items-center justify-center border-gray-200
-            text-xs md:text-sm font-medium text-gray-600 bg-white select-none
+            text-xs sm:text-sm font-medium text-gray-600 bg-white select-none
             ${idx < weekDays.length - 1 ? 'border-r' : ''} rounded-none
             px-1
           `}
