@@ -281,7 +281,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         <img 
           src={program.id === "10" ? hyperkidsImages[currentImageIndex] : program.image}
           alt={program.title}
-          className="w-full h-full object-cover transition-all duration-500 filter grayscale"
+          className="w-full h-full object-cover transition-all duration-500"
           key={program.id === "10" ? currentImageIndex : program.image}
         />
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
