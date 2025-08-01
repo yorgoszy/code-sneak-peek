@@ -24,6 +24,12 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
     "/lovable-uploads/2594ec01-4721-4092-8051-4eb45b419aec.png"
   ];
 
+  const hypergymImages = [
+    "/lovable-uploads/b64f018d-33ef-49a3-bd3b-9b0749b15d88.png",
+    "/lovable-uploads/af885bf7-e118-4573-928a-ad588bfeab5e.png",
+    "/lovable-uploads/38397d35-2484-4050-9e64-c083075c4940.png"
+  ];
+
   useEffect(() => {
     if (program.id === "10") {
       const interval = setInterval(() => {
@@ -31,7 +37,13 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       }, 2000);
       return () => clearInterval(interval);
     }
-  }, [program.id, hyperkidsImages.length]);
+    if (program.id === "11") {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % hypergymImages.length);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [program.id, hyperkidsImages.length, hypergymImages.length]);
   // Δεδομένα ανάλογα με το πρόγραμμα
   const getProgramData = () => {
     if (program.id === "01") {
@@ -325,10 +337,14 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       {/* Header Image */}
       <div className="relative h-48 overflow-hidden flex-shrink-0">
         <img 
-          src={program.id === "10" ? hyperkidsImages[currentImageIndex] : program.image}
+          src={program.id === "10" ? hyperkidsImages[currentImageIndex] : 
+               program.id === "11" ? hypergymImages[currentImageIndex] : 
+               program.image}
           alt={program.title}
           className="w-full h-full object-cover transition-all duration-500"
-          key={program.id === "10" ? currentImageIndex : program.image}
+          key={program.id === "10" ? currentImageIndex : 
+               program.id === "11" ? currentImageIndex : 
+               program.image}
         />
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="absolute top-4 left-4">
