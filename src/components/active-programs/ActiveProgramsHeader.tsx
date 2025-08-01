@@ -21,8 +21,7 @@ export const ActiveProgramsHeader: React.FC = () => {
         </Button>
         <h1 className="text-lg sm:text-2xl md:text-3xl font-bold flex items-center gap-1 sm:gap-2">
           <CalendarCheck className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-[#00ffba]" />
-          <span className="hidden xs:inline sm:text-xl md:text-3xl">Ενεργά Προγράμματα</span>
-          <span className="xs:hidden text-sm">Ενεργά</span>
+          Ενεργά Προγράμματα
         </h1>
       </div>
     </div>
