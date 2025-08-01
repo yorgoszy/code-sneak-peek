@@ -196,11 +196,12 @@ export const ExpenseManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Διαχείριση Εξόδων</h2>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold">Διαχείριση Εξόδων</h2>
         <Button
           onClick={() => setShowAddForm(true)}
-          className="bg-red-600 hover:bg-red-700 text-white rounded-none"
+          className="bg-red-600 hover:bg-red-700 text-white rounded-none w-full sm:w-auto"
         >
           <Plus className="w-4 h-4 mr-2" />
           Προσθήκη Εξόδου
@@ -208,14 +209,14 @@ export const ExpenseManagement: React.FC = () => {
       </div>
 
       {/* Στατιστικά */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="rounded-none">
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Receipt className="h-8 w-8 text-red-600" />
+              <Receipt className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Σύνολο Εξόδων</p>
-                <p className="text-lg font-semibold">€{totalExpenses.toFixed(2)}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Σύνολο Εξόδων</p>
+                <p className="text-lg sm:text-xl font-semibold">€{totalExpenses.toFixed(2)}</p>
               </div>
             </div>
           </CardContent>
@@ -224,10 +225,10 @@ export const ExpenseManagement: React.FC = () => {
         <Card className="rounded-none">
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Receipt className="h-8 w-8 text-red-600" />
+              <Receipt className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Αριθμός Εξόδων</p>
-                <p className="text-lg font-semibold">{expenses.length}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Αριθμός Εξόδων</p>
+                <p className="text-lg sm:text-xl font-semibold">{expenses.length}</p>
               </div>
             </div>
           </CardContent>
@@ -238,23 +239,25 @@ export const ExpenseManagement: React.FC = () => {
       {showAddForm && (
         <Card className="rounded-none">
           <CardHeader>
-            <CardTitle>{editingExpense ? 'Επεξεργασία Εξόδου' : 'Προσθήκη Νέου Εξόδου'}</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">
+              {editingExpense ? 'Επεξεργασία Εξόδου' : 'Προσθήκη Νέου Εξόδου'}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="description">Περιγραφή *</Label>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="lg:col-span-2">
+                <Label htmlFor="description" className="text-sm">Περιγραφή *</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Περιγραφή εξόδου"
-                  className="rounded-none"
+                  className="rounded-none h-20"
                 />
               </div>
 
               <div>
-                <Label htmlFor="amount">Ποσό *</Label>
+                <Label htmlFor="amount" className="text-sm">Ποσό *</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -267,7 +270,7 @@ export const ExpenseManagement: React.FC = () => {
               </div>
 
               <div>
-                <Label>Ημερομηνία Εξόδου</Label>
+                <Label className="text-sm">Ημερομηνία Εξόδου</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -290,7 +293,7 @@ export const ExpenseManagement: React.FC = () => {
               </div>
 
               <div>
-                <Label htmlFor="receipt_number">Αριθμός Απόδειξης</Label>
+                <Label htmlFor="receipt_number" className="text-sm">Αριθμός Απόδειξης</Label>
                 <Input
                   id="receipt_number"
                   value={formData.receipt_number}
@@ -301,7 +304,7 @@ export const ExpenseManagement: React.FC = () => {
               </div>
 
               <div>
-                <Label htmlFor="category">Κατηγορία</Label>
+                <Label htmlFor="category" className="text-sm">Κατηγορία</Label>
                 <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                   <SelectTrigger className="rounded-none">
                     <SelectValue placeholder="Επιλέξτε κατηγορία" />
@@ -318,10 +321,10 @@ export const ExpenseManagement: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 onClick={handleSubmit}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none flex-1 sm:flex-none"
               >
                 {editingExpense ? 'Ενημέρωση' : 'Αποθήκευση'}
               </Button>
@@ -338,7 +341,7 @@ export const ExpenseManagement: React.FC = () => {
                     category: ''
                   });
                 }}
-                className="rounded-none"
+                className="rounded-none flex-1 sm:flex-none"
               >
                 Ακύρωση
               </Button>
@@ -350,81 +353,165 @@ export const ExpenseManagement: React.FC = () => {
       {/* Λίστα εξόδων */}
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle>Έξοδα</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Έξοδα</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Αριθμός</th>
-                  <th className="text-left p-2">Περιγραφή</th>
-                  <th className="text-left p-2">Ποσό</th>
-                  <th className="text-left p-2">Ημερομηνία</th>
-                  <th className="text-left p-2">Απόδειξη</th>
-                  <th className="text-left p-2">Κατηγορία</th>
-                  <th className="text-left p-2">Ενέργειες</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expenses.map((expense) => (
-                  <tr key={expense.id} className="border-b hover:bg-gray-50">
-                    <td className="p-2">{expense.expense_number}</td>
-                    <td className="p-2">{expense.description}</td>
-                    <td className="p-2">€{expense.amount.toFixed(2)}</td>
-                    <td className="p-2">{format(new Date(expense.expense_date), 'dd/MM/yyyy')}</td>
-                    <td className="p-2">{expense.receipt_number || '-'}</td>
-                    <td className="p-2">{expense.category || '-'}</td>
-                    <td className="p-2">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(expense)}
-                          className="rounded-none"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="rounded-none text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="rounded-none">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Διαγραφή Εξόδου</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το έξοδο; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(expense.id)}
-                                className="bg-red-600 hover:bg-red-700 rounded-none"
-                              >
-                                Διαγραφή
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </td>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-medium">Αριθμός</th>
+                    <th className="text-left p-3 font-medium">Περιγραφή</th>
+                    <th className="text-left p-3 font-medium">Ποσό</th>
+                    <th className="text-left p-3 font-medium">Ημερομηνία</th>
+                    <th className="text-left p-3 font-medium">Απόδειξη</th>
+                    <th className="text-left p-3 font-medium">Κατηγορία</th>
+                    <th className="text-left p-3 font-medium">Ενέργειες</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            {expenses.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                Δεν βρέθηκαν έξοδα
-              </div>
-            )}
+                </thead>
+                <tbody>
+                  {expenses.map((expense) => (
+                    <tr key={expense.id} className="border-b hover:bg-gray-50">
+                      <td className="p-3">{expense.expense_number}</td>
+                      <td className="p-3">{expense.description}</td>
+                      <td className="p-3 font-semibold">€{expense.amount.toFixed(2)}</td>
+                      <td className="p-3">{format(new Date(expense.expense_date), 'dd/MM/yyyy')}</td>
+                      <td className="p-3">{expense.receipt_number || '-'}</td>
+                      <td className="p-3">{expense.category || '-'}</td>
+                      <td className="p-3">
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(expense)}
+                            className="rounded-none"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-none text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="rounded-none">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Διαγραφή Εξόδου</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το έξοδο; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(expense.id)}
+                                  className="bg-red-600 hover:bg-red-700 rounded-none"
+                                >
+                                  Διαγραφή
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden space-y-3">
+            {expenses.map((expense) => (
+              <div key={expense.id} className="border border-gray-200 rounded-none bg-white overflow-hidden">
+                {/* Header */}
+                <div className="bg-gray-50 p-3 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h5 className="font-semibold text-sm">{expense.expense_number}</h5>
+                      <p className="text-xs text-gray-500">{format(new Date(expense.expense_date), 'dd/MM/yyyy')}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-base text-red-600">€{expense.amount.toFixed(2)}</p>
+                      {expense.category && (
+                        <p className="text-xs text-gray-500 capitalize">{expense.category}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Content */}
+                <div className="p-3 space-y-2">
+                  <div>
+                    <p className="font-medium text-sm">{expense.description}</p>
+                  </div>
+                  
+                  {expense.receipt_number && (
+                    <div>
+                      <p className="text-xs text-gray-500">Αριθμός Απόδειξης: {expense.receipt_number}</p>
+                    </div>
+                  )}
+                  
+                  {/* Actions */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(expense)}
+                        className="rounded-none flex-1 text-xs h-8"
+                      >
+                        <Edit2 className="w-3 h-3 mr-1" />
+                        Επεξεργασία
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-none flex-1 text-xs h-8 text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Διαγραφή
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="rounded-none max-w-sm mx-auto">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-base">Διαγραφή Εξόδου</AlertDialogTitle>
+                            <AlertDialogDescription className="text-sm">
+                              Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το έξοδο; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+                            <AlertDialogCancel className="rounded-none w-full sm:w-auto">Ακύρωση</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(expense.id)}
+                              className="bg-red-600 hover:bg-red-700 rounded-none w-full sm:w-auto"
+                            >
+                              Διαγραφή
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {expenses.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              Δεν βρέθηκαν έξοδα
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
