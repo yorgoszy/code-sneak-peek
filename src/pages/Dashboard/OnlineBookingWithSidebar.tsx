@@ -113,17 +113,17 @@ const OnlineBookingWithSidebar = () => {
                   Στατιστικά
                 </TabsTrigger>
                 
-                {/* Mobile: Separate tabs with dropdown-like behavior */}
+                {/* Mobile: Separate horizontal tabs */}
                 {isMobile && (
-                  <div className="flex overflow-x-auto space-x-2 pb-2 mt-2">
+                  <div className="flex overflow-x-auto space-x-1 pb-2 mt-2">
                     <TabsList className="grid grid-cols-3 rounded-none min-w-full">
-                      <TabsTrigger value="bookings" className="rounded-none text-xs">
+                      <TabsTrigger value="bookings" className="rounded-none text-xs px-2">
                         Κρατήσεις
                       </TabsTrigger>
-                      <TabsTrigger value="calendar" className="rounded-none text-xs">
+                      <TabsTrigger value="calendar" className="rounded-none text-xs px-2">
                         Επισκόπηση
                       </TabsTrigger>
-                      <TabsTrigger value="overview" className="rounded-none text-xs">
+                      <TabsTrigger value="overview" className="rounded-none text-xs px-2">
                         Στατιστικά
                       </TabsTrigger>
                     </TabsList>

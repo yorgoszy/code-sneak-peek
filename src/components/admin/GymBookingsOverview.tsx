@@ -6,6 +6,7 @@ import { MapPin, Calendar, Users, Check, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GymBookingCard } from "./GymBookingCard";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GymBooking {
   id: string;
@@ -27,6 +28,7 @@ interface GymBooking {
 }
 
 export const GymBookingsOverview = () => {
+  const isMobile = useIsMobile();
   const [bookings, setBookings] = useState<GymBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastCheckTimestamp, setLastCheckTimestamp] = useState<number>(() => {
@@ -172,10 +174,10 @@ export const GymBookingsOverview = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="text-center flex-1">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Κρατήσεις Γυμναστηρίου</h2>
+    <div className={`space-y-${isMobile ? '4' : '6'}`}>
+      <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center justify-between'}`}>
+        <div className={`${isMobile ? 'text-left' : 'text-center'} flex-1`}>
+          <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 mb-2`}>Κρατήσεις Γυμναστηρίου</h2>
           <p className="text-gray-600">Διαχείριση όλων των κρατήσεων για το γυμναστήριο</p>
         </div>
         
@@ -183,7 +185,7 @@ export const GymBookingsOverview = () => {
           <Button
             onClick={handleMarkAsRead}
             disabled={markingAsRead}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            className={`bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none ${isMobile ? 'w-full' : ''}`}
           >
             {markingAsRead ? (
               <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -196,62 +198,79 @@ export const GymBookingsOverview = () => {
       </div>
 
       {/* Summary Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'} gap-4`}>
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardHeader className={`${isMobile ? 'pb-2' : 'pb-2'}`}>
+            <CardTitle className={`${isMobile ? 'text-sm' : 'text-sm'} font-medium flex items-center gap-2`}>
               <Calendar className="w-4 h-4" />
               Νέες Κρατήσεις
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{newBookings.length}</div>
+            <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>{newBookings.length}</div>
             <p className="text-xs text-gray-500">Χρειάζονται επισκόπηση</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardHeader className={`${isMobile ? 'pb-2' : 'pb-2'}`}>
+            <CardTitle className={`${isMobile ? 'text-sm' : 'text-sm'} font-medium flex items-center gap-2`}>
               <Users className="w-4 h-4" />
               Επερχόμενες Κρατήσεις
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{upcomingBookings.length}</div>
+            <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>{upcomingBookings.length}</div>
             <p className="text-xs text-gray-500">Εγκεκριμένες κρατήσεις</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardHeader className={`${isMobile ? 'pb-2' : 'pb-2'}`}>
+            <CardTitle className={`${isMobile ? 'text-sm' : 'text-sm'} font-medium flex items-center gap-2`}>
               <MapPin className="w-4 h-4" />
               Συνολικές Κρατήσεις
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{bookings.length}</div>
+            <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>{bookings.length}</div>
             <p className="text-xs text-gray-500">Όλες οι κρατήσεις</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Bookings by status */}
-      <Tabs defaultValue="new" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 rounded-none">
-          <TabsTrigger value="new" className="rounded-none">
+      <Tabs defaultValue="new" className={`space-y-${isMobile ? '3' : '4'}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-1' : 'grid-cols-3'} rounded-none`}>
+          <TabsTrigger value="new" className={`rounded-none ${isMobile ? 'text-sm py-2' : ''}`}>
             Νέα ({newBookings.length})
           </TabsTrigger>
-          <TabsTrigger value="upcoming" className="rounded-none">
+          <TabsTrigger value="upcoming" className={`rounded-none ${isMobile ? 'text-sm py-2' : ''}`}>
             Επερχόμενες ({upcomingBookings.length})
           </TabsTrigger>
-          <TabsTrigger value="history" className="rounded-none">
+          <TabsTrigger value="history" className={`rounded-none ${isMobile ? 'text-sm py-2' : ''}`}>
             Ιστορικό ({pastBookings.length})
           </TabsTrigger>
+          
+          {/* Mobile: Separate tabs */}
+          {isMobile && (
+            <div className="flex overflow-x-auto space-x-2 pb-2 mt-2">
+              <TabsList className="grid grid-cols-3 rounded-none min-w-full">
+                <TabsTrigger value="new" className="rounded-none text-xs">
+                  Νέα ({newBookings.length})
+                </TabsTrigger>
+                <TabsTrigger value="upcoming" className="rounded-none text-xs">
+                  Επερχόμενες ({upcomingBookings.length})
+                </TabsTrigger>
+                <TabsTrigger value="history" className="rounded-none text-xs">
+                  Ιστορικό ({pastBookings.length})
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          )}
         </TabsList>
 
-        <TabsContent value="new" className="space-y-4">
+        <TabsContent value="new" className={`space-y-${isMobile ? '3' : '4'}`}>
           {newBookings.length === 0 ? (
             <Card className="rounded-none">
               <CardContent className="text-center py-8">
@@ -286,7 +305,7 @@ export const GymBookingsOverview = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="upcoming" className="space-y-4">
+        <TabsContent value="upcoming" className={`space-y-${isMobile ? '3' : '4'}`}>
           {upcomingBookings.length === 0 ? (
             <Card className="rounded-none">
               <CardContent className="text-center py-8">
@@ -306,7 +325,7 @@ export const GymBookingsOverview = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-4">
+        <TabsContent value="history" className={`space-y-${isMobile ? '3' : '4'}`}>
           {pastBookings.length === 0 ? (
             <Card className="rounded-none">
               <CardContent className="text-center py-8">

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, Clock, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, endOfWeek, addDays } from "date-fns";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BookingSession {
   id: string;
@@ -22,6 +23,7 @@ interface BookingSession {
 }
 
 export const BookingSessionsOverview = () => {
+  const isMobile = useIsMobile();
   const [bookings, setBookings] = useState<BookingSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -72,32 +74,32 @@ export const BookingSessionsOverview = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-${isMobile ? '4' : '6'}`}>
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Επισκόπηση Κρατήσεων</h2>
+        <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 mb-2`}>Επισκόπηση Κρατήσεων</h2>
         <p className="text-gray-600">Εβδομάδα {format(selectedDate, 'dd/MM/yyyy')} - {format(endOfWeek(selectedDate, { weekStartsOn: 1 }), 'dd/MM/yyyy')}</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-7'} gap-4`}>
         {getWeekDays().map((day, index) => {
           const dayBookings = getBookingsForDay(day);
           const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
 
           return (
             <Card key={index} className={`rounded-none ${isToday ? 'ring-2 ring-[#00ffba]' : ''}`}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-center">
+              <CardHeader className={`${isMobile ? 'pb-1' : 'pb-2'}`}>
+                <CardTitle className={`${isMobile ? 'text-xs' : 'text-sm'} text-center`}>
                   <div className="font-medium">
                     {['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'][day.getDay()]}
                   </div>
-                  <div className="text-lg font-bold">
+                  <div className={`${isMobile ? 'text-base' : 'text-lg'} font-bold`}>
                     {format(day, 'dd/MM')}
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className={`space-y-2 ${isMobile ? 'p-2' : ''}`}>
                 {dayBookings.length === 0 ? (
-                  <p className="text-xs text-gray-500 text-center py-4">Δεν υπάρχουν κρατήσεις</p>
+                  <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-500 text-center py-4`}>Δεν υπάρχουν κρατήσεις</p>
                 ) : (
                   dayBookings.map((booking) => (
                     <div key={booking.id} className="bg-gray-50 p-2 rounded-none text-xs">
@@ -123,23 +125,23 @@ export const BookingSessionsOverview = () => {
       </div>
 
       {/* Summary Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'} gap-4`}>
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Συνολικές Κρατήσεις</CardTitle>
+          <CardHeader className={`${isMobile ? 'pb-1' : 'pb-2'}`}>
+            <CardTitle className={`${isMobile ? 'text-sm' : 'text-sm'} font-medium`}>Συνολικές Κρατήσεις</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{bookings.length}</div>
+            <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>{bookings.length}</div>
             <p className="text-xs text-gray-500">Αυτή την εβδομάδα</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Σήμερα</CardTitle>
+          <CardHeader className={`${isMobile ? 'pb-1' : 'pb-2'}`}>
+            <CardTitle className={`${isMobile ? 'text-sm' : 'text-sm'} font-medium`}>Σήμερα</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
               {getBookingsForDay(new Date()).length}
             </div>
             <p className="text-xs text-gray-500">Προγραμματισμένες κρατήσεις</p>
@@ -147,11 +149,11 @@ export const BookingSessionsOverview = () => {
         </Card>
 
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Πιο Δημοφιλής Ώρα</CardTitle>
+          <CardHeader className={`${isMobile ? 'pb-1' : 'pb-2'}`}>
+            <CardTitle className={`${isMobile ? 'text-sm' : 'text-sm'} font-medium`}>Πιο Δημοφιλής Ώρα</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold`}>
               {bookings.length > 0 ? (
                 Object.entries(
                   bookings.reduce((acc: any, booking) => {
@@ -166,11 +168,11 @@ export const BookingSessionsOverview = () => {
         </Card>
 
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Πιο Δημοφιλές Τμήμα</CardTitle>
+          <CardHeader className={`${isMobile ? 'pb-1' : 'pb-2'}`}>
+            <CardTitle className={`${isMobile ? 'text-sm' : 'text-sm'} font-medium`}>Πιο Δημοφιλές Τμήμα</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm font-bold">
+            <div className={`${isMobile ? 'text-sm' : 'text-sm'} font-bold`}>
               {bookings.length > 0 ? (
                 Object.entries(
                   bookings.reduce((acc: any, booking) => {
