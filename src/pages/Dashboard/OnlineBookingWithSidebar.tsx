@@ -99,36 +99,19 @@ const OnlineBookingWithSidebar = () => {
             )}
 
             <Tabs defaultValue="bookings" className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
-              <TabsList className={`grid w-full ${isMobile ? 'grid-cols-1' : 'grid-cols-3'} rounded-none`}>
-                <TabsTrigger value="bookings" className={`rounded-none ${isMobile ? 'text-sm py-2' : ''}`}>
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Κρατήσεις
+              <TabsList className={`grid w-full grid-cols-3 rounded-none ${isMobile ? 'h-12' : 'h-10'}`}>
+                <TabsTrigger value="bookings" className={`rounded-none ${isMobile ? 'text-xs px-2' : 'text-sm'} flex items-center justify-center`}>
+                  <Calendar className={`${isMobile ? 'w-3 h-3 mr-1' : 'w-4 h-4 mr-2'}`} />
+                  <span className={isMobile ? 'hidden sm:inline' : ''}>Κρατήσεις</span>
                 </TabsTrigger>
-                <TabsTrigger value="calendar" className={`rounded-none ${isMobile ? 'text-sm py-2' : ''}`}>
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Επισκόπηση
+                <TabsTrigger value="calendar" className={`rounded-none ${isMobile ? 'text-xs px-2' : 'text-sm'} flex items-center justify-center`}>
+                  <BarChart3 className={`${isMobile ? 'w-3 h-3 mr-1' : 'w-4 h-4 mr-2'}`} />
+                  <span className={isMobile ? 'hidden sm:inline' : ''}>Επισκόπηση</span>
                 </TabsTrigger>
-                <TabsTrigger value="overview" className={`rounded-none ${isMobile ? 'text-sm py-2' : ''}`}>
-                  <Users className="w-4 h-4 mr-2" />
-                  Στατιστικά
+                <TabsTrigger value="overview" className={`rounded-none ${isMobile ? 'text-xs px-2' : 'text-sm'} flex items-center justify-center`}>
+                  <Users className={`${isMobile ? 'w-3 h-3 mr-1' : 'w-4 h-4 mr-2'}`} />
+                  <span className={isMobile ? 'hidden sm:inline' : ''}>Στατιστικά</span>
                 </TabsTrigger>
-                
-                {/* Mobile: Separate horizontal tabs */}
-                {isMobile && (
-                  <div className="flex overflow-x-auto space-x-1 pb-2 mt-2">
-                    <TabsList className="grid grid-cols-3 rounded-none min-w-full">
-                      <TabsTrigger value="bookings" className="rounded-none text-xs px-2">
-                        Κρατήσεις
-                      </TabsTrigger>
-                      <TabsTrigger value="calendar" className="rounded-none text-xs px-2">
-                        Επισκόπηση
-                      </TabsTrigger>
-                      <TabsTrigger value="overview" className="rounded-none text-xs px-2">
-                        Στατιστικά
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
-                )}
               </TabsList>
 
               <TabsContent value="bookings" className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
