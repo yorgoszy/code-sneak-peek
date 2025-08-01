@@ -383,21 +383,6 @@ const Auth = () => {
               </Tabs>
             )}
 
-            {/* Admin Emergency Reset Button */}
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-xs text-red-600 mb-2 text-center">🚨 ADMIN EMERGENCY 🚨</p>
-              <Button 
-                onClick={handleResetAllPasswords}
-                disabled={isResettingPasswords}
-                variant="destructive"
-                className="w-full rounded-none text-xs"
-              >
-                {isResettingPasswords ? "Επαναφορά όλων των κωδικών..." : "Reset All User Passwords"}
-              </Button>
-              <p className="text-xs text-red-500 mt-1 text-center">
-                Θα στείλει password reset σε όλους τους χρήστες
-              </p>
-            </div>
 
             <div className="mt-6 text-center">
               <Link to="/" className="text-sm text-blue-600 hover:underline">
