@@ -358,14 +358,14 @@ const ActivePrograms = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+        <div className="flex-1 space-y-4 sm:space-y-6">
           {/* Header - Responsive */}
-          <div className="w-full">
+          <div className="p-3 sm:p-4 md:p-6 pb-0">
             <ActiveProgramsHeader />
           </div>
 
-          {/* Calendar - Responsive */}
-          <div className="w-full overflow-x-auto">
+          {/* Calendar - Full width without margins */}
+          <div className="w-full">
             <CalendarGrid
               currentMonth={currentMonth}
               setCurrentMonth={setCurrentMonth}
@@ -380,7 +380,7 @@ const ActivePrograms = () => {
           </div>
 
           {/* Today's Programs - Responsive */}
-          <div className="w-full">
+          <div className="p-3 sm:p-4 md:p-6 pt-0">
             <TodaysProgramsSection
               programsForToday={programsForSelectedDate}
               workoutCompletions={workoutCompletions}
