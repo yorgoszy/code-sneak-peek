@@ -386,19 +386,19 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           <TabsList className="grid w-full grid-cols-3 rounded-none bg-transparent border-b border-gray-200 px-0 gap-0">
             <TabsTrigger 
               value="details" 
-              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0.5"
+              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0"
             >
               Λεπτομέρειες
             </TabsTrigger>
             <TabsTrigger 
               value="benefits" 
-              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0 text-left"
+              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0"
             >
               Οφέλη
             </TabsTrigger>
             <TabsTrigger 
               value="schedule" 
-              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0.5"
+              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0"
             >
               Εβδομαδιαίο Πρόγραμμα
             </TabsTrigger>
