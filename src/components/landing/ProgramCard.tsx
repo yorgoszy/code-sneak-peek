@@ -266,7 +266,9 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           "Βελτιωμένη αθλητική απόδοση"
         ],
         weeklySchedule: [
-          { ageGroup: "HyperGym", day: "Με ραντεβού", time: "Ευέλικτες ώρες" }
+          { ageGroup: "Personal training", day: "κατόπιν ραντεβού", time: "" },
+          { ageGroup: "Mini group", day: "θα ανακαινωθεί σύντομα", time: "" },
+          { ageGroup: "Online coaching", day: "κατόπιν ραντεβού", time: "" }
         ],
         scheduleNote: "Ολοκληρωμένες υπηρεσίες αξιολόγησης και καθοδήγησης για βέλτιστη αθλητική απόδοση.",
         description: "Αξιολόγηση:\nστάσης και κίνησης\n\nΑθλητική απόδοση:\nΠροφίλ φορτίου - ταχύτητα\nαλτικό προφίλ\nπαρακολούθηση αποτελεσμάτων\n\nOnline coaching:\nαπομακρυσμένη καθοδήγηση"
