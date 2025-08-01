@@ -392,7 +392,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             </TabsTrigger>
             <TabsTrigger 
               value="benefits" 
-              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0.5"
+              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0 text-left"
             >
               Οφέλη
             </TabsTrigger>
