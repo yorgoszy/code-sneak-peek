@@ -312,10 +312,10 @@ const ActivePrograms = () => {
       </div>
 
       {/* Mobile/Tablet Sidebar Overlay */}
-      {(showMobileSidebar && (isMobile || window.innerWidth < 1024)) && (
+      {showMobileSidebar && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-black/20" onClick={() => setShowMobileSidebar(false)} />
-          <div className="fixed left-0 top-0 h-full w-80 bg-white">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowMobileSidebar(false)} />
+          <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-lg">
             <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />
           </div>
         </div>
@@ -323,21 +323,24 @@ const ActivePrograms = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
-        {/* Header - only show on mobile/tablet */}
-        <div className="lg:hidden bg-white border-b border-gray-200 p-4">
+        {/* Mobile/Tablet Header */}
+        <div className="lg:hidden bg-white border-b border-gray-200 p-3 sm:p-4">
           <div className="flex items-center justify-between">
+            {/* Menu Button */}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowMobileSidebar(true)}
-              className="rounded-none"
+              className="rounded-none flex items-center gap-2"
             >
               <Menu className="h-5 w-5" />
+              <span className="text-sm font-medium">Μενού</span>
             </Button>
             
-            <div className="flex items-center space-x-4">
+            {/* User Info & Logout */}
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {userProfile && (
-                <span className="text-sm text-gray-600">
+                <span className="text-xs sm:text-sm text-gray-600 max-w-[120px] sm:max-w-none truncate">
                   {userProfile.display_name || 'Διαχειριστής'}
                 </span>
               )}
@@ -345,38 +348,46 @@ const ActivePrograms = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="rounded-none"
+                className="rounded-none flex items-center gap-1"
               >
                 <LogOut className="h-4 w-4" />
+                <span className="text-xs sm:text-sm">Έξοδος</span>
               </Button>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-2 sm:p-4 md:p-6 w-full max-w-5xl mx-auto space-y-6">
-          <ActiveProgramsHeader />
+        <div className="flex-1 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+          {/* Header - Responsive */}
+          <div className="w-full">
+            <ActiveProgramsHeader />
+          </div>
 
-          {/* Calendar with ENHANCED realtime key */}
-          <CalendarGrid
-            currentMonth={currentMonth}
-            setCurrentMonth={setCurrentMonth}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            activePrograms={activePrograms}
-            workoutCompletions={workoutCompletions}
-            realtimeKey={realtimeKey}
-            onNameClick={handleProgramClick}
-            onRefresh={handleCalendarRefresh}
-          />
+          {/* Calendar - Responsive */}
+          <div className="w-full overflow-x-auto">
+            <CalendarGrid
+              currentMonth={currentMonth}
+              setCurrentMonth={setCurrentMonth}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              activePrograms={activePrograms}
+              workoutCompletions={workoutCompletions}
+              realtimeKey={realtimeKey}
+              onNameClick={handleProgramClick}
+              onRefresh={handleCalendarRefresh}
+            />
+          </div>
 
-          {/* Today's Programs for the selected date */}
-          <TodaysProgramsSection
-            programsForToday={programsForSelectedDate}
-            workoutCompletions={workoutCompletions}
-            todayStr={dayToShowStr}
-            onProgramClick={handleProgramClick}
-          />
+          {/* Today's Programs - Responsive */}
+          <div className="w-full">
+            <TodaysProgramsSection
+              programsForToday={programsForSelectedDate}
+              workoutCompletions={workoutCompletions}
+              todayStr={dayToShowStr}
+              onProgramClick={handleProgramClick}
+            />
+          </div>
         </div>
       </div>
 
