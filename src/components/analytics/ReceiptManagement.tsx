@@ -551,9 +551,18 @@ export const ReceiptManagement: React.FC = () => {
         <CardContent>
           <Tabs defaultValue="history" className="w-full">
             <TabsList className="grid w-full grid-cols-3 rounded-none">
-              <TabsTrigger value="history" className="rounded-none">Ιστορικό Αποδείξεων</TabsTrigger>
-              <TabsTrigger value="new" className="rounded-none">Νέα Απόδειξη</TabsTrigger>
-              <TabsTrigger value="mydata" className="rounded-none">MyData Ρυθμίσεις</TabsTrigger>
+              <TabsTrigger value="history" className="rounded-none text-xs sm:text-sm px-2 sm:px-4 py-2">
+                <span className="hidden sm:inline">Ιστορικό Αποδείξεων</span>
+                <span className="sm:hidden">Ιστορικό</span>
+              </TabsTrigger>
+              <TabsTrigger value="new" className="rounded-none text-xs sm:text-sm px-2 sm:px-4 py-2">
+                <span className="hidden sm:inline">Νέα Απόδειξη</span>
+                <span className="sm:hidden">Νέα</span>
+              </TabsTrigger>
+              <TabsTrigger value="mydata" className="rounded-none text-xs sm:text-sm px-2 sm:px-4 py-2">
+                <span className="hidden sm:inline">MyData Ρυθμίσεις</span>
+                <span className="sm:hidden">MyData</span>
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="new" className="mt-6">
