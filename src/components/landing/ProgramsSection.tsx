@@ -26,18 +26,34 @@ interface ProgramsSectionProps {
 
 const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translations }) => {
   const [api, setApi] = useState<any>();
+  const [isAutoplayPaused, setIsAutoplayPaused] = useState(false);
   const isMobile = useIsMobile();
 
   // Auto-rotate carousel on mobile
   useEffect(() => {
-    if (!api || !isMobile) return;
+    if (!api || !isMobile || isAutoplayPaused) return;
 
     const interval = setInterval(() => {
       api.scrollNext();
-    }, 1500);
+    }, 3000); // 3 δευτερόλεπτα
 
     return () => clearInterval(interval);
-  }, [api, isMobile]);
+  }, [api, isMobile, isAutoplayPaused]);
+
+  const handleTouchStart = () => {
+    if (isMobile) {
+      setIsAutoplayPaused(true);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (isMobile) {
+      // Επανεκκίνηση autoplay μετά από 5 δευτερόλεπτα αδράνειας
+      setTimeout(() => {
+        setIsAutoplayPaused(false);
+      }, 5000);
+    }
+  };
 
   return (
     <section id="programs" className="py-20 bg-black text-white">
@@ -97,7 +113,13 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
               </div>
             )}
 
-            <CarouselContent className="-ml-4">
+            <CarouselContent 
+              className="-ml-4"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleTouchStart}
+              onMouseUp={handleTouchEnd}
+            >
               {programs.map((program) => (
                 <CarouselItem 
                   key={program.id} 
