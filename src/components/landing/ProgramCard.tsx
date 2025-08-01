@@ -361,11 +361,6 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                program.image}
         />
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        <div className="absolute top-4 left-4">
-          <span className="bg-[#00ffba] text-black px-3 py-1 text-sm font-bold rounded">
-            {program.id}
-          </span>
-        </div>
       </div>
 
       {/* Program Title */}
