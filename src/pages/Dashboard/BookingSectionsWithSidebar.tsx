@@ -48,26 +48,33 @@ const BookingSectionsWithSidebar = () => {
         {/* Booking Sections Management Content */}
         <div className="flex-1 p-3 md:p-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
+            <div className={`flex items-center justify-between ${isMobile ? 'mb-4' : 'mb-8'}`}>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Διαχείριση Τμημάτων</h1>
-                <p className="text-gray-600">
-                  Διαχειριστείτε τα τμήματα και τις ρυθμίσεις κρατήσεων
-                </p>
+                <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold text-gray-900 ${isMobile ? 'mb-1' : 'mb-2'}`}>
+                  {isMobile ? 'Τμήματα' : 'Διαχείριση Τμημάτων'}
+                </h1>
+                {!isMobile && (
+                  <p className="text-gray-600">
+                    Διαχειριστείτε τα τμήματα και τις ρυθμίσεις κρατήσεων
+                  </p>
+                )}
               </div>
               
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
-                  {dashboardUserProfile?.name || user?.email}
-                  {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
-                </span>
+              <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
+                {!isMobile && (
+                  <span className="text-sm text-gray-600">
+                    {dashboardUserProfile?.name || user?.email}
+                    {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                  </span>
+                )}
                 <Button 
                   variant="outline" 
                   className="rounded-none"
                   onClick={handleSignOut}
+                  size={isMobile ? "sm" : "default"}
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Αποσύνδεση
+                  <LogOut className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${isMobile ? '' : 'mr-2'}`} />
+                  {!isMobile && 'Αποσύνδεση'}
                 </Button>
               </div>
             </div>

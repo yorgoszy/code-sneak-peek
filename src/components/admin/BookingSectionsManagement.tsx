@@ -11,6 +11,7 @@ import { Plus, Edit, Trash2, Users, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AvailableHoursSelector } from "./AvailableHoursSelector";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BookingSection {
   id: string;
@@ -24,6 +25,7 @@ interface BookingSection {
 }
 
 export const BookingSectionsManagement = () => {
+  const isMobile = useIsMobile();
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -193,27 +195,35 @@ export const BookingSectionsManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
+      <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-between'}`}>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Διαχείριση Τμημάτων</h2>
-          <p className="text-gray-600">Δημιουργήστε και διαχειριστείτε τα τμήματα του γυμναστηρίου</p>
+          <h2 className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900`}>
+            {isMobile ? 'Τμήματα' : 'Διαχείριση Τμημάτων'}
+          </h2>
+          {!isMobile && (
+            <p className="text-gray-600">Δημιουργήστε και διαχειριστείτε τα τμήματα του γυμναστηρίου</p>
+          )}
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
-              <Plus className="w-4 h-4 mr-2" />
-              Νέο Τμήμα
+            <Button 
+              onClick={resetForm} 
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              size={isMobile ? "sm" : "default"}
+            >
+              <Plus className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+              {isMobile ? 'Νέο' : 'Νέο Τμήμα'}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-none">
+          <DialogContent className={`${isMobile ? 'max-w-[95vw] max-h-[95vh]' : 'max-w-4xl max-h-[90vh]'} overflow-y-auto rounded-none`}>
             <DialogHeader>
               <DialogTitle>
                 {editingSection ? 'Επεξεργασία Τμήματος' : 'Νέο Τμήμα'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                 <div>
                   <Label htmlFor="name">Όνομα Τμήματος</Label>
                   <Input
@@ -254,11 +264,22 @@ export const BookingSectionsManagement = () => {
                   onChange={(hours) => setFormData(prev => ({ ...prev, available_hours: hours }))}
                 />
               </div>
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="rounded-none">
+              <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'justify-end space-x-2'}`}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsDialogOpen(false)} 
+                  className="rounded-none"
+                  size={isMobile ? "sm" : "default"}
+                >
                   Ακύρωση
                 </Button>
-                <Button type="submit" disabled={loading} className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
+                <Button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  size={isMobile ? "sm" : "default"}
+                >
                   {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
                 </Button>
               </div>
@@ -267,32 +288,34 @@ export const BookingSectionsManagement = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} ${isMobile ? 'gap-3' : 'gap-6'}`}>
         {sections.map((section) => (
           <Card key={section.id} className={`rounded-none ${!section.is_active ? 'opacity-50' : ''}`}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{section.name}</CardTitle>
+            <CardHeader className={isMobile ? 'p-3 pb-2' : ''}>
+              <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center justify-between'}`}>
+                <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>{section.name}</CardTitle>
                 <div className="flex items-center space-x-1">
-                  <Badge variant={section.is_active ? "default" : "secondary"} className="rounded-none">
+                  <Badge variant={section.is_active ? "default" : "secondary"} className="rounded-none text-xs">
                     {section.is_active ? 'Ενεργό' : 'Ανενεργό'}
                   </Badge>
                 </div>
               </div>
               {section.description && (
-                <p className="text-sm text-gray-600">{section.description}</p>
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600`}>{section.description}</p>
               )}
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className={isMobile ? 'p-3 pt-0' : ''}>
+              <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
                 <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm">Μέγιστη χωρητικότητα: {section.max_capacity} άτομα</span>
+                  <Users className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-gray-500`} />
+                  <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
+                    {isMobile ? `Χωρητικότητα: ${section.max_capacity}` : `Μέγιστη χωρητικότητα: ${section.max_capacity} άτομα`}
+                  </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm">
-                    Διαθέσιμες ώρες: {
+                  <Clock className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-gray-500`} />
+                  <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
+                    {isMobile ? 'Ώρες: ' : 'Διαθέσιμες ώρες: '}{
                       Object.entries(section.available_hours)
                         .filter(([day, hours]) => hours && hours.length > 0)
                         .map(([day, hours]) => `${day}: ${hours.length}h`)
@@ -300,32 +323,45 @@ export const BookingSectionsManagement = () => {
                     }
                   </span>
                 </div>
-                <div className="flex space-x-2 pt-2">
+                <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'space-x-2'} pt-2`}>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size={isMobile ? "sm" : "sm"}
                     onClick={() => handleEdit(section)}
-                    className="rounded-none flex-1"
+                    className={`rounded-none ${isMobile ? 'flex-1' : 'flex-1'}`}
                   >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Επεξεργασία
+                    <Edit className={`${isMobile ? 'w-3 h-3 mr-1' : 'w-3 h-3 mr-1'}`} />
+                    {isMobile ? 'Επεξεργασία' : 'Επεξεργασία'}
                   </Button>
-                  <Button
-                    variant={section.is_active ? "destructive" : "default"}
-                    size="sm"
-                    onClick={() => handleToggleActive(section)}
-                    className="rounded-none"
-                  >
-                    {section.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
-                  </Button>
+                  {!isMobile && (
+                    <Button
+                      variant={section.is_active ? "destructive" : "default"}
+                      size="sm"
+                      onClick={() => handleToggleActive(section)}
+                      className="rounded-none"
+                    >
+                      {section.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
+                    </Button>
+                  )}
+                  {isMobile && (
+                    <Button
+                      variant={section.is_active ? "destructive" : "default"}
+                      size="sm"
+                      onClick={() => handleToggleActive(section)}
+                      className="rounded-none flex-1"
+                    >
+                      {section.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
+                    </Button>
+                  )}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
                         variant="destructive"
                         size="sm"
-                        className="rounded-none px-2"
+                        className={`rounded-none ${isMobile ? 'px-3' : 'px-2'}`}
                       >
                         <Trash2 className="w-3 h-3" />
+                        {isMobile && <span className="ml-1 text-xs">Διαγραφή</span>}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent className="rounded-none">
