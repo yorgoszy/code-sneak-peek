@@ -290,7 +290,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         ],
         weeklySchedule: [
           { ageGroup: "Ακαδημαϊκό τμήμα", day: "θα ανακηνωθει συντομα", time: "" },
-          { ageGroup: "Αγωνιστικό τμημα", day: "καθημερινα", time: "στις 20:00" },
+          { ageGroup: "Αγωνιστικό τμημα", day: "Δευτερα-Παρασκευή", time: "20:00" },
           { ageGroup: "Τίμημα αναψυχής", day: "θα ανακηνωθει συντομα", time: "" }
         ],
         scheduleNote: "Εξειδικευμένες υπηρεσίες για επαγγελματίες αθλητές.",
