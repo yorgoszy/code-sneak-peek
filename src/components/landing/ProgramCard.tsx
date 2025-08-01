@@ -414,18 +414,10 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
               ) : program.id === "12" ? (
                 <div className="text-xs space-y-3">
                   <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Επαγγελματική προπόνηση:</h5>
-                    <p className="text-gray-700">Εξατομικευμένα προγράμματα</p>
-                    <p className="text-gray-700">Αναλυτική αξιολόγηση</p>
-                  </div>
-                  <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Αθλητική απόδοση:</h5>
-                    <p className="text-gray-700">Βελτιστοποίηση απόδοσης</p>
-                    <p className="text-gray-700">Παρακολούθηση προόδου</p>
-                  </div>
-                  <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Επαγγελματική καθοδήγηση:</h5>
-                    <p className="text-gray-700">Εμπειρογνώμονες προπονητές</p>
+                    <h5 className="font-semibold text-gray-900 mb-1">Muay Thai</h5>
+                    <p className="text-gray-700">Εκμάθηση βασικών τεχνικών</p>
+                    <p className="text-gray-700">Προπόνηση τακτικής</p>
+                    <p className="text-gray-700">Βίντεο ανάλυση</p>
                   </div>
                 </div>
               ) : (
