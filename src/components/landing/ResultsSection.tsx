@@ -79,42 +79,44 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
             Δεν υπάρχουν αποτελέσματα προς εμφάνιση
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {results.map((result) => (
-              <article key={result.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
-                {result.image_url && (
-                  <img 
-                    src={result.image_url} 
-                    alt={result.title_el}
-                    className="w-full h-48 object-cover"
-                  />
-                )}
-                
-                <div className="p-6 flex flex-col flex-grow">
-                  <div className="text-sm text-[#00ffba] mb-2">
-                    {format(new Date(result.result_date), 'dd MMM yyyy')}
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-                    {translations?.language === 'en' && result.title_en ? result.title_en : result.title_el}
-                  </h3>
-                  
-                  <p className="text-gray-600 mb-4 flex-grow">
-                    {translations?.language === 'en' && result.content_en ? result.content_en : result.content_el}
-                  </p>
-                  
-                  {result.hashtags && (
-                    <div className="flex flex-wrap gap-1">
-                      {parseHashtags(result.hashtags).map((tag, index) => (
-                        <span key={index} className="inline-block bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl">
+              {results.map((result) => (
+                <article key={result.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
+                  {result.image_url && (
+                    <img 
+                      src={result.image_url} 
+                      alt={result.title_el}
+                      className="w-full h-48 object-cover"
+                    />
                   )}
-                </div>
-              </article>
-            ))}
+                  
+                  <div className="p-6 flex flex-col flex-grow">
+                    <div className="text-sm text-[#00ffba] mb-2">
+                      {format(new Date(result.result_date), 'dd MMM yyyy')}
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+                      {translations?.language === 'en' && result.title_en ? result.title_en : result.title_el}
+                    </h3>
+                    
+                    <p className="text-gray-600 mb-4 flex-grow">
+                      {translations?.language === 'en' && result.content_en ? result.content_en : result.content_el}
+                    </p>
+                    
+                    {result.hashtags && (
+                      <div className="flex flex-wrap gap-1">
+                        {parseHashtags(result.hashtags).map((tag, index) => (
+                          <span key={index} className="inline-block bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         )}
       </div>
