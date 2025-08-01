@@ -4,6 +4,7 @@ import { ProgramBuilderDialog } from './ProgramBuilderDialog';
 import { ProgramsList } from './ProgramsList';
 import { ProgramBuilderTrigger } from './builder/ProgramBuilderTrigger';
 import { Program, User, Exercise } from './types';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProgramsLayoutProps {
   programs: Program[];
@@ -44,10 +45,14 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onDuplicateProgram,
   onOpenBuilder
 }) => {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Προγράμματα Προπόνησης</h1>
+    <div className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
+      <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'justify-between items-center'}`}>
+        <h1 className={`${isMobile ? 'text-xl' : 'text-2xl lg:text-3xl'} font-bold`}>
+          {isMobile ? 'Προγράμματα' : 'Προγράμματα Προπόνησης'}
+        </h1>
         <ProgramBuilderTrigger onClick={onOpenBuilder} />
       </div>
 

@@ -13,6 +13,7 @@ import { ProgramViewDialog } from "../active-programs/calendar/ProgramViewDialog
 import { ProgramPreviewDialog } from './ProgramPreviewDialog';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProgramsListProps {
   programs: Program[];
@@ -33,6 +34,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   onDuplicateProgram,
   onPreviewProgram
 }) => {
+  const isMobile = useIsMobile();
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -130,8 +132,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   if (programs.length === 0) {
     return (
       <div className="w-full">
-        <h2 className="text-xl font-semibold mb-4">Προγράμματα</h2>
-        <div className="text-center py-8 text-gray-500">
+        <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold ${isMobile ? 'mb-3' : 'mb-4'}`}>Προγράμματα</h2>
+        <div className={`text-center ${isMobile ? 'py-6' : 'py-8'} text-gray-500`}>
           Δεν υπάρχουν προγράμματα ακόμα
         </div>
       </div>
@@ -141,8 +143,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   return (
     <>
       <div className="w-full">
-        <h2 className="text-xl font-semibold mb-4">Προγράμματα</h2>
-        <div className="space-y-3">
+        <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold ${isMobile ? 'mb-3' : 'mb-4'}`}>Προγράμματα</h2>
+        <div className={`space-y-${isMobile ? '2' : '3'}`}>
           {programs.map(program => {
             const { weeksCount, avgDaysPerWeek } = getProgramStats(program);
             const assignmentInfo = getAssignmentInfo(program);
@@ -150,34 +152,34 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
             
             return (
               <Card key={program.id} className="rounded-none hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between h-full">
+                <CardContent className={`${isMobile ? 'p-3' : 'p-4'}`}>
+                  <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-between'} h-full`}>
                     {/* Left side - User info and program details */}
-                    <div className="flex items-center gap-4 flex-1">
+                    <div className={`flex items-center ${isMobile ? 'gap-3' : 'gap-4'} flex-1`}>
                       {/* Avatar - show for assigned programs */}
                       {isAssigned && assignmentInfo && (
-                        <Avatar className="w-12 h-12 flex-shrink-0">
+                        <Avatar className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex-shrink-0`}>
                           <AvatarImage src={assignmentInfo.athletePhoto || undefined} />
                           <AvatarFallback className="bg-gray-200">
-                            <User className="w-6 h-6 text-gray-500" />
+                            <User className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-gray-500`} />
                           </AvatarFallback>
                         </Avatar>
                       )}
                       
                       {/* Program Info */}
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-lg">{program.name}</h4>
+                        <h4 className={`font-medium ${isMobile ? 'text-base' : 'text-lg'}`}>{program.name}</h4>
                         {isAssigned && assignmentInfo && (
-                          <p className="text-sm text-gray-600 font-medium">{assignmentInfo.athleteName}</p>
+                          <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 font-medium`}>{assignmentInfo.athleteName}</p>
                         )}
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-500 mt-1`}>
                           {weeksCount} εβδομάδες • {avgDaysPerWeek} ημέρες/εβδομάδα
                         </div>
                       </div>
                     </div>
 
                     {/* Center - Progress and training info for assigned programs */}
-                    {isAssigned && assignmentInfo && (
+                    {!isMobile && isAssigned && assignmentInfo && (
                       <div className="flex-1 max-w-md mx-4">
                         <div className="space-y-2">
                           {/* Training dates summary */}
@@ -207,47 +209,72 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                       </div>
                     )}
 
+                    {/* Mobile Progress Info */}
+                    {isMobile && isAssigned && assignmentInfo && (
+                      <div className="w-full">
+                        <div className="space-y-2">
+                          {/* Training dates summary */}
+                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <Calendar className="w-3 h-3" />
+                            <span>{assignmentInfo.trainingDates.length} προπονήσεις</span>
+                          </div>
+                          
+                          {/* Progress bar */}
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span>Πρόοδος</span>
+                              <span>{assignmentInfo.completedSessions}/{assignmentInfo.totalSessions}</span>
+                            </div>
+                            <Progress 
+                              value={assignmentInfo.progressPercentage} 
+                              className="h-2 w-full"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Right side - Status and action buttons */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className={`flex items-center ${isMobile ? 'gap-1 flex-wrap' : 'gap-2'} flex-shrink-0`}>
                       {/* Status Badge */}
                       {isAssigned && (
                         <Badge 
                           variant="outline" 
-                          className="rounded-none bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]"
+                          className={`rounded-none bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba] ${isMobile ? 'text-xs' : ''}`}
                         >
                           Active
                         </Badge>
                       )}
 
                       {/* Action Buttons */}
-                      <div className="flex gap-1">
+                      <div className={`flex ${isMobile ? 'gap-1' : 'gap-1'}`}>
                         {/* View button - opens ProgramViewDialog for assigned programs */}
                         {isAssigned && (
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size={isMobile ? "sm" : "sm"}
                             onClick={(e) => handleViewProgram(e, program)}
                             className="rounded-none"
                             title="Προβολή Προγράμματος"
                           >
-                            <Play className="w-4 h-4" />
+                            <Play className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                           </Button>
                         )}
 
                         {/* Preview button - opens ProgramPreviewDialog */}
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size={isMobile ? "sm" : "sm"}
                           onClick={(e) => handlePreviewProgram(e, program)}
                           className="rounded-none"
                           title="Προεπισκόπηση"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                         </Button>
 
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size={isMobile ? "sm" : "sm"}
                           onClick={(e) => {
                             e.stopPropagation();
                             onEditProgram(program);
@@ -255,13 +282,13 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                           className="rounded-none"
                           title="Επεξεργασία"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                         </Button>
 
                         {onDuplicateProgram && (
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size={isMobile ? "sm" : "sm"}
                             onClick={(e) => {
                               e.stopPropagation();
                               onDuplicateProgram(program);
@@ -269,17 +296,17 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                             className="rounded-none"
                             title="Αντιγραφή"
                           >
-                            <Copy className="w-4 h-4" />
+                            <Copy className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                           </Button>
                         )}
 
                         {/* Larger delete button area */}
                         <div
                           onClick={(e) => handleDeleteProgram(e, program.id)}
-                          className="flex items-center justify-center p-2 hover:bg-red-50 cursor-pointer rounded-none border border-transparent hover:border-red-200 min-w-[32px] min-h-[32px]"
+                          className={`flex items-center justify-center ${isMobile ? 'p-1' : 'p-2'} hover:bg-red-50 cursor-pointer rounded-none border border-transparent hover:border-red-200 ${isMobile ? 'min-w-[28px] min-h-[28px]' : 'min-w-[32px] min-h-[32px]'}`}
                           title="Διαγραφή"
                         >
-                          <Trash2 className="w-4 h-4 text-red-600" />
+                          <Trash2 className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-red-600`} />
                         </div>
                       </div>
                     </div>
