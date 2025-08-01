@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
-import { ActiveProgramsSidebar } from "@/components/active-programs/ActiveProgramsSidebar";
+import { Navigate, useNavigate } from "react-router-dom";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
@@ -12,15 +12,46 @@ import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { CustomLoadingScreen } from "@/components/ui/custom-loading";
+import { Sidebar } from "@/components/Sidebar";
+import { Button } from "@/components/ui/button";
+import { LogOut, Menu } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 const ActivePrograms = () => {
+  const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
+  const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [hasCheckedRedirect, setHasCheckedRedirect] = useState(false);
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
+
+  // Authentication and redirect logic
+  useEffect(() => {
+    if (!authLoading && !rolesLoading) {
+      if (!isAuthenticated) {
+        setHasCheckedRedirect(true);
+        return;
+      }
+      
+      if (userProfile && !isAdmin) {
+        navigate(`/user/${userProfile.user_id}`);
+        return;
+      }
+      
+      setHasCheckedRedirect(true);
+    }
+  }, [authLoading, rolesLoading, isAuthenticated, userProfile, isAdmin, navigate]);
 
   const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletions();
@@ -234,6 +265,29 @@ const ActivePrograms = () => {
     console.log('🔄 Calendar refresh completed with key:', newKey);
   }, [loadCompletions, refetch]);
 
+  // Handle loading states
+  if (authLoading || rolesLoading) {
+    return <CustomLoadingScreen />;
+  }
+
+  // Handle redirection
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (!hasCheckedRedirect) {
+    return <CustomLoadingScreen />;
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex w-full items-center justify-center">
@@ -251,9 +305,55 @@ const ActivePrograms = () => {
   }
 
   return (
-    <>
-      {/* Remove Sidebar: Use a single flex column that stretches the whole width */}
-      <div className="min-h-screen bg-gray-50 flex flex-col w-full">
+    <div className="min-h-screen bg-gray-50 flex w-full">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      </div>
+
+      {/* Mobile/Tablet Sidebar Overlay */}
+      {(showMobileSidebar && (isMobile || window.innerWidth < 1024)) && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="fixed inset-0 bg-black/20" onClick={() => setShowMobileSidebar(false)} />
+          <div className="fixed left-0 top-0 h-full w-80 bg-white">
+            <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header - only show on mobile/tablet */}
+        <div className="lg:hidden bg-white border-b border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMobileSidebar(true)}
+              className="rounded-none"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            
+            <div className="flex items-center space-x-4">
+              {userProfile && (
+                <span className="text-sm text-gray-600">
+                  {userProfile.display_name || 'Διαχειριστής'}
+                </span>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="rounded-none"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
         <div className="flex-1 p-2 sm:p-4 md:p-6 w-full max-w-5xl mx-auto space-y-6">
           <ActiveProgramsHeader />
 
@@ -292,7 +392,7 @@ const ActivePrograms = () => {
           onRefresh={handleCalendarRefresh}
         />
       ))}
-    </>
+    </div>
   );
 };
 
