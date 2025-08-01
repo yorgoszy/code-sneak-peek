@@ -63,69 +63,6 @@ const Index = () => {
 
   const programs = [
     {
-      id: "01",
-      title: language === 'el' ? 'Κινητική μάθηση' : 'Movement learning',
-      description: translations.movementLearningDesc,
-      image: "/lovable-uploads/d049bee3-9df6-4a4b-8aff-88a05957d3ba.png",
-      color: "#00ffba"
-    },
-    {
-      id: "02", 
-      title: language === 'el' ? 'Κινητική ανάπτυξη' : 'Movement development',
-      description: translations.movementDevelopmentDesc,
-      image: "/lovable-uploads/99cd2512-1f3a-438a-af79-1385c89c57df.png",
-      color: "#00ffba"
-    },
-    {
-      id: "03",
-      title: language === 'el' ? 'Δύναμη νέων' : 'Youth strength',
-      description: translations.youthStrengthDesc,
-      image: "/lovable-uploads/ec05107c-d95c-4976-bab8-8d30e55abe8b.png",
-      color: "#00ffba"
-    },
-    {
-      id: "04",
-      title: language === 'el' ? 'Φυσική κατάσταση' : 'Fitness',
-      description: translations.fitnessDesc,
-      image: "/lovable-uploads/b06a27cc-1f96-43d1-a89c-ea4330c70290.png",
-      color: "#00ffba"
-    },
-    {
-      id: "05",
-      title: language === 'el' ? 'Muay thai' : 'Muay thai',
-      description: translations.muayThaiDesc,
-      image: "/lovable-uploads/37c5c9c4-26cd-4d28-8584-2ef582590264.png",
-      color: "#00ffba"
-    },
-    {
-      id: "06",
-      title: language === 'el' ? 'Προπόνηση ένας προς έναν' : 'One by one training',
-      description: translations.oneByOneDesc,
-      image: "/lovable-uploads/e56e52ce-0033-42c7-a6d2-46563aca2433.png",
-      color: "#00ffba"
-    },
-    {
-      id: "07",
-      title: language === 'el' ? 'Αθλητική απόδοση' : 'Athlete performance',
-      description: translations.athletePerformanceDesc,
-      image: "/lovable-uploads/24db4858-28e8-402b-acaf-095be2a78e56.png",
-      color: "#00ffba"
-    },
-    {
-      id: "08",
-      title: language === 'el' ? 'Εξατομικευμένος σχεδιασμός προγράμματος' : 'Custom program design',
-      description: translations.customProgramDesignDesc,
-      image: "/lovable-uploads/5db7f8e4-dd3f-4459-99e0-e211ed9b16f5.png",
-      color: "#00ffba"
-    },
-    {
-      id: "09",
-      title: language === 'el' ? 'Έτοιμα πρότυπα προγραμμάτων' : 'Ready training template',
-      description: translations.readyTemplateDesc,
-      image: "/lovable-uploads/b00b1740-0d26-4b91-9d41-9c36f78efe94.png",
-      color: "#00ffba"
-    },
-    {
       id: "10",
       title: translations.hyperkids,
       description: "Χτίζοντας αθλητικές βάσεις για όλα τα σπορ",
