@@ -124,6 +124,27 @@ const Index = () => {
       description: translations.readyTemplateDesc,
       image: "/lovable-uploads/b00b1740-0d26-4b91-9d41-9c36f78efe94.png",
       color: "#00ffba"
+    },
+    {
+      id: "10",
+      title: translations.hyperkids,
+      description: translations.hyperkidsDesc,
+      image: "/lovable-uploads/d049bee3-9df6-4a4b-8aff-88a05957d3ba.png",
+      color: "#00ffba"
+    },
+    {
+      id: "11", 
+      title: translations.hypergym,
+      description: translations.hypergymDesc,
+      image: "/lovable-uploads/b06a27cc-1f96-43d1-a89c-ea4330c70290.png",
+      color: "#00ffba"
+    },
+    {
+      id: "12",
+      title: translations.hyperathletes,
+      description: translations.hyperathletesDesc,
+      image: "/lovable-uploads/24db4858-28e8-402b-acaf-095be2a78e56.png", 
+      color: "#00ffba"
     }
   ];
 

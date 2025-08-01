@@ -83,7 +83,14 @@ export const useTranslations = () => {
       assessmentDesc: "Κίνηση & Στάση\n• Προφίλ φορτίου - ταχύτητας\n• Προφίλ άλματος\n• Αντοχή",
       resultsFocused: "Εστιασμένα στα Αποτελέσματα",
       resultsFocusedDesc: "Παρακολούθηση Αποτελεσμάτων\n• Καθοδήγηση Απόδοσης\n• Ανάπτυξη Προσαρμοσμένου Προγράμματος",
-      learnMore: "Μάθετε περισσότερα"
+      learnMore: "Μάθετε περισσότερα",
+      // New services
+      hyperkids: "hyperkids",
+      hyperkidsDesc: "Εξειδικευμένο πρόγραμμα για παιδιά ηλικίας 4-12 ετών που εστιάζει στην ανάπτυξη βασικών κινητικών δεξιοτήτων, συντονισμού και αθλητικών αξιών μέσα από διασκεδαστικές δραστηριότητες",
+      hypergym: "hypergym", 
+      hypergymDesc: "Σύγχρονο γυμναστήριο με εξειδικευμένο εξοπλισμό για προπόνηση δύναμης, φυσικής κατάστασης και αθλητικής απόδοσης για όλες τις ηλικίες και τα επίπεδα",
+      hyperathletes: "hyperathletes",
+      hyperathletesDesc: "Προηγμένο πρόγραμμα για ανταγωνιστικούς αθλητές που στοχεύει στη μεγιστοποίηση της απόδοσης μέσω εξατομικευμένων προγραμμάτων προπόνησης και αθλητικής ψυχολογίας"
     },
     en: {
       language: 'en',
@@ -163,7 +170,14 @@ export const useTranslations = () => {
       assessmentDesc: "Movement & Posture\n• Load-velocity profile\n• Jump profile\n• Endurance",
       resultsFocused: "Results Focused",
       resultsFocusedDesc: "Results Tracking\n• Performance Guidance\n• Customized Program Development",
-      learnMore: "Learn More"
+      learnMore: "Learn More",
+      // New services
+      hyperkids: "hyperkids",
+      hyperkidsDesc: "Specialized program for children aged 4-12 years focusing on developing fundamental movement skills, coordination and athletic values through fun activities",
+      hypergym: "hypergym",
+      hypergymDesc: "Modern gym with specialized equipment for strength training, fitness and athletic performance for all ages and levels", 
+      hyperathletes: "hyperathletes",
+      hyperathletesDesc: "Advanced program for competitive athletes aimed at maximizing performance through personalized training programs and sports psychology"
     }
   };
 
