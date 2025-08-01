@@ -5,9 +5,21 @@ import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
 import { Program } from "@/components/programs/types";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useProgramsData } from "@/hooks/useProgramsData";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { Menu, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useDashboard } from "@/hooks/useDashboard";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 const Programs = () => {
+  const { user, signOut } = useAuth();
+  const { userProfile: dashboardUserProfile } = useDashboard();
+  const { isAdmin } = useRoleCheck();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const isMobile = useIsMobile();
+  const [isTablet, setIsTablet] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   
@@ -21,6 +33,23 @@ const Programs = () => {
 
   const { users, exercises } = useProgramsData();
   const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+
+  // Check for tablet size
+  React.useEffect(() => {
+    const checkTablet = () => {
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1024);
+    };
+    
+    checkTablet();
+    window.addEventListener('resize', checkTablet);
+    return () => window.removeEventListener('resize', checkTablet);
+  }, []);
+
+  const showSidebarButton = isMobile || isTablet;
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   useEffect(() => {
     loadPrograms();
@@ -114,40 +143,141 @@ const Programs = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex w-full">
-        <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
-        <div className="flex-1 p-6">Φόρτωση...</div>
+      <div className="min-h-screen bg-gray-50 flex w-full">
+        {/* Desktop Sidebar */}
+        {!showSidebarButton && (
+          <div className="block">
+            <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
+          </div>
+        )}
+
+        {/* Mobile/Tablet Sidebar Overlay */}
+        {showSidebarButton && showMobileSidebar && (
+          <div className="fixed inset-0 z-50">
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-50"
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <div className="relative w-64 h-full">
+              <Sidebar 
+                isCollapsed={false} 
+                setIsCollapsed={setSidebarCollapsed}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Header with mobile menu button */}
+          {showSidebarButton && (
+            <div className="sticky top-0 z-40 bg-white border-b border-gray-200 p-3 md:p-4">
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMobileSidebar(true)}
+                  className="rounded-none"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="outline" 
+                    className="rounded-none"
+                    onClick={handleSignOut}
+                    size="sm"
+                  >
+                    <LogOut className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="flex-1 p-6">Φόρτωση...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex w-full">
-      <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
-      <div className="flex-1 p-6">
-        <ProgramsLayout
-          programs={programs}
-          selectedProgram={selectedProgram}
-          users={users}
-          exercises={exercises}
-          editingProgram={editingProgram}
-          builderDialogOpen={builderOpen}
-          previewProgram={previewProgram}
-          previewDialogOpen={previewOpen}
-          onSelectProgram={setSelectedProgram}
-          onDeleteProgram={handleDeleteProgram}
-          onEditProgram={handleEditProgram}
-          onCreateProgram={handleCreateProgram}
-          onBuilderDialogClose={handleBuilderClose}
-          onDuplicateProgram={handleDuplicateProgram}
-          onPreviewProgram={handlePreviewProgram}
-          onPreviewDialogClose={handlePreviewClose}
-          onDeleteWeek={() => {}}
-          onDeleteDay={() => {}}
-          onDeleteBlock={() => {}}
-          onDeleteExercise={() => {}}
-          onOpenBuilder={handleOpenBuilder}
-        />
+    <div className="min-h-screen bg-gray-50 flex w-full">
+      {/* Desktop Sidebar */}
+      {!showSidebarButton && (
+        <div className="block">
+          <Sidebar isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
+        </div>
+      )}
+
+      {/* Mobile/Tablet Sidebar Overlay */}
+      {showSidebarButton && showMobileSidebar && (
+        <div className="fixed inset-0 z-50">
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowMobileSidebar(false)}
+          />
+          <div className="relative w-64 h-full">
+            <Sidebar 
+              isCollapsed={false} 
+              setIsCollapsed={setSidebarCollapsed}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header with mobile menu button */}
+        {showSidebarButton && (
+          <div className="sticky top-0 z-40 bg-white border-b border-gray-200 p-3 md:p-4">
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileSidebar(true)}
+                className="rounded-none"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  className="rounded-none"
+                  onClick={handleSignOut}
+                  size="sm"
+                >
+                  <LogOut className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Programs Layout Content */}
+        <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
+          <ProgramsLayout
+            programs={programs}
+            selectedProgram={selectedProgram}
+            users={users}
+            exercises={exercises}
+            editingProgram={editingProgram}
+            builderDialogOpen={builderOpen}
+            previewProgram={previewProgram}
+            previewDialogOpen={previewOpen}
+            onSelectProgram={setSelectedProgram}
+            onDeleteProgram={handleDeleteProgram}
+            onEditProgram={handleEditProgram}
+            onCreateProgram={handleCreateProgram}
+            onBuilderDialogClose={handleBuilderClose}
+            onDuplicateProgram={handleDuplicateProgram}
+            onPreviewProgram={handlePreviewProgram}
+            onPreviewDialogClose={handlePreviewClose}
+            onDeleteWeek={() => {}}
+            onDeleteDay={() => {}}
+            onDeleteBlock={() => {}}
+            onDeleteExercise={() => {}}
+            onOpenBuilder={handleOpenBuilder}
+          />
+        </div>
       </div>
     </div>
   );
