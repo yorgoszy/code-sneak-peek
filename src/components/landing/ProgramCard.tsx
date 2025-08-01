@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
 
@@ -18,6 +16,22 @@ interface ProgramCardProps {
 }
 
 export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  const hyperkidsImages = [
+    "/lovable-uploads/588f9e4c-7c09-485d-b4f3-03d2d3ca6e99.png",
+    "/lovable-uploads/d927ce71-2cdb-4230-a8b4-83723f860a48.png", 
+    "/lovable-uploads/2594ec01-4721-4092-8051-4eb45b419aec.png"
+  ];
+
+  useEffect(() => {
+    if (program.id === "10") {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % hyperkidsImages.length);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [program.id, hyperkidsImages.length]);
   // Δεδομένα ανάλογα με το πρόγραμμα
   const getProgramData = () => {
     if (program.id === "01") {
@@ -262,59 +276,14 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[560px] flex flex-col">
-      {/* Header Image Carousel for hyperkids program */}
+      {/* Header Image */}
       <div className="relative h-48 overflow-hidden flex-shrink-0">
-        {program.id === "10" ? (
-          <Carousel 
-            className="w-full h-full"
-            plugins={[
-              Autoplay({
-                delay: 1000,
-              }),
-            ]}
-          >
-            <CarouselContent>
-              <CarouselItem>
-                <div className="relative h-48">
-                  <img 
-                    src="/lovable-uploads/588f9e4c-7c09-485d-b4f3-03d2d3ca6e99.png"
-                    alt="Hyperkids training 1"
-                    className="w-full h-full object-cover transition-all duration-300 filter grayscale"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                </div>
-              </CarouselItem>
-              <CarouselItem>
-                <div className="relative h-48">
-                  <img 
-                    src="/lovable-uploads/d927ce71-2cdb-4230-a8b4-83723f860a48.png"
-                    alt="Hyperkids training 2"
-                    className="w-full h-full object-cover transition-all duration-300 filter grayscale"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                </div>
-              </CarouselItem>
-              <CarouselItem>
-                <div className="relative h-48">
-                  <img 
-                    src="/lovable-uploads/2594ec01-4721-4092-8051-4eb45b419aec.png"
-                    alt="Hyperkids training 3"
-                    className="w-full h-full object-cover transition-all duration-300 filter grayscale"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                </div>
-              </CarouselItem>
-            </CarouselContent>
-            <CarouselPrevious className="left-2" />
-            <CarouselNext className="right-2" />
-          </Carousel>
-        ) : (
-          <img 
-            src={program.image} 
-            alt={program.title}
-            className="w-full h-full object-cover transition-all duration-300 filter grayscale"
-          />
-        )}
+        <img 
+          src={program.id === "10" ? hyperkidsImages[currentImageIndex] : program.image}
+          alt={program.title}
+          className="w-full h-full object-cover transition-all duration-500 filter grayscale"
+          key={program.id === "10" ? currentImageIndex : program.image}
+        />
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="absolute top-4 left-4">
           <span className="bg-[#00ffba] text-black px-3 py-1 text-sm font-bold rounded">
