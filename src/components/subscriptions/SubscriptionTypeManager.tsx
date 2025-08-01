@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video, Dumbbell } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { matchesSearchTerm } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SubscriptionType {
   id: string;
@@ -45,6 +46,7 @@ interface DraftProgram {
 }
 
 export const SubscriptionTypeManager: React.FC = () => {
+  const isMobile = useIsMobile();
   const [isAdmin, setIsAdmin] = useState(false);
   const [roleLoading, setRoleLoading] = useState(true);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
@@ -628,21 +630,23 @@ export const SubscriptionTypeManager: React.FC = () => {
 
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+      <CardHeader className="pb-2">
+        <CardTitle className={`flex items-center ${isMobile ? 'flex-col gap-3' : 'justify-between'}`}>
           <div className="flex items-center gap-2">
-            <span>Διαχείριση Τύπων Συνδρομών</span>
+            <span className={`${isMobile ? 'text-lg' : 'text-xl'}`}>
+              {isMobile ? 'Τύποι Συνδρομών' : 'Διαχείριση Τύπων Συνδρομών'}
+            </span>
           </div>
           <Button 
             onClick={openCreateDialog}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            className={`bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none ${isMobile ? 'w-full' : ''}`}
           >
             <Plus className="w-4 h-4 mr-2" />
             Νέος Τύπος
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className={isMobile ? "p-3" : "p-6"}>
         {/* Search Bar */}
         <div className="mb-4">
           <div className="relative">
@@ -656,120 +660,246 @@ export const SubscriptionTypeManager: React.FC = () => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          {filteredSubscriptionTypes.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              {searchTerm ? (
-                <p>Δεν βρέθηκαν τύποι συνδρομών που να ταιριάζουν με "{searchTerm}"</p>
-              ) : subscriptionTypes.length === 0 ? (
-                <>
-                  <p>Δεν υπάρχουν τύποι συνδρομών</p>
-                  <p className="text-sm">Κάντε κλικ στο κουμπί "Νέος Τύπος" για να δημιουργήσετε έναν</p>
-                </>
-              ) : null}
-            </div>
-          ) : (
-            filteredSubscriptionTypes.map((type) => (
-              <div key={type.id} className="border rounded-none p-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold">{type.name}</h3>
-                      <Badge className={`rounded-none ${type.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {type.is_active ? 'Ενεργό' : 'Ανενεργό'}
-                      </Badge>
-                    </div>
-                    {type.description && (
-                      <p className="text-sm text-gray-600 mb-2">{type.description}</p>
-                    )}
-                    <div className="text-sm space-y-1">
-                      <div className="flex items-center gap-2">
-                        <strong>Τιμή:</strong> €{type.price}
-                        {type.subscription_mode === 'visit_based' ? (
-                          <Badge variant="outline" className="rounded-none bg-blue-50 text-blue-600">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            Επισκέψεις
+        {filteredSubscriptionTypes.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            {searchTerm ? (
+              <p>Δεν βρέθηκαν τύποι συνδρομών που να ταιριάζουν με "{searchTerm}"</p>
+            ) : subscriptionTypes.length === 0 ? (
+              <>
+                <p>Δεν υπάρχουν τύποι συνδρομών</p>
+                <p className="text-sm">Κάντε κλικ στο κουμπί "Νέος Τύπος" για να δημιουργήσετε έναν</p>
+              </>
+            ) : null}
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            {!isMobile && (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-200 rounded-none">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-200 px-4 py-3 text-left font-semibold">Όνομα</th>
+                      <th className="border border-gray-200 px-4 py-3 text-left font-semibold">Τύπος</th>
+                      <th className="border border-gray-200 px-4 py-3 text-left font-semibold">Τιμή</th>
+                      <th className="border border-gray-200 px-4 py-3 text-left font-semibold">Λεπτομέρειες</th>
+                      <th className="border border-gray-200 px-4 py-3 text-left font-semibold">Κατάσταση</th>
+                      <th className="border border-gray-200 px-4 py-3 text-center font-semibold">Ενέργειες</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredSubscriptionTypes.map((type) => (
+                      <tr key={type.id} className="hover:bg-gray-50">
+                        <td className="border border-gray-200 px-4 py-3">
+                          <div>
+                            <div className="font-semibold">{type.name}</div>
+                            {type.description && (
+                              <div className="text-sm text-gray-600">{type.description}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="border border-gray-200 px-4 py-3">
+                          {type.subscription_mode === 'visit_based' ? (
+                            <Badge variant="outline" className="rounded-none bg-blue-50 text-blue-600">
+                              <MapPin className="w-3 h-3 mr-1" />
+                              Επισκέψεις
+                            </Badge>
+                          ) : type.subscription_mode === 'videocall' ? (
+                            <Badge variant="outline" className="rounded-none bg-purple-50 text-purple-600">
+                              <Video className="w-3 h-3 mr-1" />
+                              Videocall
+                            </Badge>
+                          ) : type.subscription_mode === 'program' ? (
+                            <Badge variant="outline" className="rounded-none bg-orange-50 text-orange-600">
+                              <Dumbbell className="w-3 h-3 mr-1" />
+                              Πρόγραμμα
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="rounded-none bg-green-50 text-green-600">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              Χρονική
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="border border-gray-200 px-4 py-3 font-semibold">€{type.price}</td>
+                        <td className="border border-gray-200 px-4 py-3">
+                          <div className="text-sm space-y-1">
+                            {type.subscription_mode === 'visit_based' ? (
+                              <>
+                                <div>{type.visit_count} επισκέψεις</div>
+                                <div>{type.visit_expiry_months} μήνες λήξη</div>
+                              </>
+                            ) : type.subscription_mode === 'videocall' ? (
+                              <>
+                                <div>{type.visit_count} κλήσεις</div>
+                                <div>{type.visit_expiry_months} μήνες λήξη</div>
+                              </>
+                            ) : type.subscription_mode === 'program' ? (
+                              <div>{type.program_id ? draftPrograms.find(p => p.id === type.program_id)?.name || 'Άγνωστο' : 'Δεν έχει οριστεί'}</div>
+                            ) : (
+                              <div>{type.duration_months} μήνες</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="border border-gray-200 px-4 py-3">
+                          <Badge className={`rounded-none ${type.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                            {type.is_active ? 'Ενεργό' : 'Ανενεργό'}
                           </Badge>
-                         ) : type.subscription_mode === 'videocall' ? (
-                           <Badge variant="outline" className="rounded-none bg-purple-50 text-purple-600">
-                             <Video className="w-3 h-3 mr-1" />
-                             Videocall
-                           </Badge>
-                         ) : type.subscription_mode === 'program' ? (
-                           <Badge variant="outline" className="rounded-none bg-orange-50 text-orange-600">
-                             <Dumbbell className="w-3 h-3 mr-1" />
-                             Πρόγραμμα
-                           </Badge>
-                         ) : (
-                           <Badge variant="outline" className="rounded-none bg-green-50 text-green-600">
-                             <Calendar className="w-3 h-3 mr-1" />
-                             Χρονική
-                           </Badge>
-                         )}
-                      </div>
-                      {type.subscription_mode === 'visit_based' ? (
-                        <>
-                          <div><strong>Επισκέψεις:</strong> {type.visit_count} επισκέψεις</div>
-                          <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
-                        </>
-                       ) : type.subscription_mode === 'videocall' ? (
-                         <>
-                           <div><strong>Κλήσεις:</strong> {type.visit_count} κλήσεις</div>
-                           <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
-                         </>
-                       ) : type.subscription_mode === 'program' ? (
-                         <div><strong>Πρόγραμμα:</strong> {type.program_id ? draftPrograms.find(p => p.id === type.program_id)?.name || 'Άγνωστο' : 'Δεν έχει οριστεί'}</div>
-                       ) : (
-                         <div><strong>Διάρκεια:</strong> {type.duration_months} μήνες</div>
-                       )}
-                      {type.features && Object.keys(type.features).length > 0 && (
-                        <div><strong>Χαρακτηριστικά:</strong> {Object.keys(type.features).join(', ')}</div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openEditDialog(type)}
-                      className="rounded-none"
-                    >
-                      <Edit2 className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDeleteClick(type)}
-                      className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={type.is_active ? "destructive" : "default"}
-                      onClick={() => toggleActiveStatus(type)}
-                      className="rounded-none"
-                    >
-                      {type.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => toggleAvailableInShop(type)}
-                      className={`rounded-none p-2 ${
-                        type.available_in_shop 
-                          ? 'bg-[#00ffba] text-white border-white hover:bg-[#00ffba]/90' 
-                          : 'text-gray-400 hover:text-gray-600 border-gray-300'
-                      }`}
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+                        </td>
+                        <td className="border border-gray-200 px-4 py-3">
+                          <div className="flex items-center justify-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditDialog(type)}
+                              className="rounded-none p-2"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDeleteClick(type)}
+                              className="rounded-none border-red-300 text-red-600 hover:bg-red-50 p-2"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toggleAvailableInShop(type)}
+                              className={`rounded-none p-2 ${
+                                type.available_in_shop 
+                                  ? 'bg-[#00ffba] text-white border-white hover:bg-[#00ffba]/90' 
+                                  : 'text-gray-400 hover:text-gray-600 border-gray-300'
+                              }`}
+                            >
+                              <ShoppingCart className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))
-          )}
-        </div>
+            )}
+
+            {/* Mobile Card View */}
+            {isMobile && (
+              <div className="space-y-3">
+                {filteredSubscriptionTypes.map((type) => (
+                  <Card key={type.id} className="rounded-none">
+                    <CardContent className="p-4">
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{type.name}</h3>
+                          {type.description && (
+                            <p className="text-sm text-gray-600 mt-1">{type.description}</p>
+                          )}
+                        </div>
+                        <Badge className={`rounded-none ml-2 ${type.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {type.is_active ? 'Ενεργό' : 'Ανενεργό'}
+                        </Badge>
+                      </div>
+
+                      {/* Type and Price */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          {type.subscription_mode === 'visit_based' ? (
+                            <Badge variant="outline" className="rounded-none bg-blue-50 text-blue-600">
+                              <MapPin className="w-3 h-3 mr-1" />
+                              Επισκέψεις
+                            </Badge>
+                          ) : type.subscription_mode === 'videocall' ? (
+                            <Badge variant="outline" className="rounded-none bg-purple-50 text-purple-600">
+                              <Video className="w-3 h-3 mr-1" />
+                              Videocall
+                            </Badge>
+                          ) : type.subscription_mode === 'program' ? (
+                            <Badge variant="outline" className="rounded-none bg-orange-50 text-orange-600">
+                              <Dumbbell className="w-3 h-3 mr-1" />
+                              Πρόγραμμα
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="rounded-none bg-green-50 text-green-600">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              Χρονική
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xl font-bold text-[#00ffba]">€{type.price}</div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="text-sm text-gray-600 mb-4">
+                        {type.subscription_mode === 'visit_based' ? (
+                          <div className="space-y-1">
+                            <div><strong>Επισκέψεις:</strong> {type.visit_count}</div>
+                            <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
+                          </div>
+                        ) : type.subscription_mode === 'videocall' ? (
+                          <div className="space-y-1">
+                            <div><strong>Κλήσεις:</strong> {type.visit_count}</div>
+                            <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
+                          </div>
+                        ) : type.subscription_mode === 'program' ? (
+                          <div><strong>Πρόγραμμα:</strong> {type.program_id ? draftPrograms.find(p => p.id === type.program_id)?.name || 'Άγνωστο' : 'Δεν έχει οριστεί'}</div>
+                        ) : (
+                          <div><strong>Διάρκεια:</strong> {type.duration_months} μήνες</div>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openEditDialog(type)}
+                          className="rounded-none flex-1"
+                        >
+                          <Edit2 className="w-3 h-3 mr-2" />
+                          Επεξεργασία
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteClick(type)}
+                          className="rounded-none border-red-300 text-red-600 hover:bg-red-50 px-3"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleAvailableInShop(type)}
+                          className={`rounded-none px-3 ${
+                            type.available_in_shop 
+                              ? 'bg-[#00ffba] text-white border-white hover:bg-[#00ffba]/90' 
+                              : 'text-gray-400 hover:text-gray-600 border-gray-300'
+                          }`}
+                        >
+                          <ShoppingCart className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      
+                      {/* Status Toggle Button */}
+                      <Button
+                        size="sm"
+                        variant={type.is_active ? "destructive" : "default"}
+                        onClick={() => toggleActiveStatus(type)}
+                        className="rounded-none w-full mt-2"
+                      >
+                        {type.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
 
       {/* Dialog for Create/Edit */}
@@ -778,7 +908,7 @@ export const SubscriptionTypeManager: React.FC = () => {
           closeDialog();
         }
       }}>
-        <DialogContent className="rounded-none max-w-md">
+        <DialogContent className={`rounded-none ${isMobile ? 'max-w-[95vw] max-h-[90vh] overflow-y-auto' : 'max-w-md'}`}>
           <DialogHeader>
             <DialogTitle>
               {editingType ? 'Επεξεργασία' : 'Δημιουργία'} Τύπου Συνδρομής
@@ -852,7 +982,7 @@ export const SubscriptionTypeManager: React.FC = () => {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
               <div>
                 <Label htmlFor="price">Τιμή (€)*</Label>
                 <Input
@@ -1025,7 +1155,7 @@ export const SubscriptionTypeManager: React.FC = () => {
               </Label>
             </div>
             
-            <div className="flex gap-2">
+            <div className={`flex gap-2 ${isMobile ? 'flex-col' : ''}`}>
               <Button 
                 onClick={handleSave} 
                 className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
@@ -1043,7 +1173,7 @@ export const SubscriptionTypeManager: React.FC = () => {
               <Button 
                 variant="outline" 
                 onClick={closeDialog}
-                className="rounded-none"
+                className={`rounded-none ${isMobile ? '' : 'flex-1'}`}
                 disabled={saving}
               >
                 Ακύρωση
