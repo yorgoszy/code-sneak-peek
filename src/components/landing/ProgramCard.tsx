@@ -347,7 +347,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           )}
         </div>
         <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
-          {program.id === "11" ? "εξατομικευμένο προπονητικό πλάνο βασισμένο στην αξιολόγηση" : program.description}
+          {program.id === "11" ? "Προπονητικά πλάνα βασισμένα στην αξιολόγηση" : program.description}
         </p>
       </div>
 
