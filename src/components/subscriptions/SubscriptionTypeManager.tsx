@@ -629,13 +629,13 @@ export const SubscriptionTypeManager: React.FC = () => {
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span>Διαχείριση Τύπων Συνδρομών</span>
+            <span className="text-lg sm:text-xl">Διαχείριση Τύπων Συνδρομών</span>
           </div>
           <Button 
             onClick={openCreateDialog}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 mr-2" />
             Νέος Τύπος
@@ -669,105 +669,242 @@ export const SubscriptionTypeManager: React.FC = () => {
               ) : null}
             </div>
           ) : (
-            filteredSubscriptionTypes.map((type) => (
-              <div key={type.id} className="border rounded-none p-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold">{type.name}</h3>
-                      <Badge className={`rounded-none ${type.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {type.is_active ? 'Ενεργό' : 'Ανενεργό'}
-                      </Badge>
-                    </div>
-                    {type.description && (
-                      <p className="text-sm text-gray-600 mb-2">{type.description}</p>
-                    )}
-                    <div className="text-sm space-y-1">
-                      <div className="flex items-center gap-2">
-                        <strong>Τιμή:</strong> €{type.price}
+            <div className="space-y-4">
+              {/* Desktop Table View */}
+              <div className="hidden lg:block">
+                <div className="border border-gray-200 rounded-none overflow-hidden">
+                  <div className="grid grid-cols-8 gap-4 p-4 bg-gray-50 border-b font-medium text-sm">
+                    <div>Όνομα</div>
+                    <div>Τύπος</div>
+                    <div>Τιμή</div>
+                    <div>Διάρκεια/Αριθμός</div>
+                    <div>Κατάσταση</div>
+                    <div>Shop</div>
+                    <div>Χαρακτηριστικά</div>
+                    <div>Ενέργειες</div>
+                  </div>
+                  {filteredSubscriptionTypes.map((type) => (
+                    <div key={type.id} className="grid grid-cols-8 gap-4 p-4 border-b border-gray-100 items-center hover:bg-gray-50">
+                      <div>
+                        <h3 className="font-semibold">{type.name}</h3>
+                        {type.description && (
+                          <p className="text-xs text-gray-600 mt-1">{type.description}</p>
+                        )}
+                      </div>
+                      <div>
                         {type.subscription_mode === 'visit_based' ? (
                           <Badge variant="outline" className="rounded-none bg-blue-50 text-blue-600">
                             <MapPin className="w-3 h-3 mr-1" />
                             Επισκέψεις
                           </Badge>
-                         ) : type.subscription_mode === 'videocall' ? (
-                           <Badge variant="outline" className="rounded-none bg-purple-50 text-purple-600">
-                             <Video className="w-3 h-3 mr-1" />
-                             Videocall
-                           </Badge>
-                         ) : type.subscription_mode === 'program' ? (
-                           <Badge variant="outline" className="rounded-none bg-orange-50 text-orange-600">
-                             <Dumbbell className="w-3 h-3 mr-1" />
-                             Πρόγραμμα
-                           </Badge>
-                         ) : (
-                           <Badge variant="outline" className="rounded-none bg-green-50 text-green-600">
-                             <Calendar className="w-3 h-3 mr-1" />
-                             Χρονική
-                           </Badge>
-                         )}
+                        ) : type.subscription_mode === 'videocall' ? (
+                          <Badge variant="outline" className="rounded-none bg-purple-50 text-purple-600">
+                            <Video className="w-3 h-3 mr-1" />
+                            Videocall
+                          </Badge>
+                        ) : type.subscription_mode === 'program' ? (
+                          <Badge variant="outline" className="rounded-none bg-orange-50 text-orange-600">
+                            <Dumbbell className="w-3 h-3 mr-1" />
+                            Πρόγραμμα
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="rounded-none bg-green-50 text-green-600">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            Χρονική
+                          </Badge>
+                        )}
                       </div>
-                      {type.subscription_mode === 'visit_based' ? (
-                        <>
-                          <div><strong>Επισκέψεις:</strong> {type.visit_count} επισκέψεις</div>
-                          <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
-                        </>
-                       ) : type.subscription_mode === 'videocall' ? (
-                         <>
-                           <div><strong>Κλήσεις:</strong> {type.visit_count} κλήσεις</div>
-                           <div><strong>Λήξη σε:</strong> {type.visit_expiry_months} μήνες</div>
-                         </>
-                       ) : type.subscription_mode === 'program' ? (
-                         <div><strong>Πρόγραμμα:</strong> {type.program_id ? draftPrograms.find(p => p.id === type.program_id)?.name || 'Άγνωστο' : 'Δεν έχει οριστεί'}</div>
-                       ) : (
-                         <div><strong>Διάρκεια:</strong> {type.duration_months} μήνες</div>
-                       )}
-                      {type.features && Object.keys(type.features).length > 0 && (
-                        <div><strong>Χαρακτηριστικά:</strong> {Object.keys(type.features).join(', ')}</div>
-                      )}
+                      <div className="font-semibold">€{type.price}</div>
+                      <div>
+                        {type.subscription_mode === 'visit_based' ? (
+                          <>
+                            <div className="text-sm">{type.visit_count} επισκέψεις</div>
+                            <div className="text-xs text-gray-500">{type.visit_expiry_months} μήνες</div>
+                          </>
+                        ) : type.subscription_mode === 'videocall' ? (
+                          <>
+                            <div className="text-sm">{type.visit_count} κλήσεις</div>
+                            <div className="text-xs text-gray-500">{type.visit_expiry_months} μήνες</div>
+                          </>
+                        ) : type.subscription_mode === 'program' ? (
+                          <div className="text-sm">{type.program_id ? draftPrograms.find(p => p.id === type.program_id)?.name || 'Άγνωστο' : 'Δεν έχει οριστεί'}</div>
+                        ) : (
+                          <div className="text-sm">{type.duration_months} μήνες</div>
+                        )}
+                      </div>
+                      <div>
+                        <Badge className={`rounded-none ${type.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {type.is_active ? 'Ενεργό' : 'Ανενεργό'}
+                        </Badge>
+                      </div>
+                      <div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleAvailableInShop(type)}
+                          className={`rounded-none p-2 ${
+                            type.available_in_shop 
+                              ? 'bg-[#00ffba] text-white border-white hover:bg-[#00ffba]/90' 
+                              : 'text-gray-400 hover:text-gray-600 border-gray-300'
+                          }`}
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div>
+                        {type.features && Object.keys(type.features).length > 0 && (
+                          <div className="text-xs text-gray-600">{Object.keys(type.features).join(', ')}</div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openEditDialog(type)}
+                          className="rounded-none"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteClick(type)}
+                          className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={type.is_active ? "destructive" : "default"}
+                          onClick={() => toggleActiveStatus(type)}
+                          className="rounded-none text-xs"
+                        >
+                          {type.is_active ? 'Απενεργ.' : 'Ενεργ.'}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openEditDialog(type)}
-                      className="rounded-none"
-                    >
-                      <Edit2 className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDeleteClick(type)}
-                      className="rounded-none border-red-300 text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={type.is_active ? "destructive" : "default"}
-                      onClick={() => toggleActiveStatus(type)}
-                      className="rounded-none"
-                    >
-                      {type.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => toggleAvailableInShop(type)}
-                      className={`rounded-none p-2 ${
-                        type.available_in_shop 
-                          ? 'bg-[#00ffba] text-white border-white hover:bg-[#00ffba]/90' 
-                          : 'text-gray-400 hover:text-gray-600 border-gray-300'
-                      }`}
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  ))}
                 </div>
               </div>
-            ))
+
+              {/* Mobile/Tablet Card View */}
+              <div className="lg:hidden space-y-3">
+                {filteredSubscriptionTypes.map((type) => (
+                  <div key={type.id} className="border border-gray-200 rounded-none bg-white overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gray-50 p-3 border-b border-gray-200">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-sm">{type.name}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            {type.subscription_mode === 'visit_based' ? (
+                              <Badge variant="outline" className="rounded-none bg-blue-50 text-blue-600 text-xs">
+                                <MapPin className="w-3 h-3 mr-1" />
+                                Επισκέψεις
+                              </Badge>
+                            ) : type.subscription_mode === 'videocall' ? (
+                              <Badge variant="outline" className="rounded-none bg-purple-50 text-purple-600 text-xs">
+                                <Video className="w-3 h-3 mr-1" />
+                                Videocall
+                              </Badge>
+                            ) : type.subscription_mode === 'program' ? (
+                              <Badge variant="outline" className="rounded-none bg-orange-50 text-orange-600 text-xs">
+                                <Dumbbell className="w-3 h-3 mr-1" />
+                                Πρόγραμμα
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="rounded-none bg-green-50 text-green-600 text-xs">
+                                <Calendar className="w-3 h-3 mr-1" />
+                                Χρονική
+                              </Badge>
+                            )}
+                            <Badge className={`rounded-none text-xs ${type.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                              {type.is_active ? 'Ενεργό' : 'Ανενεργό'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-base">€{type.price}</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => toggleAvailableInShop(type)}
+                            className={`rounded-none p-1 mt-1 ${
+                              type.available_in_shop 
+                                ? 'bg-[#00ffba] text-white border-white hover:bg-[#00ffba]/90' 
+                                : 'text-gray-400 hover:text-gray-600 border-gray-300'
+                            }`}
+                          >
+                            <ShoppingCart className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="p-3 space-y-2">
+                      {type.description && (
+                        <p className="text-sm text-gray-600">{type.description}</p>
+                      )}
+                      
+                      <div className="text-sm">
+                        {type.subscription_mode === 'visit_based' ? (
+                          <>
+                            <div><strong>Επισκέψεις:</strong> {type.visit_count}</div>
+                            <div><strong>Λήξη:</strong> {type.visit_expiry_months} μήνες</div>
+                          </>
+                        ) : type.subscription_mode === 'videocall' ? (
+                          <>
+                            <div><strong>Κλήσεις:</strong> {type.visit_count}</div>
+                            <div><strong>Λήξη:</strong> {type.visit_expiry_months} μήνες</div>
+                          </>
+                        ) : type.subscription_mode === 'program' ? (
+                          <div><strong>Πρόγραμμα:</strong> {type.program_id ? draftPrograms.find(p => p.id === type.program_id)?.name || 'Άγνωστο' : 'Δεν έχει οριστεί'}</div>
+                        ) : (
+                          <div><strong>Διάρκεια:</strong> {type.duration_months} μήνες</div>
+                        )}
+                        
+                        {type.features && Object.keys(type.features).length > 0 && (
+                          <div><strong>Χαρακτηριστικά:</strong> {Object.keys(type.features).join(', ')}</div>
+                        )}
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="pt-2 border-t border-gray-100">
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditDialog(type)}
+                            className="rounded-none flex-1 text-xs h-8"
+                          >
+                            <Edit2 className="w-3 h-3 mr-1" />
+                            Επεξεργασία
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteClick(type)}
+                            className="rounded-none flex-1 text-xs h-8 border-red-300 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Διαγραφή
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={type.is_active ? "destructive" : "default"}
+                            onClick={() => toggleActiveStatus(type)}
+                            className="rounded-none flex-1 text-xs h-8"
+                          >
+                            {type.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </CardContent>
