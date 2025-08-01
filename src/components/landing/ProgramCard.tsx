@@ -30,6 +30,12 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
     "/lovable-uploads/cb5d40f0-7d33-4f69-98aa-fe66758d5e1e.png"
   ];
 
+  const hyperathletesImages = [
+    "/lovable-uploads/59bc463b-a23f-4be8-acc6-49acfcffd9f4.png",
+    "/lovable-uploads/93b3838a-2f59-48ff-87b2-d6c7b2b0bdf5.png",
+    "/lovable-uploads/5d111fd3-13ae-418d-8b37-8d6b9704c2db.png"
+  ];
+
   useEffect(() => {
     if (program.id === "10") {
       const interval = setInterval(() => {
@@ -43,7 +49,13 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       }, 2000);
       return () => clearInterval(interval);
     }
-  }, [program.id, hyperkidsImages.length, hypergymImages.length]);
+    if (program.id === "12") {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % hyperathletesImages.length);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [program.id, hyperkidsImages.length, hypergymImages.length, hyperathletesImages.length]);
   // Δεδομένα ανάλογα με το πρόγραμμα
   const getProgramData = () => {
     if (program.id === "01") {
@@ -339,11 +351,13 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         <img 
           src={program.id === "10" ? hyperkidsImages[currentImageIndex] : 
                program.id === "11" ? hypergymImages[currentImageIndex] : 
+               program.id === "12" ? hyperathletesImages[currentImageIndex] :
                program.image}
           alt={program.title}
           className="w-full h-full object-cover transition-all duration-500"
           key={program.id === "10" ? currentImageIndex : 
                program.id === "11" ? currentImageIndex : 
+               program.id === "12" ? currentImageIndex :
                program.image}
         />
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
