@@ -252,6 +252,27 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       };
     }
 
+    if (program.id === "11") {
+      return {
+        ages: "16+ ετών",
+        duration: "60 λεπτά",
+        frequency: "Προσαρμοζόμενη",
+        schedule: "Με ραντεβού",
+        monthlyPrice: "100€",
+        benefits: [
+          "Εξατομικευμένη αξιολόγηση",
+          "Βελτιωμένη αθλητική απόδοση",
+          "Απομακρυσμένη καθοδήγηση",
+          "Παρακολούθηση αποτελεσμάτων"
+        ],
+        weeklySchedule: [
+          { ageGroup: "HyperGym", day: "Με ραντεβού", time: "Ευέλικτες ώρες" }
+        ],
+        scheduleNote: "Ολοκληρωμένες υπηρεσίες αξιολόγησης και καθοδήγησης για βέλτιστη αθλητική απόδοση.",
+        description: "Αξιολόγηση:\nστάσης και κίνησης\n\nΑθλητική απόδοση:\nΠροφίλ φορτίου - ταχύτητα\nαλτικό προφίλ\nπαρακολούθηση αποτελεσμάτων\n\nOnline coaching:\nαπομακρυσμένη καθοδήγηση"
+      };
+    }
+
     // Default data for other programs
     return {
       ages: "16+ ετών",
