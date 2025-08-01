@@ -396,17 +396,21 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                 <div className="text-xs space-y-3">
                   <div>
                     <h5 className="font-semibold text-gray-900 mb-1">Αξιολόγηση:</h5>
-                    <p className="text-gray-700">στάσης και κίνησης</p>
+                    <p className="text-gray-700">Στάσης και κίνησης</p>
                   </div>
                   <div>
                     <h5 className="font-semibold text-gray-900 mb-1">Αθλητική απόδοση:</h5>
                     <p className="text-gray-700">Προφίλ φορτίου - ταχύτητα</p>
-                    <p className="text-gray-700">αλτικό προφίλ</p>
-                    <p className="text-gray-700">παρακολούθηση αποτελεσμάτων</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-700">Αλτικό προφίλ</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-700">Παρακολούθηση αποτελεσμάτων</p>
                   </div>
                   <div>
                     <h5 className="font-semibold text-gray-900 mb-1">Online coaching:</h5>
-                    <p className="text-gray-700">απομακρυσμένη καθοδήγηση</p>
+                    <p className="text-gray-700">Απομακρυσμένη καθοδήγηση</p>
                   </div>
                 </div>
               ) : program.id === "12" ? (
