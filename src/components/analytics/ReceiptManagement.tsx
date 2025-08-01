@@ -793,7 +793,7 @@ export const ReceiptManagement: React.FC = () => {
                 ) : (
                   <div className="space-y-4">
                     {/* Desktop Table View */}
-                    <div className="hidden lg:block">
+                    <div className="hidden md:block">
                       <div className="border border-gray-200 rounded-none overflow-hidden">
                         <div className="grid grid-cols-6 gap-4 p-4 bg-gray-50 border-b font-medium text-sm">
                           <div>Αριθμός</div>
@@ -875,79 +875,90 @@ export const ReceiptManagement: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Mobile/Tablet Card View */}
-                    <div className="lg:hidden space-y-3">
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-3">
                       {receipts.map((receipt) => (
-                        <div key={receipt.id} className="border border-gray-200 p-4 rounded-none bg-white">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h5 className="font-medium text-base">{receipt.receiptNumber}</h5>
-                              <p className="text-sm text-gray-600 mt-1">{receipt.customerName}</p>
+                        <div key={receipt.id} className="border border-gray-200 rounded-none bg-white overflow-hidden">
+                          {/* Header with receipt number and amount */}
+                          <div className="bg-gray-50 p-3 border-b border-gray-200">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h5 className="font-semibold text-sm">{receipt.receiptNumber}</h5>
+                                <p className="text-xs text-gray-500">{receipt.date}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-base">€{receipt.total.toFixed(2)}</p>
+                                <Badge className={`${getStatusColor(receipt.myDataStatus)} text-xs`}>
+                                  {getStatusIcon(receipt.myDataStatus)}
+                                  <span className="ml-1">
+                                    {receipt.myDataStatus === 'sent' ? 'Εστάλη' : 
+                                     receipt.myDataStatus === 'pending' ? 'Εκκρεμεί' : 'Σφάλμα'}
+                                  </span>
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="p-3 space-y-2">
+                            <div>
+                              <p className="font-medium text-sm">{receipt.customerName}</p>
                               {receipt.customerEmail && (
-                                <p className="text-xs text-gray-500 mt-1">{receipt.customerEmail}</p>
+                                <p className="text-xs text-gray-500">{receipt.customerEmail}</p>
                               )}
                             </div>
-                            <div className="text-right">
-                              <p className="font-bold text-lg">€{receipt.total.toFixed(2)}</p>
-                              <p className="text-xs text-gray-500 mt-1">{receipt.date}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center justify-between mb-3">
-                            <Badge className={`${getStatusColor(receipt.myDataStatus)} flex items-center gap-1`}>
-                              {getStatusIcon(receipt.myDataStatus)}
-                              {receipt.myDataStatus === 'sent' ? 'Εστάλη' : 
-                               receipt.myDataStatus === 'pending' ? 'Εκκρεμεί' : 'Σφάλμα'}
-                            </Badge>
-                          </div>
-                          
-                          {(receipt.myDataId || receipt.invoiceMark) && (
-                            <div className="mb-3 space-y-1">
-                              {receipt.myDataId && (
-                                <p className="text-xs text-gray-500">ID: {receipt.myDataId}</p>
-                              )}
-                              {receipt.invoiceMark && (
-                                <p className="text-xs text-green-600 font-medium">ΜΑΡΚ: {receipt.invoiceMark}</p>
-                              )}
-                            </div>
-                          )}
-                          
-                          <div className="flex gap-2 flex-wrap">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none flex-1 min-w-0"
-                              onClick={() => {
-                                setSelectedReceipt(receipt);
-                                setPreviewDialogOpen(true);
-                              }}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              Προβολή
-                            </Button>
-                            {receipt.myDataStatus === 'error' && (
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={async () => {
-                                  try {
-                                    setLoading(true);
-                                    await sendToMyData(receipt);
-                                    toast.success('Η απόδειξη στάλθηκε επιτυχώς στο MyData!');
-                                  } catch (error) {
-                                    console.error('Retry send error:', error);
-                                    toast.error('Σφάλμα στην επανάληψη αποστολής');
-                                  } finally {
-                                    setLoading(false);
-                                  }
-                                }}
-                                disabled={loading}
-                                className="rounded-none flex-1 min-w-0"
-                              >
-                                <Send className="h-4 w-4 mr-1" />
-                                {loading ? 'Αποστολή...' : 'Επανάληψη'}
-                              </Button>
+                            
+                            {(receipt.myDataId || receipt.invoiceMark) && (
+                              <div className="space-y-1">
+                                {receipt.myDataId && (
+                                  <p className="text-xs text-gray-500">MyData ID: {receipt.myDataId}</p>
+                                )}
+                                {receipt.invoiceMark && (
+                                  <p className="text-xs text-green-600 font-medium">ΜΑΡΚ: {receipt.invoiceMark}</p>
+                                )}
+                              </div>
                             )}
+                            
+                            {/* Actions */}
+                            <div className="pt-2 border-t border-gray-100">
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none flex-1 text-xs h-8"
+                                  onClick={() => {
+                                    setSelectedReceipt(receipt);
+                                    setPreviewDialogOpen(true);
+                                  }}
+                                >
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  Προβολή
+                                </Button>
+                                {receipt.myDataStatus === 'error' && (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={async () => {
+                                      try {
+                                        setLoading(true);
+                                        await sendToMyData(receipt);
+                                        toast.success('Η απόδειξη στάλθηκε επιτυχώς στο MyData!');
+                                      } catch (error) {
+                                        console.error('Retry send error:', error);
+                                        toast.error('Σφάλμα στην επανάληψη αποστολής');
+                                      } finally {
+                                        setLoading(false);
+                                      }
+                                    }}
+                                    disabled={loading}
+                                    className="rounded-none flex-1 text-xs h-8"
+                                  >
+                                    <Send className="h-3 w-3 mr-1" />
+                                    Επανάληψη
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}
