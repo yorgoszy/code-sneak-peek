@@ -96,16 +96,17 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
 
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Εβδομάδες Προπόνησης</CardTitle>
-          <Button onClick={onAddWeek} className="rounded-none">
-            <Plus className="w-4 h-4 mr-2" />
-            +Week
+      <CardHeader className="p-3 md:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <CardTitle className="text-sm md:text-base">Εβδομάδες Προπόνησης</CardTitle>
+          <Button onClick={onAddWeek} className="rounded-none w-full sm:w-auto text-xs md:text-sm" size="sm">
+            <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">+Week</span>
+            <span className="sm:hidden">+ Εβδομάδα</span>
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 md:p-6">
         {weeks.length > 0 ? (
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">

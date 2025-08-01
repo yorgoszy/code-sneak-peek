@@ -34,8 +34,8 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
 
   return (
     <div className="w-full">
-      <div className="flex gap-6">
-        <div className="flex-1">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        <div className="flex-1 min-w-0">
           <CalendarDisplay
             selectedDatesAsStrings={selectedDatesAsStrings}
             totalDays={totalDays}
@@ -47,7 +47,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
           />
         </div>
         
-        <div className="w-80 space-y-4">
+        <div className="w-full lg:w-80 space-y-3 md:space-y-4">
           <WeekProgressDisplay
             weekProgress={weekProgress}
           />

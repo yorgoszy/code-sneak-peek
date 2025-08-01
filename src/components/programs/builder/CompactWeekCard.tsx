@@ -13,9 +13,9 @@ export const CompactWeekCard: React.FC<CompactWeekCardProps> = ({
   exercises
 }) => {
   return (
-    <Card className="rounded-none border border-gray-300 w-48 h-32 overflow-hidden">
-      <CardContent className="p-1 h-full">
-        <div className="space-y-1 h-full overflow-hidden">
+    <Card className="rounded-none border border-gray-300 w-full sm:w-48 h-32 sm:h-32 md:h-36 overflow-hidden">
+      <CardContent className="p-1 md:p-2 h-full">
+        <div className="space-y-1 h-full overflow-hidden text-xs md:text-sm">
           {week.program_days.map((day) => (
             <div key={day.id} className="space-y-0.5">
               <div className="text-xs font-semibold text-gray-900 truncate">

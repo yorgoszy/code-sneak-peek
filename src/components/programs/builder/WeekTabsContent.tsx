@@ -50,24 +50,25 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   return (
     <>
       {weeks.map((week) => (
-        <TabsContent key={week.id} value={week.id} className="mt-6">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">{week.name}</h3>
-              <div className="flex gap-2">
+        <TabsContent key={week.id} value={week.id} className="mt-4 md:mt-6">
+          <div className="space-y-3 md:space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h3 className="text-base md:text-lg font-semibold">{week.name}</h3>
+              <div className="flex gap-2 w-full sm:w-auto">
                 <Button
                   onClick={() => onAddDay(week.id)}
                   size="sm"
-                  className="rounded-none"
+                  className="rounded-none flex-1 sm:flex-none text-xs md:text-sm"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  +Day
+                  <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">+Day</span>
+                  <span className="sm:hidden">+ Ημέρα</span>
                 </Button>
               </div>
             </div>
 
             {week.program_days && week.program_days.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
                 {week.program_days.map((day) => (
                   <DayCard
                     key={day.id}
@@ -104,14 +105,14 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <p>Δεν υπάρχουν ημέρες σε αυτή την εβδομάδα</p>
+              <div className="text-center py-6 md:py-8 text-gray-500">
+                <p className="text-sm md:text-base">Δεν υπάρχουν ημέρες σε αυτή την εβδομάδα</p>
                 <Button
                   onClick={() => onAddDay(week.id)}
                   size="sm"
-                  className="rounded-none mt-4"
+                  className="rounded-none mt-3 md:mt-4 text-xs md:text-sm"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                   Προσθήκη Ημέρας
                 </Button>
               </div>

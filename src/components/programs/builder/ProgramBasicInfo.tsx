@@ -63,7 +63,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
       <CardHeader>
         <CardTitle>Βασικές Πληροφορίες Προγράμματος</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 md:space-y-4 p-3 md:p-6">
         <ProgramBasicInfoFields
           name={name}
           description={description}
@@ -72,7 +72,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
         />
 
         {/* Assignment Type Selection */}
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           <AssignmentTypeSelector
             assignmentMode={assignmentMode}
             onAssignmentModeChange={handleAssignmentModeChange}
@@ -87,9 +87,9 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             />
           )}
 
-          {/* Group Selection - 30% width */}
+          {/* Group Selection - Responsive width */}
           {assignmentMode === 'group' && onGroupChange && (
-            <div className="w-[30%]">
+            <div className="w-full md:w-[50%] lg:w-[30%]">
               <GroupSelection
                 selectedGroupId={selectedGroupId}
                 onGroupChange={onGroupChange}
