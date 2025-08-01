@@ -791,68 +791,168 @@ export const ReceiptManagement: React.FC = () => {
                     <p className="text-gray-600">Φόρτωση...</p>
                   </div>
                 ) : (
-                  receipts.map((receipt) => (
-                    <div key={receipt.id} className="border border-gray-200 p-4 rounded-none">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h5 className="font-medium">{receipt.receiptNumber}</h5>
-                          <p className="text-sm text-gray-600">{receipt.customerName}</p>
-                          <p className="text-xs text-gray-500">{receipt.date}</p>
+                  <div className="space-y-4">
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block">
+                      <div className="border border-gray-200 rounded-none overflow-hidden">
+                        <div className="grid grid-cols-6 gap-4 p-4 bg-gray-50 border-b font-medium text-sm">
+                          <div>Αριθμός</div>
+                          <div>Πελάτης</div>
+                          <div>Ημερομηνία</div>
+                          <div>Ποσό</div>
+                          <div>Κατάσταση</div>
+                          <div>Ενέργειες</div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold">€{receipt.total.toFixed(2)}</p>
-                          <Badge className={`${getStatusColor(receipt.myDataStatus)} flex items-center gap-1 mt-1`}>
-                            {getStatusIcon(receipt.myDataStatus)}
-                            {receipt.myDataStatus === 'sent' ? 'Εστάλη' : 
-                             receipt.myDataStatus === 'pending' ? 'Εκκρεμεί' : 'Σφάλμα'}
-                          </Badge>
-                          {receipt.myDataId && (
-                            <p className="text-xs text-gray-500 mt-1">ID: {receipt.myDataId}</p>
-                          )}
-                          {receipt.invoiceMark && (
-                            <p className="text-xs text-green-600 mt-1 font-medium">ΜΑΡΚ: {receipt.invoiceMark}</p>
-                          )}
-                        </div>
-                      </div>
-                       <div className="flex gap-2 mt-3">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="rounded-none"
-                          onClick={() => {
-                            setSelectedReceipt(receipt);
-                            setPreviewDialogOpen(true);
-                          }}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Προβολή
-                        </Button>
-                        {receipt.myDataStatus === 'error' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={async () => {
-                              try {
-                                setLoading(true);
-                                await sendToMyData(receipt);
-                                toast.success('Η απόδειξη στάλθηκε επιτυχώς στο MyData!');
-                              } catch (error) {
-                                console.error('Retry send error:', error);
-                                toast.error('Σφάλμα στην επανάληψη αποστολής');
-                              } finally {
-                                setLoading(false);
-                              }
-                            }}
-                            disabled={loading}
-                            className="rounded-none"
-                          >
-                            <Send className="h-4 w-4 mr-1" />
-                            {loading ? 'Αποστολή...' : 'Επανάληψη'}
-                          </Button>
-                        )}
+                        {receipts.map((receipt) => (
+                          <div key={receipt.id} className="grid grid-cols-6 gap-4 p-4 border-b border-gray-100 items-center">
+                            <div>
+                              <p className="font-medium">{receipt.receiptNumber}</p>
+                              {receipt.invoiceMark && (
+                                <p className="text-xs text-green-600 font-medium">ΜΑΡΚ: {receipt.invoiceMark}</p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium">{receipt.customerName}</p>
+                              {receipt.customerEmail && (
+                                <p className="text-xs text-gray-500">{receipt.customerEmail}</p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm">{receipt.date}</p>
+                            </div>
+                            <div>
+                              <p className="font-bold">€{receipt.total.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <Badge className={`${getStatusColor(receipt.myDataStatus)} flex items-center gap-1`}>
+                                {getStatusIcon(receipt.myDataStatus)}
+                                {receipt.myDataStatus === 'sent' ? 'Εστάλη' : 
+                                 receipt.myDataStatus === 'pending' ? 'Εκκρεμεί' : 'Σφάλμα'}
+                              </Badge>
+                              {receipt.myDataId && (
+                                <p className="text-xs text-gray-500 mt-1">ID: {receipt.myDataId}</p>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="rounded-none"
+                                onClick={() => {
+                                  setSelectedReceipt(receipt);
+                                  setPreviewDialogOpen(true);
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                Προβολή
+                              </Button>
+                              {receipt.myDataStatus === 'error' && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={async () => {
+                                    try {
+                                      setLoading(true);
+                                      await sendToMyData(receipt);
+                                      toast.success('Η απόδειξη στάλθηκε επιτυχώς στο MyData!');
+                                    } catch (error) {
+                                      console.error('Retry send error:', error);
+                                      toast.error('Σφάλμα στην επανάληψη αποστολής');
+                                    } finally {
+                                      setLoading(false);
+                                    }
+                                  }}
+                                  disabled={loading}
+                                  className="rounded-none"
+                                >
+                                  <Send className="h-4 w-4 mr-1" />
+                                  {loading ? 'Αποστολή...' : 'Επανάληψη'}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))
+
+                    {/* Mobile/Tablet Card View */}
+                    <div className="lg:hidden space-y-3">
+                      {receipts.map((receipt) => (
+                        <div key={receipt.id} className="border border-gray-200 p-4 rounded-none bg-white">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h5 className="font-medium text-base">{receipt.receiptNumber}</h5>
+                              <p className="text-sm text-gray-600 mt-1">{receipt.customerName}</p>
+                              {receipt.customerEmail && (
+                                <p className="text-xs text-gray-500 mt-1">{receipt.customerEmail}</p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-lg">€{receipt.total.toFixed(2)}</p>
+                              <p className="text-xs text-gray-500 mt-1">{receipt.date}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between mb-3">
+                            <Badge className={`${getStatusColor(receipt.myDataStatus)} flex items-center gap-1`}>
+                              {getStatusIcon(receipt.myDataStatus)}
+                              {receipt.myDataStatus === 'sent' ? 'Εστάλη' : 
+                               receipt.myDataStatus === 'pending' ? 'Εκκρεμεί' : 'Σφάλμα'}
+                            </Badge>
+                          </div>
+                          
+                          {(receipt.myDataId || receipt.invoiceMark) && (
+                            <div className="mb-3 space-y-1">
+                              {receipt.myDataId && (
+                                <p className="text-xs text-gray-500">ID: {receipt.myDataId}</p>
+                              )}
+                              {receipt.invoiceMark && (
+                                <p className="text-xs text-green-600 font-medium">ΜΑΡΚ: {receipt.invoiceMark}</p>
+                              )}
+                            </div>
+                          )}
+                          
+                          <div className="flex gap-2 flex-wrap">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-none flex-1 min-w-0"
+                              onClick={() => {
+                                setSelectedReceipt(receipt);
+                                setPreviewDialogOpen(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Προβολή
+                            </Button>
+                            {receipt.myDataStatus === 'error' && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={async () => {
+                                  try {
+                                    setLoading(true);
+                                    await sendToMyData(receipt);
+                                    toast.success('Η απόδειξη στάλθηκε επιτυχώς στο MyData!');
+                                  } catch (error) {
+                                    console.error('Retry send error:', error);
+                                    toast.error('Σφάλμα στην επανάληψη αποστολής');
+                                  } finally {
+                                    setLoading(false);
+                                  }
+                                }}
+                                disabled={loading}
+                                className="rounded-none flex-1 min-w-0"
+                              >
+                                <Send className="h-4 w-4 mr-1" />
+                                {loading ? 'Αποστολή...' : 'Επανάληψη'}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             </TabsContent>
