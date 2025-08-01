@@ -31,7 +31,7 @@ export const useTranslations = () => {
       bibliography: "Βιβλιογραφία:",
       readyQuestion: "Είσαι έτοιμος;",
       journeyText: "Το ταξίδι προς την κορυφή ξεκινάει εδώ.",
-      startNow: "Ξεκινήστε τώρα",
+      startNow: "Ξεκίνα τώρα",
       contactTitle: "Επικοινωνία",
       hoursTitle: "Ώρες",
       mondayFriday: "Δευτέρα - Παρασκευή: 7:00 - 22:00",
