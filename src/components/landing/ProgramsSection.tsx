@@ -44,10 +44,10 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
-            {translations.ourPrograms}
+            {translations.language === 'en' ? 'Our Services' : 'Οι υπηρεσίες μας'}
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            {translations.programsDescription}
+            {translations.language === 'en' ? 'Discover our comprehensive range of training services designed for all ages and skill levels' : 'Ανακαλύψτε τη συνολική γκάμα των εκπαιδευτικών υπηρεσιών μας που έχουν σχεδιαστεί για όλες τις ηλικίες και τα επίπεδα δεξιοτήτων'}
           </p>
         </div>
 
@@ -61,7 +61,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     Explore all
                   </h3>
                   <h4 className="text-3xl font-bold text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
-                    programs
+                    services
                   </h4>
                 </>
               ) : (
@@ -70,7 +70,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     Εξερεύνηση όλων
                   </h3>
                   <h4 className="text-3xl font-bold text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
-                    των προγραμμάτων
+                    των υπηρεσιών
                   </h4>
                 </>
               )}
