@@ -13,8 +13,22 @@ const BookingSectionsWithSidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
+  const [isTablet, setIsTablet] = useState(false);
   const { userProfile: dashboardUserProfile } = useDashboard();
   const { isAdmin } = useRoleCheck();
+
+  // Check for tablet size
+  React.useEffect(() => {
+    const checkTablet = () => {
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1024);
+    };
+    
+    checkTablet();
+    window.addEventListener('resize', checkTablet);
+    return () => window.removeEventListener('resize', checkTablet);
+  }, []);
+
+  const showSidebarButton = isMobile || isTablet;
 
   const handleSignOut = async () => {
     await signOut();
@@ -23,13 +37,15 @@ const BookingSectionsWithSidebar = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      </div>
+      {!showSidebarButton && (
+        <div className="block">
+          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        </div>
+      )}
 
-      {/* Mobile Sidebar Overlay */}
-      {isMobile && showMobileSidebar && (
-        <div className="fixed inset-0 z-50 md:hidden">
+      {/* Mobile/Tablet Sidebar Overlay */}
+      {showSidebarButton && showMobileSidebar && (
+        <div className="fixed inset-0 z-50">
           <div 
             className="absolute inset-0 bg-black bg-opacity-50"
             onClick={() => setShowMobileSidebar(false)}
@@ -46,7 +62,7 @@ const BookingSectionsWithSidebar = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header with mobile menu button */}
-        {(isMobile || window.innerWidth <= 1024) && (
+        {showSidebarButton && (
           <div className="sticky top-0 z-40 bg-white border-b border-gray-200 p-3 md:p-4">
             <div className="flex items-center justify-between">
               <Button
@@ -87,7 +103,7 @@ const BookingSectionsWithSidebar = () => {
               </div>
               
               {/* Desktop header controls */}
-              {!isMobile && window.innerWidth > 1024 && (
+              {!showSidebarButton && (
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-600">
                     {dashboardUserProfile?.name || user?.email}
