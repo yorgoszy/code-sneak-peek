@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
 
@@ -264,7 +265,14 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       {/* Header Image Carousel for hyperkids program */}
       <div className="relative h-48 overflow-hidden flex-shrink-0">
         {program.id === "10" ? (
-          <Carousel className="w-full h-full">
+          <Carousel 
+            className="w-full h-full"
+            plugins={[
+              Autoplay({
+                delay: 1000,
+              }),
+            ]}
+          >
             <CarouselContent>
               <CarouselItem>
                 <div className="relative h-48">
