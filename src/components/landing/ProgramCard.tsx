@@ -381,7 +381,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       </div>
 
       {/* Tabs */}
-      <div className="pr-4 pb-4 flex-1 overflow-hidden">
+      <div className="px-4 pb-4 flex-1 overflow-hidden">
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full grid-cols-3 rounded-none bg-transparent border-b border-gray-200">
             <TabsTrigger 
