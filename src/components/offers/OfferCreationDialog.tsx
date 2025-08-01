@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn, matchesSearchTerm } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SubscriptionType {
   id: string;
@@ -49,6 +50,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
   onClose,
   onSuccess
 }) => {
+  const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -216,13 +218,15 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto rounded-none">
+      <DialogContent className={`${isMobile ? 'max-w-[95vw] max-h-[90vh]' : 'max-w-2xl max-h-[80vh]'} overflow-y-auto rounded-none`}>
         <DialogHeader>
-          <DialogTitle>Δημιουργία Νέας Προσφοράς</DialogTitle>
+          <DialogTitle className={isMobile ? 'text-lg' : 'text-xl'}>
+            {isMobile ? 'Νέα Προσφορά' : 'Δημιουργία Νέας Προσφοράς'}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
             <div>
               <Label htmlFor="name">Όνομα Προσφοράς *</Label>
               <Input
@@ -283,7 +287,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
               <SelectTrigger className="rounded-none">
                 <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-50 bg-white">
                 {subscriptionTypes.map((type) => (
                   <SelectItem key={type.id} value={type.id}>
                     <div className="flex items-center justify-between w-full">
@@ -311,7 +315,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
             <div>
               <Label>Ημερομηνία Έναρξης *</Label>
               <Popover>
@@ -327,7 +331,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
                     {startDate ? format(startDate, "dd/MM/yyyy") : "Επιλέξτε ημερομηνία"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 z-50 bg-white" align="start">
                   <Calendar
                     mode="single"
                     selected={startDate}
@@ -353,7 +357,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
                     {endDate ? format(endDate, "dd/MM/yyyy") : "Επιλέξτε ημερομηνία"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 z-50 bg-white" align="start">
                   <Calendar
                     mode="single"
                     selected={endDate}
@@ -372,7 +376,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
               <SelectTrigger className="rounded-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-50 bg-white">
                 <SelectItem value="all">Εμφανής σε όλους</SelectItem>
                 <SelectItem value="individual">Μεμονωμένους χρήστες</SelectItem>
                 <SelectItem value="selected">Επιλεγμένους χρήστες</SelectItem>
@@ -392,7 +396,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
                 onChange={(e) => setUserSearchTerm(e.target.value)}
                 className="rounded-none mb-2"
               />
-              <div className="border border-gray-200 rounded-none p-2 max-h-32 overflow-y-auto">
+              <div className={`border border-gray-200 rounded-none p-2 ${isMobile ? 'max-h-40' : 'max-h-32'} overflow-y-auto`}>
                 {users
                   .filter(user => 
                     !userSearchTerm || 
@@ -425,7 +429,7 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
           {visibility === 'groups' && (
             <div>
               <Label>Επιλογή Ομάδων</Label>
-              <div className="border border-gray-200 rounded-none p-2 max-h-32 overflow-y-auto">
+              <div className={`border border-gray-200 rounded-none p-2 ${isMobile ? 'max-h-40' : 'max-h-32'} overflow-y-auto`}>
                 {groups.map((group) => (
                   <div key={group.id} className="flex items-center space-x-2 py-1">
                     <input
@@ -453,14 +457,18 @@ export const OfferCreationDialog: React.FC<OfferCreationDialogProps> = ({
           )}
         </div>
 
-        <div className="flex justify-end space-x-2 pt-4">
-          <Button onClick={handleClose} variant="outline" className="rounded-none">
+        <div className={`flex ${isMobile ? 'flex-col gap-2' : 'justify-end space-x-2'} pt-4`}>
+          <Button 
+            onClick={handleClose} 
+            variant="outline" 
+            className={`rounded-none ${isMobile ? 'order-2' : ''}`}
+          >
             Ακύρωση
           </Button>
           <Button 
             onClick={handleSave} 
             disabled={saving}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            className={`bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none ${isMobile ? 'order-1' : ''}`}
           >
             {saving ? 'Δημιουργία...' : 'Δημιουργία Προσφοράς'}
           </Button>
