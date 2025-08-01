@@ -58,14 +58,6 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
   return (
     <section id="programs" className="py-20 bg-black text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
-            {translations.language === 'en' ? 'Our Services' : 'Οι υπηρεσίες μας'}
-          </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            {translations.language === 'en' ? 'Discover our comprehensive range of training services designed for all ages and skill levels' : 'Ανακαλύψτε τη συνολική γκάμα των εκπαιδευτικών υπηρεσιών μας που έχουν σχεδιαστεί για όλες τις ηλικίες και τα επίπεδα δεξιοτήτων'}
-          </p>
-        </div>
 
         <div className="relative">
           {/* Header with navigation */}
