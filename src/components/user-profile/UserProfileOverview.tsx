@@ -108,6 +108,7 @@ export const UserProfileOverview = ({
             tests={tests} 
             payments={payments} 
             visits={visits}
+            stats={stats}
           />
         </CardContent>
       </Card>
