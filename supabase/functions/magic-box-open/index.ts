@@ -356,6 +356,67 @@ serve(async (req) => {
               }
             }
             
+            // For videocall subscriptions, also create a videocall package
+            if (subscriptionType.name && subscriptionType.name.toLowerCase().includes('videocall')) {
+              console.log(`✅ Creating videocall package for videocall subscription`);
+              
+              // Calculate expiry date for videocall package (same as subscription)
+              const videocallExpiryDate = new Date();
+              videocallExpiryDate.setMonth(videocallExpiryDate.getMonth() + durationMonths);
+              
+              // Check for existing active videocall packages first
+              const { data: existingPackages, error: fetchError } = await supabaseClient
+                .from('videocall_packages')
+                .select('*')
+                .eq('user_id', appUser.id)
+                .eq('status', 'active')
+                .gt('remaining_videocalls', 0)
+                .order('expiry_date', { ascending: false, nullsFirst: true });
+
+              if (fetchError) {
+                console.error('❌ Error fetching existing videocall packages:', fetchError);
+              }
+
+              if (existingPackages && existingPackages.length > 0) {
+                // Merge with existing package - add videocalls to the one with latest expiry date
+                const targetPackage = existingPackages[0];
+                const newTotalVideocalls = targetPackage.total_videocalls + 1; // Most videocall subscriptions give 1 videocall
+                const newRemainingVideocalls = targetPackage.remaining_videocalls + 1;
+                
+                const { error: updateError } = await supabaseClient
+                  .from('videocall_packages')
+                  .update({
+                    total_videocalls: newTotalVideocalls,
+                    remaining_videocalls: newRemainingVideocalls,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('id', targetPackage.id);
+
+                if (!updateError) {
+                  console.log(`✅ Added 1 videocall to existing package. New total: ${newRemainingVideocalls}`);
+                } else {
+                  console.error('❌ Error updating videocall package for subscription:', updateError);
+                }
+              } else {
+                // Create new videocall package
+                const { error: videocallPackageError } = await supabaseClient
+                  .from('videocall_packages')
+                  .insert({
+                    user_id: appUser.id,
+                    total_videocalls: 1, // Most videocall subscriptions give 1 videocall
+                    remaining_videocalls: 1,
+                    expiry_date: videocallExpiryDate.toISOString().split('T')[0],
+                    status: 'active'
+                  });
+
+                if (videocallPackageError) {
+                  console.error('❌ Error creating videocall package for subscription:', videocallPackageError);
+                } else {
+                  console.log(`✅ Created videocall package with 1 videocall for subscription`);
+                }
+              }
+            }
+            
             additionalData = {
               subscription_id: subscription.id,
               subscription_type_id: selectedPrize.subscription_type_id,
