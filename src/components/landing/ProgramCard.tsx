@@ -19,10 +19,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const hyperkidsImages = [
-    "/lovable-uploads/1aab1b16-4578-4a89-9cdf-e623fdf36ccd.png",
-    "/lovable-uploads/588f9e4c-7c09-485d-b4f3-03d2d3ca6e99.png",
-    "/lovable-uploads/d927ce71-2cdb-4230-a8b4-83723f860a48.png", 
-    "/lovable-uploads/2594ec01-4721-4092-8051-4eb45b419aec.png"
+    "/lovable-uploads/0b46eb40-7391-4b84-b9b5-551e9abd6ecc.png"
   ];
 
   const hypergymImages = [
