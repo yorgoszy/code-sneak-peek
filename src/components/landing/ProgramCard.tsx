@@ -399,7 +399,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           </TabsList>
 
           <TabsContent value="details" className="mt-4 h-[140px]">
-            <div className="bg-gray-50 p-3 rounded-none h-full">
+            <div className="bg-white p-3 rounded-none h-full">
               {program.id === "10" ? (
                 <div className="text-xs space-y-3">
                   <div>
