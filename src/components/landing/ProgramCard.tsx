@@ -26,6 +26,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   ];
 
   const hypergymImages = [
+    "/lovable-uploads/9b21c404-18e8-4d49-99b1-1012b8d7d3e9.png",
     "/lovable-uploads/645bbd9c-686c-42d9-9869-1e51296339a6.png",
     "/lovable-uploads/3f596464-e4b5-4c76-adc8-d6cec2da2dd7.png",
     "/lovable-uploads/cb5d40f0-7d33-4f69-98aa-fe66758d5e1e.png"
