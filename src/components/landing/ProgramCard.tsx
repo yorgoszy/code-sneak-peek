@@ -27,7 +27,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   ];
 
   const hyperathletesImages = [
-    "/lovable-uploads/4ed2dfe5-77c3-4aa2-b414-6420b7676799.png"
+    "/lovable-uploads/37ca5c48-e0a2-41de-83cf-a670dc377e2c.png"
   ];
 
   useEffect(() => {
