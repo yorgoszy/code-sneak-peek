@@ -48,11 +48,6 @@ interface Purchase {
     subscription_mode: string;
     visit_count?: number;
   };
-  subscription?: {
-    start_date: string;
-    end_date: string;
-    status: string;
-  };
 }
 
 const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) => {
@@ -86,11 +81,6 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
             duration_months,
             subscription_mode,
             visit_count
-          ),
-          user_subscriptions!user_id (
-            start_date,
-            end_date,
-            status
           )
         `)
         .eq('status', 'completed')
@@ -121,12 +111,7 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
           duration_months: item.subscription_types?.duration_months || 0,
           subscription_mode: item.subscription_types?.subscription_mode || '',
           visit_count: item.subscription_types?.visit_count
-        },
-        subscription: Array.isArray(item.user_subscriptions) && item.user_subscriptions.length > 0 ? {
-          start_date: item.user_subscriptions[0].start_date,
-          end_date: item.user_subscriptions[0].end_date,
-          status: item.user_subscriptions[0].status
-        } : undefined
+        }
       }));
 
       // Παίρνουμε τα acknowledged payment IDs από localStorage
@@ -207,44 +192,8 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
               </Badge>
             </div>
           </div>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <div className="flex items-center space-x-1">
-                <Calendar className="w-3 h-3" />
-                <span>
-                  {purchase.subscription_type.subscription_mode === 'visit_based' 
-                    ? `${purchase.subscription_type.visit_count} επισκέψεις`
-                    : `${purchase.subscription_type.duration_months}μ`
-                  }
-                </span>
-              </div>
-              <span>Αγορά: {format(new Date(purchase.payment_date), 'dd/MM/yyyy')}</span>
-            </div>
-            {purchase.subscription && (
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>Έναρξη: {format(new Date(purchase.subscription.start_date), 'dd/MM/yyyy')}</span>
-                <span>Λήξη: {format(new Date(purchase.subscription.end_date), 'dd/MM/yyyy')}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Desktop/Tablet layout - horizontal */}
-        <div className="hidden sm:block">
-          <div className="flex items-center justify-between">
-            {/* Left section - Icon, Name, User */}
-            <div className="flex items-center space-x-3 min-w-0 flex-1">
-              <div className="bg-[#00ffba]/10 p-1.5 rounded-full flex-shrink-0">
-                <Package className="w-4 h-4 text-[#00ffba]" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold text-gray-900 truncate">{purchase.subscription_type.name}</h3>
-                <p className="text-xs text-gray-600 truncate">{purchase.user.name} • {purchase.user.email}</p>
-              </div>
-            </div>
-
-            {/* Center section - Duration/Visits */}
-            <div className="flex items-center space-x-1 text-xs text-gray-500 px-4">
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center space-x-1">
               <Calendar className="w-3 h-3" />
               <span>
                 {purchase.subscription_type.subscription_mode === 'visit_based' 
@@ -253,27 +202,46 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
                 }
               </span>
             </div>
+            <span>{format(new Date(purchase.payment_date), 'dd/MM/yyyy')}</span>
+          </div>
+        </div>
 
-            {/* Right section - Price, Date, Status */}
-            <div className="flex items-center space-x-4 flex-shrink-0">
-              <div className="text-right">
-                <p className="text-sm font-bold text-[#00ffba]">€{purchase.amount}</p>
-                <p className="text-xs text-gray-500">
-                  Αγορά: {format(new Date(purchase.payment_date), 'dd/MM')}
-                </p>
-              </div>
-              <Badge variant="secondary" className="rounded-none text-xs px-2 py-1">
-                <Check className="w-3 h-3" />
-              </Badge>
+        {/* Desktop/Tablet layout - horizontal */}
+        <div className="hidden sm:flex items-center justify-between h-10">
+          {/* Left section - Icon, Name, User */}
+          <div className="flex items-center space-x-3 min-w-0 flex-1">
+            <div className="bg-[#00ffba]/10 p-1.5 rounded-full flex-shrink-0">
+              <Package className="w-4 h-4 text-[#00ffba]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold text-gray-900 truncate">{purchase.subscription_type.name}</h3>
+              <p className="text-xs text-gray-600 truncate">{purchase.user.name} • {purchase.user.email}</p>
             </div>
           </div>
-          
-          {/* Subscription dates row */}
-          {purchase.subscription && (
-            <div className="mt-1 flex justify-center text-xs text-gray-500">
-              <span>Έναρξη: {format(new Date(purchase.subscription.start_date), 'dd/MM/yyyy')} • Λήξη: {format(new Date(purchase.subscription.end_date), 'dd/MM/yyyy')}</span>
+
+          {/* Center section - Duration/Visits */}
+          <div className="flex items-center space-x-1 text-xs text-gray-500 px-4">
+            <Calendar className="w-3 h-3" />
+            <span>
+              {purchase.subscription_type.subscription_mode === 'visit_based' 
+                ? `${purchase.subscription_type.visit_count} επισκέψεις`
+                : `${purchase.subscription_type.duration_months}μ`
+              }
+            </span>
+          </div>
+
+          {/* Right section - Price, Date, Status */}
+          <div className="flex items-center space-x-4 flex-shrink-0">
+            <div className="text-right">
+              <p className="text-sm font-bold text-[#00ffba]">€{purchase.amount}</p>
+              <p className="text-xs text-gray-500">
+                {format(new Date(purchase.payment_date), 'dd/MM')}
+              </p>
             </div>
-          )}
+            <Badge variant="secondary" className="rounded-none text-xs px-2 py-1">
+              <Check className="w-3 h-3" />
+            </Badge>
+          </div>
         </div>
       </CardContent>
     </Card>
