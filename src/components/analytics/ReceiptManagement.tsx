@@ -326,7 +326,8 @@ export const ReceiptManagement: React.FC = () => {
           total: receipt.total,
           issue_date: receipt.date,
           mydata_status: receipt.myDataStatus,
-          created_by: createdBy
+          created_by: createdBy,
+          user_id: selectedUser || null  // Συνδέουμε την απόδειξη με τον επιλεγμένο χρήστη
         })
         .select()
         .single();
