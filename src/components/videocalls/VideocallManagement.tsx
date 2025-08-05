@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Video, Plus, Trash2, Search, Calendar, Minus, Eye, Edit } from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
+import { matchesSearchTerm } from "@/lib/utils";
 
 interface User {
   id: string;
@@ -580,8 +581,8 @@ export const VideocallManagement: React.FC = () => {
                         <option value="">Επιλέξτε χρήστη</option>
                         {users
                           .filter(user => 
-                            user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-                            user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
+                            matchesSearchTerm(user.name, userSearchTerm) ||
+                            matchesSearchTerm(user.email, userSearchTerm)
                           )
                           .map(user => (
                             <option key={user.id} value={user.id}>
