@@ -266,33 +266,38 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                                {currentBookings}/{maxCapacity}
                              </div>
                            </div>
-                          ) : (
-                            // Available slot - show capacity info only (no booking button)
-                            <div className={`w-full h-full text-[10px] flex flex-col items-center justify-center ${
-                              isPast(day) 
-                                ? 'bg-gray-100 text-gray-400' 
-                                : isFull 
-                                  ? 'bg-red-50 text-red-600' 
-                                  : 'bg-gray-50 text-gray-600'
-                            }`}>
-                              {isPast(day) ? (
-                                <>
-                                  <span className="text-xs">-</span>
-                                  <span>{currentBookings}/{maxCapacity}</span>
-                                </>
-                              ) : isFull ? (
-                                <>
-                                  <span className="text-xs">Γεμάτο</span>
-                                  <span>{currentBookings}/{maxCapacity}</span>
-                                </>
-                              ) : (
-                                <>
-                                  <span className="text-xs">-</span>
-                                  <span>{currentBookings}/{maxCapacity}</span>
-                                </>
-                              )}
-                            </div>
-                          )}
+                         ) : (
+                           // Available slot - show booking button with capacity
+                           <button
+                             onClick={() => !isFull && onCreateBooking?.(sectionId, format(day, 'yyyy-MM-dd'), timeSlot, 'gym_visit')}
+                             className={`w-full h-full transition-colors text-[10px] flex flex-col items-center justify-center ${
+                               isPast(day) 
+                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                 : isFull 
+                                   ? 'bg-red-50 text-red-600 cursor-not-allowed' 
+                                   : 'bg-gray-50 hover:bg-[#00ffba]/20 text-gray-600 hover:text-black cursor-pointer'
+                             }`}
+                             title={isPast(day) ? 'Παρελθόν' : isFull ? 'Γεμάτο' : 'Κλείσε ραντεβού'}
+                             disabled={isPast(day) || isFull}
+                           >
+                             {isPast(day) ? (
+                               <>
+                                 <span className="text-xs">-</span>
+                                 <span>{currentBookings}/{maxCapacity}</span>
+                               </>
+                             ) : isFull ? (
+                               <>
+                                 <span className="text-xs">Γεμάτο</span>
+                                 <span>{currentBookings}/{maxCapacity}</span>
+                               </>
+                             ) : (
+                               <>
+                                 <span className="text-xs">+</span>
+                                 <span>{currentBookings}/{maxCapacity}</span>
+                               </>
+                             )}
+                           </button>
+                         )}
                        </div>
                      );
                   })}
