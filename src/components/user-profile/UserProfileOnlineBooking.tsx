@@ -181,14 +181,9 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       </div>
 
 
-      {/* All Section Booking Calendars - Show sections user has access to */}
+      {/* All Section Booking Calendars - Show all sections, but only allow booking if user has access */}
       <div className="px-4 md:px-0 space-y-6">
         {sections
-          .filter(section => {
-            // Show sections user has access to based on their subscription/packages
-            const hasAccess = availability?.allowed_sections && availability.allowed_sections.includes(section.id);
-            return hasAccess;
-          })
           .map(section => {
             const sectionBookings = bookings.filter(booking => 
               booking.section_id === section.id
@@ -210,32 +205,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
             );
           })
         }
-        
-        {/* Show message if user has no access to any sections */}
-        {sections.filter(section => {
-          const hasAccess = availability?.allowed_sections && availability.allowed_sections.includes(section.id);
-          return hasAccess;
-        }).length === 0 && (
-          <Card className="rounded-none">
-            <CardContent className="p-6 text-center">
-              <p className="text-gray-600 mb-4">
-                {!availability?.has_gym_access 
-                  ? "Δεν έχεις διαθέσιμες επισκέψεις για κρατήσεις."
-                  : "Δεν έχεις πρόσβαση σε κάποιο τμήμα. Επικοινώνησε με τη διοίκηση για περισσότερες πληροφορίες."
-                }
-              </p>
-              {!availability?.has_gym_access && (
-                <Button 
-                  onClick={() => navigate(`/dashboard/user-profile/${userProfile?.id}?tab=shop`)}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Αγόρασε επίσκεψη
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Waiting Lists Section */}
