@@ -349,6 +349,46 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
     return <div className="text-center py-8">Φόρτωση...</div>;
   }
 
+  // Έλεγχος αν ο χρήστης έχει ενεργό πακέτο βιντεοκλήσεων
+  const hasVideocallAccess = ((availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)) > 0 || 
+                             availability?.videocall_subscription;
+
+  if (!hasVideocallAccess) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Online Coaching</h2>
+          <p className="text-gray-600">Χρειάζεσαι ενεργό πακέτο βιντεοκλήσεων για πρόσβαση</p>
+        </div>
+        
+        <Card className="rounded-none">
+          <CardContent className="p-6 text-center">
+            <Video className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Δεν έχεις πρόσβαση στις βιντεοκλήσεις
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Για να έχεις πρόσβαση στο Online Coaching, χρειάζεσαι ενεργό πακέτο βιντεοκλήσεων.
+            </p>
+            <Button 
+              onClick={() => {
+                const urlPath = window.location.pathname;
+                const userIdFromUrl = urlPath.match(/\/dashboard\/user-profile\/([^\/]+)/)?.[1];
+                if (userIdFromUrl) {
+                  window.location.href = `/dashboard/user-profile/${userIdFromUrl}?tab=shop`;
+                }
+              }}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              <Video className="w-4 h-4 mr-2" />
+              Αγόρασε Βιντεοκλήσεις
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center">

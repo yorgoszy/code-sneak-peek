@@ -181,9 +181,10 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       </div>
 
 
-      {/* All Section Booking Calendars - Show all sections, but only allow booking if user has access */}
+      {/* All Section Booking Calendars - Show all sections except videocalls, only allow booking if user has access */}
       <div className="px-4 md:px-0 space-y-6">
         {sections
+          .filter(section => !section.name.toLowerCase().includes('βιντεοκλήσεις') && !section.name.toLowerCase().includes('videocall'))
           .map(section => {
             const sectionBookings = bookings.filter(booking => 
               booking.section_id === section.id
