@@ -16,11 +16,13 @@ import {
   User,
   Building2,
   Download,
-  Eye
+  Eye,
+  Settings
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ReceiptPreviewDialog } from "./ReceiptPreviewDialog";
+import { ReceiptMyDataIntegration } from "@/components/receipts/ReceiptMyDataIntegration";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -347,13 +349,22 @@ export const ReceiptManagement: React.FC = () => {
       
       setReceipts(prev => [finalReceipt, ...prev]);
       
-      // Αυτόματη αποστολή στο MyData
-      try {
-        await sendToMyData(finalReceipt);
-        toast.success('Απόδειξη δημιουργήθηκε και στάλθηκε στο MyData!');
-      } catch (mydataError) {
-        console.error('MyData send error:', mydataError);
-        toast.warning('Απόδειξη δημιουργήθηκε αλλά δεν στάλθηκε στο MyData. Δοκιμάστε ξανά.');
+      // Αυτόματη αποστολή στο MyData μόνο αν είναι ενεργοποιημένη
+      const myDataSettings = {
+        enabled: localStorage.getItem('mydata_enabled') === 'true',
+        autoSend: localStorage.getItem('mydata_auto_send') === 'true'
+      };
+
+      if (myDataSettings.enabled && myDataSettings.autoSend) {
+        try {
+          await sendToMyData(finalReceipt);
+          toast.success('Απόδειξη δημιουργήθηκε και στάλθηκε στο MyData!');
+        } catch (mydataError) {
+          console.error('MyData send error:', mydataError);
+          toast.warning('Απόδειξη δημιουργήθηκε αλλά δεν στάλθηκε στο MyData. Δοκιμάστε ξανά.');
+        }
+      } else {
+        toast.success('Απόδειξη δημιουργήθηκε επιτυχώς!');
       }
       
       // Ξαναφορτώνουμε τις αποδείξεις για να έχουμε τα πιο πρόσφατα στοιχεία
@@ -834,14 +845,21 @@ export const ReceiptManagement: React.FC = () => {
                               <p className="font-bold">€{receipt.total.toFixed(2)}</p>
                             </div>
                             <div>
-                              <Badge className={`${getStatusColor(receipt.myDataStatus)} flex items-center gap-1`}>
-                                {getStatusIcon(receipt.myDataStatus)}
-                                {receipt.myDataStatus === 'sent' ? 'Εστάλη' : 
-                                 receipt.myDataStatus === 'pending' ? 'Εκκρεμεί' : 'Σφάλμα'}
-                              </Badge>
-                              {receipt.myDataId && (
-                                <p className="text-xs text-gray-500 mt-1">ID: {receipt.myDataId}</p>
-                              )}
+                              <ReceiptMyDataIntegration 
+                                receipt={{
+                                  id: receipt.id,
+                                  receipt_number: receipt.receiptNumber,
+                                  user_id: '',
+                                  total: receipt.total,
+                                  net_amount: receipt.subtotal,
+                                  tax_amount: receipt.vat,
+                                  issue_date: receipt.date,
+                                  mydata_status: receipt.myDataStatus,
+                                  mydata_id: receipt.myDataId,
+                                  invoice_mark: receipt.invoiceMark
+                                }}
+                                onUpdate={loadReceipts}
+                              />
                             </div>
                             <div className="flex gap-2">
                               <Button 
@@ -856,29 +874,6 @@ export const ReceiptManagement: React.FC = () => {
                                 <Eye className="h-4 w-4 mr-1" />
                                 Προβολή
                               </Button>
-                              {receipt.myDataStatus === 'error' && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={async () => {
-                                    try {
-                                      setLoading(true);
-                                      await sendToMyData(receipt);
-                                      toast.success('Η απόδειξη στάλθηκε επιτυχώς στο MyData!');
-                                    } catch (error) {
-                                      console.error('Retry send error:', error);
-                                      toast.error('Σφάλμα στην επανάληψη αποστολής');
-                                    } finally {
-                                      setLoading(false);
-                                    }
-                                  }}
-                                  disabled={loading}
-                                  className="rounded-none"
-                                >
-                                  <Send className="h-4 w-4 mr-1" />
-                                  {loading ? 'Αποστολή...' : 'Επανάληψη'}
-                                </Button>
-                              )}
                             </div>
                           </div>
                         ))}

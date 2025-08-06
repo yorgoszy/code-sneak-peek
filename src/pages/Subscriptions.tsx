@@ -2,7 +2,7 @@
 import { SubscriptionManagement } from "@/components/subscriptions/SubscriptionManagement";
 import { SubscriptionTypeManager } from "@/components/subscriptions/SubscriptionTypeManager";
 import { SubscriptionHistory } from "@/components/subscriptions/SubscriptionHistory";
-import { MyDataIntegration } from "@/components/analytics/MyDataIntegration";
+import { MyDataSettings } from "@/components/admin/MyDataSettings";
 import { ReceiptManagement } from "@/components/analytics/ReceiptManagement";
 import { CertificateManager } from "@/components/analytics/CertificateManager";
 import { VisitManagement } from "@/components/visits/VisitManagement";
@@ -88,7 +88,7 @@ export default function Subscriptions() {
             <TabsTrigger value="magic-boxes" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Μαγικά Κουτιά</TabsTrigger>
             <TabsTrigger value="history" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ιστορικό</TabsTrigger>
             <TabsTrigger value="certificates" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Certificates</TabsTrigger>
-            <TabsTrigger value="mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Banking</TabsTrigger>
+            <TabsTrigger value="mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">MyData AADE</TabsTrigger>
           </TabsList>
           
           <TabsContent value="management">
@@ -136,7 +136,7 @@ export default function Subscriptions() {
           </TabsContent>
           
           <TabsContent value="mydata">
-            <MyDataIntegration />
+            <MyDataSettings />
           </TabsContent>
 
           <TabsContent value="financial">
