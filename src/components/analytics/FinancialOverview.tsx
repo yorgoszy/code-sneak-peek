@@ -53,21 +53,20 @@ export const FinancialOverview: React.FC = () => {
         monthlyExpMap.set(month, (monthlyExpMap.get(month) || 0) + Number(expense.amount));
       });
 
-      // Fetch payments (receipts) for selected year to calculate monthly revenue
-      const { data: monthlyPayments, error: paymentsError } = await supabase
-        .from('payments')
-        .select('amount, payment_date')
-        .eq('status', 'completed')
-        .gte('payment_date', `${selectedYear}-01-01`)
-        .lt('payment_date', `${selectedYear + 1}-01-01`);
+      // Fetch receipts for selected year to calculate monthly revenue
+      const { data: monthlyReceipts, error: receiptsError } = await supabase
+        .from('receipts')
+        .select('total, issue_date')
+        .gte('issue_date', `${selectedYear}-01-01`)
+        .lt('issue_date', `${selectedYear + 1}-01-01`);
 
-      if (paymentsError) throw paymentsError;
+      if (receiptsError) throw receiptsError;
 
-      // Calculate monthly revenue based on payment date (receipt issue date)
+      // Calculate monthly revenue based on receipt issue date
       const monthlyRevMap = new Map<string, number>();
-      monthlyPayments?.forEach(payment => {
-        const month = format(new Date(payment.payment_date), 'yyyy-MM');
-        monthlyRevMap.set(month, (monthlyRevMap.get(month) || 0) + Number(payment.amount));
+      monthlyReceipts?.forEach(receipt => {
+        const month = format(new Date(receipt.issue_date), 'yyyy-MM');
+        monthlyRevMap.set(month, (monthlyRevMap.get(month) || 0) + Number(receipt.total));
       });
 
       // Create monthly data with both revenue and expenses
@@ -89,13 +88,12 @@ export const FinancialOverview: React.FC = () => {
       // Fetch yearly data
       const yearlyResults = [];
       for (const year of years) {
-        // Get payments (receipts) for the year
-        const { data: yearPayments } = await supabase
-          .from('payments')
-          .select('amount')
-          .eq('status', 'completed')
-          .gte('payment_date', `${year}-01-01`)
-          .lt('payment_date', `${year + 1}-01-01`);
+        // Get receipts for the year
+        const { data: yearReceipts } = await supabase
+          .from('receipts')
+          .select('total')
+          .gte('issue_date', `${year}-01-01`)
+          .lt('issue_date', `${year + 1}-01-01`);
 
         const { data: yearExpenses } = await supabase
           .from('expenses')
@@ -103,8 +101,8 @@ export const FinancialOverview: React.FC = () => {
           .gte('expense_date', `${year}-01-01`)
           .lt('expense_date', `${year + 1}-01-01`);
 
-        // Calculate revenue from payments (receipt issue date)
-        const revenue = yearPayments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+        // Calculate revenue from receipts (receipt issue date)
+        const revenue = yearReceipts?.reduce((sum, r) => sum + Number(r.total), 0) || 0;
         
         const expenses = yearExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
         yearlyResults.push({
