@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { aadeUserId, subscriptionKey, environment, receipt } = await req.json()
+    const { aadeUserId, subscriptionKey, environment, receipt, paymentMethod = 'cash' } = await req.json()
 
     console.log('🚀 MyData Send Receipt called with:', { 
       aadeUserId, 
@@ -73,6 +73,17 @@ serve(async (req) => {
       return Math.round(value * 100) / 100
     }
 
+    // Helper function για payment type codes
+    const getPaymentTypeCode = (method) => {
+      const paymentCodes = {
+        'cash': '3',          // Μετρητά
+        'card': '7',          // Πιστωτική/Χρεωστική κάρτα
+        'bank_transfer': '4', // Τραπεζική κατάθεση
+        'iris': '6'           // IRIS
+      }
+      return paymentCodes[method] || '3' // Default μετρητά
+    }
+
     // Μετατροπή σε σωστό XML format για αποδείξεις λιανικής (11.1)
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <InvoicesDoc xmlns="http://www.aade.gr/myDATA/invoice/v1.0" 
@@ -93,7 +104,7 @@ serve(async (req) => {
     </invoiceHeader>
     <paymentMethods>
       <paymentMethodDetails>
-        <type>3</type>
+        <type>${getPaymentTypeCode(paymentMethod)}</type>
         <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue)}</amount>
       </paymentMethodDetails>
     </paymentMethods>
