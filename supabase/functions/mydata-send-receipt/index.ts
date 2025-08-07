@@ -77,12 +77,21 @@ serve(async (req) => {
     const getPaymentTypeCode = (method) => {
       const paymentCodes = {
         'cash': '3',          // Μετρητά
-        'card': '7',          // Πιστωτική/Χρεωστική κάρτα
-        'bank_transfer': '4', // Τραπεζική κατάθεση
-        'iris': '6'           // IRIS
+        'card': '7',          // POS/e-POS
+        'bank_transfer': '6', // Web Banking
+        'iris': '8'           // Άμεσες Πληρωμές IRIS
       }
       return paymentCodes[method] || '3' // Default μετρητά
     }
+
+    // Δημιουργούμε το τμήμα του counterpart δυναμικά
+    const counterpartXml = receipt.counterpart && receipt.counterpart.vatNumber && receipt.counterpart.vatNumber !== "000000000"
+      ? `<counterpart>
+           <vatNumber>${receipt.counterpart.vatNumber}</vatNumber>
+           <country>${receipt.counterpart.country || 'GR'}</country>
+           <branch>${receipt.counterpart.branch || 0}</branch>
+         </counterpart>`
+      : '';
 
     // Μετατροπή σε σωστό XML format για αποδείξεις λιανικής (11.1)
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
@@ -95,6 +104,7 @@ serve(async (req) => {
       <country>${receipt.issuer.country}</country>
       <branch>${receipt.issuer.branch}</branch>
     </issuer>
+    ${counterpartXml}
     <invoiceHeader>
       <series>${receipt.invoiceHeader.series}</series>
       <aa>${receipt.invoiceHeader.aa}</aa>
@@ -121,18 +131,18 @@ serve(async (req) => {
       </incomeClassification>`).join('')}
     </invoiceDetails>
     <invoiceSummary>
-      <totalNetValue>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue)}</totalNetValue>
-      <totalVatAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalVatAmount)}</totalVatAmount>
-      <totalWithheldAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalWithheldAmount)}</totalWithheldAmount>
-      <totalFeesAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalFeesAmount)}</totalFeesAmount>
-      <totalStampDutyAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalStampDutyAmount)}</totalStampDutyAmount>
-      <totalOtherTaxesAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalOtherTaxesAmount)}</totalOtherTaxesAmount>
-      <totalDeductionsAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalDeductionsAmount)}</totalDeductionsAmount>
-      <totalGrossValue>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue)}</totalGrossValue>
+      <totalNetValue>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue || 0)}</totalNetValue>
+      <totalVatAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalVatAmount || 0)}</totalVatAmount>
+      <totalWithheldAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalWithheldAmount || 0)}</totalWithheldAmount>
+      <totalFeesAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalFeesAmount || 0)}</totalFeesAmount>
+      <totalStampDutyAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalStampDutyAmount || 0)}</totalStampDutyAmount>
+      <totalOtherTaxesAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalOtherTaxesAmount || 0)}</totalOtherTaxesAmount>
+      <totalDeductionsAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalDeductionsAmount || 0)}</totalDeductionsAmount>
+      <totalGrossValue>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue || 0)}</totalGrossValue>
       <incomeClassification>
         <classificationType>E3_561_003</classificationType>
         <classificationCategory>category1_3</classificationCategory>
-        <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue)}</amount>
+        <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue || 0)}</amount>
       </incomeClassification>
     </invoiceSummary>
   </invoice>

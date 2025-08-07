@@ -430,7 +430,7 @@ export const ReceiptManagement: React.FC = () => {
               series: series,
               aa: sequentialNumber, // Fix: Χρησιμοποιούμε τον σωστό αριθμό
               issueDate: receipt.date,
-              invoiceType: receiptSeries === 'ΑΠΥ' ? "2.1" : "1.1", // ΑΠΥ ή ΤΠΥ
+              invoiceType: receiptSeries === 'ΑΠΥ' ? "11.2" : "11.1", // 11.2 για ΑΠΥ, 11.1 για ΑΛΠ
               currency: "EUR"
             },
             invoiceDetails: receipt.items.map((item, index) => ({
