@@ -49,7 +49,7 @@ export const MyDataSettings: React.FC = () => {
     });
   };
 
-  const saveSettings = () => {
+  const saveSettings = async () => {
     if (!settings.aadeUserId || !settings.subscriptionKey || !settings.vatNumber) {
       toast({
         title: "Σφάλμα",
@@ -59,19 +59,31 @@ export const MyDataSettings: React.FC = () => {
       return;
     }
 
-    localStorage.setItem('mydata_aade_user_id', settings.aadeUserId);
-    localStorage.setItem('mydata_subscription_key', settings.subscriptionKey);
-    localStorage.setItem('mydata_vat_number', settings.vatNumber);
-    localStorage.setItem('mydata_environment', settings.environment);
-    localStorage.setItem('mydata_enabled', settings.enabled.toString());
-    localStorage.setItem('mydata_auto_send', settings.autoSend.toString());
+    setLoading(true);
+    
+    try {
+      localStorage.setItem('mydata_aade_user_id', settings.aadeUserId);
+      localStorage.setItem('mydata_subscription_key', settings.subscriptionKey);
+      localStorage.setItem('mydata_vat_number', settings.vatNumber);
+      localStorage.setItem('mydata_environment', settings.environment);
+      localStorage.setItem('mydata_enabled', settings.enabled.toString());
+      localStorage.setItem('mydata_auto_send', settings.autoSend.toString());
 
-    toast({
-      title: "Επιτυχία",
-      description: "Οι ρυθμίσεις MyData αποθηκεύτηκαν επιτυχώς",
-    });
+      toast({
+        title: "Επιτυχία",
+        description: "Οι ρυθμίσεις MyData αποθηκεύτηκαν επιτυχώς",
+      });
 
-    setConnectionStatus('unknown');
+      setConnectionStatus('unknown');
+    } catch (error) {
+      toast({
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά την αποθήκευση των ρυθμίσεων",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const testConnection = async () => {
@@ -91,11 +103,6 @@ export const MyDataSettings: React.FC = () => {
       const testReceipt = {
         issuer: {
           vatNumber: settings.vatNumber,
-          country: "GR",
-          branch: 0
-        },
-        counterpart: {
-          vatNumber: "000000000",
           country: "GR",
           branch: 0
         },

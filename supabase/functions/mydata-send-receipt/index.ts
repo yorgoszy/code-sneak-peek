@@ -73,24 +73,17 @@ serve(async (req) => {
       return Math.round(value * 100) / 100
     }
 
-    // Μετατροπή σε σωστό XML format με namespaces όπως απαιτεί το MyDATA API
+    // Μετατροπή σε σωστό XML format για αποδείξεις λιανικής (11.1)
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <InvoicesDoc xmlns="http://www.aade.gr/myDATA/invoice/v1.0" 
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-             xmlns:ic="https://www.aade.gr/myDATA/incomeClassificaton/v1.0" 
-             xmlns:exp="https://www.aade.gr/myDATA/expensesClassificaton/v1.0" 
-             xsi:schemaLocation="http://www.aade.gr/myDATA/invoice/v1.0 http://www.aade.gr/myDATA/invoice/v1.0/myDATA-invoice-doc-v1.0.xsd">
+             xsi:schemaLocation="http://www.aade.gr/myDATA/invoice/v1.0 http://www.aade.gr/myDATA/invoice/v1.0/InvoicesDoc-v1.0.xsd">
   <invoice>
     <issuer>
       <vatNumber>${receipt.issuer.vatNumber}</vatNumber>
       <country>${receipt.issuer.country}</country>
       <branch>${receipt.issuer.branch}</branch>
     </issuer>
-    <counterpart>
-      <vatNumber>${receipt.counterpart.vatNumber}</vatNumber>
-      <country>${receipt.counterpart.country}</country>
-      <branch>${receipt.counterpart.branch || 0}</branch>
-    </counterpart>
     <invoiceHeader>
       <series>${receipt.invoiceHeader.series}</series>
       <aa>${receipt.invoiceHeader.aa}</aa>
@@ -98,6 +91,12 @@ serve(async (req) => {
       <invoiceType>${receipt.invoiceHeader.invoiceType}</invoiceType>
       <currency>${receipt.invoiceHeader.currency}</currency>
     </invoiceHeader>
+    <paymentMethods>
+      <paymentMethodDetails>
+        <type>3</type>
+        <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue)}</amount>
+      </paymentMethodDetails>
+    </paymentMethods>
     <invoiceDetails>
       ${receipt.invoiceDetails.map(detail => `
       <lineNumber>${detail.lineNumber}</lineNumber>
@@ -105,9 +104,9 @@ serve(async (req) => {
       <vatCategory>${detail.vatCategory}</vatCategory>
       <vatAmount>${roundToTwoDecimals(detail.vatAmount)}</vatAmount>
       <incomeClassification>
-        <ic:classificationType>E3_561_001</ic:classificationType>
-        <ic:classificationCategory>category1_1</ic:classificationCategory>
-        <ic:amount>${roundToTwoDecimals(detail.netValue)}</ic:amount>
+        <classificationType>E3_561_003</classificationType>
+        <classificationCategory>category1_3</classificationCategory>
+        <amount>${roundToTwoDecimals(detail.netValue)}</amount>
       </incomeClassification>`).join('')}
     </invoiceDetails>
     <invoiceSummary>
@@ -120,9 +119,9 @@ serve(async (req) => {
       <totalDeductionsAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalDeductionsAmount)}</totalDeductionsAmount>
       <totalGrossValue>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue)}</totalGrossValue>
       <incomeClassification>
-        <ic:classificationType>E3_561_001</ic:classificationType>
-        <ic:classificationCategory>category1_1</ic:classificationCategory>
-        <ic:amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue)}</ic:amount>
+        <classificationType>E3_561_003</classificationType>
+        <classificationCategory>category1_3</classificationCategory>
+        <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue)}</amount>
       </incomeClassification>
     </invoiceSummary>
   </invoice>
