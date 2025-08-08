@@ -68,17 +68,19 @@ interface ReceiptItem {
 interface MyDataSettings {
   aadeUserId: string;
   subscriptionKey: string;
+  vatNumber: string;
   environment: 'development' | 'production';
   connected: boolean;
 }
 
 export const ReceiptManagement: React.FC = () => {
-  const [settings, setSettings] = useState<MyDataSettings>({
-    aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
-    subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
-    environment: 'production',
-    connected: false
-  });
+const [settings, setSettings] = useState<MyDataSettings>({
+  aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
+  subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
+  vatNumber: localStorage.getItem('mydata_vat_number') || '',
+  environment: (localStorage.getItem('mydata_environment') as 'development' | 'production') || 'production',
+  connected: false
+});
 
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -410,48 +412,62 @@ export const ReceiptManagement: React.FC = () => {
       const series = receiptNumberParts[0] || 'A';
       const sequentialNumber = receiptNumberParts[1] || '1';
       
-      console.log('📡 Καλώ το edge function mydata-send-receipt...');
-      const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
-        body: {
-          aadeUserId: settings.aadeUserId,
-          subscriptionKey: settings.subscriptionKey,
-          environment: settings.environment,
-          receipt: {
-            issuer: {
-              vatNumber: settings.aadeUserId, // Χρησιμοποιούμε το aadeUserId ως ΑΦΜ
-              country: "GR",
-              branch: 0
-            },
-            counterpart: {
-              vatNumber: receipt.customerVat || "",
-              country: "GR"
-            },
-            invoiceHeader: {
-              series: series,
-              aa: sequentialNumber, // Fix: Χρησιμοποιούμε τον σωστό αριθμό
-              issueDate: receipt.date,
-              invoiceType: receiptSeries === 'ΑΠΥ' ? "11.2" : "11.1", // 11.2 για ΑΠΥ, 11.1 για ΑΛΠ
-              currency: "EUR"
-            },
-            invoiceDetails: receipt.items.map((item, index) => ({
-              lineNumber: index + 1,
-              netValue: item.unitPrice * item.quantity,
-              vatCategory: item.vatRate === 13 ? 7 : (item.vatRate === 24 ? 1 : 8), // VAT category mapping
-              vatAmount: (item.unitPrice * item.quantity * item.vatRate / 100)
-            })),
-            invoiceSummary: {
-              totalNetValue: receipt.subtotal,
-              totalVatAmount: receipt.vat,
-              totalWithheldAmount: 0,
-              totalFeesAmount: 0,
-              totalStampDutyAmount: 0,
-              totalOtherTaxesAmount: 0,
-              totalDeductionsAmount: 0,
-              totalGrossValue: receipt.total
-            }
-          }
-        }
-      });
+console.log('📡 Καλώ το edge function mydata-send-receipt...');
+
+// Helper function για αντιστοίχιση κατηγορίας ΦΠΑ στο myDATA
+const getVatCategory = (vatRate: number) => {
+  switch (vatRate) {
+    case 24: return 1;
+    case 13: return 2;
+    case 6:  return 3;
+    case 17: return 4;
+    case 4:  return 6;
+    case 0:  return 7;
+    default: return 8; // Λοιπές περιπτώσεις χωρίς ΦΠΑ
+  }
+};
+
+const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
+  body: {
+    aadeUserId: settings.aadeUserId,
+    subscriptionKey: settings.subscriptionKey,
+    environment: settings.environment,
+    receipt: {
+      issuer: {
+        vatNumber: settings.vatNumber, // Χρησιμοποιούμε το σωστό ΑΦΜ της επιχείρησης
+        country: "GR",
+        branch: 0
+      },
+      counterpart: {
+        vatNumber: receipt.customerVat || "",
+        country: "GR"
+      },
+      invoiceHeader: {
+        series: series,
+        aa: sequentialNumber, // Fix: Χρησιμοποιούμε τον σωστό αριθμό
+        issueDate: receipt.date,
+        invoiceType: receiptSeries === 'ΑΠΥ' ? "11.2" : "11.1", // 11.2 για ΑΠΥ, 11.1 για ΑΛΠ
+        currency: "EUR"
+      },
+      invoiceDetails: receipt.items.map((item, index) => ({
+        lineNumber: index + 1,
+        netValue: item.unitPrice * item.quantity,
+        vatCategory: getVatCategory(item.vatRate),
+        vatAmount: (item.unitPrice * item.quantity * item.vatRate / 100)
+      })),
+      invoiceSummary: {
+        totalNetValue: receipt.subtotal,
+        totalVatAmount: receipt.vat,
+        totalWithheldAmount: 0,
+        totalFeesAmount: 0,
+        totalStampDutyAmount: 0,
+        totalOtherTaxesAmount: 0,
+        totalDeductionsAmount: 0,
+        totalGrossValue: receipt.total
+      }
+    }
+  }
+});
 
       console.log('📨 Edge function response:', { data, error });
 
