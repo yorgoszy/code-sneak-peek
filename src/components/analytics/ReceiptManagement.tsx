@@ -402,10 +402,15 @@ const [settings, setSettings] = useState<MyDataSettings>({
     console.log('🔧 Settings:', settings);
     console.log('📄 Receipt data:', receipt);
     
-    if (!settings.connected) {
-      throw new Error('Δεν είστε συνδεδεμένοι στο MyData');
-    }
-    
+if (!settings.connected) {
+  throw new Error('Δεν είστε συνδεδεμένοι στο MyData');
+}
+
+if (!settings.vatNumber) {
+  toast.error('Λείπει το ΑΦΜ της επιχείρησης στις ρυθμίσεις MyData');
+  throw new Error('Missing issuer VAT number');
+}
+
     try {
       // Fix: Χρησιμοποιούμε το σωστό format για τον αριθμό απόδειξης
       const receiptNumberParts = receipt.receiptNumber.split('-');
