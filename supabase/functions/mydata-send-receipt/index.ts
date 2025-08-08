@@ -65,7 +65,7 @@ serve(async (req) => {
     
     // MyData API URL - Σωστά URLs από την τεκμηρίωση
     const myDataUrl = environment === 'development' 
-      ? 'https://mydataapidev.aade.gr/SendInvoices'
+      ? 'https://mydataapidevs.azure-api.net/SendInvoices'
       : 'https://mydatapi.aade.gr/myDATA/SendInvoices'
     
     // Helper function για στρογγύλευση τιμών σε 2 δεκαδικά ψηφία
@@ -124,7 +124,7 @@ serve(async (req) => {
       <netValue>${roundToTwoDecimals(detail.netValue)}</netValue>
       <vatCategory>${detail.vatCategory}</vatCategory>
       <vatAmount>${roundToTwoDecimals(detail.vatAmount)}</vatAmount>
-      <incomeClassification>
+      <incomeClassification xmlns="https://www.aade.gr/myDATA/incomeClassificaton/v1.0">
         <classificationType>E3_561_003</classificationType>
         <classificationCategory>category1_3</classificationCategory>
         <amount>${roundToTwoDecimals(detail.netValue)}</amount>
@@ -139,7 +139,7 @@ serve(async (req) => {
       <totalOtherTaxesAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalOtherTaxesAmount || 0)}</totalOtherTaxesAmount>
       <totalDeductionsAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalDeductionsAmount || 0)}</totalDeductionsAmount>
       <totalGrossValue>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue || 0)}</totalGrossValue>
-      <incomeClassification>
+      <incomeClassification xmlns="https://www.aade.gr/myDATA/incomeClassificaton/v1.0">
         <classificationType>E3_561_003</classificationType>
         <classificationCategory>category1_3</classificationCategory>
         <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue || 0)}</amount>
