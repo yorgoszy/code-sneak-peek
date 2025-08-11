@@ -322,7 +322,7 @@ const [settings, setSettings] = useState<MyDataSettings>({
         .insert({
           receipt_number: receiptNumber,
           customer_name: receipt.customerName,
-          customer_vat: receipt.customerVat,
+          customer_vat: receipt.customerVat?.trim() ? receipt.customerVat.trim() : null,
           customer_email: receipt.customerEmail,
           items: receipt.items as any,  // Cast to any for JSON compatibility
           subtotal: receipt.subtotal,

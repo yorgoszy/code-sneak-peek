@@ -118,18 +118,19 @@ serve(async (req) => {
         <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue)}</amount>
       </paymentMethodDetails>
     </paymentMethods>
+    ${receipt.invoiceDetails.map(detail => `
     <invoiceDetails>
-      ${receipt.invoiceDetails.map(detail => `
       <lineNumber>${detail.lineNumber}</lineNumber>
       <netValue>${roundToTwoDecimals(detail.netValue)}</netValue>
       <vatCategory>${detail.vatCategory}</vatCategory>
       <vatAmount>${roundToTwoDecimals(detail.vatAmount)}</vatAmount>
-      <incomeClassification xmlns="https://www.aade.gr/myDATA/incomeClassificaton/v1.0">
+      <incomeClassification>
         <classificationType>E3_561_003</classificationType>
         <classificationCategory>category1_3</classificationCategory>
         <amount>${roundToTwoDecimals(detail.netValue)}</amount>
-      </incomeClassification>`).join('')}
-    </invoiceDetails>
+      </incomeClassification>
+    </invoiceDetails>`).join('')}
+
     <invoiceSummary>
       <totalNetValue>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue || 0)}</totalNetValue>
       <totalVatAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalVatAmount || 0)}</totalVatAmount>
@@ -139,7 +140,7 @@ serve(async (req) => {
       <totalOtherTaxesAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalOtherTaxesAmount || 0)}</totalOtherTaxesAmount>
       <totalDeductionsAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalDeductionsAmount || 0)}</totalDeductionsAmount>
       <totalGrossValue>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue || 0)}</totalGrossValue>
-      <incomeClassification xmlns="https://www.aade.gr/myDATA/incomeClassificaton/v1.0">
+      <incomeClassification>
         <classificationType>E3_561_003</classificationType>
         <classificationCategory>category1_3</classificationCategory>
         <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue || 0)}</amount>
