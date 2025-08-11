@@ -122,7 +122,11 @@ export const SubscriptionManagement: React.FC = () => {
       // Ενημέρωση ληγμένων συνδρομών πρώτα
       await supabase.rpc('check_and_update_expired_subscriptions');
 
-      // Φόρτωση συνδρομών χρηστών (μόνο ενεργές και σε παύση)
+      // Φόρτωση συνδρομών χρηστών: ενεργές + ληγμένες του τελευταίου μήνα
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+
       const { data: subscriptions, error: subscriptionsError } = await supabase
         .from('user_subscriptions')
         .select(`
@@ -130,8 +134,8 @@ export const SubscriptionManagement: React.FC = () => {
           subscription_types (*),
           app_users (name, email, subscription_status, role, user_status)
         `)
-        .in('status', ['active'])
-        .order('created_at', { ascending: false });
+        .or(`status.eq.active,and(status.eq.expired,end_date.gte.${thirtyDaysAgoStr})`)
+        .order('end_date', { ascending: true });
 
       if (subscriptionsError) {
         console.error('Error loading user subscriptions:', subscriptionsError);
@@ -917,7 +921,16 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
   const getSubscriptionStatus = (user: any, activeSubscription: any) => {
-    if (!activeSubscription) return 'inactive';
+    if (!activeSubscription) {
+      // Αν δεν υπάρχει ενεργή, έλεγξε την πιο πρόσφατη (από τα φορτωμένα ενεργά/πρόσφατα ληγμένα)
+      const subs = userSubscriptions.filter(s => s.user_id === user.id);
+      if (subs.length > 0) {
+        const latest = subs.slice().sort((a, b) => new Date(b.end_date).getTime() - new Date(a.end_date).getTime())[0];
+        const today = new Date();
+        if (latest && new Date(latest.end_date) < today) return 'expired';
+      }
+      return 'inactive';
+    }
     if (activeSubscription.is_paused) return 'paused';
     
     const today = new Date();
@@ -928,11 +941,18 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
   // Filter users for table display and sort by subscription priority
-  const filteredUsersForTable = users.filter(user => {
-    if (usersTableSearchTerm.trim() === '') return true;
-    return matchesSearchTerm(user.name, usersTableSearchTerm) ||
-           matchesSearchTerm(user.email, usersTableSearchTerm);
-  }).sort((a, b) => {
+  const filteredUsersForTable = users
+    .filter(user => {
+      const passesSearch = usersTableSearchTerm.trim() === '' ||
+        matchesSearchTerm(user.name, usersTableSearchTerm) ||
+        matchesSearchTerm(user.email, usersTableSearchTerm);
+      if (!passesSearch) return false;
+
+      // Εμφάνιση μόνο χρηστών με ενεργή ή πρόσφατα ληγμένη (<=30 ημέρες) συνδρομή
+      const subs = userSubscriptions.filter(s => s.user_id === user.id);
+      return subs.length > 0;
+    })
+    .sort((a, b) => {
     // Get active subscriptions for both users
     const aActiveSubscription = userSubscriptions.find(s => s.user_id === a.id && s.status === 'active');
     const bActiveSubscription = userSubscriptions.find(s => s.user_id === b.id && s.status === 'active');
@@ -1431,7 +1451,7 @@ export const SubscriptionManagement: React.FC = () => {
                                 }
                                 
                                 if (remainingDays < 0) {
-                                  return <span className="text-red-600 font-medium">Έληξε</span>;
+                                  return <span className="text-red-600 font-medium">-{Math.abs(remainingDays)} ημέρες</span>;
                                 } else if (remainingDays === 0) {
                                   return <span className="text-orange-600 font-medium">Λήγει σήμερα</span>;
                                 } else if (remainingDays <= 7) {
@@ -1633,7 +1653,7 @@ export const SubscriptionManagement: React.FC = () => {
                               const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
                               
                               if (remainingDays < 0) {
-                                return <span className="text-red-600 font-medium">Έληξε</span>;
+                                return <span className="text-red-600 font-medium">-{Math.abs(remainingDays)} ημέρες</span>;
                               } else if (remainingDays === 0) {
                                 return <span className="text-orange-600 font-medium">Λήγει σήμερα</span>;
                               } else if (remainingDays <= 7) {
