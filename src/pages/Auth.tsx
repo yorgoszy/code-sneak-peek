@@ -14,6 +14,8 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isResettingPasswords, setIsResettingPasswords] = useState(false);
+  const [signupPassword, setSignupPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
@@ -28,13 +30,23 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     const formData = new FormData(e.currentTarget);
     const email = formData.get("signup-email") as string;
-    const password = formData.get("signup-password") as string;
+    const password = signupPassword; // use controlled value
     const name = formData.get("name") as string;
 
+    // Client-side strong password validation
+    const isStrongPassword = (pwd: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(pwd);
+    if (!isStrongPassword(password)) {
+      const msg = "Ο κωδικός πρέπει να έχει ≥8 χαρακτήρες και να περιέχει κεφαλαία, μικρά, αριθμούς και σύμβολα.";
+      setPasswordError(msg);
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      console.log('📝 Sign up start for:', email);
       // Create user with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -50,6 +62,7 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.user) {
+        console.log('📝 Creating app_users profile for:', data.user.id);
         // Create user profile in app_users table - now automatically active and general
         const { error: profileError } = await supabase
           .from('app_users')
@@ -366,12 +379,35 @@ const Auth = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-password">Κωδικός</Label>
-                      <Input id="signup-password" name="signup-password" type="password" required />
+                      <Input
+                        id="signup-password"
+                        name="signup-password"
+                        type="password"
+                        required
+                        minLength={8}
+                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$"
+                        value={signupPassword}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSignupPassword(val);
+                          const strong = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(val);
+                          setPasswordError(
+                            strong
+                              ? null
+                              : "Ο κωδικός πρέπει να έχει ≥8 χαρακτήρες και να περιέχει κεφαλαία, μικρά, αριθμούς και σύμβολα."
+                          );
+                        }}
+                        aria-invalid={!!passwordError}
+                        aria-describedby="password-help"
+                      />
+                      <p id="password-help" className={`text-xs ${passwordError ? 'text-red-600' : 'text-gray-500'}`}>
+                        Τουλάχιστον 8 χαρακτήρες με κεφαλαία, μικρά, αριθμούς και σύμβολα.
+                      </p>
                     </div>
                     <Button 
                       type="submit" 
                       className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00cc95] border-2 border-transparent transition-all duration-300" 
-                      disabled={isLoading}
+                      disabled={isLoading || !!passwordError || signupPassword.length === 0}
                     >
                       {isLoading ? "Εγγραφή..." : "Εγγραφή"}
                     </Button>
