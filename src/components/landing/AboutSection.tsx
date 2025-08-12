@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
@@ -22,6 +21,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   onSetActiveAboutSection 
 }) => {
   const [api, setApi] = useState<any>();
+  const [isAutoplayPaused, setIsAutoplayPaused] = useState(false);
   const isMobile = useIsMobile();
 
   const aboutSections = [
@@ -108,18 +108,34 @@ const AboutSection: React.FC<AboutSectionProps> = ({
 
   // Auto-rotate carousel on mobile
   useEffect(() => {
-    if (!api || !isMobile) return;
+    if (!api || !isMobile || isAutoplayPaused) return;
 
     const interval = setInterval(() => {
       api.scrollNext();
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [api, isMobile]);
+  }, [api, isMobile, isAutoplayPaused]);
+
+  const handleTouchStart = () => {
+    if (isMobile) {
+      setIsAutoplayPaused(true);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    // Δεν επανεκκινούμε το autoplay πια
+  };
+
+  const handleScreenClick = () => {
+    if (isMobile) {
+      setIsAutoplayPaused(true);
+    }
+  };
 
   if (isMobile) {
     return (
-      <section id="about" className="py-20 bg-black relative overflow-hidden">
+      <section id="about" className="py-20 bg-black relative overflow-hidden" onClick={handleScreenClick}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
@@ -150,7 +166,13 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 </CarouselNext>
               </div>
 
-              <CarouselContent className="-ml-4">
+              <CarouselContent 
+                className="-ml-4"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onMouseDown={handleTouchStart}
+                onMouseUp={handleTouchEnd}
+              >
                 {aboutSections.map((section) => (
                   <CarouselItem key={section.id} className="pl-4 basis-full">
                     <div className="space-y-6">
