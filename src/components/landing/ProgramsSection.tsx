@@ -55,8 +55,18 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
     }
   };
 
+  const handleScreenClick = () => {
+    if (isMobile) {
+      setIsAutoplayPaused(true);
+      // Επανεκκίνηση autoplay μετά από 10 δευτερόλεπτα αδράνειας
+      setTimeout(() => {
+        setIsAutoplayPaused(false);
+      }, 10000);
+    }
+  };
+
   return (
-    <section id="programs" className="py-20 bg-black text-white">
+    <section id="programs" className="py-20 bg-black text-white" onClick={handleScreenClick}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="relative">
