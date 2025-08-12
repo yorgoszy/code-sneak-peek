@@ -58,10 +58,6 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
   const handleScreenClick = () => {
     if (isMobile) {
       setIsAutoplayPaused(true);
-      // Επανεκκίνηση autoplay μετά από 10 δευτερόλεπτα αδράνειας
-      setTimeout(() => {
-        setIsAutoplayPaused(false);
-      }, 10000);
     }
   };
 
