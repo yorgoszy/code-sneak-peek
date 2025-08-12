@@ -19,6 +19,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
   const [api, setApi] = useState<any>();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAutoplayPaused, setIsAutoplayPaused] = useState(false);
   const isMobile = useIsMobile();
 
   const currentLanguage = translations.language || 'el';
@@ -65,17 +66,33 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
 
   // Auto-rotate carousel on mobile
   useEffect(() => {
-    if (!api || !isMobile) return;
+    if (!api || !isMobile || isAutoplayPaused) return;
 
     const interval = setInterval(() => {
       api.scrollNext();
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [api, isMobile]);
+  }, [api, isMobile, isAutoplayPaused]);
+
+  const handleTouchStart = () => {
+    if (isMobile) {
+      setIsAutoplayPaused(true);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    // Δεν επανεκκινούμε το autoplay πια
+  };
+
+  const handleScreenClick = () => {
+    if (isMobile) {
+      setIsAutoplayPaused(true);
+    }
+  };
 
   return (
-    <section id="blog" className="py-21 bg-white">
+    <section id="blog" className="py-21 bg-white" onClick={handleScreenClick}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
@@ -105,7 +122,13 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
               </CarouselNext>
             </div>
 
-            <CarouselContent className="-ml-4">
+            <CarouselContent 
+              className="-ml-4"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleTouchStart}
+              onMouseUp={handleTouchEnd}
+            >
               {loading ? (
                 <div className="flex items-center justify-center w-full p-8">
                   <div className="text-gray-500">Φόρτωση άρθρων...</div>
