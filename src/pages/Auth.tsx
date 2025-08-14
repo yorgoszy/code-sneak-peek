@@ -135,7 +135,7 @@ const Auth = () => {
         let errorMessage = "Λάθος email ή κωδικός πρόσβασης.";
         
         if (error.message.includes('Invalid login credentials')) {
-          errorMessage = "Λάθος email ή κωδικός πρόσβασης. Βεβαιωθείτε ότι έχετε εισάγει τα σωστά στοιχεία.";
+          errorMessage = "Λάθος κωδικός πρόσβασης. Παρακαλώ δοκιμάστε ξανά.";
         } else if (error.message.includes('Email not confirmed')) {
           errorMessage = "Πρέπει να επιβεβαιώσετε το email σας πρώτα. Ελέγξτε τα εισερχόμενά σας.";
         } else if (error.message.includes('Too many requests')) {
