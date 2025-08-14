@@ -59,7 +59,19 @@ const Auth = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Έλεγχος για ήδη εγγεγραμμένο email
+        if (error.message.includes('User already registered')) {
+          toast({
+            title: "Το email υπάρχει ήδη",
+            description: "Υπάρχει ήδη εγγεγραμμένος χρήστης με αυτό το email. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        throw error;
+      }
 
       if (data.user) {
         console.log('📝 Creating app_users profile for:', data.user.id);
