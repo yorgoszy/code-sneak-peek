@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.create-magic-boxes]
 verify_jwt = false
+
+[functions.reset-all-passwords]
+verify_jwt = false

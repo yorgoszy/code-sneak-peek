@@ -48,40 +48,43 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`🔧 Found ${users.users.length} users to reset`);
 
-    const results = [];
+    const defaultPassword = 'Hyperkids2025@!';
+    let successful = 0;
+    let failed = 0;
     
     for (const user of users.users) {
       try {
-        // Απλή επαναφορά κωδικού - θα δημιουργήσει νέο temporary password
-        const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-          type: 'recovery',
-          email: user.email || '',
-          options: {
-            redirectTo: `${supabaseUrl}/auth/callback?type=recovery`
+        // Ενημέρωση κωδικού με συγκεκριμένο password
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+          user.id,
+          { 
+            password: defaultPassword,
+            email_confirm: true // Βεβαιώνουμε ότι το email είναι επιβεβαιωμένο
           }
-        });
+        );
 
-        if (resetError) {
-          console.error(`❌ Failed to reset password for ${user.email}:`, resetError);
-          results.push({ email: user.email, status: 'failed', error: resetError.message });
+        if (updateError) {
+          console.error(`❌ Failed to update password for ${user.email}:`, updateError);
+          failed++;
         } else {
-          console.log(`✅ Password reset initiated for ${user.email}`);
-          results.push({ email: user.email, status: 'success' });
+          console.log(`✅ Updated password for ${user.email}`);
+          successful++;
         }
       } catch (err) {
         console.error(`❌ Error processing ${user.email}:`, err);
-        results.push({ email: user.email, status: 'error', error: String(err) });
+        failed++;
       }
     }
 
-    console.log('🔧 Password reset process completed');
+    console.log(`🔧 Password reset completed: ${successful} successful, ${failed} failed`);
 
     return new Response(
       JSON.stringify({ 
-        message: 'Password reset process completed',
-        results,
+        message: `Επαναφορά κωδικών ολοκληρώθηκε! Νέος κωδικός για όλους: ${defaultPassword}`,
         total: users.users.length,
-        successful: results.filter(r => r.status === 'success').length
+        successful,
+        failed,
+        password: defaultPassword
       }),
       {
         status: 200,
