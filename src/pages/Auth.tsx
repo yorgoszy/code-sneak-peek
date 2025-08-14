@@ -132,10 +132,21 @@ const Auth = () => {
         console.error('🔐 Auth error:', error);
         
         // Βελτιωμένα μηνύματα σφάλματος
-        let errorMessage = "Λάθος email ή κωδικός πρόσβασης.";
+        let errorMessage = "Παρουσιάστηκε πρόβλημα κατά τη σύνδεση.";
         
         if (error.message.includes('Invalid login credentials')) {
-          errorMessage = "Λάθος κωδικός πρόσβασης. Παρακαλώ δοκιμάστε ξανά.";
+          // Ελέγχουμε αν ο χρήστης υπάρχει στη βάση
+          const { data: userExists } = await supabase
+            .from('app_users')
+            .select('email, user_status')
+            .eq('email', email)
+            .single();
+          
+          if (userExists) {
+            errorMessage = "Πιθανώς δεν έχετε επιβεβαιώσει το email σας. Ελέγξτε τα εισερχόμενά σας για το email επιβεβαίωσης. Αν δεν το βρίσκετε, επικοινωνήστε με τη διαχείριση.";
+          } else {
+            errorMessage = "Λάθος email ή κωδικός πρόσβασης.";
+          }
         } else if (error.message.includes('Email not confirmed')) {
           errorMessage = "Πρέπει να επιβεβαιώσετε το email σας πρώτα. Ελέγξτε τα εισερχόμενά σας.";
         } else if (error.message.includes('Too many requests')) {
