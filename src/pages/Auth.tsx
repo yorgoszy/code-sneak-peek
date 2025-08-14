@@ -442,21 +442,6 @@ const Auth = () => {
               </Tabs>
             )}
 
-            {/* Admin Reset Passwords */}
-            <div className="mt-6 p-4 border border-red-200 rounded-none bg-red-50">
-              <h3 className="text-sm font-medium text-red-800 mb-2">Διαχείριση Συστήματος</h3>
-              <p className="text-xs text-red-600 mb-3">
-                Αν αντιμετωπίζετε προβλήματα σύνδεσης, μπορείτε να επαναφέρετε όλους τους κωδικούς χρηστών.
-              </p>
-              <Button 
-                onClick={handleResetAllPasswords}
-                disabled={isResettingPasswords}
-                variant="destructive"
-                className="w-full rounded-none text-xs"
-              >
-                {isResettingPasswords ? "Επαναφορά..." : "Επαναφορά Όλων των Κωδικών"}
-              </Button>
-            </div>
 
             <div className="mt-6 text-center">
               <Link to="/" className="text-sm text-blue-600 hover:underline">
