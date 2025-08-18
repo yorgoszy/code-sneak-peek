@@ -3,7 +3,6 @@ import React from 'react';
 import { ExerciseNotes } from './ExerciseNotes';
 import { ExerciseHeader } from './ExerciseHeader';
 import { ExerciseDetails } from './ExerciseDetails';
-import { ExerciseActualValues } from './ExerciseActualValues';
 import { isValidVideoUrl } from '@/utils/videoUtils';
 
 interface ExerciseItemProps {
@@ -95,24 +94,16 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
         <ExerciseDetails 
           exercise={exercise} 
           onVideoClick={onVideoClick}
-          onSetClick={handleSetsAreaClick}
+          onSetClick={onSetClick}
           workoutInProgress={workoutInProgress}
-          getRemainingText={(exerciseId) => getRemainingText(exerciseId)}
-        />
-
-        <ExerciseActualValues
-          exercise={exercise}
-          workoutInProgress={workoutInProgress}
+          getRemainingText={getRemainingText}
           updateReps={updateReps}
           updateKg={updateKg}
           updateVelocity={updateVelocity}
-          getNotes={getNotes}
-          updateNotes={updateNotes}
           selectedDate={selectedDate}
           program={program}
-          onSetClick={onSetClick}
-          getRemainingText={(exerciseId) => getRemainingText(exerciseId)}
         />
+
 
         <ExerciseNotes
           exerciseId={exercise.id}

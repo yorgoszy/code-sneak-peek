@@ -16,12 +16,18 @@ interface ExerciseDetailsGridProps {
   };
   isComplete: boolean;
   remainingText: string;
+  actualValues?: {
+    reps?: string;
+    kg?: string;
+    velocity?: string;
+  };
 }
 
 export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
   exercise,
   isComplete,
-  remainingText
+  remainingText,
+  actualValues
 }) => {
   return (
     <div className="p-1 bg-gray-50">
@@ -38,6 +44,9 @@ export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
         <div className="flex-1 text-center">
           <div className="font-medium text-gray-600 mb-1">Reps</div>
           <div className="text-gray-900">{exercise.reps || '-'}</div>
+          {actualValues?.reps && (
+            <div className="text-xs text-green-600 font-medium">{actualValues.reps}</div>
+          )}
         </div>
         
         <Separator orientation="vertical" className="h-10 mx-1" />
@@ -52,6 +61,9 @@ export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
         <div className="flex-1 text-center">
           <div className="font-medium text-gray-600 mb-1">Kg</div>
           <div className="text-gray-900">{exercise.kg || '-'}</div>
+          {actualValues?.kg && (
+            <div className="text-xs text-green-600 font-medium">{actualValues.kg}</div>
+          )}
         </div>
         
         <Separator orientation="vertical" className="h-10 mx-1" />
@@ -59,6 +71,9 @@ export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
         <div className="flex-1 text-center">
           <div className="font-medium text-gray-600 mb-1">m/s</div>
           <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
+          {actualValues?.velocity && (
+            <div className="text-xs text-green-600 font-medium">{actualValues.velocity}</div>
+          )}
         </div>
         
         <Separator orientation="vertical" className="h-10 mx-1" />
