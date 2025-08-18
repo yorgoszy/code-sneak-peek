@@ -1,9 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Plus, Check } from "lucide-react";
+import { Plus, Check, Search } from "lucide-react";
+import { matchesSearchTerm } from "@/lib/utils";
 import type { User as UserType } from '../types';
 
 interface UserSelectionPopoverProps {
@@ -20,10 +22,21 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
   disabled = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const getUserInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
+
+  // Φιλτράρουμε τους χρήστες βάσει του search term
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm.trim()) return availableUsers;
+    
+    return availableUsers.filter(user => 
+      matchesSearchTerm(user.name, searchTerm) || 
+      matchesSearchTerm(user.email, searchTerm)
+    );
+  }, [availableUsers, searchTerm]);
 
   const handleUserClick = (userId: string, event: React.MouseEvent) => {
     event.preventDefault();
@@ -58,8 +71,21 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
         side="bottom"
         sideOffset={4}
       >
+        {/* Search Input */}
+        <div className="p-3 border-b border-gray-200">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Input
+              placeholder="Αναζήτηση χρήστη..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-none h-8"
+            />
+          </div>
+        </div>
+
         <div 
-          className="max-h-60 overflow-y-scroll overscroll-contain"
+          className="max-h-48 overflow-y-scroll overscroll-contain"
           style={{ scrollbarWidth: 'thin' }}
         >
           <div className="p-2 space-y-1">
@@ -67,8 +93,12 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
               <div className="p-4 text-center text-sm text-gray-500">
                 Όλοι οι χρήστες έχουν επιλεγεί
               </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="p-4 text-center text-sm text-gray-500">
+                Δεν βρέθηκαν χρήστες
+              </div>
             ) : (
-              availableUsers.map(user => (
+              filteredUsers.map(user => (
                 <div
                   key={user.id}
                   className="flex items-center justify-between p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer select-none"
