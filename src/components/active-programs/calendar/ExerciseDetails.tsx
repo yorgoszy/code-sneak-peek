@@ -69,8 +69,8 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
 
   return (
     <div className="space-y-2">
-      {/* Exercise Details Grid - Responsive */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-1 text-xs">
+      {/* Exercise Details Grid */}
+      <div className="grid grid-cols-7 gap-0 text-xs">
         <div className="flex flex-col items-center">
           <div className="text-gray-600 mb-1 text-center text-[10px]">Sets</div>
           <div 
@@ -95,7 +95,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
               placeholder={exercise.reps?.toString() || ''}
               value={savedData.reps || ''}
               onChange={(e) => handleRepsChange(e.target.value)}
-              className="h-6 text-[10px] rounded-none mt-1 w-full text-center"
+              className="h-5 text-[10px] rounded-none mt-1 w-full"
             />
           )}
         </div>
@@ -116,7 +116,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
               placeholder={exercise.kg?.toString() || ''}
               value={savedData.kg || ''}
               onChange={(e) => handleKgChange(e.target.value)}
-              className="h-6 text-[10px] rounded-none mt-1 w-full text-center"
+              className="h-5 text-[10px] rounded-none mt-1 w-full"
             />
           )}
         </div>
@@ -131,7 +131,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
               placeholder={exercise.velocity_ms?.toString() || ''}
               value={savedData.velocity || ''}
               onChange={(e) => handleVelocityChange(e.target.value)}
-              className="h-6 text-[10px] rounded-none mt-1 w-full text-center"
+              className="h-5 text-[10px] rounded-none mt-1 w-full"
             />
           )}
         </div>
