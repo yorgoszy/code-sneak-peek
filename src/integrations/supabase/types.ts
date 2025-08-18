@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -3933,42 +3933,42 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
         }
         Returns: boolean
       }
       join_waiting_list: {
         Args:
           | {
-              p_user_id: string
-              p_section_id: string
-              p_booking_date: string
-              p_booking_time: string
-            }
-          | {
-              p_user_id: string
-              p_section_id: string
               p_booking_date: string
               p_booking_time: string
               p_booking_type?: string
+              p_section_id: string
+              p_user_id: string
+            }
+          | {
+              p_booking_date: string
+              p_booking_time: string
+              p_section_id: string
+              p_user_id: string
             }
         Returns: string
       }
       leave_waiting_list: {
         Args:
           | {
-              p_user_id: string
-              p_section_id: string
-              p_booking_date: string
-              p_booking_time: string
-            }
-          | {
-              p_user_id: string
-              p_section_id: string
               p_booking_date: string
               p_booking_time: string
               p_booking_type?: string
+              p_section_id: string
+              p_user_id: string
+            }
+          | {
+              p_booking_date: string
+              p_booking_time: string
+              p_section_id: string
+              p_user_id: string
             }
         Returns: boolean
       }
@@ -3987,15 +3987,15 @@ export type Database = {
       notify_next_in_waiting_list: {
         Args:
           | {
-              p_section_id: string
-              p_booking_date: string
-              p_booking_time: string
-            }
-          | {
-              p_section_id: string
               p_booking_date: string
               p_booking_time: string
               p_booking_type?: string
+              p_section_id: string
+            }
+          | {
+              p_booking_date: string
+              p_booking_time: string
+              p_section_id: string
             }
         Returns: string
       }
@@ -4005,19 +4005,19 @@ export type Database = {
       }
       record_videocall: {
         Args: {
-          p_user_id: string
           p_created_by?: string
-          p_videocall_type?: string
           p_notes?: string
+          p_user_id: string
+          p_videocall_type?: string
         }
         Returns: string
       }
       record_visit: {
         Args: {
-          p_user_id: string
           p_created_by?: string
-          p_visit_type?: string
           p_notes?: string
+          p_user_id: string
+          p_visit_type?: string
         }
         Returns: string
       }
@@ -4032,8 +4032,8 @@ export type Database = {
       send_videocall_reminders: {
         Args: {
           reminder_type: string
-          time_window_start: unknown
           time_window_end: unknown
+          time_window_start: unknown
         }
         Returns: undefined
       }
