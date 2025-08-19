@@ -163,7 +163,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             program={program}
           />
 
-          <div className="space-y-4">
+          <div className="pt-32 space-y-4">
             {dayProgram ? (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
