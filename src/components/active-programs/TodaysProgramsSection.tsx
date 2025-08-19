@@ -61,7 +61,7 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
             Δεν υπάρχουν προγραμματισμένες προπονήσεις για {isTodaySelected ? "σήμερα" : "αυτή την ημέρα"}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             {programsForToday.map(assignment => {
               const status = getWorkoutStatus(assignment);
               
@@ -69,23 +69,23 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
                 <div
                   key={assignment.id}
                   onClick={() => onProgramClick(assignment)}
-                  className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-none hover:shadow-md transition-shadow cursor-pointer"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 bg-white border border-gray-200 rounded-none hover:shadow-md transition-shadow cursor-pointer gap-3 sm:gap-4"
                 >
-                  <div className="flex items-center gap-4">
-                    <Avatar className="w-12 h-12">
+                  <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                    <Avatar className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
                       <AvatarImage src={assignment.app_users?.photo_url || undefined} />
                       <AvatarFallback className="bg-gray-200">
-                        <User className="w-6 h-6 text-gray-500" />
+                        <User className="w-5 h-5 md:w-6 md:h-6 text-gray-500" />
                       </AvatarFallback>
                     </Avatar>
                     
-                    <div>
-                      <h4 className="font-medium">{assignment.app_users?.name}</h4>
-                      <p className="text-sm text-gray-600">{assignment.programs?.name}</p>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-medium text-sm md:text-base truncate">{assignment.app_users?.name}</h4>
+                      <p className="text-xs md:text-sm text-gray-600 truncate">{assignment.programs?.name}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
                     <div className={`px-2 py-1 rounded-none text-xs ${
                       status === 'completed' ? 'bg-[#00ffba]/10 text-[#00ffba]' :
                       status === 'missed' ? 'bg-red-100 text-red-600' :
@@ -98,7 +98,7 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="rounded-none"
+                      className="rounded-none p-2"
                       title="Προβολή Προπόνησης"
                     >
                       <Play className="w-4 h-4" />
