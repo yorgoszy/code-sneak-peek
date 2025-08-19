@@ -212,81 +212,30 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateSelect}
-                locale={el}
-                className="rounded-none border"
-                modifiers={{
-                  scheduled: (date) => getDateStatus(date) === 'scheduled',
-                  completed: (date) => getDateStatus(date) === 'completed',
-                  missed: (date) => getDateStatus(date) === 'missed',
-                  booking_scheduled: (date) => getDateStatus(date) === 'booking_scheduled',
-                  booking_completed: (date) => getDateStatus(date) === 'booking_completed',
-                  booking_missed: (date) => getDateStatus(date) === 'booking_missed'
-                }}
-                modifiersStyles={{
-                  scheduled: { backgroundColor: '#fef3c7', color: '#92400e' },
-                  completed: { backgroundColor: '#d1fae5', color: '#065f46' },
-                  missed: { backgroundColor: '#fee2e2', color: '#991b1b' },
-                  booking_scheduled: { backgroundColor: '#dbeafe', color: '#1e40af' },
-                  booking_completed: { backgroundColor: '#00ffba', color: '#000000' },
-                  booking_missed: { backgroundColor: '#fecaca', color: '#dc2626' }
-                }}
-              />
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">
-                {selectedDate ? format(selectedDate, 'EEEE, d MMMM yyyy', { locale: el }) : 'Επιλέξτε ημερομηνία'}
-              </h3>
-              
-              {selectedDate && getDayProgram(selectedDate) ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        variant={getDateStatus(selectedDate) === 'completed' ? "default" : "secondary"} 
-                        className={`rounded-none ${
-                          getDateStatus(selectedDate) === 'completed' ? 'bg-[#00ffba] text-black' :
-                          getDateStatus(selectedDate) === 'missed' ? 'bg-red-500 text-white' :
-                          'bg-blue-500 text-white'
-                        }`}
-                      >
-                        {getDateStatus(selectedDate) === 'completed' ? 'Ολοκληρωμένη' :
-                         getDateStatus(selectedDate) === 'missed' ? 'Χαμένη' :
-                         'Προγραμματισμένη'}
-                      </Badge>
-                    </div>
-                    
-                    <Button 
-                      onClick={() => setIsDayDialogOpen(true)}
-                      size="sm"
-                      className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black p-2"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="bg-gray-50 p-4 rounded-none">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Dumbbell className="h-4 w-4" />
-                      <span className="font-medium">
-                        {getDayProgram(selectedDate)?.program.programs?.name}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ) : selectedDate ? (
-                <div className="text-center py-8 text-gray-500">
-                  <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                  <p>Δεν υπάρχει πρόγραμμα για αυτή την ημέρα</p>
-                </div>
-              ) : null}
-            </div>
+          <div>
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDateSelect}
+              locale={el}
+              className="rounded-none border"
+              modifiers={{
+                scheduled: (date) => getDateStatus(date) === 'scheduled',
+                completed: (date) => getDateStatus(date) === 'completed',
+                missed: (date) => getDateStatus(date) === 'missed',
+                booking_scheduled: (date) => getDateStatus(date) === 'booking_scheduled',
+                booking_completed: (date) => getDateStatus(date) === 'booking_completed',
+                booking_missed: (date) => getDateStatus(date) === 'booking_missed'
+              }}
+              modifiersStyles={{
+                scheduled: { backgroundColor: '#fef3c7', color: '#92400e' },
+                completed: { backgroundColor: '#d1fae5', color: '#065f46' },
+                missed: { backgroundColor: '#fee2e2', color: '#991b1b' },
+                booking_scheduled: { backgroundColor: '#dbeafe', color: '#1e40af' },
+                booking_completed: { backgroundColor: '#00ffba', color: '#000000' },
+                booking_missed: { backgroundColor: '#fecaca', color: '#dc2626' }
+              }}
+            />
           </div>
         </CardContent>
       </Card>
