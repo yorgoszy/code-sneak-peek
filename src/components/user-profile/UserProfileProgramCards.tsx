@@ -94,12 +94,6 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
   if (isLoading) {
     return (
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Program Cards
-          </CardTitle>
-        </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
             Φόρτωση προγραμμάτων...
@@ -112,12 +106,6 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
   if (error) {
     return (
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Program Cards
-          </CardTitle>
-        </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-red-500">
             Σφάλμα κατά τη φόρτωση των προγραμμάτων
@@ -130,12 +118,6 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
   if (userPrograms.length === 0) {
     return (
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Program Cards - {userProfile.name}
-          </CardTitle>
-        </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
             <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -149,21 +131,15 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
 
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CreditCard className="w-5 h-5" />
-          Program Cards - {userProfile.name}
-        </CardTitle>
-      </CardHeader>
       <CardContent>
         <Tabs defaultValue="active" className="w-full">
           <TabsList className="grid w-full grid-cols-2 rounded-none">
-            <TabsTrigger value="active" className="rounded-none flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Ενεργά Προγράμματα ({activeIncompletePrograms.length})
+            <TabsTrigger value="active" className="rounded-none flex items-center gap-2 text-sm">
+              <Clock className="h-3 w-3" />
+              Ενεργά ({activeIncompletePrograms.length})
             </TabsTrigger>
-            <TabsTrigger value="completed" className="rounded-none flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
+            <TabsTrigger value="completed" className="rounded-none flex items-center gap-2 text-sm">
+              <CheckCircle className="h-3 w-3" />
               Ολοκληρωμένα ({completedPrograms.length})
             </TabsTrigger>
           </TabsList>

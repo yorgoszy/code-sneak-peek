@@ -13,6 +13,7 @@ interface EditableProgramDialogHeaderProps {
   onToggleEditing: () => void;
   onSaveChanges: () => void;
   onCancelEditing: () => void;
+  onClose?: () => void;
 }
 
 export const EditableProgramDialogHeader: React.FC<EditableProgramDialogHeaderProps> = ({
@@ -22,7 +23,8 @@ export const EditableProgramDialogHeader: React.FC<EditableProgramDialogHeaderPr
   isEditing,
   onToggleEditing,
   onSaveChanges,
-  onCancelEditing
+  onCancelEditing,
+  onClose
 }) => {
   return (
     <div className="sticky top-0 bg-white z-10 border-b border-gray-200 pb-4">
@@ -68,6 +70,17 @@ export const EditableProgramDialogHeader: React.FC<EditableProgramDialogHeaderPr
             <Badge variant="outline" className="rounded-none">
               {assignment?.status}
             </Badge>
+            {onClose && (
+              <Button
+                onClick={onClose}
+                size="sm"
+                variant="outline"
+                className="rounded-none"
+              >
+                <X className="w-4 h-4" />
+                Κλείσιμο
+              </Button>
+            )}
           </div>
         </DialogTitle>
         {programData?.description && (

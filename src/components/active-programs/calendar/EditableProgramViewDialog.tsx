@@ -153,6 +153,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
             onToggleEditing={() => setIsEditing(!isEditing)}
             onSaveChanges={handleSaveChanges}
             onCancelEditing={handleCancelEditing}
+            onClose={onClose}
           />
           <div className="text-center py-8 text-gray-500">
             Δεν υπάρχουν εβδομάδες στο πρόγραμμα
@@ -174,6 +175,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
             onToggleEditing={() => setIsEditing(!isEditing)}
             onSaveChanges={handleSaveChanges}
             onCancelEditing={handleCancelEditing}
+            onClose={onClose}
           />
 
           {/* Scrollable Content */}
