@@ -180,6 +180,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
         isOpen={isVideoDialogOpen}
         onClose={() => setIsVideoDialogOpen(false)}
         exercise={selectedExercise}
+        getNotes={exerciseCompletion.getNotes}
+        updateNotes={exerciseCompletion.updateNotes}
+        clearNotes={exerciseCompletion.clearNotes}
       />
     </>
   );

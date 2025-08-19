@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle } from 'lucide-react';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 
@@ -16,12 +17,18 @@ interface ExerciseVideoDialogProps {
       video_url?: string;
     };
   } | null;
+  getNotes?: (exerciseId: string) => string;
+  updateNotes?: (exerciseId: string, notes: string) => void;
+  clearNotes?: (exerciseId: string) => void;
 }
 
 export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
   isOpen,
   onClose,
-  exercise
+  exercise,
+  getNotes,
+  updateNotes,
+  clearNotes
 }) => {
   // ΔΙΟΡΘΩΣΗ: Πιο προσεκτικός χειρισμός του video_url
   let videoUrl = exercise?.exercises?.video_url;
@@ -156,6 +163,19 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Περιγραφή</h4>
               <p className="text-gray-700 text-sm leading-relaxed">{description}</p>
+            </div>
+          )}
+
+          {getNotes && updateNotes && (
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">Σημειώσεις</h4>
+              <Textarea
+                placeholder="Προσθέστε σημειώσεις για αυτή την άσκηση..."
+                value={getNotes(exercise.id) || ''}
+                onChange={(e) => updateNotes(exercise.id, e.target.value)}
+                className="rounded-none resize-none"
+                rows={3}
+              />
             </div>
           )}
         </div>
