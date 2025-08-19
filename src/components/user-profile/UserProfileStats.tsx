@@ -5,6 +5,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 
 interface UserProfileStatsProps {
   user: any;
@@ -29,6 +31,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number} | null>(null);
   const [offersData, setOffersData] = useState<{available: number, accepted: boolean, hasMagicBox: boolean} | null>(null);
   const [upcomingTests, setUpcomingTests] = useState<{count: number, daysLeft: number} | null>(null);
+  const [upcomingWorkouts, setUpcomingWorkouts] = useState<number>(0);
+  
+  const { data: activePrograms } = useActivePrograms();
+  const { getWorkoutCompletions } = useWorkoutCompletionsCache();
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -420,8 +426,60 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
       fetchUpcomingBookings();
       fetchUpcomingTests();
       fetchOffersData();
+      if (user.role !== 'trainer' && user.role !== 'admin') {
+        fetchUpcomingWorkouts();
+      }
     }
-  }, [user?.id]);
+  }, [user?.id, activePrograms]);
+
+  const fetchUpcomingWorkouts = async () => {
+    try {
+      if (!activePrograms || !user?.id) {
+        setUpcomingWorkouts(0);
+        return;
+      }
+
+      // Φιλτράρισμα για προγράμματα του συγκεκριμένου χρήστη
+      const userPrograms = activePrograms.filter(program => program.app_users?.id === user.id);
+      
+      if (userPrograms.length === 0) {
+        setUpcomingWorkouts(0);
+        return;
+      }
+
+      let totalUpcomingWorkouts = 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      for (const program of userPrograms) {
+        if (!program.training_dates) continue;
+
+        // Παίρνουμε τις ολοκληρώσεις για αυτό το assignment
+        const completions = await getWorkoutCompletions(program.id);
+        
+        // Μετράμε τις μελλοντικές ημέρες που έχουν πρόγραμμα και δεν έχουν ολοκληρωθεί/χαθεί
+        program.training_dates.forEach(dateStr => {
+          const workoutDate = new Date(dateStr);
+          workoutDate.setHours(0, 0, 0, 0);
+          
+          // Μόνο μελλοντικές ημερομηνίες (συμπεριλαμβανομένης της σημερινής)
+          if (workoutDate >= today) {
+            const completion = completions.find(c => c.scheduled_date === dateStr);
+            
+            // Αν δεν υπάρχει completion ή το status δεν είναι completed/missed
+            if (!completion || (completion.status !== 'completed' && completion.status !== 'missed')) {
+              totalUpcomingWorkouts++;
+            }
+          }
+        });
+      }
+
+      setUpcomingWorkouts(totalUpcomingWorkouts);
+    } catch (error) {
+      console.error('Error fetching upcoming workouts:', error);
+      setUpcomingWorkouts(0);
+    }
+  };
 
   // Συνάρτηση για τον υπολογισμό χρώματος βάσει ημερών (μόνο για αριθμούς)
   const getTimeBasedColor = (daysLeft: number) => {
@@ -583,16 +641,30 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               }`} />
             </div>
             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
-              {stats.programsCount > 0 ? (
-                <span className={
-                  stats.programsCount === 1 ? 'text-red-600' :
-                  stats.programsCount <= 3 ? 'text-orange-600' :
-                  'text-green-600'
-                }>
-                  {stats.programsCount}
-                </span>
+              {(user.role === 'trainer' || user.role === 'admin') ? (
+                stats.programsCount > 0 ? (
+                  <span className={
+                    stats.programsCount === 1 ? 'text-red-600' :
+                    stats.programsCount <= 3 ? 'text-orange-600' :
+                    'text-green-600'
+                  }>
+                    {stats.programsCount}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">-</span>
+                )
               ) : (
-                <span className="text-gray-400">-</span>
+                upcomingWorkouts > 0 ? (
+                  <span className={
+                    upcomingWorkouts === 1 ? 'text-red-600' :
+                    upcomingWorkouts <= 3 ? 'text-orange-600' :
+                    'text-green-600'
+                  }>
+                    {upcomingWorkouts}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">-</span>
+                )
               )}
             </div>
             <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
