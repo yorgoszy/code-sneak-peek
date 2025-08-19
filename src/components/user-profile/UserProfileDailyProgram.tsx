@@ -246,25 +246,20 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
               
               {selectedDate && getDayProgram(selectedDate) ? (
                 <div className="space-y-3">
-                  <Badge 
-                    variant={getDateStatus(selectedDate) === 'completed' ? "default" : "secondary"} 
-                    className={`rounded-none ${
-                      getDateStatus(selectedDate) === 'completed' ? 'bg-[#00ffba] text-black' :
-                      getDateStatus(selectedDate) === 'missed' ? 'bg-red-500 text-white' :
-                      'bg-blue-500 text-white'
-                    }`}
-                  >
-                    {getDateStatus(selectedDate) === 'completed' ? 'Ολοκληρωμένη' :
-                     getDateStatus(selectedDate) === 'missed' ? 'Χαμένη' :
-                     'Προγραμματισμένη'}
-                  </Badge>
-                  
-                  <div className="bg-gray-50 p-4 rounded-none">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Dumbbell className="h-4 w-4" />
-                      <span className="font-medium">
-                        {getDayProgram(selectedDate)?.program.programs?.name}
-                      </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Badge 
+                        variant={getDateStatus(selectedDate) === 'completed' ? "default" : "secondary"} 
+                        className={`rounded-none ${
+                          getDateStatus(selectedDate) === 'completed' ? 'bg-[#00ffba] text-black' :
+                          getDateStatus(selectedDate) === 'missed' ? 'bg-red-500 text-white' :
+                          'bg-blue-500 text-white'
+                        }`}
+                      >
+                        {getDateStatus(selectedDate) === 'completed' ? 'Ολοκληρωμένη' :
+                         getDateStatus(selectedDate) === 'missed' ? 'Χαμένη' :
+                         'Προγραμματισμένη'}
+                      </Badge>
                     </div>
                     
                     <Button 
@@ -274,6 +269,15 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-4 rounded-none">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Dumbbell className="h-4 w-4" />
+                      <span className="font-medium">
+                        {getDayProgram(selectedDate)?.program.programs?.name}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ) : selectedDate ? (
