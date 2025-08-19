@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
-import { ProgramInfo } from './ProgramInfo';
 import { ProgramBlocks } from './ProgramBlocks';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -42,13 +41,6 @@ export const DayProgramMainContent: React.FC<DayProgramMainContentProps> = ({
 
   return (
     <>
-      <ProgramInfo
-        program={program}
-        dayProgram={dayProgram}
-        workoutInProgress={workoutInProgress}
-        workoutStatus={dynamicStatus}
-      />
-
       {dayProgram ? (
         <div className="space-y-1 md:space-y-2">
           <h4 className="text-xs md:text-sm font-medium text-gray-900 flex items-center space-x-2 px-1 md:px-0">

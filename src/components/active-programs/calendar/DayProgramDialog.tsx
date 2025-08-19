@@ -7,7 +7,6 @@ import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/Exe
 import { useWorkoutState } from './hooks/useWorkoutState';
 import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
-import { ProgramInfo } from './ProgramInfo';
 import { ProgramBlocks } from './ProgramBlocks';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -134,13 +133,6 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
           />
 
           <div className="space-y-4">
-            <ProgramInfo
-              program={program}
-              dayProgram={dayProgram}
-              workoutInProgress={workoutInProgress}
-              workoutStatus={workoutStatus}
-            />
-
             {dayProgram ? (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
