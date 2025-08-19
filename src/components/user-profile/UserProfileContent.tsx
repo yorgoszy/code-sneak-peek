@@ -141,7 +141,7 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <h2 className="text-xl font-semibold">Online Booking</h2>
-            <UserProfileOnlineBooking userProfile={userProfile} />
+            <UserProfileOnlineBooking userProfile={userProfile} visits={visits} />
           </div>
         );
       case "ai-trainer":
