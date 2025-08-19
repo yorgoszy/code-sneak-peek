@@ -171,18 +171,18 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           </div>
         </DialogHeader>
 
-        <div id="receipt-content" className="bg-white p-6 mx-auto max-w-4xl border border-gray-200 text-sm">
+        <div id="receipt-content" className="bg-white p-3 mx-auto max-w-4xl border border-gray-200 text-xs">
           {/* Header with logo and business details */}
-          <div className="flex items-start justify-between border-b-2 border-[#00ffba] pb-4 mb-6">
+          <div className="flex items-start justify-between border-b border-[#00ffba] pb-2 mb-3">
             <div className="flex-1">
-              <div className="w-32 h-16 mb-3">
+              <div className="w-24 h-12 mb-2">
                 <img 
                   src="/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" 
                   alt="HYPERKIDS Logo" 
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
-              <div className="text-sm text-gray-700 space-y-1">
+              <div className="text-xs text-gray-700 space-y-0.5">
                 <p><strong>ΖΥΓΟΥΡΗΣ ΓΕΩΡΓΙΟΣ ΛΑΖΑΡΟΣ</strong></p>
                 <p>ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
                 <p>ΑΦΜ: 128109909 | ΔΟΥ: Ε΄ ΘΕΣΣΑΛΟΝΙΚΗΣ</p>
@@ -190,17 +190,14 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                 <p>www.hyperkids.gr | info@hyperkids.gr</p>
               </div>
             </div>
-            <div className="w-32 h-16">
-              {/* Empty space to maintain balance */}
-            </div>
           </div>
 
           {/* Receipt Title */}
-          <h2 className="text-xl text-[#00ffba] text-center mb-4 font-semibold">ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ</h2>
+          <h2 className="text-lg text-[#00ffba] text-center mb-2 font-semibold">ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ</h2>
 
           {/* Receipt Info */}
-          <div className="space-y-2 mb-6">
-            <div className="flex justify-between py-2 border-b border-gray-200">
+          <div className="space-y-1 mb-3">
+            <div className="flex justify-between py-1 border-b border-gray-200">
               <div>
                 <span className="font-semibold text-gray-900">Αριθμός Απόδειξης: </span>
                 <span className="text-gray-600">{receipt.receiptNumber}</span>
@@ -210,18 +207,18 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                 <span className="text-gray-600">{format(new Date(receipt.date), 'dd/MM/yyyy')}</span>
               </div>
             </div>
-            <div className="flex justify-between py-2 border-b border-gray-200">
+            <div className="flex justify-between py-1 border-b border-gray-200">
               <span className="font-semibold text-gray-900">Πελάτης:</span>
               <span className="text-gray-600">{receipt.customerName}</span>
             </div>
             {receipt.customerVat && (
-              <div className="flex justify-between py-2 border-b border-gray-200">
+              <div className="flex justify-between py-1 border-b border-gray-200">
                 <span className="font-semibold text-gray-900">ΑΦΜ:</span>
                 <span className="text-gray-600">{receipt.customerVat}</span>
               </div>
             )}
             {(receipt.startDate || receipt.endDate) && (
-              <div className="flex justify-between py-2 border-b border-gray-200">
+              <div className="flex justify-between py-1 border-b border-gray-200">
                 {receipt.startDate && (
                   <div>
                     <span className="font-semibold text-gray-900">Έναρξης: </span>
@@ -239,15 +236,15 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           </div>
 
           {/* Items */}
-          <div className="mb-6">
-            <h3 className="font-semibold text-gray-900 mb-2">Στοιχεία Συνδρομής</h3>
+          <div className="mb-3">
+            <h3 className="font-semibold text-gray-900 mb-1">Στοιχεία Συνδρομής</h3>
             {receipt.items.map((item, index) => (
-              <div key={item.id} className="border border-gray-200 p-3 mb-2">
-                <div className="flex justify-between items-start mb-2">
+              <div key={item.id} className="border border-gray-200 p-2 mb-1">
+                <div className="flex justify-between items-start mb-1">
                   <span className="font-medium text-gray-900">{item.description}</span>
                   <span className="text-gray-600">Ποσότητα: {item.quantity}</span>
                 </div>
-                <div className="flex justify-between text-sm text-gray-600">
+                <div className="flex justify-between text-xs text-gray-600">
                   <span>Τιμή μονάδας: €{item.unitPrice.toFixed(2)}</span>
                   <span>ΦΠΑ: {item.vatRate}%</span>
                 </div>
@@ -256,26 +253,26 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           </div>
 
           {/* Totals */}
-          <div className="bg-gray-50 p-4 border-l-4 border-[#00ffba]">
-            <div className="space-y-2">
-              <div className="flex justify-between py-2">
+          <div className="bg-gray-50 p-2 border-l-4 border-[#00ffba]">
+            <div className="space-y-1">
+              <div className="flex justify-between py-1">
                 <span className="font-semibold text-gray-900">Αξία Συνδρομής:</span>
                 <span className="text-gray-600">€{receipt.subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between py-2">
+              <div className="flex justify-between py-1">
                 <span className="font-semibold text-gray-900">ΦΠΑ (13%):</span>
                 <span className="text-gray-600">€{receipt.vat.toFixed(2)}</span>
               </div>
-              <div className="border-t-2 border-[#00ffba] pt-2 mt-4">
+              <div className="border-t border-[#00ffba] pt-1 mt-2">
                 <div className="flex justify-between">
-                  <span className="text-2xl font-bold text-[#00ffba]">Σύνολο:</span>
-                  <span className="text-2xl font-bold text-[#00ffba]">€{receipt.total.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-[#00ffba]">Σύνολο:</span>
+                  <span className="text-lg font-bold text-[#00ffba]">€{receipt.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="text-center mt-4 pt-3 border-t border-gray-200 text-xs text-gray-500">
+          <div className="text-center mt-2 pt-2 border-t border-gray-200 text-xs text-gray-500">
             <p><strong>HYPERKIDS</strong> - Γυμναστήριο</p>
             <p>Τηλ: +30 2310 529104 | Email: info@hyperkids.gr</p>
             <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
