@@ -65,10 +65,6 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   return (
     <>
       <div className="flex items-center gap-1 flex-shrink-0">
-        <Badge className={`${getStatusColor(assignment.status)} text-xs rounded-none px-1 py-0.5`}>
-          {assignment.status}
-        </Badge>
-
         <div className="flex gap-0.5">
           {!userMode && (
             <Button
