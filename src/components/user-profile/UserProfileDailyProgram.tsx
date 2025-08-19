@@ -206,8 +206,8 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
 
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+            <CalendarDays className="h-4 w-4 md:h-5 md:w-5" />
             Ημερολόγιο Προπονήσεων - {userProfile?.name}
           </CardTitle>
         </CardHeader>
