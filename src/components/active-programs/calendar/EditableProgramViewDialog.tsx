@@ -144,7 +144,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   if (weeks.length === 0) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto rounded-none">
+        <DialogContent className="w-screen h-screen max-w-none max-h-none overflow-y-auto rounded-none p-4">
           <EditableProgramDialogHeader
             programData={programData}
             assignment={assignment}
@@ -165,7 +165,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-7xl max-h-[80vh] rounded-none">
+        <DialogContent className="w-screen h-screen max-w-none max-h-none rounded-none p-4">
           <EditableProgramDialogHeader
             programData={programData}
             assignment={assignment}
@@ -177,7 +177,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
           />
 
           {/* Scrollable Content */}
-          <div className="pt-20 pb-4 overflow-y-auto max-h-[calc(80vh-120px)]">
+          <div className="pt-20 pb-4 overflow-y-auto h-[calc(100vh-120px)]">
             <div className="space-y-4">
               {/* Εβδομάδες - Οριζόντια Layout */}
               <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }}>
