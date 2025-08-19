@@ -18,6 +18,7 @@ import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog"
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAllPrograms } from "@/hooks/useAllPrograms";
+import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 
 interface UserProfileSidebarProps {
   isCollapsed: boolean;
@@ -42,8 +43,10 @@ export const UserProfileSidebar = forwardRef<
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
   const [activePrograms, setActivePrograms] = useState(0);
+  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const isMobile = useIsMobile();
   const { data: allActivePrograms = [] } = useAllPrograms();
+  const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
 
   // Εκθέτει τη συνάρτηση loadAvailableOffers στο parent component
   useImperativeHandle(ref, () => ({
@@ -55,17 +58,81 @@ export const UserProfileSidebar = forwardRef<
       loadAvailableOffers();
       loadActivePrograms();
     }
-  }, [userProfile?.id, allActivePrograms]);
+  }, [userProfile?.id, allActivePrograms, workoutCompletions]);
+
+  // Load workout completions for accurate program filtering
+  useEffect(() => {
+    const loadCompletions = async () => {
+      if (userProfile?.id && allActivePrograms.length > 0) {
+        const userPrograms = allActivePrograms.filter(program => program.user_id === userProfile.id);
+        if (userPrograms.length > 0) {
+          const allCompletions = await getAllWorkoutCompletions();
+          const userAssignmentIds = userPrograms.map(p => p.id);
+          const userCompletions = allCompletions.filter(c => userAssignmentIds.includes(c.assignment_id));
+          setWorkoutCompletions(userCompletions);
+        }
+      }
+    };
+    loadCompletions();
+  }, [userProfile?.id, allActivePrograms.length, getAllWorkoutCompletions]);
 
   const loadActivePrograms = () => {
     if (!userProfile?.id) return;
     
-    // Φιλτράρισμα προγραμμάτων για τον συγκεκριμένο χρήστη και μόνο τα ενεργά
-    const userActivePrograms = allActivePrograms.filter(program => 
-      program.user_id === userProfile.id && program.status === 'active'
+    // Φιλτράρισμα προγραμμάτων για τον συγκεκριμένο χρήστη
+    const userPrograms = allActivePrograms.filter(program => program.user_id === userProfile.id);
+    
+    // Calculate stats the same way as UserProfileProgramCards
+    const calculateProgramStats = (assignment: any) => {
+      const trainingDates = assignment.training_dates || [];
+      const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
+      
+      let completed = 0;
+      let missed = 0;
+      const total = trainingDates.length;
+      const today = new Date();
+      
+      // Για κάθε training date, έλεγξε το status
+      for (const date of trainingDates) {
+        const completion = assignmentCompletions.find(c => c.scheduled_date === date);
+        
+        if (completion?.status === 'completed') {
+          completed++;
+        } else {
+          // Έλεγχος αν έχει περάσει η ημερομηνία
+          const workoutDate = new Date(date);
+          const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          
+          if (isPast || completion?.status === 'missed') {
+            missed++;
+          }
+        }
+      }
+      
+      // Το progress υπολογίζεται από completed + missed (όλες οι "ολοκληρωμένες" προπονήσεις)
+      const processedWorkouts = completed + missed;
+      const progress = total > 0 ? Math.round((processedWorkouts / total) * 100) : 0;
+      
+      return {
+        completed,
+        total,
+        missed,
+        progress
+      };
+    };
+
+    // Calculate stats for each program
+    const programsWithStats = userPrograms.map(assignment => ({
+      assignment,
+      stats: calculateProgramStats(assignment)
+    }));
+
+    // Φιλτράρισμα μόνο των ενεργών ατελών προγραμμάτων (όπως στο tab "Ενεργά")
+    const activeIncompletePrograms = programsWithStats.filter(item => 
+      item.assignment.status === 'active' && item.stats?.progress < 100
     );
     
-    setActivePrograms(userActivePrograms.length);
+    setActivePrograms(activeIncompletePrograms.length);
   };
 
   const loadAvailableOffers = async () => {
