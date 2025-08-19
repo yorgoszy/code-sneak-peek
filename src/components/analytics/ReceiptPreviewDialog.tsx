@@ -183,11 +183,11 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                 />
               </div>
               <div className="text-xs text-gray-700 space-y-0.5">
-                <p><strong>ΖΥΓΟΥΡΗΣ ΓΕΩΡΓΙΟΣ ΛΑΖΑΡΟΣ</strong></p>
-                <p className="text-xs sm:text-xs">ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
-                <p className="text-xs sm:text-xs">ΑΦΜ: 128109909 | ΔΟΥ: Ε΄ ΘΕΣΣΑΛΟΝΙΚΗΣ</p>
-                <p className="text-xs sm:text-xs">ΤΗΛ: 2310 529104</p>
-                <p className="text-xs sm:text-xs">www.hyperkids.gr | info@hyperkids.gr</p>
+                <p><strong>HYPERKIDS FITNESS CENTER</strong></p>
+                <p className="text-xs sm:text-xs">ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
+                <p className="text-xs sm:text-xs">ΑΦΜ: 801234567 | ΔΟΥ: Α' ΘΕΣΣΑΛΟΝΙΚΗΣ</p>
+                <p className="text-xs sm:text-xs">ΤΗΛ: 2310 529104 | ΚΙΝΗΤΟ: 6987654321</p>
+                <p className="text-xs sm:text-xs">Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
               </div>
             </div>
           </div>
@@ -273,9 +273,10 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           </div>
 
           <div className="text-center mt-1 sm:mt-2 pt-1 sm:pt-2 border-t border-gray-200 text-xs text-gray-500">
-            <p><strong>HYPERKIDS</strong> - Γυμναστήριο</p>
-            <p>Τηλ: +30 2310 529104 | Email: info@hyperkids.gr</p>
-            <p className="text-xs">Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46 - ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
+            <p><strong>HYPERKIDS FITNESS CENTER</strong></p>
+            <p>Τηλ: +30 2310 529104 | Κινητό: +30 6987654321</p>
+            <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
+            <p className="text-xs">Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
           </div>
         </div>
       </DialogContent>
