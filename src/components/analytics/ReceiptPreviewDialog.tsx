@@ -146,7 +146,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto rounded-none">
+      <DialogContent className="max-w-5xl rounded-none">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>Προεπισκόπηση Απόδειξης</DialogTitle>
