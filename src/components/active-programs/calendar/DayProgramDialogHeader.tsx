@@ -35,12 +35,12 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   return (
     <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 p-4 space-y-3">
       {/* Όνομα χρήστη και ρολόι */}
-      <div className="flex items-center justify-between">
-        <div className="text-center flex-1">
+      <div className="flex items-start justify-between">
+        <div className="text-left">
           <h2 className="text-lg font-semibold text-gray-900">
             {program.app_users?.name || 'Άγνωστος Αθλητής'}
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-xs text-gray-600 mt-1">
             {format(selectedDate, 'EEEE, d MMMM yyyy', { locale: el })}
           </p>
         </div>
