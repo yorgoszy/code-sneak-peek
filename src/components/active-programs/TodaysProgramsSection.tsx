@@ -69,40 +69,46 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
                 <div
                   key={assignment.id}
                   onClick={() => onProgramClick(assignment)}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 bg-white border border-gray-200 rounded-none hover:shadow-md transition-shadow cursor-pointer gap-3 sm:gap-4"
+                  className="relative p-3 bg-white border border-gray-200 rounded-none hover:shadow-md transition-shadow cursor-pointer"
                 >
-                  <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-                    <Avatar className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
+                  {/* Κουμπί play και τικ ολοκλήρωσης - πάνω δεξιά */}
+                  <div className="absolute top-2 right-2 flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-none p-1.5 h-auto"
+                      title="Προβολή Προπόνησης"
+                    >
+                      <Play className="w-3 h-3" />
+                    </Button>
+                    {status === 'completed' && (
+                      <div className="w-4 h-4 bg-[#00ffba] rounded-full flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-black" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 pr-16">
+                    <Avatar className="w-8 h-8 flex-shrink-0">
                       <AvatarImage src={assignment.app_users?.photo_url || undefined} />
                       <AvatarFallback className="bg-gray-200">
-                        <User className="w-5 h-5 md:w-6 md:h-6 text-gray-500" />
+                        <User className="w-4 h-4 text-gray-500" />
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-medium text-sm md:text-base truncate">{assignment.app_users?.name}</h4>
-                      <p className="text-xs md:text-sm text-gray-600 truncate">{assignment.programs?.name}</p>
+                      <h4 className="font-medium text-sm truncate">{assignment.app_users?.name}</h4>
+                      <p className="text-xs text-gray-600 truncate">{assignment.programs?.name}</p>
+                      {status !== 'completed' && (
+                        <div className={`inline-block px-2 py-0.5 rounded-none text-xs mt-1 ${
+                          status === 'missed' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
+                        }`}>
+                          {status === 'missed' ? 'Χαμένη' : 'Προγραμματισμένη'}
+                        </div>
+                      )}
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
-                    <div className={`px-2 py-1 rounded-none text-xs ${
-                      status === 'completed' ? 'bg-[#00ffba]/10 text-[#00ffba]' :
-                      status === 'missed' ? 'bg-red-100 text-red-600' :
-                      'bg-blue-100 text-blue-600'
-                    }`}>
-                      {status === 'completed' ? 'Ολοκληρωμένη' :
-                       status === 'missed' ? 'Χαμένη' : 'Προγραμματισμένη'}
-                    </div>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-none p-2"
-                      title="Προβολή Προπόνησης"
-                    >
-                      <Play className="w-4 h-4" />
-                    </Button>
                   </div>
                 </div>
               );
