@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Dumbbell, Clock } from "lucide-react";
+import { CalendarDays, Dumbbell, Clock, Eye } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "date-fns";
 import { el } from "date-fns/locale";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
@@ -269,9 +269,10 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
                     
                     <Button 
                       onClick={() => setIsDayDialogOpen(true)}
-                      className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                      size="sm"
+                      className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black p-2"
                     >
-                      Προβολή Προπόνησης
+                      <Eye className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
