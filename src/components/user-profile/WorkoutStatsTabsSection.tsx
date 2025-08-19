@@ -42,68 +42,51 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
               <p className="text-gray-500">Φόρτωση στατιστικών εβδομάδας...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
-                <h4 className="text-md font-medium text-gray-700 mb-2">Προγραμματισμένες Ώρες</h4>
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
+              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
+                <h4 className="text-xs font-medium text-gray-700 mb-1">Προγρ. Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
-                  <div className="text-2xl font-semibold text-blue-600 mb-1">
+                  <div className="text-sm md:text-base font-semibold text-blue-600">
                     {Math.floor(weekStats.scheduledMinutes / 60)}:{String(weekStats.scheduledMinutes % 60).padStart(2, '0')}
                   </div>
-                  <p className="text-sm text-gray-500">
-                    Αυτή την εβδομάδα
+                  <p className="text-xs text-gray-500">
+                    Εβδομάδα
                   </p>
                 </div>
               </div>
               
-              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
-                <h4 className="text-md font-medium text-gray-700 mb-2">Πραγματικές Ώρες</h4>
+              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
+                <h4 className="text-xs font-medium text-gray-700 mb-1">Πραγμ. Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
-                  <div className="text-2xl font-semibold text-green-600 mb-1">
+                  <div className="text-sm md:text-base font-semibold text-green-600">
                     {Math.floor(weekStats.actualMinutes / 60)}:{String(weekStats.actualMinutes % 60).padStart(2, '0')}
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500">
                     Ολοκληρώθηκαν
                   </p>
                 </div>
               </div>
               
-              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
-                <h4 className="text-md font-medium text-gray-700 mb-2">Διαφορά</h4>
+              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
+                <h4 className="text-xs font-medium text-gray-700 mb-1">Προπονήσεις</h4>
                 <div className="flex-1 flex flex-col justify-end">
-                  <div className={`text-2xl font-semibold mb-1 ${
-                    weekStats.actualMinutes >= weekStats.scheduledMinutes 
-                      ? 'text-green-600' 
-                      : 'text-red-600'
-                  }`}>
-                    {weekStats.actualMinutes >= weekStats.scheduledMinutes ? '+' : ''}
-                    {Math.floor(Math.abs(weekStats.actualMinutes - weekStats.scheduledMinutes) / 60)}:{String(Math.abs(weekStats.actualMinutes - weekStats.scheduledMinutes) % 60).padStart(2, '0')}
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    Από προγραμματισμένες
-                  </p>
-                </div>
-              </div>
-              
-              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
-                <h4 className="text-md font-medium text-gray-700 mb-2">Προπονήσεις</h4>
-                <div className="flex-1 flex flex-col justify-end">
-                  <div className="text-2xl font-semibold text-purple-600 mb-1">
+                  <div className="text-sm md:text-base font-semibold text-purple-600">
                     {weekStats.scheduledWorkouts}
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500">
                     Προγραμματισμένες
                   </p>
                 </div>
               </div>
               
-              <div className="bg-white p-6 border rounded-none flex flex-col h-36">
-                <h4 className="text-md font-medium text-gray-700 mb-2">Χαμένες Προπονήσεις</h4>
+              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
+                <h4 className="text-xs font-medium text-gray-700 mb-1">Χαμένες</h4>
                 <div className="flex-1 flex flex-col justify-end">
-                  <div className="text-2xl font-semibold text-orange-600 mb-1">
+                  <div className="text-sm md:text-base font-semibold text-orange-600">
                     {weekStats.missedWorkouts}
                   </div>
-                  <p className="text-sm text-gray-500">
-                    Αυτή την εβδομάδα
+                  <p className="text-xs text-gray-500">
+                    Εβδομάδα
                   </p>
                 </div>
               </div>
