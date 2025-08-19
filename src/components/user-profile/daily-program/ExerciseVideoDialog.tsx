@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle } from 'lucide-react';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
+import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
 
 interface ExerciseVideoDialogProps {
   isOpen: boolean;
@@ -16,10 +17,14 @@ interface ExerciseVideoDialogProps {
       description?: string;
       video_url?: string;
     };
-  } | null;
+  } | null;  
   getNotes?: (exerciseId: string) => string;
   updateNotes?: (exerciseId: string, notes: string) => void;
   clearNotes?: (exerciseId: string) => void;
+  // New props for shared notes support
+  assignmentId?: string;
+  dayNumber?: number;
+  actualExerciseId?: string; // The exercise_id from the exercises table
 }
 
 export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
@@ -28,8 +33,30 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
   exercise,
   getNotes,
   updateNotes,
-  clearNotes
+  clearNotes,
+  assignmentId,
+  dayNumber,
+  actualExerciseId
 }) => {
+  // Use shared notes if assignment details are available, otherwise fallback to provided functions
+  const sharedNotes = useSharedExerciseNotes(assignmentId);
+  
+  const shouldUseSharedNotes = assignmentId && dayNumber && actualExerciseId;
+  
+  const getNotesValue = () => {
+    if (shouldUseSharedNotes) {
+      return sharedNotes.getNotes(actualExerciseId!, dayNumber!);
+    }
+    return getNotes ? getNotes(exercise?.id || '') : '';
+  };
+  
+  const handleNotesUpdate = (notes: string) => {
+    if (shouldUseSharedNotes) {
+      sharedNotes.updateNotes(actualExerciseId!, dayNumber!, notes);
+    } else if (updateNotes && exercise?.id) {
+      updateNotes(exercise.id, notes);
+    }
+  };
   // ΔΙΟΡΘΩΣΗ: Πιο προσεκτικός χειρισμός του video_url
   let videoUrl = exercise?.exercises?.video_url;
   
@@ -166,18 +193,18 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
             </div>
           )}
 
-          {getNotes && updateNotes && (
+          {(getNotes && updateNotes) || shouldUseSharedNotes ? (
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Σημειώσεις</h4>
               <Textarea
                 placeholder="Προσθέστε σημειώσεις για αυτή την άσκηση..."
-                value={getNotes(exercise.id) || ''}
-                onChange={(e) => updateNotes(exercise.id, e.target.value)}
+                value={getNotesValue()}
+                onChange={(e) => handleNotesUpdate(e.target.value)}
                 className="rounded-none resize-none"
                 rows={3}
               />
             </div>
-          )}
+          ) : null}
         </div>
       </DialogContent>
     </Dialog>

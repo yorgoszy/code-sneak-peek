@@ -1081,6 +1081,36 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_notes: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          day_number: number
+          exercise_id: string
+          id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          day_number: number
+          exercise_id: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          day_number?: number
+          exercise_id?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exercise_results: {
         Row: {
           actual_kg: string | null

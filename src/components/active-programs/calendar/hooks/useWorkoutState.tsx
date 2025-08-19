@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { saveWorkoutData, getWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
+import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -22,11 +23,45 @@ export const useWorkoutState = (
   onClose?: () => void
 ) => {
   const [exerciseCompletions, setExerciseCompletions] = useState<Record<string, number>>({});
-  const [exerciseNotes, setExerciseNotes] = useState<Record<string, string>>({});
   const [exerciseData, setExerciseData] = useState<Record<string, any>>({});
 
   const { updateWorkoutStatus } = useWorkoutCompletions();
   const { startWorkout, completeWorkout: removeFromActiveWorkouts, getWorkout } = useMultipleWorkouts();
+  
+  // Use shared exercise notes hook
+  const sharedNotes = useSharedExerciseNotes(program?.id);
+
+  // Helper function to get day number for an exercise
+  const getDayNumber = useCallback((exerciseId: string) => {
+    if (!program?.programs?.program_weeks?.[0]?.program_days) return 1;
+    
+    for (let dayIndex = 0; dayIndex < program.programs.program_weeks[0].program_days.length; dayIndex++) { 
+      const day = program.programs.program_weeks[0].program_days[dayIndex];
+      const hasExercise = day.program_blocks?.some(block => 
+        block.program_exercises?.some(ex => ex.id === exerciseId)
+      );
+      if (hasExercise) {
+        return dayIndex + 1; // Convert to 1-based index
+      }
+    }
+    return 1;
+  }, [program]);
+
+  // Helper function to get exercise_id from exercises table (not program_exercise_id)
+  const getExerciseId = useCallback((programExerciseId: string) => {
+    if (!program?.programs?.program_weeks?.[0]?.program_days) return null;
+    
+    for (const day of program.programs.program_weeks[0].program_days) {
+      for (const block of day.program_blocks || []) {
+        for (const exercise of block.program_exercises || []) {
+          if (exercise.id === programExerciseId) {
+            return exercise.exercise_id; // This is the reference to exercises table
+          }
+        }
+      }
+    }
+    return null;
+  }, [program]);
 
   // Δημιουργία unique ID για την προπόνηση
   const workoutId = program && selectedDate 
@@ -43,7 +78,6 @@ export const useWorkoutState = (
     if (program && selectedDate) {
       const loadExerciseData = () => {
         const newExerciseData: Record<string, any> = {};
-        const newExerciseNotes: Record<string, string> = {};
         
         program.programs?.program_weeks?.[0]?.program_days?.forEach(day => {
           day.program_blocks?.forEach(block => {
@@ -52,15 +86,11 @@ export const useWorkoutState = (
               if (data.kg || data.reps || data.velocity) {
                 newExerciseData[exercise.id] = data;
               }
-              if (data.notes) {
-                newExerciseNotes[exercise.id] = data.notes;
-              }
             });
           });
         });
         
         setExerciseData(newExerciseData);
-        setExerciseNotes(newExerciseNotes);
       };
       
       loadExerciseData();
@@ -151,7 +181,6 @@ export const useWorkoutState = (
     
     console.log('❌ Ακύρωση προπόνησης για:', program.app_users?.name);
     setExerciseCompletions({});
-    setExerciseNotes({});
     setExerciseData({});
     
     // Αφαίρεση από τις ενεργές προπονήσεις
@@ -183,25 +212,29 @@ export const useWorkoutState = (
     },
 
     getNotes: (exerciseId: string) => {
-      return exerciseNotes[exerciseId] || '';
+      const actualExerciseId = getExerciseId(exerciseId);
+      if (!actualExerciseId) return '';
+      
+      const dayNumber = getDayNumber(exerciseId);
+      return sharedNotes.getNotes(actualExerciseId, dayNumber);
     },
 
     updateNotes: (exerciseId: string, notes: string) => {
-      setExerciseNotes(prev => ({ ...prev, [exerciseId]: notes }));
-      if (program && selectedDate) {
-        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { notes });
-      }
+      const actualExerciseId = getExerciseId(exerciseId);
+      if (!actualExerciseId) return;
+      
+      const dayNumber = getDayNumber(exerciseId);
+      sharedNotes.updateNotes(actualExerciseId, dayNumber, notes);
+      console.log(`📝 Updated shared notes for exercise ${actualExerciseId} day ${dayNumber}:`, notes);
     },
 
     clearNotes: (exerciseId: string) => {
-      setExerciseNotes(prev => {
-        const newNotes = { ...prev };
-        delete newNotes[exerciseId];
-        return newNotes;
-      });
-      if (program && selectedDate) {
-        clearWorkoutData(selectedDate, program.programs!.id, exerciseId);
-      }
+      const actualExerciseId = getExerciseId(exerciseId);
+      if (!actualExerciseId) return;
+      
+      const dayNumber = getDayNumber(exerciseId);
+      sharedNotes.clearNotes(actualExerciseId, dayNumber);
+      console.log(`🗑️ Cleared shared notes for exercise ${actualExerciseId} day ${dayNumber}`);
     },
 
     updateKg: (exerciseId: string, kg: string) => {

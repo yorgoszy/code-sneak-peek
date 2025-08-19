@@ -66,6 +66,37 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     }
   };
 
+  // Helper functions for shared notes props
+  const getDayNumber = (exerciseId: string) => {
+    if (!program?.programs?.program_weeks?.[0]?.program_days) return 1;
+    
+    for (let dayIndex = 0; dayIndex < program.programs.program_weeks[0].program_days.length; dayIndex++) { 
+      const day = program.programs.program_weeks[0].program_days[dayIndex];
+      const hasExercise = day.program_blocks?.some(block => 
+        block.program_exercises?.some(ex => ex.id === exerciseId)
+      );
+      if (hasExercise) {
+        return dayIndex + 1; // Convert to 1-based index
+      }
+    }
+    return 1;
+  };
+
+  const getActualExerciseId = (programExerciseId: string) => {
+    if (!program?.programs?.program_weeks?.[0]?.program_days) return undefined;
+    
+    for (const day of program.programs.program_weeks[0].program_days) {
+      for (const block of day.program_blocks || []) {
+        for (const exercise of block.program_exercises || []) {
+          if (exercise.id === programExerciseId) {
+            return exercise.exercise_id; // This is the reference to exercises table
+          }
+        }
+      }
+    }
+    return undefined;
+  };
+
   // ΚΥΡΙΑ ΔΙΟΡΘΩΣΗ: Απλή λογική εύρεσης προγράμματος ημέρας
   const getDayProgram = () => {
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -183,6 +214,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
         getNotes={exerciseCompletion.getNotes}
         updateNotes={exerciseCompletion.updateNotes}
         clearNotes={exerciseCompletion.clearNotes}
+        assignmentId={program?.id}
+        dayNumber={selectedExercise ? getDayNumber(selectedExercise.id) : undefined}
+        actualExerciseId={selectedExercise ? getActualExerciseId(selectedExercise.id) : undefined}
       />
     </>
   );
