@@ -490,8 +490,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   
   return (
     <Card className="rounded-none">
-      <CardContent className={isMobile ? "pt-4" : "pt-6"}>
-        <div className={`grid gap-4 ${
+      <CardContent className={isMobile ? "pt-2 pb-2" : "pt-6"}>
+        <div className={`grid ${isMobile ? 'gap-2' : 'gap-4'} ${
           isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-6 lg:grid-cols-12'
         }`}>
           {/* Αγορές - Πρώτο */}
@@ -503,15 +503,15 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=shop`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} animate-click-me`}>
-              <MousePointer className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} animate-click-me`}>
+              <MousePointer className={`text-[#00ffba] ${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Αγορές
             </div>
           </button>
@@ -525,10 +525,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=offers`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <Tag className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <Tag className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
                 offersData?.hasMagicBox 
                   ? 'animate-offer-blink' 
                   : offersData?.available > 0 
@@ -536,18 +536,18 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   : 'text-gray-400'
               } transition-all duration-300`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               {offersData?.available > 0 ? (
                 <span className={`${offersData?.hasMagicBox ? 'animate-offer-blink' : 'text-[#00ffba]'}`}>
                   {offersData.available}
                 </span>
               ) : offersData?.hasMagicBox ? (
-                <Gift className={`animate-offer-blink ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+                <Gift className={`animate-offer-blink ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               ) : (
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Ενεργές Προσφορές
             </div>
           </button>
@@ -561,23 +561,23 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=payments`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <CreditCard className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <CreditCard className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
                 paymentStatus !== null ? 'text-orange-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               {paymentStatus === null ? (
                 <span className="text-gray-400">-</span>
               ) : paymentStatus ? (
-                <Check className={`text-[#00ffba] ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+                <Check className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               ) : (
-                <X className={`text-red-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+                <X className={`text-red-500 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               )}
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Πληρωμές
             </div>
           </button>
@@ -591,18 +591,18 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=payments`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               {isPaused ? (
-                <Pause className={`text-yellow-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+                <Pause className={`text-yellow-500 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               ) : (
-                <Clock className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+                <Clock className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
                   subscriptionDays !== null ? 'text-[#00ffba]' : 'text-gray-400'
                 }`} />
               )}
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               {subscriptionDays !== null ? (
                 isPaused ? (
                   <span className="text-orange-600">{subscriptionDays}</span>
@@ -619,7 +619,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Μέρες Συνδρομής
             </div>
           </button>
@@ -633,14 +633,14 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=calendar`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <Dumbbell className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <Dumbbell className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
                 stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               {(user.role === 'trainer' || user.role === 'admin') ? (
                 stats.programsCount > 0 ? (
                   <span className={
@@ -667,7 +667,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 )
               )}
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
             </div>
           </button>
@@ -681,14 +681,14 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=tests`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <Calendar className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <Calendar className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
                 upcomingTests ? 'text-purple-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'} min-w-12`}>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} min-w-12`}>
               {upcomingTests ? (
                 upcomingTests.daysLeft === 0 ? (
                   <span className="text-red-600">Σήμερα!</span>
@@ -701,7 +701,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενα Τεστ
             </div>
           </button>
@@ -715,14 +715,14 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <MapPin className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
                 visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               {visitsData && visitsData.total > 0 ? (
                 <span className="text-gray-900">
                   {Math.max(0, visitsData.used)}/{visitsData.total}
@@ -731,7 +731,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επισκέψεις
             </div>
           </button>
@@ -745,14 +745,14 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <MapPin className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
                 upcomingVisit ? 'text-purple-500' : 'text-gray-400'
               }`} />
             </div>
-             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
                {upcomingVisit ? (
                  upcomingVisit.daysLeft >= 1 ? (
                    <span className={getTimeBasedColor(upcomingVisit.daysLeft)}>{upcomingVisit.daysLeft}μ</span>
@@ -765,7 +765,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                  <span className="text-gray-400">-</span>
                )}
              </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενη Επίσκεψη
             </div>
           </button>
@@ -780,14 +780,14 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <Video className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
                 videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
               }`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               {videocallData && videocallData.total > 0 ? (
                 <span className="text-gray-900">
                   {Math.max(0, videocallData.used)}/{videocallData.total}
@@ -796,7 +796,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 <span className="text-gray-400">-</span>
               )}
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Βιντεοκλήσεις
             </div>
           </button>
@@ -812,15 +812,15 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 }
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col min-w-0`}
             disabled={!upcomingVideocall}
           >
-            <div className="h-10 flex items-center justify-center">
-              <Video className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
                 upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
               }`} />
             </div>
-             <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
                {upcomingVideocall ? (
                  upcomingVideocall.daysLeft >= 1 ? (
                    <span className={getTimeBasedColor(upcomingVideocall.daysLeft)}>{upcomingVideocall.daysLeft}μ</span>
@@ -833,7 +833,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                  <span className="text-gray-400">-</span>
                )}
              </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Επερχόμενη Βιντεοκλήση
             </div>
           </button>
@@ -847,15 +847,15 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=edit-profile`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <User className={`text-blue-600 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <User className={`text-blue-600 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               <span className="text-blue-600"> </span>
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Προφίλ
             </div>
           </button>
@@ -869,15 +869,15 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=ai-trainer`);
               }
             }}
-            className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
-            <div className="h-10 flex items-center justify-center">
-              <MessageCircle className={`text-purple-600 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <MessageCircle className={`text-purple-600 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
-            <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               <span className="text-purple-600"> </span>
             </div>
-            <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               RidAi Προπονητής
             </div>
           </button>
@@ -891,15 +891,15 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   navigate(`/dashboard/user-profile/${user.id}?tab=calendar`);
                 }
               }}
-              className="text-center hover:bg-gray-50 p-2 rounded-none transition-colors cursor-pointer flex flex-col min-w-0"
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
             >
-              <div className="h-10 flex items-center justify-center">
-                <Users className={`text-blue-500 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+                <Users className={`text-blue-500 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               </div>
-              <div className={`h-8 flex items-center justify-center font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
                 {stats.athletesCount}
               </div>
-              <div className={`h-12 flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
                 Αθλητές
               </div>
             </button>
