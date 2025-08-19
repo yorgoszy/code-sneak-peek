@@ -81,9 +81,9 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
         {/* First Row - Main values */}
         <div className="grid grid-cols-7 gap-1 text-xs">
           <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Sets</div>
+            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">Sets</div>
             <div 
-              className={`px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center ${
+              className={`px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center ${
                 workoutInProgress 
                   ? 'bg-[#00ffba] hover:bg-[#00ffba]/80 text-black cursor-pointer transition-colors' 
                   : 'bg-gray-100'
@@ -94,38 +94,38 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Reps</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">Reps</div>
+            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
               {exercise.reps || '-'}
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">%1RM</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">%1RM</div>
+            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
               {exercise.percentage_1rm || '-'}%
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Kg</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">Kg</div>
+            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
               {exercise.kg || '-'}
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">m/s</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">m/s</div>
+            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
               {exercise.velocity_ms || '-'}
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Tempo</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">Tempo</div>
+            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
               {exercise.tempo || '-'}
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Rest</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">Rest</div>
+            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
               {exercise.rest || '-'}
             </div>
           </div>
@@ -141,7 +141,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
                 placeholder={exercise.reps?.toString() || ''}
                 value={savedData.reps || ''}
                 onChange={(e) => handleRepsChange(e.target.value)}
-                className="h-4 text-[9px] rounded-none w-full text-center p-0.5"
+                className="h-4 text-[8px] md:text-[9px] rounded-none w-full text-center p-0.5"
               />
             </div>
             <div></div> {/* Empty space for %1RM column */}
@@ -151,7 +151,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
                 placeholder={exercise.kg?.toString() || ''}
                 value={savedData.kg || ''}
                 onChange={(e) => handleKgChange(e.target.value)}
-                className="h-4 text-[9px] rounded-none w-full text-center p-0.5"
+                className="h-4 text-[8px] md:text-[9px] rounded-none w-full text-center p-0.5"
               />
             </div>
             <div className="flex flex-col items-center">
@@ -160,7 +160,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
                 placeholder={exercise.velocity_ms?.toString() || ''}
                 value={savedData.velocity || ''}
                 onChange={(e) => handleVelocityChange(e.target.value)}
-                className="h-4 text-[9px] rounded-none w-full text-center p-0.5"
+                className="h-4 text-[8px] md:text-[9px] rounded-none w-full text-center p-0.5"
               />
             </div>
             <div></div> {/* Empty space for Tempo column */}

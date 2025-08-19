@@ -27,7 +27,7 @@ export const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
     <div className="p-2 border-b border-gray-200">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-xs md:text-sm font-medium text-gray-900">
             {exerciseNumber}. {exercise.exercises?.name || 'Unknown Exercise'}
           </div>
           {isComplete && <CheckCircle className="w-4 h-4 text-green-600" />}
