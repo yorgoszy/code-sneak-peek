@@ -72,10 +72,6 @@ export const UserProfileContent = ({
             <UserProfileOverview 
               userProfile={userProfile} 
               stats={stats} 
-              programs={programs} 
-              tests={tests} 
-              payments={payments} 
-              visits={visits}
               setActiveTab={setActiveTab}
             />
           </div>
