@@ -124,6 +124,11 @@ export const useExerciseCompletion = () => {
     return state.adjustments;
   }, [getExerciseState]);
 
+  const getCompletedSets = useCallback((exerciseId: string) => {
+    const state = getExerciseState(exerciseId);
+    return state.completedSets;
+  }, [getExerciseState]);
+
   return {
     completeSet,
     getRemainingText,
@@ -137,6 +142,7 @@ export const useExerciseCompletion = () => {
     clearVelocity,
     updateReps,
     clearReps,
-    getAdjustments
+    getAdjustments,
+    getCompletedSets
   };
 };

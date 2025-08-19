@@ -11,6 +11,7 @@ interface ExerciseItemProps {
   workoutInProgress: boolean;
   getRemainingText: (exerciseId: string) => string;
   isExerciseComplete: (exerciseId: string, totalSets: number) => boolean;
+  getCompletedSets: (exerciseId: string) => number;
   onExerciseClick: (exercise: any, event: React.MouseEvent) => void;
   onSetClick: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
   onVideoClick: (exercise: any) => void;
@@ -33,6 +34,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   workoutInProgress,
   getRemainingText,
   isExerciseComplete,
+  getCompletedSets,
   onExerciseClick,
   onSetClick,
   onVideoClick,

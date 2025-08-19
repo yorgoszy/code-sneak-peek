@@ -11,6 +11,7 @@ interface ExerciseDetailsProps {
   onSetClick?: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
   workoutInProgress?: boolean;
   getRemainingText?: (exerciseId: string) => string;
+  getCompletedSets?: (exerciseId: string) => number;
   updateReps?: (exerciseId: string, reps: string) => void;
   updateKg?: (exerciseId: string, kg: string) => void;
   updateVelocity?: (exerciseId: string, velocity: string) => void;
@@ -24,6 +25,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   onSetClick,
   workoutInProgress = false,
   getRemainingText,
+  getCompletedSets,
   updateReps,
   updateKg,
   updateVelocity,
@@ -67,6 +69,11 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
     }
   };
 
+  // Calculate remaining sets
+  const completedSets = getCompletedSets ? getCompletedSets(exercise.id) : 0;
+  const remainingSets = Math.max(0, (exercise.sets || 0) - completedSets);
+  const displaySets = workoutInProgress ? remainingSets : (exercise.sets || '-');
+
   return (
     <div className="space-y-1">
       {/* Exercise Details Grid - Two rows */}
@@ -83,7 +90,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
               }`}
               onClick={handleSetsClick}
             >
-              {exercise.sets || '-'}
+              {displaySets}
             </div>
           </div>
           <div className="flex flex-col items-center">

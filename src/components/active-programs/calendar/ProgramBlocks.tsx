@@ -8,6 +8,7 @@ interface ProgramBlocksProps {
   workoutInProgress: boolean;
   getRemainingText: (exerciseId: string) => string;
   isExerciseComplete: (exerciseId: string, totalSets: number) => boolean;
+  getCompletedSets: (exerciseId: string) => number;
   onExerciseClick: (exercise: any, event: React.MouseEvent) => void;
   onSetClick: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
   onVideoClick: (exercise: any) => void;
@@ -29,6 +30,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   workoutInProgress,
   getRemainingText,
   isExerciseComplete,
+  getCompletedSets,
   onExerciseClick,
   onSetClick,
   onVideoClick,
@@ -88,6 +90,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
               workoutInProgress={workoutInProgress}
               getRemainingText={getRemainingText}
               isExerciseComplete={isExerciseComplete}
+              getCompletedSets={getCompletedSets}
               onExerciseClick={onExerciseClick}
               onSetClick={onSetClick}
               onVideoClick={onVideoClick}
@@ -148,6 +151,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                     workoutInProgress={workoutInProgress}
                     getRemainingText={getRemainingText}
                     isExerciseComplete={isExerciseComplete}
+                    getCompletedSets={getCompletedSets}
                     onExerciseClick={onExerciseClick}
                     onSetClick={onSetClick}
                     onVideoClick={onVideoClick}
