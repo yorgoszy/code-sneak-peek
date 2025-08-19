@@ -17,12 +17,12 @@ interface UserProfileTabsProps {
 export const UserProfileTabs = ({ user, programs, tests, payments, visits }: UserProfileTabsProps) => {
   return (
     <Tabs defaultValue="programs" className="w-full">
-      <TabsList className="grid w-full grid-cols-5 rounded-none">
-        <TabsTrigger value="programs" className="rounded-none">Ημερολόγιο</TabsTrigger>
-        <TabsTrigger value="calendar" className="rounded-none">Προγράμματα</TabsTrigger>
-        <TabsTrigger value="tests" className="rounded-none">Τεστ</TabsTrigger>
-        <TabsTrigger value="payments" className="rounded-none">Πληρωμές</TabsTrigger>
-        <TabsTrigger value="visits" className="rounded-none">Επισκέψεις</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 rounded-none">
+        <TabsTrigger value="programs" className="rounded-none text-xs md:text-sm">Ημερολόγιο</TabsTrigger>
+        <TabsTrigger value="calendar" className="rounded-none text-xs md:text-sm">Προγράμματα</TabsTrigger>
+        <TabsTrigger value="tests" className="rounded-none text-xs md:text-sm">Τεστ</TabsTrigger>
+        <TabsTrigger value="payments" className="rounded-none text-xs md:text-sm">Πληρωμές</TabsTrigger>
+        <TabsTrigger value="visits" className="rounded-none text-xs md:text-sm">Επισκέψεις</TabsTrigger>
       </TabsList>
       
       <TabsContent value="programs" className="space-y-4">
