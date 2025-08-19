@@ -72,11 +72,11 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
       {/* Exercise Details Grid - Two rows */}
       <div className="space-y-1">
         {/* First Row - Main values */}
-        <div className="grid grid-cols-7 gap-1 text-xs">
-          <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Sets</div>
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 text-xs">
+          <div className="flex flex-col items-center min-w-0">
+            <div className="text-gray-600 text-[8px] sm:text-[9px] leading-tight truncate w-full text-center">Sets</div>
             <div 
-              className={`px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center ${
+              className={`px-0.5 py-0.5 sm:py-1 rounded-none text-[8px] sm:text-[10px] text-center w-full h-3 sm:h-4 flex items-center justify-center ${
                 workoutInProgress 
                   ? 'bg-[#00ffba] hover:bg-[#00ffba]/80 text-black cursor-pointer transition-colors' 
                   : 'bg-gray-100'
@@ -86,39 +86,39 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
               {exercise.sets || '-'}
             </div>
           </div>
-          <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Reps</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+          <div className="flex flex-col items-center min-w-0">
+            <div className="text-gray-600 text-[8px] sm:text-[9px] leading-tight truncate w-full text-center">Reps</div>
+            <div className="bg-gray-100 px-0.5 py-0.5 sm:py-1 rounded-none text-[8px] sm:text-[10px] text-center w-full h-3 sm:h-4 flex items-center justify-center">
               {exercise.reps || '-'}
             </div>
           </div>
-          <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">%1RM</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+          <div className="flex flex-col items-center min-w-0">
+            <div className="text-gray-600 text-[8px] sm:text-[9px] leading-tight truncate w-full text-center">%1RM</div>
+            <div className="bg-gray-100 px-0.5 py-0.5 sm:py-1 rounded-none text-[8px] sm:text-[10px] text-center w-full h-3 sm:h-4 flex items-center justify-center">
               {exercise.percentage_1rm || '-'}%
             </div>
           </div>
-          <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Kg</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+          <div className="flex flex-col items-center min-w-0">
+            <div className="text-gray-600 text-[8px] sm:text-[9px] leading-tight truncate w-full text-center">Kg</div>
+            <div className="bg-gray-100 px-0.5 py-0.5 sm:py-1 rounded-none text-[8px] sm:text-[10px] text-center w-full h-3 sm:h-4 flex items-center justify-center">
               {exercise.kg || '-'}
             </div>
           </div>
-          <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">m/s</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+          <div className="flex flex-col items-center min-w-0">
+            <div className="text-gray-600 text-[8px] sm:text-[9px] leading-tight truncate w-full text-center">m/s</div>
+            <div className="bg-gray-100 px-0.5 py-0.5 sm:py-1 rounded-none text-[8px] sm:text-[10px] text-center w-full h-3 sm:h-4 flex items-center justify-center">
               {exercise.velocity_ms || '-'}
             </div>
           </div>
-          <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Tempo</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+          <div className="flex flex-col items-center min-w-0">
+            <div className="text-gray-600 text-[8px] sm:text-[9px] leading-tight truncate w-full text-center">Tempo</div>
+            <div className="bg-gray-100 px-0.5 py-0.5 sm:py-1 rounded-none text-[8px] sm:text-[10px] text-center w-full h-3 sm:h-4 flex items-center justify-center">
               {exercise.tempo || '-'}
             </div>
           </div>
-          <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[9px] leading-tight">Rest</div>
-            <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[10px] text-center w-full h-4 flex items-center justify-center">
+          <div className="flex flex-col items-center min-w-0">
+            <div className="text-gray-600 text-[8px] sm:text-[9px] leading-tight truncate w-full text-center">Rest</div>
+            <div className="bg-gray-100 px-0.5 py-0.5 sm:py-1 rounded-none text-[8px] sm:text-[10px] text-center w-full h-3 sm:h-4 flex items-center justify-center">
               {exercise.rest || '-'}
             </div>
           </div>
@@ -126,34 +126,34 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
 
         {/* Second Row - Actual values (only when workout in progress) */}
         {workoutInProgress && (
-          <div className="grid grid-cols-7 gap-1 text-xs">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 text-xs">
             <div></div> {/* Empty space for Sets column */}
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center min-w-0">
               <Input
                 type="text"
                 placeholder={exercise.reps?.toString() || ''}
                 value={savedData.reps || ''}
                 onChange={(e) => handleRepsChange(e.target.value)}
-                className="h-4 text-[9px] rounded-none w-full text-center p-0.5"
+                className="h-3 sm:h-4 text-[8px] sm:text-[9px] rounded-none w-full text-center p-0.5 min-w-0"
               />
             </div>
             <div></div> {/* Empty space for %1RM column */}
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center min-w-0">
               <Input
                 type="text"
                 placeholder={exercise.kg?.toString() || ''}
                 value={savedData.kg || ''}
                 onChange={(e) => handleKgChange(e.target.value)}
-                className="h-4 text-[9px] rounded-none w-full text-center p-0.5"
+                className="h-3 sm:h-4 text-[8px] sm:text-[9px] rounded-none w-full text-center p-0.5 min-w-0"
               />
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center min-w-0">
               <Input
                 type="text"
                 placeholder={exercise.velocity_ms?.toString() || ''}
                 value={savedData.velocity || ''}
                 onChange={(e) => handleVelocityChange(e.target.value)}
-                className="h-4 text-[9px] rounded-none w-full text-center p-0.5"
+                className="h-3 sm:h-4 text-[8px] sm:text-[9px] rounded-none w-full text-center p-0.5 min-w-0"
               />
             </div>
             <div></div> {/* Empty space for Tempo column */}
