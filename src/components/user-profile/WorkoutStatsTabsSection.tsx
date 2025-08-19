@@ -100,23 +100,31 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
               <p className="text-gray-500">Φόρτωση στατιστικών ημέρας...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white p-6 border rounded-none">
-                <h4 className="text-md font-medium text-gray-700 mb-4">Στατιστικά Σήμερα</h4>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm text-gray-600">Όγκος:</span>
-                    <span className="ml-2 text-lg font-semibold">
-                      {dayWeekStats.currentDay.volume >= 1000 
-                        ? `${(dayWeekStats.currentDay.volume / 1000).toFixed(1)}tn`
-                        : `${dayWeekStats.currentDay.volume}kg`
-                      }
-                    </span>
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
+              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
+                <h4 className="text-xs font-medium text-gray-700 mb-1">Όγκος</h4>
+                <div className="flex-1 flex flex-col justify-end">
+                  <div className="text-sm md:text-base font-semibold text-purple-600">
+                    {dayWeekStats.currentDay.volume >= 1000 
+                      ? `${(dayWeekStats.currentDay.volume / 1000).toFixed(1)}tn`
+                      : `${dayWeekStats.currentDay.volume}kg`
+                    }
                   </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Ώρες:</span>
-                    <span className="ml-2 text-lg font-semibold">{dayWeekStats.currentDay.hours}h</span>
+                  <p className="text-xs text-gray-500">
+                    Σήμερα
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
+                <h4 className="text-xs font-medium text-gray-700 mb-1">Ώρες</h4>
+                <div className="flex-1 flex flex-col justify-end">
+                  <div className="text-sm md:text-base font-semibold text-green-600">
+                    {dayWeekStats.currentDay.hours}h
                   </div>
+                  <p className="text-xs text-gray-500">
+                    Σήμερα
+                  </p>
                 </div>
               </div>
             </div>
