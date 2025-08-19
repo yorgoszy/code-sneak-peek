@@ -64,11 +64,15 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     const processedWorkouts = completed + missed;
     const progress = total > 0 ? Math.round((processedWorkouts / total) * 100) : 0;
     
+    // Ελέγχουμε αν το πρόγραμμα έχει χάσει όλες τις προπονήσεις
+    const isAllMissed = total > 0 && missed === total && completed === 0;
+    
     return {
       completed,
       total,
       missed,
-      progress
+      progress,
+      isAllMissed
     };
   };
 
@@ -78,13 +82,26 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     stats: calculateProgramStats(assignment)
   }));
 
-  // Διαχωρισμός προγραμμάτων σε ενεργά και ολοκληρωμένα βάσει status και progress
+  // Διαχωρισμός προγραμμάτων σε ενεργά, ολοκληρωμένα επιτυχώς και χαμένα βάσει status και progress
   const activeIncompletePrograms = programsWithStats.filter(item => 
     item.assignment.status === 'active' && item.stats?.progress < 100
   );
-  const completedPrograms = programsWithStats.filter(item => 
-    item.assignment.status === 'completed' || item.stats?.progress >= 100
+  
+  // Ολοκληρωμένα με επιτυχία - έχουν completed workouts
+  const successfullyCompletedPrograms = programsWithStats.filter(item => 
+    (item.assignment.status === 'completed' || item.stats?.progress >= 100) && 
+    item.stats?.completed > 0 && 
+    !item.stats?.isAllMissed
   );
+  
+  // Χαμένα/Αποτυχημένα προγράμματα - όλες οι προπονήσεις έχουν χαθεί
+  const missedPrograms = programsWithStats.filter(item => 
+    (item.assignment.status === 'completed' || item.stats?.progress >= 100) && 
+    item.stats?.isAllMissed
+  );
+  
+  // Συνολικά ολοκληρωμένα (επιτυχή + χαμένα)
+  const allCompletedPrograms = [...successfullyCompletedPrograms, ...missedPrograms];
 
   const handleDelete = async (assignmentId: string) => {
     // Regular users typically cannot delete programs
@@ -140,7 +157,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             </TabsTrigger>
             <TabsTrigger value="completed" className="rounded-none flex items-center gap-2 text-sm">
               <CheckCircle className="h-3 w-3" />
-              Ολοκληρωμένα ({completedPrograms.length})
+              Ολοκληρωμένα ({allCompletedPrograms.length})
             </TabsTrigger>
           </TabsList>
 
@@ -168,19 +185,49 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
           </TabsContent>
 
           <TabsContent value="completed" className="mt-4">
-            {completedPrograms.length > 0 ? (
+            {allCompletedPrograms.length > 0 ? (
               <div className="space-y-4">
-                {completedPrograms.map((item) => (
-                  <div key={item.assignment.id} className="flex justify-center">
-                    <ProgramCard
-                      assignment={item.assignment}
-                      workoutStats={item.stats}
-                      onRefresh={refetch}
-                      onDelete={handleDelete}
-                      userMode={true}
-                    />
+                {/* Επιτυχώς ολοκληρωμένα προγράμματα */}
+                {successfullyCompletedPrograms.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-green-700 flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4" />
+                      Επιτυχώς Ολοκληρωμένα ({successfullyCompletedPrograms.length})
+                    </h4>
+                    {successfullyCompletedPrograms.map((item) => (
+                      <div key={item.assignment.id} className="flex justify-center">
+                        <ProgramCard
+                          assignment={item.assignment}
+                          workoutStats={item.stats}
+                          onRefresh={refetch}
+                          onDelete={handleDelete}
+                          userMode={true}
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+                
+                {/* Χαμένα προγράμματα */}
+                {missedPrograms.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-red-700 flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-red-500" />
+                      Αποτυχημένα - Όλες οι Προπονήσεις Χάθηκαν ({missedPrograms.length})
+                    </h4>
+                    {missedPrograms.map((item) => (
+                      <div key={item.assignment.id} className="flex justify-center opacity-75">
+                        <ProgramCard
+                          assignment={item.assignment}
+                          workoutStats={item.stats}
+                          onRefresh={refetch}
+                          onDelete={handleDelete}
+                          userMode={true}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
