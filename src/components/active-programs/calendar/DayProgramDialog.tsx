@@ -161,6 +161,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onCompleteWorkout={handleCompleteWorkout}
             onCancelWorkout={handleCancelWorkout}
             program={program}
+            onClose={onClose}
           />
 
           <div className="pt-32 space-y-4">

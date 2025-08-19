@@ -17,6 +17,7 @@ interface DayProgramDialogHeaderProps {
   onCancelWorkout: () => void;
   onMinimize?: () => void;
   program: EnrichedAssignment;
+  onClose: () => void;
 }
 
 export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
@@ -28,7 +29,8 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   onCompleteWorkout,
   onCancelWorkout,
   onMinimize,
-  program
+  program,
+  onClose
 }) => {
   const isCompleted = workoutStatus === 'completed';
 
@@ -84,11 +86,11 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
               Έναρξη
             </button>
             <button
-              onClick={onCancelWorkout}
+              onClick={onClose}
               className="border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-none inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-4 py-1"
             >
               <X className="w-4 h-4" />
-              Ακύρωση
+              Κλείσιμο
             </button>
           </div>
         )}

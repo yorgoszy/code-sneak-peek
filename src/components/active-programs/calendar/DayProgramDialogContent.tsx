@@ -16,6 +16,7 @@ interface DayProgramDialogContentProps {
   workoutStatus: string;
   onRefresh?: () => void;
   onMinimize?: () => void;
+  onClose: () => void;
 }
 
 export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = ({
@@ -23,7 +24,8 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
   selectedDate,
   workoutStatus,
   onRefresh,
-  onMinimize
+  onMinimize,
+  onClose
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
@@ -130,6 +132,7 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
         onCancelWorkout={handleCancelWorkout}
         onMinimize={onMinimize}
         program={program}
+        onClose={onClose}
       />
 
       <div className="space-y-2 md:space-y-4">
