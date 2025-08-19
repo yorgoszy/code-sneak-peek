@@ -56,9 +56,18 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
       {/* Κουμπιά ελέγχου */}
       <div className="flex items-center justify-center gap-2">
         {isCompleted ? (
-          <Badge className="bg-green-100 text-green-800 border-green-200 rounded-none text-sm px-3 py-1">
-            Ολοκληρωμένη
-          </Badge>
+          <div className="flex gap-2 items-center">
+            <Badge className="bg-green-100 text-green-800 border-green-200 rounded-none text-sm px-3 py-1">
+              Ολοκληρωμένη
+            </Badge>
+            <button
+              onClick={onClose}
+              className="border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-none inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-4 py-1"
+            >
+              <X className="w-4 h-4" />
+              Κλείσιμο
+            </button>
+          </div>
         ) : workoutInProgress ? (
           <div className="flex gap-2">
             <button
