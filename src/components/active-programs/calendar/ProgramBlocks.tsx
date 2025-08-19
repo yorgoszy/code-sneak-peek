@@ -77,11 +77,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
     });
 
     return (
-      <div className="bg-white border border-gray-200 rounded-none">
-        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-          <h4 className="font-medium text-gray-900">{block.name}</h4>
-        </div>
-        <div className="p-4 space-y-3">
+      <div className="space-y-3">
           {sortedExercises.map((exercise, exerciseIndex) => (
             <ExerciseItem
               key={exercise.id}
@@ -107,7 +103,6 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
               program={program}
             />
           ))}
-        </div>
       </div>
     );
   }
@@ -138,11 +133,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
 
         return (
           <TabsContent key={block.id} value={block.id} className="mt-2">
-            <div className="bg-white border border-gray-200 rounded-none">
-              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                <h4 className="font-medium text-gray-900">{block.name}</h4>
-              </div>
-              <div className="p-4 space-y-3">
+            <div className="space-y-3">
                 {sortedExercises.map((exercise, exerciseIndex) => (
                   <ExerciseItem
                     key={exercise.id}
@@ -168,7 +159,6 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                     program={program}
                   />
                 ))}
-              </div>
             </div>
           </TabsContent>
         );
