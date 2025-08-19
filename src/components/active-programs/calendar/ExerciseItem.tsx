@@ -6,22 +6,27 @@ import { ExerciseDetails } from './ExerciseDetails';
 
 interface ExerciseItemProps {
   exercise: any;
-  isComplete: boolean;
-  remainingText: string;
+  exerciseNumber: number;
+  isComplete?: boolean;
+  remainingText?: string;
   onVideoClick: (exercise: any) => void;
   onSetClick: (exerciseId: string, totalSets: number, event: React.MouseEvent) => void;
+  onExerciseClick?: (exercise: any, event: React.MouseEvent) => void;
   workoutInProgress: boolean;
   getRemainingText: (exerciseId: string) => string;
   getCompletedSets: (exerciseId: string) => number;
+  isExerciseComplete: (exerciseId: string, totalSets: number) => boolean;
   updateReps: (exerciseId: string, value: string) => void;
   updateKg: (exerciseId: string, value: string) => void;
   updateVelocity: (exerciseId: string, value: string) => void;
-  updateNotes: (exerciseId: string, value: string) => void;
-  clearReps: (exerciseId: string) => void;
-  clearKg: (exerciseId: string) => void;
-  clearVelocity: (exerciseId: string) => void;
-  clearNotes: (exerciseId: string) => void;
-  getNotes: (exerciseId: string) => string;
+  updateNotes?: (exerciseId: string, value: string) => void;
+  clearReps?: (exerciseId: string) => void;
+  clearKg?: (exerciseId: string) => void;
+  clearVelocity?: (exerciseId: string) => void;
+  clearNotes?: (exerciseId: string) => void;
+  getNotes?: (exerciseId: string) => string;
+  selectedDate?: Date;
+  program?: any;
   actualValues?: {
     reps?: string;
     kg?: string;
@@ -31,13 +36,16 @@ interface ExerciseItemProps {
 
 export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   exercise,
-  isComplete,
-  remainingText,
+  exerciseNumber,
+  isComplete: propIsComplete,
+  remainingText: propRemainingText,
   onVideoClick,
   onSetClick,
+  onExerciseClick,
   workoutInProgress,
   getRemainingText,
   getCompletedSets,
+  isExerciseComplete,
   updateReps,
   updateKg,
   updateVelocity,
@@ -47,21 +55,38 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   clearVelocity,
   clearNotes,
   getNotes,
+  selectedDate,
+  program,
   actualValues
 }) => {
+  // Calculate derived values
+  const isComplete = propIsComplete ?? isExerciseComplete(exercise.id, exercise.sets);
+  const remainingText = propRemainingText ?? getRemainingText(exercise.id);
+
+  const handleVideoClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onVideoClick(exercise);
+  };
+
+  const handleSetClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onSetClick(exercise.id, exercise.sets, event);
+  };
   return (
     <Card className="rounded-none border-l-4 border-l-blue-500 mb-2">
       <CardContent className="p-0">
         <ExerciseHeader
           exercise={exercise}
+          exerciseNumber={exerciseNumber}
           isComplete={isComplete}
-          onVideoClick={onVideoClick}
+          remainingText={remainingText}
+          workoutInProgress={workoutInProgress}
+          onVideoClick={handleVideoClick}
+          onSetClick={handleSetClick}
         />
         
         <ExerciseDetails
           exercise={exercise}
-          isComplete={isComplete}
-          remainingText={remainingText}
           onSetClick={onSetClick}
           workoutInProgress={workoutInProgress}
           getRemainingText={getRemainingText}
@@ -69,13 +94,8 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           updateReps={updateReps}
           updateKg={updateKg}
           updateVelocity={updateVelocity}
-          updateNotes={updateNotes}
-          clearReps={clearReps}
-          clearKg={clearKg}
-          clearVelocity={clearVelocity}
-          clearNotes={clearNotes}
-          getNotes={getNotes}
-          actualValues={actualValues}
+          selectedDate={selectedDate}
+          program={program}
         />
       </CardContent>
     </Card>
