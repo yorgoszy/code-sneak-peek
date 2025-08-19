@@ -18,11 +18,11 @@ export const UserProfileTabs = ({ user, programs, tests, payments, visits }: Use
   return (
     <Tabs defaultValue="programs" className="w-full">
       <TabsList className="w-full flex flex-wrap md:grid md:grid-cols-5 rounded-none gap-1 p-1 h-auto">
-        <TabsTrigger value="programs" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Ημερολόγιο</TabsTrigger>
-        <TabsTrigger value="calendar" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Προγράμματα</TabsTrigger>
-        <TabsTrigger value="tests" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Τεστ</TabsTrigger>
-        <TabsTrigger value="payments" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Πληρωμές</TabsTrigger>
-        <TabsTrigger value="visits" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Επισκέψεις</TabsTrigger>
+        <TabsTrigger value="programs" className="rounded-none text-xs w-1/2 md:w-auto">Ημερολόγιο</TabsTrigger>
+        <TabsTrigger value="calendar" className="rounded-none text-xs w-1/2 md:w-auto">Προγράμματα</TabsTrigger>
+        <TabsTrigger value="tests" className="rounded-none text-xs w-1/3 md:w-auto">Τεστ</TabsTrigger>
+        <TabsTrigger value="payments" className="rounded-none text-xs w-1/3 md:w-auto">Πληρωμές</TabsTrigger>
+        <TabsTrigger value="visits" className="rounded-none text-xs w-1/3 md:w-auto">Επισκέψεις</TabsTrigger>
       </TabsList>
       
       <TabsContent value="programs" className="space-y-4">
