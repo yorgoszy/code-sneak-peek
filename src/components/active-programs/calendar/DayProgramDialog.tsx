@@ -157,6 +157,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                     workoutInProgress={workoutInProgress}
                     getRemainingText={exerciseCompletion.getRemainingText}
                     isExerciseComplete={exerciseCompletion.isExerciseComplete}
+                    getCompletedSets={exerciseCompletion.getCompletedSets}
                     onExerciseClick={handleExerciseClick}
                     onSetClick={handleSetClick}
                     onVideoClick={handleVideoClick}

@@ -65,6 +65,7 @@ export const DayProgramMainContent: React.FC<DayProgramMainContentProps> = ({
               workoutInProgress={workoutInProgress}
               getRemainingText={exerciseCompletion.getRemainingText}
               isExerciseComplete={exerciseCompletion.isExerciseComplete}
+              getCompletedSets={exerciseCompletion.getCompletedSets}
               onExerciseClick={handleExerciseClick}
               onSetClick={onSetClick}
               onVideoClick={onVideoClick}

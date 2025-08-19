@@ -264,6 +264,10 @@ export const useWorkoutState = (
         }
         return newData;
       });
+    },
+
+    getCompletedSets: (exerciseId: string) => {
+      return exerciseCompletions[exerciseId] || 0;
     }
   };
 
