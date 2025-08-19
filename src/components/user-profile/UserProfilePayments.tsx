@@ -408,33 +408,33 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
                   <p className="text-gray-500">Δεν υπάρχουν αποδείξεις για αυτόν τον χρήστη</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {receipts.map((receipt) => (
-                    <div key={receipt.id} className="border border-gray-200 p-4 rounded-none hover:bg-gray-50">
+                    <div key={receipt.id} className="border border-gray-200 p-2 rounded-none hover:bg-gray-50">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-medium">{receipt.receipt_number}</h4>
-                            <Badge className={`text-xs ${getStatusColor(receipt.mydata_status)}`}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium text-sm">{receipt.receipt_number}</h4>
+                            <Badge className={`text-xs ${getStatusColor(receipt.mydata_status)} px-1 py-0.5`}>
                               {getStatusText(receipt.mydata_status)}
                             </Badge>
                           </div>
-                          <p className="text-sm text-gray-600">{receipt.customer_name}</p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-gray-600">{receipt.customer_name}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">
                             Ημερομηνία: {formatDate(receipt.issue_date)}
                           </p>
-                          <p className="text-lg font-bold text-[#00ffba] mt-2">
+                          <p className="text-base font-bold text-[#00ffba] mt-1">
                             €{receipt.total.toFixed(2)}
                           </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleViewReceipt(receipt)}
-                            className="rounded-none"
+                            className="rounded-none text-xs px-2 py-1"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
