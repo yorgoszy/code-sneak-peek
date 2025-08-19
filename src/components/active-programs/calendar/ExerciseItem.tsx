@@ -99,6 +99,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           onSetClick={onSetClick}
           workoutInProgress={workoutInProgress}
           getRemainingText={getRemainingText}
+          getCompletedSets={getCompletedSets}
           updateReps={updateReps}
           updateKg={updateKg}
           updateVelocity={updateVelocity}
