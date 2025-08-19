@@ -1,8 +1,6 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DayCalculations } from './DayCalculations';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramInfoProps {
@@ -19,122 +17,11 @@ export const ProgramInfo: React.FC<ProgramInfoProps> = ({
   workoutStatus
 }) => {
   const isCompleted = workoutStatus === 'completed';
-  const userName = program.app_users?.name || 'Άγνωστος Αθλητής';
-  
-  const getUserInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  // Calculate day metrics for compact display
-  const calculateCompactMetrics = () => {
-    if (!dayProgram?.program_blocks) return { volume: 0, intensity: 0, watts: 0, time: 0 };
-
-    let totalVolume = 0;
-    let totalIntensitySum = 0;
-    let intensityCount = 0;
-    let totalWatts = 0;
-    let totalTimeSeconds = 0;
-
-    dayProgram.program_blocks.forEach((block: any) => {
-      block.program_exercises?.forEach((exercise: any) => {
-        if (exercise.exercise_id) {
-          const sets = exercise.sets || 0;
-          const reps = parseRepsToTotal(exercise.reps);
-          const kg = parseNumberWithComma(exercise.kg || '0');
-
-          // Volume calculation
-          const volumeKg = sets * reps * kg;
-          totalVolume += volumeKg;
-
-          // Intensity calculation
-          const intensity = parseNumberWithComma(exercise.percentage_1rm || '0');
-          if (intensity > 0) {
-            totalIntensitySum += intensity;
-            intensityCount++;
-          }
-
-          // Watts calculation
-          const velocity = parseNumberWithComma(exercise.velocity_ms || '0');
-          if (kg > 0 && velocity > 0) {
-            const force = kg * 9.81;
-            const watts = force * velocity;
-            totalWatts += watts * sets * reps;
-          }
-
-          // Time calculation
-          const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
-          const restSeconds = parseRestTime(exercise.rest || '');
-          const workTime = sets * reps * tempoSeconds;
-          const totalRestTime = (sets - 1) * restSeconds;
-          totalTimeSeconds += workTime + totalRestTime;
-        }
-      });
-    });
-
-    return {
-      volume: Math.round(totalVolume / 1000), // Convert to tons
-      intensity: intensityCount > 0 ? Math.round(totalIntensitySum / intensityCount) : 0,
-      watts: Math.round(totalWatts / 1000), // Convert to kilowatts
-      time: Math.round(totalTimeSeconds / 60), // Convert to minutes
-    };
-  };
-
-  const { volume, intensity, watts, time } = calculateCompactMetrics();
 
   return (
     <div className="bg-white border border-gray-200 rounded-none p-2 md:p-3 mb-4">
-      <div className="flex items-center justify-between gap-1 md:gap-3">
-        {/* Avatar and User Info - Smaller on mobile */}
-        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0 min-w-0">
-          <Avatar className="w-6 h-6 md:w-8 md:h-8">
-            <AvatarImage 
-              src={program.app_users?.photo_url} 
-              alt={userName}
-            />
-            <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
-              {getUserInitials(userName)}
-            </AvatarFallback>
-          </Avatar>
-          
-          <div className="min-w-0 flex-shrink">
-            <div className="text-xs md:text-sm font-medium text-gray-900 truncate">
-              {userName}
-            </div>
-            <div className="text-xs md:text-xs text-gray-600 truncate">
-              {program.programs?.name || 'Άγνωστο Πρόγραμμα'}
-            </div>
-          </div>
-        </div>
-
-        {/* Compact Stats - Much smaller on mobile */}
-        <div className="flex items-center gap-1 md:gap-4 text-xs">
-          <div className="text-center min-w-0">
-            <div className="text-gray-600 text-xs md:text-xs">Όγκος</div>
-            <div className="font-semibold text-blue-700 text-xs md:text-sm">{volume.toLocaleString()}tn</div>
-          </div>
-          
-          <div className="text-center min-w-0">
-            <div className="text-gray-600 text-xs md:text-xs">Ένταση</div>
-            <div className="font-semibold text-green-700 text-xs md:text-sm">{intensity}%</div>
-          </div>
-          
-          <div className="text-center min-w-0">
-            <div className="text-gray-600 text-xs md:text-xs">Ισχύς</div>
-            <div className="font-semibold text-orange-700 text-xs md:text-sm">{watts}KW</div>
-          </div>
-          
-          <div className="text-center min-w-0">
-            <div className="text-gray-600 text-xs md:text-xs">Χρόνος</div>
-            <div className="font-semibold text-red-700 text-xs md:text-sm">{time}λ</div>
-          </div>
-        </div>
-
-        {/* Status Badges - Smaller on mobile */}
+      <div className="flex items-center justify-end gap-1 md:gap-2">
+        {/* Status Badges Only - Smaller on mobile */}
         <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
           {isCompleted && (
             <Badge className="bg-green-100 text-green-800 border-green-200 rounded-none text-xs px-1 py-0.5 md:px-2.5 md:py-0.5">
