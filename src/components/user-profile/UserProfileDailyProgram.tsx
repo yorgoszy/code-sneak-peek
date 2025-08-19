@@ -247,24 +247,24 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
       {/* Monthly Stats Card */}
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Dumbbell className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+            <Dumbbell className="h-4 w-4 md:h-5 md:w-5" />
             Στατιστικά Μήνα - {userProfile?.name}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-2 md:gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-[#00ffba]">{monthlyStats.completed}</div>
-              <div className="text-sm text-gray-600">Ολοκληρωμένες</div>
+              <div className="text-lg md:text-2xl font-bold text-[#00ffba]">{monthlyStats.completed}</div>
+              <div className="text-xs md:text-sm text-gray-600">Ολοκληρωμένες</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-red-500">{monthlyStats.missed}</div>
-              <div className="text-sm text-gray-600">Χαμένες</div>
+              <div className="text-lg md:text-2xl font-bold text-red-500">{monthlyStats.missed}</div>
+              <div className="text-xs md:text-sm text-gray-600">Χαμένες</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-blue-500">{monthlyStats.total}</div>
-              <div className="text-sm text-gray-600">Συνολικές</div>
+              <div className="text-lg md:text-2xl font-bold text-blue-500">{monthlyStats.total}</div>
+              <div className="text-xs md:text-sm text-gray-600">Συνολικές</div>
             </div>
           </div>
         </CardContent>
