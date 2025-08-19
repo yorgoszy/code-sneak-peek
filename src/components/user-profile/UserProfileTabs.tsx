@@ -17,12 +17,12 @@ interface UserProfileTabsProps {
 export const UserProfileTabs = ({ user, programs, tests, payments, visits }: UserProfileTabsProps) => {
   return (
     <Tabs defaultValue="programs" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 rounded-none">
-        <TabsTrigger value="programs" className="rounded-none text-xs md:text-sm">Ημερολόγιο</TabsTrigger>
-        <TabsTrigger value="calendar" className="rounded-none text-xs md:text-sm">Προγράμματα</TabsTrigger>
-        <TabsTrigger value="tests" className="rounded-none text-xs md:text-sm">Τεστ</TabsTrigger>
-        <TabsTrigger value="payments" className="rounded-none text-xs md:text-sm">Πληρωμές</TabsTrigger>
-        <TabsTrigger value="visits" className="rounded-none text-xs md:text-sm">Επισκέψεις</TabsTrigger>
+      <TabsList className="w-full flex flex-wrap md:grid md:grid-cols-5 rounded-none gap-1 p-1 h-auto">
+        <TabsTrigger value="programs" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Ημερολόγιο</TabsTrigger>
+        <TabsTrigger value="calendar" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Προγράμματα</TabsTrigger>
+        <TabsTrigger value="tests" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Τεστ</TabsTrigger>
+        <TabsTrigger value="payments" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Πληρωμές</TabsTrigger>
+        <TabsTrigger value="visits" className="rounded-none text-xs flex-1 min-w-0 md:min-w-full">Επισκέψεις</TabsTrigger>
       </TabsList>
       
       <TabsContent value="programs" className="space-y-4">
