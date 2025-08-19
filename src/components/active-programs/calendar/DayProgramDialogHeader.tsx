@@ -36,7 +36,7 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2 md:mb-4 gap-2 md:gap-4">
       <div className="flex items-center space-x-2 md:space-x-4 min-w-0 flex-1">
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900 truncate">
+          <h2 className="text-sm md:text-lg lg:text-xl font-semibold text-gray-900 truncate">
             {program.app_users?.name || 'Άγνωστος Αθλητής'}
           </h2>
           <p className="text-xs md:text-sm text-gray-600 truncate">
@@ -63,7 +63,6 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
             >
               <CheckCircle className="w-3 h-3 md:w-4 md:h-4" />
               <span className="hidden md:inline">Ολοκλήρωση</span>
-              <span className="md:hidden">Τέλος</span>
             </button>
             <button
               onClick={onCancelWorkout}
@@ -71,7 +70,6 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
             >
               <X className="w-3 h-3 md:w-4 md:h-4" />
               <span className="hidden md:inline">Ακύρωση</span>
-              <span className="md:hidden">Άκυρο</span>
             </button>
           </div>
         ) : (
@@ -81,7 +79,6 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
           >
             <Play className="w-3 h-3 md:w-4 md:h-4" />
             <span className="hidden md:inline">Έναρξη</span>
-            <span className="md:hidden">Start</span>
           </button>
         )}
       </div>
