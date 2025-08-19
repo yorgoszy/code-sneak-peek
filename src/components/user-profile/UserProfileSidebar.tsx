@@ -17,6 +17,7 @@ import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { useAllPrograms } from "@/hooks/useAllPrograms";
 
 interface UserProfileSidebarProps {
   isCollapsed: boolean;
@@ -40,7 +41,9 @@ export const UserProfileSidebar = forwardRef<
 }, ref) => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
+  const [activePrograms, setActivePrograms] = useState(0);
   const isMobile = useIsMobile();
+  const { data: allActivePrograms = [] } = useAllPrograms();
 
   // Εκθέτει τη συνάρτηση loadAvailableOffers στο parent component
   useImperativeHandle(ref, () => ({
@@ -50,8 +53,20 @@ export const UserProfileSidebar = forwardRef<
   useEffect(() => {
     if (userProfile?.id) {
       loadAvailableOffers();
+      loadActivePrograms();
     }
-  }, [userProfile?.id]);
+  }, [userProfile?.id, allActivePrograms]);
+
+  const loadActivePrograms = () => {
+    if (!userProfile?.id) return;
+    
+    // Φιλτράρισμα προγραμμάτων για τον συγκεκριμένο χρήστη και μόνο τα ενεργά
+    const userActivePrograms = allActivePrograms.filter(program => 
+      program.user_id === userProfile.id && program.status === 'active'
+    );
+    
+    setActivePrograms(userActivePrograms.length);
+  };
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
@@ -116,7 +131,7 @@ export const UserProfileSidebar = forwardRef<
       icon: Activity, 
       label: "Προγράμματα", 
       key: "programs",
-      badge: stats.programsCount > 0 ? stats.programsCount : null
+      badge: activePrograms > 0 ? activePrograms : null
     },
     { 
       icon: Calendar, 
