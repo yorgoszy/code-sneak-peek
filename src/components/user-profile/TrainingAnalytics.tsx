@@ -156,8 +156,8 @@ export const TrainingAnalytics: React.FC<TrainingAnalyticsProps> = ({ userId }) 
     return (
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+            <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
             Ανάλυση Προπονήσεων
           </CardTitle>
         </CardHeader>
@@ -174,8 +174,8 @@ export const TrainingAnalytics: React.FC<TrainingAnalyticsProps> = ({ userId }) 
     return (
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+            <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
             Ανάλυση Προπονήσεων
           </CardTitle>
         </CardHeader>
@@ -189,16 +189,16 @@ export const TrainingAnalytics: React.FC<TrainingAnalyticsProps> = ({ userId }) 
   }
 
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" />
-          Ανάλυση Προπονήσεων
-          <span className="text-sm font-normal text-gray-600 ml-auto">
-            Σύνολο: {formatHours(analysis.total_hours)}
-          </span>
-        </CardTitle>
-      </CardHeader>
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+            <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
+            Ανάλυση Προπονήσεων
+            <span className="text-xs md:text-sm font-normal text-gray-600 ml-auto">
+              Σύνολο: {formatHours(analysis.total_hours)}
+            </span>
+          </CardTitle>
+        </CardHeader>
       <CardContent className="space-y-4">
         {/* Προπόνηση Δύναμης */}
         <div className="space-y-2">
