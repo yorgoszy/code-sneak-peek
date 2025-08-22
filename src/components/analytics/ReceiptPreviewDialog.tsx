@@ -272,12 +272,14 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
             </div>
           </div>
 
-          <div className="text-center mt-1 sm:mt-2 pt-1 sm:pt-2 border-t border-gray-200 text-xs text-gray-500">
-            <p><strong>HYPERKIDS</strong></p>
-            <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
-            <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
-            <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
-            <p>Τηλ: 2310 529104</p>
+          <div className="text-center mt-1 sm:mt-2 pt-1 sm:pt-2 border-t border-gray-200">
+            <div className="w-16 h-8 sm:w-24 sm:h-12 mx-auto">
+              <img 
+                src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" 
+                alt="HYPERKIDS Logo" 
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
           </div>
         </div>
       </DialogContent>

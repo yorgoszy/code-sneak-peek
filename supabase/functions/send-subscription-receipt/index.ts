@@ -201,11 +201,7 @@ const generateGeneralReceiptHTML = (data: any) => {
             </div>
             
             <div class="footer">
-                <p><strong>HYPERKIDS</strong></p>
-                <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
-                <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
-                <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
-                <p>Τηλ: 2310 529104</p>
+                <img src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" alt="HYPERKIDS Logo" style="width: 80px; height: auto; margin: 0 auto 10px;" />
                 <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά</em></p>
             </div>
         </div>
@@ -300,11 +296,7 @@ const generateReceiptHTML = (data: ReceiptData) => {
             </div>
             
             <div class="footer">
-                <p><strong>HYPERKIDS</strong></p>
-                <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
-                <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
-                <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
-                <p>Τηλ: 2310 529104</p>
+                <img src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" alt="HYPERKIDS Logo" style="width: 80px; height: auto; margin: 0 auto 10px;" />
                 <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά και θα αποσταλεί στο MyData της AADE</em></p>
             </div>
         </div>
