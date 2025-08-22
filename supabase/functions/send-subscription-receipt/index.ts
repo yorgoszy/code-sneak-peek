@@ -148,8 +148,11 @@ const generateGeneralReceiptHTML = (data: any) => {
     <body>
         <div class="container">
             <div class="header">
-                <div class="logo">HYPERKIDS ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</div>
-                <p>ΑΦΜ: 128109909 | ΔΟΥ: Ε' ΘΕΣΣΑΛΟΝΙΚΗΣ</p>
+                <div class="logo">HYPERKIDS</div>
+                <p>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</p>
+                <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
+                <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
+                <p>Τηλ: 2310 529104</p>
             </div>
             
             <h2 class="receipt-title">ΑΠΟΔΕΙΞΗ</h2>
@@ -198,10 +201,11 @@ const generateGeneralReceiptHTML = (data: any) => {
             </div>
             
             <div class="footer">
-                <p><strong>HYPERKIDS ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
-                <p>ΑΦΜ: 128109909 | ΔΟΥ: Ε' ΘΕΣΣΑΛΟΝΙΚΗΣ</p>
-                <p>Τηλ: 2310 529104 | Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
+                <p><strong>HYPERKIDS</strong></p>
+                <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
                 <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
+                <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
+                <p>Τηλ: 2310 529104</p>
                 <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά</em></p>
             </div>
         </div>
@@ -235,8 +239,11 @@ const generateReceiptHTML = (data: ReceiptData) => {
     <body>
         <div class="container">
             <div class="header">
-                <div class="logo">HYPERKIDS ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</div>
-                <p>ΑΦΜ: 128109909 | ΔΟΥ: Ε' ΘΕΣΣΑΛΟΝΙΚΗΣ</p>
+                <div class="logo">HYPERKIDS</div>
+                <p>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</p>
+                <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
+                <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
+                <p>Τηλ: 2310 529104</p>
             </div>
             
             <h2 class="receipt-title">ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ</h2>
@@ -293,10 +300,11 @@ const generateReceiptHTML = (data: ReceiptData) => {
             </div>
             
             <div class="footer">
-                <p><strong>HYPERKIDS ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
-                <p>ΑΦΜ: 128109909 | ΔΟΥ: Ε' ΘΕΣΣΑΛΟΝΙΚΗΣ</p>
-                <p>Τηλ: 2310 529104 | Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
+                <p><strong>HYPERKIDS</strong></p>
+                <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
                 <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
+                <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
+                <p>Τηλ: 2310 529104</p>
                 <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά και θα αποσταλεί στο MyData της AADE</em></p>
             </div>
         </div>
