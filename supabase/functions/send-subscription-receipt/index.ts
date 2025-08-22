@@ -200,8 +200,8 @@ const generateGeneralReceiptHTML = (data: any) => {
                 </div>
             </div>
             
-            <div class="footer">
-                <img src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" alt="HYPERKIDS Logo" style="width: 80px; height: auto; margin: 0 auto 10px;" />
+            <div class="footer" style="text-align: right;">
+                <img src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" alt="HYPERKIDS Logo" style="width: 80px; height: auto; margin-left: auto; display: block; margin-bottom: 10px;" />
                 <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά</em></p>
             </div>
         </div>
@@ -295,8 +295,8 @@ const generateReceiptHTML = (data: ReceiptData) => {
                 </div>
             </div>
             
-            <div class="footer">
-                <img src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" alt="HYPERKIDS Logo" style="width: 80px; height: auto; margin: 0 auto 10px;" />
+            <div class="footer" style="text-align: right;">
+                <img src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" alt="HYPERKIDS Logo" style="width: 80px; height: auto; margin-left: auto; display: block; margin-bottom: 10px;" />
                 <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά και θα αποσταλεί στο MyData της AADE</em></p>
             </div>
         </div>
