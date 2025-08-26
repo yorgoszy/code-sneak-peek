@@ -165,40 +165,101 @@ serve(async (req) => {
       logStep("Offer acceptance processed", { offer_id, removed_rejection: !rejectionError });
     }
 
-    // Δημιουργία συνδρομής για όλους τους τύπους
-    const startDate = new Date();
-    let endDate = new Date(startDate);
-    
-    if (subscriptionType.subscription_mode === 'time_based') {
-      endDate.setMonth(endDate.getMonth() + (subscriptionType.duration_months || 1));
-      endDate.setDate(endDate.getDate() - 1); // Τελευταία ημέρα του μήνα
-    } else if (subscriptionType.subscription_mode === 'visit_based') {
-      // Για visit-based, η συνδρομή λήγει μετά από visit_expiry_months
-      endDate.setMonth(endDate.getMonth() + (subscriptionType.visit_expiry_months || 12));
-      endDate.setDate(endDate.getDate() - 1);
-    }
-
-    const subscriptionData = {
-      user_id: appUser.id,
-      subscription_type_id: subscription_type_id,
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
-      payment_id: savedPayment.id,
-      status: 'active',
-      is_paid: true
-    };
-
-    const { data: savedSubscription, error: subscriptionError } = await supabaseClient
+    // Έλεγχος αν υπάρχει ενεργή συνδρομή της ίδιας υπηρεσίας
+    logStep("Checking for existing active subscription");
+    const { data: existingSubscription, error: existingSubError } = await supabaseClient
       .from('user_subscriptions')
-      .insert(subscriptionData)
-      .select()
+      .select('*, subscription_types!inner(*)')
+      .eq('user_id', appUser.id)
+      .eq('status', 'active')
+      .gte('end_date', new Date().toISOString().split('T')[0])
       .single();
 
-    if (subscriptionError) {
-      logStep("Subscription insert error", subscriptionError);
-      throw new Error(`Failed to create subscription: ${subscriptionError.message}`);
+    let savedSubscription;
+    
+    if (existingSubscription && existingSubscription.subscription_types.name === subscriptionType.name) {
+      // Ανανέωση υπάρχουσας συνδρομής της ίδιας υπηρεσίας
+      logStep("Found existing subscription of same service, extending instead of creating new", {
+        existingId: existingSubscription.id,
+        currentEndDate: existingSubscription.end_date,
+        newService: subscriptionType.name
+      });
+      
+      const currentEndDate = new Date(existingSubscription.end_date);
+      let newEndDate = new Date(currentEndDate);
+      newEndDate.setDate(newEndDate.getDate() + 1); // Ξεκινάμε από την επόμενη ημέρα
+      
+      if (subscriptionType.subscription_mode === 'time_based') {
+        newEndDate.setMonth(newEndDate.getMonth() + (subscriptionType.duration_months || 1));
+        newEndDate.setDate(newEndDate.getDate() - 1);
+      } else if (subscriptionType.subscription_mode === 'visit_based') {
+        newEndDate.setMonth(newEndDate.getMonth() + (subscriptionType.visit_expiry_months || 12));
+        newEndDate.setDate(newEndDate.getDate() - 1);
+      }
+
+      const { data: updatedSubscription, error: updateError } = await supabaseClient
+        .from('user_subscriptions')
+        .update({
+          end_date: newEndDate.toISOString().split('T')[0],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingSubscription.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        logStep("Subscription update error", updateError);
+        throw new Error(`Failed to extend subscription: ${updateError.message}`);
+      }
+      
+      savedSubscription = updatedSubscription;
+      logStep("Subscription extended successfully", { 
+        id: savedSubscription.id,
+        newEndDate: savedSubscription.end_date 
+      });
+    } else {
+      // Δημιουργία νέας συνδρομής (διαφορετική υπηρεσία ή καμία ενεργή)
+      logStep("Creating new subscription", { 
+        hasExisting: !!existingSubscription,
+        existingService: existingSubscription?.subscription_types?.name,
+        newService: subscriptionType.name
+      });
+      
+      const startDate = new Date();
+      let endDate = new Date(startDate);
+      
+      if (subscriptionType.subscription_mode === 'time_based') {
+        endDate.setMonth(endDate.getMonth() + (subscriptionType.duration_months || 1));
+        endDate.setDate(endDate.getDate() - 1);
+      } else if (subscriptionType.subscription_mode === 'visit_based') {
+        endDate.setMonth(endDate.getMonth() + (subscriptionType.visit_expiry_months || 12));
+        endDate.setDate(endDate.getDate() - 1);
+      }
+
+      const subscriptionData = {
+        user_id: appUser.id,
+        subscription_type_id: subscription_type_id,
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+        payment_id: savedPayment.id,
+        status: 'active',
+        is_paid: true
+      };
+
+      const { data: newSubscription, error: subscriptionError } = await supabaseClient
+        .from('user_subscriptions')
+        .insert(subscriptionData)
+        .select()
+        .single();
+
+      if (subscriptionError) {
+        logStep("Subscription insert error", subscriptionError);
+        throw new Error(`Failed to create subscription: ${subscriptionError.message}`);
+      }
+      
+      savedSubscription = newSubscription;
+      logStep("New subscription created successfully", savedSubscription);
     }
-    logStep("Subscription created successfully", savedSubscription);
 
     // Ενημέρωση user status
     await supabaseClient
@@ -214,36 +275,81 @@ serve(async (req) => {
     });
     
     if (subscriptionType.subscription_mode === 'visit_based' && subscriptionType.visit_count) {
-      logStep("Creating visit package for visit-based subscription");
+      logStep("Processing visit package for visit-based subscription");
       
-      const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + (subscriptionType.visit_expiry_months || 12));
-
-      const visitPackageData = {
-        user_id: appUser.id,
-        total_visits: subscriptionType.visit_count,
-        remaining_visits: subscriptionType.visit_count,
-        purchase_date: new Date().toISOString().split('T')[0],
-        expiry_date: expiryDate.toISOString().split('T')[0],
-        price: finalAmount,
-        payment_id: savedPayment.id,
-        allowed_sections: subscriptionType.allowed_sections,
-        status: 'active'
-      };
-      
-      logStep("Visit package data to insert", visitPackageData);
-
-      const { data: savedVisitPackage, error: visitPackageError } = await supabaseClient
+      // Έλεγχος αν υπάρχει ενεργό visit package
+      const { data: existingVisitPackage, error: existingPackageError } = await supabaseClient
         .from('visit_packages')
-        .insert(visitPackageData)
-        .select()
+        .select('*')
+        .eq('user_id', appUser.id)
+        .eq('status', 'active')
+        .gte('expiry_date', new Date().toISOString().split('T')[0])
+        .order('expiry_date', { ascending: false })
+        .limit(1)
         .single();
 
-      if (visitPackageError) {
-        logStep("Visit package insert error", visitPackageError);
-        throw new Error(`Failed to create visit package: ${visitPackageError.message}`);
+      if (existingVisitPackage && !existingPackageError) {
+        // Επέκταση υπάρχοντος visit package
+        logStep("Found existing visit package, extending it", {
+          existingId: existingVisitPackage.id,
+          currentExpiry: existingVisitPackage.expiry_date,
+          visitsToAdd: subscriptionType.visit_count
+        });
+        
+        const currentExpiryDate = new Date(existingVisitPackage.expiry_date);
+        const newExpiryDate = new Date(currentExpiryDate);
+        newExpiryDate.setMonth(newExpiryDate.getMonth() + (subscriptionType.visit_expiry_months || 12));
+
+        const { data: updatedVisitPackage, error: updatePackageError } = await supabaseClient
+          .from('visit_packages')
+          .update({
+            total_visits: existingVisitPackage.total_visits + subscriptionType.visit_count,
+            remaining_visits: existingVisitPackage.remaining_visits + subscriptionType.visit_count,
+            expiry_date: newExpiryDate.toISOString().split('T')[0],
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingVisitPackage.id)
+          .select()
+          .single();
+
+        if (updatePackageError) {
+          logStep("Visit package update error", updatePackageError);
+          throw new Error(`Failed to extend visit package: ${updatePackageError.message}`);
+        }
+        logStep("Visit package extended successfully", updatedVisitPackage);
+      } else {
+        // Δημιουργία νέου visit package
+        logStep("Creating new visit package");
+        
+        const expiryDate = new Date();
+        expiryDate.setMonth(expiryDate.getMonth() + (subscriptionType.visit_expiry_months || 12));
+
+        const visitPackageData = {
+          user_id: appUser.id,
+          total_visits: subscriptionType.visit_count,
+          remaining_visits: subscriptionType.visit_count,
+          purchase_date: new Date().toISOString().split('T')[0],
+          expiry_date: expiryDate.toISOString().split('T')[0],
+          price: finalAmount,
+          payment_id: savedPayment.id,
+          allowed_sections: subscriptionType.allowed_sections,
+          status: 'active'
+        };
+        
+        logStep("Visit package data to insert", visitPackageData);
+
+        const { data: savedVisitPackage, error: visitPackageError } = await supabaseClient
+          .from('visit_packages')
+          .insert(visitPackageData)
+          .select()
+          .single();
+
+        if (visitPackageError) {
+          logStep("Visit package insert error", visitPackageError);
+          throw new Error(`Failed to create visit package: ${visitPackageError.message}`);
+        }
+        logStep("Visit package created successfully", savedVisitPackage);
       }
-      logStep("Visit package created successfully", savedVisitPackage);
     } else {
       logStep("Visit package NOT created because conditions not met");
     }
