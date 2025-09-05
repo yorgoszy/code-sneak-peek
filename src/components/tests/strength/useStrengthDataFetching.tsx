@@ -53,11 +53,10 @@ const { data: usageStats } = await supabase
 const { data: sessionsData } = await supabase
       .from('test_sessions')
       .select(`
-        *,
-        app_users!user_id(name)
+        *
       `)
       .eq('user_id', selectedAthleteId)
-      .eq('test_types', '["strength"]')
+      .contains('test_types', ['strength'])
       .order('created_at', { ascending: false });
 
     if (sessionsData) {
@@ -89,15 +88,17 @@ const { data: attempts } = await supabase
             exerciseMap.get(exerciseId).attempts.push(attempt);
           });
 
-          return {
+return {
             ...session,
             start_date: session.test_date,
             end_date: session.test_date,
-            exercise_tests: exerciseTests
+            exercise_tests: exerciseTests,
+            session_label: null,
+            completed_at: null
           };
         })
       );
-      setSessions(sessionsWithAttempts);
+      setSessions(sessionsWithAttempts as SessionWithDetails[]);
     }
   };
 

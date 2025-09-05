@@ -1,4 +1,5 @@
 
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { TestResult } from "./types";
+import { StrengthTestChart } from "./StrengthTestChart";
 
 interface TestViewDialogProps {
   isOpen: boolean;
@@ -19,12 +21,12 @@ export const TestViewDialog = ({ isOpen, onClose, test }: TestViewDialogProps) =
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl rounded-none">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto rounded-none">
         <DialogHeader>
           <DialogTitle>Προβολή Τεστ</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-700">Τύπος Τεστ</label>
@@ -56,6 +58,21 @@ export const TestViewDialog = ({ isOpen, onClose, test }: TestViewDialogProps) =
             <div>
               <label className="text-sm font-medium text-gray-700">Σημειώσεις</label>
               <p className="text-sm text-gray-900 mt-1">{test.notes}</p>
+            </div>
+          )}
+
+          {/* Show strength test chart for strength tests */}
+          {test.test_type === "Δύναμη" && (
+            <StrengthTestChart 
+              userId={test.user_id} 
+              userName={test.user_name}
+            />
+          )}
+
+          {/* Placeholder for other test types */}
+          {test.test_type !== "Δύναμη" && (
+            <div className="bg-gray-50 p-6 rounded-none text-center text-gray-500">
+              Προβολή δεδομένων για {test.test_type} - Σε ανάπτυξη
             </div>
           )}
         </div>

@@ -22,7 +22,7 @@ export const useStrengthSessionManager = (
   });
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
-  const saveSession = async () => {
+const saveSession = async () => {
     if (!currentSession.user_id || currentSession.exercise_tests.length === 0) {
       toast({
         title: "Σφάλμα",
@@ -59,32 +59,33 @@ export const useStrengthSessionManager = (
       let sessionId = currentSession.id;
 
       if (editingSessionId) {
+        // Update existing test_session
         const { error: updateError } = await supabase
-          .from('strength_test_sessions')
+          .from('test_sessions')
           .update({
-            user_id: currentSession.user_id,
             test_date: startDate,
-            notes: currentSession.notes,
-            created_by: user.id
+            notes: currentSession.notes
           })
           .eq('id', editingSessionId);
 
         if (updateError) throw updateError;
 
+        // Delete existing strength test data
         await supabase
-          .from('strength_test_attempts')
+          .from('strength_test_data')
           .delete()
           .eq('test_session_id', editingSessionId);
 
         sessionId = editingSessionId;
       } else {
+        // Create new test_session
         const { data: sessionData, error: sessionError } = await supabase
-          .from('strength_test_sessions')
+          .from('test_sessions')
           .insert({
             user_id: currentSession.user_id,
             test_date: startDate,
             notes: currentSession.notes,
-            created_by: user.id
+            test_types: ['strength']
           })
           .select()
           .single();
@@ -93,6 +94,7 @@ export const useStrengthSessionManager = (
         sessionId = sessionData.id;
       }
 
+      // Insert strength test data
       const allAttempts: any[] = [];
       currentSession.exercise_tests.forEach(exerciseTest => {
         exerciseTest.attempts.forEach(attempt => {
@@ -108,7 +110,7 @@ export const useStrengthSessionManager = (
       });
 
       const { error: attemptsError } = await supabase
-        .from('strength_test_attempts')
+        .from('strength_test_data')
         .insert(allAttempts);
 
       if (attemptsError) throw attemptsError;
