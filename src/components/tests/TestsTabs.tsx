@@ -107,8 +107,6 @@ export const TestsTabs: React.FC<TestsTabsProps> = ({
           <StrengthTests
             selectedAthleteId={selectedAthleteId}
             selectedDate={selectedDate}
-            hideSubmitButton={true}
-            strengthSessionRef={strengthSessionRef}
           />
           {saving && (
             <div className="text-center text-gray-600 mt-4">
