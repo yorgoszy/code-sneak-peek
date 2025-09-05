@@ -18,13 +18,13 @@ export const useStrengthDataFetching = () => {
       return;
     }
 
-    const { data: usageStats } = await supabase
-      .from('strength_test_attempts')
+const { data: usageStats } = await supabase
+      .from('strength_test_data')
       .select(`
         exercise_id,
-        strength_test_sessions!inner(user_id)
+        test_sessions!inner(user_id)
       `)
-      .eq('strength_test_sessions.user_id', selectedAthleteId);
+      .eq('test_sessions.user_id', selectedAthleteId);
 
     const usageMap = new Map();
     usageStats?.forEach(stat => {
@@ -50,20 +50,21 @@ export const useStrengthDataFetching = () => {
   const fetchSessions = async (selectedAthleteId: string) => {
     if (!selectedAthleteId) return;
 
-    const { data: sessionsData } = await supabase
-      .from('strength_test_sessions')
+const { data: sessionsData } = await supabase
+      .from('test_sessions')
       .select(`
         *,
         app_users!user_id(name)
       `)
       .eq('user_id', selectedAthleteId)
+      .eq('test_types', '["strength"]')
       .order('created_at', { ascending: false });
 
     if (sessionsData) {
       const sessionsWithAttempts = await Promise.all(
         sessionsData.map(async (session) => {
-          const { data: attempts } = await supabase
-            .from('strength_test_attempts')
+const { data: attempts } = await supabase
+            .from('strength_test_data')
             .select(`
               *,
               exercises(name)

@@ -131,13 +131,13 @@ export const useStrengthSessionManager = (
     }
   };
 
-  const deleteSession = async (sessionId: string) => {
+const deleteSession = async (sessionId: string) => {
     try {
       const { error } = await supabase
-        .from('strength_test_sessions')
+        .from('test_sessions')
         .delete()
         .eq('id', sessionId);
-
+      
       if (error) throw error;
 
       toast({
