@@ -25,6 +25,7 @@ import Subscriptions from "@/pages/Subscriptions";
 import Analytics from "@/pages/Analytics";
 import ArticlesWithSidebar from "@/pages/Dashboard/ArticlesWithSidebar";
 import ResultsWithSidebar from "@/pages/Dashboard/ResultsWithSidebar";
+import TestResultsWithSidebar from "@/pages/Dashboard/TestResultsWithSidebar";
 import Shop from "@/pages/Shop";
 import AdminShopWithSidebar from "@/pages/Dashboard/AdminShopWithSidebar";
 import OnlineCoaching from "@/pages/OnlineCoaching";
@@ -60,6 +61,7 @@ function App() {
                 <Route path="/dashboard/active-programs" element={<ActivePrograms />} />
                 <Route path="/dashboard/program-cards" element={<ProgramCards />} />
                 <Route path="/dashboard/tests" element={<Tests />} />
+                <Route path="/dashboard/test-results" element={<TestResultsWithSidebar />} />
                 <Route path="/dashboard/analytics" element={<Analytics />} />
                 <Route path="/dashboard/articles" element={<ArticlesWithSidebar />} />
                 <Route path="/dashboard/results" element={<ResultsWithSidebar />} />
