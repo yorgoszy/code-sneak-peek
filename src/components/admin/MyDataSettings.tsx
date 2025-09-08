@@ -82,7 +82,7 @@ export const MyDataSettings: React.FC = () => {
 
       toast({
         title: "Επιτυχία",
-        description: "Οι ρυθμίσεις MyData αποθηκεύτηκαν επιτυχώς",
+        description: "Οι ρυθμίσεις MyData αποθηκεύτηκαν επιτυχώς! 🎉",
       });
 
       setConnectionStatus('unknown');
