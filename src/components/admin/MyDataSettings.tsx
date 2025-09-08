@@ -50,7 +50,15 @@ export const MyDataSettings: React.FC = () => {
   };
 
   const saveSettings = async () => {
+    console.log('🔄 saveSettings called with:', settings);
+    
     if (!settings.aadeUserId || !settings.subscriptionKey || !settings.vatNumber) {
+      console.log('❌ Missing required fields:', {
+        aadeUserId: !!settings.aadeUserId,
+        subscriptionKey: !!settings.subscriptionKey,
+        vatNumber: !!settings.vatNumber
+      });
+      
       toast({
         title: "Σφάλμα",
         description: "Παρακαλώ συμπληρώστε όλα τα απαραίτητα πεδία",
@@ -59,6 +67,7 @@ export const MyDataSettings: React.FC = () => {
       return;
     }
 
+    console.log('✅ All fields valid, proceeding with save...');
     setLoading(true);
     
     try {
@@ -69,6 +78,8 @@ export const MyDataSettings: React.FC = () => {
       localStorage.setItem('mydata_enabled', settings.enabled.toString());
       localStorage.setItem('mydata_auto_send', settings.autoSend.toString());
 
+      console.log('✅ Settings saved to localStorage');
+
       toast({
         title: "Επιτυχία",
         description: "Οι ρυθμίσεις MyData αποθηκεύτηκαν επιτυχώς",
@@ -76,6 +87,7 @@ export const MyDataSettings: React.FC = () => {
 
       setConnectionStatus('unknown');
     } catch (error) {
+      console.error('❌ Error saving settings:', error);
       toast({
         title: "Σφάλμα",
         description: "Σφάλμα κατά την αποθήκευση των ρυθμίσεων",
@@ -287,11 +299,14 @@ export const MyDataSettings: React.FC = () => {
 
               <div className="flex gap-3">
                 <Button
-                  onClick={saveSettings}
+                  onClick={() => {
+                    console.log('🖱️ Button clicked!');
+                    saveSettings();
+                  }}
                   disabled={loading}
                   className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
                 >
-                  Αποθήκευση Ρυθμίσεων
+                  {loading ? "Αποθήκευση..." : "Αποθήκευση Ρυθμίσεων"}
                 </Button>
 
                 <Button
