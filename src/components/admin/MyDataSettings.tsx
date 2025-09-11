@@ -318,6 +318,15 @@ export const MyDataSettings: React.FC = () => {
                   <TestTube className="w-4 h-4 mr-2" />
                   {testLoading ? "Έλεγχος..." : "Test Σύνδεσης"}
                 </Button>
+
+                <Button
+                  onClick={() => window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank')}
+                  variant="outline"
+                  className="rounded-none"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  E-timologio
+                </Button>
               </div>
             </CardContent>
           </Card>
