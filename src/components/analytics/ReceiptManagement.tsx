@@ -23,6 +23,93 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ReceiptPreviewDialog } from "./ReceiptPreviewDialog";
 import { ReceiptMyDataIntegration } from "@/components/receipts/ReceiptMyDataIntegration";
+
+// Component για χειροκίνητη εισαγωγή ΜΑΡΚ
+const MarkInput: React.FC<{
+  receiptId: string;
+  currentMark: string;
+  onUpdate: () => void;
+}> = ({ receiptId, currentMark, onUpdate }) => {
+  const [mark, setMark] = useState(currentMark);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (mark.trim() === currentMark) {
+      setIsEditing(false);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('receipts')
+        .update({ invoice_mark: mark.trim() || null })
+        .eq('id', receiptId);
+
+      if (error) throw error;
+
+      toast.success('ΜΑΡΚ ενημερώθηκε επιτυχώς');
+      setIsEditing(false);
+      onUpdate();
+    } catch (error) {
+      console.error('Error updating invoice mark:', error);
+      toast.error('Σφάλμα στην ενημέρωση ΜΑΡΚ');
+      setMark(currentMark); // Reset to original value
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setMark(currentMark);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1">
+        <Input
+          value={mark}
+          onChange={(e) => setMark(e.target.value)}
+          className="rounded-none text-xs h-8 w-24"
+          placeholder="ΜΑΡΚ"
+          disabled={isSaving}
+        />
+        <div className="flex gap-1">
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="h-6 w-6 p-0 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+          >
+            <CheckCircle className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isSaving}
+            className="h-6 w-6 p-0 rounded-none"
+          >
+            ×
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <span 
+        className={`text-xs ${currentMark ? 'text-green-600 font-medium' : 'text-gray-400'} cursor-pointer hover:underline`}
+        onClick={() => setIsEditing(true)}
+      >
+        {currentMark || 'Κλικ για ΜΑΡΚ'}
+      </span>
+    </div>
+  );
+};
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -835,69 +922,74 @@ const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
                 ) : (
                   <div className="space-y-4">
                     {/* Desktop Table View */}
-                    <div className="hidden md:block">
-                      <div className="border border-gray-200 rounded-none overflow-hidden">
-                        <div className="grid grid-cols-6 gap-4 p-4 bg-gray-50 border-b font-medium text-sm">
-                          <div>Αριθμός</div>
-                          <div>Πελάτης</div>
-                          <div>Ημερομηνία</div>
-                          <div>Ποσό</div>
-                          <div>Κατάσταση</div>
-                          <div>Ενέργειες</div>
-                        </div>
-                        {receipts.map((receipt) => (
-                          <div key={receipt.id} className="grid grid-cols-6 gap-4 p-4 border-b border-gray-100 items-center">
-                            <div>
-                              <p className="font-medium">{receipt.receiptNumber}</p>
-                              {receipt.invoiceMark && (
-                                <p className="text-xs text-green-600 font-medium">ΜΑΡΚ: {receipt.invoiceMark}</p>
-                              )}
-                            </div>
-                            <div>
-                              <p className="font-medium">{receipt.customerName}</p>
-                              {receipt.customerEmail && (
-                                <p className="text-xs text-gray-500">{receipt.customerEmail}</p>
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-sm">{receipt.date}</p>
-                            </div>
-                            <div>
-                              <p className="font-bold">€{receipt.total.toFixed(2)}</p>
-                            </div>
-                            <div>
-                              <ReceiptMyDataIntegration 
-                                receipt={{
-                                  id: receipt.id,
-                                  receipt_number: receipt.receiptNumber,
-                                  user_id: '',
-                                  total: receipt.total,
-                                  net_amount: receipt.subtotal,
-                                  tax_amount: receipt.vat,
-                                  issue_date: receipt.date,
-                                  mydata_status: receipt.myDataStatus,
-                                  mydata_id: receipt.myDataId,
-                                  invoice_mark: receipt.invoiceMark
-                                }}
-                                onUpdate={loadReceipts}
-                              />
-                            </div>
-                            <div className="flex gap-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="rounded-none"
-                                onClick={() => {
-                                  setSelectedReceipt(receipt);
-                                  setPreviewDialogOpen(true);
-                                }}
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                Προβολή
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
+                     <div className="hidden md:block">
+                       <div className="border border-gray-200 rounded-none overflow-hidden">
+                         <div className="grid grid-cols-7 gap-4 p-4 bg-gray-50 border-b font-medium text-sm">
+                           <div>Αριθμός</div>
+                           <div>Πελάτης</div>
+                           <div>Ημερομηνία</div>
+                           <div>Ποσό</div>
+                           <div>Κατάσταση</div>
+                           <div>ΜΑΡΚ</div>
+                           <div>Ενέργειες</div>
+                         </div>
+                         {receipts.map((receipt) => (
+                           <div key={receipt.id} className="grid grid-cols-7 gap-4 p-4 border-b border-gray-100 items-center">
+                             <div>
+                               <p className="font-medium">{receipt.receiptNumber}</p>
+                             </div>
+                             <div>
+                               <p className="font-medium">{receipt.customerName}</p>
+                               {receipt.customerEmail && (
+                                 <p className="text-xs text-gray-500">{receipt.customerEmail}</p>
+                               )}
+                             </div>
+                             <div>
+                               <p className="text-sm">{receipt.date}</p>
+                             </div>
+                             <div>
+                               <p className="font-bold">€{receipt.total.toFixed(2)}</p>
+                             </div>
+                             <div>
+                               <ReceiptMyDataIntegration 
+                                 receipt={{
+                                   id: receipt.id,
+                                   receipt_number: receipt.receiptNumber,
+                                   user_id: '',
+                                   total: receipt.total,
+                                   net_amount: receipt.subtotal,
+                                   tax_amount: receipt.vat,
+                                   issue_date: receipt.date,
+                                   mydata_status: receipt.myDataStatus,
+                                   mydata_id: receipt.myDataId,
+                                   invoice_mark: receipt.invoiceMark
+                                 }}
+                                 onUpdate={loadReceipts}
+                               />
+                             </div>
+                             <div>
+                               <MarkInput 
+                                 receiptId={receipt.id}
+                                 currentMark={receipt.invoiceMark || ''}
+                                 onUpdate={loadReceipts}
+                               />
+                             </div>
+                             <div className="flex gap-2">
+                               <Button 
+                                 variant="outline" 
+                                 size="sm" 
+                                 className="rounded-none"
+                                 onClick={() => {
+                                   setSelectedReceipt(receipt);
+                                   setPreviewDialogOpen(true);
+                                 }}
+                               >
+                                 <Eye className="h-4 w-4 mr-1" />
+                                 Προβολή
+                               </Button>
+                             </div>
+                           </div>
+                         ))}
                       </div>
                     </div>
 
