@@ -924,17 +924,16 @@ const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
                     {/* Desktop Table View */}
                      <div className="hidden md:block">
                        <div className="border border-gray-200 rounded-none overflow-hidden">
-                         <div className="grid grid-cols-7 gap-4 p-4 bg-gray-50 border-b font-medium text-sm">
+                         <div className="grid grid-cols-6 gap-4 p-4 bg-gray-50 border-b font-medium text-sm">
                            <div>Αριθμός</div>
                            <div>Πελάτης</div>
                            <div>Ημερομηνία</div>
                            <div>Ποσό</div>
-                           <div>Κατάσταση</div>
                            <div>ΜΑΡΚ</div>
                            <div>Ενέργειες</div>
                          </div>
                          {receipts.map((receipt) => (
-                           <div key={receipt.id} className="grid grid-cols-7 gap-4 p-4 border-b border-gray-100 items-center">
+                           <div key={receipt.id} className="grid grid-cols-6 gap-4 p-4 border-b border-gray-100 items-center">
                              <div>
                                <p className="font-medium">{receipt.receiptNumber}</p>
                              </div>
@@ -949,23 +948,6 @@ const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
                              </div>
                              <div>
                                <p className="font-bold">€{receipt.total.toFixed(2)}</p>
-                             </div>
-                             <div>
-                               <ReceiptMyDataIntegration 
-                                 receipt={{
-                                   id: receipt.id,
-                                   receipt_number: receipt.receiptNumber,
-                                   user_id: '',
-                                   total: receipt.total,
-                                   net_amount: receipt.subtotal,
-                                   tax_amount: receipt.vat,
-                                   issue_date: receipt.date,
-                                   mydata_status: receipt.myDataStatus,
-                                   mydata_id: receipt.myDataId,
-                                   invoice_mark: receipt.invoiceMark
-                                 }}
-                                 onUpdate={loadReceipts}
-                               />
                              </div>
                              <div>
                                <MarkInput 
