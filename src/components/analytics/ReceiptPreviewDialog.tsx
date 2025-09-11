@@ -278,7 +278,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
               <img 
                 src="/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" 
                 alt="HYPERKIDS Logo" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain grayscale"
               />
             </div>
           </div>
