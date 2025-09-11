@@ -274,7 +274,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
 
           {/* Logo στο κέντρο κάτω */}
           <div className="flex justify-center mt-2 sm:mt-3 pt-1 sm:pt-2 border-t border-gray-200">
-            <div className="w-full h-12 sm:h-16">
+            <div className="w-3/4 h-8 sm:h-12">
               <img 
                 src="/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" 
                 alt="HYPERKIDS Logo" 
