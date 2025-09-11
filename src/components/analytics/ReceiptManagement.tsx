@@ -956,20 +956,23 @@ const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
                                  onUpdate={loadReceipts}
                                />
                              </div>
-                             <div className="flex gap-2">
-                               <Button 
-                                 variant="outline" 
-                                 size="sm" 
-                                 className="rounded-none"
-                                 onClick={() => {
-                                   setSelectedReceipt(receipt);
-                                   setPreviewDialogOpen(true);
-                                 }}
-                               >
-                                 <Eye className="h-4 w-4 mr-1" />
-                                 Προβολή
-                               </Button>
-                             </div>
+                              <div className="flex gap-2 items-center">
+                                {receipt.invoiceMark && (
+                                  <CheckCircle className="h-4 w-4 text-[#00ffba]" />
+                                )}
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none"
+                                  onClick={() => {
+                                    setSelectedReceipt(receipt);
+                                    setPreviewDialogOpen(true);
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  Προβολή
+                                </Button>
+                              </div>
                            </div>
                          ))}
                       </div>
