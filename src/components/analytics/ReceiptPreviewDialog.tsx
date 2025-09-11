@@ -279,15 +279,6 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
             </div>
           </div>
 
-          <div className="relative mt-1 sm:mt-2 pt-1 sm:pt-2 border-t border-gray-200">
-            <div className="absolute right-0 w-16 h-8 sm:w-24 sm:h-12">
-              <img 
-                src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" 
-                alt="HYPERKIDS Logo" 
-                className="max-w-full max-h-full object-contain"
-              />
-            </div>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
