@@ -176,13 +176,6 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           {/* Header with logo and business details */}
           <div className="flex items-start justify-between border-b border-[#00ffba] pb-1 sm:pb-2 mb-2 sm:mb-3">
             <div className="flex-1">
-              <div className="w-16 h-8 sm:w-24 sm:h-12 mb-1 sm:mb-2">
-                <img 
-                  src="/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" 
-                  alt="HYPERKIDS Logo" 
-                  className="max-w-full max-h-full object-contain"
-                />
-              </div>
               <div className="text-xs text-gray-700 space-y-0.5 text-left">
                 <p><strong>HYPERKIDS</strong></p>
                 <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
@@ -276,6 +269,17 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                   <span className="text-sm sm:text-lg font-bold text-[#00ffba]">€{receipt.total.toFixed(2)}</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Logo στο κέντρο κάτω */}
+          <div className="flex justify-center mt-2 sm:mt-3 pt-1 sm:pt-2 border-t border-gray-200">
+            <div className="w-16 h-8 sm:w-24 sm:h-12">
+              <img 
+                src="/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" 
+                alt="HYPERKIDS Logo" 
+                className="max-w-full max-h-full object-contain"
+              />
             </div>
           </div>
 
