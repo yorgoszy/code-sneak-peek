@@ -22,6 +22,7 @@ interface ReceiptData {
   endDate?: string;
   myDataStatus: 'pending' | 'sent' | 'error';
   myDataId?: string;
+  invoiceMark?: string;
 }
 
 interface ReceiptItem {
@@ -231,6 +232,12 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                     <span className="text-gray-600 text-xs">{format(new Date(receipt.endDate), 'dd/MM/yyyy')}</span>
                   </div>
                 )}
+              </div>
+            )}
+            {receipt.invoiceMark && (
+              <div className="flex justify-between py-0.5 sm:py-1 border-b border-gray-200">
+                <span className="font-semibold text-gray-900 text-xs">ΜΑΡΚ:</span>
+                <span className="text-gray-600 text-xs">{receipt.invoiceMark}</span>
               </div>
             )}
           </div>
