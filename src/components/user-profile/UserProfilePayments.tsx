@@ -412,13 +412,15 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
                   {receipts.map((receipt) => (
                     <div key={receipt.id} className="border border-gray-200 p-2 rounded-none hover:bg-gray-50">
                       <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-sm">{receipt.receipt_number}</h4>
-                            <Badge className={`text-xs ${getStatusColor(receipt.mydata_status)} px-1 py-0.5`}>
-                              {getStatusText(receipt.mydata_status)}
-                            </Badge>
-                          </div>
+                         <div className="flex-1">
+                           <div className="flex items-center gap-2 mb-1">
+                             <h4 className="font-medium text-sm">{receipt.receipt_number}</h4>
+                             {receipt.invoice_mark && (
+                               <Badge className="text-xs bg-green-100 text-green-800 px-1 py-0.5">
+                                 ΜΑΡΚ: {receipt.invoice_mark}
+                               </Badge>
+                             )}
+                           </div>
                           <p className="text-xs text-gray-600">{receipt.customer_name}</p>
                           <p className="text-xs text-gray-500 mt-0.5">
                             Ημερομηνία: {formatDate(receipt.issue_date)}
@@ -463,7 +465,8 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
           total: selectedReceipt.total,
           date: selectedReceipt.issue_date,
           myDataStatus: selectedReceipt.mydata_status,
-          myDataId: selectedReceipt.mydata_id
+          myDataId: selectedReceipt.mydata_id,
+          invoiceMark: selectedReceipt.invoice_mark
         } : null}
       />
     </>
