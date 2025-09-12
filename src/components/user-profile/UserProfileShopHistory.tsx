@@ -150,65 +150,87 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Ιστορικό Αγορών</h2>
-        <p className="text-gray-600">Όλες οι αγορές σας ανά μήνα και έτος</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Ιστορικό Αγορών</h2>
+        <p className="text-sm sm:text-base text-gray-600">Όλες οι αγορές σας ανά μήνα και έτος</p>
       </div>
 
       {Object.entries(groupedHistory).map(([monthYear, purchases]) => (
         <Card key={monthYear} className="rounded-none">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Calendar className="w-5 h-5 text-[#00ffba]" />
-              {monthYear}
-              <Badge variant="secondary" className="ml-auto rounded-none">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-base sm:text-lg">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ffba]" />
+                <span className="text-sm sm:text-base">{monthYear}</span>
+              </div>
+              <Badge variant="secondary" className="rounded-none self-start sm:ml-auto text-xs">
                 {purchases.length} αγορές
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="p-3 sm:p-6">
+            <div className="space-y-3 sm:space-y-4">
               {purchases.map((purchase) => (
                 <div 
                   key={purchase.id} 
-                  className="border border-gray-200 rounded-none p-4 hover:bg-gray-50 transition-colors"
+                  className="border border-gray-200 rounded-none p-3 sm:p-4 hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        {getModeIcon(purchase.subscription_type.subscription_mode)}
-                        <h4 className="font-medium text-gray-900">
-                          {purchase.subscription_type.name}
-                        </h4>
+                  {/* Mobile Layout */}
+                  <div className="block sm:hidden space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {getModeIcon(purchase.subscription_type.subscription_mode)}
+                          <h4 className="font-medium text-gray-900 text-sm truncate">
+                            {purchase.subscription_type.name}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          Τύπος: {getModeText(purchase.subscription_type.subscription_mode)}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-1 text-base font-bold text-[#00ffba]">
+                          <Euro className="w-3 h-3" />
+                          <span>{purchase.subscription_type.price}</span>
+                        </div>
                         <Badge 
-                          className={`rounded-none border ${getStatusColor(purchase.status, purchase.is_paid)}`}
+                          className={`rounded-none border text-xs ${getStatusColor(purchase.status, purchase.is_paid)}`}
                           variant="outline"
                         >
                           {getStatusText(purchase.status, purchase.is_paid)}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">
-                        Τύπος: {getModeText(purchase.subscription_type.subscription_mode)}
-                      </p>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 text-lg font-bold text-[#00ffba]">
-                        <Euro className="w-4 h-4" />
-                        {purchase.subscription_type.price}
+                    
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <p className="text-gray-500">Ημερομηνία</p>
+                        <p className="font-medium">
+                          {format(parseISO(purchase.created_at), 'dd/MM/yyyy', { locale: el })}
+                        </p>
                       </div>
+                      {purchase.subscription_type.subscription_mode === 'time_based' && (
+                        <div>
+                          <p className="text-gray-500">Διάρκεια</p>
+                          <p className="font-medium">
+                            {purchase.subscription_type.duration_months} μήνες
+                          </p>
+                        </div>
+                      )}
+                      {purchase.subscription_type.subscription_mode === 'visit_based' && (
+                        <div>
+                          <p className="text-gray-500">Επισκέψεις</p>
+                          <p className="font-medium">
+                            {purchase.subscription_type.visit_count}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">Ημερομηνία Αγοράς</p>
-                      <p className="font-medium">
-                        {format(parseISO(purchase.created_at), 'dd/MM/yyyy', { locale: el })}
-                      </p>
-                    </div>
+                    
                     {purchase.subscription_type.subscription_mode === 'time_based' && (
-                      <>
+                      <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-gray-100">
                         <div>
                           <p className="text-gray-500">Έναρξη</p>
                           <p className="font-medium">
@@ -221,22 +243,79 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
                             {format(parseISO(purchase.end_date), 'dd/MM/yyyy', { locale: el })}
                           </p>
                         </div>
-                        <div>
-                          <p className="text-gray-500">Διάρκεια</p>
-                          <p className="font-medium">
-                            {purchase.subscription_type.duration_months} μήνες
-                          </p>
-                        </div>
-                      </>
-                    )}
-                    {purchase.subscription_type.subscription_mode === 'visit_based' && (
-                      <div>
-                        <p className="text-gray-500">Επισκέψεις</p>
-                        <p className="font-medium">
-                          {purchase.subscription_type.visit_count}
-                        </p>
                       </div>
                     )}
+                  </div>
+
+                  {/* Desktop Layout */}
+                  <div className="hidden sm:block">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          {getModeIcon(purchase.subscription_type.subscription_mode)}
+                          <h4 className="font-medium text-gray-900">
+                            {purchase.subscription_type.name}
+                          </h4>
+                          <Badge 
+                            className={`rounded-none border ${getStatusColor(purchase.status, purchase.is_paid)}`}
+                            variant="outline"
+                          >
+                            {getStatusText(purchase.status, purchase.is_paid)}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Τύπος: {getModeText(purchase.subscription_type.subscription_mode)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-lg font-bold text-[#00ffba]">
+                          <Euro className="w-4 h-4" />
+                          {purchase.subscription_type.price}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop Grid Layout */}
+                  <div className="hidden sm:block">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-500">Ημερομηνία Αγοράς</p>
+                        <p className="font-medium">
+                          {format(parseISO(purchase.created_at), 'dd/MM/yyyy', { locale: el })}
+                        </p>
+                      </div>
+                      {purchase.subscription_type.subscription_mode === 'time_based' && (
+                        <>
+                          <div>
+                            <p className="text-gray-500">Έναρξη</p>
+                            <p className="font-medium">
+                              {format(parseISO(purchase.start_date), 'dd/MM/yyyy', { locale: el })}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Λήξη</p>
+                            <p className="font-medium">
+                              {format(parseISO(purchase.end_date), 'dd/MM/yyyy', { locale: el })}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Διάρκεια</p>
+                            <p className="font-medium">
+                              {purchase.subscription_type.duration_months} μήνες
+                            </p>
+                          </div>
+                        </>
+                      )}
+                      {purchase.subscription_type.subscription_mode === 'visit_based' && (
+                        <div>
+                          <p className="text-gray-500">Επισκέψεις</p>
+                          <p className="font-medium">
+                            {purchase.subscription_type.visit_count}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -247,23 +326,23 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
 
       {/* Σύνοψη */}
       <Card className="rounded-none bg-gray-50">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 text-center">
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 text-center">
             <div>
-              <p className="text-2xl font-bold text-[#00ffba]">{history.length}</p>
-              <p className="text-sm text-gray-600">Συνολικές Αγορές</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#00ffba]">{history.length}</p>
+              <p className="text-xs sm:text-sm text-gray-600">Συνολικές Αγορές</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-xl sm:text-2xl font-bold text-green-600">
                 €{history.reduce((sum, p) => sum + p.subscription_type.price, 0)}
               </p>
-              <p className="text-sm text-gray-600">Συνολικό Ποσό</p>
+              <p className="text-xs sm:text-sm text-gray-600">Συνολικό Ποσό</p>
             </div>
-            <div className="md:col-span-1 col-span-2">
-              <p className="text-2xl font-bold text-blue-600">
+            <div className="sm:col-span-2 lg:col-span-1">
+              <p className="text-xl sm:text-2xl font-bold text-blue-600">
                 {history.filter(p => p.status === 'active').length}
               </p>
-              <p className="text-sm text-gray-600">Ενεργές Συνδρομές</p>
+              <p className="text-xs sm:text-sm text-gray-600">Ενεργές Συνδρομές</p>
             </div>
           </div>
         </CardContent>
