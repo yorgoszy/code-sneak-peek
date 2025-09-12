@@ -160,14 +160,6 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
                 <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Κατέβασμα </span>PDF
               </Button>
-              <Button
-                onClick={onClose}
-                variant="outline"
-                size="sm"
-                className="rounded-none text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
-              >
-                <X className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
             </div>
           </div>
         </DialogHeader>
