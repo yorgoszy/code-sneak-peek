@@ -146,7 +146,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen}>
       <DialogContent className="max-w-5xl rounded-none sm:rounded-none w-full h-full sm:h-auto sm:w-auto overflow-y-auto sm:overflow-visible">
         <DialogHeader>
           <div className="flex items-center justify-between">
