@@ -22,11 +22,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     <section id="home" className="relative pt-16 min-h-screen flex items-center">
       <style>{`
         .get-started-btn {
-          background-color: #00ffba !important;
-          color: black !important;
+          background-color: #cf8d54 !important;
+          color: white !important;
         }
         .get-started-btn:hover {
-          background-color: #00cc99 !important;
+          background-color: #b8794a !important;
         }
       `}</style>
       
@@ -43,7 +43,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         <div className="text-left">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl text-white mb-6">
             {translations.heroTitle}<br />
-            <span style={{ color: '#00ffba' }}>{translations.heroSubtitle}</span>
+            <span style={{ color: '#cf8d54' }}>{translations.heroSubtitle}</span>
           </h1>
           <div className="flex space-x-4">
             <Button 
