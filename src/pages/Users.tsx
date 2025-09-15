@@ -471,6 +471,15 @@ const Users = () => {
                             variant="outline" 
                             size="sm" 
                             className="rounded-none p-2"
+                            onClick={() => handleTestPasswordReset(user)}
+                            title="Αποστολή κωδικού"
+                          >
+                            <Mail className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none p-2"
                             onClick={() => handleViewUser(user)}
                             title="Προβολή προφίλ"
                           >
