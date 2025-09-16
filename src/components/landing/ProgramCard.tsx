@@ -360,7 +360,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       {/* Program Title */}
       {program.id === "10" ? (
         <div className="p-4 pb-2 bg-black">
-          <p className="text-gray-400 text-xs leading-relaxed">
+          <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
             Χτίζοντας αθλητικές βάσεις για όλα τα σπορ
           </p>
         </div>
