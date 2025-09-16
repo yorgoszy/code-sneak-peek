@@ -366,9 +366,6 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         </div>
       ) : program.id === "11" ? (
         <div className="p-4 pb-2 bg-black">
-          <div className="flex justify-between items-start mb-1">
-            {/* Αφαιρέθηκε η επικεφαλίδα hypergym */}
-          </div>
           <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
             Προπονητικά πλάνα βασισμένα στην αξιολόγηση
           </p>
