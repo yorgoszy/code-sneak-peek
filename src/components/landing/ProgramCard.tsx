@@ -370,15 +370,10 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             Προπονητικά πλάνα βασισμένα στην αξιολόγηση
           </p>
         </div>
-      ) : program.id === "12" ? (
-        <div className="p-4 pb-2">
-          <div className="flex justify-between items-start mb-1">
-            <h3 className="text-lg font-bold text-gray-500 flex-1" style={{ fontFamily: 'Robert, sans-serif' }}>
-              {program.title}
-            </h3>
-          </div>
-          <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
-            {program.description}
+      ) : program.id === "13" ? (
+        <div className="p-4 pb-2 bg-black">
+          <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
+            Προπονητικά πλάνα βασισμένα στην αξιολόγηση
           </p>
         </div>
       ) : (
@@ -387,7 +382,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             <h3 className="text-lg font-bold text-gray-900 flex-1" style={{ fontFamily: 'Robert, sans-serif' }}>
               {program.title}
             </h3>
-            {program.id !== "11" && program.id !== "12" && (
+            {program.id !== "11" && program.id !== "12" && program.id !== "13" && (
               <span className="text-lg font-bold text-[#00ffba] ml-2 flex-shrink-0">
                 {programData.monthlyPrice}
               </span>
@@ -400,21 +395,21 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       )}
 
       {/* Tabs */}
-      <div className={`px-4 pb-4 flex-1 overflow-hidden ${program.id === "10" || program.id === "11" ? "bg-black" : ""}`}>
+      <div className={`px-4 pb-4 flex-1 overflow-hidden ${program.id === "10" || program.id === "11" || program.id === "13" ? "bg-black" : ""}`}>
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className={`grid w-full ${program.id === "10" || program.id === "11" ? "grid-cols-1" : "grid-cols-3"} rounded-none bg-transparent ${program.id === "10" || program.id === "11" ? "" : "border-b border-gray-200"} px-0 gap-0`}>
+          <TabsList className={`grid w-full ${program.id === "10" || program.id === "11" || program.id === "13" ? "grid-cols-1" : "grid-cols-3"} rounded-none bg-transparent ${program.id === "10" || program.id === "11" || program.id === "13" ? "" : "border-b border-gray-200"} px-0 gap-0`}>
             <TabsTrigger 
               value="details" 
-              className={`rounded-none text-xs bg-transparent border-b-2 border-transparent ${program.id === "10" || program.id === "11" ? "" : "data-[state=active]:border-[#00ffba]"} data-[state=active]:bg-transparent hover:bg-gray-50 px-0`}
-              style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}
+              className={`rounded-none text-xs bg-transparent border-b-2 border-transparent ${program.id === "10" || program.id === "11" || program.id === "13" ? "" : "data-[state=active]:border-[#00ffba]"} data-[state=active]:bg-transparent hover:bg-gray-50 px-0`}
+              style={program.id === "10" || program.id === "11" || program.id === "13" ? { color: '#aca097' } : {}}
             >
-              {program.id === "10" || program.id === "11" ? "" : "Λεπτομέρειες"}
+              {program.id === "10" || program.id === "11" || program.id === "13" ? "" : "Λεπτομέρειες"}
             </TabsTrigger>
             {/* Αφαιρέθηκαν τα tabs Οφέλη και Εβδομαδιαίο Πρόγραμμα */}
           </TabsList>
 
-          <TabsContent value="details" className={`${program.id === "10" || program.id === "11" ? "mt-[-20px]" : "mt-4"} h-[140px]`}>
-            <div className={`${program.id === "10" || program.id === "11" ? "bg-black" : "bg-white"} p-3 rounded-none h-full`}>
+          <TabsContent value="details" className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "mt-[-20px]" : "mt-4"} h-[140px]`}>
+            <div className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "bg-black" : "bg-white"} p-3 rounded-none h-full`}>
               {program.id === "10" ? (
                 <div className="text-xs space-y-3">
                   <div>
@@ -430,7 +425,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                     <p style={{ color: '#aca097' }}>Εισαγωγικές τεχνικές δύναμης</p>
                   </div>
                 </div>
-              ) : program.id === "11" ? (
+              ) : program.id === "11" || program.id === "13" ? (
                 <div className="text-xs space-y-3">
                   <div>
                     <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Αξιολόγηση:</h5>
