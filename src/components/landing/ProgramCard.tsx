@@ -439,7 +439,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
               ) : program.id === "12" ? (
                 <div className="text-xs space-y-3">
                   <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Muay Thai</h5>
+                    <h5 className="font-semibold text-gray-500 mb-1">Muay Thai</h5>
                     <p className="text-gray-700">Εκμάθηση βασικών τεχνικών</p>
                     <p className="text-gray-700">Προπόνηση τακτικής</p>
                     <p className="text-gray-700">Βίντεο ανάλυση</p>
