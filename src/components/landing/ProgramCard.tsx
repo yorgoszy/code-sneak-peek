@@ -370,17 +370,6 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             Προπονητικά πλάνα βασισμένα στην αξιολόγηση
           </p>
         </div>
-      ) : program.id === "12" ? (
-        <div className="p-4 pb-2">
-          <div className="flex justify-between items-start mb-1">
-            <h3 className="text-lg font-bold text-gray-500 flex-1" style={{ fontFamily: 'Robert, sans-serif' }}>
-              {program.title}
-            </h3>
-          </div>
-          <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
-            {program.description}
-          </p>
-        </div>
       ) : (
         <div className="p-4 pb-2">
           <div className="flex justify-between items-start mb-1">
