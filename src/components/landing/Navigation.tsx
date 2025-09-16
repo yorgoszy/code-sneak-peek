@@ -40,7 +40,7 @@ const Navigation: React.FC<NavigationProps> = ({
     <nav className="fixed top-0 w-full bg-black z-50">
       <style>{`
         .nav-link:hover {
-          color: #00ffba !important;
+          color: #cf8d54 !important;
         }
         .dashboard-btn:hover {
           background-color: #00ffba !important;
