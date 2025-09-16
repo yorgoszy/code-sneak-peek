@@ -22,11 +22,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     <section id="home" className="relative pt-16 min-h-screen flex items-center">
       <style>{`
         .get-started-btn {
-          background-color: #00ffba !important;
-          color: black !important;
+          background-color: #cf8d54 !important;
+          color: #ACA097 !important;
         }
         .get-started-btn:hover {
-          background-color: #00cc99 !important;
+          background-color: #b5794a !important;
         }
       `}</style>
       
