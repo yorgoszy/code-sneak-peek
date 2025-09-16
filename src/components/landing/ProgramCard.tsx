@@ -341,7 +341,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[520px] flex flex-col">
       {/* Header Image */}
-      <div className="relative h-96 overflow-hidden flex-shrink-0">
+      <div className="relative h-48 overflow-hidden flex-shrink-0">
         <img 
           src={program.id === "10" ? hyperkidsImages[currentImageIndex] : 
                program.id === "11" ? hypergymImages[currentImageIndex] : 
