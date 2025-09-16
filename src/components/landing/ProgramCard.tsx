@@ -358,7 +358,13 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       </div>
 
       {/* Program Title */}
-      {program.id !== "10" && (
+      {program.id === "10" ? (
+        <div className="p-4 pb-2">
+          <p className="text-gray-600 text-xs leading-relaxed">
+            Χτίζοντας αθλητικές βάσεις για όλα τα σπορ
+          </p>
+        </div>
+      ) : (
         <div className="p-4 pb-2">
           <div className="flex justify-between items-start mb-1">
             <h3 className="text-lg font-bold text-gray-900 flex-1" style={{ fontFamily: 'Robert, sans-serif' }}>
