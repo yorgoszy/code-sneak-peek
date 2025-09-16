@@ -424,7 +424,6 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                 </div>
               ) : program.id === "11" ? (
                 <div className="text-xs space-y-3">
-                  <h4 className="font-semibold text-sm mb-3" style={{ color: '#aca097' }}>Προπονητικά πλάνα βασισμένα στην αξιολόγηση</h4>
                   <div>
                     <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Αξιολόγηση:</h5>
                     <p style={{ color: '#aca097' }}>Στάσης και κίνησης</p>
