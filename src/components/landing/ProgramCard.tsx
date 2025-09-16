@@ -391,7 +391,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
               className={`rounded-none text-xs bg-transparent border-b-2 border-transparent ${program.id === "10" ? "" : "data-[state=active]:border-[#00ffba]"} data-[state=active]:bg-transparent hover:bg-gray-50 px-0`}
               style={program.id === "10" ? { color: '#aca097' } : {}}
             >
-              Λεπτομέρειες
+              {program.id === "10" ? "" : "Λεπτομέρειες"}
             </TabsTrigger>
             {program.id !== "10" && (
               <>
