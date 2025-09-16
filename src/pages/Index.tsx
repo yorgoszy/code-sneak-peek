@@ -75,13 +75,6 @@ const Index = () => {
       description: translations.hypergymDesc,
       image: "/lovable-uploads/b06a27cc-1f96-43d1-a89c-ea4330c70290.png",
       color: "#00ffba"
-    },
-    {
-      id: "12",
-      title: translations.hyperathletes,
-      description: translations.hyperathletesDesc,
-      image: "/lovable-uploads/24db4858-28e8-402b-acaf-095be2a78e56.png", 
-      color: "#00ffba"
     }
   ];
 
