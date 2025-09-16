@@ -23,7 +23,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   ];
 
   const hypergymImages = [
-    "/src/assets/gym.png"
+    "/src/assets/hypergym-image.png"
   ];
 
   const hyperathletesImages = [
