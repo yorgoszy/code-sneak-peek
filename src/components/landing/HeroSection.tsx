@@ -28,6 +28,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         .get-started-btn:hover {
           background-color: #b5794a !important;
         }
+        .contact-btn:hover {
+          border-color: #cf8d54 !important;
+          color: #cf8d54 !important;
+        }
       `}</style>
       
       <div 
@@ -54,7 +58,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             </Button>
             <Button 
               variant="outline" 
-              className="rounded-none bg-transparent hover:bg-transparent hover:border-[#cf8d54] hover:text-[#cf8d54]"
+              className="contact-btn rounded-none bg-transparent"
               style={{ color: '#ACA097', borderColor: '#ACA097' }}
               onClick={handleContactClick}
             >
