@@ -31,6 +31,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         .contact-btn:hover {
           border-color: #cf8d54 !important;
           color: #cf8d54 !important;
+          background-color: transparent !important;
         }
       `}</style>
       
