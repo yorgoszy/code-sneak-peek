@@ -364,6 +364,15 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             Χτίζοντας αθλητικές βάσεις για όλα τα σπορ
           </p>
         </div>
+      ) : program.id === "11" ? (
+        <div className="p-4 pb-2">
+          <div className="flex justify-between items-start mb-1">
+            {/* Αφαιρέθηκε η επικεφαλίδα hypergym */}
+          </div>
+          <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
+            Προπονητικά πλάνα βασισμένα στην αξιολόγηση
+          </p>
+        </div>
       ) : (
         <div className="p-4 pb-2">
           <div className="flex justify-between items-start mb-1">
@@ -377,7 +386,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             )}
           </div>
           <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
-            {program.id === "11" ? "Προπονητικά πλάνα βασισμένα στην αξιολόγηση" : program.description}
+            {program.description}
           </p>
         </div>
       )}
