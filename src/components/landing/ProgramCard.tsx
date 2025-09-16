@@ -373,7 +373,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       ) : program.id === "13" ? (
         <div className="p-4 pb-2 bg-black">
           <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
-            Προπονητικά πλάνα βασισμένα στην αξιολόγηση
+            Μέθοδοι Προπόνησης Νέας Γενιάς
           </p>
         </div>
       ) : (
