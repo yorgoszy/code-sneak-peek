@@ -43,16 +43,22 @@ const Navigation: React.FC<NavigationProps> = ({
           color: #cf8d54 !important;
         }
         .dashboard-btn:hover {
-          background-color: #00ffba !important;
+          background-color: #cf8d54 !important;
           border-color: transparent !important;
         }
         .logout-btn:hover {
-          background-color: #00ffba !important;
+          background-color: #cf8d54 !important;
           border-color: transparent !important;
         }
         .language-btn:hover {
-          background-color: #00ffba !important;
+          background-color: #cf8d54 !important;
           border-color: transparent !important;
+        }
+        .language-btn svg, .dashboard-btn svg, .logout-btn svg {
+          color: #ACA097 !important;
+        }
+        .language-btn:hover svg, .dashboard-btn:hover svg, .logout-btn:hover svg {
+          color: #cf8d54 !important;
         }
         .login-btn {
           background-color: #00ffba !important;
