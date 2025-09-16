@@ -391,8 +391,14 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       {/* Tabs */}
       <div className={`px-4 pb-4 flex-1 overflow-hidden ${program.id === "10" || program.id === "11" ? "bg-black" : ""}`}>
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="hidden">
-            {/* Αφαιρέθηκε το TabsTrigger για λεπτομέρειες */}
+          <TabsList className={`grid w-full ${program.id === "10" || program.id === "11" ? "grid-cols-1" : "grid-cols-3"} rounded-none bg-transparent ${program.id === "10" || program.id === "11" ? "" : "border-b border-gray-200"} px-0 gap-0`}>
+            <TabsTrigger 
+              value="details" 
+              className={`rounded-none text-xs bg-transparent border-b-2 border-transparent ${program.id === "10" || program.id === "11" ? "" : "data-[state=active]:border-[#00ffba]"} data-[state=active]:bg-transparent hover:bg-gray-50 px-0`}
+              style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}
+            >
+              {program.id === "10" || program.id === "11" ? "" : "Λεπτομέρειες"}
+            </TabsTrigger>
             {/* Αφαιρέθηκαν τα tabs Οφέλη και Εβδομαδιαίο Πρόγραμμα */}
           </TabsList>
 
