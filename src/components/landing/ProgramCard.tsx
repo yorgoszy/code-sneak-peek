@@ -425,7 +425,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                     <p style={{ color: '#aca097' }}>Εισαγωγικές τεχνικές δύναμης</p>
                   </div>
                 </div>
-              ) : program.id === "11" || program.id === "13" ? (
+              ) : program.id === "11" ? (
                 <div className="text-xs space-y-3">
                   <div>
                     <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Αξιολόγηση:</h5>
@@ -440,6 +440,15 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                   <div>
                     <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Online coaching:</h5>
                     <p style={{ color: '#aca097' }}>Απομακρυσμένη καθοδήγηση</p>
+                  </div>
+                </div>
+              ) : program.id === "13" ? (
+                <div className="text-xs space-y-3">
+                  <div>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Muay Thai</h5>
+                    <p style={{ color: '#aca097' }}>Εκμάθηση βασικών τεχνικών</p>
+                    <p style={{ color: '#aca097' }}>Προπόνηση τακτικής</p>
+                    <p style={{ color: '#aca097' }}>Βίντεο ανάλυση</p>
                   </div>
                 </div>
               ) : program.id === "12" ? (
