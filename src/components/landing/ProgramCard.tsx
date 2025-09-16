@@ -339,7 +339,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   const programData = getProgramData();
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[520px] flex flex-col">
+    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[1040px] flex flex-col">
       {/* Header Image */}
       <div className="relative h-48 overflow-hidden flex-shrink-0">
         <img 
