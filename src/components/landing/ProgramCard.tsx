@@ -349,7 +349,8 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                program.image}
           alt={program.title}
           className={`w-full h-full object-cover transition-all duration-500 ${
-            program.id === "13" ? "object-[center_20%]" : ""
+            program.id === "11" ? "object-[center_20%]" :
+            program.id === "13" ? "object-[center_35%]" : ""
           }`}
           key={program.id === "10" ? currentImageIndex : 
                program.id === "11" ? currentImageIndex : 
