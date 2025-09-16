@@ -13,10 +13,9 @@ interface Program {
 
 interface ProgramCardProps {
   program: Program;
-  translations?: any;
 }
 
-export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations }) => {
+export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const hyperkidsImages = [
