@@ -393,22 +393,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             >
               {program.id === "10" ? "" : "Λεπτομέρειες"}
             </TabsTrigger>
-            {program.id !== "10" && (
-              <>
-                <TabsTrigger 
-                  value="benefits" 
-                  className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0"
-                >
-                  Οφέλη
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="schedule" 
-                  className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0"
-                >
-                  Εβδομαδιαίο Πρόγραμμα
-                </TabsTrigger>
-              </>
-            )}
+            {/* Αφαιρέθηκαν τα tabs Οφέλη και Εβδομαδιαίο Πρόγραμμα */}
           </TabsList>
 
           <TabsContent value="details" className={`${program.id === "10" || program.id === "11" ? "mt-[-20px]" : "mt-4"} h-[140px]`}>
@@ -481,35 +466,9 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             </div>
           </TabsContent>
 
-          <TabsContent value="benefits" className="mt-4 h-[140px]">
-            <div className={`${program.id === "10" || program.id === "11" ? "bg-black" : ""} h-full p-3 rounded-none`}>
-              <h4 className={`font-semibold text-sm mb-2 ${program.id === "10" || program.id === "11" ? "" : "text-gray-900"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>Οφέλη Προγράμματος</h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {programData.benefits.map((benefit, index) => (
-                  <div key={index} className={`${program.id === "10" || program.id === "11" ? "bg-gray-800 border-[#aca097]" : "bg-gray-50 border-[#00ffba]"} p-2 rounded-none border-l-2`}>
-                    <div className={program.id === "10" || program.id === "11" ? "leading-relaxed" : "text-gray-900 leading-relaxed"} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>{benefit}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </TabsContent>
+          {/* Αφαιρέθηκε το TabsContent benefits */}
 
-          <TabsContent value="schedule" className="mt-4 h-[140px]">
-            <div className={`${program.id === "10" || program.id === "11" ? "bg-black" : ""} h-full p-3 rounded-none`}>
-              <h4 className={`font-semibold text-sm mb-2 ${program.id === "10" || program.id === "11" ? "" : "text-gray-900"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>Εβδομαδιαίο Πρόγραμμα</h4>
-              <div className="space-y-2 text-xs">
-                {programData.weeklySchedule.map((schedule, index) => (
-                  <div key={index} className={`${program.id === "10" || program.id === "11" ? "bg-gray-800" : "bg-gray-50"} p-2 rounded-none flex justify-between items-center`}>
-                    <div>
-                      <span className={`font-medium ${program.id === "10" || program.id === "11" ? "" : "text-gray-900"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>{schedule.ageGroup}</span>
-                      <span className={`ml-2 ${program.id === "10" || program.id === "11" ? "" : "text-gray-600"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>{schedule.day}</span>
-                    </div>
-                    <div className={`font-bold ${program.id === "10" || program.id === "11" ? "" : "text-[#00ffba]"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>{schedule.time}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </TabsContent>
+          {/* Αφαιρέθηκε το TabsContent schedule */}
         </Tabs>
       </div>
     </div>
