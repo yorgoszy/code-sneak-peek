@@ -23,7 +23,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   ];
 
   const hypergymImages = [
-    "/lovable-uploads/9b21c404-18e8-4d49-99b1-1012b8d7d3e9.png"
+    "/src/assets/gym.png"
   ];
 
   const hyperathletesImages = [
@@ -411,8 +411,8 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
             )}
           </TabsList>
 
-          <TabsContent value="details" className={`${program.id === "10" ? "mt-[-20px]" : "mt-4"} h-[140px]`}>
-            <div className={`${program.id === "10" ? "bg-black" : "bg-white"} p-3 rounded-none h-full`}>
+          <TabsContent value="details" className={`${program.id === "10" || program.id === "11" ? "mt-[-20px]" : "mt-4"} h-[140px]`}>
+            <div className={`${program.id === "10" || program.id === "11" ? "bg-black" : "bg-white"} p-3 rounded-none h-full`}>
               {program.id === "10" ? (
                 <div className="text-xs space-y-3">
                   <div>
@@ -430,19 +430,20 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                 </div>
               ) : program.id === "11" ? (
                 <div className="text-xs space-y-3">
+                  <h4 className="font-semibold text-sm mb-3" style={{ color: '#aca097' }}>Προπονητικά πλάνα βασισμένα στην αξιολόγηση</h4>
                   <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Αξιολόγηση:</h5>
-                    <p className="text-gray-700">Στάσης και κίνησης</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Αξιολόγηση:</h5>
+                    <p style={{ color: '#aca097' }}>Στάσης και κίνησης</p>
                   </div>
                   <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Αθλητική απόδοση:</h5>
-                    <p className="text-gray-700">Προφίλ φορτίου - ταχύτητα</p>
-                    <p className="text-gray-700">Αλτικό προφίλ</p>
-                    <p className="text-gray-700">Παρακολούθηση αποτελεσμάτων</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Αθλητική απόδοση:</h5>
+                    <p style={{ color: '#aca097' }}>Προφίλ φορτίου - ταχύτητα</p>
+                    <p style={{ color: '#aca097' }}>Αλτικό προφίλ</p>
+                    <p style={{ color: '#aca097' }}>Παρακολούθηση αποτελεσμάτων</p>
                   </div>
                   <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Online coaching:</h5>
-                    <p className="text-gray-700">Απομακρυσμένη καθοδήγηση</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Online coaching:</h5>
+                    <p style={{ color: '#aca097' }}>Απομακρυσμένη καθοδήγηση</p>
                   </div>
                 </div>
               ) : program.id === "12" ? (
@@ -481,12 +482,12 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           </TabsContent>
 
           <TabsContent value="benefits" className="mt-4 h-[140px]">
-            <div className={`${program.id === "10" ? "bg-black" : ""} h-full p-3 rounded-none`}>
-              <h4 className={`font-semibold text-sm mb-2 ${program.id === "10" ? "" : "text-gray-900"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>Οφέλη Προγράμματος</h4>
+            <div className={`${program.id === "10" || program.id === "11" ? "bg-black" : ""} h-full p-3 rounded-none`}>
+              <h4 className={`font-semibold text-sm mb-2 ${program.id === "10" || program.id === "11" ? "" : "text-gray-900"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>Οφέλη Προγράμματος</h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {programData.benefits.map((benefit, index) => (
-                  <div key={index} className={`${program.id === "10" ? "bg-gray-800 border-[#aca097]" : "bg-gray-50 border-[#00ffba]"} p-2 rounded-none border-l-2`}>
-                    <div className={program.id === "10" ? "leading-relaxed" : "text-gray-900 leading-relaxed"} style={program.id === "10" ? { color: '#aca097' } : {}}>{benefit}</div>
+                  <div key={index} className={`${program.id === "10" || program.id === "11" ? "bg-gray-800 border-[#aca097]" : "bg-gray-50 border-[#00ffba]"} p-2 rounded-none border-l-2`}>
+                    <div className={program.id === "10" || program.id === "11" ? "leading-relaxed" : "text-gray-900 leading-relaxed"} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>{benefit}</div>
                   </div>
                 ))}
               </div>
@@ -494,16 +495,16 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           </TabsContent>
 
           <TabsContent value="schedule" className="mt-4 h-[140px]">
-            <div className={`${program.id === "10" ? "bg-black" : ""} h-full p-3 rounded-none`}>
-              <h4 className={`font-semibold text-sm mb-2 ${program.id === "10" ? "" : "text-gray-900"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>Εβδομαδιαίο Πρόγραμμα</h4>
+            <div className={`${program.id === "10" || program.id === "11" ? "bg-black" : ""} h-full p-3 rounded-none`}>
+              <h4 className={`font-semibold text-sm mb-2 ${program.id === "10" || program.id === "11" ? "" : "text-gray-900"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>Εβδομαδιαίο Πρόγραμμα</h4>
               <div className="space-y-2 text-xs">
                 {programData.weeklySchedule.map((schedule, index) => (
-                  <div key={index} className={`${program.id === "10" ? "bg-gray-800" : "bg-gray-50"} p-2 rounded-none flex justify-between items-center`}>
+                  <div key={index} className={`${program.id === "10" || program.id === "11" ? "bg-gray-800" : "bg-gray-50"} p-2 rounded-none flex justify-between items-center`}>
                     <div>
-                      <span className={`font-medium ${program.id === "10" ? "" : "text-gray-900"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>{schedule.ageGroup}</span>
-                      <span className={`ml-2 ${program.id === "10" ? "" : "text-gray-600"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>{schedule.day}</span>
+                      <span className={`font-medium ${program.id === "10" || program.id === "11" ? "" : "text-gray-900"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>{schedule.ageGroup}</span>
+                      <span className={`ml-2 ${program.id === "10" || program.id === "11" ? "" : "text-gray-600"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>{schedule.day}</span>
                     </div>
-                    <div className={`font-bold ${program.id === "10" ? "" : "text-[#00ffba]"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>{schedule.time}</div>
+                    <div className={`font-bold ${program.id === "10" || program.id === "11" ? "" : "text-[#00ffba]"}`} style={program.id === "10" || program.id === "11" ? { color: '#aca097' } : {}}>{schedule.time}</div>
                   </div>
                 ))}
               </div>
