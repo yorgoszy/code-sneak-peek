@@ -385,7 +385,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       {/* Tabs */}
       <div className={`px-4 pb-4 flex-1 overflow-hidden ${program.id === "10" ? "bg-black" : ""}`}>
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className={`grid w-full ${program.id === "10" ? "grid-cols-1" : "grid-cols-3"} rounded-none bg-transparent border-b border-gray-200 px-0 gap-0`}>
+          <TabsList className={`grid w-full ${program.id === "10" ? "grid-cols-1" : "grid-cols-3"} rounded-none bg-transparent ${program.id === "10" ? "" : "border-b border-gray-200"} px-0 gap-0`}>
             <TabsTrigger 
               value="details" 
               className={`rounded-none text-xs bg-transparent border-b-2 border-transparent ${program.id === "10" ? "" : "data-[state=active]:border-[#00ffba]"} data-[state=active]:bg-transparent hover:bg-gray-50 px-0`}
