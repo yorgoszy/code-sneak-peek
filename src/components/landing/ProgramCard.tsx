@@ -27,7 +27,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   ];
 
   const hyperathletesImages = [
-    "/src/assets/hyperathletes.png"
+    "/src/assets/hyperathletes-muaythai.png"
   ];
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       }, 2000);
       return () => clearInterval(interval);
     }
-    if (program.id === "12") {
+    if (program.id === "13") {
       const interval = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % hyperathletesImages.length);
       }, 2000);
@@ -345,13 +345,13 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
         <img 
           src={program.id === "10" ? hyperkidsImages[currentImageIndex] : 
                program.id === "11" ? hypergymImages[currentImageIndex] : 
-               program.id === "12" ? hyperathletesImages[currentImageIndex] :
+               program.id === "13" ? hyperathletesImages[currentImageIndex] :
                program.image}
           alt={program.title}
           className="w-full h-full object-cover transition-all duration-500"
           key={program.id === "10" ? currentImageIndex : 
                program.id === "11" ? currentImageIndex : 
-               program.id === "12" ? currentImageIndex :
+               program.id === "13" ? currentImageIndex :
                program.image}
         />
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
