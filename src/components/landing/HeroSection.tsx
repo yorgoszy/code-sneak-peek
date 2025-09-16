@@ -43,7 +43,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         <div className="text-left">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6" style={{ color: '#ACA097' }}>
             {translations.heroTitle}<br />
-            <span style={{ color: '#00ffba' }}>{translations.heroSubtitle}</span>
+            <span style={{ color: '#cf8d54' }}>{translations.heroSubtitle}</span>
           </h1>
           <div className="flex space-x-4">
             <Button 
