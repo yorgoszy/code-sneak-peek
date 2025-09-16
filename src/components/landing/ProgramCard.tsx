@@ -407,20 +407,20 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           </TabsList>
 
           <TabsContent value="details" className="mt-4 h-[140px]">
-            <div className="bg-white p-3 rounded-none h-full">
+            <div className={`${program.id === "10" ? "bg-black" : "bg-white"} p-3 rounded-none h-full`}>
               {program.id === "10" ? (
                 <div className="text-xs space-y-3">
                   <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Κινητική μάθηση:</h5>
-                    <p className="text-gray-700">Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Κινητική μάθηση:</h5>
+                    <p style={{ color: '#aca097' }}>Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού</p>
                   </div>
                   <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Κινητική ανάπτυξη:</h5>
-                    <p className="text-gray-700">Ανάπτυξη ειδικών αθλητικών δεξιοτήτων</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Κινητική ανάπτυξη:</h5>
+                    <p style={{ color: '#aca097' }}>Ανάπτυξη ειδικών αθλητικών δεξιοτήτων</p>
                   </div>
                   <div>
-                    <h5 className="font-semibold text-gray-900 mb-1">Κινητική βελτίωση:</h5>
-                    <p className="text-gray-700">Εισαγωγικές τεχνικές δύναμης</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Κινητική βελτίωση:</h5>
+                    <p style={{ color: '#aca097' }}>Εισαγωγικές τεχνικές δύναμης</p>
                   </div>
                 </div>
               ) : program.id === "11" ? (
@@ -476,12 +476,12 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           </TabsContent>
 
           <TabsContent value="benefits" className="mt-4 h-[140px]">
-            <div className="h-full">
-              <h4 className="font-semibold text-gray-900 text-sm mb-2">Οφέλη Προγράμματος</h4>
+            <div className={`${program.id === "10" ? "bg-black" : ""} h-full p-3 rounded-none`}>
+              <h4 className={`font-semibold text-sm mb-2 ${program.id === "10" ? "" : "text-gray-900"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>Οφέλη Προγράμματος</h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {programData.benefits.map((benefit, index) => (
-                  <div key={index} className="bg-gray-50 p-2 rounded-none border-l-2 border-[#00ffba]">
-                    <div className="text-gray-900 leading-relaxed">{benefit}</div>
+                  <div key={index} className={`${program.id === "10" ? "bg-gray-800 border-[#aca097]" : "bg-gray-50 border-[#00ffba]"} p-2 rounded-none border-l-2`}>
+                    <div className={program.id === "10" ? "leading-relaxed" : "text-gray-900 leading-relaxed"} style={program.id === "10" ? { color: '#aca097' } : {}}>{benefit}</div>
                   </div>
                 ))}
               </div>
@@ -489,16 +489,16 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           </TabsContent>
 
           <TabsContent value="schedule" className="mt-4 h-[140px]">
-            <div className="h-full">
-              <h4 className="font-semibold text-gray-900 text-sm mb-2">Εβδομαδιαίο Πρόγραμμα</h4>
+            <div className={`${program.id === "10" ? "bg-black" : ""} h-full p-3 rounded-none`}>
+              <h4 className={`font-semibold text-sm mb-2 ${program.id === "10" ? "" : "text-gray-900"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>Εβδομαδιαίο Πρόγραμμα</h4>
               <div className="space-y-2 text-xs">
                 {programData.weeklySchedule.map((schedule, index) => (
-                  <div key={index} className="bg-gray-50 p-2 rounded-none flex justify-between items-center">
+                  <div key={index} className={`${program.id === "10" ? "bg-gray-800" : "bg-gray-50"} p-2 rounded-none flex justify-between items-center`}>
                     <div>
-                      <span className="text-gray-900 font-medium">{schedule.ageGroup}</span>
-                      <span className="text-gray-600 ml-2">{schedule.day}</span>
+                      <span className={`font-medium ${program.id === "10" ? "" : "text-gray-900"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>{schedule.ageGroup}</span>
+                      <span className={`ml-2 ${program.id === "10" ? "" : "text-gray-600"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>{schedule.day}</span>
                     </div>
-                    <div className="text-[#00ffba] font-bold">{schedule.time}</div>
+                    <div className={`font-bold ${program.id === "10" ? "" : "text-[#00ffba]"}`} style={program.id === "10" ? { color: '#aca097' } : {}}>{schedule.time}</div>
                   </div>
                 ))}
               </div>
