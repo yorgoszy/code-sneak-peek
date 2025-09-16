@@ -41,7 +41,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-left">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl text-white mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6" style={{ color: '#ACA097' }}>
             {translations.heroTitle}<br />
             <span style={{ color: '#00ffba' }}>{translations.heroSubtitle}</span>
           </h1>
@@ -54,7 +54,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             </Button>
             <Button 
               variant="outline" 
-              className="rounded-none bg-transparent border-white text-white hover:bg-white hover:text-black"
+              className="rounded-none bg-transparent border-white hover:bg-white hover:text-black"
+              style={{ color: '#ACA097' }}
               onClick={handleContactClick}
             >
               {translations.contactBtn}
