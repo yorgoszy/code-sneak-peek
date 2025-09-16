@@ -388,7 +388,8 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
           <TabsList className={`grid w-full ${program.id === "10" ? "grid-cols-1" : "grid-cols-3"} rounded-none bg-transparent border-b border-gray-200 px-0 gap-0`}>
             <TabsTrigger 
               value="details" 
-              className="rounded-none text-xs bg-transparent border-b-2 border-transparent data-[state=active]:border-[#00ffba] data-[state=active]:bg-transparent hover:bg-gray-50 px-0"
+              className={`rounded-none text-xs bg-transparent border-b-2 border-transparent ${program.id === "10" ? "" : "data-[state=active]:border-[#00ffba]"} data-[state=active]:bg-transparent hover:bg-gray-50 px-0`}
+              style={program.id === "10" ? { color: '#aca097' } : {}}
             >
               Λεπτομέρειες
             </TabsTrigger>
