@@ -54,7 +54,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             </Button>
             <Button 
               variant="outline" 
-              className="rounded-none bg-transparent hover:bg-white hover:text-black"
+              className="rounded-none bg-transparent hover:border-[#cf8d54] hover:text-[#cf8d54]"
               style={{ color: '#ACA097', borderColor: '#ACA097' }}
               onClick={handleContactClick}
             >
