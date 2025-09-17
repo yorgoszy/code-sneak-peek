@@ -4,7 +4,7 @@ import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
 import hyperkidsImage from '@/assets/hyperkids-new.png';
 import hypergymImage from '@/assets/hypergym-new-image.png';
-import hyperathletesImage from '@/assets/hyperathletes-image.png';
+import hyperathletesImage from '@/assets/hyperathletes-final-image.png';
 
 interface Program {
   id: string;
