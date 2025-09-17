@@ -251,7 +251,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
           display: inline-block;
         }
         .about-nav-item.active .about-nav-title {
-          border-bottom-color: #00ffba;
+          border-bottom-color: #cb8954;
         }
         .about-nav-item:hover .about-nav-title {
           border-bottom-color: #cb8954;
@@ -276,21 +276,21 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 className={`flex items-center about-nav-item ${activeAboutSection === 1 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(1)}
               >
-                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 1 ? '#00ffba' : '#aca097' }}>01</span>
+                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 1 ? '#cb8954' : '#aca097' }}>01</span>
                 <h3 className={`text-xl about-nav-title ${activeAboutSection === 1 ? 'text-white font-bold' : ''}`} style={{ color: activeAboutSection === 1 ? 'white' : '#aca097' }}>{translations.headCoach}</h3>
               </div>
               <div 
                 className={`flex items-center about-nav-item ${activeAboutSection === 2 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(2)}
               >
-                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 2 ? '#00ffba' : '#aca097' }}>02</span>
+                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 2 ? '#cb8954' : '#aca097' }}>02</span>
                 <h3 className={`text-xl about-nav-title ${activeAboutSection === 2 ? 'text-white font-bold' : ''}`} style={{ color: activeAboutSection === 2 ? 'white' : '#aca097' }}>{translations.ourVision}</h3>
               </div>
               <div 
                 className={`flex items-center about-nav-item ${activeAboutSection === 3 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(3)}
               >
-                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 3 ? '#00ffba' : '#aca097' }}>03</span>
+                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 3 ? '#cb8954' : '#aca097' }}>03</span>
                 <h3 className={`text-xl about-nav-title ${activeAboutSection === 3 ? 'text-white font-bold' : ''}`} style={{ color: activeAboutSection === 3 ? 'white' : '#aca097' }}>{translations.trainingMethodology}</h3>
               </div>
             </div>
