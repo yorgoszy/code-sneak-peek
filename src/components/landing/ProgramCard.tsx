@@ -368,7 +368,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
       {program.id === "10" ? (
         <div className="p-4 pb-2 bg-black">
           <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
-            Χτίζοντας αθλητικές βάσεις για όλα τα σπορ
+            {translations?.language === 'en' ? 'Building multi-sport athletic fundamentals' : 'Χτίζοντας αθλητικές βάσεις για όλα τα σπορ'}
           </p>
         </div>
       ) : program.id === "11" ? (
@@ -420,16 +420,28 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               {program.id === "10" ? (
                 <div className="text-xs space-y-3">
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Κινητική μάθηση:</h5>
-                    <p style={{ color: '#aca097' }}>Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Motor learning:' : 'Κινητική μάθηση:'}
+                    </h5>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Development of basic motor skills and coordination' : 'Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού'}
+                    </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Κινητική ανάπτυξη:</h5>
-                    <p style={{ color: '#aca097' }}>Ανάπτυξη ειδικών αθλητικών δεξιοτήτων</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Motor development:' : 'Κινητική ανάπτυξη:'}
+                    </h5>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Development of specific athletic skills' : 'Ανάπτυξη ειδικών αθλητικών δεξιοτήτων'}
+                    </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Κινητική βελτίωση:</h5>
-                    <p style={{ color: '#aca097' }}>Εισαγωγικές τεχνικές δύναμης</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Motor improvement:' : 'Κινητική βελτίωση:'}
+                    </h5>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Introductory strength techniques' : 'Εισαγωγικές τεχνικές δύναμης'}
+                    </p>
                   </div>
                 </div>
               ) : program.id === "11" ? (
