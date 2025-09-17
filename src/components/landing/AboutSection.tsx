@@ -178,7 +178,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     <div className="space-y-6">
                       {/* Section Header */}
                       <div className="flex items-center mb-6">
-                        <span className="text-2xl font-bold mr-6" style={{ color: '#00ffba' }}>
+                        <span className="text-2xl font-bold mr-6" style={{ color: '#cb8954' }}>
                           {section.id.toString().padStart(2, '0')}
                         </span>
                         <h3 className="text-xl text-white font-bold">{section.title}</h3>
@@ -192,12 +192,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                           className="w-full h-[300px] object-cover filter grayscale rounded-none"
                         />
                         <div className="absolute flex items-center" style={{ bottom: '20px', left: '20px', right: '20px' }}>
-                          <span className="text-2xl font-bold mr-4" style={{ color: '#00ffba' }}>
+                          <span className="text-2xl font-bold mr-4" style={{ color: '#cb8954' }}>
                             {section.id.toString().padStart(2, '0')}
                           </span>
                           <div 
                             className="flex-1"
-                            style={{ backgroundColor: '#00ffba', height: '1px' }}
+                            style={{ backgroundColor: '#cb8954', height: '1px' }}
                           ></div>
                         </div>
                       </div>
@@ -312,12 +312,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 className="w-full h-[420px] object-cover filter grayscale"
               />
               <div className="absolute flex items-center" style={{ bottom: '40px', left: '20px', right: '0px' }}>
-                <span className="text-4xl font-bold mr-6" style={{ color: '#00ffba' }}>
+                <span className="text-4xl font-bold mr-6" style={{ color: '#cb8954' }}>
                   {activeAboutSection.toString().padStart(2, '0')}
                 </span>
                 <div 
                   className="flex-1 mr-8"
-                  style={{ backgroundColor: '#00ffba', height: '1px' }}
+                  style={{ backgroundColor: '#cb8954', height: '1px' }}
                 ></div>
               </div>
             </div>
