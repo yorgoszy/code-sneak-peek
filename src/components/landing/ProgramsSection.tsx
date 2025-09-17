@@ -75,9 +75,9 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                 </>
               ) : (
                 <>
-                  <h3 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Robert, sans-serif', color: '#ACA097' }}>
-                    Υπηρεσίες
-                  </h3>
+                   <h3 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Robert, sans-serif', color: '#ACA097' }}>
+                     {translations?.language === 'en' ? 'Services' : 'Υπηρεσίες'}
+                   </h3>
                 </>
               )}
             </div>
