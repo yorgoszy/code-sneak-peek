@@ -374,7 +374,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
       ) : program.id === "11" ? (
         <div className="p-4 pb-2 bg-black">
           <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
-            Προπονητικά πλάνα βασισμένα στην αξιολόγηση
+            {translations?.language === 'en' ? 'Assessment based training plans' : 'Προπονητικά πλάνα βασισμένα στην αξιολόγηση'}
           </p>
         </div>
       ) : program.id === "13" ? (
@@ -435,18 +435,32 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               ) : program.id === "11" ? (
                 <div className="text-xs space-y-3">
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Αξιολόγηση:</h5>
-                    <p style={{ color: '#aca097' }}>Στάσης και κίνησης</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Assessment:' : 'Αξιολόγηση:'}
+                    </h5>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Posture and movement' : 'Στάσης και κίνησης'}
+                    </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Αθλητική απόδοση:</h5>
-                    <p style={{ color: '#aca097' }}>Προφίλ φορτίου - ταχύτητα</p>
-                    <p style={{ color: '#aca097' }}>Αλτικό προφίλ</p>
-                    <p style={{ color: '#aca097' }}>Παρακολούθηση αποτελεσμάτων</p>
+                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Athletic performance:' : 'Αθλητική απόδοση:'}
+                    </h5>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Load-velocity profile' : 'Προφίλ φορτίου - ταχύτητα'}
+                    </p>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Jump profile' : 'Αλτικό προφίλ'}
+                    </p>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Results monitoring' : 'Παρακολούθηση αποτελεσμάτων'}
+                    </p>
                   </div>
                   <div>
                     <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Online coaching:</h5>
-                    <p style={{ color: '#aca097' }}>Απομακρυσμένη καθοδήγηση</p>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Remote guidance' : 'Απομακρυσμένη καθοδήγηση'}
+                    </p>
                   </div>
                 </div>
               ) : program.id === "13" ? (
