@@ -204,7 +204,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
 
                       {/* Description */}
                       <div className="mb-6">
-                        <p className="text-gray-300 text-sm leading-relaxed">
+                        <p className="text-sm leading-relaxed" style={{ color: '#aca097' }}>
                           {section.description}
                         </p>
                       </div>
@@ -330,7 +330,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     {activeAboutSection === 2 && translations.ourVision}
                     {activeAboutSection === 3 && translations.trainingMethodology}
                   </h3>
-                  <p className="text-gray-300 text-sm leading-relaxed">
+                  <p className="text-sm leading-relaxed" style={{ color: '#aca097' }}>
                     {activeAboutSection === 1 && translations.coachDescription}
                     {activeAboutSection === 2 && translations.visionDescription}
                     {activeAboutSection === 3 && translations.trainingMethodologyDescription}
