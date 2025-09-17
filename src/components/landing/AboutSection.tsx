@@ -138,12 +138,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
       <section id="about" className="py-20 bg-black relative overflow-hidden" onClick={handleScreenClick}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
+            <p className="text-sm font-medium mb-4" style={{ color: '#cb8954' }}>
               {translations.aboutSection.toUpperCase()}
             </p>
             <h2 className="text-4xl font-bold text-white leading-tight">
-              {translations.supportingYour}<br />
-              <span style={{ color: '#00ffba' }}>{translations.athleticJourney}</span>
+              <span style={{ color: '#aca097' }}>{translations.supportingYour}</span><br />
+              <span style={{ color: '#cb8954' }}>{translations.athleticJourney}</span>
             </h2>
           </div>
 
@@ -262,12 +262,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         <div className="flex flex-col lg:flex-row min-h-[56vh]">
           <div className="lg:w-2/5 flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="mb-12">
-              <p className="text-sm font-medium mb-4" style={{ color: '#00ffba' }}>
+              <p className="text-sm font-medium mb-4" style={{ color: '#cb8954' }}>
                 {translations.aboutSection.toUpperCase()}
               </p>
               <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
-                {translations.supportingYour}<br />
-                <span style={{ color: '#00ffba' }}>{translations.athleticJourney}</span>
+                <span style={{ color: '#aca097' }}>{translations.supportingYour}</span><br />
+                <span style={{ color: '#cb8954' }}>{translations.athleticJourney}</span>
               </h2>
             </div>
 
