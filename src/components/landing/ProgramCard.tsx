@@ -16,9 +16,10 @@ interface Program {
 
 interface ProgramCardProps {
   program: Program;
+  translations?: any;
 }
 
-export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
+export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const hyperkidsImages = [
@@ -379,7 +380,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       ) : program.id === "13" ? (
         <div className="p-4 pb-2 bg-black">
           <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
-            Μέθοδοι Προπόνησης Νέας Γενιάς
+            {translations?.language === 'en' ? 'New generation training methods' : 'Μέθοδοι Προπόνησης Νέας Γενιάς'}
           </p>
         </div>
       ) : (
@@ -452,9 +453,15 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
                 <div className="text-xs space-y-3">
                   <div>
                     <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Muay Thai</h5>
-                    <p style={{ color: '#aca097' }}>Εκμάθηση βασικών τεχνικών</p>
-                    <p style={{ color: '#aca097' }}>Προπόνηση τακτικής</p>
-                    <p style={{ color: '#aca097' }}>Βίντεο ανάλυση</p>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Learning basic techniques' : 'Εκμάθηση βασικών τεχνικών'}
+                    </p>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Tactical training' : 'Προπόνηση τακτικής'}
+                    </p>
+                    <p style={{ color: '#aca097' }}>
+                      {translations?.language === 'en' ? 'Video analysis' : 'Βίντεο ανάλυση'}
+                    </p>
                   </div>
                 </div>
               ) : program.id === "12" ? (
