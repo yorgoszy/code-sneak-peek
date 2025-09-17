@@ -215,7 +215,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                           <div 
                             key={index}
                             className="p-4 border-l-2 rounded-none"
-                            style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                            style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                           >
                             <h4 className="text-white font-bold mb-2">{card.title}</h4>
                             {typeof card.description === 'string' ? (
@@ -342,7 +342,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
                   <div 
                     className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.academicBackground}</h4>
                     <p className="text-gray-400 text-sm">
@@ -351,7 +351,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   </div>
                   <div 
                     className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.professionalAthlete}</h4>
                     <p className="text-gray-400 text-sm">
@@ -360,7 +360,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   </div>
                   <div 
                     className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.coreValues}</h4>
                     <p className="text-gray-400 text-sm">
@@ -374,7 +374,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
                   <div 
                     className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.moreThanPhysical}</h4>
                     <p className="text-gray-400 text-sm">
@@ -383,7 +383,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   </div>
                   <div 
                     className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.buildingCharacter}</h4>
                     <p className="text-gray-400 text-sm">
@@ -392,7 +392,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   </div>
                   <div 
                     className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.trustTheProcess}</h4>
                     <p className="text-gray-400 text-sm">
@@ -406,7 +406,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
                   <div 
                     className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.movementSkills}</h4>
                     <div className="text-gray-400 text-sm">
@@ -417,7 +417,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   </div>
                   <div 
                     className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.assessment}</h4>
                     <div className="text-gray-400 text-sm">
@@ -429,7 +429,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   </div>
                   <div 
                     className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#171e2c', borderColor: '#00ffba' }}
+                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
                     <h4 className="text-white font-bold mb-2">{translations.resultsFocused}</h4>
                     <div className="text-gray-400 text-sm">
