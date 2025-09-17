@@ -254,7 +254,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
           border-bottom-color: #00ffba;
         }
         .about-nav-item:hover .about-nav-title {
-          border-bottom-color: #00ffba;
+          border-bottom-color: #cb8954;
         }
       `}</style>
       
