@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
+import hyperkidsImage from '@/assets/hyperkids-new.png';
+import hypergymImage from '@/assets/hypergym-image.png';
+import hyperathletesImage from '@/assets/hyperathletes-muaythai.png';
 
 interface Program {
   id: string;
@@ -19,15 +22,15 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const hyperkidsImages = [
-    "/src/assets/hyperkids-new.png"
+    hyperkidsImage
   ];
 
   const hypergymImages = [
-    "/src/assets/hypergym-image.png"
+    hypergymImage
   ];
 
   const hyperathletesImages = [
-    "/src/assets/hyperathletes-muaythai.png"
+    hyperathletesImage
   ];
 
   useEffect(() => {
