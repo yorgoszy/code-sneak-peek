@@ -217,11 +217,11 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                             className="p-4 border-l-2 rounded-none"
                             style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                           >
-                            <h4 className="text-white font-bold mb-2">{card.title}</h4>
+                            <h4 className="font-bold mb-2" style={{ color: 'black' }}>{card.title}</h4>
                             {typeof card.description === 'string' ? (
-                              <p className="text-gray-400 text-sm">{card.description}</p>
+                              <p className="text-sm" style={{ color: 'black' }}>{card.description}</p>
                             ) : (
-                              card.description
+                              <div style={{ color: 'black' }}>{card.description}</div>
                             )}
                           </div>
                         ))}
@@ -344,8 +344,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
-                    <h4 className="text-white font-bold mb-2">{translations.academicBackground}</h4>
-                    <p className="text-gray-400 text-sm">
+                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.academicBackground}</h4>
+                    <p className="text-sm" style={{ color: 'black' }}>
                       {translations.academicDescription}
                     </p>
                   </div>
@@ -353,8 +353,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
-                    <h4 className="text-white font-bold mb-2">{translations.professionalAthlete}</h4>
-                    <p className="text-gray-400 text-sm">
+                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.professionalAthlete}</h4>
+                    <p className="text-sm" style={{ color: 'black' }}>
                       {translations.professionalDescription}
                     </p>
                   </div>
@@ -362,8 +362,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
-                    <h4 className="text-white font-bold mb-2">{translations.coreValues}</h4>
-                    <p className="text-gray-400 text-sm">
+                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.coreValues}</h4>
+                    <p className="text-sm" style={{ color: 'black' }}>
                       {translations.coreValuesDescription}
                     </p>
                   </div>
@@ -376,8 +376,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
-                    <h4 className="text-white font-bold mb-2">{translations.moreThanPhysical}</h4>
-                    <p className="text-gray-400 text-sm">
+                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.moreThanPhysical}</h4>
+                    <p className="text-sm" style={{ color: 'black' }}>
                       {translations.moreThanPhysicalDesc}
                     </p>
                   </div>
@@ -385,8 +385,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
-                    <h4 className="text-white font-bold mb-2">{translations.buildingCharacter}</h4>
-                    <p className="text-gray-400 text-sm">
+                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.buildingCharacter}</h4>
+                    <p className="text-sm" style={{ color: 'black' }}>
                       {translations.buildingCharacterDesc}
                     </p>
                   </div>
@@ -394,8 +394,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
-                    <h4 className="text-white font-bold mb-2">{translations.trustTheProcess}</h4>
-                    <p className="text-gray-400 text-sm">
+                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.trustTheProcess}</h4>
+                    <p className="text-sm" style={{ color: 'black' }}>
                       {translations.trustTheProcessDesc}
                     </p>
                   </div>
@@ -408,8 +408,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
-                    <h4 className="text-white font-bold mb-2">{translations.movementSkills}</h4>
-                    <div className="text-gray-400 text-sm">
+                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.movementSkills}</h4>
+                    <div className="text-sm" style={{ color: 'black' }}>
                       <p className="mb-2">• Ανάπτυξη Αθλητικών Δεξιοτήτων</p>
                       <p className="mb-2">• Κατάλληλα για την Ηλικία</p>
                       <p>• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός</p>
@@ -419,8 +419,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
-                    <h4 className="text-white font-bold mb-2">{translations.assessment}</h4>
-                    <div className="text-gray-400 text-sm">
+                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.assessment}</h4>
+                    <div className="text-sm" style={{ color: 'black' }}>
                       <p className="mb-2">• Κίνηση & Στάση</p>
                       <p className="mb-2">• Προφίλ φορτίου - ταχύτητας</p>
                       <p className="mb-2">• Προφίλ άλματος</p>
@@ -431,8 +431,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     className="p-4 border-l-2 rounded-md"
                     style={{ backgroundColor: '#aca097', borderColor: '#cb8954' }}
                   >
-                    <h4 className="text-white font-bold mb-2">{translations.resultsFocused}</h4>
-                    <div className="text-gray-400 text-sm">
+                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.resultsFocused}</h4>
+                    <div className="text-sm" style={{ color: 'black' }}>
                       <p className="mb-2">• Παρακολούθηση Αποτελεσμάτων</p>
                       <p className="mb-2">• Καθοδήγηση Απόδοσης</p>
                       <p>• Ανάπτυξη Προσαρμοσμένου Προγράμματος</p>
