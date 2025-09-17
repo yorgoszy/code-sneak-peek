@@ -74,7 +74,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         {
           title: translations.movementSkills,
           description: (
-            <div className="text-gray-400 text-sm">
+            <div className="text-sm" style={{ color: 'black' }}>
               <p className="mb-2">• Ανάπτυξη Αθλητικών Δεξιοτήτων</p>
               <p className="mb-2">• Κατάλληλα για την Ηλικία</p>
               <p>• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός</p>
@@ -84,7 +84,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         {
           title: translations.assessment,
           description: (
-            <div className="text-gray-400 text-sm">
+            <div className="text-sm" style={{ color: 'black' }}>
               <p className="mb-2">• Κίνηση & Στάση</p>
               <p className="mb-2">• Προφίλ φορτίου - ταχύτητας</p>
               <p className="mb-2">• Προφίλ άλματος</p>
@@ -95,7 +95,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         {
           title: translations.resultsFocused,
           description: (
-            <div className="text-gray-400 text-sm">
+            <div className="text-sm" style={{ color: 'black' }}>
               <p className="mb-2">• Παρακολούθηση Αποτελεσμάτων</p>
               <p className="mb-2">• Καθοδήγηση Απόδοσης</p>
               <p>• Ανάπτυξη Προσαρμοσμένου Προγράμματος</p>
