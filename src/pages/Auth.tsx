@@ -59,6 +59,8 @@ const Auth = () => {
         }
       });
 
+      console.log('📝 Supabase auth response:', { data, error });
+
       if (error) {
         // Έλεγχος για ήδη εγγεγραμμένο email
         if (error.message.includes('User already registered')) {
@@ -87,13 +89,14 @@ const Auth = () => {
           });
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
+          console.error('📝 Profile creation error:', profileError);
           toast({
             title: "Σφάλμα",
-            description: "Προέκυψε σφάλμα κατά τη δημιουργία του προφίλ.",
+            description: `Προέκυψε σφάλμα κατά τη δημιουργία του προφίλ: ${profileError.message}`,
             variant: "destructive",
           });
         } else {
+          console.log('📝 Profile created successfully');
           toast({
             title: "Εγγραφή ολοκληρώθηκε!",
             description: "Ελέγξτε το email σας για επιβεβαίωση. Μπορείτε να συνδεθείτε αμέσως.",
