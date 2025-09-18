@@ -411,12 +411,12 @@ const Auth = () => {
                         type="password"
                         required
                         minLength={8}
-                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$"
+                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$"
                         value={signupPassword}
                         onChange={(e) => {
                           const val = e.target.value;
                           setSignupPassword(val);
-                          const strong = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(val);
+                          const strong = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(val);
                           setPasswordError(
                             strong
                               ? null
