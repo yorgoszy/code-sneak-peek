@@ -81,6 +81,19 @@ export const useActivePrograms = () => {
           throw programsError;
         }
 
+        console.log('✅ Raw programs data:', programs);
+        console.log('📊 Programs structure check:', programs?.map(p => ({
+          id: p.id,
+          name: p.name,
+          weeksCount: p.program_weeks?.length,
+          weeks: p.program_weeks?.map(w => ({
+            id: w.id,
+            name: w.name,
+            week_number: w.week_number,
+            daysCount: w.program_days?.length
+          }))
+        })));
+
         // Fetch related users separately
         const userIds = assignments.map(a => a.user_id).filter(Boolean);
         const { data: users, error: usersError } = await supabase
