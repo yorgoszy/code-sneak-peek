@@ -16,6 +16,8 @@ export const useEditableProgramState = (isOpen: boolean, assignment: EnrichedAss
 
   useEffect(() => {
     if (isOpen && assignment?.programs) {
+      console.log('📊 Assignment data:', assignment);
+      console.log('📊 Program weeks:', assignment.programs?.program_weeks);
       const programDataCopy = JSON.parse(JSON.stringify(assignment.programs));
       setProgramData(programDataCopy);
       setOriginalProgramData(JSON.parse(JSON.stringify(programDataCopy))); // Backup
