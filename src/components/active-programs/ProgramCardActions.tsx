@@ -82,7 +82,12 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 hover:bg-gray-100"
-            onClick={() => setIsProgramViewOpen(true)}
+            onClick={() => {
+              console.log('👁️ Opening ProgramViewDialog with assignment:', assignment);
+              console.log('👁️ Assignment programs:', assignment?.programs);
+              console.log('👁️ Program weeks:', assignment?.programs?.program_weeks);
+              setIsProgramViewOpen(true);
+            }}
             title="Προβολή Προγράμματος"
           >
             <Eye className="h-3 w-3" />
@@ -116,7 +121,10 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 
       <ProgramViewDialog
         isOpen={isProgramViewOpen}
-        onClose={() => setIsProgramViewOpen(false)}
+        onClose={() => {
+          console.log('🔄 Closing ProgramViewDialog');
+          setIsProgramViewOpen(false);
+        }}
         assignment={assignment}
         onStartWorkout={handleStartWorkout}
         editMode={!userMode}
