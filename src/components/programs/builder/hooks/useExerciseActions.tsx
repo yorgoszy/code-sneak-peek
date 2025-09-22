@@ -5,7 +5,8 @@ export const useExerciseActions = (
   program: ProgramStructure,
   updateProgram: (updates: Partial<ProgramStructure>) => void,
   generateId: () => string,
-  exercises: any[]
+  exercises: any[],
+  saveProgram?: (programData: any) => Promise<any>
 ) => {
   const findExerciseName = (exerciseId: string): string => {
     const exercise = exercises.find(ex => ex.id === exerciseId);
@@ -119,7 +120,7 @@ export const useExerciseActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  const duplicateExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
+  const duplicateExercise = async (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
@@ -155,6 +156,17 @@ export const useExerciseActions = (
       return week;
     });
     updateProgram({ weeks: updatedWeeks });
+
+    // Αν το πρόγραμμα έχει ID και υπάρχει saveProgram function, αποθήκευσε αμέσως
+    if (program.id && saveProgram) {
+      try {
+        console.log('💾 Auto-saving after exercise duplication...');
+        await saveProgram({ ...program, weeks: updatedWeeks });
+        console.log('✅ Exercise duplication saved to database');
+      } catch (error) {
+        console.error('❌ Failed to save exercise duplication:', error);
+      }
+    }
   };
 
   return {

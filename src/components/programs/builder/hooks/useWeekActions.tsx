@@ -4,7 +4,8 @@ import { ProgramStructure } from './useProgramBuilderState';
 export const useWeekActions = (
   program: ProgramStructure,
   updateProgram: (updates: Partial<ProgramStructure>) => void,
-  generateId: () => string
+  generateId: () => string,
+  saveProgram?: (programData: any) => Promise<any>
 ) => {
   const addWeek = () => {
     const newWeek = {
@@ -23,7 +24,7 @@ export const useWeekActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  const duplicateWeek = (weekId: string) => {
+  const duplicateWeek = async (weekId: string) => {
     const weekToDuplicate = program.weeks?.find(week => week.id === weekId);
     if (!weekToDuplicate) return;
 
@@ -96,6 +97,17 @@ export const useWeekActions = (
     
     // Άμεση ενημέρωση του state
     updateProgram({ weeks: updatedWeeks });
+
+    // Αν το πρόγραμμα έχει ID και υπάρχει saveProgram function, αποθήκευσε αμέσως
+    if (program.id && saveProgram) {
+      try {
+        console.log('💾 Auto-saving after week duplication...');
+        await saveProgram({ ...program, weeks: updatedWeeks });
+        console.log('✅ Week duplication saved to database');
+      } catch (error) {
+        console.error('❌ Failed to save week duplication:', error);
+      }
+    }
 
     console.log('🚨 [DUPLICATE WEEK] Week duplication completed successfully');
   };

@@ -10,7 +10,8 @@ export const useProgramBuilderActions = (
   program: ProgramStructure,
   updateProgram: (updates: Partial<ProgramStructure>) => void,
   generateId: () => string,
-  exercises: any[]
+  exercises: any[],
+  saveProgram?: (programData: any) => Promise<any>
 ) => {
   // Βελτιωμένη updateProgram που διατηρεί όλες τις βασικές πληροφορίες
   const updateProgramWithPreservation = (updates: Partial<ProgramStructure>) => {
@@ -26,10 +27,10 @@ export const useProgramBuilderActions = (
     updateProgram(preservedUpdates);
   };
 
-  const weekActions = useWeekActions(program, updateProgramWithPreservation, generateId);
-  const dayActions = useDayActions(program, updateProgramWithPreservation, generateId);
-  const blockActions = useBlockActions(program, updateProgramWithPreservation, generateId);
-  const exerciseActions = useExerciseActions(program, updateProgramWithPreservation, generateId, exercises);
+  const weekActions = useWeekActions(program, updateProgramWithPreservation, generateId, saveProgram);
+  const dayActions = useDayActions(program, updateProgramWithPreservation, generateId, saveProgram);
+  const blockActions = useBlockActions(program, updateProgramWithPreservation, generateId, saveProgram);
+  const exerciseActions = useExerciseActions(program, updateProgramWithPreservation, generateId, exercises, saveProgram);
   const reorderActions = useReorderActions(program, updateProgramWithPreservation);
 
   // Νέες λειτουργίες για πολλαπλούς χρήστες

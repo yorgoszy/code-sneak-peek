@@ -4,7 +4,8 @@ import { ProgramStructure } from './useProgramBuilderState';
 export const useBlockActions = (
   program: ProgramStructure,
   updateProgram: (updates: Partial<ProgramStructure>) => void,
-  generateId: () => string
+  generateId: () => string,
+  saveProgram?: (programData: any) => Promise<any>
 ) => {
   const addBlock = (weekId: string, dayId: string) => {
     const updatedWeeks = (program.weeks || []).map(week => {
@@ -54,7 +55,7 @@ export const useBlockActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  const duplicateBlock = (weekId: string, dayId: string, blockId: string) => {
+  const duplicateBlock = async (weekId: string, dayId: string, blockId: string) => {
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
@@ -87,6 +88,17 @@ export const useBlockActions = (
       return week;
     });
     updateProgram({ weeks: updatedWeeks });
+
+    // Αν το πρόγραμμα έχει ID και υπάρχει saveProgram function, αποθήκευσε αμέσως
+    if (program.id && saveProgram) {
+      try {
+        console.log('💾 Auto-saving after block duplication...');
+        await saveProgram({ ...program, weeks: updatedWeeks });
+        console.log('✅ Block duplication saved to database');
+      } catch (error) {
+        console.error('❌ Failed to save block duplication:', error);
+      }
+    }
   };
 
   const updateBlockName = (weekId: string, dayId: string, blockId: string, name: string) => {
