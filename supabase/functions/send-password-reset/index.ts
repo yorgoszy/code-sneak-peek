@@ -58,12 +58,16 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if user exists
-    console.log("👤 Checking if user exists...");
-    const { data: users, error: userError } = await supabase.auth.admin.listUsers();
+    // Check if user exists in app_users table first
+    console.log("👤 Checking if user exists in app_users...");
+    const { data: appUser, error: appUserError } = await supabase
+      .from('app_users')
+      .select('id, email, auth_user_id')
+      .eq('email', email)
+      .single();
     
-    if (userError) {
-      console.log("❌ Error listing users:", userError);
+    if (appUserError) {
+      console.log("⚠️ User not found in app_users:", email);
       // Return success for security reasons even if user doesn't exist
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
@@ -71,14 +75,43 @@ serve(async (req) => {
       });
     }
 
-    const user = users.users.find(u => u.email === email);
-    if (!user) {
-      console.log("⚠️ User not found:", email);
-      // Return success for security reasons
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    console.log("✅ User found in app_users:", appUser.email);
+
+    // Check if user has auth_user_id (already has auth account)
+    let authUserId = appUser.auth_user_id;
+    
+    if (!authUserId) {
+      console.log("🔄 Creating auth user for existing app_user...");
+      // Create auth user for this app_user
+      const { data: authUser, error: createError } = await supabase.auth.admin.createUser({
+        email: email,
+        email_confirm: true, // Skip email confirmation
+        user_metadata: {
+          app_user_id: appUser.id
+        }
       });
+      
+      if (createError) {
+        console.log("❌ Error creating auth user:", createError);
+        // Return success for security reasons
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      authUserId = authUser.user?.id;
+      
+      // Update app_user with auth_user_id
+      if (authUserId) {
+        await supabase
+          .from('app_users')
+          .update({ auth_user_id: authUserId })
+          .eq('id', appUser.id);
+        console.log("✅ Updated app_user with auth_user_id");
+      }
+    } else {
+      console.log("✅ User already has auth account");
     }
 
     console.log("✅ User found, generating reset link...");
