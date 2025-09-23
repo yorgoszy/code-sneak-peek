@@ -31,9 +31,26 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language,
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <style>
+        {`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cb8954;
+            border-radius: 2px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #b87849;
+          }
+        `}
+      </style>
       <div 
         ref={modalRef}
-        className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar"
       >
         <div className={`relative ${article.id === 2 ? 'pt-8' : ''}`}>
           <img 
@@ -54,7 +71,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language,
           </button>
         </div>
         <div className="p-8">
-          <div className="text-sm text-[#00ffba] mb-2">{article.date}</div>
+          <div className="text-sm mb-2" style={{ color: '#cb8954' }}>{article.date}</div>
           <h2 className="text-3xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Robert, sans-serif' }}>
             {article.title}
           </h2>
