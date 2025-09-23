@@ -55,10 +55,10 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
       <section id="results" className="py-8 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-4xl font-bold mb-4 text-black" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+            <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert Pro, sans-serif', color: '#aca097' }}>
               Αποτελέσματα
             </h2>
-            <div>Φόρτωση...</div>
+            <div style={{ color: '#aca097' }}>Φόρτωση...</div>
           </div>
         </div>
       </section>
@@ -69,13 +69,13 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
     <section id="results" className="py-8 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4 text-black" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+          <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert Pro, sans-serif', color: '#aca097' }}>
             Αποτελέσματα
           </h2>
         </div>
         
         {results.length === 0 ? (
-          <div className="text-center text-gray-500">
+          <div className="text-center" style={{ color: '#aca097' }}>
             Δεν υπάρχουν αποτελέσματα προς εμφάνιση
           </div>
         ) : (
@@ -92,22 +92,22 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                   )}
                   
                   <div className="p-6 flex flex-col flex-grow">
-                    <div className="text-sm text-[#00ffba] mb-2">
+                    <div className="text-sm mb-2" style={{ color: '#aca097' }}>
                       {format(new Date(result.result_date), 'dd MMM yyyy')}
                     </div>
                     
-                    <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+                    <h3 className="text-xl font-bold mb-3" style={{ fontFamily: 'Robert Pro, sans-serif', color: '#aca097' }}>
                       {translations?.language === 'en' && result.title_en ? result.title_en : result.title_el}
                     </h3>
                     
-                    <p className="text-gray-600 mb-4 flex-grow">
+                    <p className="mb-4 flex-grow" style={{ color: '#aca097' }}>
                       {translations?.language === 'en' && result.content_en ? result.content_en : result.content_el}
                     </p>
                     
                     {result.hashtags && (
                       <div className="flex flex-wrap gap-1">
                         {parseHashtags(result.hashtags).map((tag, index) => (
-                          <span key={index} className="inline-block bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full">
+                          <span key={index} className="inline-block px-2 py-1 text-xs rounded-full" style={{ backgroundColor: '#aca097', color: 'black' }}>
                             {tag}
                           </span>
                         ))}
