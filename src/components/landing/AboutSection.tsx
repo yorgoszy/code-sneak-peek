@@ -438,17 +438,6 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 )}
               </div>
             </div>
-            
-            {/* Number and line below image for all sections */}
-            <div className="flex items-center mb-6" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-              <span className="text-4xl font-bold mr-6" style={{ color: '#cb8954' }}>
-                {activeAboutSection.toString().padStart(2, '0')}
-              </span>
-              <div 
-                className="flex-1 mr-8"
-                style={{ backgroundColor: '#cb8954', height: '1px' }}
-              ></div>
-            </div>
 
           </div>
         </div>
