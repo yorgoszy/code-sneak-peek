@@ -351,16 +351,30 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   </div>
                 </div>
               )}
-              <div className="absolute flex items-center" style={{ bottom: '40px', left: '20px', right: '0px' }}>
+              {activeAboutSection !== 1 && (
+                <div className="absolute flex items-center" style={{ bottom: '40px', left: '20px', right: '0px' }}>
+                  <span className="text-4xl font-bold mr-6" style={{ color: '#cb8954' }}>
+                    {activeAboutSection.toString().padStart(2, '0')}
+                  </span>
+                  <div 
+                    className="flex-1 mr-8"
+                    style={{ backgroundColor: '#cb8954', height: '1px' }}
+                  ></div>
+                </div>
+              )}
+            </div>
+            
+            {activeAboutSection === 1 && (
+              <div className="flex items-center mb-6" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#cb8954' }}>
-                  {activeAboutSection.toString().padStart(2, '0')}
+                  01
                 </span>
                 <div 
                   className="flex-1 mr-8"
                   style={{ backgroundColor: '#cb8954', height: '1px' }}
                 ></div>
               </div>
-            </div>
+            )}
 
             {activeAboutSection !== 1 && (
               <div className="bg-black bg-opacity-90 w-full">
