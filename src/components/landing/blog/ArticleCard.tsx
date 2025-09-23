@@ -15,7 +15,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onReadMore, translat
         <img 
           src={article.image} 
           alt={article.title}
-          className="w-full h-48 object-cover"
+          className="w-full h-48 object-cover opacity-75"
         />
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
       </div>
