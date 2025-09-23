@@ -75,7 +75,7 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <img 
-              src="/hyperkids_logo.png" 
+              src="/assets/hyperkids-logo.png" 
               alt="HyperKids Logo" 
               className="h-10 w-auto"
             />
