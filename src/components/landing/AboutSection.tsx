@@ -310,16 +310,24 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   "Georgios Zygouris - Head Coach"
                 }
                 className="w-full h-[420px] object-cover filter grayscale"
-                style={{ opacity: activeAboutSection === 1 ? 0.4 : 1 }}
+                style={{ opacity: 0.4 }}
               />
-              {activeAboutSection === 1 && (
-                <div className="absolute inset-0 p-8 flex flex-col justify-center">
-                  <h3 className="text-xl font-bold mb-4" style={{ color: '#cb8954' }}>
-                    {translations.headCoach}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-white mb-6">
-                    {translations.coachDescription}
-                  </p>
+              
+              {/* Content overlay for all sections */}
+              <div className="absolute inset-0 p-8 flex flex-col justify-center">
+                <h3 className="text-xl font-bold mb-4" style={{ color: '#cb8954' }}>
+                  {activeAboutSection === 1 && translations.headCoach}
+                  {activeAboutSection === 2 && translations.ourVision}
+                  {activeAboutSection === 3 && translations.trainingMethodology}
+                </h3>
+                <p className="text-sm leading-relaxed text-white mb-6">
+                  {activeAboutSection === 1 && translations.coachDescription}
+                  {activeAboutSection === 2 && translations.visionDescription}
+                  {activeAboutSection === 3 && translations.trainingMethodologyDescription}
+                </p>
+                
+                {/* Cards for section 1 */}
+                {activeAboutSection === 1 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div 
                       className="p-4 border-2 rounded-md"
@@ -349,120 +357,94 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                       </p>
                     </div>
                   </div>
-                </div>
-              )}
-              {activeAboutSection !== 1 && (
-                <div className="absolute flex items-center" style={{ bottom: '40px', left: '20px', right: '0px' }}>
-                  <span className="text-4xl font-bold mr-6" style={{ color: '#cb8954' }}>
-                    {activeAboutSection.toString().padStart(2, '0')}
-                  </span>
-                  <div 
-                    className="flex-1 mr-8"
-                    style={{ backgroundColor: '#cb8954', height: '1px' }}
-                  ></div>
-                </div>
-              )}
+                )}
+                
+                {/* Cards for section 2 */}
+                {activeAboutSection === 2 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div 
+                      className="p-4 border-2 rounded-md"
+                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                    >
+                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.moreThanPhysical}</h4>
+                      <p className="text-sm text-white">
+                        {translations.moreThanPhysicalDesc}
+                      </p>
+                    </div>
+                    <div 
+                      className="p-4 border-2 rounded-md"
+                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                    >
+                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.buildingCharacter}</h4>
+                      <p className="text-sm text-white">
+                        {translations.buildingCharacterDesc}
+                      </p>
+                    </div>
+                    <div 
+                      className="p-4 border-2 rounded-md"
+                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                    >
+                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.trustTheProcess}</h4>
+                      <p className="text-sm text-white">
+                        {translations.trustTheProcessDesc}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Cards for section 3 */}
+                {activeAboutSection === 3 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div 
+                      className="p-4 border-2 rounded-md"
+                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                    >
+                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.movementSkills}</h4>
+                      <div className="text-sm text-white">
+                        <p className="mb-2">• Ανάπτυξη Αθλητικών Δεξιοτήτων</p>
+                        <p className="mb-2">• Κατάλληλα για την Ηλικία</p>
+                        <p>• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός</p>
+                      </div>
+                    </div>
+                    <div 
+                      className="p-4 border-2 rounded-md"
+                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                    >
+                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.assessment}</h4>
+                      <div className="text-sm text-white">
+                        <p className="mb-2">• Κίνηση & Στάση</p>
+                        <p className="mb-2">• Προφίλ φορτίου - ταχύτητας</p>
+                        <p className="mb-2">• Προφίλ άλματος</p>
+                        <p>• Αντοχή</p>
+                      </div>
+                    </div>
+                    <div 
+                      className="p-4 border-2 rounded-md"
+                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                    >
+                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.resultsFocused}</h4>
+                      <div className="text-sm text-white">
+                        <p className="mb-2">• Παρακολούθηση Αποτελεσμάτων</p>
+                        <p className="mb-2">• Καθοδήγηση Απόδοσης</p>
+                        <p>• Ανάπτυξη Προσαρμοσμένου Προγράμματος</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             
-            {activeAboutSection === 1 && (
-              <div className="flex items-center mb-6" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-                <span className="text-4xl font-bold mr-6" style={{ color: '#cb8954' }}>
-                  01
-                </span>
-                <div 
-                  className="flex-1 mr-8"
-                  style={{ backgroundColor: '#cb8954', height: '1px' }}
-                ></div>
-              </div>
-            )}
+            {/* Number and line below image for all sections */}
+            <div className="flex items-center mb-6" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
+              <span className="text-4xl font-bold mr-6" style={{ color: '#cb8954' }}>
+                {activeAboutSection.toString().padStart(2, '0')}
+              </span>
+              <div 
+                className="flex-1 mr-8"
+                style={{ backgroundColor: '#cb8954', height: '1px' }}
+              ></div>
+            </div>
 
-            {activeAboutSection !== 1 && (
-              <div className="bg-black bg-opacity-90 w-full">
-                <div className="p-0 mb-6">
-                  <div className="px-0 py-8">
-                    <h3 className="text-xl font-bold text-white mb-4">
-                      {activeAboutSection === 2 && translations.ourVision}
-                      {activeAboutSection === 3 && translations.trainingMethodology}
-                    </h3>
-                    <p className="text-sm leading-relaxed" style={{ color: '#aca097' }}>
-                      {activeAboutSection === 2 && translations.visionDescription}
-                      {activeAboutSection === 3 && translations.trainingMethodologyDescription}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-              {activeAboutSection === 2 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
-                  <div 
-                    className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.moreThanPhysical}</h4>
-                    <p className="text-sm" style={{ color: 'black' }}>
-                      {translations.moreThanPhysicalDesc}
-                    </p>
-                  </div>
-                  <div 
-                    className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.buildingCharacter}</h4>
-                    <p className="text-sm" style={{ color: 'black' }}>
-                      {translations.buildingCharacterDesc}
-                    </p>
-                  </div>
-                  <div 
-                    className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.trustTheProcess}</h4>
-                    <p className="text-sm" style={{ color: 'black' }}>
-                      {translations.trustTheProcessDesc}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {activeAboutSection === 3 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
-                  <div 
-                    className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.movementSkills}</h4>
-                    <div className="text-sm" style={{ color: 'black' }}>
-                      <p className="mb-2">• Ανάπτυξη Αθλητικών Δεξιοτήτων</p>
-                      <p className="mb-2">• Κατάλληλα για την Ηλικία</p>
-                      <p>• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός</p>
-                    </div>
-                  </div>
-                  <div 
-                    className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.assessment}</h4>
-                    <div className="text-sm" style={{ color: 'black' }}>
-                      <p className="mb-2">• Κίνηση & Στάση</p>
-                      <p className="mb-2">• Προφίλ φορτίου - ταχύτητας</p>
-                      <p className="mb-2">• Προφίλ άλματος</p>
-                      <p>• Αντοχή</p>
-                    </div>
-                  </div>
-                  <div 
-                    className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.resultsFocused}</h4>
-                    <div className="text-sm" style={{ color: 'black' }}>
-                      <p className="mb-2">• Παρακολούθηση Αποτελεσμάτων</p>
-                      <p className="mb-2">• Καθοδήγηση Απόδοσης</p>
-                      <p>• Ανάπτυξη Προσαρμοσμένου Προγράμματος</p>
-                    </div>
-                  </div>
-                </div>
-              )}
           </div>
         </div>
       </div>
