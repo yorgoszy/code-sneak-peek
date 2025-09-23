@@ -84,11 +84,14 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
               {results.map((result) => (
                 <article key={result.id} className="bg-black rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
                   {result.image_url && (
-                    <img 
-                      src={result.image_url} 
-                      alt={result.title_el}
-                      className="w-full h-48 object-cover"
-                    />
+                    <div className="relative">
+                      <img 
+                        src={result.image_url} 
+                        alt={result.title_el}
+                        className="w-full h-48 object-cover"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
+                    </div>
                   )}
                   
                   <div className="p-6 flex flex-col flex-grow">
