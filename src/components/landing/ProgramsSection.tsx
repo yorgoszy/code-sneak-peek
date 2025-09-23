@@ -80,8 +80,8 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             </div>
           </div>
 
-          {/* Mobile: Carousel */}
-          {isMobile ? (
+          {/* Mobile & Tablet: Carousel */}
+          <div className="lg:hidden">
             <Carousel
               setApi={setApi}
               opts={{
@@ -107,14 +107,14 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                 ))}
               </CarouselContent>
             </Carousel>
-          ) : (
-            /* Desktop: Grid Layout */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {programs.map((program) => (
-                <ProgramCard key={program.id} program={program} translations={translations} />
-              ))}
-            </div>
-          )}
+          </div>
+
+          {/* Desktop: Grid Layout */}
+          <div className="hidden lg:grid grid-cols-3 gap-6">
+            {programs.map((program) => (
+              <ProgramCard key={program.id} program={program} translations={translations} />
+            ))}
+          </div>
         </div>
       </div>
     </section>
