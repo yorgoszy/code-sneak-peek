@@ -419,7 +419,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
           <TabsContent value="details" className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "mt-[-20px]" : "mt-4"} h-[140px]`}>
             <div className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "bg-black" : "bg-white"} p-3 rounded-none h-full`}>
               {program.id === "10" ? (
-                <div className="text-xs space-y-3">
+                <div className="text-sm space-y-3">
                   <div>
                     <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
                       {translations?.language === 'en' ? 'Motor learning:' : 'Κινητική μάθηση:'}
@@ -446,7 +446,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                   </div>
                 </div>
               ) : program.id === "11" ? (
-                <div className="text-xs space-y-3">
+                <div className="text-sm space-y-3">
                   <div>
                     <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
                       {translations?.language === 'en' ? 'Assessment:' : 'Αξιολόγηση:'}
@@ -477,7 +477,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                   </div>
                 </div>
               ) : program.id === "13" ? (
-                <div className="text-xs space-y-3">
+                <div className="text-sm space-y-3">
                   <div>
                     <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Muay Thai</h5>
                     <p style={{ color: '#aca097' }}>
