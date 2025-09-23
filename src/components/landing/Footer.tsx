@@ -46,10 +46,9 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
           {/* Logo/Center */}
           <div className="flex flex-col justify-center items-center">
             <img 
-              src="/lovable-uploads/d03d7cda-5ce7-49e9-815c-1ecc687bd1aa.png" 
+              src="/assets/logo.png" 
               alt="Performance Logo"
               className="w-20 h-20 mb-6"
-              style={{ filter: 'brightness(0) saturate(100%) invert(63%) sepia(47%) saturate(1102%) hue-rotate(14deg) brightness(94%) contrast(86%)' }}
             />
             {/* Social Media Icons */}
             <div className="flex justify-center gap-6">
