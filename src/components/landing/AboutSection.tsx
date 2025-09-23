@@ -322,29 +322,29 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div 
-                      className="p-4 border-l-2 rounded-md"
-                      style={{ backgroundColor: 'rgba(172, 160, 151, 0.8)', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md"
+                      style={{ backgroundColor: 'transparent', borderColor: '#aca097' }}
                     >
-                      <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.academicBackground}</h4>
-                      <p className="text-sm" style={{ color: 'black' }}>
+                      <h4 className="font-bold mb-2 text-white">{translations.academicBackground}</h4>
+                      <p className="text-sm text-white">
                         {translations.academicDescription}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-l-2 rounded-md"
-                      style={{ backgroundColor: 'rgba(172, 160, 151, 0.8)', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md"
+                      style={{ backgroundColor: 'transparent', borderColor: '#aca097' }}
                     >
-                      <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.professionalAthlete}</h4>
-                      <p className="text-sm" style={{ color: 'black' }}>
+                      <h4 className="font-bold mb-2 text-white">{translations.professionalAthlete}</h4>
+                      <p className="text-sm text-white">
                         {translations.professionalDescription}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-l-2 rounded-md"
-                      style={{ backgroundColor: 'rgba(172, 160, 151, 0.8)', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md"
+                      style={{ backgroundColor: 'transparent', borderColor: '#aca097' }}
                     >
-                      <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.coreValues}</h4>
-                      <p className="text-sm" style={{ color: 'black' }}>
+                      <h4 className="font-bold mb-2 text-white">{translations.coreValues}</h4>
+                      <p className="text-sm text-white">
                         {translations.coreValuesDescription}
                       </p>
                     </div>
