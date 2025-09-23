@@ -18,30 +18,30 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
             </h2>
             <div className="w-16 h-1 bg-[#cb8954] mb-8"></div>
             
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-lg text-black mb-8">
               {translations.eliteTrainingDesc}
             </p>
 
             <div className="space-y-4 mb-8">
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-gray-700">{translations.accentuatedEccentric}</span>
+                <span className="text-black">{translations.accentuatedEccentric}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-gray-700">{translations.accommodatingResistance}</span>
+                <span className="text-black">{translations.accommodatingResistance}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-gray-700">{translations.velocityBasedTraining}</span>
+                <span className="text-black">{translations.velocityBasedTraining}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-gray-700">{translations.specificEnergySystem}</span>
+                <span className="text-black">{translations.specificEnergySystem}</span>
               </div>
             </div>
 
-            <p className="text-gray-600 mb-6">
+            <p className="text-black mb-6">
               {translations.cuttingEdgeTech}
             </p>
           </div>
