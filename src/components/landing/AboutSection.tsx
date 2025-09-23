@@ -309,7 +309,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   activeAboutSection === 3 ? "Training Methodology" :
                   "Georgios Zygouris - Head Coach"
                 }
-                className="w-full h-[420px] object-cover filter grayscale"
+                className="w-full h-[500px] object-cover filter grayscale"
                 style={{ opacity: 0.4 }}
               />
               
