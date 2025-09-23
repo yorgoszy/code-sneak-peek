@@ -314,7 +314,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               />
               {activeAboutSection === 1 && (
                 <div className="absolute inset-0 p-8 flex flex-col justify-center">
-                  <h3 className="text-xl font-bold text-white mb-4">
+                  <h3 className="text-xl font-bold mb-4" style={{ color: '#cb8954' }}>
                     {translations.headCoach}
                   </h3>
                   <p className="text-sm leading-relaxed text-white mb-6">
@@ -325,7 +325,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                       className="p-4 border-2 rounded-md"
                       style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.academicBackground}</h4>
+                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.academicBackground}</h4>
                       <p className="text-sm text-white">
                         {translations.academicDescription}
                       </p>
@@ -334,7 +334,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                       className="p-4 border-2 rounded-md"
                       style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.professionalAthlete}</h4>
+                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.professionalAthlete}</h4>
                       <p className="text-sm text-white">
                         {translations.professionalDescription}
                       </p>
@@ -343,7 +343,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                       className="p-4 border-2 rounded-md"
                       style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.coreValues}</h4>
+                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.coreValues}</h4>
                       <p className="text-sm text-white">
                         {translations.coreValuesDescription}
                       </p>
