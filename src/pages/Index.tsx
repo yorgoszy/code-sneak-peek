@@ -135,7 +135,7 @@ const Index = () => {
             {correctedTranslations.journeyText}
           </p>
           <button 
-            className="bg-black text-[#00ffba] px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors"
+            className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors" style={{ color: '#cb8954' }}
             onClick={handleGetStarted}
           >
             {correctedTranslations.startNow}
