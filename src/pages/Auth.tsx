@@ -303,7 +303,7 @@ const Auth = () => {
     return (
       <div className="min-h-screen bg-[hsl(var(--auth-black))] flex items-center justify-center">
         <div className="text-center">
-          <img src="/hyperkids-logo-new.jpg" alt="HYPERKIDS" className="h-12 mx-auto mb-4 animate-pulse" />
+          <img src="/hyperkids-logo-clean.jpg" alt="HYPERKIDS" className="h-12 mx-auto mb-4 animate-pulse" />
           <p className="text-[hsl(var(--auth-gray))]">Φόρτωση...</p>
         </div>
       </div>
@@ -315,7 +315,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center justify-center">
-            <img src="/hyperkids-logo-new.jpg" alt="HYPERKIDS" className="h-16" />
+            <img src="/hyperkids-logo-clean.jpg" alt="HYPERKIDS" className="h-16" />
           </Link>
         </div>
 
