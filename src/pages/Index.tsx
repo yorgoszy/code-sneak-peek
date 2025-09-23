@@ -126,7 +126,7 @@ const Index = () => {
       />
 
       {/* Green Section */}
-      <section className="py-20 bg-[#00ffba]">
+      <section className="py-20" style={{ backgroundColor: '#cb8954' }}>
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-black mb-6">
             {correctedTranslations.readyQuestion}
