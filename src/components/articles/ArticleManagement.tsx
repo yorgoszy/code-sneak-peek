@@ -79,7 +79,32 @@ export const ArticleManagement = () => {
   };
 
   const uploadImage = async (file: File): Promise<string> => {
-    const fileName = `${Date.now()}-${file.name}`;
+    // Καθαρισμός του ονόματος αρχείου από ελληνικούς χαρακτήρες
+    const cleanFileName = file.name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Αφαίρεση τόνων
+      .replace(/[αάἀἁἄἅἆἇᾶᾱᾰᾀᾁᾄᾅᾆᾇᾳᾲᾷ]/g, 'a')
+      .replace(/[εέἐἑἔἕὲ]/g, 'e')
+      .replace(/[ηήἠἡἤἥἦἧῆῃῂῇ]/g, 'i')
+      .replace(/[ιίἰἱἴἵἶἷῖῒΐ]/g, 'i')
+      .replace(/[οόὀὁὄὅὸ]/g, 'o')
+      .replace(/[υύὐὑὔὕὖὗῦῢΰ]/g, 'y')
+      .replace(/[ωώὠὡὤὥὦὧῶῳῲῷ]/g, 'o')
+      .replace(/[βγδζθκλμνξπρστφχψ]/g, (match) => {
+        const map: { [key: string]: string } = {
+          'β': 'b', 'γ': 'g', 'δ': 'd', 'ζ': 'z', 'θ': 'th',
+          'κ': 'k', 'λ': 'l', 'μ': 'm', 'ν': 'n', 'ξ': 'ks',
+          'π': 'p', 'ρ': 'r', 'σ': 's', 'τ': 't', 'φ': 'f',
+          'χ': 'ch', 'ψ': 'ps'
+        };
+        return map[match] || match;
+      })
+      .replace(/[ς]/g, 's')
+      .replace(/[^a-zA-Z0-9.-]/g, '_'); // Όλοι οι άλλοι χαρακτήρες γίνονται _
+    
+    const fileName = `${Date.now()}-${cleanFileName}`;
+    console.log('📁 Uploading file with clean name:', fileName);
+    
     const { data, error } = await supabase.storage
       .from('articles')
       .upload(fileName, file);
