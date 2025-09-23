@@ -82,7 +82,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
           <div className="flex justify-center">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl">
               {results.map((result) => (
-                <article key={result.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
+                <article key={result.id} className="bg-black rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
                   {result.image_url && (
                     <img 
                       src={result.image_url} 
