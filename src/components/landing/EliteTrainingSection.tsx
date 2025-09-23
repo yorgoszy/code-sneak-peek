@@ -14,38 +14,35 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
           {/* Left Content */}
           <div>
             <h2 className="text-4xl font-bold text-black mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-              Elite Training Methodology
+              {translations.eliteTrainingMethodology}
             </h2>
             <div className="w-16 h-1 bg-[#cb8954] mb-8"></div>
             
             <p className="text-lg text-gray-600 mb-8">
-              Our training methodology is based on scientific principles and years of 
-              experience working with athletes. We focus on developing all 
-              aspects of athletic performance
+              {translations.eliteTrainingDesc}
             </p>
 
             <div className="space-y-4 mb-8">
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-gray-700">Accentuated Eccentric Loading</span>
+                <span className="text-gray-700">{translations.accentuatedEccentric}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-gray-700">Accommodating Resistance</span>
+                <span className="text-gray-700">{translations.accommodatingResistance}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-gray-700">Velocity Based Training</span>
+                <span className="text-gray-700">{translations.velocityBasedTraining}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-gray-700">Specific Energy System Development</span>
+                <span className="text-gray-700">{translations.specificEnergySystem}</span>
               </div>
             </div>
 
             <p className="text-gray-600 mb-6">
-              We utilize cutting-edge technology to track performance metrics in real-time, 
-              allowing for precise adjustments and optimal training outcomes.
+              {translations.cuttingEdgeTech}
             </p>
           </div>
 
@@ -59,10 +56,10 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
             />
             <div className="absolute bottom-2 -left-4 bg-[#cb8954] text-black p-6 max-w-xs -ml-4">
               <h3 className="font-bold text-lg mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-                Advanced Technology
+                {translations.advancedTechnology}
               </h3>
               <p className="text-sm">
-                Real-time performance tracking for optimal results
+                {translations.realTimeTracking}
               </p>
             </div>
           </div>

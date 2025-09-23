@@ -84,6 +84,16 @@ export const useTranslations = () => {
       resultsFocused: "Εστιασμένα στα Αποτελέσματα",
       resultsFocusedDesc: "Παρακολούθηση Αποτελεσμάτων\n• Καθοδήγηση Απόδοσης\n• Ανάπτυξη Προσαρμοσμένου Προγράμματος",
       learnMore: "Μάθετε περισσότερα",
+      // Elite Training Methodology section
+      eliteTrainingMethodology: "Elite Training Methodology",
+      eliteTrainingDesc: "Η μεθοδολογία προπόνησής μας βασίζεται σε επιστημονικές αρχές και χρόνια εμπειρία στη δουλειά με αθλητές. Εστιάζουμε στην ανάπτυξη όλων των πτυχών της αθλητικής απόδοσης",
+      accentuatedEccentric: "Accentuated Eccentric Loading",
+      accommodatingResistance: "Accommodating Resistance",
+      velocityBasedTraining: "Velocity Based Training",
+      specificEnergySystem: "Specific Energy System Development",
+      advancedTechnology: "Advanced Technology",
+      realTimeTracking: "Real-time performance tracking for optimal results",
+      cuttingEdgeTech: "Χρησιμοποιούμε τεχνολογία αιχμής για την παρακολούθηση των μετρήσεων απόδοσης σε πραγματικό χρόνο, επιτρέποντας ακριβείς προσαρμογές και βέλτιστα αποτελέσματα προπόνησης.",
       // New services
       hyperkids: "hyperkids",
       hyperkidsDesc: "Εξειδικευμένο πρόγραμμα για παιδιά ηλικίας 4-12 ετών που εστιάζει στην ανάπτυξη βασικών κινητικών δεξιοτήτων, συντονισμού και αθλητικών αξιών μέσα από διασκεδαστικές δραστηριότητες",
@@ -171,6 +181,16 @@ export const useTranslations = () => {
       resultsFocused: "Results Focused",
       resultsFocusedDesc: "Results Tracking\n• Performance Guidance\n• Customized Program Development",
       learnMore: "Learn More",
+      // Elite Training Methodology section
+      eliteTrainingMethodology: "Elite Training Methodology",
+      eliteTrainingDesc: "Our training methodology is based on scientific principles and years of experience working with athletes. We focus on developing all aspects of athletic performance",
+      accentuatedEccentric: "Accentuated Eccentric Loading",
+      accommodatingResistance: "Accommodating Resistance",
+      velocityBasedTraining: "Velocity Based Training",
+      specificEnergySystem: "Specific Energy System Development",
+      advancedTechnology: "Advanced Technology",
+      realTimeTracking: "Real-time performance tracking for optimal results",
+      cuttingEdgeTech: "We utilize cutting-edge technology to track performance metrics in real-time, allowing for precise adjustments and optimal training outcomes.",
       // New services
       hyperkids: "hyperkids",
       hyperkidsDesc: "Specialized program for children aged 4-12 years focusing on developing fundamental movement skills, coordination and athletic values through fun activities",
