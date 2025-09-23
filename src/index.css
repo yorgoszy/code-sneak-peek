@@ -47,6 +47,9 @@ html, body {
     --radius: 0.5rem;
 
     --magic-box: 355 94% 58%; /* #fa3055 */
+    --auth-gold: 35 49% 56%; /* #cb8954 */
+    --auth-gray: 34 10% 65%; /* #aca097 */
+    --auth-black: 0 0% 0%; /* #000000 */
 
     --sidebar-background: 0 0% 98%;
 

@@ -311,7 +311,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[hsl(var(--auth-black))] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center justify-center">
@@ -319,12 +319,12 @@ const Auth = () => {
           </Link>
         </div>
 
-        <Card>
+        <Card className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))]">
           <CardHeader>
-            <CardTitle className="text-center">
+            <CardTitle className="text-center text-[hsl(var(--auth-gray))]">
               {showForgotPassword ? "Επαναφορά Κωδικού" : "Είσοδος στο λογαριασμό σας"}
             </CardTitle>
-            <CardDescription className="text-center">
+            <CardDescription className="text-center text-[hsl(var(--auth-gray))]">
               {showForgotPassword ? "Εισάγετε το email σας για επαναφορά κωδικού" : "Συνδεθείτε για να συνεχίσετε"}
             </CardDescription>
           </CardHeader>
@@ -332,18 +332,19 @@ const Auth = () => {
             {showForgotPassword ? (
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="reset-email">Email</Label>
+                  <Label htmlFor="reset-email" className="text-[hsl(var(--auth-gray))]">Email</Label>
                   <Input 
                     id="reset-email" 
                     name="reset-email" 
                     type="email" 
                     placeholder="your@email.com" 
                     required 
+                    className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]"
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00cc95] border-2 border-transparent transition-all duration-300" 
+                  className="w-full rounded-none bg-[hsl(var(--auth-gold))] text-black hover:bg-[hsl(var(--auth-gold)/0.9)] border-2 border-transparent transition-all duration-300" 
                   disabled={isLoading}
                 >
                   {isLoading ? "Αποστολή..." : "Αποστολή Email Επαναφοράς"}
@@ -351,7 +352,7 @@ const Auth = () => {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  className="w-full rounded-none"
+                  className="w-full rounded-none border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] hover:bg-[hsl(var(--auth-gray)/0.1)]"
                   onClick={() => setShowForgotPassword(false)}
                 >
                   Επιστροφή στη Σύνδεση
@@ -359,24 +360,24 @@ const Auth = () => {
               </form>
             ) : (
               <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login">Σύνδεση</TabsTrigger>
-                  <TabsTrigger value="signup">Εγγραφή</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 bg-[hsl(var(--auth-black))] border border-[hsl(var(--auth-gray))]">
+                  <TabsTrigger value="login" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">Σύνδεση</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">Εγγραφή</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" name="email" type="email" placeholder="your@email.com" required />
+                      <Label htmlFor="email" className="text-[hsl(var(--auth-gray))]">Email</Label>
+                      <Input id="email" name="email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Κωδικός</Label>
-                      <Input id="password" name="password" type="password" required />
+                      <Label htmlFor="password" className="text-[hsl(var(--auth-gray))]">Κωδικός</Label>
+                      <Input id="password" name="password" type="password" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00cc95] border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-[hsl(var(--auth-gold))] text-black hover:bg-[hsl(var(--auth-gold)/0.9)] border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading}
                     >
                       {isLoading ? "Σύνδεση..." : "Σύνδεση"}
@@ -385,7 +386,7 @@ const Auth = () => {
                       <button
                         type="button"
                         onClick={() => setShowForgotPassword(true)}
-                        className="text-sm text-blue-600 hover:underline"
+                        className="text-sm text-[hsl(var(--auth-gray))] hover:underline"
                       >
                         Ξέχασα τον κωδικό μου
                       </button>
@@ -396,15 +397,15 @@ const Auth = () => {
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Πλήρες Όνομα</Label>
-                      <Input id="name" name="name" type="text" placeholder="Το όνομά σας" required />
+                      <Label htmlFor="name" className="text-[hsl(var(--auth-gray))]">Πλήρες Όνομα</Label>
+                      <Input id="name" name="name" type="text" placeholder="Το όνομά σας" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <Input id="signup-email" name="signup-email" type="email" placeholder="your@email.com" required />
+                      <Label htmlFor="signup-email" className="text-[hsl(var(--auth-gray))]">Email</Label>
+                      <Input id="signup-email" name="signup-email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password">Κωδικός</Label>
+                      <Label htmlFor="signup-password" className="text-[hsl(var(--auth-gray))]">Κωδικός</Label>
                       <Input
                         id="signup-password"
                         name="signup-password"
@@ -425,19 +426,20 @@ const Auth = () => {
                         }}
                         aria-invalid={!!passwordError}
                         aria-describedby="password-help"
+                        className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]"
                       />
-                      <p id="password-help" className={`text-xs ${passwordError ? 'text-red-600' : 'text-gray-500'}`}>
+                      <p id="password-help" className={`text-xs ${passwordError ? 'text-red-600' : 'text-[hsl(var(--auth-gray))]'}`}>
                         Τουλάχιστον 8 χαρακτήρες με κεφαλαία, μικρά, αριθμούς και σύμβολα.
                       </p>
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00cc95] border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-[hsl(var(--auth-gold))] text-black hover:bg-[hsl(var(--auth-gold)/0.9)] border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading || !!passwordError || signupPassword.length === 0}
                     >
                       {isLoading ? "Εγγραφή..." : "Εγγραφή"}
                     </Button>
-                    <div className="text-xs text-gray-600 text-center">
+                    <div className="text-xs text-[hsl(var(--auth-gray))] text-center">
                       Μετά την εγγραφή, μπορείτε να συνδεθείτε αμέσως.
                     </div>
                   </form>
@@ -447,7 +449,7 @@ const Auth = () => {
 
 
             <div className="mt-6 text-center">
-              <Link to="/" className="text-sm text-blue-600 hover:underline">
+              <Link to="/" className="text-sm text-[hsl(var(--auth-gray))] hover:underline">
                 ← Επιστροφή στην αρχική
               </Link>
             </div>
