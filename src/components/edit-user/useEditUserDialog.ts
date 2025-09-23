@@ -44,11 +44,13 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         role,
         category,
         user_status: userStatus,
-        subscription_status: subscriptionStatus,
+        subscription_status: subscriptionStatus || 'inactive', // Προεπιλογή αν είναι κενό
         birth_date: birthDate || null,
         photo_url: photoUrl || null,
         updated_at: new Date().toISOString(),
       };
+
+      console.log('📝 Updates to send:', updates);
 
       const { error } = await supabase
         .from("app_users")
