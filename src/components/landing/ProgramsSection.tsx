@@ -80,43 +80,41 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             </div>
           </div>
 
-          <Carousel
-            setApi={setApi}
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full"
-          >
-            {/* Navigation buttons positioned absolutely in top right - only show if more than 3 programs */}
-            {programs.length > 3 && (
-              <div className="absolute -top-16 right-0 flex gap-2 z-10">
-                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
-                  <ChevronLeft className="h-6 w-6" />
-                </CarouselPrevious>
-                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
-                  <ChevronRight className="h-6 w-6" />
-                </CarouselNext>
-              </div>
-            )}
-
-            <CarouselContent 
-              className="-ml-4"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              onMouseDown={handleTouchStart}
-              onMouseUp={handleTouchEnd}
+          {/* Mobile: Carousel */}
+          {isMobile ? (
+            <Carousel
+              setApi={setApi}
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
             >
+              <CarouselContent 
+                className="-ml-4"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onMouseDown={handleTouchStart}
+                onMouseUp={handleTouchEnd}
+              >
+                {programs.map((program) => (
+                  <CarouselItem 
+                    key={program.id} 
+                    className="pl-4 basis-full"
+                  >
+                    <ProgramCard program={program} translations={translations} />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          ) : (
+            /* Desktop: Grid Layout */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {programs.map((program) => (
-                <CarouselItem 
-                  key={program.id} 
-                  className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
-                >
-                  <ProgramCard program={program} translations={translations} />
-                </CarouselItem>
+                <ProgramCard key={program.id} program={program} translations={translations} />
               ))}
-            </CarouselContent>
-          </Carousel>
+            </div>
+          )}
         </div>
       </div>
     </section>
