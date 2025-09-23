@@ -301,10 +301,10 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[hsl(var(--auth-black))] flex items-center justify-center">
         <div className="text-center">
-          <img src="/lovable-uploads/bafc2832-366b-43ee-a1c6-3e3ea94f5dbb.png" alt="HYPERKIDS" className="h-12 mx-auto mb-4 animate-pulse" />
-          <p className="text-gray-600">Φόρτωση...</p>
+          <img src="/hyperkids-logo.png" alt="HYPERKIDS" className="h-12 mx-auto mb-4 animate-pulse" />
+          <p className="text-[hsl(var(--auth-gray))]">Φόρτωση...</p>
         </div>
       </div>
     );
@@ -315,7 +315,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center justify-center">
-            <img src="/lovable-uploads/bafc2832-366b-43ee-a1c6-3e3ea94f5dbb.png" alt="HYPERKIDS" className="h-16" />
+            <img src="/hyperkids-logo.png" alt="HYPERKIDS" className="h-16" />
           </Link>
         </div>
 
