@@ -92,7 +92,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
   };
 
   return (
-    <section id="blog" className="py-21 bg-gray-100" onClick={handleScreenClick}>
+    <section id="blog" className="py-21" style={{ backgroundColor: '#aca097' }} onClick={handleScreenClick}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
