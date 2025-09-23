@@ -386,7 +386,7 @@ const Auth = () => {
                       <button
                         type="button"
                         onClick={() => setShowForgotPassword(true)}
-                        className="text-sm text-[hsl(var(--auth-gray))] hover:underline"
+                        className="text-sm text-[hsl(var(--auth-gold))] hover:underline"
                       >
                         Ξέχασα τον κωδικό μου
                       </button>
@@ -449,7 +449,7 @@ const Auth = () => {
 
 
             <div className="mt-6 text-center">
-              <Link to="/" className="text-sm text-[hsl(var(--auth-gray))] hover:underline">
+              <Link to="/" className="text-sm text-[hsl(var(--auth-gold))] hover:underline">
                 ← Επιστροφή στην αρχική
               </Link>
             </div>
