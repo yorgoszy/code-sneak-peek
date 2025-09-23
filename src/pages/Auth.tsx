@@ -38,12 +38,16 @@ const Auth = () => {
 
     // Detailed password validation with specific messages
     const validatePassword = (pwd: string) => {
-      const errors = [];
+      const errors: string[] = [];
       if (pwd.length < 8) errors.push("τουλάχιστον 8 χαρακτήρες");
-      if (!/[a-z]/.test(pwd)) errors.push("μικρά γράμματα (a-z)");
-      if (!/[A-Z]/.test(pwd)) errors.push("κεφαλαία γράμματα (A-Z)");
-      if (!/\d/.test(pwd)) errors.push("αριθμούς (0-9)");
-      if (!/[^A-Za-z0-9]/.test(pwd)) errors.push("ειδικούς χαρακτήρες (!@#$%^&*)");
+      const hasLower = /\p{Ll}/u.test(pwd); // Unicode lowercase (π.χ. α)
+      const hasUpper = /\p{Lu}/u.test(pwd); // Unicode uppercase (π.χ. Α)
+      const hasNumber = /\p{Nd}/u.test(pwd); // Unicode digits
+      const hasSpecial = /[^\p{L}\p{N}]/u.test(pwd); // Anything that's not letter/number
+      if (!hasLower) errors.push("μικρά γράμματα");
+      if (!hasUpper) errors.push("κεφαλαία γράμματα");
+      if (!hasNumber) errors.push("αριθμούς (0-9)");
+      if (!hasSpecial) errors.push("ειδικούς χαρακτήρες (!@#$%^&*)");
       return errors;
     };
 
@@ -427,24 +431,29 @@ const Auth = () => {
                         type="password"
                         required
                         minLength={8}
-                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$"
                         value={signupPassword}
                         onChange={(e) => {
                           const val = e.target.value;
                           setSignupPassword(val);
-                          const strong = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(val);
-                          setPasswordError(
-                            strong
-                              ? null
-                              : "Ο κωδικός πρέπει να έχει ≥8 χαρακτήρες και να περιέχει κεφαλαία, μικρά, αριθμούς και σύμβολα."
-                          );
+                          // Unicode-aware validation (Greek, Latin, etc.)
+                          const hasLower = /\p{Ll}/u.test(val);
+                          const hasUpper = /\p{Lu}/u.test(val);
+                          const hasNumber = /\p{Nd}/u.test(val);
+                          const hasSpecial = /[^\p{L}\p{N}]/u.test(val);
+                          const errors: string[] = [];
+                          if (val.length < 8) errors.push("τουλάχιστον 8 χαρακτήρες");
+                          if (!hasLower) errors.push("μικρά γράμματα");
+                          if (!hasUpper) errors.push("κεφαλαία γράμματα");
+                          if (!hasNumber) errors.push("αριθμούς");
+                          if (!hasSpecial) errors.push("ειδικούς χαρακτήρες");
+                          setPasswordError(errors.length ? `Ο κωδικός πρέπει να περιέχει: ${errors.join(', ')}.` : null);
                         }}
                         aria-invalid={!!passwordError}
                         aria-describedby="password-help"
                         className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]"
                       />
                       <p id="password-help" className={`text-xs ${passwordError ? 'text-red-600' : 'text-[hsl(var(--auth-gray))]'}`}>
-                        Τουλάχιστον 8 χαρακτήρες με κεφαλαία, μικρά, αριθμούς και σύμβολα.
+                        Τουλάχιστον 8 χαρακτήρες με κεφαλαία/μικρά (οποιασδήποτε γλώσσας), αριθμούς και σύμβολα.
                       </p>
                     </div>
                     <Button 
