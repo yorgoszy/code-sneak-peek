@@ -310,7 +310,47 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   "Georgios Zygouris - Head Coach"
                 }
                 className="w-full h-[420px] object-cover filter grayscale"
+                style={{ opacity: activeAboutSection === 1 ? 0.4 : 1 }}
               />
+              {activeAboutSection === 1 && (
+                <div className="absolute inset-0 p-8 flex flex-col justify-center">
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    {translations.headCoach}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-white mb-6">
+                    {translations.coachDescription}
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div 
+                      className="p-4 border-l-2 rounded-md"
+                      style={{ backgroundColor: 'rgba(172, 160, 151, 0.8)', borderColor: '#cb8954' }}
+                    >
+                      <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.academicBackground}</h4>
+                      <p className="text-sm" style={{ color: 'black' }}>
+                        {translations.academicDescription}
+                      </p>
+                    </div>
+                    <div 
+                      className="p-4 border-l-2 rounded-md"
+                      style={{ backgroundColor: 'rgba(172, 160, 151, 0.8)', borderColor: '#cb8954' }}
+                    >
+                      <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.professionalAthlete}</h4>
+                      <p className="text-sm" style={{ color: 'black' }}>
+                        {translations.professionalDescription}
+                      </p>
+                    </div>
+                    <div 
+                      className="p-4 border-l-2 rounded-md"
+                      style={{ backgroundColor: 'rgba(172, 160, 151, 0.8)', borderColor: '#cb8954' }}
+                    >
+                      <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.coreValues}</h4>
+                      <p className="text-sm" style={{ color: 'black' }}>
+                        {translations.coreValuesDescription}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="absolute flex items-center" style={{ bottom: '40px', left: '20px', right: '0px' }}>
                 <span className="text-4xl font-bold mr-6" style={{ color: '#cb8954' }}>
                   {activeAboutSection.toString().padStart(2, '0')}
@@ -322,53 +362,22 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               </div>
             </div>
 
-            <div className="bg-black bg-opacity-90 w-full">
-              <div className="p-0 mb-6">
-                <div className="px-0 py-8">
-                  <h3 className="text-xl font-bold text-white mb-4">
-                    {activeAboutSection === 1 && translations.headCoach}
-                    {activeAboutSection === 2 && translations.ourVision}
-                    {activeAboutSection === 3 && translations.trainingMethodology}
-                  </h3>
-                  <p className="text-sm leading-relaxed" style={{ color: '#aca097' }}>
-                    {activeAboutSection === 1 && translations.coachDescription}
-                    {activeAboutSection === 2 && translations.visionDescription}
-                    {activeAboutSection === 3 && translations.trainingMethodologyDescription}
-                  </p>
+            {activeAboutSection !== 1 && (
+              <div className="bg-black bg-opacity-90 w-full">
+                <div className="p-0 mb-6">
+                  <div className="px-0 py-8">
+                    <h3 className="text-xl font-bold text-white mb-4">
+                      {activeAboutSection === 2 && translations.ourVision}
+                      {activeAboutSection === 3 && translations.trainingMethodology}
+                    </h3>
+                    <p className="text-sm leading-relaxed" style={{ color: '#aca097' }}>
+                      {activeAboutSection === 2 && translations.visionDescription}
+                      {activeAboutSection === 3 && translations.trainingMethodologyDescription}
+                    </p>
+                  </div>
                 </div>
               </div>
-
-              {activeAboutSection === 1 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
-                  <div 
-                    className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.academicBackground}</h4>
-                    <p className="text-sm" style={{ color: 'black' }}>
-                      {translations.academicDescription}
-                    </p>
-                  </div>
-                  <div 
-                    className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.professionalAthlete}</h4>
-                    <p className="text-sm" style={{ color: 'black' }}>
-                      {translations.professionalDescription}
-                    </p>
-                  </div>
-                  <div 
-                    className="p-4 border-l-2 rounded-md"
-                    style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: 'black' }}>{translations.coreValues}</h4>
-                    <p className="text-sm" style={{ color: 'black' }}>
-                      {translations.coreValuesDescription}
-                    </p>
-                  </div>
-                </div>
-              )}
+            )}
 
               {activeAboutSection === 2 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
@@ -440,7 +449,6 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   </div>
                 </div>
               )}
-            </div>
           </div>
         </div>
       </div>
