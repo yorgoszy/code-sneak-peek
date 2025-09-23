@@ -86,7 +86,7 @@ export const useTranslations = () => {
       learnMore: "Μάθετε περισσότερα",
       // Elite Training Methodology section
       eliteTrainingMethodology: "Elite Training Methodology",
-      eliteTrainingDesc: "Η μεθοδολογία προπόνησής μας βασίζεται σε επιστημονικές αρχές και χρόνια εμπειρία στη δουλειά με αθλητές. Εστιάζουμε στην ανάπτυξη όλων των πτυχών της αθλητικής απόδοσης",
+      eliteTrainingDesc: "Η μεθοδολογία προπόνησής μας βασίζεται σε επιστημονικές αρχές και χρόνια καθοδήγηση αθλητών. Εστιάζουμε στην ανάπτυξη όλων των πτυχών της αθλητικής απόδοσης.",
       accentuatedEccentric: "Accentuated Eccentric Loading",
       accommodatingResistance: "Accommodating Resistance",
       velocityBasedTraining: "Velocity Based Training",
