@@ -344,7 +344,7 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full rounded-none bg-[hsl(var(--auth-gold))] text-black hover:bg-[hsl(var(--auth-gold)/0.9)] border-2 border-transparent transition-all duration-300" 
+                  className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
                   disabled={isLoading}
                 >
                   {isLoading ? "Αποστολή..." : "Αποστολή Email Επαναφοράς"}
@@ -377,7 +377,7 @@ const Auth = () => {
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-[hsl(var(--auth-gold))] text-black hover:bg-[hsl(var(--auth-gold)/0.9)] border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading}
                     >
                       {isLoading ? "Σύνδεση..." : "Σύνδεση"}
@@ -386,7 +386,7 @@ const Auth = () => {
                       <button
                         type="button"
                         onClick={() => setShowForgotPassword(true)}
-                        className="text-sm text-[hsl(var(--auth-gold))] hover:underline"
+                        className="text-sm text-[#cb8954] hover:underline"
                       >
                         Ξέχασα τον κωδικό μου
                       </button>
@@ -434,7 +434,7 @@ const Auth = () => {
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-[hsl(var(--auth-gold))] text-black hover:bg-[hsl(var(--auth-gold)/0.9)] border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading || !!passwordError || signupPassword.length === 0}
                     >
                       {isLoading ? "Εγγραφή..." : "Εγγραφή"}
@@ -449,7 +449,7 @@ const Auth = () => {
 
 
             <div className="mt-6 text-center">
-              <Link to="/" className="text-sm text-[hsl(var(--auth-gold))] hover:underline">
+              <Link to="/" className="text-sm text-[#cb8954] hover:underline">
                 ← Επιστροφή στην αρχική
               </Link>
             </div>
