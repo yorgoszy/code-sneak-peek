@@ -323,7 +323,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div 
                       className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#aca097' }}
+                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
                     >
                       <h4 className="font-bold mb-2 text-white">{translations.academicBackground}</h4>
                       <p className="text-sm text-white">
@@ -332,7 +332,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </div>
                     <div 
                       className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#aca097' }}
+                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
                     >
                       <h4 className="font-bold mb-2 text-white">{translations.professionalAthlete}</h4>
                       <p className="text-sm text-white">
@@ -341,7 +341,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     </div>
                     <div 
                       className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#aca097' }}
+                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
                     >
                       <h4 className="font-bold mb-2 text-white">{translations.coreValues}</h4>
                       <p className="text-sm text-white">
