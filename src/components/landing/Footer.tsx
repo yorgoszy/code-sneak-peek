@@ -23,21 +23,21 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 hover:opacity-80 transition-colors"
               >
-                <MapPin className="w-5 h-5 text-[#00ffba]" />
+                <MapPin className="w-5 h-5" style={{ color: '#cb8954' }} />
                 <span>an.georgiou 46, thessaloniki 54627</span>
               </a>
               <a 
                 href="tel:+302310529104"
                 className="flex items-center gap-3 hover:opacity-80 transition-colors"
               >
-                <Phone className="w-5 h-5 text-[#00ffba]" />
+                <Phone className="w-5 h-5" style={{ color: '#cb8954' }} />
                 <span>+30 2310 529104</span>
               </a>
               <a 
                 href="mailto:info@hyperkids.gr"
                 className="flex items-center gap-3 hover:opacity-80 transition-colors"
               >
-                <Mail className="w-5 h-5 text-[#00ffba]" />
+                <Mail className="w-5 h-5" style={{ color: '#cb8954' }} />
                 <span>info@hyperkids.gr</span>
               </a>
             </div>
@@ -49,6 +49,7 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
               src="/lovable-uploads/d03d7cda-5ce7-49e9-815c-1ecc687bd1aa.png" 
               alt="Performance Logo"
               className="w-20 h-20 mb-6"
+              style={{ filter: 'brightness(0) saturate(100%) invert(63%) sepia(47%) saturate(1102%) hue-rotate(14deg) brightness(94%) contrast(86%)' }}
             />
             {/* Social Media Icons */}
             <div className="flex justify-center gap-6">
