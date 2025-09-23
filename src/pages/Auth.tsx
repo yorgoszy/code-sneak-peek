@@ -36,11 +36,26 @@ const Auth = () => {
     const password = signupPassword; // use controlled value
     const name = formData.get("name") as string;
 
-    // Client-side strong password validation
-    const isStrongPassword = (pwd: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(pwd);
-    if (!isStrongPassword(password)) {
-      const msg = "Ο κωδικός πρέπει να έχει ≥8 χαρακτήρες και να περιέχει κεφαλαία, μικρά, αριθμούς και σύμβολα.";
+    // Detailed password validation with specific messages
+    const validatePassword = (pwd: string) => {
+      const errors = [];
+      if (pwd.length < 8) errors.push("τουλάχιστον 8 χαρακτήρες");
+      if (!/[a-z]/.test(pwd)) errors.push("μικρά γράμματα (a-z)");
+      if (!/[A-Z]/.test(pwd)) errors.push("κεφαλαία γράμματα (A-Z)");
+      if (!/\d/.test(pwd)) errors.push("αριθμούς (0-9)");
+      if (!/[^A-Za-z0-9]/.test(pwd)) errors.push("ειδικούς χαρακτήρες (!@#$%^&*)");
+      return errors;
+    };
+
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      const msg = `Ο κωδικός πρέπει να περιέχει: ${passwordErrors.join(', ')}.`;
       setPasswordError(msg);
+      toast({
+        title: "Μη έγκυρος κωδικός",
+        description: msg,
+        variant: "destructive",
+      });
       setIsLoading(false);
       return;
     }
