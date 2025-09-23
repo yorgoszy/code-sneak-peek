@@ -95,7 +95,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                   )}
                   
                   <div className="p-6 flex flex-col flex-grow">
-                    <div className="text-sm mb-2" style={{ color: '#aca097' }}>
+                    <div className="text-sm mb-2" style={{ color: '#cb8954' }}>
                       {format(new Date(result.result_date), 'dd MMM yyyy')}
                     </div>
                     
@@ -110,7 +110,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                     {result.hashtags && (
                       <div className="flex flex-wrap gap-1">
                         {parseHashtags(result.hashtags).map((tag, index) => (
-                          <span key={index} className="inline-block px-2 py-1 text-xs rounded-full" style={{ backgroundColor: '#aca097', color: 'black' }}>
+                          <span key={index} className="inline-block px-2 py-1 text-xs rounded-full" style={{ backgroundColor: '#cb8954', color: 'black' }}>
                             {tag}
                           </span>
                         ))}
