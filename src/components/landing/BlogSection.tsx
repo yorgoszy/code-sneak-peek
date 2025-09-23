@@ -98,9 +98,6 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert, sans-serif', color: '#aca097' }}>
             {translations.blogSection}
           </h2>
-          <p className="text-lg max-w-3xl" style={{ color: '#aca097' }}>
-            {translations.blogDescription}
-          </p>
         </div>
 
         <div className="relative mb-16">
