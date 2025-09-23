@@ -61,13 +61,13 @@ const Navigation: React.FC<NavigationProps> = ({
           color: #cf8d54 !important;
         }
         .login-btn {
-          background-color: #00ffba !important;
-          border-color: #00ffba !important;
-          color: black !important;
+          background-color: #cb8954 !important;
+          border-color: #cb8954 !important;
+          color: #aca097 !important;
         }
         .login-btn:hover {
-          background-color: #00cc99 !important;
-          border-color: #00cc99 !important;
+          background-color: #b87849 !important;
+          border-color: #b87849 !important;
         }
       `}</style>
       
