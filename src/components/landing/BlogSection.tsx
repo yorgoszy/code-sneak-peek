@@ -111,10 +111,10 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           >
             {/* Navigation buttons positioned absolutely in top right */}
             <div className="absolute -top-16 right-0 flex gap-2 z-10">
-              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-gray-600 hover:text-[#00ffba] hover:bg-transparent rounded-none">
+              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none" style={{ color: '#cb8954' }}>
                 <ChevronLeft className="h-6 w-6" />
               </CarouselPrevious>
-              <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-gray-600 hover:text-[#00ffba] hover:bg-transparent rounded-none">
+              <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none" style={{ color: '#cb8954' }}>
                 <ChevronRight className="h-6 w-6" />
               </CarouselNext>
             </div>
