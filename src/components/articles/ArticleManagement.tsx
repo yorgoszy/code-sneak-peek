@@ -100,10 +100,15 @@ export const ArticleManagement = () => {
     try {
       let imageUrl = formData.image_url;
       
+      console.log('📝 Original image URL:', imageUrl);
+      console.log('📁 Selected file:', selectedFile);
+      
       // Upload new image if selected
       if (selectedFile) {
         setUploading(true);
+        console.log('📤 Uploading new image...');
         imageUrl = await uploadImage(selectedFile);
+        console.log('✅ New image URL:', imageUrl);
       }
 
       const articleData = {
@@ -113,7 +118,10 @@ export const ArticleManagement = () => {
         scheduled_date: status === 'scheduled' ? formData.scheduled_date : null
       };
 
+      console.log('📊 Article data to update:', articleData);
+
       if (editingArticle) {
+        console.log('🔄 Updating article with ID:', editingArticle.id);
         const { error } = await supabase
           .from('articles')
           .update(articleData)
