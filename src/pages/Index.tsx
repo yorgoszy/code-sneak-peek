@@ -126,13 +126,7 @@ const Index = () => {
       />
 
       {/* Green Section */}
-      <section 
-        className="py-20 relative"
-        style={{ 
-          background: 'linear-gradient(135deg, #d19b60 0%, #cb8954 25%, #b57648 50%, #cb8954 75%, #d19b60 100%)',
-          boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), inset 0 -1px 3px rgba(0,0,0,0.2)',
-        }}
-      >
+      <section className="py-20" style={{ backgroundColor: '#cb8954' }}>
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-black mb-6">
             {correctedTranslations.readyQuestion}
