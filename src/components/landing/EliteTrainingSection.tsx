@@ -8,7 +8,13 @@ interface EliteTrainingSectionProps {
 
 const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translations }) => {
   return (
-    <section className="py-24" style={{ backgroundColor: '#aca097' }}>
+    <section 
+      className="py-24 relative"
+      style={{ 
+        background: 'linear-gradient(135deg, #b8b3a8 0%, #aca097 25%, #9e968a 50%, #aca097 75%, #b8b3a8 100%)',
+        boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), inset 0 -1px 3px rgba(0,0,0,0.2)',
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
