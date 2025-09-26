@@ -145,7 +145,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                     )}
                   </div>
                   <CardTitle className="text-xl font-bold">{product.name}</CardTitle>
-                  <div className="text-3xl font-bold text-[#00ffba]">
+                  <div className="text-3xl font-bold text-[#cb8954]">
                     €{product.price}
                     {product.subscription_mode === 'time_based' && (
                       <span className="text-sm text-gray-500 font-normal">/μήνα</span>
@@ -218,7 +218,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                     <Button 
                       onClick={() => handlePurchase(product)}
                       disabled={purchasing === product.id}
-                      className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                      className="w-full bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       {purchasing === product.id ? 'Επεξεργασία...' : 'Αγορά Τώρα'}
