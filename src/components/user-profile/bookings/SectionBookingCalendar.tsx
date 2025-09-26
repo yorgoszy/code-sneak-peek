@@ -103,7 +103,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
 
     if (isPastBooking) {
       if (booking.attended === true) {
-        return { icon: <Check className="w-3 h-3" />, color: 'text-[#00ffba]' };
+        return { icon: <Check className="w-3 h-3" />, color: 'text-[#cb8954]' };
       } else if (booking.attended === false) {
         return { icon: <X className="w-3 h-3" />, color: 'text-red-500' };
       }
@@ -206,7 +206,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
               {/* Day headers */}
               {weekDays.map((day, index) => (
                 <div key={index} className="text-center flex flex-col items-center justify-center">
-                  <div className={`font-medium text-xs py-2 w-full text-center ${isToday(day) ? 'bg-[#00ffba] text-black rounded-none' : 'text-gray-700'}`}>
+                  <div className={`font-medium text-xs py-2 w-full text-center ${isToday(day) ? 'bg-[#cb8954] text-white rounded-none' : 'text-gray-700'}`}>
                     {dayNames[index]}
                   </div>
                   <div className={`text-xs w-full text-center ${isToday(day) ? 'font-bold' : 'text-gray-500'}`}>
@@ -275,7 +275,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                                  : isFull 
                                    ? 'bg-red-50 text-red-600 cursor-not-allowed' 
-                                   : 'bg-gray-50 hover:bg-[#00ffba]/20 text-gray-600 hover:text-black cursor-pointer'
+                                   : 'bg-gray-50 hover:bg-[#cb8954]/20 text-gray-600 hover:text-black cursor-pointer'
                              }`}
                              title={isPast(day) ? 'Παρελθόν' : isFull ? 'Γεμάτο' : 'Κλείσε ραντεβού'}
                              disabled={isPast(day) || isFull}
@@ -315,7 +315,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
               <span>Επερχόμενο</span>
             </div>
             <div className="flex items-center space-x-1">
-              <Check className="w-3 h-3 text-[#00ffba]" />
+              <Check className="w-3 h-3 text-[#cb8954]" />
               <span>Παρουσία</span>
             </div>
             <div className="flex items-center space-x-1">
