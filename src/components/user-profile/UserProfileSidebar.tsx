@@ -272,7 +272,7 @@ export const UserProfileSidebar = forwardRef<
             key={item.key}
             onClick={() => setActiveTab(item.key)}
             className={`w-full flex items-center justify-between px-3 py-2 md:py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
-              isActive ? 'bg-[#00ffba]/10 text-black border-r-2 border-[#00ffba]' : 'text-gray-700'
+              isActive ? 'bg-[#cb8954]/10 text-black border-r-2 border-[#cb8954]' : 'text-gray-700'
             }`}
           >
             <div className="flex items-center space-x-3">
@@ -295,7 +295,7 @@ export const UserProfileSidebar = forwardRef<
         onClick={handleAIChatClick}
         className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4"
       >
-        <Brain className="h-5 w-5 flex-shrink-0 text-[#00ffba]" />
+        <Brain className="h-5 w-5 flex-shrink-0 text-[#cb8954]" />
         {(!isCollapsed || isMobile) && (
           <div className="flex flex-col items-start min-w-0">
             <span className="text-sm font-medium truncate">RidAI Προπονητής</span>
