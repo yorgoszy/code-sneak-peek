@@ -368,7 +368,7 @@ export const UserProfileOffers: React.FC<UserProfileOffersProps> = ({ userProfil
             </p>
             <Button 
               onClick={() => window.location.href = '/dashboard/shop'} 
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              className="bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
               Δείτε το Κατάστημα
