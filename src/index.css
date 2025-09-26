@@ -50,6 +50,7 @@ html, body {
     --auth-gold: 35 49% 56%; /* #cb8954 */
     --auth-gray: 34 10% 65%; /* #aca097 */
     --auth-black: 0 0% 0%; /* #000000 */
+    --sidebar-active: 35 49% 56%; /* #cb8954 - gold color for active sidebar items */
 
     --sidebar-background: 0 0% 98%;
 
