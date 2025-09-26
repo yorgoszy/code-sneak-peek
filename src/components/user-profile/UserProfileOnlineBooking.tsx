@@ -144,7 +144,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                     setShowNoVisitsDialog(false);
                     navigate(`/dashboard/user-profile/${userProfile?.id}?tab=shop`);
                   }}
-                  className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  className="w-full bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
                   Αγόρασε επίσκεψη
