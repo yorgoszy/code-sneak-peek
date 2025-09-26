@@ -601,7 +601,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
         <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-[#00ffba]" />
+            <Brain className="w-5 h-5 text-[#cb8954]" />
             RidAI Προπονητής
             {athleteName && (
               <span className="text-sm font-normal text-gray-600">
@@ -635,7 +635,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
                             </AvatarFallback>
                           </Avatar>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-[#cb8954] text-white flex items-center justify-center">
                             <Brain className="w-4 h-4" />
                           </div>
                         )}
@@ -667,7 +667,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               
               {isLoading && (
                 <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-[#00ffba] text-black flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-[#cb8954] text-white flex items-center justify-center">
                     <Brain className="w-4 h-4" />
                   </div>
                   <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
@@ -695,7 +695,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             <Button
               onClick={sendMessage}
               disabled={!input.trim() || isLoading || isLoadingHistory}
-              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
