@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReceiptPreviewDialog } from "./ReceiptPreviewDialog";
 import { ReceiptMyDataIntegration } from "@/components/receipts/ReceiptMyDataIntegration";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 // MarkInput component
 const MarkInput: React.FC<{
@@ -123,6 +124,8 @@ export const ReceiptManagement: React.FC = () => {
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [receiptToDelete, setReceiptToDelete] = useState<ReceiptData | null>(null);
 
   useEffect(() => {
     loadReceipts();
@@ -183,6 +186,27 @@ export const ReceiptManagement: React.FC = () => {
       case 'pending': return <Clock className="w-3 h-3" />;
       case 'error': return <AlertCircle className="w-3 h-3" />;
       default: return <Clock className="w-3 h-3" />;
+    }
+  };
+
+  const handleDeleteReceipt = async () => {
+    if (!receiptToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('receipts')
+        .delete()
+        .eq('id', receiptToDelete.id);
+
+      if (error) throw error;
+
+      toast.success('Η απόδειξη διαγράφηκε επιτυχώς');
+      loadReceipts();
+    } catch (error) {
+      console.error('Error deleting receipt:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή της απόδειξης');
+    } finally {
+      setReceiptToDelete(null);
     }
   };
 
@@ -263,6 +287,17 @@ export const ReceiptManagement: React.FC = () => {
                                 <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                                 <span className="hidden sm:inline">Προβολή</span>
                               </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="rounded-none text-xs px-1 sm:px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => {
+                                  setReceiptToDelete(receipt);
+                                  setDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                              </Button>
                             </div>
                           </div>
                         ))}
@@ -316,6 +351,17 @@ export const ReceiptManagement: React.FC = () => {
                               >
                                 <Eye className="h-4 w-4 mr-1" />
                                 Προβολή
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="rounded-none mt-4 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => {
+                                  setReceiptToDelete(receipt);
+                                  setDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </div>
@@ -372,6 +418,17 @@ export const ReceiptManagement: React.FC = () => {
                                   <Eye className="h-3 w-3 mr-1" />
                                   Προβολή
                                 </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none text-xs h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => {
+                                    setReceiptToDelete(receipt);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -419,6 +476,20 @@ export const ReceiptManagement: React.FC = () => {
           myDataId: selectedReceipt.myDataId,
           invoiceMark: selectedReceipt.invoiceMark
         } : null}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setReceiptToDelete(null);
+        }}
+        onConfirm={handleDeleteReceipt}
+        title="Διαγραφή Απόδειξης"
+        description={`Είστε σίγουροι ότι θέλετε να διαγράψετε την απόδειξη ${receiptToDelete?.receiptNumber}; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.`}
+        confirmText="Διαγραφή"
+        cancelText="Ακύρωση"
       />
     </div>
   );
