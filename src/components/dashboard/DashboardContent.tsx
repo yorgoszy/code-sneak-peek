@@ -1,8 +1,13 @@
 
+import { useState, useEffect, useCallback } from "react";
+import { format } from "date-fns";
 import { TodaysProgramsCard } from "./TodaysProgramsCard";
 import { QuickActions } from "@/components/QuickActions";
 import { RecentActivity } from "@/components/RecentActivity";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { formatDateToLocalString } from "@/utils/dateUtils";
 
 interface DashboardContentProps {
   isAdmin: boolean;
@@ -11,10 +16,48 @@ interface DashboardContentProps {
 
 export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps) => {
   const isMobile = useIsMobile();
+  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
+  
+  const { data: activePrograms = [], refetch } = useActivePrograms();
+  const { getWorkoutCompletions } = useWorkoutCompletions();
+  
+  // Σημερινή ημερομηνία
+  const today = new Date();
+  const todayString = formatDateToLocalString(today);
+  
+  // Φιλτράρουμε τα προγράμματα που έχουν προπόνηση σήμερα
+  const todaysPrograms = activePrograms.filter(assignment => {
+    if (!assignment.training_dates) return false;
+    return assignment.training_dates.includes(todayString);
+  });
+  
+  // Φόρτωση workout completions
+  const loadCompletions = useCallback(async () => {
+    if (activePrograms.length === 0) return;
+    
+    try {
+      const allCompletions = [];
+      for (const assignment of activePrograms) {
+        const completions = await getWorkoutCompletions(assignment.id);
+        allCompletions.push(...completions);
+      }
+      setWorkoutCompletions(allCompletions);
+    } catch (error) {
+      console.error('Error loading workout completions:', error);
+    }
+  }, [activePrograms, getWorkoutCompletions]);
+
+  useEffect(() => {
+    loadCompletions();
+  }, [loadCompletions]);
   
   const handleProgramClick = (assignment: any) => {
     console.log('Program clicked in dashboard:', assignment);
-    // Για το dashboard, μπορούμε να κάνουμε redirect στο ActivePrograms ή άλλη ενέργεια
+  };
+
+  const handleRefresh = () => {
+    refetch();
+    loadCompletions();
   };
 
   return (
@@ -23,9 +66,9 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
     }`}>
       <div className="space-y-4 md:space-y-6">
         <TodaysProgramsCard 
-          todaysPrograms={[]}
-          allCompletions={[]}
-          onRefresh={() => {}}
+          todaysPrograms={todaysPrograms}
+          allCompletions={workoutCompletions}
+          onRefresh={handleRefresh}
           onProgramClick={handleProgramClick}
         />
         {isAdmin && <QuickActions />}
