@@ -134,7 +134,7 @@ const Users = () => {
       console.log('✅ Users fetched:', usersWithSubscription.length);
       
       // Φέρνουμε τους acknowledged χρήστες από τη βάση για τον τρέχοντα admin
-      if (!userProfile) {
+      if (!userProfile?.id) {
         setNewRegistrations(usersWithSubscription);
         setAllUsers([]);
         setUsers(usersWithSubscription);
@@ -144,8 +144,7 @@ const Users = () => {
       const { data: acknowledgedData } = await supabase
         .from('acknowledged_users')
         .select('user_id')
-        .eq('admin_user_id', userProfile);
-      
+        .eq('admin_user_id', userProfile.id);
       const acknowledgedUserIdsSet = new Set(
         (acknowledgedData || []).map(item => item.user_id)
       );
