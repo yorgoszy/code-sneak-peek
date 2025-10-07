@@ -172,11 +172,22 @@ const Users = () => {
   };
 
   const handleAcknowledgeUsers = async () => {
-    if (!userProfile) return;
+    if (!userProfile) {
+      console.error('❌ No user profile found');
+      toast.error('Σφάλμα: Δεν βρέθηκε το προφίλ χρήστη');
+      return;
+    }
     
     const newUserIds = newRegistrations.map(user => user.id);
     
-    // Αποθηκεύουμε στη βάση
+    if (newUserIds.length === 0) {
+      toast.error('Δεν υπάρχουν νέοι χρήστες για ενημέρωση');
+      return;
+    }
+    
+    console.log('📝 Acknowledging users:', { admin_user_id: userProfile, user_ids: newUserIds });
+    
+    // Αποθηκεύουμε στη βάση με upsert για να αποφύγουμε duplicate errors
     const acknowledgedRecords = newUserIds.map(userId => ({
       admin_user_id: userProfile,
       user_id: userId
@@ -184,11 +195,13 @@ const Users = () => {
     
     const { error } = await supabase
       .from('acknowledged_users')
-      .insert(acknowledgedRecords);
+      .upsert(acknowledgedRecords, {
+        onConflict: 'admin_user_id,user_id'
+      });
     
     if (error) {
       console.error('❌ Error acknowledging users:', error);
-      toast.error('Σφάλμα κατά την ενημέρωση');
+      toast.error(`Σφάλμα κατά την ενημέρωση: ${error.message}`);
       return;
     }
     
