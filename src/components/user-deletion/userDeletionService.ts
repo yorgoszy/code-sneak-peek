@@ -376,10 +376,11 @@ export class UserDeletionService {
   }
 
   private static async deleteUser(userId: string): Promise<void> {
-    const { error } = await supabase
-      .from('app_users')
-      .delete()
-      .eq('id', userId);
+    // Χρησιμοποιούμε RPC με SECURITY DEFINER για να παρακάμψουμε RLS και να γίνει σίγουρα η διαγραφή
+    // Προαιρετικά: καθάρισμα memberships/πληρωμών
+    await supabase.rpc('admin_delete_athlete_memberships', { athlete_id: userId });
+
+    const { error } = await supabase.rpc('admin_delete_athlete', { athlete_id: userId });
 
     if (error) {
       throw new Error(`Δεν ήταν δυνατή η διαγραφή του χρήστη: ${error.message}`);
