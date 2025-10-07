@@ -33,7 +33,31 @@ export class UserDeletionService {
     // 9. Διαγραφή από tests
     await this.deleteTests(user.id);
 
-    // 10. Τέλος, διαγραφή του χρήστη
+    // 10. Διαγραφή από bookings & sessions
+    await this.deleteBookings(user.id);
+    await this.deleteBookingSessions(user.id);
+    await this.deleteWaitingList(user.id);
+
+    // 11. Διαγραφή από subscriptions & packages
+    await this.deleteUserSubscriptions(user.id);
+    await this.deleteVisitPackages(user.id);
+    await this.deleteVideocallPackages(user.id);
+
+    // 12. Διαγραφή από AI data
+    await this.deleteAIData(user.id);
+
+    // 13. Διαγραφή από user visits & videocalls
+    await this.deleteUserVisits(user.id);
+    await this.deleteUserVideocalls(user.id);
+
+    // 14. Διαγραφή από discount coupons & magic boxes
+    await this.deleteDiscountCoupons(user.id);
+    await this.deleteUserMagicBoxes(user.id);
+
+    // 15. Διαγραφή από exercise notes
+    await this.deleteExerciseNotes(user.id);
+
+    // 16. Τέλος, διαγραφή του χρήστη
     await this.deleteUser(user.id);
 
     console.log('✅ Χρήστης διαγράφηκε επιτυχώς');
@@ -185,6 +209,169 @@ export class UserDeletionService {
 
     if (error) {
       console.log('⚠️ Tests error (πιθανώς δεν υπάρχουν):', error);
+    }
+  }
+
+  private static async deleteBookings(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ Bookings error:', error);
+    }
+  }
+
+  private static async deleteBookingSessions(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('booking_sessions')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ Booking sessions error:', error);
+    }
+  }
+
+  private static async deleteWaitingList(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('booking_waiting_list')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ Waiting list error:', error);
+    }
+  }
+
+  private static async deleteUserSubscriptions(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_subscriptions')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ User subscriptions error:', error);
+    }
+  }
+
+  private static async deleteVisitPackages(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('visit_packages')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ Visit packages error:', error);
+    }
+  }
+
+  private static async deleteVideocallPackages(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('videocall_packages')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ Videocall packages error:', error);
+    }
+  }
+
+  private static async deleteAIData(userId: string): Promise<void> {
+    // AI conversations
+    const { error: conversationsError } = await supabase
+      .from('ai_conversations')
+      .delete()
+      .eq('user_id', userId);
+
+    if (conversationsError) {
+      console.log('⚠️ AI conversations error:', conversationsError);
+    }
+
+    // AI user profiles
+    const { error: profilesError } = await supabase
+      .from('ai_user_profiles')
+      .delete()
+      .eq('user_id', userId);
+
+    if (profilesError) {
+      console.log('⚠️ AI user profiles error:', profilesError);
+    }
+
+    // AI chat files
+    const { error: filesError } = await supabase
+      .from('ai_chat_files')
+      .delete()
+      .eq('user_id', userId);
+
+    if (filesError) {
+      console.log('⚠️ AI chat files error:', filesError);
+    }
+  }
+
+  private static async deleteUserVisits(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_visits')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ User visits error:', error);
+    }
+  }
+
+  private static async deleteUserVideocalls(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_videocalls')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ User videocalls error:', error);
+    }
+  }
+
+  private static async deleteDiscountCoupons(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('discount_coupons')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ Discount coupons error:', error);
+    }
+  }
+
+  private static async deleteUserMagicBoxes(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_magic_boxes')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.log('⚠️ User magic boxes error:', error);
+    }
+  }
+
+  private static async deleteExerciseNotes(userId: string): Promise<void> {
+    // Βρες όλα τα assignments του χρήστη
+    const { data: assignments } = await supabase
+      .from('program_assignments')
+      .select('id')
+      .eq('user_id', userId);
+
+    if (assignments && assignments.length > 0) {
+      const assignmentIds = assignments.map(a => a.id);
+      
+      const { error } = await supabase
+        .from('exercise_notes')
+        .delete()
+        .in('assignment_id', assignmentIds);
+
+      if (error) {
+        console.log('⚠️ Exercise notes error:', error);
+      }
     }
   }
 
