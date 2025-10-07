@@ -133,9 +133,22 @@ const Users = () => {
 
       console.log('✅ Users fetched:', usersWithSubscription.length);
       
-      // Separate new registrations from all users
-      const acknowledgedUserIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
-      const acknowledgedUserIdsSet = new Set(acknowledgedUserIds);
+      // Φέρνουμε τους acknowledged χρήστες από τη βάση για τον τρέχοντα admin
+      if (!userProfile) {
+        setNewRegistrations(usersWithSubscription);
+        setAllUsers([]);
+        setUsers(usersWithSubscription);
+        return;
+      }
+
+      const { data: acknowledgedData } = await supabase
+        .from('acknowledged_users')
+        .select('user_id')
+        .eq('admin_user_id', userProfile);
+      
+      const acknowledgedUserIdsSet = new Set(
+        (acknowledgedData || []).map(item => item.user_id)
+      );
       
       const newUsers = usersWithSubscription.filter(user => 
         !acknowledgedUserIdsSet.has(user.id)
@@ -146,7 +159,7 @@ const Users = () => {
       
       setNewRegistrations(newUsers);
       setAllUsers(acknowledgedUsers);
-      setUsers(usersWithSubscription); // Keep for backward compatibility
+      setUsers(usersWithSubscription);
       
       // Trigger sidebar update
       window.dispatchEvent(new CustomEvent('users-updated'));
@@ -158,12 +171,31 @@ const Users = () => {
     }
   };
 
-  const handleAcknowledgeUsers = () => {
-    const newUserIds = newRegistrations.map(user => user.id);
-    const existingAcknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
-    const updatedAcknowledgedIds = [...existingAcknowledgedIds, ...newUserIds];
+  const handleAcknowledgeUsers = async () => {
+    if (!userProfile) return;
     
-    localStorage.setItem('acknowledgedUsers', JSON.stringify(updatedAcknowledgedIds));
+    const newUserIds = newRegistrations.map(user => user.id);
+    
+    // Αποθηκεύουμε στη βάση
+    const acknowledgedRecords = newUserIds.map(userId => ({
+      admin_user_id: userProfile,
+      user_id: userId
+    }));
+    
+    const { error } = await supabase
+      .from('acknowledged_users')
+      .insert(acknowledgedRecords);
+    
+    if (error) {
+      console.error('❌ Error acknowledging users:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση');
+      return;
+    }
+    
+    toast.success('Οι χρήστες ενημερώθηκαν επιτυχώς');
+    
+    // Ανανέωση της λίστας χρηστών
+    await fetchUsers();
     
     // Move new registrations to all users
     setAllUsers(prev => [...prev, ...newRegistrations]);

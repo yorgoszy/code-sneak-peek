@@ -249,9 +249,20 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
       if (error) throw error;
 
-      // Παίρνουμε τα acknowledged user IDs από localStorage
-      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedUsers') || '[]');
-      const acknowledgedUserIds = new Set(acknowledgedIds);
+      // Φέρνουμε τους acknowledged χρήστες από τη βάση για τον τρέχοντα admin
+      if (!userProfile?.id) {
+        setNewUsers(allUsers?.length || 0);
+        return;
+      }
+
+      const { data: acknowledgedData } = await supabase
+        .from('acknowledged_users')
+        .select('user_id')
+        .eq('admin_user_id', userProfile.id);
+
+      const acknowledgedUserIds = new Set(
+        (acknowledgedData || []).map(item => item.user_id)
+      );
 
       // Υπολογίζουμε τους νέους χρήστες (όσους δεν έχουν επισημανθεί ως "ενημερώθηκα")
       const newUsersData = allUsers?.filter(user => 

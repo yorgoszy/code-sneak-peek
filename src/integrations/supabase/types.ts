@@ -38,6 +38,45 @@ export type Database = {
         }
         Relationships: []
       }
+      acknowledged_users: {
+        Row: {
+          acknowledged_at: string
+          admin_user_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acknowledged_users_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acknowledged_users_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_notifications: {
         Row: {
           acknowledged_at: string
