@@ -172,7 +172,7 @@ const Users = () => {
   };
 
   const handleAcknowledgeUsers = async () => {
-    if (!userProfile) {
+    if (!userProfile?.id) {
       console.error('❌ No user profile found');
       toast.error('Σφάλμα: Δεν βρέθηκε το προφίλ χρήστη');
       return;
@@ -185,11 +185,11 @@ const Users = () => {
       return;
     }
     
-    console.log('📝 Acknowledging users:', { admin_user_id: userProfile, user_ids: newUserIds });
+    console.log('📝 Acknowledging users:', { admin_user_id: userProfile.id, user_ids: newUserIds });
     
     // Αποθηκεύουμε στη βάση με upsert για να αποφύγουμε duplicate errors
     const acknowledgedRecords = newUserIds.map(userId => ({
-      admin_user_id: userProfile,
+      admin_user_id: userProfile.id,
       user_id: userId
     }));
     
