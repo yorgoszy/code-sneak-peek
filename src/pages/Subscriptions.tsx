@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sidebar } from "@/components/Sidebar";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu } from "lucide-react";
+import { Menu, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Subscriptions() {
@@ -75,7 +75,7 @@ export default function Subscriptions() {
           </div>
         
         <Tabs defaultValue="management" className="w-full">
-          <TabsList className="flex w-full justify-start mb-6 rounded-none h-auto flex-wrap overflow-x-auto">
+          <TabsList className="flex w-full justify-start mb-6 rounded-none h-auto flex-wrap overflow-x-auto gap-2">
             <TabsTrigger value="management" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Συνδρομές</TabsTrigger>
             <TabsTrigger value="booking" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Booking</TabsTrigger>
             <TabsTrigger value="videocalls" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Βιντεοκλήσεις</TabsTrigger>
@@ -88,7 +88,18 @@ export default function Subscriptions() {
             <TabsTrigger value="magic-boxes" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Μαγικά Κουτιά</TabsTrigger>
             <TabsTrigger value="history" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ιστορικό</TabsTrigger>
             <TabsTrigger value="certificates" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Certificates</TabsTrigger>
-            <TabsTrigger value="mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">MyData AADE</TabsTrigger>
+            <div className="flex items-center gap-2">
+              <TabsTrigger value="mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">MyData AADE</TabsTrigger>
+              <Button
+                onClick={() => window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank')}
+                variant="outline"
+                size="sm"
+                className="rounded-none whitespace-nowrap text-xs sm:text-sm"
+              >
+                <ExternalLink className="w-3 h-3 mr-1" />
+                E-timologio
+              </Button>
+            </div>
           </TabsList>
           
           <TabsContent value="management">
