@@ -91,7 +91,13 @@ export default function Subscriptions() {
             <div className="flex items-center gap-2">
               <TabsTrigger value="mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">MyData AADE</TabsTrigger>
               <Button
-                onClick={() => window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank')}
+                onClick={() => {
+                  const subscriptionKey = localStorage.getItem('mydata_subscription_key');
+                  if (subscriptionKey) {
+                    navigator.clipboard.writeText(subscriptionKey);
+                  }
+                  window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank');
+                }}
                 variant="outline"
                 size="sm"
                 className="rounded-none whitespace-nowrap text-xs sm:text-sm"
