@@ -92,10 +92,8 @@ export default function Subscriptions() {
               <TabsTrigger value="mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">MyData AADE</TabsTrigger>
               <Button
                 onClick={() => {
-                  const subscriptionKey = localStorage.getItem('mydata_subscription_key');
-                  if (subscriptionKey) {
-                    navigator.clipboard.writeText(subscriptionKey);
-                  }
+                  const subscriptionKey = '6a1bc2b0ad328f1971a203175834caa4';
+                  navigator.clipboard.writeText(subscriptionKey);
                   window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank');
                 }}
                 variant="outline"
