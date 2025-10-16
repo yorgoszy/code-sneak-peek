@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAllPrograms } from "@/hooks/useAllPrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
+import { TrainingTypesPieChart } from "./TrainingTypesPieChart";
 
 interface UserProfileProgramCardsProps {
   userProfile: any;
@@ -147,19 +148,23 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
   }
 
   return (
-    <Card className="rounded-none">
-      <CardContent>
-        <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 rounded-none">
-            <TabsTrigger value="active" className="rounded-none flex items-center gap-2 text-sm">
-              <Clock className="h-3 w-3" />
-              Ενεργά ({activeIncompletePrograms.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="rounded-none flex items-center gap-2 text-sm">
-              <CheckCircle className="h-3 w-3" />
-              Ολοκληρωμένα ({allCompletedPrograms.length})
-            </TabsTrigger>
-          </TabsList>
+    <div className="space-y-6">
+      {/* Training Types Analytics */}
+      <TrainingTypesPieChart userId={userProfile.id} />
+
+      <Card className="rounded-none">
+        <CardContent>
+          <Tabs defaultValue="active" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 rounded-none">
+              <TabsTrigger value="active" className="rounded-none flex items-center gap-2 text-sm">
+                <Clock className="h-3 w-3" />
+                Ενεργά ({activeIncompletePrograms.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="rounded-none flex items-center gap-2 text-sm">
+                <CheckCircle className="h-3 w-3" />
+                Ολοκληρωμένα ({allCompletedPrograms.length})
+              </TabsTrigger>
+            </TabsList>
 
           <TabsContent value="active" className="mt-4">
             {activeIncompletePrograms.length > 0 ? (
@@ -237,7 +242,8 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             )}
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
