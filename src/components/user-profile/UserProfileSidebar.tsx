@@ -10,7 +10,8 @@ import {
   ShoppingCart,
   Video,
   CalendarDays,
-  Tag
+  Tag,
+  TrendingUp
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -211,6 +212,12 @@ export const UserProfileSidebar = forwardRef<
       label: "Τεστ", 
       key: "tests",
       badge: stats.testsCount > 0 ? stats.testsCount : null
+    },
+    { 
+      icon: TrendingUp, 
+      label: "Προφίλ Δύναμης", 
+      key: "load-velocity",
+      badge: null
     },
     { 
       icon: CreditCard, 
