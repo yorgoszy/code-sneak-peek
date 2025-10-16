@@ -5,7 +5,7 @@ import { AnthropometricTests } from "./AnthropometricTests";
 import { FunctionalTests } from "./FunctionalTests";
 import { EnduranceTests } from "./EnduranceTests";
 import { JumpTests } from "./JumpTests";
-import { StrengthTests } from "./StrengthTests";
+import { LoadVelocityProfile } from "./LoadVelocityProfile";
 
 interface TestsTabsProps {
   selectedAthleteId: string;
@@ -104,15 +104,10 @@ export const TestsTabs: React.FC<TestsTabsProps> = ({
         </TabsContent>
 
         <TabsContent value="strength" className="space-y-4">
-          <StrengthTests
+          <LoadVelocityProfile
             selectedAthleteId={selectedAthleteId}
             selectedDate={selectedDate}
           />
-          {saving && (
-            <div className="text-center text-gray-600 mt-4">
-              <p>Αποθήκευση δεδομένων δύναμης...</p>
-            </div>
-          )}
         </TabsContent>
       </div>
     </Tabs>
