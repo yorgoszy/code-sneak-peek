@@ -3931,6 +3931,41 @@ export type Database = {
           },
         ]
       }
+      workout_training_types: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          id: string
+          training_type: string
+          updated_at: string
+          workout_completion_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          training_type: string
+          updated_at?: string
+          workout_completion_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          training_type?: string
+          updated_at?: string
+          workout_completion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_training_types_workout_completion_id_fkey"
+            columns: ["workout_completion_id"]
+            isOneToOne: false
+            referencedRelation: "workout_completions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

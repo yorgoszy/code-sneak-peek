@@ -111,8 +111,8 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
           // Work time: sets × reps × tempo (in seconds)
           const workTime = sets * reps * tempoSeconds;
           
-          // Rest time: (sets - 1) × rest time between sets
-          const totalRestTime = (sets - 1) * restSeconds;
+          // Rest time: sets × rest time between sets
+          const totalRestTime = sets * restSeconds;
           
           totalTimeSeconds += workTime + totalRestTime;
         }

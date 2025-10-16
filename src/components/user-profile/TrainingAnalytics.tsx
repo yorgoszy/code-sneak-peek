@@ -136,8 +136,8 @@ export const TrainingAnalytics: React.FC<TrainingAnalyticsProps> = ({ userId }) 
     const tempoPhases = tempo.split('.').map(phase => parseInt(phase) || 2);
     const tempoSeconds = tempoPhases.reduce((sum, phase) => sum + phase, 0);
     
-    // Συνολικός χρόνος: (sets * reps * tempo) + (sets-1) * rest
-    const totalSeconds = (sets * reps * tempoSeconds) + ((sets - 1) * rest);
+    // Συνολικός χρόνος: (sets * reps * tempo) + (sets * rest)
+    const totalSeconds = (sets * reps * tempoSeconds) + (sets * rest);
     return totalSeconds / 3600; // μετατροπή σε ώρες
   };
 

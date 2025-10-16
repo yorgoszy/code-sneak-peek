@@ -26,10 +26,10 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
 
           if (repsData.isTime) {
             // Αν το reps είναι χρόνος, προσθέτουμε τον χρόνο απευθείας
-            // Time calculation for time-based reps: sets × time_per_set + (sets - 1) × rest
+            // Time calculation for time-based reps: sets × time_per_set + sets × rest
             const workTime = sets * repsData.seconds;
             const restSeconds = parseRestTime(exercise.rest || '');
-            const totalRestTime = (sets - 1) * restSeconds;
+            const totalRestTime = sets * restSeconds;
             totalTimeSeconds += workTime + totalRestTime;
             
             // Δεν υπολογίζουμε όγκο για χρονικές ασκήσεις
@@ -48,8 +48,8 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
             // Work time: sets × reps × tempo (in seconds)
             const workTime = sets * reps * tempoSeconds;
             
-            // Rest time: (sets - 1) × rest time between sets
-            const totalRestTime = (sets - 1) * restSeconds;
+            // Rest time: sets × rest time between sets
+            const totalRestTime = sets * restSeconds;
             
             totalTimeSeconds += workTime + totalRestTime;
           }

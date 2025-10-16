@@ -236,7 +236,7 @@ export const useWeekStats = (userId: string) => {
                 const tempo = parseTempoToSeconds(exercise.tempo);
                 const restTime = parseInt(exercise.rest) || 0;
                 
-                const exerciseTime = (sets * repsData * tempo) + ((sets - 1) * restTime);
+                const exerciseTime = (sets * repsData * tempo) + (sets * restTime);
                 totalTimeSeconds += exerciseTime;
               }
             });

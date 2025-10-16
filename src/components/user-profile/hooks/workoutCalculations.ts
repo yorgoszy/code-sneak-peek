@@ -18,7 +18,7 @@ export const calculateDayMetrics = (blocks: any[]) => {
       if (repsData.isTime) {
         // Time-based exercise
         const workTime = (sets * repsData.seconds) / 60; // Convert to minutes
-        const restTime = (sets - 1) * rest;
+        const restTime = sets * rest;
         totalTimeMinutes += workTime + restTime;
         
         // No volume calculation for time-based exercises
@@ -30,9 +30,9 @@ export const calculateDayMetrics = (blocks: any[]) => {
         const volume = sets * reps * kg;
         totalVolume += volume;
 
-        // Time: [(sets × reps) × tempo] + (sets - 1) × rest
+        // Time: [(sets × reps) × tempo] + (sets × rest)
         const workTime = (sets * reps * tempo) / 60; // Convert to minutes
-        const restTime = (sets - 1) * rest;
+        const restTime = sets * rest;
         totalTimeMinutes += workTime + restTime;
       }
     });

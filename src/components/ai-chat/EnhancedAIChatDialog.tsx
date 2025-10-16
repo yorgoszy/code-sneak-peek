@@ -352,8 +352,8 @@ class SmartLocalAI {
     // Υπολογίζει τον χρόνο του tempo
     const tempoSeconds = tempo.split('.').reduce((sum: number, phase: string) => sum + parseInt(phase), 0);
     
-    // Συνολικός χρόνος: (sets * reps * tempo) + (sets-1) * rest
-    const totalSeconds = (sets * reps * tempoSeconds) + ((sets - 1) * rest);
+    // Συνολικός χρόνος: (sets * reps * tempo) + (sets * rest)
+    const totalSeconds = (sets * reps * tempoSeconds) + (sets * rest);
     return totalSeconds / 3600; // μετατροπή σε ώρες
   }
 }
