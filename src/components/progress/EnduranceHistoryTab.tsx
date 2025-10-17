@@ -218,8 +218,8 @@ export const EnduranceHistoryTab: React.FC = () => {
                       </div>
                       {enduranceData.sprint_watt !== null && (
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-500">Sprint W:</span>
-                          <span className="font-bold text-[#00ffba]">{enduranceData.sprint_watt}</span>
+                          <span className="text-gray-500">Sprint km/h:</span>
+                          <span className="font-bold text-[#00ffba]">{parseFloat(enduranceData.sprint_watt).toFixed(2)}</span>
                         </div>
                       )}
                     </>

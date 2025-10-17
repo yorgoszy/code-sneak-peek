@@ -80,8 +80,8 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId }
           </div>
           {getLatestValue('sprint_watt') && (
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-500">Watt:</span>
-              <span className="font-semibold text-[#00ffba]">{getLatestValue('sprint_watt')} W</span>
+              <span className="text-gray-500">Km/h:</span>
+              <span className="font-semibold text-[#00ffba]">{parseFloat(getLatestValue('sprint_watt') as string).toFixed(2)} km/h</span>
             </div>
           )}
         </div>
@@ -100,7 +100,7 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId }
               return (
                 <div key={session.id} className="flex items-center justify-between text-[10px] text-gray-400">
                   <span>{format(new Date(session.test_date), 'dd/MM/yy')}</span>
-                  <span>{data.sprint_seconds}s × {data.sprint_meters}m {data.sprint_watt ? `× ${data.sprint_watt}W` : ''}</span>
+                  <span>{data.sprint_seconds}s × {data.sprint_meters}m {data.sprint_watt ? `× ${parseFloat(data.sprint_watt).toFixed(2)}km/h` : ''}</span>
                 </div>
               );
             })}

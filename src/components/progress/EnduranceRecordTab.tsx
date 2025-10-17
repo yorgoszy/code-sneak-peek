@@ -42,7 +42,7 @@ interface SprintForm {
   sprintSeconds: string;
   sprintMeters: string;
   sprintResistance: string;
-  sprintWatt: string;
+  sprintKmh: string;
   loading: boolean;
 }
 
@@ -97,10 +97,24 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       sprintSeconds: '',
       sprintMeters: '',
       sprintResistance: '',
-      sprintWatt: '',
+      sprintKmh: '',
       loading: false
     }
   ]);
+
+  // Calculate km/h for sprint
+  const calculateSprintKmh = (meters: string, seconds: string) => {
+    const m = parseFloat(meters);
+    const s = parseFloat(seconds);
+    
+    if (!m || !s || m <= 0 || s <= 0) {
+      return '';
+    }
+    
+    const ms = m / s;
+    const kmh = ms * 3.6;
+    return kmh.toFixed(2);
+  };
 
   const userOptions = useMemo(() => 
     (users || []).map(user => ({ 
@@ -482,7 +496,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       sprintSeconds: '',
       sprintMeters: '',
       sprintResistance: '',
-      sprintWatt: '',
+      sprintKmh: '',
       loading: false
     }]);
   };
@@ -512,7 +526,6 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
 
     const sprintSeconds = parseFloat(form.sprintSeconds);
     const sprintMeters = parseFloat(form.sprintMeters);
-    const sprintWatt = form.sprintWatt ? parseFloat(form.sprintWatt) : null;
 
     if (!sprintSeconds || !sprintMeters) {
       toast({
@@ -522,6 +535,10 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       });
       return;
     }
+
+    // Calculate km/h
+    const ms = sprintMeters / sprintSeconds;
+    const sprintKmh = ms * 3.6;
 
     updateSprintForm(formId, { loading: true });
     try {
@@ -549,7 +566,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
           sprint_seconds: sprintSeconds,
           sprint_meters: sprintMeters,
           sprint_resistance: form.sprintResistance || null,
-          sprint_watt: sprintWatt
+          sprint_watt: sprintKmh
         });
 
       if (dataError) throw dataError;
@@ -563,7 +580,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         sprintSeconds: '',
         sprintMeters: '',
         sprintResistance: '',
-        sprintWatt: '',
+        sprintKmh: '',
         loading: false
       });
       
@@ -913,14 +930,13 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                   </div>
 
                   <div className="w-16">
-                    <Label className="text-xs">Watt</Label>
+                    <Label className="text-xs">Km/h</Label>
                     <Input
-                      type="number"
-                      step="0.1"
-                      placeholder="W"
-                      value={form.sprintWatt}
-                      onChange={(e) => updateSprintForm(form.id, { sprintWatt: e.target.value })}
-                      className="rounded-none no-spinners h-7 text-xs"
+                      type="text"
+                      value={calculateSprintKmh(form.sprintMeters, form.sprintSeconds)}
+                      readOnly
+                      placeholder="km/h"
+                      className="rounded-none bg-gray-100 h-7 text-xs"
                     />
                   </div>
 
