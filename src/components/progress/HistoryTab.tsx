@@ -209,13 +209,21 @@ export const HistoryTab: React.FC = () => {
                       <div className="space-y-2">
                         <Label className="text-sm font-semibold">{exerciseData.exerciseName}</Label>
                         <div className="space-y-1">
+                          {/* Header */}
+                          <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 text-xs font-medium text-gray-600">
+                            <span className="w-4">#</span>
+                            <span>Κιλά</span>
+                            <span>m/s</span>
+                            <span className="w-6"></span>
+                          </div>
+                          {/* Attempts */}
                           {exerciseData.attempts
                             .sort((a: any, b: any) => a.attempt_number - b.attempt_number)
                             .map((attempt: any) => (
-                              <div key={attempt.id} className="flex items-center gap-1 p-1 border rounded-none bg-white">
+                              <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 border rounded-none bg-white">
                                 <span className="text-xs font-medium w-4">#{attempt.attempt_number}</span>
-                                <span className="text-xs w-16">{attempt.weight_kg} kg</span>
-                                <span className="text-xs w-16">{attempt.velocity_ms} m/s</span>
+                                <span className="text-xs border rounded-none p-1 bg-gray-50">{attempt.weight_kg} kg</span>
+                                <span className="text-xs border rounded-none p-1 bg-gray-50">{attempt.velocity_ms} m/s</span>
                                 <Button
                                   size="sm"
                                   variant="outline"
