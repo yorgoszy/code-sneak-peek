@@ -174,79 +174,73 @@ export const HistoryTab: React.FC = () => {
           return (
             <Card key={session.id} className="rounded-none">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">
-                      {session.app_users?.name || 'Άγνωστος Χρήστης'}
-                    </CardTitle>
-                    <span className="text-sm text-gray-500">
-                      {format(new Date(session.test_date), 'dd MMM yyyy', { locale: el })}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-4">
+                  <CardTitle className="text-base whitespace-nowrap">
+                    {session.app_users?.name || 'Άγνωστος Χρήστης'}
+                  </CardTitle>
+                  <span className="text-sm text-gray-500">
+                    {format(new Date(session.test_date), 'dd MMM yyyy', { locale: el })}
+                  </span>
                   <Button
                     size="sm"
                     variant="destructive"
                     onClick={() => handleDeleteSession(session.id)}
-                    className="rounded-none h-8 w-8 p-0"
+                    className="rounded-none ml-auto"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-                {session.notes && (
-                  <p className="text-sm text-gray-600 mt-1">{session.notes}</p>
-                )}
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {Object.values(attemptsByExercise).map((exerciseData: any, idx: number) => {
-                    // Prepare chart data for this exercise
-                    const chartData = exerciseData.attempts.map((attempt: any) => ({
-                      exerciseName: exerciseData.exerciseName,
-                      velocity: attempt.velocity_ms || 0,
-                      weight: attempt.weight_kg,
-                      date: session.test_date
-                    }));
+                {Object.values(attemptsByExercise).map((exerciseData: any, idx: number) => {
+                  // Prepare chart data for this exercise
+                  const chartData = exerciseData.attempts.map((attempt: any) => ({
+                    exerciseName: exerciseData.exerciseName,
+                    velocity: attempt.velocity_ms || 0,
+                    weight: attempt.weight_kg,
+                    date: session.test_date
+                  }));
 
-                    return (
-                      <div key={idx} className="border-t pt-3">
-                        <h4 className="text-sm font-semibold mb-2">{exerciseData.exerciseName}</h4>
-                        
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {/* Left side - Attempts list */}
-                          <div className="grid grid-cols-1 gap-1">
-                            {exerciseData.attempts
-                              .sort((a: any, b: any) => a.attempt_number - b.attempt_number)
-                              .map((attempt: any) => (
-                                <div key={attempt.id} className="flex items-center gap-2 text-xs bg-gray-50 p-2 rounded-none">
-                                  <span className="font-medium w-16">#{attempt.attempt_number}</span>
-                                  <span className="w-20">{attempt.weight_kg} kg</span>
-                                  <span className="w-20">{attempt.velocity_ms} m/s</span>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleEditAttempt(attempt)}
-                                    className="rounded-none h-6 w-6 p-0 ml-auto"
-                                  >
-                                    <Pencil className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              ))}
-                          </div>
-
-                          {/* Right side - Chart */}
-                          <div className="flex items-center">
-                            {chartData.length > 0 && (
-                              <LoadVelocityChart 
-                                data={chartData}
-                                exerciseName={exerciseData.exerciseName}
-                              />
-                            )}
-                          </div>
+                  return (
+                    <div key={idx} className="grid grid-cols-1 lg:grid-cols-[230px_1fr] gap-6">
+                      {/* Left side - Attempts list */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">{exerciseData.exerciseName}</Label>
+                        <div className="space-y-1">
+                          {exerciseData.attempts
+                            .sort((a: any, b: any) => a.attempt_number - b.attempt_number)
+                            .map((attempt: any) => (
+                              <div key={attempt.id} className="flex items-center gap-1 p-1 border rounded-none bg-white">
+                                <span className="text-xs font-medium w-4">#{attempt.attempt_number}</span>
+                                <span className="text-xs w-16">{attempt.weight_kg} kg</span>
+                                <span className="text-xs w-16">{attempt.velocity_ms} m/s</span>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleEditAttempt(attempt)}
+                                  className="rounded-none h-6 w-6 p-0"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            ))}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+
+                      {/* Right side - Chart */}
+                      <div className="flex items-center justify-center">
+                        {chartData.length > 0 && (
+                          <div className="w-full">
+                            <LoadVelocityChart 
+                              data={chartData}
+                              exerciseName={exerciseData.exerciseName}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
           );
