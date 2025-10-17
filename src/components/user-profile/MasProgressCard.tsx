@@ -100,19 +100,15 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
                     </div>
                   )}
                   
-                  {/* MAS */}
-                  <div className="font-bold text-[#cb8954]">
-                    {enduranceData.mas_ms?.toFixed(2)} m/s
-                  </div>
-                  
-                  {/* Μέτρα */}
-                  <div className="text-xs text-gray-500">
-                    {enduranceData.mas_meters}m
-                  </div>
-                  
-                  {/* Λεπτά */}
-                  <div className="text-xs text-gray-500">
-                    {Math.floor(enduranceData.mas_minutes)}:{String(Math.round((enduranceData.mas_minutes % 1) * 60)).padStart(2, '0')}
+                  {/* MAS με μέτρα και λεπτά */}
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-bold text-[#cb8954]">
+                      {enduranceData.mas_ms?.toFixed(2)} m/s
+                    </span>
+                    <div className="flex flex-col text-xs text-gray-500">
+                      <span>{enduranceData.mas_meters}m</span>
+                      <span>{Math.floor(enduranceData.mas_minutes)}:{String(Math.round((enduranceData.mas_minutes % 1) * 60)).padStart(2, '0')}</span>
+                    </div>
                   </div>
                   
                   {/* Ημερομηνία κάτω αριστερά */}
