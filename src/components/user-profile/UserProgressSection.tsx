@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 import { MasProgressCard } from "./MasProgressCard";
+import { BodyweightProgressCard } from "./BodyweightProgressCard";
 
 interface UserProgressSectionProps {
   userId: string;
@@ -380,6 +381,9 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
           {/* MAS Card */}
           <MasProgressCard userId={userId} />
+          
+          {/* Bodyweight Card */}
+          <BodyweightProgressCard userId={userId} />
         </>
       ) : (
         <div className="text-center py-8 text-gray-500">
