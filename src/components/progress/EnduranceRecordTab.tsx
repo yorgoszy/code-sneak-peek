@@ -460,7 +460,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
               </CardHeader>
               <CardContent className="p-3 pt-2 space-y-2">
                 {/* User Selection */}
-                <div className="w-40">
+                <div className="w-32">
                   <Label className="text-xs">Ασκούμενος</Label>
                   <Combobox
                     options={userOptions}
@@ -474,7 +474,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
 
                 {/* Push Ups and Pull Ups */}
                 <div className="flex gap-2">
-                  <div className="w-24">
+                  <div className="w-20">
                     <Label className="text-xs">Push Ups</Label>
                     <Input
                       type="number"
@@ -485,7 +485,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                     />
                   </div>
 
-                  <div className="w-24">
+                  <div className="w-20">
                     <Label className="text-xs">Pull Ups</Label>
                     <Input
                       type="number"
