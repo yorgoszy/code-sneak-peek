@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 import { MasProgressCard } from "./MasProgressCard";
+import { TestBarChart } from "@/components/charts/TestBarChart";
 
 interface UserProgressSectionProps {
   userId: string;
@@ -17,6 +18,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   const [rawHistoricalData, setRawHistoricalData] = useState<any[]>([]);
   const [exerciseSessions, setExerciseSessions] = useState<Record<string, any[]>>({});
   const [selectedSessions, setSelectedSessions] = useState<Record<string, string[]>>({});
+  const [masData, setMasData] = useState<any[]>([]);
 
   useEffect(() => {
     fetchExercises();
@@ -31,6 +33,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   useEffect(() => {
     if (userId) {
       fetchHistoricalData();
+      fetchMasData();
     }
   }, [userId]);
 
@@ -45,6 +48,61 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       setExercises(data || []);
     } catch (error) {
       console.error('Error fetching exercises:', error);
+    }
+  };
+
+  const fetchMasData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('endurance_test_sessions')
+        .select(`
+          id,
+          test_date,
+          endurance_test_data!endurance_test_data_test_session_id_fkey (
+            id,
+            mas_meters,
+            exercise_id,
+            exercises (
+              id,
+              name
+            )
+          )
+        `)
+        .eq('user_id', userId)
+        .order('test_date', { ascending: false });
+
+      if (error) throw error;
+      
+      // Flatten all endurance data with their test dates
+      const allData = (data || []).flatMap(session => 
+        (session.endurance_test_data || []).map(ed => ({
+          ...ed,
+          test_date: session.test_date
+        }))
+      );
+      
+      // Group by exercise_id and get latest for each
+      const exerciseMap = new Map();
+      allData.forEach(item => {
+        if (!item.exercise_id || !item.mas_meters) return;
+        
+        if (!exerciseMap.has(item.exercise_id)) {
+          exerciseMap.set(item.exercise_id, []);
+        }
+        exerciseMap.get(item.exercise_id).push(item);
+      });
+      
+      // For each exercise, get the latest one
+      const latestMasData = Array.from(exerciseMap.values()).map(items => {
+        const sorted = items.sort((a, b) => 
+          new Date(b.test_date).getTime() - new Date(a.test_date).getTime()
+        );
+        return sorted[0];
+      });
+      
+      setMasData(latestMasData);
+    } catch (error) {
+      console.error('Error fetching MAS data:', error);
     }
   };
 
@@ -379,6 +437,19 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
           {/* MAS Card */}
           <MasProgressCard userId={userId} />
+
+          {/* MAS Bar Chart */}
+          {masData.length > 0 && (
+            <TestBarChart
+              data={masData.map(item => ({
+                name: item.exercises?.name || 'Άγνωστη',
+                value: item.mas_meters || 0,
+                unit: 'm'
+              }))}
+              title="MAS Tests - Μέτρα ανά Άσκηση"
+              color="#00ffba"
+            />
+          )}
         </>
       ) : (
         <div className="text-center py-8 text-gray-500">
