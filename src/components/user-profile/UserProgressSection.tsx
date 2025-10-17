@@ -20,6 +20,12 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   }, []);
 
   useEffect(() => {
+    if (userId && !selectedExerciseId) {
+      fetchLatestExerciseForUser();
+    }
+  }, [userId, selectedExerciseId]);
+
+  useEffect(() => {
     if (selectedExerciseId && userId) {
       fetchHistoricalData();
     }
@@ -70,6 +76,34 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       setHistoricalData(chartData);
     } catch (error) {
       console.error('Error fetching historical data:', error);
+    }
+  };
+
+  const fetchLatestExerciseForUser = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('strength_test_attempts')
+        .select(`
+          exercise_id,
+          created_at,
+          strength_test_sessions!inner (
+            user_id
+          )
+        `)
+        .eq('strength_test_sessions.user_id', userId)
+        .not('velocity_ms', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      if (data && data.length > 0 && (data[0] as any).exercise_id) {
+        setSelectedExerciseId((data[0] as any).exercise_id);
+      } else if (exercises.length > 0) {
+        setSelectedExerciseId(exercises[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching latest exercise for user:', error);
     }
   };
 
