@@ -335,9 +335,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                       <div className="text-[10px] text-gray-500 mb-1">{exercise?.name}</div>
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-base font-bold" style={{ color: exerciseColor }}>
-                          {oneRM.weight}
+                          {oneRM.weight}<span className="text-[9px]">kg</span>
                         </span>
-                        <span className="text-[9px] text-gray-400">kg</span>
                         <span className="text-[10px] text-gray-400">
                           {oneRM.velocity.toFixed(2)}
                         </span>
