@@ -333,13 +333,15 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                       style={{ borderLeftWidth: '3px', borderLeftColor: exerciseColor }}
                     >
                       <div className="text-[10px] text-gray-500 mb-1">{exercise?.name}</div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold" style={{ color: exerciseColor }}>
-                          {oneRM.weight}kg
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-base font-bold" style={{ color: exerciseColor }}>
+                          {oneRM.weight}
                         </span>
-                        <span className="text-xs text-gray-400">
-                          {oneRM.velocity.toFixed(2)} m/s
+                        <span className="text-[9px] text-gray-400">kg</span>
+                        <span className="text-[10px] text-gray-400">
+                          {oneRM.velocity.toFixed(2)}
                         </span>
+                        <span className="text-[9px] text-gray-400">m/s</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
                         <div className="text-[9px] text-gray-400">
