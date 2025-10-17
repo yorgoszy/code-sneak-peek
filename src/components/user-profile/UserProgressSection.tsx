@@ -442,11 +442,29 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           {masData.length > 0 && (
             <div className="max-w-2xl" style={{ width: 'calc(100% + 10px)' }}>
               <TestBarChart
-                data={masData.map(item => ({
-                  name: item.exercises?.name || 'Άγνωστη',
-                  value: item.mas_meters || 0,
-                  unit: 'm'
-                }))}
+                data={masData.map(item => {
+                  const exerciseName = (item.exercises?.name || '').toLowerCase();
+                  let barColor = '#00ffba'; // default
+                  
+                  if (exerciseName.includes('skierg')) {
+                    barColor = '#ff8c42'; // πορτοκαλί
+                  } else if (exerciseName.includes('rowerg') || exerciseName.includes('row erg')) {
+                    barColor = '#9b59b6'; // μωβ
+                  } else if (exerciseName.includes('bikeerg') || exerciseName.includes('bike erg')) {
+                    barColor = '#3498db'; // γαλάζιο
+                  } else if (exerciseName.includes('woodway')) {
+                    barColor = '#e74c3c'; // κόκκινο
+                  } else if (exerciseName.includes('track')) {
+                    barColor = '#2ecc71'; // πράσινο
+                  }
+                  
+                  return {
+                    name: item.exercises?.name || 'Άγνωστη',
+                    value: item.mas_meters || 0,
+                    unit: 'm',
+                    color: barColor
+                  };
+                })}
                 title="MAS Tests - Μέτρα ανά Άσκηση"
                 color="#00ffba"
               />

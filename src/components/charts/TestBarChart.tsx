@@ -1,5 +1,5 @@
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface TestBarChartProps {
@@ -7,6 +7,7 @@ interface TestBarChartProps {
     name: string;
     value: number;
     unit?: string;
+    color?: string;
   }>;
   title: string;
   color?: string;
@@ -36,7 +37,11 @@ export const TestBarChart = ({ data, title, color = "#2563eb" }: TestBarChartPro
                 'Αποτέλεσμα'
               ]}
             />
-            <Bar dataKey="value" fill={color} radius={[2, 2, 0, 0]} />
+            <Bar dataKey="value" fill={color} radius={[2, 2, 0, 0]}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color || color} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
