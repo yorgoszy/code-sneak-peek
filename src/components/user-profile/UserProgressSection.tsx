@@ -75,43 +75,15 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
-            Προφίλ Φόρτισης/Ταχύτητας
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>Επιλογή Άσκησης</Label>
-            <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Επιλέξτε άσκηση" />
-              </SelectTrigger>
-              <SelectContent>
-                {exercises.map((exercise) => (
-                  <SelectItem key={exercise.id} value={exercise.id}>
-                    {exercise.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {historicalData.length === 0 && selectedExerciseId && (
-            <div className="text-center py-8 text-gray-500">
-              Δεν υπάρχουν δεδομένα για αυτή την άσκηση
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {historicalData.length > 0 && selectedExerciseId && (
+      {historicalData.length > 0 && selectedExerciseId ? (
         <LoadVelocityChart 
           data={historicalData}
           exerciseName={exercises.find(e => e.id === selectedExerciseId)?.name || ''}
         />
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          Δεν υπάρχουν δεδομένα προόδου
+        </div>
       )}
     </div>
   );
