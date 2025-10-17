@@ -26,10 +26,10 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   }, [userId, selectedExercises]);
 
   useEffect(() => {
-    if (selectedExercises.length > 0 && userId) {
+    if (userId) {
       fetchHistoricalData();
     }
-  }, [selectedExercises, userId]);
+  }, [userId]);
 
   const fetchExercises = async () => {
     try {
@@ -60,7 +60,6 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             test_date
           )
         `)
-        .in('exercise_id', selectedExercises)
         .eq('strength_test_sessions.user_id', userId)
         .not('velocity_ms', 'is', null)
         .order('weight_kg', { ascending: false });
