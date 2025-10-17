@@ -155,7 +155,8 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
               
               return sessionIds.map(sessionId => {
                 const sessionKey = `${exerciseName}_${sessionId}`;
-                const dashArray = getStrokeDasharray(exerciseId || '', sessionId || '');
+                // Μόνο αν έχουμε selected sessions, χρησιμοποιούμε διακεκομμένες γραμμές
+                const dashArray = sessions && sessions.length > 0 ? getStrokeDasharray(exerciseId || '', sessionId || '') : "0";
                 
                 return (
                   <Line 
