@@ -22,7 +22,7 @@ export default function ProgressTracking() {
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
   const [attempts, setAttempts] = useState<Attempt[]>([
-    { attempt_number: 1, weight_kg: 0, velocity_ms: 0 }
+    { attempt_number: 1, weight_kg: undefined as any, velocity_ms: undefined as any }
   ]);
   const [historicalData, setHistoricalData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -114,7 +114,7 @@ export default function ProgressTracking() {
   const addAttempt = () => {
     setAttempts([
       ...attempts,
-      { attempt_number: attempts.length + 1, weight_kg: 0, velocity_ms: 0 }
+      { attempt_number: attempts.length + 1, weight_kg: undefined as any, velocity_ms: undefined as any }
     ]);
   };
 
@@ -188,7 +188,7 @@ export default function ProgressTracking() {
       });
 
       // Reset form
-      setAttempts([{ attempt_number: 1, weight_kg: 0, velocity_ms: 0 }]);
+      setAttempts([{ attempt_number: 1, weight_kg: undefined as any, velocity_ms: undefined as any }]);
       fetchHistoricalData();
     } catch (error) {
       console.error('Error saving data:', error);
@@ -204,7 +204,7 @@ export default function ProgressTracking() {
 
   const handleVelocityChange = (index: number, value: string) => {
     if (value === '') {
-      updateAttempt(index, 'velocity_ms', 0);
+      updateAttempt(index, 'velocity_ms', undefined as any);
       return;
     }
     // Replace period with comma for Greek decimal format
@@ -217,7 +217,7 @@ export default function ProgressTracking() {
 
   const handleWeightChange = (index: number, value: string) => {
     if (value === '') {
-      updateAttempt(index, 'weight_kg', 0);
+      updateAttempt(index, 'weight_kg', undefined as any);
       return;
     }
     // Replace period with comma for Greek decimal format
