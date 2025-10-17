@@ -5,6 +5,7 @@ import { TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
+import { MasProgressCard } from "./MasProgressCard";
 
 interface UserProgressSectionProps {
   userId: string;
@@ -312,52 +313,58 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             </div>
           </div>
 
-          {/* 1RM Display */}
-          {selectedExercises.length > 0 && Object.keys(exerciseOneRMs).length > 0 && (
-            <div className="bg-white border border-gray-200 rounded-none p-3 max-w-2xl">
-              <div className="mb-2">
-                <span className="text-xs font-medium text-gray-700">1RM</span>
-              </div>
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                {selectedExercises.map((exerciseId, index) => {
-                  const exercise = exercises.find(e => e.id === exerciseId);
-                  const oneRM = exerciseOneRMs[exerciseId];
-                  const exerciseColor = getExerciseColor(exercise?.name || '', index);
-                  
-                  if (!oneRM) return null;
-                  
-                  return (
-                    <div 
-                      key={exerciseId} 
-                      className="border border-gray-200 rounded-none p-1.5"
-                      style={{ borderLeftWidth: '3px', borderLeftColor: exerciseColor }}
-                    >
-                      <div className="text-[10px] text-gray-500 mb-1">{exercise?.name}</div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-base font-bold" style={{ color: exerciseColor }}>
-                          {oneRM.weight}<span className="text-[9px]">kg</span>
-                        </span>
-                        <span className="text-[10px] text-gray-400">
-                          {oneRM.velocity.toFixed(2)}
-                        </span>
-                        <span className="text-[9px] text-gray-400">m/s</span>
-                      </div>
-                      <div className="flex items-center justify-between mt-1">
-                        <div className="text-[9px] text-gray-400">
-                          {new Date(oneRM.date).toLocaleDateString('el-GR')}
+          {/* Progress Cards Container */}
+          <div className="flex gap-4">
+            {/* 1RM Display */}
+            {selectedExercises.length > 0 && Object.keys(exerciseOneRMs).length > 0 && (
+              <div className="bg-white border border-gray-200 rounded-none p-3 max-w-2xl">
+                <div className="mb-2">
+                  <span className="text-xs font-medium text-gray-700">1RM</span>
+                </div>
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                  {selectedExercises.map((exerciseId, index) => {
+                    const exercise = exercises.find(e => e.id === exerciseId);
+                    const oneRM = exerciseOneRMs[exerciseId];
+                    const exerciseColor = getExerciseColor(exercise?.name || '', index);
+                    
+                    if (!oneRM) return null;
+                    
+                    return (
+                      <div 
+                        key={exerciseId} 
+                        className="border border-gray-200 rounded-none p-1.5"
+                        style={{ borderLeftWidth: '3px', borderLeftColor: exerciseColor }}
+                      >
+                        <div className="text-[10px] text-gray-500 mb-1">{exercise?.name}</div>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-base font-bold" style={{ color: exerciseColor }}>
+                            {oneRM.weight}<span className="text-[9px]">kg</span>
+                          </span>
+                          <span className="text-[10px] text-gray-400">
+                            {oneRM.velocity.toFixed(2)}
+                          </span>
+                          <span className="text-[9px] text-gray-400">m/s</span>
                         </div>
-                        {oneRM.percentageChange !== null && (
-                          <div className={`text-[10px] font-medium ${oneRM.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {oneRM.percentageChange >= 0 ? '+' : ''}{oneRM.percentageChange.toFixed(1)}%
+                        <div className="flex items-center justify-between mt-1">
+                          <div className="text-[9px] text-gray-400">
+                            {new Date(oneRM.date).toLocaleDateString('el-GR')}
                           </div>
-                        )}
+                          {oneRM.percentageChange !== null && (
+                            <div className={`text-[10px] font-medium ${oneRM.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {oneRM.percentageChange >= 0 ? '+' : ''}{oneRM.percentageChange.toFixed(1)}%
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* MAS Card */}
+            <MasProgressCard userId={userId} />
+          </div>
 
           {/* Γράφημα */}
           {filteredData.length > 0 ? (

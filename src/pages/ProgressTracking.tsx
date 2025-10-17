@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewRecordTab } from "@/components/progress/NewRecordTab";
 import { HistoryTab } from "@/components/progress/HistoryTab";
 import { EnduranceRecordTab } from "@/components/progress/EnduranceRecordTab";
+import { EnduranceHistoryTab } from "@/components/progress/EnduranceHistoryTab";
 
 
 export default function ProgressTracking() {
@@ -107,9 +108,7 @@ export default function ProgressTracking() {
             </TabsContent>
 
             <TabsContent value="history" className="mt-6">
-              <div className="text-center py-8 text-gray-500">
-                Ιστορικό Endurance - Σύντομα διαθέσιμο
-              </div>
+              <EnduranceHistoryTab />
             </TabsContent>
           </Tabs>
         </TabsContent>
