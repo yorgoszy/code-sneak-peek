@@ -5,26 +5,26 @@ import { CartesianGrid, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tool
 interface LoadVelocityChartProps {
   data: Array<{
     exerciseName: string;
+    exerciseId?: string;
     velocity: number;
     weight: number;
     date: string;
   }>;
-  exerciseName: string;
+  selectedExercises: string[];
 }
 
-export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps) => {
-  // Sort by velocity (X-axis) from smallest to largest
-  const sortedData = [...data]
-    .sort((a, b) => a.velocity - b.velocity)
-    .map((item, index) => ({
-      velocity: item.velocity,
-      weight: item.weight,
-      date: new Date(item.date).toLocaleDateString('el-GR'),
-      test: `Τεστ ${index + 1}`
-    }));
+export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChartProps) => {
+  // Ομαδοποίηση δεδομένων ανά άσκηση
+  const exerciseGroups = data.reduce((acc, item) => {
+    if (!acc[item.exerciseName]) {
+      acc[item.exerciseName] = [];
+    }
+    acc[item.exerciseName].push(item);
+    return acc;
+  }, {} as Record<string, typeof data>);
 
   // Συνάρτηση για να επιλέξει χρώμα βάσει άσκησης
-  const getLineColor = (name: string) => {
+  const getLineColor = (name: string, index: number) => {
     const normalizedName = name.toLowerCase();
     
     if (normalizedName.includes('deadlift') || normalizedName.includes('dl')) {
@@ -36,16 +36,34 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
     if (normalizedName.includes('bench press') || normalizedName.includes('bp')) {
       return '#eab308'; // κίτρινο
     }
-    return '#00ffba'; // default πράσινο
+    
+    // Χρώματα για πολλαπλές ασκήσεις
+    const colors = ['#00ffba', '#cb8954', '#ef4444', '#3b82f6', '#eab308', '#8b5cf6', '#ec4899'];
+    return colors[index % colors.length];
   };
 
-  const lineColor = getLineColor(exerciseName);
+  // Ενοποιημένα δεδομένα για το γράφημα
+  const chartData = data
+    .sort((a, b) => a.velocity - b.velocity)
+    .reduce((acc, item) => {
+      const existing = acc.find(d => d.velocity === item.velocity);
+      if (existing) {
+        existing[item.exerciseName] = item.weight;
+      } else {
+        acc.push({
+          velocity: item.velocity,
+          [item.exerciseName]: item.weight,
+          date: new Date(item.date).toLocaleDateString('el-GR')
+        });
+      }
+      return acc;
+    }, [] as any[]);
 
   return (
     <Card className="rounded-none">
       <CardContent className="pt-4">
-        <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={sortedData} margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
+        <ResponsiveContainer width="100%" height={350}>
+          <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="velocity"
@@ -63,27 +81,34 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
             <Tooltip 
               content={({ active, payload }) => {
                 if (active && payload && payload.length > 0) {
-                  const data = payload[0].payload;
                   return (
-                    <div className="bg-white p-2 border border-gray-200 rounded shadow text-xs">
-                      <p className="font-medium">{data.test}</p>
-                      <p>Ημερομηνία: {data.date}</p>
-                      <p>Ταχύτητα: {data.velocity} m/s</p>
-                      <p>Βάρος: {data.weight} kg</p>
+                    <div className="bg-white p-2 border border-gray-200 rounded shadow text-xs space-y-1">
+                      <p className="font-medium">Ταχύτητα: {payload[0].payload.velocity} m/s</p>
+                      <p className="text-gray-600">Ημερομηνία: {payload[0].payload.date}</p>
+                      {payload.map((entry, index) => (
+                        <p key={index} style={{ color: entry.color }}>
+                          {entry.name}: {entry.value} kg
+                        </p>
+                      ))}
                     </div>
                   );
                 }
                 return null;
               }}
             />
-            <Line 
-              type="monotone" 
-              dataKey="weight" 
-              stroke={lineColor}
-              strokeWidth={2}
-              dot={{ fill: lineColor, strokeWidth: 2, r: 3 }}
-              name="Load-Velocity"
-            />
+            <Legend />
+            {selectedExercises.map((exerciseName, index) => (
+              <Line 
+                key={exerciseName}
+                type="monotone" 
+                dataKey={exerciseName} 
+                stroke={getLineColor(exerciseName, index)}
+                strokeWidth={2}
+                dot={{ strokeWidth: 2, r: 3 }}
+                name={exerciseName}
+                connectNulls
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

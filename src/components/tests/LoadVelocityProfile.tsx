@@ -253,7 +253,7 @@ export const LoadVelocityProfile: React.FC<LoadVelocityProfileProps> = ({
       {historicalData.length > 0 && selectedExerciseId && (
         <LoadVelocityChart 
           data={historicalData}
-          exerciseName={exercises.find(e => e.id === selectedExerciseId)?.name || ''}
+          selectedExercises={[exercises.find(e => e.id === selectedExerciseId)?.name || '']}
         />
       )}
     </div>

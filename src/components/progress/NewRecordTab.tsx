@@ -391,7 +391,7 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
                     <div className="w-full">
                       <LoadVelocityChart 
                         data={chartData}
-                        exerciseName={exercises.find(e => e.id === form.selectedExerciseId)?.name || ''}
+                        selectedExercises={[exercises.find(e => e.id === form.selectedExerciseId)?.name || '']}
                       />
                     </div>
                   ) : (

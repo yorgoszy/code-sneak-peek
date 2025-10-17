@@ -12,7 +12,7 @@ interface UserProgressSectionProps {
 
 export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId }) => {
   const [exercises, setExercises] = useState<any[]>([]);
-  const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
+  const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [historicalData, setHistoricalData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -20,16 +20,16 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   }, []);
 
   useEffect(() => {
-    if (userId && !selectedExerciseId) {
+    if (userId && selectedExercises.length === 0) {
       fetchLatestExerciseForUser();
     }
-  }, [userId, selectedExerciseId]);
+  }, [userId, selectedExercises]);
 
   useEffect(() => {
-    if (selectedExerciseId && userId) {
+    if (selectedExercises.length > 0 && userId) {
       fetchHistoricalData();
     }
-  }, [selectedExerciseId, userId]);
+  }, [selectedExercises, userId]);
 
   const fetchExercises = async () => {
     try {
@@ -53,13 +53,14 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           id,
           weight_kg,
           velocity_ms,
+          exercise_id,
           test_session_id,
           strength_test_sessions!inner (
             user_id,
             test_date
           )
         `)
-        .eq('exercise_id', selectedExerciseId)
+        .in('exercise_id', selectedExercises)
         .eq('strength_test_sessions.user_id', userId)
         .not('velocity_ms', 'is', null)
         .order('weight_kg', { ascending: false });
@@ -67,7 +68,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       if (error) throw error;
 
       const chartData = (data || []).map(attempt => ({
-        exerciseName: exercises.find(e => e.id === selectedExerciseId)?.name || '',
+        exerciseName: exercises.find(e => e.id === attempt.exercise_id)?.name || '',
+        exerciseId: attempt.exercise_id,
         velocity: attempt.velocity_ms || 0,
         weight: attempt.weight_kg,
         date: attempt.strength_test_sessions.test_date
@@ -92,28 +94,105 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         `)
         .eq('strength_test_sessions.user_id', userId)
         .not('velocity_ms', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      if (data && data.length > 0 && (data[0] as any).exercise_id) {
-        setSelectedExerciseId((data[0] as any).exercise_id);
+      // Παίρνουμε όλες τις μοναδικές ασκήσεις που έχει κάνει ο χρήστης
+      const uniqueExerciseIds = [...new Set((data || []).map((d: any) => d.exercise_id))];
+      
+      if (uniqueExerciseIds.length > 0) {
+        setSelectedExercises(uniqueExerciseIds);
       } else if (exercises.length > 0) {
-        setSelectedExerciseId(exercises[0].id);
+        setSelectedExercises([exercises[0].id]);
       }
     } catch (error) {
       console.error('Error fetching latest exercise for user:', error);
     }
   };
 
+  const toggleExercise = (exerciseId: string) => {
+    setSelectedExercises(prev => {
+      if (prev.includes(exerciseId)) {
+        return prev.filter(id => id !== exerciseId);
+      } else {
+        return [...prev, exerciseId];
+      }
+    });
+  };
+
+  const selectAllExercises = () => {
+    const userExerciseIds = [...new Set(historicalData.map(d => d.exerciseId))];
+    setSelectedExercises(userExerciseIds);
+  };
+
+  const deselectAllExercises = () => {
+    setSelectedExercises([]);
+  };
+
+  const availableExercises = [...new Set(historicalData.map(d => d.exerciseId))];
+  const filteredData = historicalData.filter(d => selectedExercises.includes(d.exerciseId));
+
   return (
     <div className="space-y-6">
-      {historicalData.length > 0 && selectedExerciseId ? (
-        <LoadVelocityChart 
-          data={historicalData}
-          exerciseName={exercises.find(e => e.id === selectedExerciseId)?.name || ''}
-        />
+      {historicalData.length > 0 ? (
+        <>
+          {/* Φίλτρα Ασκήσεων */}
+          <Card className="rounded-none">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium flex items-center justify-between">
+                <span>Επιλογή Ασκήσεων</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={selectAllExercises}
+                    className="text-xs px-2 py-1 bg-[#00ffba] text-black hover:bg-[#00ffba]/90 rounded-none"
+                  >
+                    Όλες
+                  </button>
+                  <button
+                    onClick={deselectAllExercises}
+                    className="text-xs px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-none"
+                  >
+                    Καμία
+                  </button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {availableExercises.map(exerciseId => {
+                  const exercise = exercises.find(e => e.id === exerciseId);
+                  const isSelected = selectedExercises.includes(exerciseId);
+                  return (
+                    <button
+                      key={exerciseId}
+                      onClick={() => toggleExercise(exerciseId)}
+                      className={`px-3 py-2 text-sm rounded-none transition-colors ${
+                        isSelected
+                          ? 'bg-[#00ffba] text-black'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {exercise?.name || 'Άγνωστη άσκηση'}
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Γράφημα */}
+          {filteredData.length > 0 ? (
+            <LoadVelocityChart 
+              data={filteredData}
+              selectedExercises={selectedExercises.map(id => exercises.find(e => e.id === id)?.name || '')}
+            />
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              Επιλέξτε τουλάχιστον μία άσκηση
+            </div>
+          )}
+        </>
       ) : (
         <div className="text-center py-8 text-gray-500">
           Δεν υπάρχουν δεδομένα προόδου

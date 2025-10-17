@@ -305,7 +305,7 @@ export const StrengthTestSession = ({ selectedAthleteId, selectedDate }: Strengt
       {selectedExercise && chartData.length > 0 && (
         <LoadVelocityChart 
           data={chartData}
-          exerciseName={selectedExercise.name}
+          selectedExercises={[selectedExercise.name]}
         />
       )}
     </div>

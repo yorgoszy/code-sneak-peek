@@ -127,7 +127,7 @@ const { data: strengthData } = await supabase
           ) : chartData.length > 0 ? (
             <LoadVelocityChart 
               data={chartData} 
-              exerciseName={selectedExerciseName}
+              selectedExercises={[selectedExerciseName]}
             />
           ) : selectedExercise ? (
             <div className="text-center py-8 text-gray-500">

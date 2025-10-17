@@ -233,7 +233,7 @@ export const HistoryTab: React.FC = () => {
                           <div className="w-full">
                             <LoadVelocityChart 
                               data={chartData}
-                              exerciseName={exerciseData.exerciseName}
+                              selectedExercises={[exerciseData.exerciseName]}
                             />
                           </div>
                         )}
