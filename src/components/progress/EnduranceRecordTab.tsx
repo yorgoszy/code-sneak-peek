@@ -202,13 +202,6 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
   };
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
-        <Button onClick={addNewForm} size="sm" className="rounded-none h-7 text-xs">
-          <Plus className="w-3 h-3 mr-1" />
-          Νέα Καταγραφή
-        </Button>
-      </div>
-
       {forms.map((form, formIndex) => {
         const calculatedMas = calculateMas(form.distance, form.duration);
 
@@ -216,13 +209,17 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
           <Card key={form.id} className="rounded-none w-fit">
             <CardHeader className="pb-1 pt-2 px-3">
               <div className="flex items-center gap-2">
-                <CardTitle className="text-xs">MAS Test #{formIndex + 1}</CardTitle>
+                <CardTitle className="text-xs">MAS Test {forms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                <Button onClick={addNewForm} size="sm" className="rounded-none h-5 text-xs px-2 ml-auto">
+                  <Plus className="w-3 h-3 mr-1" />
+                  Νέα Καταγραφή
+                </Button>
                 {forms.length > 1 && (
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => removeForm(form.id)}
-                    className="rounded-none h-5 w-5 p-0 ml-auto"
+                    className="rounded-none h-5 w-5 p-0"
                   >
                     <Trash2 className="w-3 h-3" />
                   </Button>
