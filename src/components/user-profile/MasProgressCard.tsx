@@ -93,40 +93,26 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
             <Card key={session.id} className="rounded-none min-w-[220px] shrink-0">
               <CardContent className="p-[5px]">
                 <div className="space-y-2">
-                  {/* Header με ημερομηνία και άσκηση */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500 whitespace-nowrap">
-                          {format(new Date(session.test_date), 'dd/MM/yy')}
-                        </span>
-                      </div>
-                      {enduranceData.exercises?.name && (
-                        <span className="text-xs text-gray-600 truncate">
-                          {enduranceData.exercises.name}
-                        </span>
-                      )}
+                  {/* Άσκηση - Επικεφαλίδα */}
+                  {enduranceData.exercises?.name && (
+                    <div className="text-sm font-semibold text-gray-900">
+                      {enduranceData.exercises.name}
                     </div>
+                  )}
+                  
+                  {/* MAS με μέτρα και λεπτά */}
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-bold text-[#cb8954]">
+                      {enduranceData.mas_ms?.toFixed(2)} m/s
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {enduranceData.mas_meters}m {enduranceData.mas_minutes}'
+                    </span>
                   </div>
                   
-                  {/* Μετρήσεις */}
-                  <div className="grid grid-cols-2 gap-1.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Απόσταση:</span>
-                      <span className="font-semibold text-gray-900">{enduranceData.mas_meters}m</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Χρόνος:</span>
-                      <span className="font-semibold text-gray-900">{enduranceData.mas_minutes}'</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">MAS:</span>
-                      <span className="font-bold text-[#cb8954]">{enduranceData.mas_ms?.toFixed(2)} m/s</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">MAS:</span>
-                      <span className="font-bold text-[#cb8954]">{enduranceData.mas_kmh?.toFixed(2)} km/h</span>
-                    </div>
+                  {/* Ημερομηνία κάτω αριστερά */}
+                  <div className="text-xs text-gray-500">
+                    {format(new Date(session.test_date), 'dd/MM/yy')}
                   </div>
                 </div>
               </CardContent>
