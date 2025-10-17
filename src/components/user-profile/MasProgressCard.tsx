@@ -82,7 +82,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="pb-2">
+      <CardHeader className="p-0">
         <CardTitle className="text-sm">MAS Tests</CardTitle>
       </CardHeader>
       <CardContent className="flex gap-2 overflow-x-auto pb-2">
@@ -91,7 +91,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
           
           return (
             <Card key={session.id} className="rounded-none min-w-[220px] shrink-0">
-              <CardContent className="p-3">
+              <CardContent className="p-0">
                 <div className="space-y-2">
                   {/* Header με ημερομηνία και άσκηση */}
                   <div className="flex items-center justify-between gap-2">
