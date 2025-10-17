@@ -72,7 +72,7 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
   };
 
   const updateForm = (formId: string, updates: Partial<RecordForm>) => {
-    setForms(forms.map(f => f.id === formId ? { ...f, ...updates } : f));
+    setForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
   };
 
   const fetchHistoricalData = async (formId: string, userId: string, exerciseId: string) => {
