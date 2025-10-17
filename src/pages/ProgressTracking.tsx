@@ -108,7 +108,7 @@ export default function ProgressTracking() {
             </TabsContent>
 
             <TabsContent value="history" className="mt-6">
-              <EnduranceHistoryTab />
+              <EnduranceHistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
         </TabsContent>
