@@ -63,13 +63,13 @@ export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChart
     <Card className="rounded-none">
       <CardContent className="pt-4">
         <ResponsiveContainer width="100%" height={350}>
-          <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 50, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="velocity"
               type="number"
               domain={['dataMin', 'dataMax']}
-              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -10, fontSize: 11 }}
+              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -35, fontSize: 11 }}
               tick={{ fontSize: 10 }}
             />
             <YAxis 
