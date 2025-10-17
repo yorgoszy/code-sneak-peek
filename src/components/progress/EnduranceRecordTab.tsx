@@ -594,9 +594,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
             <CardHeader className="pb-1 pt-2 px-3">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-xs">MAS Test {forms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
-                <Button onClick={addNewForm} size="sm" className="rounded-none h-5 text-xs px-2 ml-auto">
-                  <Plus className="w-3 h-3 mr-1" />
-                  Νέα Καταγραφή
+                <Button onClick={addNewForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                  <Plus className="w-3 h-3" />
                 </Button>
                 {forms.length > 1 && (
                   <Button
@@ -678,11 +677,10 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                 <div className="flex items-end">
                   <Button 
                     onClick={() => handleSave(form.id)} 
-                    className="rounded-none h-7 text-xs px-3"
+                    className="rounded-none h-7 w-7 p-0"
                     disabled={form.loading}
                   >
-                    <Save className="w-3 h-3 mr-1" />
-                    {form.loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                    <Save className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
@@ -699,9 +697,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
               <CardHeader className="pb-1 pt-2 px-3">
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-xs">Push Ups & Pull Ups {bodyweightForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
-                  <Button onClick={addNewBodyweightForm} size="sm" className="rounded-none h-5 text-xs px-2 ml-auto">
-                    <Plus className="w-3 h-3 mr-1" />
-                    Νέα Καταγραφή
+                  <Button onClick={addNewBodyweightForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                    <Plus className="w-3 h-3" />
                   </Button>
                   {bodyweightForms.length > 1 && (
                     <Button
@@ -756,11 +753,10 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                   <div className="flex items-end">
                     <Button 
                       onClick={() => handleBodyweightSave(form.id)} 
-                      className="rounded-none h-7 text-xs px-3"
+                      className="rounded-none h-7 w-7 p-0"
                       disabled={form.loading}
                     >
-                      <Save className="w-3 h-3 mr-1" />
-                      {form.loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                      <Save className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
@@ -776,9 +772,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
               <CardHeader className="pb-1 pt-2 px-3">
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-xs">Farmer {farmerForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
-                  <Button onClick={addNewFarmerForm} size="sm" className="rounded-none h-5 text-xs px-2 ml-auto">
-                    <Plus className="w-3 h-3 mr-1" />
-                    Νέα
+                  <Button onClick={addNewFarmerForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                    <Plus className="w-3 h-3" />
                   </Button>
                   {farmerForms.length > 1 && (
                     <Button
@@ -845,11 +840,10 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                   <div className="flex items-end">
                     <Button 
                       onClick={() => handleFarmerSave(form.id)} 
-                      className="rounded-none h-7 text-xs px-3"
+                      className="rounded-none h-7 w-7 p-0"
                       disabled={form.loading}
                     >
-                      <Save className="w-3 h-3 mr-1" />
-                      {form.loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                      <Save className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
@@ -865,9 +859,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
               <CardHeader className="pb-1 pt-2 px-3">
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-xs">Sprint {sprintForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
-                  <Button onClick={addNewSprintForm} size="sm" className="rounded-none h-5 text-xs px-2 ml-auto">
-                    <Plus className="w-3 h-3 mr-1" />
-                    Νέα
+                  <Button onClick={addNewSprintForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                    <Plus className="w-3 h-3" />
                   </Button>
                   {sprintForms.length > 1 && (
                     <Button
@@ -934,11 +927,10 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                   <div className="flex items-end">
                     <Button 
                       onClick={() => handleSprintSave(form.id)} 
-                      className="rounded-none h-7 text-xs px-3"
+                      className="rounded-none h-7 w-7 p-0"
                       disabled={form.loading}
                     >
-                      <Save className="w-3 h-3 mr-1" />
-                      {form.loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                      <Save className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
