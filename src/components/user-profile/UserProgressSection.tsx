@@ -238,7 +238,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   }, [selectedExercises, historicalData]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-0">
       {historicalData.length > 0 ? (
         <>
           {/* Φίλτρα Ασκήσεων - Compact */}
