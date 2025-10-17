@@ -166,8 +166,6 @@ export default function ProgressTracking() {
           user_id: selectedUserId,
           created_by: user.id,
           test_date: new Date().toISOString().split('T')[0],
-          start_date: new Date().toISOString().split('T')[0],
-          end_date: new Date().toISOString().split('T')[0],
           notes: 'Καταγραφή Προόδου - Admin'
         })
         .select()
