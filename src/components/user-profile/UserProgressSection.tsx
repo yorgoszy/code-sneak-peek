@@ -167,7 +167,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                     className={`px-2 py-1 text-xs rounded-none transition-all ${
                       isSelected
                         ? 'bg-[#00ffba] text-black font-medium'
-                        : 'bg-gray-50 text-gray-400 hover:bg-gray-100 opacity-50'
+                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
                     }`}
                   >
                     {exercise?.name || 'Άγνωστη άσκηση'}
