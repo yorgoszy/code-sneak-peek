@@ -154,11 +154,17 @@ export default function ProgressTracking() {
 
     setLoading(true);
     try {
+      // Get current auth user for RLS
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error('Δεν βρέθηκε συνδεδεμένος χρήστης');
+      }
       // Create session
       const { data: session, error: sessionError } = await supabase
         .from('strength_test_sessions')
         .insert({
           user_id: selectedUserId,
+          created_by: user.id,
           test_date: new Date().toISOString().split('T')[0],
           start_date: new Date().toISOString().split('T')[0],
           end_date: new Date().toISOString().split('T')[0],
