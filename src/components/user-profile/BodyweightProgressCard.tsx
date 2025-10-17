@@ -115,7 +115,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                   {/* Push Ups */}
                   {data.push_ups !== null && (
                     <div className="space-y-0.5 flex-1">
-                      <div className="text-xs font-semibold text-gray-700">Push Ups</div>
+                      <div className="text-[10px] font-semibold text-gray-700">Push Ups</div>
                       <div className="flex items-center gap-1">
                         <div className="font-bold text-[#cb8954]">
                           {data.push_ups}
@@ -135,7 +135,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                   {/* Pull Ups */}
                   {data.pull_ups !== null && (
                     <div className="space-y-0.5 flex-1">
-                      <div className="text-xs font-semibold text-gray-700">Pull Ups</div>
+                      <div className="text-[10px] font-semibold text-gray-700">Pull Ups</div>
                       <div className="flex items-center gap-1">
                         <div className="font-bold text-[#cb8954]">
                           {data.pull_ups}
