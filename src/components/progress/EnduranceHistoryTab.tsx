@@ -30,10 +30,15 @@ export const EnduranceHistoryTab: React.FC = () => {
             created_at,
             endurance_test_data!endurance_test_data_test_session_id_fkey (
               id,
+              exercise_id,
               mas_meters,
               mas_minutes,
               mas_ms,
-              mas_kmh
+              mas_kmh,
+              exercises (
+                id,
+                name
+              )
             )
           `)
           .order('created_at', { ascending: false }),
@@ -113,60 +118,47 @@ export const EnduranceHistoryTab: React.FC = () => {
         
         return (
           <Card key={session.id} className="rounded-none">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-4">
-                <CardTitle className="text-base whitespace-nowrap">
-                  {usersMap.get(session.user_id) || 'Άγνωστος Χρήστης'}
-                </CardTitle>
-                <span className="text-sm text-gray-500">
-                  {format(new Date(session.test_date), 'dd MMM yyyy', { locale: el })}
-                </span>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleDeleteSession(session.id)}
-                  className="rounded-none ml-auto"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="border border-gray-200 rounded-none p-3">
-                  <div className="text-xs text-gray-500 mb-1">Απόσταση</div>
-                  <div className="text-lg font-bold text-gray-900">
-                    {enduranceData.mas_meters} <span className="text-xs text-gray-500">m</span>
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm text-gray-900 truncate">
+                      {usersMap.get(session.user_id) || 'Άγνωστος'}
+                    </span>
+                    <span className="text-xs text-gray-500 whitespace-nowrap">
+                      {format(new Date(session.test_date), 'dd/MM/yy')}
+                    </span>
                   </div>
+                  {enduranceData.exercises && (
+                    <span className="text-xs text-gray-600 truncate">
+                      {enduranceData.exercises.name}
+                    </span>
+                  )}
                 </div>
-
-                <div className="border border-gray-200 rounded-none p-3">
-                  <div className="text-xs text-gray-500 mb-1">Διάρκεια</div>
-                  <div className="text-lg font-bold text-gray-900">
-                    {enduranceData.mas_minutes} <span className="text-xs text-gray-500">min</span>
+                
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500">MAS</div>
+                    <div className="text-sm font-bold text-[#00ffba]">
+                      {enduranceData.mas_ms?.toFixed(2)} <span className="text-xs">m/s</span>
+                    </div>
                   </div>
-                </div>
-
-                <div className="border border-gray-200 rounded-none p-3">
-                  <div className="text-xs text-gray-500 mb-1">MAS</div>
-                  <div className="text-lg font-bold text-[#00ffba]">
-                    {enduranceData.mas_ms?.toFixed(2)} <span className="text-xs text-gray-500">m/s</span>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500">MAS</div>
+                    <div className="text-sm font-bold text-[#00ffba]">
+                      {enduranceData.mas_kmh?.toFixed(2)} <span className="text-xs">km/h</span>
+                    </div>
                   </div>
-                </div>
-
-                <div className="border border-gray-200 rounded-none p-3">
-                  <div className="text-xs text-gray-500 mb-1">MAS</div>
-                  <div className="text-lg font-bold text-[#00ffba]">
-                    {enduranceData.mas_kmh?.toFixed(2)} <span className="text-xs text-gray-500">km/h</span>
-                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteSession(session.id)}
+                    className="rounded-none h-8 w-8 p-0"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </Button>
                 </div>
               </div>
-
-              {session.notes && (
-                <div className="mt-3 text-sm text-gray-600">
-                  <span className="font-medium">Σημειώσεις:</span> {session.notes}
-                </div>
-              )}
             </CardContent>
           </Card>
         );

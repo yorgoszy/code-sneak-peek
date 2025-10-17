@@ -143,6 +143,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         .from('endurance_test_data')
         .insert({
           test_session_id: session.id,
+          exercise_id: form.selectedExerciseId,
           mas_meters: dist,
           mas_minutes: dur,
           mas_ms: mas,
