@@ -118,7 +118,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                       <div className="font-bold text-[#cb8954]">
                         {data.push_ups}
                       </div>
-                      {data.pushUpsChange !== null && (
+                      {data.pushUpsChange !== null && data.pushUpsChange !== undefined && (
                         <div className={`text-xs font-semibold ${
                           data.pushUpsChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
                         }`}>
@@ -138,7 +138,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                       <div className="font-bold text-[#cb8954]">
                         {data.pull_ups}
                       </div>
-                      {data.pullUpsChange !== null && (
+                      {data.pullUpsChange !== null && data.pullUpsChange !== undefined && (
                         <div className={`text-xs font-semibold ${
                           data.pullUpsChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
                         }`}>
