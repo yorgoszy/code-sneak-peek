@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 
 export const HistoryTab: React.FC = () => {
   const { toast } = useToast();
@@ -197,30 +198,54 @@ export const HistoryTab: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {Object.values(attemptsByExercise).map((exerciseData: any, idx: number) => (
-                    <div key={idx} className="border-t pt-3">
-                      <h4 className="text-sm font-semibold mb-2">{exerciseData.exerciseName}</h4>
-                      <div className="grid grid-cols-1 gap-1">
-                        {exerciseData.attempts
-                          .sort((a: any, b: any) => a.attempt_number - b.attempt_number)
-                          .map((attempt: any) => (
-                            <div key={attempt.id} className="flex items-center gap-2 text-xs bg-gray-50 p-2 rounded-none">
-                              <span className="font-medium w-16">#{attempt.attempt_number}</span>
-                              <span className="w-20">{attempt.weight_kg} kg</span>
-                              <span className="w-20">{attempt.velocity_ms} m/s</span>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditAttempt(attempt)}
-                                className="rounded-none h-6 w-6 p-0 ml-auto"
-                              >
-                                <Pencil className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          ))}
+                  {Object.values(attemptsByExercise).map((exerciseData: any, idx: number) => {
+                    // Prepare chart data for this exercise
+                    const chartData = exerciseData.attempts.map((attempt: any) => ({
+                      exerciseName: exerciseData.exerciseName,
+                      velocity: attempt.velocity_ms || 0,
+                      weight: attempt.weight_kg,
+                      date: session.test_date
+                    }));
+
+                    return (
+                      <div key={idx} className="border-t pt-3">
+                        <h4 className="text-sm font-semibold mb-2">{exerciseData.exerciseName}</h4>
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {/* Left side - Attempts list */}
+                          <div className="grid grid-cols-1 gap-1">
+                            {exerciseData.attempts
+                              .sort((a: any, b: any) => a.attempt_number - b.attempt_number)
+                              .map((attempt: any) => (
+                                <div key={attempt.id} className="flex items-center gap-2 text-xs bg-gray-50 p-2 rounded-none">
+                                  <span className="font-medium w-16">#{attempt.attempt_number}</span>
+                                  <span className="w-20">{attempt.weight_kg} kg</span>
+                                  <span className="w-20">{attempt.velocity_ms} m/s</span>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleEditAttempt(attempt)}
+                                    className="rounded-none h-6 w-6 p-0 ml-auto"
+                                  >
+                                    <Pencil className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                          </div>
+
+                          {/* Right side - Chart */}
+                          <div className="flex items-center">
+                            {chartData.length > 0 && (
+                              <LoadVelocityChart 
+                                data={chartData}
+                                exerciseName={exerciseData.exerciseName}
+                              />
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

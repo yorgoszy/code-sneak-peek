@@ -203,100 +203,114 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
         <CardHeader>
           <CardTitle>Νέα Καταγραφή</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Επιλογή Χρήστη</Label>
-              <Combobox
-                options={userOptions}
-                value={selectedUserId}
-                onValueChange={(val) => {
-                  setSelectedUserId(val);
-                  if (val && selectedExerciseId) fetchHistoricalData();
-                }}
-                placeholder="Επιλέξτε χρήστη"
-                emptyMessage="Δεν βρέθηκε χρήστης."
-              />
-            </div>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left side - Form */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Επιλογή Χρήστη</Label>
+                  <Combobox
+                    options={userOptions}
+                    value={selectedUserId}
+                    onValueChange={(val) => {
+                      setSelectedUserId(val);
+                      if (val && selectedExerciseId) fetchHistoricalData();
+                    }}
+                    placeholder="Επιλέξτε χρήστη"
+                    emptyMessage="Δεν βρέθηκε χρήστης."
+                  />
+                </div>
 
-            <div>
-              <Label>Επιλογή Άσκησης</Label>
-              <Combobox
-                options={exerciseOptions}
-                value={selectedExerciseId}
-                onValueChange={(val) => {
-                  setSelectedExerciseId(val);
-                  if (val && selectedUserId) fetchHistoricalData();
-                }}
-                placeholder="Επιλέξτε άσκηση"
-                emptyMessage="Δεν βρέθηκε άσκηση."
-              />
-            </div>
-          </div>
+                <div>
+                  <Label>Επιλογή Άσκησης</Label>
+                  <Combobox
+                    options={exerciseOptions}
+                    value={selectedExerciseId}
+                    onValueChange={(val) => {
+                      setSelectedExerciseId(val);
+                      if (val && selectedUserId) fetchHistoricalData();
+                    }}
+                    placeholder="Επιλέξτε άσκηση"
+                    emptyMessage="Δεν βρέθηκε άσκηση."
+                  />
+                </div>
+              </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label className="text-sm">Προσπάθειες</Label>
-              <Button onClick={addAttempt} size="sm" className="rounded-none h-7 text-xs">
-                <Plus className="w-3 h-3 mr-1" />
-                Προσπάθεια
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm">Προσπάθειες</Label>
+                  <Button onClick={addAttempt} size="sm" className="rounded-none h-7 text-xs">
+                    <Plus className="w-3 h-3 mr-1" />
+                    Προσπάθεια
+                  </Button>
+                </div>
+
+                <div className="space-y-1">
+                  {attempts.map((attempt, index) => (
+                    <div key={index} className="flex items-center gap-1 p-1 border rounded-none bg-white">
+                      <span className="text-xs font-medium w-4">#{attempt.attempt_number}</span>
+                      
+                      <Input
+                        type="number"
+                        step="0.5"
+                        placeholder="kg"
+                        value={attempt.weight_kg ?? ''}
+                        onChange={(e) => handleWeightChange(index, e.target.value)}
+                        className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
+                      />
+
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="m/s"
+                        value={attempt.velocity_ms ?? ''}
+                        onChange={(e) => handleVelocityChange(index, e.target.value)}
+                        className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
+                      />
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => removeAttempt(index)}
+                        className="rounded-none h-6 w-6 p-0"
+                        disabled={attempts.length === 1}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleSave} 
+                className="rounded-none w-full h-8 text-sm"
+                disabled={loading}
+              >
+                <Save className="w-3 h-3 mr-2" />
+                {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
               </Button>
             </div>
 
-            <div className="space-y-1">
-              {attempts.map((attempt, index) => (
-                <div key={index} className="flex items-center gap-1 p-1 border rounded-none bg-white">
-                  <span className="text-xs font-medium w-4">#{attempt.attempt_number}</span>
-                  
-                  <Input
-                    type="number"
-                    step="0.5"
-                    placeholder="kg"
-                    value={attempt.weight_kg ?? ''}
-                    onChange={(e) => handleWeightChange(index, e.target.value)}
-                    className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
+            {/* Right side - Chart */}
+            <div className="flex items-center justify-center">
+              {historicalData.length > 0 && selectedExerciseId ? (
+                <div className="w-full">
+                  <LoadVelocityChart 
+                    data={historicalData}
+                    exerciseName={exercises.find(e => e.id === selectedExerciseId)?.name || ''}
                   />
-
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="m/s"
-                    value={attempt.velocity_ms ?? ''}
-                    onChange={(e) => handleVelocityChange(index, e.target.value)}
-                    className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
-                  />
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => removeAttempt(index)}
-                    className="rounded-none h-6 w-6 p-0"
-                    disabled={attempts.length === 1}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
                 </div>
-              ))}
+              ) : (
+                <div className="text-center text-gray-400 text-sm">
+                  Επιλέξτε χρήστη και άσκηση για να δείτε το γράφημα
+                </div>
+              )}
             </div>
           </div>
-
-          <Button 
-            onClick={handleSave} 
-            className="rounded-none w-full h-8 text-sm"
-            disabled={loading}
-          >
-            <Save className="w-3 h-3 mr-2" />
-            {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
-          </Button>
         </CardContent>
       </Card>
-
-      {historicalData.length > 0 && selectedExerciseId && (
-        <LoadVelocityChart 
-          data={historicalData}
-          exerciseName={exercises.find(e => e.id === selectedExerciseId)?.name || ''}
-        />
-      )}
     </div>
   );
 };
