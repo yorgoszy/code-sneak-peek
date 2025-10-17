@@ -60,9 +60,9 @@ export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChart
     }, [] as any[]);
 
   return (
-    <Card className="rounded-none">
+    <Card className="rounded-none max-w-4xl mx-auto">
       <CardContent className="pt-4">
-        <ResponsiveContainer width="100%" height={350}>
+        <ResponsiveContainer width="100%" height={280}>
           <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 50, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
