@@ -93,22 +93,22 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
             <Card key={session.id} className="rounded-none min-w-[130px] shrink-0">
               <CardContent className="p-[5px]">
                 <div className="space-y-2">
-                  {/* Άσκηση - Επικεφαλίδα */}
-                  {enduranceData.exercises?.name && (
-                    <div className="text-sm font-semibold text-gray-900">
-                      {enduranceData.exercises.name}
-                    </div>
-                  )}
-                  
-                  {/* MAS με μέτρα και λεπτά */}
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-bold text-[#cb8954]">
-                      {enduranceData.mas_ms?.toFixed(2)} m/s
-                    </span>
-                    <div className="flex flex-col text-xs text-gray-500">
+                  {/* Header με άσκηση και μέτρα/λεπτά */}
+                  <div className="flex items-start justify-between">
+                    {enduranceData.exercises?.name && (
+                      <div className="text-sm font-semibold text-gray-900">
+                        {enduranceData.exercises.name}
+                      </div>
+                    )}
+                    <div className="flex flex-col text-xs text-gray-500 text-right">
                       <span>{enduranceData.mas_meters}m</span>
                       <span>{Math.floor(enduranceData.mas_minutes)}:{String(Math.round((enduranceData.mas_minutes % 1) * 60)).padStart(2, '0')}</span>
                     </div>
+                  </div>
+                  
+                  {/* MAS */}
+                  <div className="font-bold text-[#cb8954]">
+                    {enduranceData.mas_ms?.toFixed(2)} m/s
                   </div>
                   
                   {/* Ημερομηνία κάτω αριστερά */}
