@@ -9,6 +9,7 @@ import { Exercise, Week } from '../types';
 interface WeekTabsContentProps {
   weeks: Week[];
   exercises: Exercise[];
+  selectedUserId?: string;
   onAddDay: (weekId: string) => void;
   onRemoveWeek: (weekId: string) => void;
   onAddBlock: (weekId: string, dayId: string) => void;
@@ -30,6 +31,7 @@ interface WeekTabsContentProps {
 export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   weeks,
   exercises,
+  selectedUserId,
   onAddDay,
   onRemoveWeek,
   onAddBlock,
@@ -74,6 +76,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                     key={day.id}
                     day={day}
                     exercises={exercises}
+                    selectedUserId={selectedUserId}
                     onAddBlock={() => onAddBlock(week.id, day.id)}
                     onRemoveDay={() => onRemoveDay(week.id, day.id)}
                     onDuplicateDay={() => onDuplicateDay(week.id, day.id)}

@@ -128,6 +128,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
               <WeekTabsContent
                 weeks={weeks}
                 exercises={exercises}
+                selectedUserId={selectedUserId}
                 onAddDay={onAddDay}
                 onRemoveWeek={onRemoveWeek}
                 onAddBlock={onAddBlock}

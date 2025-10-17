@@ -11,6 +11,7 @@ interface ExerciseRowProps {
   exercise: ProgramExercise;
   exercises: Exercise[];
   allBlockExercises: ProgramExercise[];
+  selectedUserId?: string;
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
   onDuplicate: () => void;
@@ -21,6 +22,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   exercise,
   exercises,
   allBlockExercises,
+  selectedUserId,
   onUpdate,
   onRemove,
   onDuplicate,
@@ -28,7 +30,11 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 }) => {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   
-  const { handleVelocityChange, handleKgChange, handlePercentageChange } = useExerciseInputHandlers({ onUpdate });
+  const { handleVelocityChange, handleKgChange, handlePercentageChange } = useExerciseInputHandlers({ 
+    onUpdate,
+    userId: selectedUserId,
+    exerciseId: exercise.exercise_id
+  });
 
   const handleExerciseSelect = (exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
