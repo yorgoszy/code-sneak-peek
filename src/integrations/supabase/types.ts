@@ -983,7 +983,7 @@ export type Database = {
             foreignKeyName: "fk_endurance_test_data_session"
             columns: ["test_session_id"]
             isOneToOne: false
-            referencedRelation: "test_sessions"
+            referencedRelation: "endurance_test_sessions"
             referencedColumns: ["id"]
           },
         ]
