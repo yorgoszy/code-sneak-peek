@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 import { MasProgressCard } from "./MasProgressCard";
 import { BodyweightProgressCard } from "./BodyweightProgressCard";
+import { FarmerProgressCard } from "./FarmerProgressCard";
+import { SprintProgressCard } from "./SprintProgressCard";
 
 interface UserProgressSectionProps {
   userId: string;
@@ -382,8 +384,12 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           {/* MAS Card */}
           <MasProgressCard userId={userId} />
           
-          {/* Bodyweight Card */}
-          <BodyweightProgressCard userId={userId} />
+          {/* Bodyweight, Farmer, Sprint Cards */}
+          <div className="flex gap-3">
+            <BodyweightProgressCard userId={userId} />
+            <FarmerProgressCard userId={userId} />
+            <SprintProgressCard userId={userId} />
+          </div>
         </>
       ) : (
         <div className="text-center py-8 text-gray-500">

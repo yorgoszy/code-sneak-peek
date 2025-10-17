@@ -37,6 +37,13 @@ export const EnduranceHistoryTab: React.FC = () => {
               mas_kmh,
               push_ups,
               pull_ups,
+              farmer_kg,
+              farmer_meters,
+              farmer_seconds,
+              sprint_seconds,
+              sprint_meters,
+              sprint_resistance,
+              sprint_watt,
               exercises (
                 id,
                 name
@@ -182,6 +189,40 @@ export const EnduranceHistoryTab: React.FC = () => {
                       <span className="text-gray-500">Pull Ups:</span>
                       <span className="font-bold text-[#cb8954]">{enduranceData.pull_ups}</span>
                     </div>
+                  )}
+                  {enduranceData.farmer_kg !== null && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Farmer kg:</span>
+                        <span className="font-bold text-[#00ffba]">{enduranceData.farmer_kg}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Farmer m:</span>
+                        <span className="font-bold text-[#00ffba]">{enduranceData.farmer_meters}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Farmer s:</span>
+                        <span className="font-bold text-[#00ffba]">{enduranceData.farmer_seconds}</span>
+                      </div>
+                    </>
+                  )}
+                  {enduranceData.sprint_seconds !== null && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Sprint s:</span>
+                        <span className="font-bold text-[#00ffba]">{enduranceData.sprint_seconds}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Sprint m:</span>
+                        <span className="font-bold text-[#00ffba]">{enduranceData.sprint_meters}</span>
+                      </div>
+                      {enduranceData.sprint_watt !== null && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500">Sprint W:</span>
+                          <span className="font-bold text-[#00ffba]">{enduranceData.sprint_watt}</span>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
