@@ -14,8 +14,6 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   const [exercises, setExercises] = useState<any[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [historicalData, setHistoricalData] = useState<any[]>([]);
-  const [exerciseSessions, setExerciseSessions] = useState<Record<string, any[]>>({});
-  const [selectedSessions, setSelectedSessions] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     fetchExercises();
@@ -73,42 +71,10 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         exerciseId: attempt.exercise_id,
         velocity: attempt.velocity_ms || 0,
         weight: attempt.weight_kg,
-        date: attempt.strength_test_sessions.test_date,
-        sessionId: attempt.test_session_id
+        date: attempt.strength_test_sessions.test_date
       }));
 
       setHistoricalData(chartData);
-
-      // Ομαδοποίηση sessions ανά άσκηση
-      const sessions: Record<string, any[]> = {};
-      chartData.forEach(item => {
-        if (!sessions[item.exerciseId]) {
-          sessions[item.exerciseId] = [];
-        }
-        const existingSession = sessions[item.exerciseId].find(s => s.sessionId === item.sessionId);
-        if (!existingSession) {
-          sessions[item.exerciseId].push({
-            sessionId: item.sessionId,
-            date: item.date
-          });
-        }
-      });
-
-      // Ταξινόμηση sessions ανά ημερομηνία (από νεότερο σε παλαιότερο)
-      Object.keys(sessions).forEach(exerciseId => {
-        sessions[exerciseId].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      });
-
-      setExerciseSessions(sessions);
-
-      // Αρχικά επιλέγω το πιο πρόσφατο session για κάθε άσκηση
-      const initialSelectedSessions: Record<string, string[]> = {};
-      Object.keys(sessions).forEach(exerciseId => {
-        if (sessions[exerciseId].length > 0) {
-          initialSelectedSessions[exerciseId] = [sessions[exerciseId][0].sessionId];
-        }
-      });
-      setSelectedSessions(initialSelectedSessions);
     } catch (error) {
       console.error('Error fetching historical data:', error);
     }
@@ -181,22 +147,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     setSelectedExercises([]);
   };
 
-  const toggleSession = (exerciseId: string, sessionId: string) => {
-    setSelectedSessions(prev => {
-      const current = prev[exerciseId] || [];
-      if (current.includes(sessionId)) {
-        return { ...prev, [exerciseId]: current.filter(id => id !== sessionId) };
-      } else {
-        return { ...prev, [exerciseId]: [...current, sessionId] };
-      }
-    });
-  };
-
   const availableExercises = [...new Set(historicalData.map(d => d.exerciseId))];
-  const filteredData = historicalData.filter(d => 
-    selectedExercises.includes(d.exerciseId) && 
-    selectedSessions[d.exerciseId]?.includes(d.sessionId)
-  );
+  const filteredData = historicalData.filter(d => selectedExercises.includes(d.exerciseId));
 
   return (
     <div className="space-y-6">
@@ -207,48 +159,24 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             <div className="mb-2">
               <span className="text-xs font-medium text-gray-700">Επιλογή Ασκήσεων</span>
             </div>
-            <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
               {availableExercises.map((exerciseId, index) => {
                 const exercise = exercises.find(e => e.id === exerciseId);
                 const isSelected = selectedExercises.includes(exerciseId);
                 const exerciseColor = getExerciseColor(exercise?.name || '', index);
-                const sessions = exerciseSessions[exerciseId] || [];
-                
                 return (
-                  <div key={exerciseId} className="space-y-1">
-                    <button
-                      onClick={() => toggleExercise(exerciseId)}
-                      className={`px-2 py-1 text-xs rounded-none transition-all ${
-                        isSelected
-                          ? 'text-white font-medium'
-                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
-                      }`}
-                      style={isSelected ? { backgroundColor: exerciseColor } : {}}
-                    >
-                      {exercise?.name || 'Άγνωστη άσκηση'}
-                    </button>
-                    
-                    {isSelected && sessions.length > 0 && (
-                      <div className="ml-4 flex flex-wrap gap-1">
-                        {sessions.map((session, sessionIndex) => {
-                          const isSessionSelected = selectedSessions[exerciseId]?.includes(session.sessionId);
-                          return (
-                            <button
-                              key={session.sessionId}
-                              onClick={() => toggleSession(exerciseId, session.sessionId)}
-                              className={`px-2 py-0.5 text-xs rounded-none transition-all ${
-                                isSessionSelected
-                                  ? 'bg-gray-700 text-white'
-                                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
-                              }`}
-                            >
-                              {new Date(session.date).toLocaleDateString('el-GR')}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    key={exerciseId}
+                    onClick={() => toggleExercise(exerciseId)}
+                    className={`px-2 py-1 text-xs rounded-none transition-all ${
+                      isSelected
+                        ? 'text-white font-medium'
+                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
+                    }`}
+                    style={isSelected ? { backgroundColor: exerciseColor } : {}}
+                  >
+                    {exercise?.name || 'Άγνωστη άσκηση'}
+                  </button>
                 );
               })}
             </div>
@@ -259,8 +187,6 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             <LoadVelocityChart 
               data={filteredData}
               selectedExercises={selectedExercises.map(id => exercises.find(e => e.id === id)?.name || '')}
-              exerciseSessions={exerciseSessions}
-              selectedSessions={selectedSessions}
             />
           ) : (
             <div className="text-center py-8 text-gray-500">

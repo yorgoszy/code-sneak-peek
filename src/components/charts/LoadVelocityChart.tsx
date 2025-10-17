@@ -9,14 +9,11 @@ interface LoadVelocityChartProps {
     velocity: number;
     weight: number;
     date: string;
-    sessionId?: string;
   }>;
   selectedExercises: string[];
-  exerciseSessions?: Record<string, any[]>;
-  selectedSessions?: Record<string, string[]>;
 }
 
-export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = {}, selectedSessions = {} }: LoadVelocityChartProps) => {
+export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChartProps) => {
   // Ομαδοποίηση δεδομένων ανά άσκηση
   const exerciseGroups = data.reduce((acc, item) => {
     if (!acc[item.exerciseName]) {
@@ -45,49 +42,22 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
     return colors[index % colors.length];
   };
 
-  // Προσδιορισμός strokeDasharray βάσει του session index
-  const getStrokeDasharray = (exerciseId: string, sessionId: string) => {
-    const sessions = exerciseSessions[exerciseId] || [];
-    const sessionIndex = sessions.findIndex(s => s.sessionId === sessionId);
-    
-    // 0 = πιο πρόσφατο (συνεχής γραμμή)
-    // 1 = προηγούμενο (διακεκομμένη: "5 5")
-    // 2 = πιο προηγούμενο (τελείες και διακεκομμένη: "1 3")
-    // 3+ = πιο παλιά (τελείες: "1 5")
-    
-    if (sessionIndex === 0) return "0"; // συνεχής
-    if (sessionIndex === 1) return "5 5"; // διακεκομμένη
-    if (sessionIndex === 2) return "1 3"; // τελείες και διακεκομμένη
-    return "1 5"; // τελείες
-  };
-
-  // Ομαδοποίηση δεδομένων ανά άσκηση και session
-  const groupedData: Record<string, Record<string, typeof data>> = {};
-  data.forEach(item => {
-    const key = item.exerciseName;
-    const sessionKey = item.sessionId || 'default';
-    if (!groupedData[key]) {
-      groupedData[key] = {};
-    }
-    if (!groupedData[key][sessionKey]) {
-      groupedData[key][sessionKey] = [];
-    }
-    groupedData[key][sessionKey].push(item);
-  });
-
-  // Δημιουργία ενοποιημένων δεδομένων για το γράφημα
-  const allVelocities = [...new Set(data.map(d => d.velocity))].sort((a, b) => a - b);
-  const chartData = allVelocities.map(velocity => {
-    const point: any = { velocity };
-    data.forEach(item => {
-      if (item.velocity === velocity) {
-        const sessionKey = `${item.exerciseName}_${item.sessionId}`;
-        point[sessionKey] = item.weight;
-        point[`${sessionKey}_date`] = new Date(item.date).toLocaleDateString('el-GR');
+  // Ενοποιημένα δεδομένα για το γράφημα
+  const chartData = data
+    .sort((a, b) => a.velocity - b.velocity)
+    .reduce((acc, item) => {
+      const existing = acc.find(d => d.velocity === item.velocity);
+      if (existing) {
+        existing[item.exerciseName] = item.weight;
+      } else {
+        acc.push({
+          velocity: item.velocity,
+          [item.exerciseName]: item.weight,
+          date: new Date(item.date).toLocaleDateString('el-GR')
+        });
       }
-    });
-    return point;
-  });
+      return acc;
+    }, [] as any[]);
 
   return (
     <Card className="rounded-none max-w-2xl">
@@ -127,30 +97,18 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
               }}
             />
             <Legend verticalAlign="bottom" height={36} wrapperStyle={{ paddingTop: '10px' }} />
-            {selectedExercises.map((exerciseName, index) => {
-              const exerciseData = data.filter(d => d.exerciseName === exerciseName);
-              const exerciseId = exerciseData[0]?.exerciseId;
-              const sessions = selectedSessions[exerciseId || ''] || [];
-              
-              return sessions.map(sessionId => {
-                const sessionKey = `${exerciseName}_${sessionId}`;
-                const dashArray = getStrokeDasharray(exerciseId || '', sessionId);
-                
-                return (
-                  <Line 
-                    key={sessionKey}
-                    type="monotone" 
-                    dataKey={sessionKey}
-                    stroke={getLineColor(exerciseName, index)}
-                    strokeWidth={2}
-                    strokeDasharray={dashArray}
-                    dot={{ strokeWidth: 2, r: 3 }}
-                    name={exerciseName}
-                    connectNulls
-                  />
-                );
-              });
-            })}
+            {selectedExercises.map((exerciseName, index) => (
+              <Line 
+                key={exerciseName}
+                type="monotone" 
+                dataKey={exerciseName} 
+                stroke={getLineColor(exerciseName, index)}
+                strokeWidth={2}
+                dot={{ strokeWidth: 2, r: 3 }}
+                name={exerciseName}
+                connectNulls
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
