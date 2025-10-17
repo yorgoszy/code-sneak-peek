@@ -140,7 +140,11 @@ export default function ProgressTracking() {
       return;
     }
 
-    if (attempts.some(a => a.weight_kg <= 0 || a.velocity_ms <= 0)) {
+    if (attempts.some(a => 
+      typeof a.weight_kg !== 'number' || typeof a.velocity_ms !== 'number' ||
+      isNaN(a.weight_kg as unknown as number) || isNaN(a.velocity_ms as unknown as number) ||
+      (a.weight_kg as number) <= 0 || (a.velocity_ms as number) <= 0
+    )) {
       toast({
         title: "Σφάλμα",
         description: "Παρακαλώ συμπληρώστε όλα τα πεδία",
