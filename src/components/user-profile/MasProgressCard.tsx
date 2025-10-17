@@ -30,6 +30,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
             mas_minutes,
             mas_ms,
             mas_kmh,
+            exercise_id,
             exercises (
               id,
               name
@@ -41,12 +42,46 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
 
       if (error) throw error;
       
-      // Filter sessions that have endurance data
-      const filteredData = (data || []).filter(session => 
-        session.endurance_test_data && session.endurance_test_data.length > 0
+      // Flatten all endurance data with their test dates
+      const allData = (data || []).flatMap(session => 
+        (session.endurance_test_data || []).map(ed => ({
+          ...ed,
+          test_date: session.test_date
+        }))
       );
       
-      setSessions(filteredData);
+      // Group by exercise_id and get latest + previous for each
+      const exerciseMap = new Map();
+      allData.forEach(item => {
+        if (!item.exercise_id || !item.mas_ms) return;
+        
+        if (!exerciseMap.has(item.exercise_id)) {
+          exerciseMap.set(item.exercise_id, []);
+        }
+        exerciseMap.get(item.exercise_id).push(item);
+      });
+      
+      // For each exercise, sort by date and keep only the 2 most recent
+      const processedSessions = Array.from(exerciseMap.values()).map(items => {
+        const sorted = items.sort((a, b) => 
+          new Date(b.test_date).getTime() - new Date(a.test_date).getTime()
+        );
+        
+        const latest = sorted[0];
+        const previous = sorted[1];
+        
+        let percentageChange = null;
+        if (previous && previous.mas_ms) {
+          percentageChange = ((latest.mas_ms - previous.mas_ms) / previous.mas_ms) * 100;
+        }
+        
+        return {
+          ...latest,
+          percentageChange
+        };
+      });
+      
+      setSessions(processedSessions);
     } catch (error) {
       console.error('Error fetching MAS data:', error);
     } finally {
@@ -86,38 +121,46 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
         <CardTitle className="text-sm">MAS Tests</CardTitle>
       </CardHeader>
       <CardContent className="flex gap-2 overflow-x-auto pb-2 p-[5px]">
-        {sessions.flatMap((session) => 
-          session.endurance_test_data.map((enduranceData) => (
-            <Card key={enduranceData.id} className="rounded-none min-w-[130px] shrink-0">
-              <CardContent className="p-[3px]">
-                <div className="space-y-1">
-                  {/* Header με άσκηση και μέτρα/λεπτά */}
-                  <div className="flex items-start justify-between">
-                    {enduranceData.exercises?.name && (
-                      <div className="text-sm font-semibold text-gray-900">
-                        {enduranceData.exercises.name}
-                      </div>
-                    )}
-                    <div className="flex flex-col text-xs text-gray-500 text-right">
-                      <span>{enduranceData.mas_meters}m</span>
-                      <span>{Math.floor(enduranceData.mas_minutes)}:{String(Math.round((enduranceData.mas_minutes % 1) * 60)).padStart(2, '0')}</span>
+        {sessions.map((exerciseData) => (
+          <Card key={exerciseData.id} className="rounded-none min-w-[130px] shrink-0">
+            <CardContent className="p-[3px]">
+              <div className="space-y-1">
+                {/* Header με άσκηση και μέτρα/λεπτά */}
+                <div className="flex items-start justify-between">
+                  {exerciseData.exercises?.name && (
+                    <div className="text-sm font-semibold text-gray-900">
+                      {exerciseData.exercises.name}
                     </div>
-                  </div>
-                  
-                  {/* MAS */}
-                  <div className="font-bold text-[#cb8954]">
-                    {enduranceData.mas_ms?.toFixed(2)} m/s
-                  </div>
-                  
-                  {/* Ημερομηνία κάτω αριστερά */}
-                  <div className="text-xs text-gray-500">
-                    {format(new Date(session.test_date), 'dd/MM/yy')}
+                  )}
+                  <div className="flex flex-col text-xs text-gray-500 text-right">
+                    <span>{exerciseData.mas_meters}m</span>
+                    <span>{Math.floor(exerciseData.mas_minutes)}:{String(Math.round((exerciseData.mas_minutes % 1) * 60)).padStart(2, '0')}</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+                
+                {/* MAS με ποσοστό αλλαγής */}
+                <div className="flex items-center gap-1">
+                  <div className="font-bold text-[#cb8954]">
+                    {exerciseData.mas_ms?.toFixed(2)} m/s
+                  </div>
+                  {exerciseData.percentageChange !== null && (
+                    <div className={`text-xs font-semibold ${
+                      exerciseData.percentageChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                    }`}>
+                      {exerciseData.percentageChange > 0 ? '+' : ''}
+                      {exerciseData.percentageChange.toFixed(1)}%
+                    </div>
+                  )}
+                </div>
+                
+                {/* Ημερομηνία κάτω αριστερά */}
+                <div className="text-xs text-gray-500">
+                  {format(new Date(exerciseData.test_date), 'dd/MM/yy')}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </CardContent>
     </Card>
   );
