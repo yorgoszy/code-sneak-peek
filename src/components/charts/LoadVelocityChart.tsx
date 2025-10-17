@@ -69,7 +69,7 @@ export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChart
               dataKey="velocity"
               type="number"
               domain={['dataMin', 'dataMax']}
-              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -35, fontSize: 11 }}
+              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -5, fontSize: 11 }}
               tick={{ fontSize: 10 }}
             />
             <YAxis 
@@ -96,7 +96,7 @@ export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChart
                 return null;
               }}
             />
-            <Legend verticalAlign="bottom" height={36} />
+            <Legend verticalAlign="bottom" height={36} wrapperStyle={{ paddingTop: '10px' }} />
             {selectedExercises.map((exerciseName, index) => (
               <Line 
                 key={exerciseName}
