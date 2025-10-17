@@ -315,7 +315,7 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-[230px_1fr] gap-6">
                 {/* Left side - Form */}
                 <div className="space-y-4">
                   <div className="space-y-2">
