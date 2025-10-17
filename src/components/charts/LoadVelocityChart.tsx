@@ -33,6 +33,9 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
     if (normalizedName.includes('squat') || normalizedName.includes('sq')) {
       return '#eab308'; // κίτρινο
     }
+    if (normalizedName.includes('bench press') || normalizedName.includes('bp')) {
+      return '#3b82f6'; // μπλε
+    }
     return '#00ffba'; // default πράσινο
   };
 
