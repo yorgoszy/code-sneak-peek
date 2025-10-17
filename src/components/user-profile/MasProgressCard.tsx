@@ -90,7 +90,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
           const enduranceData = session.endurance_test_data[0];
           
           return (
-            <Card key={session.id} className="rounded-none min-w-[160px] shrink-0">
+            <Card key={session.id} className="rounded-none min-w-[130px] shrink-0">
               <CardContent className="p-[5px]">
                 <div className="space-y-2">
                   {/* Άσκηση - Επικεφαλίδα */}
