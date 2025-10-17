@@ -203,17 +203,29 @@ export default function ProgressTracking() {
   };
 
   const handleVelocityChange = (index: number, value: string) => {
+    if (value === '') {
+      updateAttempt(index, 'velocity_ms', 0);
+      return;
+    }
     // Replace period with comma for Greek decimal format
     const normalizedValue = value.replace('.', ',');
-    const numericValue = parseFloat(normalizedValue.replace(',', '.')) || 0;
-    updateAttempt(index, 'velocity_ms', numericValue);
+    const numericValue = parseFloat(normalizedValue.replace(',', '.'));
+    if (!isNaN(numericValue)) {
+      updateAttempt(index, 'velocity_ms', numericValue);
+    }
   };
 
   const handleWeightChange = (index: number, value: string) => {
+    if (value === '') {
+      updateAttempt(index, 'weight_kg', 0);
+      return;
+    }
     // Replace period with comma for Greek decimal format
     const normalizedValue = value.replace('.', ',');
-    const numericValue = parseFloat(normalizedValue.replace(',', '.')) || 0;
-    updateAttempt(index, 'weight_kg', numericValue);
+    const numericValue = parseFloat(normalizedValue.replace(',', '.'));
+    if (!isNaN(numericValue)) {
+      updateAttempt(index, 'weight_kg', numericValue);
+    }
   };
 
   return (
