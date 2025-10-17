@@ -496,6 +496,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     },
     {
       icon: TrendingUp,
+      label: "Πρόοδος",
+      path: "/dashboard/progress",
+      badge: null
+    },
+    {
+      icon: TrendingUp,
       label: "Analytics",
       path: "/dashboard/analytics",
       badge: null
