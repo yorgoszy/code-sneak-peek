@@ -476,6 +476,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/program-cards",
       badge: null
     },
+    {
+      icon: TrendingUp,
+      label: "Πρόοδος",
+      path: "/dashboard/progress",
+      badge: null
+    },
     { 
       icon: FileText, 
       label: "Τεστ", 
@@ -492,12 +498,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Dumbbell, 
       label: "Ασκήσεις", 
       path: "/dashboard/exercises",
-      badge: null
-    },
-    {
-      icon: TrendingUp,
-      label: "Πρόοδος",
-      path: "/dashboard/progress",
       badge: null
     },
     {
