@@ -14,6 +14,15 @@ interface LoadVelocityChartProps {
 }
 
 export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChartProps) => {
+  // Ομαδοποίηση δεδομένων ανά άσκηση
+  const exerciseGroups = data.reduce((acc, item) => {
+    if (!acc[item.exerciseName]) {
+      acc[item.exerciseName] = [];
+    }
+    acc[item.exerciseName].push(item);
+    return acc;
+  }, {} as Record<string, typeof data>);
+
   // Συνάρτηση για να επιλέξει χρώμα βάσει άσκησης
   const getLineColor = (name: string, index: number) => {
     const normalizedName = name.toLowerCase();
@@ -33,25 +42,28 @@ export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChart
     return colors[index % colors.length];
   };
 
-  // Ομαδοποίηση δεδομένων ανά άσκηση
-  const exerciseDataMap = new Map<string, typeof data>();
-  
-  data.forEach(item => {
-    if (!exerciseDataMap.has(item.exerciseName)) {
-      exerciseDataMap.set(item.exerciseName, []);
-    }
-    exerciseDataMap.get(item.exerciseName)!.push(item);
-  });
-
-  console.log('📊 Chart data:', data);
-  console.log('📋 Selected exercises:', selectedExercises);
-  console.log('🗺️ Exercise data map:', exerciseDataMap);
+  // Ενοποιημένα δεδομένα για το γράφημα
+  const chartData = data
+    .sort((a, b) => a.velocity - b.velocity)
+    .reduce((acc, item) => {
+      const existing = acc.find(d => d.velocity === item.velocity);
+      if (existing) {
+        existing[item.exerciseName] = item.weight;
+      } else {
+        acc.push({
+          velocity: item.velocity,
+          [item.exerciseName]: item.weight,
+          date: new Date(item.date).toLocaleDateString('el-GR')
+        });
+      }
+      return acc;
+    }, [] as any[]);
 
   return (
     <Card className="rounded-none">
       <CardContent className="pt-4">
         <ResponsiveContainer width="100%" height={350}>
-          <LineChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="velocity"
@@ -69,13 +81,15 @@ export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChart
             <Tooltip 
               content={({ active, payload }) => {
                 if (active && payload && payload.length > 0) {
-                  const point = payload[0].payload;
                   return (
                     <div className="bg-white p-2 border border-gray-200 rounded shadow text-xs space-y-1">
-                      <p className="font-medium">{point.exerciseName}</p>
-                      <p>Ταχύτητα: {point.velocity} m/s</p>
-                      <p>Βάρος: {point.weight} kg</p>
-                      <p className="text-gray-600">Ημερομηνία: {new Date(point.date).toLocaleDateString('el-GR')}</p>
+                      <p className="font-medium">Ταχύτητα: {payload[0].payload.velocity} m/s</p>
+                      <p className="text-gray-600">Ημερομηνία: {payload[0].payload.date}</p>
+                      {payload.map((entry, index) => (
+                        <p key={index} style={{ color: entry.color }}>
+                          {entry.name}: {entry.value} kg
+                        </p>
+                      ))}
                     </div>
                   );
                 }
@@ -83,26 +97,18 @@ export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChart
               }}
             />
             <Legend />
-            {selectedExercises.map((exerciseName, index) => {
-              const exerciseData = Array.from(exerciseDataMap.get(exerciseName) || [])
-                .sort((a, b) => a.velocity - b.velocity);
-              
-              console.log(`📈 Rendering line for ${exerciseName}:`, exerciseData);
-              
-              return (
-                <Line 
-                  key={exerciseName}
-                  type="monotone" 
-                  data={exerciseData}
-                  dataKey="weight"
-                  stroke={getLineColor(exerciseName, index)}
-                  strokeWidth={2}
-                  dot={{ strokeWidth: 2, r: 3 }}
-                  name={exerciseName}
-                  connectNulls
-                />
-              );
-            })}
+            {selectedExercises.map((exerciseName, index) => (
+              <Line 
+                key={exerciseName}
+                type="monotone" 
+                dataKey={exerciseName} 
+                stroke={getLineColor(exerciseName, index)}
+                strokeWidth={2}
+                dot={{ strokeWidth: 2, r: 3 }}
+                name={exerciseName}
+                connectNulls
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
