@@ -215,8 +215,8 @@ export const UserProfileSidebar = forwardRef<
     },
     { 
       icon: TrendingUp, 
-      label: "Προφίλ Δύναμης", 
-      key: "load-velocity",
+      label: "Πρόοδος", 
+      key: "progress",
       badge: null
     },
     { 

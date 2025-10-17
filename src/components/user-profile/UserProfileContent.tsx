@@ -18,7 +18,7 @@ import { TrainingAnalytics } from "./TrainingAnalytics";
 import { InlineAIChat } from "@/components/ai-chat/InlineAIChat";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { UserProfileEdit } from "./UserProfileEdit";
-import { LoadVelocitySection } from "./LoadVelocitySection";
+import { UserProgressSection } from "./UserProgressSection";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -101,12 +101,12 @@ export const UserProfileContent = ({
             <UserProfileTests tests={tests} />
           </div>
         );
-      case "load-velocity":
+      case "progress":
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Προφίλ Δύναμης</h2>
-            <LoadVelocitySection userId={userProfile?.id} />
+            <h2 className="text-xl font-semibold">Πρόοδος</h2>
+            <UserProgressSection userId={userProfile?.id} />
           </div>
         );
       case "payments":
