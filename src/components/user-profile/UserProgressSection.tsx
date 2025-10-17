@@ -206,6 +206,37 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     selectedSessions[d.exerciseId]?.includes(d.sessionId)
   );
 
+  // Υπολογισμός 1RM για κάθε επιλεγμένη άσκηση (τελευταία προσπάθεια από την τελευταία session)
+  const exerciseOneRMs = useMemo(() => {
+    const oneRMs: Record<string, { weight: number; velocity: number; date: string }> = {};
+    
+    selectedExercises.forEach(exerciseId => {
+      const exerciseData = historicalData.filter(d => d.exerciseId === exerciseId);
+      if (exerciseData.length === 0) return;
+      
+      // Βρίσκουμε την πιο πρόσφατη session
+      const latestSession = exerciseData.reduce((latest, current) => {
+        return new Date(current.date) > new Date(latest.date) ? current : latest;
+      });
+      
+      // Παίρνουμε όλες τις προσπάθειες από την πιο πρόσφατη session
+      const latestSessionAttempts = exerciseData.filter(d => d.sessionId === latestSession.sessionId);
+      
+      // Η τελευταία προσπάθεια (με το μεγαλύτερο βάρος) είναι το 1RM
+      const oneRM = latestSessionAttempts.reduce((max, current) => {
+        return current.weight > max.weight ? current : max;
+      });
+      
+      oneRMs[exerciseId] = {
+        weight: oneRM.weight,
+        velocity: oneRM.velocity,
+        date: oneRM.date
+      };
+    });
+    
+    return oneRMs;
+  }, [selectedExercises, historicalData]);
+
   return (
     <div className="space-y-6">
       {historicalData.length > 0 ? (
@@ -261,6 +292,45 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
               })}
             </div>
           </div>
+
+          {/* 1RM Display */}
+          {selectedExercises.length > 0 && Object.keys(exerciseOneRMs).length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-none p-3 max-w-2xl">
+              <div className="mb-2">
+                <span className="text-xs font-medium text-gray-700">1RM (Τελευταία Καταγραφή)</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {selectedExercises.map((exerciseId, index) => {
+                  const exercise = exercises.find(e => e.id === exerciseId);
+                  const oneRM = exerciseOneRMs[exerciseId];
+                  const exerciseColor = getExerciseColor(exercise?.name || '', index);
+                  
+                  if (!oneRM) return null;
+                  
+                  return (
+                    <div 
+                      key={exerciseId} 
+                      className="border border-gray-200 rounded-none p-2"
+                      style={{ borderLeftWidth: '3px', borderLeftColor: exerciseColor }}
+                    >
+                      <div className="text-[10px] text-gray-500 mb-1">{exercise?.name}</div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-lg font-bold" style={{ color: exerciseColor }}>
+                          {oneRM.weight}kg
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {oneRM.velocity.toFixed(2)} m/s
+                        </span>
+                      </div>
+                      <div className="text-[9px] text-gray-400 mt-1">
+                        {new Date(oneRM.date).toLocaleDateString('el-GR')}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Γράφημα */}
           {filteredData.length > 0 ? (
