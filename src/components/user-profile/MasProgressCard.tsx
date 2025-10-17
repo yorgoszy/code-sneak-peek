@@ -91,7 +91,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
           
           return (
             <Card key={session.id} className="rounded-none min-w-[220px] shrink-0">
-              <CardContent className="p-0">
+              <CardContent className="p-[5px]">
                 <div className="space-y-2">
                   {/* Header με ημερομηνία και άσκηση */}
                   <div className="flex items-center justify-between gap-2">
