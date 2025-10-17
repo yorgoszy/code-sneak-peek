@@ -28,7 +28,7 @@ export const EnduranceHistoryTab: React.FC = () => {
             test_date,
             notes,
             created_at,
-            endurance_test_data (
+            endurance_test_data!endurance_test_data_test_session_id_fkey (
               id,
               mas_meters,
               mas_minutes,
