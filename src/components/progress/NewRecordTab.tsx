@@ -283,7 +283,7 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
               <div className="flex items-center gap-4">
                 <CardTitle className="whitespace-nowrap text-base">Καταγραφή #{formIndex + 1}</CardTitle>
                 <div className="flex gap-3">
-                  <div className="w-48">
+                  <div className="w-64">
                     <Combobox
                       options={userOptions}
                       value={form.selectedUserId}
@@ -296,7 +296,7 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
                     />
                   </div>
 
-                  <div className="w-48">
+                  <div className="w-64">
                     <Combobox
                       options={exerciseOptions}
                       value={form.selectedExerciseId}
