@@ -143,10 +143,75 @@ export const use1RMCalculation = (userId: string | undefined, exerciseId: string
     };
   };
 
+  const calculateFromKg = (kgInput: string): { percentage: string; velocity: string } | null => {
+    if (!oneRMData) return null;
+
+    const kgValue = parseFloat(kgInput.replace(',', '.'));
+    if (isNaN(kgValue) || kgValue <= 0) return null;
+
+    // Υπολογισμός έντασης
+    const percent = (kgValue / oneRMData.weight) * 100;
+    const clampedPercent = Math.max(0, Math.min(100, percent));
+
+    // Υπολογισμός ταχύτητας από το μοντέλο
+    let velocityValue: number;
+    if (lvModel) {
+      const v = lvModel.intercept + lvModel.slope * kgValue;
+      velocityValue = Math.max(0, v);
+    } else {
+      // Fallback αν δεν υπάρχει μοντέλο: κλιμάκωση από 1RM velocity
+      const velocityMultiplier = 1 + ((100 - clampedPercent) / 100) * 0.3;
+      velocityValue = oneRMData.velocity * velocityMultiplier;
+    }
+
+    return {
+      percentage: clampedPercent.toFixed(0),
+      velocity: velocityValue.toFixed(2).replace('.', ',')
+    };
+  };
+
+  const calculateFromVelocity = (velocityInput: string): { percentage: string; kg: string } | null => {
+    if (!oneRMData) return null;
+
+    const v = parseFloat(velocityInput.replace(',', '.'));
+    if (isNaN(v) || v < 0) return null;
+
+    let kgValue: number | null = null;
+
+    if (lvModel && Math.abs(lvModel.slope) > 1e-6) {
+      kgValue = (v - lvModel.intercept) / lvModel.slope;
+      if (!isFinite(kgValue)) kgValue = null;
+    }
+
+    let percentValue: number | null = null;
+
+    if (kgValue !== null && kgValue >= 0) {
+      percentValue = (kgValue / oneRMData.weight) * 100;
+    } else if (oneRMData.velocity > 0) {
+      // Fallback αντιστροφή της κλιμάκωσης: vel = v1rm * (1.3 - 0.003 * p)
+      const ratio = v / oneRMData.velocity;
+      const p = (1.3 - ratio) / 0.003; // μπορεί να βγει εκτός [0,100]
+      percentValue = Math.max(0, Math.min(100, p));
+      kgValue = oneRMData.weight * (percentValue / 100);
+    } else {
+      return null;
+    }
+
+    const clampedPercent = Math.max(0, Math.min(100, percentValue || 0));
+    const kgOut = Math.max(0, kgValue || 0);
+
+    return {
+      percentage: clampedPercent.toFixed(0),
+      kg: kgOut.toFixed(1).replace('.', ',')
+    };
+  };
+
   return {
     oneRMData,
     loading,
     calculateFromPercentage,
+    calculateFromKg,
+    calculateFromVelocity,
     hasData: !!oneRMData
   };
 };
