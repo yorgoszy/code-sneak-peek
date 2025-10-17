@@ -137,7 +137,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       {historicalData.length > 0 ? (
         <>
           {/* Φίλτρα Ασκήσεων - Compact */}
-          <div className="bg-white border border-gray-200 rounded-none p-3">
+          <div className="bg-white border border-gray-200 rounded-none p-3 max-w-2xl">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-gray-700">Επιλογή Ασκήσεων</span>
               <div className="flex gap-2">
