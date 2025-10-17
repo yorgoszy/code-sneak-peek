@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, ChevronDown, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 
@@ -18,6 +20,13 @@ export const HistoryTab: React.FC = () => {
   const [editingAttempt, setEditingAttempt] = useState<any>(null);
   const [editWeight, setEditWeight] = useState('');
   const [editVelocity, setEditVelocity] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  
+  // Filter states
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
+  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  const [selectedYears, setSelectedYears] = useState<string[]>([]);
 
   useEffect(() => {
     fetchSessions();
@@ -146,6 +155,74 @@ export const HistoryTab: React.FC = () => {
     }
   };
 
+  // Extract unique values for filters
+  const uniqueUsers = useMemo(() => {
+    const users = sessions.map(s => ({ id: s.app_users?.id, name: s.app_users?.name || 'Άγνωστος' }));
+    return Array.from(new Map(users.map(u => [u.id, u])).values());
+  }, [sessions]);
+
+  const uniqueExercises = useMemo(() => {
+    const exercises = new Map<string, string>();
+    sessions.forEach(s => {
+      s.strength_test_attempts.forEach((a: any) => {
+        if (a.exercises?.id && a.exercises?.name) {
+          exercises.set(a.exercises.id, a.exercises.name);
+        }
+      });
+    });
+    return Array.from(exercises.entries()).map(([id, name]) => ({ id, name }));
+  }, [sessions]);
+
+  const uniqueMonths = useMemo(() => {
+    const months = new Set(sessions.map(s => format(new Date(s.test_date), 'yyyy-MM')));
+    return Array.from(months).sort().reverse();
+  }, [sessions]);
+
+  const uniqueYears = useMemo(() => {
+    const years = new Set(sessions.map(s => format(new Date(s.test_date), 'yyyy')));
+    return Array.from(years).sort().reverse();
+  }, [sessions]);
+
+  // Filtered sessions
+  const filteredSessions = useMemo(() => {
+    return sessions.filter(session => {
+      // User filter
+      if (selectedUsers.length > 0 && !selectedUsers.includes(session.app_users?.id)) {
+        return false;
+      }
+
+      // Exercise filter
+      if (selectedExercises.length > 0) {
+        const hasSelectedExercise = session.strength_test_attempts.some((a: any) => 
+          selectedExercises.includes(a.exercises?.id)
+        );
+        if (!hasSelectedExercise) return false;
+      }
+
+      // Month filter
+      if (selectedMonths.length > 0) {
+        const sessionMonth = format(new Date(session.test_date), 'yyyy-MM');
+        if (!selectedMonths.includes(sessionMonth)) return false;
+      }
+
+      // Year filter
+      if (selectedYears.length > 0) {
+        const sessionYear = format(new Date(session.test_date), 'yyyy');
+        if (!selectedYears.includes(sessionYear)) return false;
+      }
+
+      return true;
+    });
+  }, [sessions, selectedUsers, selectedExercises, selectedMonths, selectedYears]);
+
+  const toggleFilter = (value: string, selected: string[], setSelected: (values: string[]) => void) => {
+    if (selected.includes(value)) {
+      setSelected(selected.filter(v => v !== value));
+    } else {
+      setSelected([...selected, value]);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8 text-gray-500">Φόρτωση...</div>;
   }
@@ -156,8 +233,140 @@ export const HistoryTab: React.FC = () => {
 
   return (
     <>
+      {/* Filters Section */}
+      <Card className="rounded-none mb-4">
+        <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <CollapsibleTrigger className="w-full">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4" />
+                  <CardTitle className="text-base">Φίλτρα</CardTitle>
+                  {(selectedUsers.length + selectedExercises.length + selectedMonths.length + selectedYears.length) > 0 && (
+                    <span className="text-xs bg-[#00ffba] text-black px-2 py-0.5 rounded-full">
+                      {selectedUsers.length + selectedExercises.length + selectedMonths.length + selectedYears.length}
+                    </span>
+                  )}
+                </div>
+                <ChevronDown className={`w-4 h-4 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Users Filter */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Χρήστες</Label>
+                <div className="space-y-1 max-h-40 overflow-y-auto border rounded-none p-2">
+                  {uniqueUsers.map(user => (
+                    <div key={user.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`user-${user.id}`}
+                        checked={selectedUsers.includes(user.id)}
+                        onCheckedChange={() => toggleFilter(user.id, selectedUsers, setSelectedUsers)}
+                      />
+                      <label
+                        htmlFor={`user-${user.id}`}
+                        className="text-sm cursor-pointer flex-1"
+                      >
+                        {user.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Exercises Filter */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Ασκήσεις</Label>
+                <div className="space-y-1 max-h-40 overflow-y-auto border rounded-none p-2">
+                  {uniqueExercises.map(exercise => (
+                    <div key={exercise.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`exercise-${exercise.id}`}
+                        checked={selectedExercises.includes(exercise.id)}
+                        onCheckedChange={() => toggleFilter(exercise.id, selectedExercises, setSelectedExercises)}
+                      />
+                      <label
+                        htmlFor={`exercise-${exercise.id}`}
+                        className="text-sm cursor-pointer flex-1"
+                      >
+                        {exercise.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Months Filter */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Μήνες</Label>
+                <div className="space-y-1 max-h-40 overflow-y-auto border rounded-none p-2">
+                  {uniqueMonths.map(month => (
+                    <div key={month} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`month-${month}`}
+                        checked={selectedMonths.includes(month)}
+                        onCheckedChange={() => toggleFilter(month, selectedMonths, setSelectedMonths)}
+                      />
+                      <label
+                        htmlFor={`month-${month}`}
+                        className="text-sm cursor-pointer flex-1"
+                      >
+                        {format(new Date(month + '-01'), 'MMMM yyyy', { locale: el })}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Years Filter */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Έτη</Label>
+                <div className="space-y-1 max-h-40 overflow-y-auto border rounded-none p-2">
+                  {uniqueYears.map(year => (
+                    <div key={year} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`year-${year}`}
+                        checked={selectedYears.includes(year)}
+                        onCheckedChange={() => toggleFilter(year, selectedYears, setSelectedYears)}
+                      />
+                      <label
+                        htmlFor={`year-${year}`}
+                        className="text-sm cursor-pointer flex-1"
+                      >
+                        {year}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+
+            {/* Clear Filters Button */}
+            {(selectedUsers.length + selectedExercises.length + selectedMonths.length + selectedYears.length) > 0 && (
+              <CardContent className="pt-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedUsers([]);
+                    setSelectedExercises([]);
+                    setSelectedMonths([]);
+                    setSelectedYears([]);
+                  }}
+                  className="rounded-none"
+                >
+                  Καθαρισμός Φίλτρων
+                </Button>
+              </CardContent>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
       <div className="space-y-4">
-        {sessions.map((session) => {
+        {filteredSessions.map((session) => {
           // Group attempts by exercise
           const attemptsByExercise = session.strength_test_attempts.reduce((acc: any, attempt: any) => {
             const exerciseId = attempt.exercises?.id;
