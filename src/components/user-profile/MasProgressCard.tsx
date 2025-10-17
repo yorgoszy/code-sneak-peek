@@ -116,7 +116,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
   }
 
   return (
-    <Card className="rounded-none" style={{ width: '100%' }}>
+    <Card className="rounded-none max-w-2xl" style={{ width: 'calc(100% + 10px)' }}>
       <CardHeader className="p-[5px]">
         <CardTitle className="text-sm">MAS Tests</CardTitle>
       </CardHeader>

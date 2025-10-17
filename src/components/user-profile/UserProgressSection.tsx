@@ -314,14 +314,14 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           </div>
 
           {/* Progress Cards Container */}
-          <div className="flex gap-2">
+          <div className="flex gap-0">
             {/* 1RM Display */}
             {selectedExercises.length > 0 && Object.keys(exerciseOneRMs).length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-none p-2" style={{ paddingBottom: '8px', width: 'calc(50% - 4px)' }}>
+              <div className="bg-white border border-gray-200 rounded-none p-2 max-w-2xl" style={{ paddingBottom: '8px', width: 'calc(100% + 10px)' }}>
                 <div className="mb-1.5">
                   <span className="text-[10px] font-medium text-gray-700">1RM</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                   {selectedExercises.map((exerciseId, index) => {
                     const exercise = exercises.find(e => e.id === exerciseId);
                     const oneRM = exerciseOneRMs[exerciseId];
@@ -361,11 +361,6 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                 </div>
               </div>
             )}
-
-            {/* MAS Card */}
-            <div style={{ width: selectedExercises.length > 0 ? 'calc(50% - 4px)' : '100%' }}>
-              <MasProgressCard userId={userId} />
-            </div>
           </div>
 
           {/* Γράφημα */}
@@ -381,6 +376,9 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
               Επιλέξτε τουλάχιστον μία άσκηση
             </div>
           )}
+
+          {/* MAS Card */}
+          <MasProgressCard userId={userId} />
         </>
       ) : (
         <div className="text-center py-8 text-gray-500">
