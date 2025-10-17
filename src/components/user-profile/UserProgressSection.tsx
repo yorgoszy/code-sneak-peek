@@ -440,15 +440,17 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
           {/* MAS Bar Chart */}
           {masData.length > 0 && (
-            <TestBarChart
-              data={masData.map(item => ({
-                name: item.exercises?.name || 'Άγνωστη',
-                value: item.mas_meters || 0,
-                unit: 'm'
-              }))}
-              title="MAS Tests - Μέτρα ανά Άσκηση"
-              color="#00ffba"
-            />
+            <div className="max-w-2xl" style={{ width: 'calc(100% + 10px)' }}>
+              <TestBarChart
+                data={masData.map(item => ({
+                  name: item.exercises?.name || 'Άγνωστη',
+                  value: item.mas_meters || 0,
+                  unit: 'm'
+                }))}
+                title="MAS Tests - Μέτρα ανά Άσκηση"
+                color="#00ffba"
+              />
+            </div>
           )}
         </>
       ) : (
