@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Exercise, ProgramExercise } from '../types';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { ExerciseSelectionButton } from './ExerciseSelectionButton';
@@ -31,6 +31,8 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 }) => {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   
+  const initializedRef = useRef(false);
+  
   const { oneRMData, hasData } = use1RMCalculation(selectedUserId, exercise.exercise_id);
   
   const { handleVelocityChange, handleKgChange, handlePercentageChange } = useExerciseInputHandlers({ 
@@ -41,7 +43,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
 
   // Auto-populate fields όταν επιλέγεται άσκηση με 1RM
   useEffect(() => {
-    if (hasData && oneRMData && exercise.exercise_id) {
+    if (!initializedRef.current && hasData && oneRMData && exercise.exercise_id) {
       const kgStr = (Number.isFinite(oneRMData.weight) ? oneRMData.weight : 0)
         .toFixed(1)
         .replace('.', ',');
@@ -49,7 +51,6 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
         .toFixed(2)
         .replace('.', ',');
 
-      // Συμπλήρωσε ό,τι λείπει (μην αλλάζεις τιμές που έχει δώσει ο χρήστης)
       if (!exercise.percentage_1rm || exercise.percentage_1rm === 0) {
         onUpdate('percentage_1rm', 100);
       }
@@ -59,11 +60,15 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
       if (!exercise.velocity_ms) {
         onUpdate('velocity_ms', velStr);
       }
+
+      initializedRef.current = true;
     }
   }, [hasData, oneRMData, exercise.exercise_id]);
 
   const handleExerciseSelect = (exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
+    // επιτρέπουμε νέα αρχικοποίηση για την καινούρια άσκηση
+    initializedRef.current = false;
     // Reset τα πεδία όταν αλλάζει η άσκηση
     onUpdate('percentage_1rm', '');
     onUpdate('kg', '');
