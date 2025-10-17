@@ -112,12 +112,12 @@ export const EnduranceHistoryTab: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex gap-2 overflow-x-auto pb-2">
       {sessions.map((session) => {
         const enduranceData = session.endurance_test_data[0];
         
         return (
-          <Card key={session.id} className="rounded-none">
+          <Card key={session.id} className="rounded-none min-w-[220px] shrink-0">
             <CardContent className="p-3">
               <div className="space-y-2">
                 {/* Header με χρήστη, ημερομηνία, άσκηση */}
@@ -147,21 +147,22 @@ export const EnduranceHistoryTab: React.FC = () => {
                   </Button>
                 </div>
                 
-                {/* Μετρήσεις σε μία γραμμή */}
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500 text-xs">Απόσταση:</span>
+                {/* Μετρήσεις */}
+                <div className="grid grid-cols-2 gap-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Απόσταση:</span>
                     <span className="font-semibold text-gray-900">{enduranceData.mas_meters}m</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500 text-xs">Χρόνος:</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Χρόνος:</span>
                     <span className="font-semibold text-gray-900">{enduranceData.mas_minutes}'</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500 text-xs">MAS:</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">MAS:</span>
                     <span className="font-bold text-[#00ffba]">{enduranceData.mas_ms?.toFixed(2)} m/s</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">MAS:</span>
                     <span className="font-bold text-[#00ffba]">{enduranceData.mas_kmh?.toFixed(2)} km/h</span>
                   </div>
                 </div>
