@@ -318,7 +318,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
               <div className="mb-2">
                 <span className="text-xs font-medium text-gray-700">1RM (Τελευταία Καταγραφή)</span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                 {selectedExercises.map((exerciseId, index) => {
                   const exercise = exercises.find(e => e.id === exerciseId);
                   const oneRM = exerciseOneRMs[exerciseId];
