@@ -85,7 +85,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
       <CardHeader className="p-[5px]">
         <CardTitle className="text-sm">MAS Tests</CardTitle>
       </CardHeader>
-      <CardContent className="flex gap-2 overflow-x-auto pb-2 pl-0">
+      <CardContent className="flex gap-2 overflow-x-auto pb-2 p-[5px]">
         {sessions.map((session) => {
           const enduranceData = session.endurance_test_data[0];
           
