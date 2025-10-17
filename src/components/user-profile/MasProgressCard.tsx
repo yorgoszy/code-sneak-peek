@@ -86,11 +86,9 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
         <CardTitle className="text-sm">MAS Tests</CardTitle>
       </CardHeader>
       <CardContent className="flex gap-2 overflow-x-auto pb-2 p-[5px]">
-        {sessions.map((session) => {
-          const enduranceData = session.endurance_test_data[0];
-          
-          return (
-            <Card key={session.id} className="rounded-none min-w-[130px] shrink-0">
+        {sessions.flatMap((session) => 
+          session.endurance_test_data.map((enduranceData) => (
+            <Card key={enduranceData.id} className="rounded-none min-w-[130px] shrink-0">
               <CardContent className="p-[3px]">
                 <div className="space-y-1">
                   {/* Header με άσκηση και μέτρα/λεπτά */}
@@ -118,8 +116,8 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
+          ))
+        )}
       </CardContent>
     </Card>
   );
