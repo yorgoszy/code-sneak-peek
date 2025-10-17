@@ -439,11 +439,11 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         <div className="space-y-3">
           {bodyweightForms.map((form, formIndex) => (
             <Card key={form.id} className="rounded-none w-fit">
-              <CardHeader className="pb-0.5 pt-1.5 px-2">
-                <div className="flex items-center gap-1.5">
-                  <CardTitle className="text-[10px]">Push Ups & Pull Ups {bodyweightForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
-                  <Button onClick={addNewBodyweightForm} size="sm" className="rounded-none h-4 text-[9px] px-1.5 ml-auto">
-                    <Plus className="w-2.5 h-2.5 mr-0.5" />
+              <CardHeader className="pb-1 pt-2 px-3">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-xs">Push Ups & Pull Ups {bodyweightForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                  <Button onClick={addNewBodyweightForm} size="sm" className="rounded-none h-5 text-xs px-2 ml-auto">
+                    <Plus className="w-3 h-3 mr-1" />
                     Νέα Καταγραφή
                   </Button>
                   {bodyweightForms.length > 1 && (
@@ -451,58 +451,58 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                       size="sm"
                       variant="ghost"
                       onClick={() => removeBodyweightForm(form.id)}
-                      className="rounded-none h-4 w-4 p-0"
+                      className="rounded-none h-5 w-5 p-0"
                     >
-                      <Trash2 className="w-2.5 h-2.5" />
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="p-2 pt-1 space-y-1.5">
+              <CardContent className="p-3 pt-2 space-y-2">
                 {/* User Selection */}
-                <div className="w-28">
-                  <Label className="text-[10px]">Ασκούμενος</Label>
+                <div className="w-32">
+                  <Label className="text-xs">Ασκούμενος</Label>
                   <Combobox
                     options={userOptions}
                     value={form.selectedUserId}
                     onValueChange={(val) => updateBodyweightForm(form.id, { selectedUserId: val })}
                     placeholder="Χρήστης"
                     emptyMessage="Δεν βρέθηκε."
-                    className="h-6 text-[10px]"
+                    className="h-7 text-xs"
                   />
                 </div>
 
                 {/* Push Ups and Pull Ups */}
-                <div className="flex gap-1.5">
-                  <div className="w-16">
-                    <Label className="text-[10px]">Push Ups</Label>
+                <div className="flex gap-2">
+                  <div className="w-20">
+                    <Label className="text-xs">Push Ups</Label>
                     <Input
                       type="number"
                       placeholder="0"
                       value={form.pushUps}
                       onChange={(e) => updateBodyweightForm(form.id, { pushUps: e.target.value })}
-                      className="rounded-none no-spinners h-6 text-[10px]"
+                      className="rounded-none no-spinners h-7 text-xs"
                     />
                   </div>
 
-                  <div className="w-16">
-                    <Label className="text-[10px]">Pull Ups</Label>
+                  <div className="w-20">
+                    <Label className="text-xs">Pull Ups</Label>
                     <Input
                       type="number"
                       placeholder="0"
                       value={form.pullUps}
                       onChange={(e) => updateBodyweightForm(form.id, { pullUps: e.target.value })}
-                      className="rounded-none no-spinners h-6 text-[10px]"
+                      className="rounded-none no-spinners h-7 text-xs"
                     />
                   </div>
 
                   <div className="flex items-end">
                     <Button 
                       onClick={() => handleBodyweightSave(form.id)} 
-                      className="rounded-none h-6 text-[10px] px-2"
+                      className="rounded-none h-7 text-xs px-3"
                       disabled={form.loading}
                     >
-                      <Save className="w-3 h-3 mr-0.5" />
+                      <Save className="w-3 h-3 mr-1" />
                       {form.loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
                     </Button>
                   </div>
