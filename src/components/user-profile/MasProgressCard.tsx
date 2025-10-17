@@ -82,7 +82,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="p-0">
+      <CardHeader className="p-[5px]">
         <CardTitle className="text-sm">MAS Tests</CardTitle>
       </CardHeader>
       <CardContent className="flex gap-2 overflow-x-auto pb-2">
