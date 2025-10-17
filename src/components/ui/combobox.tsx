@@ -84,10 +84,9 @@ export function Combobox({
               {filteredOptions.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.label}
-                  onSelect={(currentValue) => {
-                    const selected = options.find(o => normalizeString(o.label) === normalizeString(currentValue))
-                    onValueChange(selected ? selected.value : "")
+                  value={option.value}
+                  onSelect={(selectedValue) => {
+                    onValueChange(selectedValue)
                     setOpen(false)
                     setSearchValue("")
                   }}
