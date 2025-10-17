@@ -19,7 +19,7 @@ export default function ProgressTracking() {
     try {
       const { data, error } = await supabase
         .from('app_users')
-        .select('id, name')
+        .select('id, name, email')
         .order('name');
 
       if (error) throw error;
