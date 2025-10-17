@@ -363,7 +363,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             )}
 
             {/* MAS Card */}
-            <div className="ml-[12px]">
+            <div className="ml-[22px]">
               <MasProgressCard userId={userId} />
             </div>
           </div>
