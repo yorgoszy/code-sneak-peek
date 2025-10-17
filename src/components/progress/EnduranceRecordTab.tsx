@@ -161,84 +161,85 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
   };
 
   return (
-    <Card className="rounded-none">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">MAS Test</CardTitle>
+    <Card className="rounded-none w-fit">
+      <CardHeader className="pb-1 pt-2 px-3">
+        <CardTitle className="text-xs">MAS Test</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="p-3 pt-2 space-y-2">
         {/* User and Exercise Selection */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label className="text-sm">Ασκούμενος</Label>
+        <div className="flex gap-2">
+          <div className="w-40">
+            <Label className="text-xs">Ασκούμενος</Label>
             <Combobox
               options={userOptions}
               value={selectedUserId}
               onValueChange={setSelectedUserId}
-              placeholder="Επιλέξτε χρήστη"
-              emptyMessage="Δεν βρέθηκε χρήστης."
+              placeholder="Χρήστης"
+              emptyMessage="Δεν βρέθηκε."
+              className="h-7 text-xs"
             />
           </div>
 
-          <div>
-            <Label className="text-sm">Άσκηση</Label>
+          <div className="w-40">
+            <Label className="text-xs">Άσκηση</Label>
             <Combobox
               options={exerciseOptions}
               value={selectedExerciseId}
               onValueChange={setSelectedExerciseId}
-              placeholder="Επιλέξτε άσκηση"
-              emptyMessage="Δεν βρέθηκε άσκηση."
+              placeholder="Άσκηση"
+              emptyMessage="Δεν βρέθηκε."
+              className="h-7 text-xs"
             />
           </div>
         </div>
 
         {/* Distance, Duration, and MAS */}
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <Label className="text-sm">Απόσταση (μέτρα)</Label>
+        <div className="flex gap-2">
+          <div className="w-24">
+            <Label className="text-xs">Μέτρα</Label>
             <Input
               type="number"
               step="0.1"
               placeholder="m"
               value={distance}
               onChange={(e) => handleDistanceChange(e.target.value)}
-              className="rounded-none no-spinners"
+              className="rounded-none no-spinners h-7 text-xs"
             />
           </div>
 
-          <div>
-            <Label className="text-sm">Διάρκεια (λεπτά)</Label>
+          <div className="w-24">
+            <Label className="text-xs">Λεπτά</Label>
             <Input
               type="number"
               step="0.1"
               placeholder="λεπτά"
               value={duration}
               onChange={(e) => handleDurationChange(e.target.value)}
-              className="rounded-none no-spinners"
+              className="rounded-none no-spinners h-7 text-xs"
             />
           </div>
 
-          <div>
-            <Label className="text-sm">MAS (m/s)</Label>
+          <div className="w-20">
+            <Label className="text-xs">MAS</Label>
             <Input
               type="text"
               value={calculatedMas}
               readOnly
-              placeholder="Αυτόματος υπολογισμός"
-              className="rounded-none bg-gray-100"
+              placeholder="m/s"
+              className="rounded-none bg-gray-100 h-7 text-xs"
             />
           </div>
-        </div>
 
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button 
-            onClick={handleSave} 
-            className="rounded-none"
-            disabled={loading}
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
-          </Button>
+          <div className="flex items-end">
+            <Button 
+              onClick={handleSave} 
+              className="rounded-none h-7 text-xs px-3"
+              disabled={loading}
+            >
+              <Save className="w-3 h-3 mr-1" />
+              {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
