@@ -16,6 +16,8 @@ interface MasForm {
   selectedExerciseId: string;
   distance: string;
   duration: string;
+  maxHr: string;
+  restingHr1min: string;
   loading: boolean;
 }
 
@@ -65,6 +67,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       selectedExerciseId: '',
       distance: '',
       duration: '',
+      maxHr: '',
+      restingHr1min: '',
       loading: false
     }
   ]);
@@ -138,6 +142,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       selectedExerciseId: '',
       distance: '',
       duration: '',
+      maxHr: '',
+      restingHr1min: '',
       loading: false
     }]);
   };
@@ -180,6 +186,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
 
     const dist = parseFloat(form.distance);
     const dur = parseFloat(form.duration);
+    const maxHr = form.maxHr ? parseInt(form.maxHr) : null;
+    const restingHr1min = form.restingHr1min ? parseInt(form.restingHr1min) : null;
 
     if (!dist || !dur || dist <= 0 || dur <= 0) {
       toast({
@@ -223,7 +231,9 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
           mas_meters: dist,
           mas_minutes: dur,
           mas_ms: mas,
-          mas_kmh: masKmh
+          mas_kmh: masKmh,
+          max_hr: maxHr,
+          resting_hr_1min: restingHr1min
         });
 
       if (dataError) throw dataError;
@@ -237,6 +247,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       updateForm(formId, {
         distance: '',
         duration: '',
+        maxHr: '',
+        restingHr1min: '',
         loading: false
       });
       
@@ -688,6 +700,28 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                     readOnly
                     placeholder="m/s"
                     className="rounded-none bg-gray-100 h-7 text-xs"
+                  />
+                </div>
+
+                <div className="w-20">
+                  <Label className="text-xs">Max HR</Label>
+                  <Input
+                    type="number"
+                    placeholder="bpm"
+                    value={form.maxHr}
+                    onChange={(e) => updateForm(form.id, { maxHr: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
+                </div>
+
+                <div className="w-20">
+                  <Label className="text-xs">1min Rest</Label>
+                  <Input
+                    type="number"
+                    placeholder="bpm"
+                    value={form.restingHr1min}
+                    onChange={(e) => updateForm(form.id, { restingHr1min: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
                   />
                 </div>
 
