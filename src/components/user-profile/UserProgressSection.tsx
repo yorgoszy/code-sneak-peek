@@ -329,7 +329,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                   return (
                     <div 
                       key={exerciseId} 
-                      className="border border-gray-200 rounded-none p-2"
+                      className="border border-gray-200 rounded-none p-1.5"
                       style={{ borderLeftWidth: '3px', borderLeftColor: exerciseColor }}
                     >
                       <div className="text-[10px] text-gray-500 mb-1">{exercise?.name}</div>
