@@ -85,12 +85,12 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm">MAS Tests</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="flex gap-2 overflow-x-auto">
         {sessions.map((session) => {
           const enduranceData = session.endurance_test_data[0];
           
           return (
-            <div key={session.id} className="border border-gray-200 rounded-none p-2 space-y-1.5">
+            <div key={session.id} className="border border-gray-200 rounded-none p-2 space-y-1.5 min-w-[200px]">
               {/* Header με ημερομηνία και άσκηση */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
