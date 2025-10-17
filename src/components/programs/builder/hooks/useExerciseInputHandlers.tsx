@@ -12,10 +12,12 @@ export const useExerciseInputHandlers = ({ onUpdate, userId, exerciseId }: UseEx
   const handleVelocityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     const display = raw.replace('.', ',');
+    console.info('[ExerciseInput] velocity change raw:', raw);
     onUpdate('velocity_ms', display);
 
     if (raw && raw.trim() !== '') {
       const calculated = calculateFromVelocity(raw);
+      console.info('[ExerciseInput] velocity -> calc:', calculated);
       if (calculated) {
         onUpdate('percentage_1rm', calculated.percentage);
         onUpdate('kg', calculated.kg);
@@ -38,18 +40,29 @@ export const useExerciseInputHandlers = ({ onUpdate, userId, exerciseId }: UseEx
   };
 
   const handlePercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-    // Replace period with comma for Greek decimal format
-    value = value.replace('.', ',');
-    onUpdate('percentage_1rm', value);
+    const raw = e.target.value;
+    // Normalize decimal separator for parsing
+    const sanitized = raw.replace('%', '').replace(',', '.');
 
-    // Αν το value περιέχει ποσοστό, υπολογίζουμε αυτόματα kg και velocity
-    if (value && value.trim() !== '') {
-      const calculated = calculateFromPercentage(value);
-      if (calculated) {
-        onUpdate('kg', calculated.kg);
-        onUpdate('velocity_ms', calculated.velocity);
-      }
+    if (!raw || raw.trim() === '') {
+      onUpdate('percentage_1rm', '');
+      return;
+    }
+
+    const percentValue = parseFloat(sanitized);
+    if (isNaN(percentValue)) {
+      onUpdate('percentage_1rm', raw.replace('.', ','));
+      return;
+    }
+
+    // Store as number (0-100), display stays controlled by value prop
+    const clamped = Math.max(0, Math.min(100, percentValue));
+    onUpdate('percentage_1rm', clamped);
+
+    const calculated = calculateFromPercentage(clamped.toString());
+    if (calculated) {
+      onUpdate('kg', calculated.kg);
+      onUpdate('velocity_ms', calculated.velocity);
     }
   };
 
