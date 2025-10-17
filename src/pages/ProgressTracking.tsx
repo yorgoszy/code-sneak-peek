@@ -29,12 +29,12 @@ export default function ProgressTracking() {
 
   // Prepare options for combobox
   const userOptions = useMemo(() => 
-    users.map(user => ({ value: user.id, label: user.name })),
+    (users || []).map(user => ({ value: user.id, label: user.name })),
     [users]
   );
 
   const exerciseOptions = useMemo(() => 
-    exercises.map(exercise => ({ value: exercise.id, label: exercise.name })),
+    (exercises || []).map(exercise => ({ value: exercise.id, label: exercise.name })),
     [exercises]
   );
 
