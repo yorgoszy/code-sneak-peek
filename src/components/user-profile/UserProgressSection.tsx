@@ -215,7 +215,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             <div className="mb-2">
               <span className="text-xs font-medium text-gray-700">Επιλογή Ασκήσεων</span>
             </div>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               {availableExercises.map((exerciseId, index) => {
                 const exercise = exercises.find(e => e.id === exerciseId);
                 const isSelected = selectedExercises.includes(exerciseId);
@@ -226,7 +226,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                   <div key={exerciseId} className="space-y-1">
                     <button
                       onClick={() => toggleExercise(exerciseId)}
-                      className={`px-2 py-1 text-xs rounded-none transition-all ${
+                      className={`px-2 py-1 text-xs rounded-none transition-all w-full ${
                         isSelected
                           ? 'text-white font-medium'
                           : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
