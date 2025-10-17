@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewRecordTab } from "@/components/progress/NewRecordTab";
 import { HistoryTab } from "@/components/progress/HistoryTab";
+import { NewEnduranceRecordTab } from "@/components/progress/endurance/NewEnduranceRecordTab";
 
 
 export default function ProgressTracking() {
@@ -98,9 +99,10 @@ export default function ProgressTracking() {
             </TabsList>
 
             <TabsContent value="new" className="mt-6">
-              <div className="text-center py-8 text-gray-500">
-                Νέα Καταγραφή Endurance - Σύντομα διαθέσιμο
-              </div>
+              <NewEnduranceRecordTab 
+                users={users}
+                onRecordSaved={handleRecordSaved}
+              />
             </TabsContent>
 
             <TabsContent value="history" className="mt-6">
