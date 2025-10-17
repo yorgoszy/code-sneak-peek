@@ -273,7 +273,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                   <Input
                     type="number"
                     step="0.1"
-                    placeholder="λεπτά"
+                    placeholder="min"
                     value={form.duration}
                     onChange={(e) => handleDurationChange(form.id, e.target.value)}
                     className="rounded-none no-spinners h-7 text-xs"
