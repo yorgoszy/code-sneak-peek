@@ -110,6 +110,24 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     }
   };
 
+  const getExerciseColor = (name: string, index: number) => {
+    const normalizedName = name.toLowerCase();
+    
+    if (normalizedName.includes('deadlift') || normalizedName.includes('dl')) {
+      return '#ef4444'; // κόκκινο
+    }
+    if (normalizedName.includes('squat') || normalizedName.includes('sq')) {
+      return '#3b82f6'; // μπλε
+    }
+    if (normalizedName.includes('bench press') || normalizedName.includes('bp')) {
+      return '#eab308'; // κίτρινο
+    }
+    
+    // Χρώματα για πολλαπλές ασκήσεις
+    const colors = ['#00ffba', '#cb8954', '#ef4444', '#3b82f6', '#eab308', '#8b5cf6', '#ec4899'];
+    return colors[index % colors.length];
+  };
+
   const toggleExercise = (exerciseId: string) => {
     setSelectedExercises(prev => {
       if (prev.includes(exerciseId)) {
@@ -142,18 +160,20 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
               <span className="text-xs font-medium text-gray-700">Επιλογή Ασκήσεων</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {availableExercises.map(exerciseId => {
+              {availableExercises.map((exerciseId, index) => {
                 const exercise = exercises.find(e => e.id === exerciseId);
                 const isSelected = selectedExercises.includes(exerciseId);
+                const exerciseColor = getExerciseColor(exercise?.name || '', index);
                 return (
                   <button
                     key={exerciseId}
                     onClick={() => toggleExercise(exerciseId)}
                     className={`px-2 py-1 text-xs rounded-none transition-all ${
                       isSelected
-                        ? 'bg-[#00ffba] text-black font-medium'
+                        ? 'text-white font-medium'
                         : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
                     }`}
+                    style={isSelected ? { backgroundColor: exerciseColor } : {}}
                   >
                     {exercise?.name || 'Άγνωστη άσκηση'}
                   </button>
