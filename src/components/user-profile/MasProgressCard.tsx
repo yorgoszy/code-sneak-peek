@@ -103,16 +103,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
   }
 
   if (sessions.length === 0) {
-    return (
-      <Card className="rounded-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">MAS Tests</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4 text-gray-500 text-xs">Δεν υπάρχουν δεδομένα</div>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   return (
