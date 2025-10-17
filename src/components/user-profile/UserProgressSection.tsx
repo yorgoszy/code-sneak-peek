@@ -13,23 +13,18 @@ interface UserProgressSectionProps {
 export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId }) => {
   const [exercises, setExercises] = useState<any[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
-  const [historicalData, setHistoricalData] = useState<any[]>([]);
+  const [allHistoricalData, setAllHistoricalData] = useState<any[]>([]);
+  const [availableExerciseIds, setAvailableExerciseIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetchExercises();
   }, []);
 
   useEffect(() => {
-    if (userId && selectedExercises.length === 0) {
-      fetchLatestExerciseForUser();
+    if (userId) {
+      fetchAllHistoricalData();
     }
-  }, [userId, selectedExercises]);
-
-  useEffect(() => {
-    if (selectedExercises.length > 0 && userId) {
-      fetchHistoricalData();
-    }
-  }, [selectedExercises, userId]);
+  }, [userId]);
 
   const fetchExercises = async () => {
     try {
@@ -45,7 +40,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     }
   };
 
-  const fetchHistoricalData = async () => {
+  const fetchAllHistoricalData = async () => {
     try {
       const { data, error } = await supabase
         .from('strength_test_attempts')
@@ -60,7 +55,6 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             test_date
           )
         `)
-        .in('exercise_id', selectedExercises)
         .eq('strength_test_sessions.user_id', userId)
         .not('velocity_ms', 'is', null)
         .order('weight_kg', { ascending: false });
@@ -75,41 +69,19 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         date: attempt.strength_test_sessions.test_date
       }));
 
-      setHistoricalData(chartData);
+      setAllHistoricalData(chartData);
+      
+      // Βρίσκουμε όλες τις μοναδικές ασκήσεις
+      const uniqueExerciseIds = [...new Set(chartData.map(d => d.exerciseId))];
+      setAvailableExerciseIds(uniqueExerciseIds);
+      
+      // Επιλέγουμε όλες τις ασκήσεις αρχικά
+      setSelectedExercises(uniqueExerciseIds);
     } catch (error) {
       console.error('Error fetching historical data:', error);
     }
   };
 
-  const fetchLatestExerciseForUser = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('strength_test_attempts')
-        .select(`
-          exercise_id,
-          created_at,
-          strength_test_sessions!inner (
-            user_id
-          )
-        `)
-        .eq('strength_test_sessions.user_id', userId)
-        .not('velocity_ms', 'is', null)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Παίρνουμε όλες τις μοναδικές ασκήσεις που έχει κάνει ο χρήστης
-      const uniqueExerciseIds = [...new Set((data || []).map((d: any) => d.exercise_id))];
-      
-      if (uniqueExerciseIds.length > 0) {
-        setSelectedExercises(uniqueExerciseIds);
-      } else if (exercises.length > 0) {
-        setSelectedExercises([exercises[0].id]);
-      }
-    } catch (error) {
-      console.error('Error fetching latest exercise for user:', error);
-    }
-  };
 
   const toggleExercise = (exerciseId: string) => {
     setSelectedExercises(prev => {
@@ -122,20 +94,18 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   };
 
   const selectAllExercises = () => {
-    const userExerciseIds = [...new Set(historicalData.map(d => d.exerciseId))];
-    setSelectedExercises(userExerciseIds);
+    setSelectedExercises(availableExerciseIds);
   };
 
   const deselectAllExercises = () => {
     setSelectedExercises([]);
   };
 
-  const availableExercises = [...new Set(historicalData.map(d => d.exerciseId))];
-  const filteredData = historicalData.filter(d => selectedExercises.includes(d.exerciseId));
+  const filteredData = allHistoricalData.filter(d => selectedExercises.includes(d.exerciseId));
 
   return (
     <div className="space-y-6">
-      {historicalData.length > 0 ? (
+      {allHistoricalData.length > 0 ? (
         <>
           {/* Φίλτρα Ασκήσεων - Compact */}
           <div className="bg-white border border-gray-200 rounded-none p-3">
@@ -157,7 +127,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {availableExercises.map(exerciseId => {
+              {availableExerciseIds.map(exerciseId => {
                 const exercise = exercises.find(e => e.id === exerciseId);
                 const isSelected = selectedExercises.includes(exerciseId);
                 return (
