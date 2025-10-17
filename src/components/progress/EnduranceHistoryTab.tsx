@@ -119,44 +119,51 @@ export const EnduranceHistoryTab: React.FC = () => {
         return (
           <Card key={session.id} className="rounded-none">
             <CardContent className="p-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex flex-col gap-1 min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-gray-900 truncate">
-                      {usersMap.get(session.user_id) || 'Άγνωστος'}
-                    </span>
-                    <span className="text-xs text-gray-500 whitespace-nowrap">
-                      {format(new Date(session.test_date), 'dd/MM/yy')}
-                    </span>
-                  </div>
-                  {enduranceData.exercises && (
-                    <span className="text-xs text-gray-600 truncate">
-                      {enduranceData.exercises.name}
-                    </span>
-                  )}
-                </div>
-                
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="text-right">
-                    <div className="text-xs text-gray-500">MAS</div>
-                    <div className="text-sm font-bold text-[#00ffba]">
-                      {enduranceData.mas_ms?.toFixed(2)} <span className="text-xs">m/s</span>
+              <div className="space-y-2">
+                {/* Header με χρήστη, ημερομηνία, άσκηση */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm text-gray-900 truncate">
+                        {usersMap.get(session.user_id) || 'Άγνωστος'}
+                      </span>
+                      <span className="text-xs text-gray-500 whitespace-nowrap">
+                        {format(new Date(session.test_date), 'dd/MM/yy')}
+                      </span>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs text-gray-500">MAS</div>
-                    <div className="text-sm font-bold text-[#00ffba]">
-                      {enduranceData.mas_kmh?.toFixed(2)} <span className="text-xs">km/h</span>
-                    </div>
+                    {enduranceData.exercises?.name && (
+                      <span className="text-xs text-gray-600 truncate">
+                        {enduranceData.exercises.name}
+                      </span>
+                    )}
                   </div>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleDeleteSession(session.id)}
-                    className="rounded-none h-8 w-8 p-0"
+                    className="rounded-none h-8 w-8 p-0 shrink-0"
                   >
                     <Trash2 className="w-4 h-4 text-red-500" />
                   </Button>
+                </div>
+                
+                {/* Μετρήσεις σε μία γραμμή */}
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 text-xs">Απόσταση:</span>
+                    <span className="font-semibold text-gray-900">{enduranceData.mas_meters}m</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 text-xs">Χρόνος:</span>
+                    <span className="font-semibold text-gray-900">{enduranceData.mas_minutes}'</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 text-xs">MAS:</span>
+                    <span className="font-bold text-[#00ffba]">{enduranceData.mas_ms?.toFixed(2)} m/s</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-[#00ffba]">{enduranceData.mas_kmh?.toFixed(2)} km/h</span>
+                  </div>
                 </div>
               </div>
             </CardContent>
