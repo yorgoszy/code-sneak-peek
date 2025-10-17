@@ -127,8 +127,15 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
     const form = forms.find(f => f.id === formId);
     if (!form || form.attempts.length <= 1) return;
 
+    const updatedAttempts = form.attempts
+      .filter((_, i) => i !== index)
+      .map((attempt, i) => ({
+        ...attempt,
+        attempt_number: i + 1
+      }));
+
     updateForm(formId, {
-      attempts: form.attempts.filter((_, i) => i !== index)
+      attempts: updatedAttempts
     });
   };
 
