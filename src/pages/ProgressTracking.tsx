@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 
 interface Attempt {
@@ -26,6 +26,17 @@ export default function ProgressTracking() {
   ]);
   const [historicalData, setHistoricalData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Prepare options for combobox
+  const userOptions = useMemo(() => 
+    users.map(user => ({ value: user.id, label: user.name })),
+    [users]
+  );
+
+  const exerciseOptions = useMemo(() => 
+    exercises.map(exercise => ({ value: exercise.id, label: exercise.name })),
+    [exercises]
+  );
 
   useEffect(() => {
     fetchUsers();
@@ -217,34 +228,24 @@ export default function ProgressTracking() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Επιλογή Χρήστη</Label>
-              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε χρήστη" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Combobox
+                options={userOptions}
+                value={selectedUserId}
+                onValueChange={setSelectedUserId}
+                placeholder="Επιλέξτε χρήστη"
+                emptyMessage="Δεν βρέθηκε χρήστης."
+              />
             </div>
 
             <div>
               <Label>Επιλογή Άσκησης</Label>
-              <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε άσκηση" />
-                </SelectTrigger>
-                <SelectContent>
-                  {exercises.map((exercise) => (
-                    <SelectItem key={exercise.id} value={exercise.id}>
-                      {exercise.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Combobox
+                options={exerciseOptions}
+                value={selectedExerciseId}
+                onValueChange={setSelectedExerciseId}
+                placeholder="Επιλέξτε άσκηση"
+                emptyMessage="Δεν βρέθηκε άσκηση."
+              />
             </div>
           </div>
 
