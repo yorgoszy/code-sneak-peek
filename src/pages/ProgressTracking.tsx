@@ -248,60 +248,58 @@ export default function ProgressTracking() {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label>Προσπάθειες</Label>
-              <Button onClick={addAttempt} size="sm" className="rounded-none">
-                <Plus className="w-4 h-4 mr-1" />
+              <Label className="text-sm">Προσπάθειες</Label>
+              <Button onClick={addAttempt} size="sm" className="rounded-none h-7 text-xs">
+                <Plus className="w-3 h-3 mr-1" />
                 Προσπάθεια
               </Button>
             </div>
 
-            {attempts.map((attempt, index) => (
-              <div key={index} className="flex items-center gap-2 p-3 border rounded-none">
-                <span className="text-sm font-medium w-6">#{attempt.attempt_number}</span>
-                
-                <div className="flex-1">
-                  <Label className="text-xs">Κιλά (kg)</Label>
+            <div className="space-y-1">
+              {attempts.map((attempt, index) => (
+                <div key={index} className="flex items-center gap-1 p-1 border rounded-none bg-white">
+                  <span className="text-xs font-medium w-4">#{attempt.attempt_number}</span>
+                  
                   <Input
                     type="number"
                     step="0.5"
+                    placeholder="kg"
                     value={attempt.weight_kg || ''}
                     onChange={(e) => handleWeightChange(index, e.target.value)}
-                    className="rounded-none h-8 no-spinners"
+                    className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
                   />
-                </div>
 
-                <div className="flex-1">
-                  <Label className="text-xs">Ταχύτητα (m/s)</Label>
                   <Input
                     type="number"
                     step="0.01"
+                    placeholder="m/s"
                     value={attempt.velocity_ms || ''}
                     onChange={(e) => handleVelocityChange(index, e.target.value)}
-                    className="rounded-none h-8 no-spinners"
+                    className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
                   />
-                </div>
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => removeAttempt(index)}
-                  className="rounded-none h-8 w-8 p-0 mt-5"
-                  disabled={attempts.length === 1}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
-            ))}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => removeAttempt(index)}
+                    className="rounded-none h-6 w-6 p-0"
+                    disabled={attempts.length === 1}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <Button 
             onClick={handleSave} 
-            className="rounded-none w-full"
+            className="rounded-none w-full h-8 text-sm"
             disabled={loading}
           >
-            <Save className="w-4 h-4 mr-2" />
+            <Save className="w-3 h-3 mr-2" />
             {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
           </Button>
         </CardContent>
