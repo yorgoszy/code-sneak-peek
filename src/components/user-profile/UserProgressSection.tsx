@@ -138,22 +138,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         <>
           {/* Φίλτρα Ασκήσεων - Compact */}
           <div className="bg-white border border-gray-200 rounded-none p-3 max-w-2xl">
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2">
               <span className="text-xs font-medium text-gray-700">Επιλογή Ασκήσεων</span>
-              <div className="flex gap-2">
-                <button
-                  onClick={selectAllExercises}
-                  className="text-xs px-2 py-1 bg-[#00ffba] text-black hover:bg-[#00ffba]/90 rounded-none"
-                >
-                  Όλες
-                </button>
-                <button
-                  onClick={deselectAllExercises}
-                  className="text-xs px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-none"
-                >
-                  Καμία
-                </button>
-              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               {availableExercises.map(exerciseId => {
