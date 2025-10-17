@@ -258,18 +258,17 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
       </div>
 
       {forms.map((form, formIndex) => {
-        const chartData = useMemo(() => {
-          const currentAttempts = form.attempts
-            .filter(a => a.weight_kg && a.velocity_ms && a.weight_kg > 0 && a.velocity_ms > 0)
-            .map(a => ({
-              exerciseName: exercises.find(e => e.id === form.selectedExerciseId)?.name || '',
-              velocity: a.velocity_ms,
-              weight: a.weight_kg,
-              date: new Date().toISOString().split('T')[0]
-            }));
+        // Calculate chart data without useMemo (can't use hooks inside map)
+        const currentAttempts = form.attempts
+          .filter(a => a.weight_kg && a.velocity_ms && a.weight_kg > 0 && a.velocity_ms > 0)
+          .map(a => ({
+            exerciseName: exercises.find(e => e.id === form.selectedExerciseId)?.name || '',
+            velocity: a.velocity_ms,
+            weight: a.weight_kg,
+            date: new Date().toISOString().split('T')[0]
+          }));
 
-          return [...form.historicalData, ...currentAttempts];
-        }, [form.historicalData, form.attempts, form.selectedExerciseId]);
+        const chartData = [...form.historicalData, ...currentAttempts];
 
         return (
           <Card key={form.id} className="rounded-none">
