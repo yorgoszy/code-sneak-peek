@@ -250,7 +250,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                                   : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
                               }`}
                             >
-                              {new Date(session.date).toLocaleDateString('el-GR')}
+                              {sessionIndex + 1}η
                             </button>
                           );
                         })}
