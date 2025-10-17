@@ -34,8 +34,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
   return (
     <div className="space-y-4">
       <Card className="rounded-none">
-        <CardContent className="p-6 space-y-6">
-          <div className="space-y-4">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <User className="w-4 h-4" />
