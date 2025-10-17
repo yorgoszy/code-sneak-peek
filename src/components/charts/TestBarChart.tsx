@@ -8,6 +8,7 @@ interface TestBarChartProps {
     value: number;
     unit?: string;
     color?: string;
+    opacity?: number;
   }>;
   title: string;
   color?: string;
@@ -39,7 +40,11 @@ export const TestBarChart = ({ data, title, color = "#2563eb" }: TestBarChartPro
             />
             <Bar dataKey="value" fill={color} radius={[2, 2, 0, 0]}>
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color || color} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.color || color} 
+                  fillOpacity={entry.opacity || 1}
+                />
               ))}
             </Bar>
           </BarChart>

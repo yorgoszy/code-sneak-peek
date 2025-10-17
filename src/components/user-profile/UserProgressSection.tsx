@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 import { MasProgressCard } from "./MasProgressCard";
+import { MasTestSelector } from "./MasTestSelector";
 import { TestBarChart } from "@/components/charts/TestBarChart";
 
 interface UserProgressSectionProps {
@@ -19,6 +20,9 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   const [exerciseSessions, setExerciseSessions] = useState<Record<string, any[]>>({});
   const [selectedSessions, setSelectedSessions] = useState<Record<string, string[]>>({});
   const [masData, setMasData] = useState<any[]>([]);
+  const [masExercises, setMasExercises] = useState<any[]>([]);
+  const [selectedMasExercises, setSelectedMasExercises] = useState<string[]>([]);
+  const [selectedMasSessions, setSelectedMasSessions] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     fetchExercises();
@@ -81,7 +85,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         }))
       );
       
-      // Group by exercise_id and get latest for each
+      // Group by exercise_id and get ALL records for each
       const exerciseMap = new Map();
       allData.forEach(item => {
         if (!item.exercise_id || !item.mas_meters) return;
@@ -92,15 +96,39 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         exerciseMap.get(item.exercise_id).push(item);
       });
       
-      // For each exercise, get the latest one
-      const latestMasData = Array.from(exerciseMap.values()).map(items => {
+      // For each exercise, sort and number the records
+      const processedExercises: any[] = [];
+      exerciseMap.forEach((items, exerciseId) => {
         const sorted = items.sort((a, b) => 
           new Date(b.test_date).getTime() - new Date(a.test_date).getTime()
         );
-        return sorted[0];
+        
+        const sessions = sorted.map((item, index) => ({
+          sessionId: item.id,
+          date: item.test_date,
+          mas_meters: item.mas_meters,
+          recordNumber: index + 1,
+          fullData: item
+        }));
+        
+        processedExercises.push({
+          id: exerciseId,
+          name: sorted[0].exercises?.name || 'Άγνωστη',
+          sessions: sessions
+        });
       });
       
-      setMasData(latestMasData);
+      setMasExercises(processedExercises);
+      
+      // Auto-select first exercise and its latest session
+      if (processedExercises.length > 0) {
+        const firstExercise = processedExercises[0];
+        setSelectedMasExercises([firstExercise.id]);
+        setSelectedMasSessions({
+          [firstExercise.id]: [firstExercise.sessions[0].sessionId]
+        });
+      }
+      
     } catch (error) {
       console.error('Error fetching MAS data:', error);
     }
@@ -435,36 +463,73 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             </div>
           )}
 
+          {/* MAS Test Selector */}
+          {masExercises.length > 0 && (
+            <MasTestSelector
+              exercises={masExercises}
+              selectedExercises={selectedMasExercises}
+              selectedSessions={selectedMasSessions}
+              onExerciseToggle={(exerciseId) => {
+                setSelectedMasExercises(prev => 
+                  prev.includes(exerciseId)
+                    ? prev.filter(id => id !== exerciseId)
+                    : [...prev, exerciseId]
+                );
+              }}
+              onSessionToggle={(exerciseId, sessionId) => {
+                setSelectedMasSessions(prev => {
+                  const current = prev[exerciseId] || [];
+                  const updated = current.includes(sessionId)
+                    ? current.filter(id => id !== sessionId)
+                    : [...current, sessionId];
+                  return { ...prev, [exerciseId]: updated };
+                });
+              }}
+            />
+          )}
+
           {/* MAS Card */}
           <MasProgressCard userId={userId} />
 
           {/* MAS Bar Chart */}
-          {masData.length > 0 && (
+          {selectedMasExercises.length > 0 && (
             <div className="max-w-2xl" style={{ width: 'calc(100% + 10px)' }}>
               <TestBarChart
-                data={masData.map(item => {
-                  const exerciseName = (item.exercises?.name || '').toLowerCase();
-                  let barColor = '#00ffba'; // default
-                  
-                  if (exerciseName.includes('skierg')) {
-                    barColor = '#ff8c42'; // πορτοκαλί
-                  } else if (exerciseName.includes('rowerg') || exerciseName.includes('row erg')) {
-                    barColor = '#9b59b6'; // μωβ
-                  } else if (exerciseName.includes('bikeerg') || exerciseName.includes('bike erg')) {
-                    barColor = '#3498db'; // γαλάζιο
-                  } else if (exerciseName.includes('woodway')) {
-                    barColor = '#ff69b4'; // ροζ
-                  } else if (exerciseName.includes('track')) {
-                    barColor = '#90ee90'; // λαχανί
-                  }
-                  
-                  return {
-                    name: item.exercises?.name || 'Άγνωστη',
-                    value: item.mas_meters || 0,
-                    unit: 'm',
-                    color: barColor
-                  };
-                })}
+                data={masExercises
+                  .filter(ex => selectedMasExercises.includes(ex.id))
+                  .flatMap(exercise => {
+                    const exerciseSessions = selectedMasSessions[exercise.id] || [];
+                    return exercise.sessions
+                      .filter(session => exerciseSessions.includes(session.sessionId))
+                      .map(session => {
+                        const exerciseName = exercise.name.toLowerCase();
+                        let barColor = '#00ffba';
+                        
+                        if (exerciseName.includes('skierg')) {
+                          barColor = '#ff8c42';
+                        } else if (exerciseName.includes('rowerg') || exerciseName.includes('row erg')) {
+                          barColor = '#9b59b6';
+                        } else if (exerciseName.includes('bikeerg') || exerciseName.includes('bike erg')) {
+                          barColor = '#3498db';
+                        } else if (exerciseName.includes('woodway')) {
+                          barColor = '#ff69b4';
+                        } else if (exerciseName.includes('track')) {
+                          barColor = '#90ee90';
+                        }
+                        
+                        // Opacity based on record number (1st = full, 2nd = 0.7, 3rd = 0.5, etc)
+                        const opacity = Math.max(0.3, 1 - (session.recordNumber - 1) * 0.15);
+                        
+                        return {
+                          name: `${exercise.name} (${session.recordNumber}η)`,
+                          value: session.mas_meters || 0,
+                          unit: 'm',
+                          color: barColor,
+                          opacity: opacity
+                        };
+                      });
+                  })
+                }
                 title="MAS Tests - Μέτρα ανά Άσκηση"
                 color="#00ffba"
               />
