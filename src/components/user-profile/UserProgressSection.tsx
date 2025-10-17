@@ -361,11 +361,6 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                 </div>
               </div>
             )}
-
-            {/* MAS Card */}
-            <div className="ml-[22px]">
-              <MasProgressCard userId={userId} />
-            </div>
           </div>
 
           {/* Γράφημα */}
@@ -381,6 +376,9 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
               Επιλέξτε τουλάχιστον μία άσκηση
             </div>
           )}
+
+          {/* MAS Card */}
+          <MasProgressCard userId={userId} />
         </>
       ) : (
         <div className="text-center py-8 text-gray-500">
