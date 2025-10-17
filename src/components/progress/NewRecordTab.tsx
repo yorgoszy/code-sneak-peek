@@ -197,6 +197,20 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
     }
   };
 
+  // Combine historical data with current attempts for real-time chart update
+  const chartData = useMemo(() => {
+    const currentAttempts = attempts
+      .filter(a => a.weight_kg && a.velocity_ms && a.weight_kg > 0 && a.velocity_ms > 0)
+      .map(a => ({
+        exerciseName: exercises.find(e => e.id === selectedExerciseId)?.name || '',
+        velocity: a.velocity_ms,
+        weight: a.weight_kg,
+        date: new Date().toISOString().split('T')[0]
+      }));
+
+    return [...historicalData, ...currentAttempts];
+  }, [historicalData, attempts, selectedExerciseId, exercises]);
+
   return (
     <div className="space-y-6">
       <Card className="rounded-none">
@@ -295,10 +309,10 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
 
             {/* Right side - Chart */}
             <div className="flex items-center justify-center">
-              {historicalData.length > 0 && selectedExerciseId ? (
+              {selectedExerciseId && selectedUserId ? (
                 <div className="w-full">
                   <LoadVelocityChart 
-                    data={historicalData}
+                    data={chartData}
                     exerciseName={exercises.find(e => e.id === selectedExerciseId)?.name || ''}
                   />
                 </div>
