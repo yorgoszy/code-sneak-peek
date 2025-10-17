@@ -279,7 +279,7 @@ export default function ProgressTracking() {
                     type="number"
                     step="0.5"
                     placeholder="kg"
-                    value={attempt.weight_kg || ''}
+                    value={attempt.weight_kg ?? ''}
                     onChange={(e) => handleWeightChange(index, e.target.value)}
                     className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
                   />
@@ -288,7 +288,7 @@ export default function ProgressTracking() {
                     type="number"
                     step="0.01"
                     placeholder="m/s"
-                    value={attempt.velocity_ms || ''}
+                    value={attempt.velocity_ms ?? ''}
                     onChange={(e) => handleVelocityChange(index, e.target.value)}
                     className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
                   />
