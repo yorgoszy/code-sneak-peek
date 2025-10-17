@@ -137,49 +137,45 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     <div className="space-y-6">
       {historicalData.length > 0 ? (
         <>
-          {/* Φίλτρα Ασκήσεων */}
-          <Card className="rounded-none">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium flex items-center justify-between">
-                <span>Επιλογή Ασκήσεων</span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={selectAllExercises}
-                    className="text-xs px-2 py-1 bg-[#00ffba] text-black hover:bg-[#00ffba]/90 rounded-none"
-                  >
-                    Όλες
-                  </button>
-                  <button
-                    onClick={deselectAllExercises}
-                    className="text-xs px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-none"
-                  >
-                    Καμία
-                  </button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {availableExercises.map(exerciseId => {
-                  const exercise = exercises.find(e => e.id === exerciseId);
-                  const isSelected = selectedExercises.includes(exerciseId);
-                  return (
-                    <button
-                      key={exerciseId}
-                      onClick={() => toggleExercise(exerciseId)}
-                      className={`px-3 py-2 text-sm rounded-none transition-colors ${
-                        isSelected
-                          ? 'bg-[#00ffba] text-black'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {exercise?.name || 'Άγνωστη άσκηση'}
-                    </button>
-                  );
-                })}
+          {/* Φίλτρα Ασκήσεων - Compact */}
+          <div className="bg-white border border-gray-200 rounded-none p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-700">Επιλογή Ασκήσεων</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={selectAllExercises}
+                  className="text-xs px-2 py-1 bg-[#00ffba] text-black hover:bg-[#00ffba]/90 rounded-none"
+                >
+                  Όλες
+                </button>
+                <button
+                  onClick={deselectAllExercises}
+                  className="text-xs px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-none"
+                >
+                  Καμία
+                </button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {availableExercises.map(exerciseId => {
+                const exercise = exercises.find(e => e.id === exerciseId);
+                const isSelected = selectedExercises.includes(exerciseId);
+                return (
+                  <button
+                    key={exerciseId}
+                    onClick={() => toggleExercise(exerciseId)}
+                    className={`px-2 py-1 text-xs rounded-none transition-all ${
+                      isSelected
+                        ? 'bg-[#00ffba] text-black font-medium'
+                        : 'bg-gray-50 text-gray-400 hover:bg-gray-100 opacity-50'
+                    }`}
+                  >
+                    {exercise?.name || 'Άγνωστη άσκηση'}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Γράφημα */}
           {filteredData.length > 0 ? (
