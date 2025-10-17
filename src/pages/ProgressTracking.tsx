@@ -51,26 +51,45 @@ export default function ProgressTracking() {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Καταγραφή Προόδου</h1>
 
-      <Tabs defaultValue="new" className="w-full">
+      <Tabs defaultValue="force-velocity" className="w-full">
         <TabsList className="rounded-none w-full">
-          <TabsTrigger value="new" className="rounded-none flex-1">
-            Νέα Καταγραφή
+          <TabsTrigger value="force-velocity" className="rounded-none flex-1">
+            Force/Velocity
           </TabsTrigger>
-          <TabsTrigger value="history" className="rounded-none flex-1">
-            Ιστορικό
+          <TabsTrigger value="endurance" className="rounded-none flex-1">
+            Endurance
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="new" className="mt-6">
-          <NewRecordTab 
-            users={users} 
-            exercises={exercises} 
-            onRecordSaved={handleRecordSaved}
-          />
+        <TabsContent value="force-velocity" className="mt-6">
+          <Tabs defaultValue="new" className="w-full">
+            <TabsList className="rounded-none w-full bg-gray-100">
+              <TabsTrigger value="new" className="rounded-none flex-1">
+                Νέα Καταγραφή
+              </TabsTrigger>
+              <TabsTrigger value="history" className="rounded-none flex-1">
+                Ιστορικό
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="new" className="mt-6">
+              <NewRecordTab 
+                users={users} 
+                exercises={exercises} 
+                onRecordSaved={handleRecordSaved}
+              />
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-6">
+              <HistoryTab key={refreshKey} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
-        <TabsContent value="history" className="mt-6">
-          <HistoryTab key={refreshKey} />
+        <TabsContent value="endurance" className="mt-6">
+          <div className="text-center py-8 text-gray-500">
+            Endurance - Σύντομα διαθέσιμο
+          </div>
         </TabsContent>
       </Tabs>
     </div>
