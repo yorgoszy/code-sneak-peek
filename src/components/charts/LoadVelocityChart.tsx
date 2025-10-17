@@ -13,8 +13,8 @@ interface LoadVelocityChartProps {
 }
 
 export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps) => {
-  // Sort data by velocity to create proper curve
-  const sortedData = data
+  // Sort by velocity (X-axis) from smallest to largest
+  const sortedData = [...data]
     .sort((a, b) => a.velocity - b.velocity)
     .map((item, index) => ({
       velocity: item.velocity,
@@ -35,14 +35,13 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
             <XAxis 
               dataKey="velocity"
               type="number"
-              domain={[0, 'dataMax']}
+              domain={['dataMin', 'dataMax']}
               label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -10 }}
               tick={{ fontSize: 12 }}
             />
             <YAxis 
-              dataKey="weight"
               type="number"
-              domain={[0, 'dataMax']}
+              domain={['dataMin', 'dataMax']}
               label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip 
