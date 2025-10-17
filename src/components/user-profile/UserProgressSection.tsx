@@ -211,11 +211,11 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       {historicalData.length > 0 ? (
         <>
           {/* Φίλτρα Ασκήσεων - Compact */}
-          <div className="bg-white border border-gray-200 rounded-none p-3 max-w-2xl">
-            <div className="mb-2">
-              <span className="text-xs font-medium text-gray-700">Επιλογή Ασκήσεων</span>
+          <div className="bg-white border border-gray-200 rounded-none p-2 max-w-2xl">
+            <div className="mb-1.5">
+              <span className="text-[10px] font-medium text-gray-700">Επιλογή Ασκήσεων</span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {availableExercises.map((exerciseId, index) => {
                 const exercise = exercises.find(e => e.id === exerciseId);
                 const isSelected = selectedExercises.includes(exerciseId);
@@ -223,10 +223,10 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                 const sessions = exerciseSessions[exerciseId] || [];
                 
                 return (
-                  <div key={exerciseId} className="space-y-1">
+                  <div key={exerciseId} className="space-y-0.5">
                     <button
                       onClick={() => toggleExercise(exerciseId)}
-                      className={`px-2 py-1 text-xs rounded-none transition-all w-full ${
+                      className={`px-1.5 py-0.5 text-[10px] rounded-none transition-all w-full ${
                         isSelected
                           ? 'text-white font-medium'
                           : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
@@ -237,14 +237,14 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                     </button>
                     
                     {isSelected && sessions.length > 0 && (
-                      <div className="ml-4 flex flex-wrap gap-1">
+                      <div className="ml-2 flex flex-wrap gap-0.5">
                         {sessions.map((session, sessionIndex) => {
                           const isSessionSelected = selectedSessions[exerciseId]?.includes(session.sessionId);
                           return (
                             <button
                               key={session.sessionId}
                               onClick={() => toggleSession(exerciseId, session.sessionId)}
-                              className={`px-2 py-0.5 text-xs rounded-none transition-all ${
+                              className={`px-1 py-0.5 text-[9px] rounded-none transition-all ${
                                 isSessionSelected
                                   ? 'bg-gray-700 text-white'
                                   : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
