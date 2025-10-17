@@ -25,31 +25,29 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
 
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle>{exerciseName} - Load/Velocity Profile</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={sortedData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+      <CardContent className="pt-4">
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={sortedData} margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="velocity"
               type="number"
               domain={['dataMin', 'dataMax']}
-              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -10 }}
-              tick={{ fontSize: 12 }}
+              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -10, fontSize: 11 }}
+              tick={{ fontSize: 10 }}
             />
             <YAxis 
               type="number"
               domain={['dataMin', 'dataMax']}
-              label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft', fontSize: 11 }}
+              tick={{ fontSize: 10 }}
             />
             <Tooltip 
               content={({ active, payload }) => {
                 if (active && payload && payload.length > 0) {
                   const data = payload[0].payload;
                   return (
-                    <div className="bg-white p-3 border border-gray-200 rounded shadow">
+                    <div className="bg-white p-2 border border-gray-200 rounded shadow text-xs">
                       <p className="font-medium">{data.test}</p>
                       <p>Ημερομηνία: {data.date}</p>
                       <p>Ταχύτητα: {data.velocity} m/s</p>
@@ -60,14 +58,13 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
                 return null;
               }}
             />
-            <Legend />
             <Line 
               type="monotone" 
               dataKey="weight" 
               stroke="#8884d8" 
               strokeWidth={2}
-              dot={{ fill: "#8884d8", strokeWidth: 2, r: 4 }}
-              name={`${exerciseName} Load-Velocity`}
+              dot={{ fill: "#8884d8", strokeWidth: 2, r: 3 }}
+              name="Load-Velocity"
             />
           </LineChart>
         </ResponsiveContainer>
