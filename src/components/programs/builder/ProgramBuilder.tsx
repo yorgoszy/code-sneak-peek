@@ -93,7 +93,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
       <TrainingWeeks
         weeks={program.weeks}
         exercises={exercises}
-        selectedUserId={(program as any).user_id || (program as any).user_ids?.[0]}
+        selectedUserId={program.user_id}
         onAddWeek={onAddWeek}
         onRemoveWeek={onRemoveWeek}
         onDuplicateWeek={onDuplicateWeek}

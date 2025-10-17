@@ -10,7 +10,6 @@ import { Exercise, ProgramExercise } from '../types';
 interface BlockCardContentProps {
   exercises: ProgramExercise[];
   availableExercises: Exercise[];
-  selectedUserId?: string;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onDuplicateExercise: (exerciseId: string) => void;
@@ -20,7 +19,6 @@ interface BlockCardContentProps {
 export const BlockCardContent: React.FC<BlockCardContentProps> = ({
   exercises,
   availableExercises,
-  selectedUserId,
   onUpdateExercise,
   onRemoveExercise,
   onDuplicateExercise,
@@ -48,7 +46,6 @@ export const BlockCardContent: React.FC<BlockCardContentProps> = ({
                   exercise={exercise}
                   exercises={availableExercises}
                   allBlockExercises={exercises}
-                  selectedUserId={selectedUserId}
                   onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
                   onRemove={() => onRemoveExercise(exercise.id)}
                   onDuplicate={() => onDuplicateExercise(exercise.id)}
