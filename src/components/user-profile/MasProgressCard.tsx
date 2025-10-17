@@ -91,8 +91,8 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
           
           return (
             <Card key={session.id} className="rounded-none min-w-[130px] shrink-0">
-              <CardContent className="p-[5px]">
-                <div className="space-y-2">
+              <CardContent className="p-[3px]">
+                <div className="space-y-1">
                   {/* Header με άσκηση και μέτρα/λεπτά */}
                   <div className="flex items-start justify-between">
                     {enduranceData.exercises?.name && (
