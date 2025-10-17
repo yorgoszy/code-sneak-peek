@@ -9,10 +9,12 @@ interface OneRMData {
 export const use1RMCalculation = (userId: string | undefined, exerciseId: string | undefined) => {
   const [oneRMData, setOneRMData] = useState<OneRMData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [lvModel, setLvModel] = useState<{ slope: number; intercept: number } | null>(null);
 
   useEffect(() => {
     if (!userId || !exerciseId) {
       setOneRMData(null);
+      setLvModel(null);
       return;
     }
 
@@ -58,6 +60,32 @@ export const use1RMCalculation = (userId: string | undefined, exerciseId: string
             weight: oneRM.weight_kg,
             velocity: oneRM.velocity_ms || 0
           });
+
+          // Δημιουργία γραμμικού μοντέλου load-velocity: v = a + b * weight
+          const points = latestSessionAttempts
+            .filter(a => typeof a.velocity_ms === 'number' && typeof a.weight_kg === 'number')
+            .map(a => ({ x: Number(a.weight_kg), y: Number(a.velocity_ms) }));
+
+          if (points.length >= 2) {
+            const n = points.length;
+            const sumX = points.reduce((s, p) => s + p.x, 0);
+            const sumY = points.reduce((s, p) => s + p.y, 0);
+            const meanX = sumX / n;
+            const meanY = sumY / n;
+
+            let num = 0;
+            let den = 0;
+            for (const p of points) {
+              const dx = p.x - meanX;
+              num += dx * (p.y - meanY);
+              den += dx * dx;
+            }
+            const slope = den !== 0 ? num / den : 0;
+            const intercept = meanY - slope * meanX;
+            setLvModel({ slope, intercept });
+          } else {
+            setLvModel(null);
+          }
         } else {
           // Fallback: RPC για τελευταίο 1RM βάρος αν δεν υπάρχουν attempts
           const { data: rpcWeight, error: rpcError } = await supabase.rpc('get_latest_1rm', {
@@ -94,14 +122,20 @@ export const use1RMCalculation = (userId: string | undefined, exerciseId: string
     }
 
     // Υπολογισμός κιλών
-    const calculatedKg = (oneRMData.weight * percentValue / 100).toFixed(1);
+    const kgForPercent = oneRMData.weight * (percentValue / 100);
+    const calculatedKg = kgForPercent.toFixed(1);
 
-    // Προτεινόμενη ταχύτητα βασισμένη στο ποσοστό
-    // Απλή προσέγγιση: όσο χαμηλότερο το ποσοστό, τόσο μεγαλύτερη η ταχύτητα
-    // Για 100% -> velocity από 1RM
-    // Για χαμηλότερα ποσοστά, αυξάνουμε την ταχύτητα ανάλογα
-    const velocityMultiplier = 1 + ((100 - percentValue) / 100) * 0.3; // +30% max στο 0%
-    const calculatedVelocity = (oneRMData.velocity * velocityMultiplier).toFixed(2);
+    // Υπολογισμός ταχύτητας από το γραμμικό μοντέλο v = a + b * weight (fallback αν δεν υπάρχει)
+    let velocityValue: number;
+    if (lvModel) {
+      const v = lvModel.intercept + lvModel.slope * kgForPercent;
+      velocityValue = Math.max(0, v);
+    } else {
+      // Fallback: απλή κλιμάκωση σε σχέση με το 1RM velocity
+      const velocityMultiplier = 1 + ((100 - percentValue) / 100) * 0.3; // +30% max στο 0%
+      velocityValue = oneRMData.velocity * velocityMultiplier;
+    }
+    const calculatedVelocity = velocityValue.toFixed(2);
 
     return {
       kg: calculatedKg.replace('.', ','),
