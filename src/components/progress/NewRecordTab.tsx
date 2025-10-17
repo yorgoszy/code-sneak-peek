@@ -215,42 +215,41 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
     <div className="space-y-6">
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle>Νέα Καταγραφή</CardTitle>
+          <div className="flex items-center gap-4">
+            <CardTitle className="whitespace-nowrap">Νέα Καταγραφή</CardTitle>
+            <div className="flex gap-4 flex-1">
+              <div className="flex-1">
+                <Combobox
+                  options={userOptions}
+                  value={selectedUserId}
+                  onValueChange={(val) => {
+                    setSelectedUserId(val);
+                    if (val && selectedExerciseId) fetchHistoricalData();
+                  }}
+                  placeholder="Επιλέξτε χρήστη"
+                  emptyMessage="Δεν βρέθηκε χρήστης."
+                />
+              </div>
+
+              <div className="flex-1">
+                <Combobox
+                  options={exerciseOptions}
+                  value={selectedExerciseId}
+                  onValueChange={(val) => {
+                    setSelectedExerciseId(val);
+                    if (val && selectedUserId) fetchHistoricalData();
+                  }}
+                  placeholder="Επιλέξτε άσκηση"
+                  emptyMessage="Δεν βρέθηκε άσκηση."
+                />
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left side - Form */}
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Επιλογή Χρήστη</Label>
-                  <Combobox
-                    options={userOptions}
-                    value={selectedUserId}
-                    onValueChange={(val) => {
-                      setSelectedUserId(val);
-                      if (val && selectedExerciseId) fetchHistoricalData();
-                    }}
-                    placeholder="Επιλέξτε χρήστη"
-                    emptyMessage="Δεν βρέθηκε χρήστης."
-                  />
-                </div>
-
-                <div>
-                  <Label>Επιλογή Άσκησης</Label>
-                  <Combobox
-                    options={exerciseOptions}
-                    value={selectedExerciseId}
-                    onValueChange={(val) => {
-                      setSelectedExerciseId(val);
-                      if (val && selectedUserId) fetchHistoricalData();
-                    }}
-                    placeholder="Επιλέξτε άσκηση"
-                    emptyMessage="Δεν βρέθηκε άσκηση."
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label className="text-sm">Προσπάθειες</Label>
