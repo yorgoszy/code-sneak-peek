@@ -35,6 +35,8 @@ export const EnduranceHistoryTab: React.FC = () => {
               mas_minutes,
               mas_ms,
               mas_kmh,
+              push_ups,
+              pull_ups,
               exercises (
                 id,
                 name
@@ -149,22 +151,38 @@ export const EnduranceHistoryTab: React.FC = () => {
                 
                 {/* Μετρήσεις */}
                 <div className="grid grid-cols-2 gap-1.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500">Απόσταση:</span>
-                    <span className="font-semibold text-gray-900">{enduranceData.mas_meters}m</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500">Χρόνος:</span>
-                    <span className="font-semibold text-gray-900">{enduranceData.mas_minutes}'</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500">MAS:</span>
-                    <span className="font-bold text-[#00ffba]">{enduranceData.mas_ms?.toFixed(2)} m/s</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500">MAS:</span>
-                    <span className="font-bold text-[#00ffba]">{enduranceData.mas_kmh?.toFixed(2)} km/h</span>
-                  </div>
+                  {enduranceData.mas_meters && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Απόσταση:</span>
+                        <span className="font-semibold text-gray-900">{enduranceData.mas_meters}m</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Χρόνος:</span>
+                        <span className="font-semibold text-gray-900">{enduranceData.mas_minutes}'</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">MAS:</span>
+                        <span className="font-bold text-[#00ffba]">{enduranceData.mas_ms?.toFixed(2)} m/s</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">MAS:</span>
+                        <span className="font-bold text-[#00ffba]">{enduranceData.mas_kmh?.toFixed(2)} km/h</span>
+                      </div>
+                    </>
+                  )}
+                  {enduranceData.push_ups !== null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Push Ups:</span>
+                      <span className="font-bold text-[#cb8954]">{enduranceData.push_ups}</span>
+                    </div>
+                  )}
+                  {enduranceData.pull_ups !== null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Pull Ups:</span>
+                      <span className="font-bold text-[#cb8954]">{enduranceData.pull_ups}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
