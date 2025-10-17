@@ -196,9 +196,11 @@ export const HistoryTab: React.FC = () => {
                   // Prepare chart data for this exercise
                   const chartData = exerciseData.attempts.map((attempt: any) => ({
                     exerciseName: exerciseData.exerciseName,
+                    exerciseId: attempt.exercises?.id,
                     velocity: attempt.velocity_ms || 0,
                     weight: attempt.weight_kg,
-                    date: session.test_date
+                    date: session.test_date,
+                    sessionId: session.id
                   }));
 
                   return (

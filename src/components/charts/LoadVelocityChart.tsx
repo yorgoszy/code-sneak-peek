@@ -130,11 +130,32 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
             {selectedExercises.map((exerciseName, index) => {
               const exerciseData = data.filter(d => d.exerciseName === exerciseName);
               const exerciseId = exerciseData[0]?.exerciseId;
-              const sessions = selectedSessions[exerciseId || ''] || [];
+              const sessions = selectedSessions[exerciseId || ''];
               
-              return sessions.map(sessionId => {
+              // Αν δεν υπάρχουν selected sessions, εμφάνισε όλα τα unique sessions για αυτή την άσκηση
+              const sessionIds = sessions && sessions.length > 0 
+                ? sessions 
+                : [...new Set(exerciseData.map(d => d.sessionId).filter(Boolean))];
+              
+              if (sessionIds.length === 0) {
+                // Fallback: εμφάνισε μια γραμμή χωρίς session ID
+                return (
+                  <Line 
+                    key={exerciseName}
+                    type="monotone" 
+                    dataKey={`${exerciseName}_${exerciseData[0]?.sessionId || 'default'}`}
+                    stroke={getLineColor(exerciseName, index)}
+                    strokeWidth={2}
+                    dot={{ strokeWidth: 2, r: 3 }}
+                    name={exerciseName}
+                    connectNulls
+                  />
+                );
+              }
+              
+              return sessionIds.map(sessionId => {
                 const sessionKey = `${exerciseName}_${sessionId}`;
-                const dashArray = getStrokeDasharray(exerciseId || '', sessionId);
+                const dashArray = getStrokeDasharray(exerciseId || '', sessionId || '');
                 
                 return (
                   <Line 
