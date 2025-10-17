@@ -197,13 +197,13 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
 
       if (sessionError) throw sessionError;
 
-      const attemptsToInsert = form.attempts.map((attempt) => ({
+      const attemptsToInsert = form.attempts.map((attempt, index) => ({
         test_session_id: session.id,
         exercise_id: form.selectedExerciseId,
         attempt_number: attempt.attempt_number,
         weight_kg: attempt.weight_kg,
         velocity_ms: attempt.velocity_ms,
-        is_1rm: false
+        is_1rm: index === form.attempts.length - 1 // Η τελευταία προσπάθεια ορίζεται ως 1RM
       }));
 
       const { error: attemptsError } = await supabase
