@@ -214,11 +214,11 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
   return (
     <div className="space-y-6">
       <Card className="rounded-none">
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center gap-4">
-            <CardTitle className="whitespace-nowrap">Νέα Καταγραφή</CardTitle>
-            <div className="flex gap-4 flex-1">
-              <div className="flex-1">
+            <CardTitle className="whitespace-nowrap text-base">Νέα Καταγραφή</CardTitle>
+            <div className="flex gap-3">
+              <div className="w-48">
                 <Combobox
                   options={userOptions}
                   value={selectedUserId}
@@ -231,7 +231,7 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
                 />
               </div>
 
-              <div className="flex-1">
+              <div className="w-48">
                 <Combobox
                   options={exerciseOptions}
                   value={selectedExerciseId}
