@@ -15,28 +15,28 @@ interface TestBarChartProps {
 export const TestBarChart = ({ data, title, color = "#2563eb" }: TestBarChartProps) => {
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="text-lg">{title}</CardTitle>
+      <CardHeader className="p-3">
+        <CardTitle className="text-sm">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={data}>
+      <CardContent className="p-3">
+        <ResponsiveContainer width="100%" height={150}>
+          <BarChart data={data} barSize={5}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="name" 
               angle={-45}
               textAnchor="end"
-              height={80}
-              fontSize={12}
+              height={60}
+              fontSize={10}
             />
-            <YAxis />
+            <YAxis fontSize={10} />
             <Tooltip 
               formatter={(value, name, props) => [
                 `${value}${props.payload.unit || ''}`,
                 'Αποτέλεσμα'
               ]}
             />
-            <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
+            <Bar dataKey="value" fill={color} radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
