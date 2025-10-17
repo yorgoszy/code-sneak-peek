@@ -208,29 +208,48 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
   // Υπολογισμός 1RM για κάθε επιλεγμένη άσκηση (τελευταία προσπάθεια από την τελευταία session)
   const exerciseOneRMs = useMemo(() => {
-    const oneRMs: Record<string, { weight: number; velocity: number; date: string }> = {};
+    const oneRMs: Record<string, { weight: number; velocity: number; date: string; percentageChange: number | null }> = {};
     
     selectedExercises.forEach(exerciseId => {
       const exerciseData = historicalData.filter(d => d.exerciseId === exerciseId);
       if (exerciseData.length === 0) return;
       
-      // Βρίσκουμε την πιο πρόσφατη session
-      const latestSession = exerciseData.reduce((latest, current) => {
-        return new Date(current.date) > new Date(latest.date) ? current : latest;
-      });
+      // Βρίσκουμε τις μοναδικές sessions ταξινομημένες από νεότερη σε παλαιότερη
+      const uniqueSessions = [...new Set(exerciseData.map(d => d.sessionId))]
+        .map(sessionId => {
+          const sessionData = exerciseData.find(d => d.sessionId === sessionId);
+          return { sessionId, date: sessionData?.date || '' };
+        })
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       
-      // Παίρνουμε όλες τις προσπάθειες από την πιο πρόσφατη session
-      const latestSessionAttempts = exerciseData.filter(d => d.sessionId === latestSession.sessionId);
+      if (uniqueSessions.length === 0) return;
       
-      // Η τελευταία προσπάθεια (με το μεγαλύτερο βάρος) είναι το 1RM
-      const oneRM = latestSessionAttempts.reduce((max, current) => {
+      // Τελευταία session
+      const latestSessionId = uniqueSessions[0].sessionId;
+      const latestSessionAttempts = exerciseData.filter(d => d.sessionId === latestSessionId);
+      const latestOneRM = latestSessionAttempts.reduce((max, current) => {
         return current.weight > max.weight ? current : max;
       });
       
+      // Προηγούμενη session (αν υπάρχει)
+      let percentageChange: number | null = null;
+      if (uniqueSessions.length > 1) {
+        const previousSessionId = uniqueSessions[1].sessionId;
+        const previousSessionAttempts = exerciseData.filter(d => d.sessionId === previousSessionId);
+        const previousOneRM = previousSessionAttempts.reduce((max, current) => {
+          return current.weight > max.weight ? current : max;
+        });
+        
+        if (previousOneRM.weight > 0) {
+          percentageChange = ((latestOneRM.weight - previousOneRM.weight) / previousOneRM.weight) * 100;
+        }
+      }
+      
       oneRMs[exerciseId] = {
-        weight: oneRM.weight,
-        velocity: oneRM.velocity,
-        date: oneRM.date
+        weight: latestOneRM.weight,
+        velocity: latestOneRM.velocity,
+        date: latestOneRM.date,
+        percentageChange
       };
     });
     
@@ -322,8 +341,15 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                           {oneRM.velocity.toFixed(2)} m/s
                         </span>
                       </div>
-                      <div className="text-[9px] text-gray-400 mt-1">
-                        {new Date(oneRM.date).toLocaleDateString('el-GR')}
+                      <div className="flex items-center justify-between mt-1">
+                        <div className="text-[9px] text-gray-400">
+                          {new Date(oneRM.date).toLocaleDateString('el-GR')}
+                        </div>
+                        {oneRM.percentageChange !== null && (
+                          <div className={`text-[10px] font-medium ${oneRM.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {oneRM.percentageChange >= 0 ? '+' : ''}{oneRM.percentageChange.toFixed(1)}%
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
