@@ -453,9 +453,9 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                   } else if (exerciseName.includes('bikeerg') || exerciseName.includes('bike erg')) {
                     barColor = '#3498db'; // γαλάζιο
                   } else if (exerciseName.includes('woodway')) {
-                    barColor = '#e74c3c'; // κόκκινο
+                    barColor = '#ff69b4'; // ροζ
                   } else if (exerciseName.includes('track')) {
-                    barColor = '#2ecc71'; // πράσινο
+                    barColor = '#90ee90'; // λαχανί
                   }
                   
                   return {
