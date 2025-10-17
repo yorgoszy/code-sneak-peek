@@ -7,6 +7,8 @@ import { Save, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
+import { FarmerTestCard } from "@/components/tests/endurance/FarmerTestCard";
+import { SprintTestCard } from "@/components/tests/endurance/SprintTestCard";
 
 interface MasForm {
   id: string;
@@ -22,6 +24,25 @@ interface BodyweightForm {
   selectedUserId: string;
   pushUps: string;
   pullUps: string;
+  loading: boolean;
+}
+
+interface FarmerForm {
+  id: string;
+  selectedUserId: string;
+  farmerKg: string;
+  farmerMeters: string;
+  farmerSeconds: string;
+  loading: boolean;
+}
+
+interface SprintForm {
+  id: string;
+  selectedUserId: string;
+  sprintSeconds: string;
+  sprintMeters: string;
+  sprintResistance: string;
+  sprintWatt: string;
   loading: boolean;
 }
 
@@ -54,6 +75,29 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       selectedUserId: '',
       pushUps: '',
       pullUps: '',
+      loading: false
+    }
+  ]);
+
+  const [farmerForms, setFarmerForms] = useState<FarmerForm[]>([
+    {
+      id: '1',
+      selectedUserId: '',
+      farmerKg: '',
+      farmerMeters: '',
+      farmerSeconds: '',
+      loading: false
+    }
+  ]);
+
+  const [sprintForms, setSprintForms] = useState<SprintForm[]>([
+    {
+      id: '1',
+      selectedUserId: '',
+      sprintSeconds: '',
+      sprintMeters: '',
+      sprintResistance: '',
+      sprintWatt: '',
       loading: false
     }
   ]);
@@ -324,6 +368,219 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
     }
   };
 
+  // Farmer form management
+  const addNewFarmerForm = () => {
+    const newId = (Math.max(...farmerForms.map(f => parseInt(f.id))) + 1).toString();
+    setFarmerForms([...farmerForms, {
+      id: newId,
+      selectedUserId: '',
+      farmerKg: '',
+      farmerMeters: '',
+      farmerSeconds: '',
+      loading: false
+    }]);
+  };
+
+  const removeFarmerForm = (formId: string) => {
+    if (farmerForms.length > 1) {
+      setFarmerForms(farmerForms.filter(f => f.id !== formId));
+    }
+  };
+
+  const updateFarmerForm = (formId: string, updates: Partial<FarmerForm>) => {
+    setFarmerForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
+  const handleFarmerSave = async (formId: string) => {
+    const form = farmerForms.find(f => f.id === formId);
+    if (!form) return;
+
+    if (!form.selectedUserId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const farmerKg = parseFloat(form.farmerKg);
+    const farmerMeters = parseFloat(form.farmerMeters);
+    const farmerSeconds = parseFloat(form.farmerSeconds);
+
+    if (!farmerKg || !farmerMeters || !farmerSeconds) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε όλα τα πεδία",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    updateFarmerForm(formId, { loading: true });
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error('Δεν βρέθηκε συνδεδεμένος χρήστης');
+      }
+
+      const { data: session, error: sessionError } = await supabase
+        .from('endurance_test_sessions')
+        .insert({
+          user_id: form.selectedUserId,
+          test_date: new Date().toISOString().split('T')[0],
+          notes: 'Farmer Test'
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      const { error: dataError } = await supabase
+        .from('endurance_test_data')
+        .insert({
+          test_session_id: session.id,
+          farmer_kg: farmerKg,
+          farmer_meters: farmerMeters,
+          farmer_seconds: farmerSeconds
+        });
+
+      if (dataError) throw dataError;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Η καταγραφή Farmer αποθηκεύτηκε"
+      });
+
+      updateFarmerForm(formId, {
+        farmerKg: '',
+        farmerMeters: '',
+        farmerSeconds: '',
+        loading: false
+      });
+      
+      if (onRecordSaved) {
+        onRecordSaved();
+      }
+    } catch (error) {
+      console.error('Error saving farmer test:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία αποθήκευσης",
+        variant: "destructive"
+      });
+      updateFarmerForm(formId, { loading: false });
+    }
+  };
+
+  // Sprint form management
+  const addNewSprintForm = () => {
+    const newId = (Math.max(...sprintForms.map(f => parseInt(f.id))) + 1).toString();
+    setSprintForms([...sprintForms, {
+      id: newId,
+      selectedUserId: '',
+      sprintSeconds: '',
+      sprintMeters: '',
+      sprintResistance: '',
+      sprintWatt: '',
+      loading: false
+    }]);
+  };
+
+  const removeSprintForm = (formId: string) => {
+    if (sprintForms.length > 1) {
+      setSprintForms(sprintForms.filter(f => f.id !== formId));
+    }
+  };
+
+  const updateSprintForm = (formId: string, updates: Partial<SprintForm>) => {
+    setSprintForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
+  const handleSprintSave = async (formId: string) => {
+    const form = sprintForms.find(f => f.id === formId);
+    if (!form) return;
+
+    if (!form.selectedUserId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const sprintSeconds = parseFloat(form.sprintSeconds);
+    const sprintMeters = parseFloat(form.sprintMeters);
+    const sprintWatt = form.sprintWatt ? parseFloat(form.sprintWatt) : null;
+
+    if (!sprintSeconds || !sprintMeters) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε χρόνο και μέτρα",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    updateSprintForm(formId, { loading: true });
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error('Δεν βρέθηκε συνδεδεμένος χρήστης');
+      }
+
+      const { data: session, error: sessionError } = await supabase
+        .from('endurance_test_sessions')
+        .insert({
+          user_id: form.selectedUserId,
+          test_date: new Date().toISOString().split('T')[0],
+          notes: 'Sprint Test'
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      const { error: dataError } = await supabase
+        .from('endurance_test_data')
+        .insert({
+          test_session_id: session.id,
+          sprint_seconds: sprintSeconds,
+          sprint_meters: sprintMeters,
+          sprint_resistance: form.sprintResistance || null,
+          sprint_watt: sprintWatt
+        });
+
+      if (dataError) throw dataError;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Η καταγραφή Sprint αποθηκεύτηκε"
+      });
+
+      updateSprintForm(formId, {
+        sprintSeconds: '',
+        sprintMeters: '',
+        sprintResistance: '',
+        sprintWatt: '',
+        loading: false
+      });
+      
+      if (onRecordSaved) {
+        onRecordSaved();
+      }
+    } catch (error) {
+      console.error('Error saving sprint test:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία αποθήκευσης",
+        variant: "destructive"
+      });
+      updateSprintForm(formId, { loading: false });
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex gap-3">
@@ -499,6 +756,184 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                   <div className="flex items-end">
                     <Button 
                       onClick={() => handleBodyweightSave(form.id)} 
+                      className="rounded-none h-7 text-xs px-3"
+                      disabled={form.loading}
+                    >
+                      <Save className="w-3 h-3 mr-1" />
+                      {form.loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Farmer Forms */}
+        <div className="space-y-3">
+          {farmerForms.map((form, formIndex) => (
+            <Card key={form.id} className="rounded-none w-fit">
+              <CardHeader className="pb-1 pt-2 px-3">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-xs">Farmer {farmerForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                  <Button onClick={addNewFarmerForm} size="sm" className="rounded-none h-5 text-xs px-2 ml-auto">
+                    <Plus className="w-3 h-3 mr-1" />
+                    Νέα
+                  </Button>
+                  {farmerForms.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeFarmerForm(form.id)}
+                      className="rounded-none h-5 w-5 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 pt-2 space-y-2">
+                <div className="w-32">
+                  <Label className="text-xs">Ασκούμενος</Label>
+                  <Combobox
+                    options={userOptions}
+                    value={form.selectedUserId}
+                    onValueChange={(val) => updateFarmerForm(form.id, { selectedUserId: val })}
+                    placeholder="Χρήστης"
+                    emptyMessage="Δεν βρέθηκε."
+                    className="h-7 text-xs"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="w-16">
+                    <Label className="text-xs">Kg</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="kg"
+                      value={form.farmerKg}
+                      onChange={(e) => updateFarmerForm(form.id, { farmerKg: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="w-16">
+                    <Label className="text-xs">Μέτρα</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="m"
+                      value={form.farmerMeters}
+                      onChange={(e) => updateFarmerForm(form.id, { farmerMeters: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="w-16">
+                    <Label className="text-xs">Δευτ.</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="s"
+                      value={form.farmerSeconds}
+                      onChange={(e) => updateFarmerForm(form.id, { farmerSeconds: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button 
+                      onClick={() => handleFarmerSave(form.id)} 
+                      className="rounded-none h-7 text-xs px-3"
+                      disabled={form.loading}
+                    >
+                      <Save className="w-3 h-3 mr-1" />
+                      {form.loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Sprint Forms */}
+        <div className="space-y-3">
+          {sprintForms.map((form, formIndex) => (
+            <Card key={form.id} className="rounded-none w-fit">
+              <CardHeader className="pb-1 pt-2 px-3">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-xs">Sprint {sprintForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                  <Button onClick={addNewSprintForm} size="sm" className="rounded-none h-5 text-xs px-2 ml-auto">
+                    <Plus className="w-3 h-3 mr-1" />
+                    Νέα
+                  </Button>
+                  {sprintForms.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeSprintForm(form.id)}
+                      className="rounded-none h-5 w-5 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 pt-2 space-y-2">
+                <div className="w-32">
+                  <Label className="text-xs">Ασκούμενος</Label>
+                  <Combobox
+                    options={userOptions}
+                    value={form.selectedUserId}
+                    onValueChange={(val) => updateSprintForm(form.id, { selectedUserId: val })}
+                    placeholder="Χρήστης"
+                    emptyMessage="Δεν βρέθηκε."
+                    className="h-7 text-xs"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="w-16">
+                    <Label className="text-xs">Δευτ.</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="s"
+                      value={form.sprintSeconds}
+                      onChange={(e) => updateSprintForm(form.id, { sprintSeconds: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="w-16">
+                    <Label className="text-xs">Μέτρα</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="m"
+                      value={form.sprintMeters}
+                      onChange={(e) => updateSprintForm(form.id, { sprintMeters: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="w-16">
+                    <Label className="text-xs">Watt</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="W"
+                      value={form.sprintWatt}
+                      onChange={(e) => updateSprintForm(form.id, { sprintWatt: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button 
+                      onClick={() => handleSprintSave(form.id)} 
                       className="rounded-none h-7 text-xs px-3"
                       disabled={form.loading}
                     >
