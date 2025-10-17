@@ -121,11 +121,11 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500">MAS:</span>
-                      <span className="font-bold text-[#00ffba]">{enduranceData.mas_ms?.toFixed(2)} m/s</span>
+                      <span className="font-bold text-[#cb8954]">{enduranceData.mas_ms?.toFixed(2)} m/s</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500">MAS:</span>
-                      <span className="font-bold text-[#00ffba]">{enduranceData.mas_kmh?.toFixed(2)} km/h</span>
+                      <span className="font-bold text-[#cb8954]">{enduranceData.mas_kmh?.toFixed(2)} km/h</span>
                     </div>
                   </div>
                 </div>
