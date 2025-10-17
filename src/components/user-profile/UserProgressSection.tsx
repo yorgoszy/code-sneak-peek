@@ -317,7 +317,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           <div className="flex gap-0">
             {/* 1RM Display */}
             {selectedExercises.length > 0 && Object.keys(exerciseOneRMs).length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-none p-2 max-w-2xl" style={{ paddingBottom: '18px' }}>
+              <div className="bg-white border border-gray-200 rounded-none p-2 max-w-2xl">
                 <div className="mb-1.5">
                   <span className="text-[10px] font-medium text-gray-700">1RM</span>
                 </div>
