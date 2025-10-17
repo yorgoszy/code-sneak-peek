@@ -23,6 +23,21 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
       test: `Τεστ ${index + 1}`
     }));
 
+  // Συνάρτηση για να επιλέξει χρώμα βάσει άσκησης
+  const getLineColor = (name: string) => {
+    const normalizedName = name.toLowerCase();
+    
+    if (normalizedName.includes('deadlift') || normalizedName.includes('dl')) {
+      return '#ef4444'; // κόκκινο
+    }
+    if (normalizedName.includes('squat') || normalizedName.includes('sq')) {
+      return '#eab308'; // κίτρινο
+    }
+    return '#00ffba'; // default πράσινο
+  };
+
+  const lineColor = getLineColor(exerciseName);
+
   return (
     <Card className="rounded-none">
       <CardContent className="pt-4">
@@ -61,9 +76,9 @@ export const LoadVelocityChart = ({ data, exerciseName }: LoadVelocityChartProps
             <Line 
               type="monotone" 
               dataKey="weight" 
-              stroke="#8884d8" 
+              stroke={lineColor}
               strokeWidth={2}
-              dot={{ fill: "#8884d8", strokeWidth: 2, r: 3 }}
+              dot={{ fill: lineColor, strokeWidth: 2, r: 3 }}
               name="Load-Velocity"
             />
           </LineChart>
