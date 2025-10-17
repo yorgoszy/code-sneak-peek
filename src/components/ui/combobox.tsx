@@ -26,7 +26,7 @@ const normalizeString = (str: string): string => {
 };
 
 interface ComboboxProps {
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; searchTerms?: string }[];
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
@@ -52,7 +52,7 @@ export function Combobox({
     const normalizedSearch = normalizeString(searchValue);
     
     return options.filter(option => 
-      normalizeString(option.label).includes(normalizedSearch)
+      normalizeString(option.searchTerms || option.label).includes(normalizedSearch)
     );
   }, [options, searchValue]);
 

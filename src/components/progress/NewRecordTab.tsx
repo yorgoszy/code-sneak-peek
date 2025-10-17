@@ -44,7 +44,11 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
   ]);
 
   const userOptions = useMemo(() => 
-    (users || []).map(user => ({ value: user.id, label: user.name })),
+    (users || []).map(user => ({ 
+      value: user.id, 
+      label: user.name,
+      searchTerms: `${user.name} ${user.email || ''}`
+    })),
     [users]
   );
 
