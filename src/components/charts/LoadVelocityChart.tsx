@@ -96,7 +96,7 @@ export const LoadVelocityChart = ({ data, selectedExercises }: LoadVelocityChart
                 return null;
               }}
             />
-            <Legend />
+            <Legend verticalAlign="bottom" height={36} />
             {selectedExercises.map((exerciseName, index) => (
               <Line 
                 key={exerciseName}
