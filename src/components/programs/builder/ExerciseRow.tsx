@@ -42,11 +42,22 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   // Auto-populate fields όταν επιλέγεται άσκηση με 1RM
   useEffect(() => {
     if (hasData && oneRMData && exercise.exercise_id) {
-      // Αν δεν υπάρχουν ήδη τιμές, βάλε το 1RM
-      if (!exercise.percentage_1rm && !exercise.kg && !exercise.velocity_ms) {
-        onUpdate('percentage_1rm', '100');
-        onUpdate('kg', oneRMData.weight.toString().replace('.', ','));
-        onUpdate('velocity_ms', oneRMData.velocity.toString().replace('.', ','));
+      const kgStr = (Number.isFinite(oneRMData.weight) ? oneRMData.weight : 0)
+        .toFixed(1)
+        .replace('.', ',');
+      const velStr = (Number.isFinite(oneRMData.velocity) ? oneRMData.velocity : 0)
+        .toFixed(2)
+        .replace('.', ',');
+
+      // Συμπλήρωσε ό,τι λείπει (μην αλλάζεις τιμές που έχει δώσει ο χρήστης)
+      if (!exercise.percentage_1rm || exercise.percentage_1rm === 0) {
+        onUpdate('percentage_1rm', 100);
+      }
+      if (!exercise.kg || exercise.kg === '') {
+        onUpdate('kg', kgStr);
+      }
+      if (!exercise.velocity_ms) {
+        onUpdate('velocity_ms', velStr);
       }
     }
   }, [hasData, oneRMData, exercise.exercise_id]);
