@@ -121,9 +121,9 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         throw new Error('Δεν βρέθηκε συνδεδεμένος χρήστης');
       }
 
-      // Create test session
+      // Create endurance test session (like force/velocity pattern)
       const { data: session, error: sessionError } = await supabase
-        .from('test_sessions')
+        .from('endurance_test_sessions')
         .insert({
           user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],

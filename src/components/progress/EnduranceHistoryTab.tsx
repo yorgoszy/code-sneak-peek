@@ -11,6 +11,7 @@ export const EnduranceHistoryTab: React.FC = () => {
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     fetchSessions();
@@ -18,35 +19,39 @@ export const EnduranceHistoryTab: React.FC = () => {
 
   const fetchSessions = async () => {
     try {
-      const { data, error } = await supabase
-        .from('test_sessions')
-        .select(`
-          id,
-          test_date,
-          notes,
-          created_at,
-          app_users!test_sessions_user_id_fkey (
+      const [sessionsRes, usersRes] = await Promise.all([
+        supabase
+          .from('endurance_test_sessions')
+          .select(`
             id,
-            name
-          ),
-          endurance_test_data (
-            id,
-            mas_meters,
-            mas_minutes,
-            mas_ms,
-            mas_kmh
-          )
-        `)
-        .not('endurance_test_data', 'is', null)
-        .order('created_at', { ascending: false });
+            user_id,
+            test_date,
+            notes,
+            created_at,
+            endurance_test_data (
+              id,
+              mas_meters,
+              mas_minutes,
+              mas_ms,
+              mas_kmh
+            )
+          `)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('app_users')
+          .select('id, name')
+      ]);
 
-      if (error) throw error;
+      if (sessionsRes.error) throw sessionsRes.error;
+      if (usersRes.error) throw usersRes.error;
 
-      // Filter only sessions that have endurance data
-      const filteredData = (data || []).filter(session => 
+      const map = new Map<string, string>();
+      (usersRes.data || []).forEach(u => map.set(u.id, u.name));
+      setUsersMap(map);
+
+      const filteredData = (sessionsRes.data || []).filter(session => 
         session.endurance_test_data && session.endurance_test_data.length > 0
       );
-      
       setSessions(filteredData);
     } catch (error) {
       console.error('Error fetching sessions:', error);
@@ -71,7 +76,7 @@ export const EnduranceHistoryTab: React.FC = () => {
 
       // Delete session
       const { error: sessionError } = await supabase
-        .from('test_sessions')
+        .from('endurance_test_sessions')
         .delete()
         .eq('id', sessionId);
 
@@ -111,7 +116,7 @@ export const EnduranceHistoryTab: React.FC = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-4">
                 <CardTitle className="text-base whitespace-nowrap">
-                  {session.app_users?.name || 'Άγνωστος Χρήστης'}
+                  {usersMap.get(session.user_id) || 'Άγνωστος Χρήστης'}
                 </CardTitle>
                 <span className="text-sm text-gray-500">
                   {format(new Date(session.test_date), 'dd MMM yyyy', { locale: el })}
