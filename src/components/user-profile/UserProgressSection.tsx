@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { TrendingUp } from "lucide-react";
@@ -13,7 +13,7 @@ interface UserProgressSectionProps {
 export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId }) => {
   const [exercises, setExercises] = useState<any[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
-  const [historicalData, setHistoricalData] = useState<any[]>([]);
+  const [rawHistoricalData, setRawHistoricalData] = useState<any[]>([]);
   const [exerciseSessions, setExerciseSessions] = useState<Record<string, any[]>>({});
   const [selectedSessions, setSelectedSessions] = useState<Record<string, string[]>>({});
 
@@ -68,51 +68,59 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
       if (error) throw error;
 
-      const chartData = (data || []).map(attempt => ({
-        exerciseName: exercises.find(e => e.id === attempt.exercise_id)?.name || '',
-        exerciseId: attempt.exercise_id,
-        velocity: attempt.velocity_ms || 0,
-        weight: attempt.weight_kg,
-        date: attempt.strength_test_sessions.test_date,
-        sessionId: attempt.test_session_id
-      }));
+      setRawHistoricalData(data || []);
 
-      setHistoricalData(chartData);
-
-      // Ομαδοποίηση sessions ανά άσκηση
-      const sessions: Record<string, any[]> = {};
-      chartData.forEach(item => {
-        if (!sessions[item.exerciseId]) {
-          sessions[item.exerciseId] = [];
-        }
-        const existingSession = sessions[item.exerciseId].find(s => s.sessionId === item.sessionId);
-        if (!existingSession) {
-          sessions[item.exerciseId].push({
-            sessionId: item.sessionId,
-            date: item.date
-          });
-        }
-      });
-
-      // Ταξινόμηση sessions ανά ημερομηνία (από νεότερο σε παλαιότερο)
-      Object.keys(sessions).forEach(exerciseId => {
-        sessions[exerciseId].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      });
-
-      setExerciseSessions(sessions);
-
-      // Αρχικά επιλέγω το πιο πρόσφατο session για κάθε άσκηση
-      const initialSelectedSessions: Record<string, string[]> = {};
-      Object.keys(sessions).forEach(exerciseId => {
-        if (sessions[exerciseId].length > 0) {
-          initialSelectedSessions[exerciseId] = [sessions[exerciseId][0].sessionId];
-        }
-      });
-      setSelectedSessions(initialSelectedSessions);
     } catch (error) {
       console.error('Error fetching historical data:', error);
     }
   };
+
+  // Δημιουργία chartData με useMemo που εξαρτάται από rawHistoricalData και exercises
+  const historicalData = useMemo(() => {
+    return rawHistoricalData.map(attempt => ({
+      exerciseName: exercises.find(e => e.id === attempt.exercise_id)?.name || '',
+      exerciseId: attempt.exercise_id,
+      velocity: attempt.velocity_ms || 0,
+      weight: attempt.weight_kg,
+      date: attempt.strength_test_sessions.test_date,
+      sessionId: attempt.test_session_id
+    }));
+  }, [rawHistoricalData, exercises]);
+
+  // Ομαδοποίηση sessions και επιλογή default sessions
+  useEffect(() => {
+    if (historicalData.length === 0) return;
+
+    const sessions: Record<string, any[]> = {};
+    historicalData.forEach(item => {
+      if (!sessions[item.exerciseId]) {
+        sessions[item.exerciseId] = [];
+      }
+      const existingSession = sessions[item.exerciseId].find(s => s.sessionId === item.sessionId);
+      if (!existingSession) {
+        sessions[item.exerciseId].push({
+          sessionId: item.sessionId,
+          date: item.date
+        });
+      }
+    });
+
+    // Ταξινόμηση sessions ανά ημερομηνία (από νεότερο σε παλαιότερο)
+    Object.keys(sessions).forEach(exerciseId => {
+      sessions[exerciseId].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
+
+    setExerciseSessions(sessions);
+
+    // Αρχικά επιλέγω το πιο πρόσφατο session για κάθε άσκηση
+    const initialSelectedSessions: Record<string, string[]> = {};
+    Object.keys(sessions).forEach(exerciseId => {
+      if (sessions[exerciseId].length > 0) {
+        initialSelectedSessions[exerciseId] = [sessions[exerciseId][0].sessionId];
+      }
+    });
+    setSelectedSessions(initialSelectedSessions);
+  }, [historicalData]);
 
   const fetchLatestExerciseForUser = async () => {
     try {
