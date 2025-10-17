@@ -87,9 +87,28 @@ export default function ProgressTracking() {
         </TabsContent>
 
         <TabsContent value="endurance" className="mt-6">
-          <div className="text-center py-8 text-gray-500">
-            Endurance - Σύντομα διαθέσιμο
-          </div>
+          <Tabs defaultValue="new" className="w-full">
+            <TabsList className="rounded-none w-full bg-gray-100">
+              <TabsTrigger value="new" className="rounded-none flex-1">
+                Νέα Καταγραφή
+              </TabsTrigger>
+              <TabsTrigger value="history" className="rounded-none flex-1">
+                Ιστορικό
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="new" className="mt-6">
+              <div className="text-center py-8 text-gray-500">
+                Νέα Καταγραφή Endurance - Σύντομα διαθέσιμο
+              </div>
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-6">
+              <div className="text-center py-8 text-gray-500">
+                Ιστορικό Endurance - Σύντομα διαθέσιμο
+              </div>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>
