@@ -19,7 +19,7 @@ export const use1RMCalculation = (userId: string | undefined, exerciseId: string
     const fetchOneRM = async () => {
       setLoading(true);
       try {
-        // Fetch τελευταία καταγραφή για τον συγκεκριμένο χρήστη και άσκηση
+        // Fetch τελευταία καταγραφή για τον συγκεκριμένο χρήστη και άσκηση (όχι απαραίτητα με δηλωμένη ταχύτητα)
         const { data: attempts, error } = await supabase
           .from('strength_test_attempts')
           .select(`
@@ -32,9 +32,7 @@ export const use1RMCalculation = (userId: string | undefined, exerciseId: string
             )
           `)
           .eq('strength_test_sessions.user_id', userId)
-          .eq('exercise_id', exerciseId)
-          .not('velocity_ms', 'is', null)
-          .order('strength_test_sessions(test_date)', { ascending: false });
+          .eq('exercise_id', exerciseId);
 
         if (error) throw error;
 
@@ -61,7 +59,18 @@ export const use1RMCalculation = (userId: string | undefined, exerciseId: string
             velocity: oneRM.velocity_ms || 0
           });
         } else {
-          setOneRMData(null);
+          // Fallback: RPC για τελευταίο 1RM βάρος αν δεν υπάρχουν attempts
+          const { data: rpcWeight, error: rpcError } = await supabase.rpc('get_latest_1rm', {
+            athlete_id: userId,
+            exercise_id: exerciseId
+          });
+          if (rpcError) {
+            setOneRMData(null);
+          } else if (rpcWeight) {
+            setOneRMData({ weight: Number(rpcWeight), velocity: 0 });
+          } else {
+            setOneRMData(null);
+          }
         }
       } catch (error) {
         console.error('Error fetching 1RM:', error);
