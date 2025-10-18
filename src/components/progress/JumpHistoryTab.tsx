@@ -242,7 +242,7 @@ export const JumpHistoryTab: React.FC = () => {
                         <div className="flex justify-between items-center text-[10px]">
                           <span className="text-gray-500">Non-CMJ:</span>
                           <span className="font-semibold text-[#cb8954]">
-                            {jumpData.non_counter_movement_jump} cm
+                            {jumpData.non_counter_movement_jump}<span className="text-[9px] ml-0.5">cm</span>
                           </span>
                         </div>
                       )}
@@ -250,7 +250,7 @@ export const JumpHistoryTab: React.FC = () => {
                         <div className="flex justify-between items-center text-[10px]">
                           <span className="text-gray-500">CMJ:</span>
                           <span className="font-semibold text-[#cb8954]">
-                            {jumpData.counter_movement_jump} cm
+                            {jumpData.counter_movement_jump}<span className="text-[9px] ml-0.5">cm</span>
                           </span>
                         </div>
                       )}
@@ -258,7 +258,7 @@ export const JumpHistoryTab: React.FC = () => {
                         <div className="flex justify-between items-center text-[10px]">
                           <span className="text-gray-500">Depth Jump:</span>
                           <span className="font-semibold text-[#cb8954]">
-                            {jumpData.depth_jump} cm
+                            {jumpData.depth_jump}<span className="text-[9px] ml-0.5">cm</span>
                           </span>
                         </div>
                       )}
@@ -266,7 +266,7 @@ export const JumpHistoryTab: React.FC = () => {
                         <div className="flex justify-between items-center text-[10px]">
                           <span className="text-gray-500">Broad Jump:</span>
                           <span className="font-semibold text-[#cb8954]">
-                            {jumpData.broad_jump} cm
+                            {jumpData.broad_jump}<span className="text-[9px] ml-0.5">cm</span>
                           </span>
                         </div>
                       )}
@@ -274,7 +274,7 @@ export const JumpHistoryTab: React.FC = () => {
                         <div className="flex justify-between items-center text-[10px]">
                           <span className="text-gray-500">Triple Jump L:</span>
                           <span className="font-semibold text-[#cb8954]">
-                            {jumpData.triple_jump_left} cm
+                            {jumpData.triple_jump_left}<span className="text-[9px] ml-0.5">cm</span>
                           </span>
                         </div>
                       )}
@@ -282,7 +282,7 @@ export const JumpHistoryTab: React.FC = () => {
                         <div className="flex justify-between items-center text-[10px]">
                           <span className="text-gray-500">Triple Jump R:</span>
                           <span className="font-semibold text-[#cb8954]">
-                            {jumpData.triple_jump_right} cm
+                            {jumpData.triple_jump_right}<span className="text-[9px] ml-0.5">cm</span>
                           </span>
                         </div>
                       )}
