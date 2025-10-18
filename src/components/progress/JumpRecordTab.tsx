@@ -163,7 +163,7 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
 
               {/* CMJ Height and Save */}
               <div className="flex gap-1 items-end">
-                <div className="flex-1">
+                <div className="w-16">
                   <Label className="text-[10px]">cm</Label>
                   <Input
                     type="number"
