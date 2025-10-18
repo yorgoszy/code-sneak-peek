@@ -1,12 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { Trash2, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export const EnduranceHistoryTab: React.FC = () => {
@@ -15,7 +14,6 @@ export const EnduranceHistoryTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map());
   const [selectedUser, setSelectedUser] = useState<string>("all");
-  const [userSearch, setUserSearch] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>("all");
 
@@ -122,13 +120,6 @@ export const EnduranceHistoryTab: React.FC = () => {
     }
   };
 
-  const handleClearFilters = () => {
-    setSelectedUser("all");
-    setUserSearch("");
-    setSelectedCategory("all");
-    setSelectedYear("all");
-  };
-
   // Get unique years - MUST be before any conditional returns
   const availableYears = useMemo(() => {
     const years = sessions.map(s => new Date(s.test_date).getFullYear());
@@ -137,10 +128,8 @@ export const EnduranceHistoryTab: React.FC = () => {
 
   // Get unique users - MUST be before any conditional returns
   const availableUsers = useMemo(() => {
-    const users = Array.from(usersMap.entries()).map(([id, name]) => ({ id, name }));
-    if (!userSearch.trim()) return users;
-    return users.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
-  }, [usersMap, userSearch]);
+    return Array.from(usersMap.entries()).map(([id, name]) => ({ id, name }));
+  }, [usersMap]);
 
   // Filter sessions - MUST be before any conditional returns
   const filteredSessions = useMemo(() => {
@@ -348,12 +337,6 @@ export const EnduranceHistoryTab: React.FC = () => {
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
-        <Input
-          placeholder="Αναζήτηση χρήστη..."
-          value={userSearch}
-          onChange={(e) => setUserSearch(e.target.value)}
-          className="w-[200px] rounded-none"
-        />
         <Select value={selectedUser} onValueChange={setSelectedUser}>
           <SelectTrigger className="w-[200px] rounded-none">
             <SelectValue placeholder="Όλοι οι χρήστες" />
@@ -365,7 +348,6 @@ export const EnduranceHistoryTab: React.FC = () => {
             ))}
           </SelectContent>
         </Select>
-
 
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-[200px] rounded-none">
@@ -382,15 +364,17 @@ export const EnduranceHistoryTab: React.FC = () => {
           </SelectContent>
         </Select>
 
-
-        <Button
-          onClick={handleClearFilters}
-          variant="outline"
-          className="rounded-none"
-        >
-          <X className="w-4 h-4 mr-2" />
-          Καθαρισμός Φίλτρων
-        </Button>
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="w-[150px] rounded-none">
+            <SelectValue placeholder="Όλα τα έτη" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="all">Όλα τα έτη</SelectItem>
+            {availableYears.map(year => (
+              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Results */}
