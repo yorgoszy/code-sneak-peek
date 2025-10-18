@@ -81,7 +81,8 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
     const point: any = { velocity };
     data.forEach(item => {
       if (item.velocity === velocity) {
-        const sessionKey = `${item.exerciseName}_${item.sessionId}`;
+        const rawSessionKey = item.sessionId ? String(item.sessionId) : 'default';
+        const sessionKey = `${item.exerciseName}_${rawSessionKey}`;
         point[sessionKey] = item.weight;
         point[`${sessionKey}_date`] = new Date(item.date).toLocaleDateString('el-GR');
       }
@@ -93,7 +94,7 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
     <Card className="rounded-none max-w-2xl">
       <CardContent className="pt-4 pb-0">
         <ResponsiveContainer width="100%" height={270}>
-          <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 30, left: 10 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 30, left: 48 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="velocity"
@@ -119,11 +120,14 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
             <Tooltip 
               content={({ active, payload }) => {
                 if (active && payload && payload.length > 0) {
+                  const first: any = payload[0];
+                  const dateKey = `${first.dataKey}_date`;
+                  const dateVal = first?.payload?.[dateKey];
                   return (
                     <div className="bg-white p-2 border border-gray-200 rounded shadow text-xs space-y-1">
-                      <p className="font-medium">Ταχύτητα: {payload[0].payload.velocity} m/s</p>
-                      <p className="text-gray-600">Ημερομηνία: {payload[0].payload.date}</p>
-                      {payload.map((entry, index) => (
+                      <p className="font-medium">Ταχύτητα: {first.payload.velocity} m/s</p>
+                      <p className="text-gray-600">Ημερομηνία: {dateVal ?? '-'}</p>
+                      {payload.map((entry: any, index: number) => (
                         <p key={index} style={{ color: entry.color }}>
                           {entry.name}: {entry.value} kg
                         </p>
