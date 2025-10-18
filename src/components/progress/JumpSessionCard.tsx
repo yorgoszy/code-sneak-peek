@@ -34,7 +34,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
   const jumpData = session.jump_test_data?.[0];
 
   return (
-    <Card key={session.id} className="rounded-none w-full">
+    <Card key={session.id} className="rounded-none w-full flex flex-col">
       <CardHeader className="pb-1 pt-2 px-1.5">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -83,7 +83,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
         </div>
       </CardHeader>
 
-      <CardContent className="p-1.5 pt-1">
+      <CardContent className="p-1.5 pt-1 flex flex-col flex-1">
         {jumpData && (
           <div className="space-y-0.5">
             {jumpData.non_counter_movement_jump !== null && (
@@ -155,7 +155,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
       </div>
     )}
 
-    <div className="pt-1 border-t border-gray-200 mt-1">
+    <div className="pt-1 border-t border-gray-200 mt-auto">
       <div className="text-[10px] text-gray-400 text-center">
         Τελευταία μέτρηση: {format(new Date(session.test_date), 'dd/MM/yy')}
       </div>
