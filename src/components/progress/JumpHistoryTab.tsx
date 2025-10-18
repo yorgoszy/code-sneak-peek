@@ -221,7 +221,12 @@ export const JumpHistoryTab: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="text-xs">{user?.name || 'Άγνωστος Χρήστης'}</CardTitle>
-                      <p className="text-[10px] text-gray-500">
+                      {session.notes && (
+                        <p className="text-[10px] text-gray-600 mt-0.5">
+                          {session.notes}
+                        </p>
+                      )}
+                      <p className="text-[10px] text-gray-500 mt-0.5">
                         {format(new Date(session.test_date), 'dd/MM/yyyy')}
                       </p>
                     </div>
