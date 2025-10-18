@@ -130,7 +130,7 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
   };
 
   return (
-    <div className="space-y-2">
+    <div className="flex gap-2">
       {/* Non-CMJ Forms */}
       <div className="space-y-[1px]">
         {forms.filter(f => f.testType === 'non-cmj').map((form, formIndex) => {
