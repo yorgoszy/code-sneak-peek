@@ -34,7 +34,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
   const jumpData = session.jump_test_data?.[0];
 
   return (
-    <Card key={session.id} className="rounded-none w-[180px]">
+    <Card key={session.id} className="rounded-none w-[200px]">
       <CardHeader className="pb-1 pt-2 px-2">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -113,26 +113,18 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
               </div>
             )}
             {(jumpData.triple_jump_left !== null || jumpData.triple_jump_right !== null) && (
-              <div className="space-y-0.5">
-                <span className="text-gray-500 text-[10px]">Triple Jump:</span>
-                <div className="flex gap-3 justify-start">
+              <div className="flex justify-between items-center text-[9px]">
+                <span className="text-gray-500">Triple Jump:</span>
+                <div className="flex gap-2">
                   {jumpData.triple_jump_left !== null && (
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-gray-500 text-[10px]">L:</span>
-                      <span className="font-semibold text-[#cb8954]">
-                        {jumpData.triple_jump_left}
-                        <span className="text-[9px] ml-0.5">cm</span>
-                      </span>
-                    </div>
+                    <span className="font-semibold text-[#cb8954]">
+                      L: {jumpData.triple_jump_left}<span className="text-[8px] ml-0.5">cm</span>
+                    </span>
                   )}
                   {jumpData.triple_jump_right !== null && (
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-gray-500 text-[10px]">R:</span>
-                      <span className="font-semibold text-[#cb8954]">
-                        {jumpData.triple_jump_right}
-                        <span className="text-[9px] ml-0.5">cm</span>
-                      </span>
-                    </div>
+                    <span className="font-semibold text-[#cb8954]">
+                      R: {jumpData.triple_jump_right}<span className="text-[8px] ml-0.5">cm</span>
+                    </span>
                   )}
                 </div>
               </div>
