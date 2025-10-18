@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { X, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { JumpSessionCard } from "@/components/progress/JumpSessionCard";
 
 interface JumpSession {
   id: string;
@@ -215,94 +216,15 @@ export const JumpHistoryTab: React.FC = () => {
             const user = usersMap.get(session.user_id);
             const jumpData = session.jump_test_data?.[0];
 
-            return (
-              <Card key={session.id} className="rounded-none w-60">
-                <CardHeader className="pb-1 pt-2 px-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-xs">{user?.name || 'Άγνωστος Χρήστης'}</CardTitle>
-                      {session.notes && (
-                        <>
-                          <p className="text-[10px] text-gray-600 mt-0.5">
-                            {session.notes.split(' - ')[0]}
-                          </p>
-                          {session.notes.includes(' - ') && (
-                            <p className="text-2xl font-bold text-[#cb8954] mt-1">
-                              {session.notes.split(' - ')[1]}
-                            </p>
-                          )}
-                        </>
-                      )}
-                      <p className="text-[10px] text-gray-500 mt-0.5">
-                        {format(new Date(session.test_date), 'dd/MM/yyyy')}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleDelete(session.id)}
-                      className="rounded-none h-5 w-5 p-0 hover:bg-red-100"
-                    >
-                      <Trash2 className="w-3 h-3 text-red-600" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-2 pt-1">
-                  {jumpData && (
-                    <div className="space-y-0.5">
-                      {jumpData.non_counter_movement_jump !== null && (
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="text-gray-500">Non-CMJ:</span>
-                          <span className="font-semibold text-[#cb8954]">
-                            {jumpData.non_counter_movement_jump}<span className="text-[9px] ml-0.5">cm</span>
-                          </span>
-                        </div>
-                      )}
-                      {jumpData.counter_movement_jump !== null && (
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="text-gray-500">CMJ:</span>
-                          <span className="font-semibold text-[#cb8954]">
-                            {jumpData.counter_movement_jump}<span className="text-[9px] ml-0.5">cm</span>
-                          </span>
-                        </div>
-                      )}
-                      {jumpData.depth_jump !== null && (
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="text-gray-500">Depth Jump:</span>
-                          <span className="font-semibold text-[#cb8954]">
-                            {jumpData.depth_jump}<span className="text-[9px] ml-0.5">cm</span>
-                          </span>
-                        </div>
-                      )}
-                      {jumpData.broad_jump !== null && (
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="text-gray-500">Broad Jump:</span>
-                          <span className="font-semibold text-[#cb8954]">
-                            {jumpData.broad_jump}<span className="text-[9px] ml-0.5">cm</span>
-                          </span>
-                        </div>
-                      )}
-                      {jumpData.triple_jump_left !== null && (
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="text-gray-500">Triple Jump L:</span>
-                          <span className="font-semibold text-[#cb8954]">
-                            {jumpData.triple_jump_left}<span className="text-[9px] ml-0.5">cm</span>
-                          </span>
-                        </div>
-                      )}
-                      {jumpData.triple_jump_right !== null && (
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="text-gray-500">Triple Jump R:</span>
-                          <span className="font-semibold text-[#cb8954]">
-                            {jumpData.triple_jump_right}<span className="text-[9px] ml-0.5">cm</span>
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
+              return (
+                <JumpSessionCard
+                  key={session.id}
+                  session={session}
+                  userName={user?.name || 'Άγνωστος Χρήστης'}
+                  showDelete
+                  onDelete={() => handleDelete(session.id)}
+                />
+              );
           })
         )}
       </div>

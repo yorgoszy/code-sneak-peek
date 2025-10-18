@@ -11,7 +11,7 @@ import { FarmerProgressCard } from "./FarmerProgressCard";
 import { SprintProgressCard } from "./SprintProgressCard";
 import { CardiacProgressCard } from "./CardiacProgressCard";
 import { VO2MaxProgressCard } from "./VO2MaxProgressCard";
-import { JumpProgressCard } from "./JumpProgressCard";
+import { JumpProfileLatestCard } from "./JumpProfileLatestCard";
 
 interface UserProgressSectionProps {
   userId: string;
@@ -405,7 +405,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
       {/* Jump Progress is always visible, independent from strength data */}
       <div className="flex gap-0 flex-wrap mt-2">
-        <JumpProgressCard userId={userId} />
+        <JumpProfileLatestCard userId={userId} />
       </div>
     </div>
   );
