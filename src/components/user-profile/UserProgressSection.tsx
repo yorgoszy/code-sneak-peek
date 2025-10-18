@@ -267,6 +267,11 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
   return (
     <div className="space-y-0">
+      {/* Anthropometric Card - always visible at the top */}
+      <div className="mb-0">
+        <AnthropometricProgressCard userId={userId} />
+      </div>
+
       {historicalData.length > 0 ? (
         <>
           {/* Φίλτρα Ασκήσεων - Compact */}
@@ -404,10 +409,9 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         </div>
       )}
 
-      {/* Jump Progress and Anthropometric - always visible */}
+      {/* Jump Progress - always visible */}
       <div className="flex gap-0 flex-wrap mt-2">
         <JumpProfileLatestCard userId={userId} />
-        <AnthropometricProgressCard userId={userId} />
       </div>
     </div>
   );
