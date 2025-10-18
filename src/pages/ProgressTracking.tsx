@@ -148,10 +148,27 @@ export default function ProgressTracking() {
         </TabsContent>
 
         <TabsContent value="anthropometric" className="mt-6">
-          <AnthropometricRecordTab 
-            users={users} 
-            onRecordSaved={handleRecordSaved}
-          />
+          <Tabs defaultValue="new" className="w-full">
+            <TabsList className="rounded-none w-full bg-gray-100">
+              <TabsTrigger value="new" className="rounded-none flex-1">
+                Νέα Καταγραφή
+              </TabsTrigger>
+              <TabsTrigger value="history" className="rounded-none flex-1">
+                Ιστορικό
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="new" className="mt-6">
+              <AnthropometricRecordTab 
+                users={users} 
+                onRecordSaved={handleRecordSaved}
+              />
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-6">
+              <AnthropometricHistoryTab key={refreshKey} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>
