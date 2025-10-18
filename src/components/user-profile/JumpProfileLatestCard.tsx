@@ -34,6 +34,7 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
           user_id,
           test_date,
           notes,
+          created_at,
           jump_test_data (
             id,
             non_counter_movement_jump,
@@ -45,7 +46,8 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
           )
         `)
         .eq('user_id', userId)
-        .order('test_date', { ascending: false });
+        .order('test_date', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error loading jump sessions:', error);
