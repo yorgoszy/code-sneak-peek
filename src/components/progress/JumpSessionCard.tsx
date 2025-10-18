@@ -113,7 +113,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
               </div>
             )}
             {(jumpData.triple_jump_left !== null || jumpData.triple_jump_right !== null) && (
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {jumpData.triple_jump_left !== null && (
                 <div className="flex justify-between items-center text-[9px]">
                   <span className="text-gray-500">L:</span>
