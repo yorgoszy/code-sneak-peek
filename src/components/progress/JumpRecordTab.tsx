@@ -118,8 +118,8 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
       let notesText = testName;
       if (form.testType === 'triple-jump') {
         const parts = [];
-        if (form.tripleJumpLeft) parts.push(`Left: ${form.tripleJumpLeft}cm`);
-        if (form.tripleJumpRight) parts.push(`Right: ${form.tripleJumpRight}cm`);
+        if (form.tripleJumpLeft) parts.push(`L: ${form.tripleJumpLeft}cm`);
+        if (form.tripleJumpRight) parts.push(`R: ${form.tripleJumpRight}cm`);
         notesText = `${testName} - ${parts.join(', ')}`;
       } else {
         notesText = `${testName} - ${form.cmjHeight}cm`;
