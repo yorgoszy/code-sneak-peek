@@ -1,60 +1,72 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 
 interface JumpRecordTabProps {
   users: any[];
   onRecordSaved?: () => void;
 }
 
+interface JumpEntry {
+  id: string;
+  userId: string;
+  cmjHeight: string;
+  saving: boolean;
+}
+
 export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSaved }) => {
   const { toast } = useToast();
-  const [selectedUser, setSelectedUser] = useState<string>("");
-  const [testDate, setTestDate] = useState<Date>(new Date());
-  const [notes, setNotes] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const [entries, setEntries] = useState<JumpEntry[]>([
+    { id: '1', userId: '', cmjHeight: '', saving: false }
+  ]);
 
-  // Jump test data states
-  const [cmj, setCmj] = useState<string>("");
-  const [sqj, setSqj] = useState<string>("");
-  const [djHeight, setDjHeight] = useState<string>("");
-  const [djContact, setDjContact] = useState<string>("");
-  const [rsi, setRsi] = useState<string>("");
-  const [asymmetry, setAsymmetry] = useState<string>("");
+  const addNewEntry = () => {
+    const newEntry: JumpEntry = {
+      id: Date.now().toString(),
+      userId: '',
+      cmjHeight: '',
+      saving: false
+    };
+    setEntries([...entries, newEntry]);
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const updateEntry = (id: string, field: keyof JumpEntry, value: string) => {
+    setEntries(entries.map(entry => 
+      entry.id === id ? { ...entry, [field]: value } : entry
+    ));
+  };
 
-    if (!selectedUser) {
+  const saveEntry = async (entryId: string) => {
+    const entry = entries.find(e => e.id === entryId);
+    
+    if (!entry || !entry.userId || !entry.cmjHeight) {
       toast({
         title: "Σφάλμα",
-        description: "Παρακαλώ επιλέξτε χρήστη",
+        description: "Παρακαλώ συμπληρώστε όλα τα πεδία",
         variant: "destructive",
       });
       return;
     }
 
-    setLoading(true);
+    // Set saving state
+    setEntries(entries.map(e => 
+      e.id === entryId ? { ...e, saving: true } : e
+    ));
 
     try {
       // Create jump test session
       const { data: session, error: sessionError } = await supabase
         .from('jump_test_sessions')
         .insert({
-          user_id: selectedUser,
-          test_date: format(testDate, 'yyyy-MM-dd'),
-          notes: notes || null
+          user_id: entry.userId,
+          test_date: format(new Date(), 'yyyy-MM-dd'),
+          notes: null
         })
         .select()
         .single();
@@ -66,30 +78,27 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
         .from('jump_test_data')
         .insert({
           test_session_id: session.id,
-          cmj_height: cmj ? parseFloat(cmj) : null,
-          sqj_height: sqj ? parseFloat(sqj) : null,
-          dj_height: djHeight ? parseFloat(djHeight) : null,
-          dj_contact_time: djContact ? parseFloat(djContact) : null,
-          rsi: rsi ? parseFloat(rsi) : null,
-          asymmetry_percentage: asymmetry ? parseFloat(asymmetry) : null
+          cmj_height: parseFloat(entry.cmjHeight),
+          sqj_height: null,
+          dj_height: null,
+          dj_contact_time: null,
+          rsi: null,
+          asymmetry_percentage: null
         });
 
       if (dataError) throw dataError;
 
       toast({
         title: "Επιτυχία",
-        description: "Η καταγραφή αποθηκεύτηκε με επιτυχία",
+        description: "Η καταγραφή αποθηκεύτηκε",
       });
 
-      // Reset form
-      setCmj("");
-      setSqj("");
-      setDjHeight("");
-      setDjContact("");
-      setRsi("");
-      setAsymmetry("");
-      setNotes("");
-      setTestDate(new Date());
+      // Clear this entry after successful save
+      setEntries(entries.map(e => 
+        e.id === entryId 
+          ? { ...e, userId: '', cmjHeight: '', saving: false } 
+          : e
+      ));
       
       onRecordSaved?.();
     } catch (error) {
@@ -99,14 +108,77 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
         description: "Σφάλμα κατά την αποθήκευση",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
+      
+      // Reset saving state on error
+      setEntries(entries.map(e => 
+        e.id === entryId ? { ...e, saving: false } : e
+      ));
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Empty content */}
+    <div className="space-y-4">
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle className="text-sm">Non-CMJ</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {entries.map((entry) => (
+            <div key={entry.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-none">
+              <div className="flex-1">
+                <Select 
+                  value={entry.userId} 
+                  onValueChange={(value) => updateEntry(entry.id, 'userId', value)}
+                  disabled={entry.saving}
+                >
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Επιλέξτε χρήστη" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-32">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={entry.cmjHeight}
+                  onChange={(e) => updateEntry(entry.id, 'cmjHeight', e.target.value)}
+                  placeholder="cm"
+                  className="rounded-none"
+                  disabled={entry.saving}
+                />
+              </div>
+
+              <Button
+                type="button"
+                size="icon"
+                onClick={() => saveEntry(entry.id)}
+                disabled={entry.saving}
+                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              >
+                <Save className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+
+          <Button
+            type="button"
+            onClick={addNewEntry}
+            variant="outline"
+            className="w-full rounded-none"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Προσθήκη Χρήστη
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
