@@ -36,38 +36,34 @@ export const OffersManagement: React.FC = () => {
 
   const checkUserRole = async () => {
     try {
-      console.log('🔍 [OffersManagement] Checking user role...');
+      console.log('🔍 Checking user role...');
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        console.log('❌ [OffersManagement] No authenticated user found');
+        console.log('❌ No authenticated user found');
         setIsAdmin(false);
         setRoleLoading(false);
         return;
       }
 
-      console.log('👤 [OffersManagement] Authenticated user ID:', user.id);
-      console.log('👤 [OffersManagement] User email:', user.email);
+      console.log('👤 Authenticated user:', user.id);
 
       // Check if user is admin in app_users table
       const { data: appUser, error } = await supabase
         .from('app_users')
-        .select('id, auth_user_id, email, role')
+        .select('role')
         .eq('auth_user_id', user.id)
         .single();
 
       if (error) {
-        console.error('❌ [OffersManagement] Error checking user role:', error);
-        console.error('❌ [OffersManagement] Error details:', JSON.stringify(error));
+        console.error('❌ Error checking user role:', error);
         setIsAdmin(false);
       } else {
-        console.log('✅ [OffersManagement] Found app_user:', appUser);
-        console.log('✅ [OffersManagement] User role:', appUser?.role);
-        console.log('✅ [OffersManagement] Is admin?', appUser?.role === 'admin');
+        console.log('✅ User role:', appUser?.role);
         setIsAdmin(appUser?.role === 'admin');
       }
     } catch (error) {
-      console.error('💥 [OffersManagement] Error in checkUserRole:', error);
+      console.error('💥 Error in checkUserRole:', error);
       setIsAdmin(false);
     } finally {
       setRoleLoading(false);

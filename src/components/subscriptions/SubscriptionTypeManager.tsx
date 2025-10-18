@@ -101,38 +101,34 @@ export const SubscriptionTypeManager: React.FC = () => {
 
   const checkUserRole = async () => {
     try {
-      console.log('🔍 [SubscriptionTypeManager] Checking user role...');
+      console.log('🔍 Checking user role...');
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        console.log('❌ [SubscriptionTypeManager] No authenticated user found');
+        console.log('❌ No authenticated user found');
         setIsAdmin(false);
         setRoleLoading(false);
         return;
       }
 
-      console.log('👤 [SubscriptionTypeManager] Authenticated user ID:', user.id);
-      console.log('👤 [SubscriptionTypeManager] User email:', user.email);
+      console.log('👤 Authenticated user:', user.id);
 
       // Check if user is admin in app_users table
       const { data: appUser, error } = await supabase
         .from('app_users')
-        .select('id, auth_user_id, email, role')
+        .select('role')
         .eq('auth_user_id', user.id)
         .single();
 
       if (error) {
-        console.error('❌ [SubscriptionTypeManager] Error checking user role:', error);
-        console.error('❌ [SubscriptionTypeManager] Error details:', JSON.stringify(error));
+        console.error('❌ Error checking user role:', error);
         setIsAdmin(false);
       } else {
-        console.log('✅ [SubscriptionTypeManager] Found app_user:', appUser);
-        console.log('✅ [SubscriptionTypeManager] User role:', appUser?.role);
-        console.log('✅ [SubscriptionTypeManager] Is admin?', appUser?.role === 'admin');
+        console.log('✅ User role:', appUser?.role);
         setIsAdmin(appUser?.role === 'admin');
       }
     } catch (error) {
-      console.error('💥 [SubscriptionTypeManager] Error in checkUserRole:', error);
+      console.error('💥 Error in checkUserRole:', error);
       setIsAdmin(false);
     } finally {
       setRoleLoading(false);
@@ -912,7 +908,7 @@ export const SubscriptionTypeManager: React.FC = () => {
           closeDialog();
         }
       }}>
-        <DialogContent className={`rounded-none max-h-[90vh] overflow-y-auto ${isMobile ? 'max-w-[95vw]' : 'max-w-md'}`}>
+        <DialogContent className={`rounded-none ${isMobile ? 'max-w-[95vw] max-h-[90vh] overflow-y-auto' : 'max-w-md'}`}>
           <DialogHeader>
             <DialogTitle>
               {editingType ? 'Επεξεργασία' : 'Δημιουργία'} Τύπου Συνδρομής
