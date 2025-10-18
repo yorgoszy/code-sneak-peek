@@ -117,53 +117,49 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
   };
 
   return (
-    <div className="space-y-4">
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-sm">Non-CMJ</CardTitle>
+    <div className="space-y-2">
+      <Card className="rounded-none w-80">
+        <CardHeader className="p-2">
+          <CardTitle className="text-xs">Non-CMJ</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="p-2 space-y-1">
           {entries.map((entry) => (
-            <div key={entry.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-none">
-              <div className="flex-1">
-                <Select 
-                  value={entry.userId} 
-                  onValueChange={(value) => updateEntry(entry.id, 'userId', value)}
-                  disabled={entry.saving}
-                >
-                  <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε χρήστη" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div key={entry.id} className="flex items-center gap-1">
+              <Select 
+                value={entry.userId} 
+                onValueChange={(value) => updateEntry(entry.id, 'userId', value)}
+                disabled={entry.saving}
+              >
+                <SelectTrigger className="rounded-none h-7 text-xs flex-1">
+                  <SelectValue placeholder="Χρήστης" />
+                </SelectTrigger>
+                <SelectContent className="bg-white z-50">
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id} className="text-xs">
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-              <div className="w-32">
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={entry.cmjHeight}
-                  onChange={(e) => updateEntry(entry.id, 'cmjHeight', e.target.value)}
-                  placeholder="cm"
-                  className="rounded-none"
-                  disabled={entry.saving}
-                />
-              </div>
+              <Input
+                type="number"
+                step="0.1"
+                value={entry.cmjHeight}
+                onChange={(e) => updateEntry(entry.id, 'cmjHeight', e.target.value)}
+                placeholder="cm"
+                className="rounded-none h-7 w-16 text-xs"
+                disabled={entry.saving}
+              />
 
               <Button
                 type="button"
                 size="icon"
                 onClick={() => saveEntry(entry.id)}
                 disabled={entry.saving}
-                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-7 w-7"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-3 h-3" />
               </Button>
             </div>
           ))}
@@ -172,10 +168,10 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
             type="button"
             onClick={addNewEntry}
             variant="outline"
-            className="w-full rounded-none"
+            className="w-full rounded-none h-6 text-xs"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Προσθήκη Χρήστη
+            <Plus className="w-3 h-3 mr-1" />
+            Προσθήκη
           </Button>
         </CardContent>
       </Card>
