@@ -908,7 +908,7 @@ export const SubscriptionTypeManager: React.FC = () => {
           closeDialog();
         }
       }}>
-        <DialogContent className={`rounded-none ${isMobile ? 'max-w-[95vw] max-h-[90vh] overflow-y-auto' : 'max-w-md'}`}>
+        <DialogContent className={`rounded-none max-h-[90vh] overflow-y-auto ${isMobile ? 'max-w-[95vw]' : 'max-w-md'}`}>
           <DialogHeader>
             <DialogTitle>
               {editingType ? 'Επεξεργασία' : 'Δημιουργία'} Τύπου Συνδρομής
