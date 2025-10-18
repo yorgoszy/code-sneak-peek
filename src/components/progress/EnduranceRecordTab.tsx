@@ -734,7 +734,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-3">
+      <div className="flex gap-3 overflow-x-auto pb-2">
         {/* MAS Test Forms */}
         <div className="space-y-3">
           {forms.map((form, formIndex) => {
