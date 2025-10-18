@@ -59,7 +59,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
                             </p>
                           </div>
                         ) : (
-                          <p className="text-xl font-bold text-[hsl(var(--metric-green))] mt-0.5">
+                          <p className="text-base font-bold text-[hsl(var(--metric-green))] mt-0.5">
                             {session.notes.split(' - ')[1]}
                           </p>
                         )}
