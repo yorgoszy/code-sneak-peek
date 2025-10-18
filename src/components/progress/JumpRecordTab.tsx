@@ -126,7 +126,7 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-[1px] overflow-x-auto pb-2">
+      <div className="space-y-[1px]">
         {forms.map((form, formIndex) => (
           <Card key={form.id} className="rounded-none w-60">
             <CardHeader className="pb-0.5 pt-1 px-2">
