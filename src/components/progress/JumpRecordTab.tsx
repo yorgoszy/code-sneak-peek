@@ -18,8 +18,10 @@ interface JumpForm {
   id: string;
   selectedUserId: string;
   cmjHeight: string;
+  tripleJumpLeft?: string;
+  tripleJumpRight?: string;
   loading: boolean;
-  testType: 'non-cmj' | 'cmj' | 'depth-jump' | 'broad-jump';
+  testType: 'non-cmj' | 'cmj' | 'depth-jump' | 'broad-jump' | 'triple-jump';
 }
 
 export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSaved }) => {
@@ -28,7 +30,8 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
     { id: '1', selectedUserId: '', cmjHeight: '', loading: false, testType: 'non-cmj' },
     { id: '2', selectedUserId: '', cmjHeight: '', loading: false, testType: 'cmj' },
     { id: '3', selectedUserId: '', cmjHeight: '', loading: false, testType: 'depth-jump' },
-    { id: '4', selectedUserId: '', cmjHeight: '', loading: false, testType: 'broad-jump' }
+    { id: '4', selectedUserId: '', cmjHeight: '', loading: false, testType: 'broad-jump' },
+    { id: '5', selectedUserId: '', cmjHeight: '', tripleJumpLeft: '', tripleJumpRight: '', loading: false, testType: 'triple-jump' }
   ]);
 
   const userOptions = useMemo(() => 
@@ -40,18 +43,25 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
     [users]
   );
 
-  const addNewForm = (testType: 'non-cmj' | 'cmj' | 'depth-jump' | 'broad-jump') => {
+  const addNewForm = (testType: 'non-cmj' | 'cmj' | 'depth-jump' | 'broad-jump' | 'triple-jump') => {
     const newId = (Math.max(...forms.map(f => parseInt(f.id))) + 1).toString();
-    setForms([...forms, {
+    const newForm: JumpForm = {
       id: newId,
       selectedUserId: '',
       cmjHeight: '',
       loading: false,
       testType
-    }]);
+    };
+    
+    if (testType === 'triple-jump') {
+      newForm.tripleJumpLeft = '';
+      newForm.tripleJumpRight = '';
+    }
+    
+    setForms([...forms, newForm]);
   };
 
-  const removeForm = (formId: string, testType: 'non-cmj' | 'cmj' | 'depth-jump' | 'broad-jump') => {
+  const removeForm = (formId: string, testType: 'non-cmj' | 'cmj' | 'depth-jump' | 'broad-jump' | 'triple-jump') => {
     const formsOfType = forms.filter(f => f.testType === testType);
     if (formsOfType.length > 1) {
       setForms(forms.filter(f => f.id !== formId));
@@ -66,13 +76,33 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
     const form = forms.find(f => f.id === formId);
     if (!form) return;
     
-    if (!form.selectedUserId || !form.cmjHeight) {
+    if (!form.selectedUserId) {
       toast({
         title: "Σφάλμα",
-        description: "Παρακαλώ συμπληρώστε όλα τα πεδία",
+        description: "Παρακαλώ επιλέξτε ασκούμενο",
         variant: "destructive",
       });
       return;
+    }
+    
+    if (form.testType === 'triple-jump') {
+      if (!form.tripleJumpLeft && !form.tripleJumpRight) {
+        toast({
+          title: "Σφάλμα",
+          description: "Παρακαλώ συμπληρώστε τουλάχιστον ένα πεδίο",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      if (!form.cmjHeight) {
+        toast({
+          title: "Σφάλμα",
+          description: "Παρακαλώ συμπληρώστε το ύψος",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     updateForm(formId, { loading: true });
@@ -82,13 +112,25 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
       const testName = form.testType === 'cmj' ? 'CMJ Test' : 
                        form.testType === 'depth-jump' ? 'Depth Jump Test' :
                        form.testType === 'broad-jump' ? 'Broad Jump Test' :
+                       form.testType === 'triple-jump' ? 'Triple Jump Test' :
                        'Non-CMJ Test';
+      
+      let notesText = testName;
+      if (form.testType === 'triple-jump') {
+        const parts = [];
+        if (form.tripleJumpLeft) parts.push(`Left: ${form.tripleJumpLeft}cm`);
+        if (form.tripleJumpRight) parts.push(`Right: ${form.tripleJumpRight}cm`);
+        notesText = `${testName} - ${parts.join(', ')}`;
+      } else {
+        notesText = `${testName} - ${form.cmjHeight}cm`;
+      }
+      
       const { data: session, error: sessionError } = await supabase
         .from('jump_test_sessions')
         .insert({
           user_id: form.selectedUserId,
           test_date: format(new Date(), 'yyyy-MM-dd'),
-          notes: `${testName} - ${form.cmjHeight}cm`
+          notes: notesText
         })
         .select()
         .single();
@@ -104,8 +146,8 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
           counter_movement_jump: form.testType === 'cmj' ? parseFloat(form.cmjHeight) : null,
           depth_jump: form.testType === 'depth-jump' ? parseFloat(form.cmjHeight) : null,
           broad_jump: form.testType === 'broad-jump' ? parseFloat(form.cmjHeight) : null,
-          triple_jump_left: null,
-          triple_jump_right: null
+          triple_jump_left: form.testType === 'triple-jump' && form.tripleJumpLeft ? parseFloat(form.tripleJumpLeft) : null,
+          triple_jump_right: form.testType === 'triple-jump' && form.tripleJumpRight ? parseFloat(form.tripleJumpRight) : null
         });
 
       if (dataError) throw dataError;
@@ -116,10 +158,17 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
       });
 
       // Reset form
-      updateForm(formId, {
+      const resetData: Partial<JumpForm> = {
         cmjHeight: '',
         loading: false
-      });
+      };
+      
+      if (form.testType === 'triple-jump') {
+        resetData.tripleJumpLeft = '';
+        resetData.tripleJumpRight = '';
+      }
+      
+      updateForm(formId, resetData);
       
       onRecordSaved?.();
     } catch (error) {
@@ -373,6 +422,79 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
                   <Button 
                     onClick={() => handleSave(form.id)} 
                     className="rounded-none h-6 w-6 p-0"
+                    disabled={form.loading}
+                  >
+                    <Save className="w-2.5 h-2.5" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Triple Jump Forms */}
+      <div className="space-y-[1px]">
+        {forms.filter(f => f.testType === 'triple-jump').map((form, formIndex) => {
+          const formsOfType = forms.filter(f => f.testType === 'triple-jump');
+          return (
+            <Card key={form.id} className="rounded-none w-60">
+              <CardHeader className="pb-0.5 pt-1 px-2">
+                <div className="flex items-center gap-1">
+                  <CardTitle className="text-xs">Triple Jump {formsOfType.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                  <Button onClick={() => addNewForm('triple-jump')} size="sm" className="rounded-none h-4 w-4 p-0 ml-auto">
+                    <Plus className="w-2.5 h-2.5" />
+                  </Button>
+                  {formsOfType.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeForm(form.id, 'triple-jump')}
+                      className="rounded-none h-4 w-4 p-0"
+                    >
+                      <Trash2 className="w-2.5 h-2.5" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-2 pt-1 space-y-1">
+                <div>
+                  <Label className="text-[10px]">Ασκούμενος</Label>
+                  <Combobox
+                    options={userOptions}
+                    value={form.selectedUserId}
+                    onValueChange={(val) => updateForm(form.id, { selectedUserId: val })}
+                    placeholder="Χρήστης"
+                    emptyMessage="Δεν βρέθηκε."
+                    className="h-6 text-[10px]"
+                  />
+                </div>
+                <div className="flex justify-between items-end gap-1">
+                  <div className="flex-1">
+                    <Label className="text-[10px]">Left (cm)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="Left"
+                      value={form.tripleJumpLeft || ''}
+                      onChange={(e) => updateForm(form.id, { tripleJumpLeft: e.target.value })}
+                      className="rounded-none no-spinners h-6 text-[10px]"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-[10px]">Right (cm)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="Right"
+                      value={form.tripleJumpRight || ''}
+                      onChange={(e) => updateForm(form.id, { tripleJumpRight: e.target.value })}
+                      className="rounded-none no-spinners h-6 text-[10px]"
+                    />
+                  </div>
+                  <Button 
+                    onClick={() => handleSave(form.id)} 
+                    className="rounded-none h-6 w-6 p-0 mt-4"
                     disabled={form.loading}
                   >
                     <Save className="w-2.5 h-2.5" />

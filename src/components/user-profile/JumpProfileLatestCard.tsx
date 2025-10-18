@@ -12,13 +12,15 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
     cmj: JumpSessionCardSession | null;
     depthJump: JumpSessionCardSession | null;
     broadJump: JumpSessionCardSession | null;
-  }>({ nonCmj: null, cmj: null, depthJump: null, broadJump: null });
+    tripleJump: JumpSessionCardSession | null;
+  }>({ nonCmj: null, cmj: null, depthJump: null, broadJump: null, tripleJump: null });
   const [percentageChanges, setPercentageChanges] = useState<{
     nonCmj: number | null;
     cmj: number | null;
     depthJump: number | null;
     broadJump: number | null;
-  }>({ nonCmj: null, cmj: null, depthJump: null, broadJump: null });
+    tripleJump: number | null;
+  }>({ nonCmj: null, cmj: null, depthJump: null, broadJump: null, tripleJump: null });
 
   useEffect(() => {
     const load = async () => {
@@ -57,18 +59,21 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
       const cmjSessions = allSessions.filter(s => s.notes?.includes('CMJ Test'));
       const depthJumpSessions = allSessions.filter(s => s.notes?.includes('Depth Jump Test'));
       const broadJumpSessions = allSessions.filter(s => s.notes?.includes('Broad Jump Test'));
+      const tripleJumpSessions = allSessions.filter(s => s.notes?.includes('Triple Jump Test'));
 
       // Βρίσκω την τελευταία καταγραφή για κάθε τύπο
       const latestNonCmj = nonCmjSessions[0] || null;
       const latestCmj = cmjSessions[0] || null;
       const latestDepthJump = depthJumpSessions[0] || null;
       const latestBroadJump = broadJumpSessions[0] || null;
+      const latestTripleJump = tripleJumpSessions[0] || null;
 
       setLatestSessions({
         nonCmj: latestNonCmj,
         cmj: latestCmj,
         depthJump: latestDepthJump,
-        broadJump: latestBroadJump
+        broadJump: latestBroadJump,
+        tripleJump: latestTripleJump
       });
 
       // Υπολογίζω το ποσοστό για Non-CMJ
@@ -127,18 +132,38 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         }
       }
 
+      // Υπολογίζω το ποσοστό για Triple Jump (average of left and right)
+      let tripleJumpChange: number | null = null;
+      if (tripleJumpSessions.length >= 2) {
+        const currentJump = tripleJumpSessions[0].jump_test_data?.[0];
+        const previousJump = tripleJumpSessions[1].jump_test_data?.[0];
+        
+        const currentLeft = currentJump?.triple_jump_left || 0;
+        const currentRight = currentJump?.triple_jump_right || 0;
+        const previousLeft = previousJump?.triple_jump_left || 0;
+        const previousRight = previousJump?.triple_jump_right || 0;
+
+        const currentAvg = (currentLeft + currentRight) / 2;
+        const previousAvg = (previousLeft + previousRight) / 2;
+
+        if (currentAvg && previousAvg) {
+          tripleJumpChange = ((currentAvg - previousAvg) / previousAvg) * 100;
+        }
+      }
+
       setPercentageChanges({
         nonCmj: nonCmjChange,
         cmj: cmjChange,
         depthJump: depthJumpChange,
-        broadJump: broadJumpChange
+        broadJump: broadJumpChange,
+        tripleJump: tripleJumpChange
       });
     };
 
     load();
   }, [userId]);
 
-  if (!latestSessions.nonCmj && !latestSessions.cmj && !latestSessions.depthJump && !latestSessions.broadJump) return null;
+  if (!latestSessions.nonCmj && !latestSessions.cmj && !latestSessions.depthJump && !latestSessions.broadJump && !latestSessions.tripleJump) return null;
 
   return (
     <>
@@ -168,6 +193,13 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
           key={latestSessions.broadJump.id}
           session={latestSessions.broadJump} 
           percentageChange={percentageChanges.broadJump} 
+        />
+      )}
+      {latestSessions.tripleJump && (
+        <JumpSessionCard 
+          key={latestSessions.tripleJump.id}
+          session={latestSessions.tripleJump} 
+          percentageChange={percentageChanges.tripleJump} 
         />
       )}
     </>
