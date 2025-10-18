@@ -19,6 +19,8 @@ interface EnduranceData {
   sprintMeters: string;
   sprintResistance: string;
   sprintWatt: string;
+  sprintKmh: string;
+  sprintExercise: string;
   masMeters: string;
   masMinutes: string;
   masMs: string;
@@ -84,7 +86,9 @@ export const EnduranceTests = ({
             sprintSeconds: formData?.sprintSeconds || '',
             sprintMeters: formData?.sprintMeters || '',
             sprintResistance: formData?.sprintResistance || '',
-            sprintWatt: formData?.sprintWatt || ''
+            sprintWatt: formData?.sprintWatt || '',
+            sprintKmh: formData?.sprintKmh || '',
+            sprintExercise: formData?.sprintExercise || 'track'
           }}
           onInputChange={handleInputChange}
         />

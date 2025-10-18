@@ -10,6 +10,8 @@ interface SprintTestCardProps {
     sprintMeters: string;
     sprintResistance: string;
     sprintWatt: string;
+    sprintKmh: string;
+    sprintExercise: string;
   };
   onInputChange: (field: string, value: string) => void;
 }
@@ -22,7 +24,22 @@ export const SprintTestCard = ({ formData, onInputChange }: SprintTestCardProps)
       </CardHeader>
       <CardContent className="pt-0 space-y-2">
         <div>
-          <Label className="text-xs">Χρόνος</Label>
+          <Label className="text-xs">Άσκηση</Label>
+          <Select 
+            value={formData.sprintExercise} 
+            onValueChange={(value) => onInputChange('sprintExercise', value)}
+          >
+            <SelectTrigger className="rounded-none h-8 text-xs">
+              <SelectValue placeholder="Επιλέξτε" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="track">Track</SelectItem>
+              <SelectItem value="woodway">Woodway</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">Χρόνος (δευτ.)</Label>
           <Input
             type="number"
             step="0.1"
@@ -32,17 +49,31 @@ export const SprintTestCard = ({ formData, onInputChange }: SprintTestCardProps)
             className="rounded-none h-8 text-xs"
           />
         </div>
-        <div>
-          <Label className="text-xs">Μέτρα</Label>
-          <Input
-            type="number"
-            step="0.1"
-            placeholder="m"
-            value={formData.sprintMeters}
-            onChange={(e) => onInputChange('sprintMeters', e.target.value)}
-            className="rounded-none h-8 text-xs"
-          />
-        </div>
+        {formData.sprintExercise === 'track' ? (
+          <div>
+            <Label className="text-xs">Μέτρα</Label>
+            <Input
+              type="number"
+              step="0.1"
+              placeholder="m"
+              value={formData.sprintMeters}
+              onChange={(e) => onInputChange('sprintMeters', e.target.value)}
+              className="rounded-none h-8 text-xs"
+            />
+          </div>
+        ) : (
+          <div>
+            <Label className="text-xs">km/h</Label>
+            <Input
+              type="number"
+              step="0.1"
+              placeholder="km/h"
+              value={formData.sprintKmh}
+              onChange={(e) => onInputChange('sprintKmh', e.target.value)}
+              className="rounded-none h-8 text-xs"
+            />
+          </div>
+        )}
         <div>
           <Label className="text-xs">Αντίσταση</Label>
           <Select 

@@ -17,6 +17,8 @@ export const useEnduranceTestLogic = () => {
     sprintMeters: '',
     sprintResistance: '',
     sprintWatt: '',
+    sprintKmh: '',
+    sprintExercise: 'track',
     masMeters: '',
     masMinutes: '',
     masMs: '',
@@ -45,6 +47,39 @@ export const useEnduranceTestLogic = () => {
       }
     }
   }, [formData.masMeters, formData.masMinutes]);
+
+  // Αυτόματος υπολογισμός για Sprint
+  useEffect(() => {
+    if (formData.sprintExercise === 'track' && formData.sprintSeconds && formData.sprintMeters) {
+      // Track: υπολογισμός km/h από meters και seconds
+      const seconds = parseFloat(formData.sprintSeconds);
+      const meters = parseFloat(formData.sprintMeters);
+      
+      if (seconds > 0 && meters > 0) {
+        const ms = meters / seconds;
+        const kmh = ms * 3.6;
+        
+        setFormData(prev => ({
+          ...prev,
+          sprintKmh: kmh.toFixed(2)
+        }));
+      }
+    } else if (formData.sprintExercise === 'woodway' && formData.sprintSeconds && formData.sprintKmh) {
+      // Woodway: υπολογισμός meters από km/h και seconds
+      const seconds = parseFloat(formData.sprintSeconds);
+      const kmh = parseFloat(formData.sprintKmh);
+      
+      if (seconds > 0 && kmh > 0) {
+        const ms = kmh / 3.6;
+        const meters = ms * seconds;
+        
+        setFormData(prev => ({
+          ...prev,
+          sprintMeters: meters.toFixed(2)
+        }));
+      }
+    }
+  }, [formData.sprintExercise, formData.sprintSeconds, formData.sprintMeters, formData.sprintKmh]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -202,6 +237,8 @@ export const useEnduranceTestLogic = () => {
         sprintMeters: '',
         sprintResistance: '',
         sprintWatt: '',
+        sprintKmh: '',
+        sprintExercise: 'track',
         masMeters: '',
         masMinutes: '',
         masMs: '',
