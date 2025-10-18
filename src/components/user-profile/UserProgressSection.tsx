@@ -11,6 +11,7 @@ import { FarmerProgressCard } from "./FarmerProgressCard";
 import { SprintProgressCard } from "./SprintProgressCard";
 import { CardiacProgressCard } from "./CardiacProgressCard";
 import { VO2MaxProgressCard } from "./VO2MaxProgressCard";
+import { JumpProgressCard } from "./JumpProgressCard";
 
 interface UserProgressSectionProps {
   userId: string;
@@ -386,7 +387,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           {/* MAS Card */}
           <MasProgressCard userId={userId} />
           
-          {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway, VO2 Max, Cardiac Cards */}
+          {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway, VO2 Max, Cardiac, Jump Cards */}
           <div className="flex gap-0 flex-wrap">
             <BodyweightProgressCard userId={userId} />
             <FarmerProgressCard userId={userId} />
@@ -394,6 +395,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             <SprintProgressCard userId={userId} exerciseName="Woodway" />
             <VO2MaxProgressCard userId={userId} />
             <CardiacProgressCard userId={userId} />
+            <JumpProgressCard userId={userId} />
           </div>
         </>
       ) : (
