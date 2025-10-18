@@ -734,7 +734,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-3 overflow-x-auto pb-2 fixed bottom-0 left-0 right-0 bg-background z-50 px-4 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
+      <div className="flex gap-3 overflow-x-auto pb-2 sticky bottom-0 bg-background z-10">
         {/* MAS Test Forms */}
         <div className="space-y-3">
           {forms.map((form, formIndex) => {
