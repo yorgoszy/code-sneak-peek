@@ -84,7 +84,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
   }
 
   return (
-    <Card className="rounded-none border border-gray-200 w-full">
+    <Card className="rounded-none border border-gray-200 w-full max-w-2xl">
       <CardHeader className="pb-2 pt-3 px-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xs font-medium">Σωματομετρικά</CardTitle>

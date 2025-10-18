@@ -399,10 +399,14 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             <MasProgressCard userId={userId} />
           </div>
           
-          {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway - Responsive Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full">
+          {/* Bodyweight, Farmer - Responsive Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
             <BodyweightProgressCard userId={userId} />
             <FarmerProgressCard userId={userId} />
+          </div>
+
+          {/* Sprint Track & Woodway - Side by Side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
             <SprintProgressCard userId={userId} exerciseName="Track" />
             <SprintProgressCard userId={userId} exerciseName="Woodway" />
           </div>
