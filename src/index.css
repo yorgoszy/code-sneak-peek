@@ -52,7 +52,7 @@ html, body {
     --auth-black: 0 0% 0%; /* #000000 */
     --sidebar-active: 35 49% 56%; /* #cb8954 - gold color for active sidebar items */
 
-    --metric-green: 160 100% 50%; /* #00ffba - light green for jump numbers */
+    --metric-green: 120 60% 40%; /* grass green for jump numbers */
 
     --sidebar-background: 0 0% 98%;
 
