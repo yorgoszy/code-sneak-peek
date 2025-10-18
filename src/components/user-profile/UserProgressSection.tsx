@@ -423,8 +423,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         </div>
       )}
 
-      {/* Jump Progress - Grid 2 columns on mobile */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 w-full mt-2">
+      {/* Jump Progress - Compact Grid to match Anthropometric width */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 w-full max-w-2xl mt-2">
         <JumpProfileLatestCard userId={userId} />
       </div>
     </div>
