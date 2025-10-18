@@ -12,6 +12,7 @@ import { el } from "date-fns/locale";
 import { Pencil, Trash2, ChevronDown, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
+import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
 
 export const HistoryTab: React.FC = () => {
   const { toast } = useToast();
@@ -21,6 +22,8 @@ export const HistoryTab: React.FC = () => {
   const [editWeight, setEditWeight] = useState('');
   const [editVelocity, setEditVelocity] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   
   // Filter states
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -117,17 +120,20 @@ export const HistoryTab: React.FC = () => {
     }
   };
 
-  const handleDeleteSession = async (sessionId: string) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την καταγραφή;')) {
-      return;
-    }
+  const handleDeleteSessionClick = (sessionId: string) => {
+    setSessionToDelete(sessionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteSessionConfirm = async () => {
+    if (!sessionToDelete) return;
 
     try {
       // Delete attempts first (due to foreign key)
       const { error: attemptsError } = await supabase
         .from('strength_test_attempts')
         .delete()
-        .eq('test_session_id', sessionId);
+        .eq('test_session_id', sessionToDelete);
 
       if (attemptsError) throw attemptsError;
 
@@ -135,7 +141,7 @@ export const HistoryTab: React.FC = () => {
       const { error: sessionError } = await supabase
         .from('strength_test_sessions')
         .delete()
-        .eq('id', sessionId);
+        .eq('id', sessionToDelete);
 
       if (sessionError) throw sessionError;
 
@@ -152,6 +158,9 @@ export const HistoryTab: React.FC = () => {
         description: "Αποτυχία διαγραφής",
         variant: "destructive"
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setSessionToDelete(null);
     }
   };
 
@@ -393,7 +402,7 @@ export const HistoryTab: React.FC = () => {
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => handleDeleteSession(session.id)}
+                    onClick={() => handleDeleteSessionClick(session.id)}
                     className="rounded-none ml-auto"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -510,6 +519,12 @@ export const HistoryTab: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <DeleteConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDeleteSessionConfirm}
+      />
     </>
   );
 };

@@ -7,6 +7,7 @@ import { X, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { JumpSessionCard } from "@/components/progress/JumpSessionCard";
+import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
 
 interface JumpSession {
   id: string;
@@ -31,6 +32,8 @@ export const JumpHistoryTab: React.FC = () => {
   const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string }>>(new Map());
   const [userSearch, setUserSearch] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSessions();
@@ -117,17 +120,20 @@ export const JumpHistoryTab: React.FC = () => {
     return { nonCmj, cmj, depthJump, broadJump, tripleJump };
   }, [filteredSessions]);
 
-  const handleDelete = async (sessionId: string) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την καταγραφή;')) {
-      return;
-    }
+  const handleDeleteClick = (sessionId: string) => {
+    setSessionToDelete(sessionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!sessionToDelete) return;
 
     try {
       // First delete jump_test_data
       const { error: dataError } = await supabase
         .from('jump_test_data')
         .delete()
-        .eq('test_session_id', sessionId);
+        .eq('test_session_id', sessionToDelete);
 
       if (dataError) throw dataError;
 
@@ -135,7 +141,7 @@ export const JumpHistoryTab: React.FC = () => {
       const { error: sessionError } = await supabase
         .from('jump_test_sessions')
         .delete()
-        .eq('id', sessionId);
+        .eq('id', sessionToDelete);
 
       if (sessionError) throw sessionError;
 
@@ -153,6 +159,9 @@ export const JumpHistoryTab: React.FC = () => {
         description: "Σφάλμα κατά τη διαγραφή",
         variant: "destructive",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setSessionToDelete(null);
     }
   };
 
@@ -237,7 +246,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDelete(session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
@@ -258,7 +267,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDelete(session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
@@ -279,7 +288,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDelete(session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
@@ -300,7 +309,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDelete(session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
@@ -321,7 +330,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDelete(session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
@@ -330,6 +339,12 @@ export const JumpHistoryTab: React.FC = () => {
           </>
         )}
       </div>
+
+      <DeleteConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };

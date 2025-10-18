@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { Trash2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
 
 export const EnduranceHistoryTab: React.FC = () => {
   const { toast } = useToast();
@@ -18,6 +19,8 @@ export const EnduranceHistoryTab: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSessions();
@@ -84,17 +87,20 @@ export const EnduranceHistoryTab: React.FC = () => {
     }
   };
 
-  const handleDeleteSession = async (sessionId: string) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την καταγραφή;')) {
-      return;
-    }
+  const handleDeleteSessionClick = (sessionId: string) => {
+    setSessionToDelete(sessionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteSessionConfirm = async () => {
+    if (!sessionToDelete) return;
 
     try {
       // Delete endurance test data first (due to foreign key)
       const { error: dataError } = await supabase
         .from('endurance_test_data')
         .delete()
-        .eq('test_session_id', sessionId);
+        .eq('test_session_id', sessionToDelete);
 
       if (dataError) throw dataError;
 
@@ -102,7 +108,7 @@ export const EnduranceHistoryTab: React.FC = () => {
       const { error: sessionError } = await supabase
         .from('endurance_test_sessions')
         .delete()
-        .eq('id', sessionId);
+        .eq('id', sessionToDelete);
 
       if (sessionError) throw sessionError;
 
@@ -119,6 +125,9 @@ export const EnduranceHistoryTab: React.FC = () => {
         description: "Αποτυχία διαγραφής",
         variant: "destructive"
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setSessionToDelete(null);
     }
   };
 
@@ -249,7 +258,7 @@ export const EnduranceHistoryTab: React.FC = () => {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => handleDeleteSession(session.id)}
+                onClick={() => handleDeleteSessionClick(session.id)}
                 className="rounded-none h-8 w-8 p-0 shrink-0"
               >
                 <Trash2 className="w-4 h-4 text-red-500" />
@@ -506,6 +515,12 @@ export const EnduranceHistoryTab: React.FC = () => {
         </div>
       )}
       </div>
+
+      <DeleteConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDeleteSessionConfirm}
+      />
     </div>
   );
 };
