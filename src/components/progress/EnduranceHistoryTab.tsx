@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
@@ -12,6 +13,9 @@ export const EnduranceHistoryTab: React.FC = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map());
+  const [selectedUser, setSelectedUser] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedYear, setSelectedYear] = useState<string>("all");
 
   useEffect(() => {
     fetchSessions();
@@ -120,24 +124,58 @@ export const EnduranceHistoryTab: React.FC = () => {
     return <div className="text-center py-8 text-gray-500">Φόρτωση...</div>;
   }
 
+  // Get unique years
+  const availableYears = useMemo(() => {
+    const years = sessions.map(s => new Date(s.test_date).getFullYear());
+    return Array.from(new Set(years)).sort((a, b) => b - a);
+  }, [sessions]);
+
+  // Get unique users
+  const availableUsers = useMemo(() => {
+    return Array.from(usersMap.entries()).map(([id, name]) => ({ id, name }));
+  }, [usersMap]);
+
+  // Filter sessions
+  const filteredSessions = useMemo(() => {
+    return sessions.filter(s => {
+      if (selectedUser !== "all" && s.user_id !== selectedUser) return false;
+      if (selectedYear !== "all" && new Date(s.test_date).getFullYear().toString() !== selectedYear) return false;
+      return true;
+    });
+  }, [sessions, selectedUser, selectedYear]);
+
   if (sessions.length === 0) {
-    return <div className="text-center py-8 text-gray-500">Δεν υπάρχουν καταγραφές MAS</div>;
+    return <div className="text-center py-8 text-gray-500">Δεν υπάρχουν καταγραφές</div>;
   }
 
-  // Group sessions by test type
-  const masSessions = sessions.filter(s => s.endurance_test_data[0]?.mas_meters);
-  const bodyweightSessions = sessions.filter(s => 
-    s.endurance_test_data[0]?.push_ups !== null || 
-    s.endurance_test_data[0]?.pull_ups !== null ||
-    s.endurance_test_data[0]?.t2b !== null
-  );
-  const farmerSessions = sessions.filter(s => s.endurance_test_data[0]?.farmer_kg);
-  const sprintSessions = sessions.filter(s => s.endurance_test_data[0]?.sprint_seconds);
-  const vo2MaxSessions = sessions.filter(s => s.endurance_test_data[0]?.vo2_max);
-  const cardiacSessions = sessions.filter(s => 
-    s.endurance_test_data[0]?.max_hr !== null || 
-    s.endurance_test_data[0]?.resting_hr_1min !== null
-  );
+  // Group filtered sessions by test type
+  const masSessions = filteredSessions.filter(s => {
+    if (selectedCategory !== "all" && selectedCategory !== "mas") return false;
+    return s.endurance_test_data[0]?.mas_meters;
+  });
+  const bodyweightSessions = filteredSessions.filter(s => {
+    if (selectedCategory !== "all" && selectedCategory !== "bodyweight") return false;
+    return s.endurance_test_data[0]?.push_ups !== null || 
+           s.endurance_test_data[0]?.pull_ups !== null ||
+           s.endurance_test_data[0]?.t2b !== null;
+  });
+  const farmerSessions = filteredSessions.filter(s => {
+    if (selectedCategory !== "all" && selectedCategory !== "farmer") return false;
+    return s.endurance_test_data[0]?.farmer_kg;
+  });
+  const sprintSessions = filteredSessions.filter(s => {
+    if (selectedCategory !== "all" && selectedCategory !== "sprint") return false;
+    return s.endurance_test_data[0]?.sprint_seconds;
+  });
+  const vo2MaxSessions = filteredSessions.filter(s => {
+    if (selectedCategory !== "all" && selectedCategory !== "vo2max") return false;
+    return s.endurance_test_data[0]?.vo2_max;
+  });
+  const cardiacSessions = filteredSessions.filter(s => {
+    if (selectedCategory !== "all" && selectedCategory !== "cardiac") return false;
+    return s.endurance_test_data[0]?.max_hr !== null || 
+           s.endurance_test_data[0]?.resting_hr_1min !== null;
+  });
 
   const renderSessionCard = (session: any) => {
     const enduranceData = session.endurance_test_data[0];
@@ -279,7 +317,51 @@ export const EnduranceHistoryTab: React.FC = () => {
   };
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-2">
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex gap-3 flex-wrap">
+        <Select value={selectedUser} onValueChange={setSelectedUser}>
+          <SelectTrigger className="w-[200px] rounded-none">
+            <SelectValue placeholder="Όλοι οι χρήστες" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="all">Όλοι οι χρήστες</SelectItem>
+            {availableUsers.map(user => (
+              <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="w-[200px] rounded-none">
+            <SelectValue placeholder="Όλες οι κατηγορίες" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="all">Όλες οι κατηγορίες</SelectItem>
+            <SelectItem value="mas">MAS Tests</SelectItem>
+            <SelectItem value="bodyweight">Push Ups, Pull Ups & T2B</SelectItem>
+            <SelectItem value="farmer">Farmer Walk</SelectItem>
+            <SelectItem value="sprint">Sprint</SelectItem>
+            <SelectItem value="vo2max">VO2 Max</SelectItem>
+            <SelectItem value="cardiac">Cardiac Data</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="w-[150px] rounded-none">
+            <SelectValue placeholder="Όλα τα έτη" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="all">Όλα τα έτη</SelectItem>
+            {availableYears.map(year => (
+              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Results */}
+      <div className="flex gap-4 overflow-x-auto pb-2">
       {/* MAS Tests */}
       {masSessions.length > 0 && (
         <div className="min-w-[240px]">
@@ -339,6 +421,7 @@ export const EnduranceHistoryTab: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
