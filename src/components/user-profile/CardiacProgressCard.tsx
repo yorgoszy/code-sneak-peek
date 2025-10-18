@@ -72,28 +72,34 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
   const latestRestingHr = getLatestValue('resting_hr_1min');
 
   return (
-    <Card className="rounded-none w-fit">
-      <CardHeader className="pb-2 pt-3 px-3">
-        <CardTitle className="text-xs flex items-center gap-1">
+    <Card className="rounded-none">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-1">
           <Activity className="w-3 h-3" />
           Cardiac Data
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 pt-0 space-y-2">
+      <CardContent className="space-y-2">
         {/* Latest Values */}
-        <div className="flex gap-3">
+        <div className="space-y-1">
           {latestMaxHr && (
-            <div>
-              <div className="text-[10px] text-gray-500">Max HR</div>
-              <div className="text-sm font-semibold text-gray-900">{latestMaxHr} bpm</div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-500">Max HR:</span>
+              <span className="font-semibold text-[#cb8954]">{latestMaxHr} bpm</span>
             </div>
           )}
           {latestRestingHr && (
-            <div>
-              <div className="text-[10px] text-gray-500">1min Rest</div>
-              <div className="text-sm font-semibold text-gray-900">{latestRestingHr} bpm</div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-500">1min Rest:</span>
+              <span className="font-semibold text-[#cb8954]">{latestRestingHr} bpm</span>
             </div>
           )}
+        </div>
+
+        <div className="pt-1 border-t border-gray-200">
+          <div className="text-[10px] text-gray-400 text-center">
+            Τελευταία μέτρηση: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
+          </div>
         </div>
 
         {/* History */}
