@@ -55,17 +55,23 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
   };
 
   if (loading) {
-    return (
-      <Card className="rounded-none w-fit">
-        <CardContent className="p-3">
-          <div className="text-xs text-gray-500">Φόρτωση...</div>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   if (sessions.length === 0) {
-    return null;
+    return (
+      <Card className="rounded-none">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-1">
+            <Activity className="w-3 h-3" />
+            Cardiac Data
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-2 text-gray-400 text-xs">Δεν υπάρχουν δεδομένα</div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const latestMaxHr = getLatestValue('max_hr');
