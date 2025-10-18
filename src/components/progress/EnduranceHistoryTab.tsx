@@ -279,12 +279,12 @@ export const EnduranceHistoryTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex gap-4 overflow-x-auto pb-2">
       {/* MAS Tests */}
       {masSessions.length > 0 && (
-        <div>
+        <div className="min-w-[240px]">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">MAS Tests</h3>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex flex-col gap-2">
             {masSessions.map(renderSessionCard)}
           </div>
         </div>
@@ -292,9 +292,9 @@ export const EnduranceHistoryTab: React.FC = () => {
 
       {/* Bodyweight Tests */}
       {bodyweightSessions.length > 0 && (
-        <div>
+        <div className="min-w-[240px]">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Push Ups, Pull Ups & T2B</h3>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex flex-col gap-2">
             {bodyweightSessions.map(renderSessionCard)}
           </div>
         </div>
@@ -302,9 +302,9 @@ export const EnduranceHistoryTab: React.FC = () => {
 
       {/* Farmer Tests */}
       {farmerSessions.length > 0 && (
-        <div>
+        <div className="min-w-[240px]">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Farmer Walk</h3>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex flex-col gap-2">
             {farmerSessions.map(renderSessionCard)}
           </div>
         </div>
@@ -312,9 +312,9 @@ export const EnduranceHistoryTab: React.FC = () => {
 
       {/* Sprint Tests */}
       {sprintSessions.length > 0 && (
-        <div>
+        <div className="min-w-[240px]">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Sprint</h3>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex flex-col gap-2">
             {sprintSessions.map(renderSessionCard)}
           </div>
         </div>
@@ -322,9 +322,9 @@ export const EnduranceHistoryTab: React.FC = () => {
 
       {/* VO2 Max Tests */}
       {vo2MaxSessions.length > 0 && (
-        <div>
+        <div className="min-w-[240px]">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">VO2 Max</h3>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex flex-col gap-2">
             {vo2MaxSessions.map(renderSessionCard)}
           </div>
         </div>
@@ -332,9 +332,9 @@ export const EnduranceHistoryTab: React.FC = () => {
 
       {/* Cardiac Tests */}
       {cardiacSessions.length > 0 && (
-        <div>
+        <div className="min-w-[240px]">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Cardiac Data</h3>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex flex-col gap-2">
             {cardiacSessions.map(renderSessionCard)}
           </div>
         </div>
