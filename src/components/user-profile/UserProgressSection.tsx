@@ -266,20 +266,20 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   }, [selectedExercises, historicalData]);
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-2 sm:space-y-0 px-2 sm:px-0">
       {/* Anthropometric Card - always visible at the top */}
-      <div className="mb-0">
+      <div className="mb-2 sm:mb-0">
         <AnthropometricProgressCard userId={userId} />
       </div>
 
       {historicalData.length > 0 ? (
         <>
-          {/* Φίλτρα Ασκήσεων - Compact */}
-          <div className="bg-white border border-gray-200 rounded-none p-2 max-w-2xl">
-            <div className="mb-1.5">
-              <span className="text-[10px] font-medium text-gray-700">Επιλογή Ασκήσεων</span>
+          {/* Φίλτρα Ασκήσεων - Responsive */}
+          <div className="bg-white border border-gray-200 rounded-none p-3 sm:p-2 w-full sm:max-w-2xl">
+            <div className="mb-2 sm:mb-1.5">
+              <span className="text-xs sm:text-[10px] font-medium text-gray-700">Επιλογή Ασκήσεων</span>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-2">
               {availableExercises.map((exerciseId, index) => {
                 const exercise = exercises.find(e => e.id === exerciseId);
                 const isSelected = selectedExercises.includes(exerciseId);
@@ -287,10 +287,10 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                 const sessions = exerciseSessions[exerciseId] || [];
                 
                 return (
-                  <div key={exerciseId} className="space-y-0.5">
+                  <div key={exerciseId} className="space-y-1 sm:space-y-0.5">
                     <button
                       onClick={() => toggleExercise(exerciseId)}
-                      className={`px-1.5 py-0.5 text-[10px] rounded-none transition-all w-full ${
+                      className={`px-3 py-2 sm:px-1.5 sm:py-0.5 text-sm sm:text-[10px] rounded-none transition-all w-full ${
                         isSelected
                           ? 'text-white font-medium'
                           : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
@@ -301,14 +301,14 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                     </button>
                     
                     {isSelected && sessions.length > 0 && (
-                      <div className="ml-2 flex flex-wrap gap-0.5">
+                      <div className="ml-2 flex flex-wrap gap-1 sm:gap-0.5">
                         {sessions.map((session, sessionIndex) => {
                           const isSessionSelected = selectedSessions[exerciseId]?.includes(session.sessionId);
                           return (
                             <button
                               key={session.sessionId}
                               onClick={() => toggleSession(exerciseId, session.sessionId)}
-                              className={`px-1 py-0.5 text-[9px] rounded-none transition-all ${
+                              className={`px-2 py-1 sm:px-1 sm:py-0.5 text-xs sm:text-[9px] rounded-none transition-all ${
                                 isSessionSelected
                                   ? 'bg-gray-700 text-white'
                                   : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
@@ -326,15 +326,15 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             </div>
           </div>
 
-          {/* Progress Cards Container */}
-          <div className="flex gap-0">
-            {/* 1RM Display */}
+          {/* Progress Cards Container - Responsive */}
+          <div className="flex gap-0 w-full">
+            {/* 1RM Display - Responsive */}
             {selectedExercises.length > 0 && Object.keys(exerciseOneRMs).length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-none p-2 max-w-2xl" style={{ paddingBottom: '8px', width: 'calc(100% + 10px)' }}>
-                <div className="mb-1.5">
-                  <span className="text-[10px] font-medium text-gray-700">1RM</span>
+              <div className="bg-white border border-gray-200 rounded-none p-3 sm:p-2 w-full sm:max-w-2xl" style={{ paddingBottom: '12px', width: 'calc(100% + 10px)' }}>
+                <div className="mb-2 sm:mb-1.5">
+                  <span className="text-xs sm:text-[10px] font-medium text-gray-700">1RM</span>
                 </div>
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-2">
                   {selectedExercises.map((exerciseId, index) => {
                     const exercise = exercises.find(e => e.id === exerciseId);
                     const oneRM = exerciseOneRMs[exerciseId];
@@ -345,25 +345,27 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                     return (
                       <div 
                         key={exerciseId} 
-                        className="border border-gray-200 rounded-none p-1.5"
+                        className="border border-gray-200 rounded-none p-2 sm:p-1.5"
                         style={{ borderLeftWidth: '3px', borderLeftColor: exerciseColor }}
                       >
-                        <div className="text-[10px] text-gray-500 mb-1">{exercise?.name}</div>
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-base font-bold" style={{ color: exerciseColor }}>
-                            {oneRM.weight}<span className="text-[9px]">kg</span>
+                        <div className="text-xs sm:text-[10px] text-gray-500 mb-1.5 sm:mb-1 truncate" title={exercise?.name}>
+                          {exercise?.name}
+                        </div>
+                        <div className="flex items-baseline gap-2 sm:gap-1.5">
+                          <span className="text-lg sm:text-base font-bold" style={{ color: exerciseColor }}>
+                            {oneRM.weight}<span className="text-xs sm:text-[9px]">kg</span>
                           </span>
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-xs sm:text-[10px] text-gray-400">
                             {oneRM.velocity.toFixed(2)}
                           </span>
-                          <span className="text-[9px] text-gray-400">m/s</span>
+                          <span className="text-xs sm:text-[9px] text-gray-400">m/s</span>
                         </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <div className="text-[9px] text-gray-400">
+                        <div className="flex items-center justify-between mt-1.5 sm:mt-1">
+                          <div className="text-xs sm:text-[9px] text-gray-400">
                             {new Date(oneRM.date).toLocaleDateString('el-GR')}
                           </div>
                           {oneRM.percentageChange !== null && (
-                            <div className={`text-[10px] font-medium ${oneRM.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            <div className={`text-xs sm:text-[10px] font-medium ${oneRM.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                               {oneRM.percentageChange >= 0 ? '+' : ''}{oneRM.percentageChange.toFixed(1)}%
                             </div>
                           )}
@@ -376,25 +378,29 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             )}
           </div>
 
-          {/* Γράφημα */}
+          {/* Γράφημα - Responsive */}
           {filteredData.length > 0 ? (
-            <LoadVelocityChart 
-              data={filteredData}
-              selectedExercises={selectedExercises.map(id => exercises.find(e => e.id === id)?.name || '')}
-              exerciseSessions={exerciseSessions}
-              selectedSessions={selectedSessions}
-            />
+            <div className="w-full overflow-x-auto">
+              <LoadVelocityChart 
+                data={filteredData}
+                selectedExercises={selectedExercises.map(id => exercises.find(e => e.id === id)?.name || '')}
+                exerciseSessions={exerciseSessions}
+                selectedSessions={selectedSessions}
+              />
+            </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-sm sm:text-base text-gray-500">
               Επιλέξτε τουλάχιστον μία άσκηση
             </div>
           )}
 
-          {/* MAS Card */}
-          <MasProgressCard userId={userId} />
+          {/* MAS Card - Responsive */}
+          <div className="w-full">
+            <MasProgressCard userId={userId} />
+          </div>
           
-          {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway, VO2 Max, Cardiac Cards */}
-          <div className="flex gap-0 flex-wrap">
+          {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway, VO2 Max, Cardiac Cards - Responsive Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full">
             <BodyweightProgressCard userId={userId} />
             <FarmerProgressCard userId={userId} />
             <SprintProgressCard userId={userId} exerciseName="Track" />
@@ -404,13 +410,13 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           </div>
         </>
       ) : (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-sm sm:text-base text-gray-500">
           Δεν υπάρχουν δεδομένα προόδου
         </div>
       )}
 
-      {/* Jump Progress - always visible */}
-      <div className="flex gap-0 flex-wrap mt-2">
+      {/* Jump Progress - always visible - Responsive */}
+      <div className="w-full mt-2">
         <JumpProfileLatestCard userId={userId} />
       </div>
     </div>

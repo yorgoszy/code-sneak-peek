@@ -84,7 +84,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
   }
 
   return (
-    <Card className="rounded-none border border-gray-200 w-full max-w-2xl">
+    <Card className="rounded-none border border-gray-200 w-full">
       <CardHeader className="pb-2 pt-3 px-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xs font-medium">Σωματομετρικά</CardTitle>
@@ -94,11 +94,11 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
         </div>
       </CardHeader>
       <CardContent className="p-3 pt-1">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
           {latestData.height && (
             <div className="space-y-0.5">
               <div className="text-[10px] text-gray-500">Ύψος</div>
-              <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
+              <div className="text-sm font-bold text-gray-900 flex items-center gap-1 flex-wrap">
                 {latestData.height}<span className="text-[9px] text-gray-400 ml-0.5">cm</span>
                 {previousData?.height && calculatePercentageChange(latestData.height, previousData.height) !== null && (
                   <span className={`text-[9px] font-semibold ${
