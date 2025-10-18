@@ -16,6 +16,7 @@ interface JumpSession {
   notes: string | null;
   jump_test_data: Array<{
     id: string;
+    test_session_id: string;
     cmj_height: number | null;
     sqj_height: number | null;
     dj_height: number | null;
@@ -120,8 +121,8 @@ export const JumpHistoryTab: React.FC = () => {
     return { nonCmj, cmj, depthJump, broadJump, tripleJump };
   }, [filteredSessions]);
 
-  const handleDeleteClick = (sessionId: string) => {
-    setSessionToDelete(sessionId);
+  const handleDeleteClick = (jumpDataId: string) => {
+    setSessionToDelete(jumpDataId);
     setDeleteDialogOpen(true);
   };
 
@@ -129,21 +130,13 @@ export const JumpHistoryTab: React.FC = () => {
     if (!sessionToDelete) return;
 
     try {
-      // First delete jump_test_data
+      // Delete only the specific jump_test_data record
       const { error: dataError } = await supabase
         .from('jump_test_data')
         .delete()
-        .eq('test_session_id', sessionToDelete);
-
-      if (dataError) throw dataError;
-
-      // Then delete the session
-      const { error: sessionError } = await supabase
-        .from('jump_test_sessions')
-        .delete()
         .eq('id', sessionToDelete);
 
-      if (sessionError) throw sessionError;
+      if (dataError) throw dataError;
 
       toast({
         title: "Επιτυχία",
@@ -153,7 +146,7 @@ export const JumpHistoryTab: React.FC = () => {
       // Refresh the list
       fetchSessions();
     } catch (error) {
-      console.error('Error deleting session:', error);
+      console.error('Error deleting jump data:', error);
       toast({
         title: "Σφάλμα",
         description: "Σφάλμα κατά τη διαγραφή",
@@ -240,13 +233,14 @@ export const JumpHistoryTab: React.FC = () => {
                 </div>
                 {sessionsByType.nonCmj.map((session) => {
                   const user = usersMap.get(session.user_id);
+                  const jumpDataId = session.jump_test_data?.[0]?.id;
                   return (
                     <JumpSessionCard
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDeleteClick(session.id)}
+                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId)}
                     />
                   );
                 })}
@@ -261,13 +255,14 @@ export const JumpHistoryTab: React.FC = () => {
                 </div>
                 {sessionsByType.cmj.map((session) => {
                   const user = usersMap.get(session.user_id);
+                  const jumpDataId = session.jump_test_data?.[0]?.id;
                   return (
                     <JumpSessionCard
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDeleteClick(session.id)}
+                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId)}
                     />
                   );
                 })}
@@ -282,13 +277,14 @@ export const JumpHistoryTab: React.FC = () => {
                 </div>
                 {sessionsByType.depthJump.map((session) => {
                   const user = usersMap.get(session.user_id);
+                  const jumpDataId = session.jump_test_data?.[0]?.id;
                   return (
                     <JumpSessionCard
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDeleteClick(session.id)}
+                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId)}
                     />
                   );
                 })}
@@ -303,13 +299,14 @@ export const JumpHistoryTab: React.FC = () => {
                 </div>
                 {sessionsByType.broadJump.map((session) => {
                   const user = usersMap.get(session.user_id);
+                  const jumpDataId = session.jump_test_data?.[0]?.id;
                   return (
                     <JumpSessionCard
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDeleteClick(session.id)}
+                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId)}
                     />
                   );
                 })}
@@ -324,13 +321,14 @@ export const JumpHistoryTab: React.FC = () => {
                 </div>
                 {sessionsByType.tripleJump.map((session) => {
                   const user = usersMap.get(session.user_id);
+                  const jumpDataId = session.jump_test_data?.[0]?.id;
                   return (
                     <JumpSessionCard
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => handleDeleteClick(session.id)}
+                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId)}
                     />
                   );
                 })}
