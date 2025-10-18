@@ -10,11 +10,13 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
   const [latestSessions, setLatestSessions] = useState<{
     nonCmj: JumpSessionCardSession | null;
     cmj: JumpSessionCardSession | null;
-  }>({ nonCmj: null, cmj: null });
+    depthJump: JumpSessionCardSession | null;
+  }>({ nonCmj: null, cmj: null, depthJump: null });
   const [percentageChanges, setPercentageChanges] = useState<{
     nonCmj: number | null;
     cmj: number | null;
-  }>({ nonCmj: null, cmj: null });
+    depthJump: number | null;
+  }>({ nonCmj: null, cmj: null, depthJump: null });
 
   useEffect(() => {
     const load = async () => {
@@ -51,14 +53,17 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
       // Χωρίζω τα sessions ανά τύπο
       const nonCmjSessions = allSessions.filter(s => s.notes?.includes('Non-CMJ Test'));
       const cmjSessions = allSessions.filter(s => s.notes?.includes('CMJ Test'));
+      const depthJumpSessions = allSessions.filter(s => s.notes?.includes('Depth Jump Test'));
 
       // Βρίσκω την τελευταία καταγραφή για κάθε τύπο
       const latestNonCmj = nonCmjSessions[0] || null;
       const latestCmj = cmjSessions[0] || null;
+      const latestDepthJump = depthJumpSessions[0] || null;
 
       setLatestSessions({
         nonCmj: latestNonCmj,
-        cmj: latestCmj
+        cmj: latestCmj,
+        depthJump: latestDepthJump
       });
 
       // Υπολογίζω το ποσοστό για Non-CMJ
@@ -89,16 +94,31 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         }
       }
 
+      // Υπολογίζω το ποσοστό για Depth Jump
+      let depthJumpChange: number | null = null;
+      if (depthJumpSessions.length >= 2) {
+        const currentJump = depthJumpSessions[0].jump_test_data?.[0];
+        const previousJump = depthJumpSessions[1].jump_test_data?.[0];
+        
+        const currentValue = currentJump?.depth_jump;
+        const previousValue = previousJump?.depth_jump;
+
+        if (currentValue && previousValue) {
+          depthJumpChange = ((currentValue - previousValue) / previousValue) * 100;
+        }
+      }
+
       setPercentageChanges({
         nonCmj: nonCmjChange,
-        cmj: cmjChange
+        cmj: cmjChange,
+        depthJump: depthJumpChange
       });
     };
 
     load();
   }, [userId]);
 
-  if (!latestSessions.nonCmj && !latestSessions.cmj) return null;
+  if (!latestSessions.nonCmj && !latestSessions.cmj && !latestSessions.depthJump) return null;
 
   return (
     <>
@@ -114,6 +134,13 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
           key={latestSessions.cmj.id}
           session={latestSessions.cmj} 
           percentageChange={percentageChanges.cmj} 
+        />
+      )}
+      {latestSessions.depthJump && (
+        <JumpSessionCard 
+          key={latestSessions.depthJump.id}
+          session={latestSessions.depthJump} 
+          percentageChange={percentageChanges.depthJump} 
         />
       )}
     </>
