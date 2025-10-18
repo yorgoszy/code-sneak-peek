@@ -120,22 +120,18 @@ export const EnduranceHistoryTab: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-8 text-gray-500">Φόρτωση...</div>;
-  }
-
-  // Get unique years
+  // Get unique years - MUST be before any conditional returns
   const availableYears = useMemo(() => {
     const years = sessions.map(s => new Date(s.test_date).getFullYear());
     return Array.from(new Set(years)).sort((a, b) => b - a);
   }, [sessions]);
 
-  // Get unique users
+  // Get unique users - MUST be before any conditional returns
   const availableUsers = useMemo(() => {
     return Array.from(usersMap.entries()).map(([id, name]) => ({ id, name }));
   }, [usersMap]);
 
-  // Filter sessions
+  // Filter sessions - MUST be before any conditional returns
   const filteredSessions = useMemo(() => {
     return sessions.filter(s => {
       if (selectedUser !== "all" && s.user_id !== selectedUser) return false;
@@ -144,38 +140,59 @@ export const EnduranceHistoryTab: React.FC = () => {
     });
   }, [sessions, selectedUser, selectedYear]);
 
+  // Group filtered sessions by test type - MUST be before any conditional returns
+  const masSessions = useMemo(() => {
+    return filteredSessions.filter(s => {
+      if (selectedCategory !== "all" && selectedCategory !== "mas") return false;
+      return s.endurance_test_data[0]?.mas_meters;
+    });
+  }, [filteredSessions, selectedCategory]);
+
+  const bodyweightSessions = useMemo(() => {
+    return filteredSessions.filter(s => {
+      if (selectedCategory !== "all" && selectedCategory !== "bodyweight") return false;
+      return s.endurance_test_data[0]?.push_ups !== null || 
+             s.endurance_test_data[0]?.pull_ups !== null ||
+             s.endurance_test_data[0]?.t2b !== null;
+    });
+  }, [filteredSessions, selectedCategory]);
+
+  const farmerSessions = useMemo(() => {
+    return filteredSessions.filter(s => {
+      if (selectedCategory !== "all" && selectedCategory !== "farmer") return false;
+      return s.endurance_test_data[0]?.farmer_kg;
+    });
+  }, [filteredSessions, selectedCategory]);
+
+  const sprintSessions = useMemo(() => {
+    return filteredSessions.filter(s => {
+      if (selectedCategory !== "all" && selectedCategory !== "sprint") return false;
+      return s.endurance_test_data[0]?.sprint_seconds;
+    });
+  }, [filteredSessions, selectedCategory]);
+
+  const vo2MaxSessions = useMemo(() => {
+    return filteredSessions.filter(s => {
+      if (selectedCategory !== "all" && selectedCategory !== "vo2max") return false;
+      return s.endurance_test_data[0]?.vo2_max;
+    });
+  }, [filteredSessions, selectedCategory]);
+
+  const cardiacSessions = useMemo(() => {
+    return filteredSessions.filter(s => {
+      if (selectedCategory !== "all" && selectedCategory !== "cardiac") return false;
+      return s.endurance_test_data[0]?.max_hr !== null || 
+             s.endurance_test_data[0]?.resting_hr_1min !== null;
+    });
+  }, [filteredSessions, selectedCategory]);
+
+  if (loading) {
+    return <div className="text-center py-8 text-gray-500">Φόρτωση...</div>;
+  }
+
   if (sessions.length === 0) {
     return <div className="text-center py-8 text-gray-500">Δεν υπάρχουν καταγραφές</div>;
   }
-
-  // Group filtered sessions by test type
-  const masSessions = filteredSessions.filter(s => {
-    if (selectedCategory !== "all" && selectedCategory !== "mas") return false;
-    return s.endurance_test_data[0]?.mas_meters;
-  });
-  const bodyweightSessions = filteredSessions.filter(s => {
-    if (selectedCategory !== "all" && selectedCategory !== "bodyweight") return false;
-    return s.endurance_test_data[0]?.push_ups !== null || 
-           s.endurance_test_data[0]?.pull_ups !== null ||
-           s.endurance_test_data[0]?.t2b !== null;
-  });
-  const farmerSessions = filteredSessions.filter(s => {
-    if (selectedCategory !== "all" && selectedCategory !== "farmer") return false;
-    return s.endurance_test_data[0]?.farmer_kg;
-  });
-  const sprintSessions = filteredSessions.filter(s => {
-    if (selectedCategory !== "all" && selectedCategory !== "sprint") return false;
-    return s.endurance_test_data[0]?.sprint_seconds;
-  });
-  const vo2MaxSessions = filteredSessions.filter(s => {
-    if (selectedCategory !== "all" && selectedCategory !== "vo2max") return false;
-    return s.endurance_test_data[0]?.vo2_max;
-  });
-  const cardiacSessions = filteredSessions.filter(s => {
-    if (selectedCategory !== "all" && selectedCategory !== "cardiac") return false;
-    return s.endurance_test_data[0]?.max_hr !== null || 
-           s.endurance_test_data[0]?.resting_hr_1min !== null;
-  });
 
   const renderSessionCard = (session: any) => {
     const enduranceData = session.endurance_test_data[0];
