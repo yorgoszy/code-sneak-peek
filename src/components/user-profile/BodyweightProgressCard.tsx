@@ -92,66 +92,56 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
   }
 
   return (
-    <Card className="rounded-none max-w-2xl" style={{ width: 'calc(100% + 10px)' }}>
-      <CardHeader className="p-[5px]">
+    <Card className="rounded-none">
+      <CardHeader className="pb-2">
         <CardTitle className="text-sm">Push Ups & Pull Ups</CardTitle>
       </CardHeader>
-      <CardContent className="flex gap-2 overflow-x-auto pb-2 p-[5px]">
+      <CardContent className="space-y-2">
         {sessions.map((data) => (
-          <Card key={data.id} className="rounded-none min-w-[130px] shrink-0">
-            <CardContent className="p-[3px]">
-              <div className="space-y-1">
-                {/* Push Ups & Pull Ups δίπλα-δίπλα */}
-                <div className="flex gap-3">
-                  {/* Push Ups */}
-                  {data.push_ups !== null && (
-                    <div className="space-y-0.5 flex-1">
-                      <div className="text-[10px] font-semibold text-gray-700">Push Ups</div>
-                      <div className="flex items-center gap-1">
-                        <div className="font-bold text-[#cb8954]">
-                          {data.push_ups}
-                        </div>
-                        {data.pushUpsChange !== null && data.pushUpsChange !== undefined && (
-                          <div className={`text-xs font-semibold ${
-                            data.pushUpsChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
-                          }`}>
-                            {data.pushUpsChange > 0 ? '+' : ''}
-                            {data.pushUpsChange.toFixed(1)}%
-                          </div>
-                        )}
-                      </div>
-                    </div>
+          <div key={data.id} className="space-y-1">
+            {/* Push Ups */}
+            {data.push_ups !== null && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">Push Ups:</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-[#cb8954]">{data.push_ups}</span>
+                  {data.pushUpsChange !== null && data.pushUpsChange !== undefined && (
+                    <span className={`text-[10px] font-semibold ${
+                      data.pushUpsChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                    }`}>
+                      {data.pushUpsChange > 0 ? '+' : ''}
+                      {data.pushUpsChange.toFixed(1)}%
+                    </span>
                   )}
-                  
-                  {/* Pull Ups */}
-                  {data.pull_ups !== null && (
-                    <div className="space-y-0.5 flex-1">
-                      <div className="text-[10px] font-semibold text-gray-700">Pull Ups</div>
-                      <div className="flex items-center gap-1">
-                        <div className="font-bold text-[#cb8954]">
-                          {data.pull_ups}
-                        </div>
-                        {data.pullUpsChange !== null && data.pullUpsChange !== undefined && (
-                          <div className={`text-xs font-semibold ${
-                            data.pullUpsChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
-                          }`}>
-                            {data.pullUpsChange > 0 ? '+' : ''}
-                            {data.pullUpsChange.toFixed(1)}%
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Ημερομηνία */}
-                <div className="text-xs text-gray-500 pt-1">
-                  {format(new Date(data.test_date), 'dd/MM/yy')}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
+            
+            {/* Pull Ups */}
+            {data.pull_ups !== null && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">Pull Ups:</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-[#cb8954]">{data.pull_ups}</span>
+                  {data.pullUpsChange !== null && data.pullUpsChange !== undefined && (
+                    <span className={`text-[10px] font-semibold ${
+                      data.pullUpsChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                    }`}>
+                      {data.pullUpsChange > 0 ? '+' : ''}
+                      {data.pullUpsChange.toFixed(1)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         ))}
+
+        <div className="pt-1 border-t border-gray-200">
+          <div className="text-[10px] text-gray-400 text-center">
+            Τελευταία μέτρηση: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
