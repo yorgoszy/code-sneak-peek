@@ -44,6 +44,9 @@ export const EnduranceHistoryTab: React.FC = () => {
               sprint_meters,
               sprint_resistance,
               sprint_watt,
+              vo2_max,
+              max_hr,
+              resting_hr_1min,
               exercises (
                 id,
                 name
@@ -223,6 +226,24 @@ export const EnduranceHistoryTab: React.FC = () => {
                         </div>
                       )}
                     </>
+                  )}
+                  {enduranceData.vo2_max !== null && (
+                    <div className="flex items-center justify-between col-span-2">
+                      <span className="text-gray-500">VO2 Max:</span>
+                      <span className="font-bold text-[#cb8954]">{enduranceData.vo2_max}</span>
+                    </div>
+                  )}
+                  {enduranceData.max_hr !== null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Max HR:</span>
+                      <span className="font-bold text-red-500">{enduranceData.max_hr} bpm</span>
+                    </div>
+                  )}
+                  {enduranceData.resting_hr_1min !== null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Resting HR:</span>
+                      <span className="font-bold text-blue-500">{enduranceData.resting_hr_1min} bpm</span>
+                    </div>
                   )}
                 </div>
               </div>
