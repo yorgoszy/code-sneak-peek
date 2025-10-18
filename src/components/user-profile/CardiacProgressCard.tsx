@@ -31,15 +31,15 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
           )
         `)
         .eq('user_id', userId)
-        .or('endurance_test_data.max_hr.not.is.null,endurance_test_data.resting_hr_1min.not.is.null')
         .order('test_date', { ascending: false })
         .limit(10);
 
       if (error) throw error;
 
-      const filteredData = (data || []).filter(session => 
-        session.endurance_test_data && session.endurance_test_data.length > 0
-      );
+      const filteredData = (data || []).filter(session => {
+        const rows = session.endurance_test_data || [];
+        return rows.some((r: any) => r.max_hr !== null || r.resting_hr_1min !== null);
+      });
 
       setSessions(filteredData);
     } catch (error) {
