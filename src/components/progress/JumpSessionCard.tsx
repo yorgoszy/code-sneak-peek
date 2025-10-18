@@ -48,9 +48,22 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
                       {session.notes.split(' - ')[0]}
                     </p>
                     {session.notes.includes(' - ') && (
-                      <p className="text-xl font-bold text-[hsl(var(--metric-green))] mt-0.5">
-                        {session.notes.split(' - ')[1]}
-                      </p>
+                      <>
+                        {session.notes.includes('L:') && session.notes.includes('R:') ? (
+                          <div className="mt-0.5 space-y-0.5">
+                            <p className="text-base font-bold text-[hsl(var(--metric-green))]">
+                              L: {session.notes.split('L:')[1].split('R:')[0].trim()}
+                            </p>
+                            <p className="text-base font-bold text-[hsl(var(--metric-green))]">
+                              R: {session.notes.split('R:')[1].trim()}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-xl font-bold text-[hsl(var(--metric-green))] mt-0.5">
+                            {session.notes.split(' - ')[1]}
+                          </p>
+                        )}
+                      </>
                     )}
                   </>
                 )}
