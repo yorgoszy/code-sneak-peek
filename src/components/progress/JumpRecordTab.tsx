@@ -125,67 +125,63 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex gap-[1px] overflow-x-auto pb-2 sticky bottom-0 bg-background z-10 -ml-4 pl-4">
+    <div className="space-y-2">
+      <div className="flex gap-[1px] overflow-x-auto pb-2">
         {forms.map((form, formIndex) => (
-          <Card key={form.id} className="rounded-none w-[calc(66.666%+120px)]">
-            <CardHeader className="pb-1 pt-2 px-3">
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-xs">Non-CMJ {forms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
-                <Button onClick={addNewForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
-                  <Plus className="w-3 h-3" />
+          <Card key={form.id} className="rounded-none w-60">
+            <CardHeader className="pb-0.5 pt-1 px-2">
+              <div className="flex items-center gap-1">
+                <CardTitle className="text-[10px]">Non-CMJ {forms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                <Button onClick={addNewForm} size="sm" className="rounded-none h-4 w-4 p-0 ml-auto">
+                  <Plus className="w-2.5 h-2.5" />
                 </Button>
                 {forms.length > 1 && (
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => removeForm(form.id)}
-                    className="rounded-none h-5 w-5 p-0"
+                    className="rounded-none h-4 w-4 p-0"
                   >
-                    <Trash2 className="w-3 h-3" />
+                    <Trash2 className="w-2.5 h-2.5" />
                   </Button>
                 )}
               </div>
             </CardHeader>
-            <CardContent className="p-3 pt-2 space-y-2">
+            <CardContent className="p-2 pt-1 space-y-1">
               {/* User Selection */}
-              <div className="flex gap-2">
-                <div className="w-40">
-                  <Label className="text-xs">Ασκούμενος</Label>
-                  <Combobox
-                    options={userOptions}
-                    value={form.selectedUserId}
-                    onValueChange={(val) => updateForm(form.id, { selectedUserId: val })}
-                    placeholder="Χρήστης"
-                    emptyMessage="Δεν βρέθηκε."
-                    className="h-7 text-xs"
-                  />
-                </div>
+              <div>
+                <Label className="text-[10px]">Ασκούμενος</Label>
+                <Combobox
+                  options={userOptions}
+                  value={form.selectedUserId}
+                  onValueChange={(val) => updateForm(form.id, { selectedUserId: val })}
+                  placeholder="Χρήστης"
+                  emptyMessage="Δεν βρέθηκε."
+                  className="h-6 text-[10px]"
+                />
               </div>
 
               {/* CMJ Height and Save */}
-              <div className="flex gap-2">
-                <div className="w-24">
-                  <Label className="text-xs">Ύψος (cm)</Label>
+              <div className="flex gap-1 items-end">
+                <div className="flex-1">
+                  <Label className="text-[10px]">cm</Label>
                   <Input
                     type="number"
                     step="0.1"
                     placeholder="cm"
                     value={form.cmjHeight}
                     onChange={(e) => updateForm(form.id, { cmjHeight: e.target.value })}
-                    className="rounded-none no-spinners h-7 text-xs"
+                    className="rounded-none no-spinners h-6 text-[10px]"
                   />
                 </div>
 
-                <div className="flex items-end">
-                  <Button 
-                    onClick={() => handleSave(form.id)} 
-                    className="rounded-none h-7 w-7 p-0"
-                    disabled={form.loading}
-                  >
-                    <Save className="w-3 h-3" />
-                  </Button>
-                </div>
+                <Button 
+                  onClick={() => handleSave(form.id)} 
+                  className="rounded-none h-6 w-6 p-0"
+                  disabled={form.loading}
+                >
+                  <Save className="w-2.5 h-2.5" />
+                </Button>
               </div>
             </CardContent>
           </Card>
