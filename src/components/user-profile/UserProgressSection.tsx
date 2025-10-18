@@ -12,6 +12,7 @@ import { SprintProgressCard } from "./SprintProgressCard";
 import { CardiacProgressCard } from "./CardiacProgressCard";
 import { VO2MaxProgressCard } from "./VO2MaxProgressCard";
 import { JumpProfileLatestCard } from "./JumpProfileLatestCard";
+import { AnthropometricSection } from "./anthropometric/AnthropometricSection";
 
 interface UserProgressSectionProps {
   userId: string;
@@ -403,9 +404,18 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         </div>
       )}
 
-      {/* Jump Progress is always visible, independent from strength data */}
-      <div className="flex gap-0 flex-wrap mt-2">
-        <JumpProfileLatestCard userId={userId} />
+      {/* Jump Progress and Anthropometric Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+        <div>
+          <h3 className="text-sm font-semibold mb-2">Jump Profile</h3>
+          <div className="flex gap-0 flex-wrap">
+            <JumpProfileLatestCard userId={userId} />
+          </div>
+        </div>
+        
+        <div>
+          <AnthropometricSection userId={userId} />
+        </div>
       </div>
     </div>
   );
