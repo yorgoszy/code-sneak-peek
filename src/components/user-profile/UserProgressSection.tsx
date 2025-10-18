@@ -387,7 +387,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           <MasProgressCard userId={userId} />
           
           {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway, VO2 Max, Cardiac Cards */}
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-0 flex-wrap">
             <BodyweightProgressCard userId={userId} />
             <FarmerProgressCard userId={userId} />
             <SprintProgressCard userId={userId} exerciseName="Track" />
