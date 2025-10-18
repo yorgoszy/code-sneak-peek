@@ -19,7 +19,7 @@ interface JumpSession {
     dj_contact_time: number | null;
     rsi: number | null;
     asymmetry_percentage: number | null;
-  }>;
+  }> | any;
 }
 
 export const JumpHistoryTab: React.FC = () => {
@@ -55,7 +55,7 @@ export const JumpHistoryTab: React.FC = () => {
           user_id,
           test_date,
           notes,
-          jump_test_data!jump_test_data_test_session_id_fkey (
+          jump_test_data (
             id,
             cmj_height,
             sqj_height,
@@ -68,7 +68,7 @@ export const JumpHistoryTab: React.FC = () => {
         .order('test_date', { ascending: false });
 
       if (error) throw error;
-      setSessions(data || []);
+      setSessions(data as any || []);
     } catch (error) {
       console.error('Error fetching jump sessions:', error);
     } finally {
