@@ -1299,32 +1299,34 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                 </div>
               </CardHeader>
               <CardContent className="p-3 pt-2 space-y-2">
-                <div className="w-32">
-                  <Label className="text-xs">Ασκούμενος</Label>
-                  <Combobox
-                    options={userOptions}
-                    value={form.selectedUserId}
-                    onValueChange={(val) => updateSprintForm(form.id, { selectedUserId: val })}
-                    placeholder="Χρήστης"
-                    emptyMessage="Δεν βρέθηκε."
-                    className="h-7 text-xs"
-                  />
-                </div>
+                <div className="flex gap-2">
+                  <div className="w-32">
+                    <Label className="text-xs">Ασκούμενος</Label>
+                    <Combobox
+                      options={userOptions}
+                      value={form.selectedUserId}
+                      onValueChange={(val) => updateSprintForm(form.id, { selectedUserId: val })}
+                      placeholder="Χρήστης"
+                      emptyMessage="Δεν βρέθηκε."
+                      className="h-7 text-xs"
+                    />
+                  </div>
 
-                <div className="w-32">
-                  <Label className="text-xs">Άσκηση</Label>
-                  <Select 
-                    value={form.sprintExercise} 
-                    onValueChange={(value) => updateSprintForm(form.id, { sprintExercise: value })}
-                  >
-                    <SelectTrigger className="rounded-none h-7 text-xs">
-                      <SelectValue placeholder="Επιλέξτε" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="track">Track</SelectItem>
-                      <SelectItem value="woodway">Woodway</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="w-24">
+                    <Label className="text-xs">Άσκηση</Label>
+                    <Select 
+                      value={form.sprintExercise} 
+                      onValueChange={(value) => updateSprintForm(form.id, { sprintExercise: value })}
+                    >
+                      <SelectTrigger className="rounded-none h-7 text-xs">
+                        <SelectValue placeholder="Επιλέξτε" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="track">Track</SelectItem>
+                        <SelectItem value="woodway">Woodway</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="flex gap-2">
