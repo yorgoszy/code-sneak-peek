@@ -44,7 +44,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
 
                 {session.notes && (
                   <>
-                    <p className="text-[9px] text-gray-600 mt-0.5 truncate">
+                    <p className="text-[11px] font-bold text-gray-700 mt-0.5 truncate">
                       {session.notes.split(' - ')[0]}
                     </p>
                     {session.notes.includes(' - ') && (
