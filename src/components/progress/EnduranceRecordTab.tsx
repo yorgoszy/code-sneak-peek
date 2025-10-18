@@ -48,6 +48,14 @@ interface SprintForm {
   loading: boolean;
 }
 
+interface CardiacForm {
+  id: string;
+  selectedUserId: string;
+  maxHr: string;
+  restingHr1min: string;
+  loading: boolean;
+}
+
 interface EnduranceRecordTabProps {
   users: any[];
   exercises: any[];
@@ -102,6 +110,16 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       sprintMeters: '',
       sprintResistance: '',
       sprintKmh: '',
+      loading: false
+    }
+  ]);
+
+  const [cardiacForms, setCardiacForms] = useState<CardiacForm[]>([
+    {
+      id: '1',
+      selectedUserId: '',
+      maxHr: '',
+      restingHr1min: '',
       loading: false
     }
   ]);
@@ -287,6 +305,110 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
     const numericValue = parseFloat(normalizedValue.replace(',', '.'));
     if (!isNaN(numericValue)) {
       updateForm(formId, { duration: numericValue.toString() });
+    }
+  };
+
+  // Cardiac form management
+  const addNewCardiacForm = () => {
+    const newId = (Math.max(...cardiacForms.map(f => parseInt(f.id))) + 1).toString();
+    setCardiacForms([...cardiacForms, {
+      id: newId,
+      selectedUserId: '',
+      maxHr: '',
+      restingHr1min: '',
+      loading: false
+    }]);
+  };
+
+  const removeCardiacForm = (formId: string) => {
+    if (cardiacForms.length > 1) {
+      setCardiacForms(cardiacForms.filter(f => f.id !== formId));
+    }
+  };
+
+  const updateCardiacForm = (formId: string, updates: Partial<CardiacForm>) => {
+    setCardiacForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
+  const handleCardiacSave = async (formId: string) => {
+    const form = cardiacForms.find(f => f.id === formId);
+    if (!form) return;
+
+    if (!form.selectedUserId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const maxHr = form.maxHr ? parseInt(form.maxHr) : null;
+    const restingHr1min = form.restingHr1min ? parseInt(form.restingHr1min) : null;
+
+    if (!maxHr && !restingHr1min) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε τουλάχιστον ένα πεδίο",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    updateCardiacForm(formId, { loading: true });
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error('Δεν βρέθηκε συνδεδεμένος χρήστης');
+      }
+
+      // Create endurance test session
+      const { data: session, error: sessionError } = await supabase
+        .from('endurance_test_sessions')
+        .insert({
+          user_id: form.selectedUserId,
+          test_date: new Date().toISOString().split('T')[0],
+          notes: 'Cardiac Data - Max HR & Resting HR'
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Save cardiac data
+      const { error: dataError } = await supabase
+        .from('endurance_test_data')
+        .insert({
+          test_session_id: session.id,
+          max_hr: maxHr,
+          resting_hr_1min: restingHr1min
+        });
+
+      if (dataError) throw dataError;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Τα καρδιακά δεδομένα αποθηκεύτηκαν"
+      });
+
+      // Reset form
+      updateCardiacForm(formId, {
+        maxHr: '',
+        restingHr1min: '',
+        loading: false
+      });
+      
+      if (onRecordSaved) {
+        onRecordSaved();
+      }
+    } catch (error) {
+      console.error('Error saving cardiac data:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία αποθήκευσης",
+        variant: "destructive"
+      });
+      updateCardiacForm(formId, { loading: false });
     }
   };
 
@@ -721,12 +843,41 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
 
         {/* Cardiac Data Card */}
         <div className="space-y-3">
-          {forms.map((form) => (
-            <Card key={`cardiac-${form.id}`} className="rounded-none w-fit">
+          {cardiacForms.map((form, formIndex) => (
+            <Card key={form.id} className="rounded-none w-fit">
               <CardHeader className="pb-1 pt-2 px-3">
-                <CardTitle className="text-xs">Cardiac Data</CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-xs">Cardiac Data {cardiacForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                  <Button onClick={addNewCardiacForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                    <Plus className="w-3 h-3" />
+                  </Button>
+                  {cardiacForms.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeCardiacForm(form.id)}
+                      className="rounded-none h-5 w-5 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="p-3 pt-2 space-y-2">
+                {/* User Selection */}
+                <div className="w-40">
+                  <Label className="text-xs">Ασκούμενος</Label>
+                  <Combobox
+                    options={userOptions}
+                    value={form.selectedUserId}
+                    onValueChange={(val) => updateCardiacForm(form.id, { selectedUserId: val })}
+                    placeholder="Χρήστης"
+                    emptyMessage="Δεν βρέθηκε."
+                    className="h-7 text-xs"
+                  />
+                </div>
+
+                {/* HR Fields */}
                 <div className="flex gap-2">
                   <div className="w-20">
                     <Label className="text-xs">Max HR</Label>
@@ -734,7 +885,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                       type="number"
                       placeholder="bpm"
                       value={form.maxHr}
-                      onChange={(e) => updateForm(form.id, { maxHr: e.target.value })}
+                      onChange={(e) => updateCardiacForm(form.id, { maxHr: e.target.value })}
                       className="rounded-none no-spinners h-7 text-xs"
                     />
                   </div>
@@ -745,9 +896,19 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                       type="number"
                       placeholder="bpm"
                       value={form.restingHr1min}
-                      onChange={(e) => updateForm(form.id, { restingHr1min: e.target.value })}
+                      onChange={(e) => updateCardiacForm(form.id, { restingHr1min: e.target.value })}
                       className="rounded-none no-spinners h-7 text-xs"
                     />
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button 
+                      onClick={() => handleCardiacSave(form.id)} 
+                      className="rounded-none h-7 w-7 p-0"
+                      disabled={form.loading}
+                    >
+                      <Save className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
               </CardContent>
