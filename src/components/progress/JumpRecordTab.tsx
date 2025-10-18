@@ -78,7 +78,7 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
         .insert({
           user_id: form.selectedUserId,
           test_date: format(new Date(), 'yyyy-MM-dd'),
-          notes: 'Non-CMJ Test - Καταγραφή Προόδου'
+          notes: `Non-CMJ Test - ${form.cmjHeight}cm`
         })
         .select()
         .single();
