@@ -1,51 +1,66 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Save } from "lucide-react";
+import { Plus, Save, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { Combobox } from "@/components/ui/combobox";
 
 interface JumpRecordTabProps {
   users: any[];
   onRecordSaved?: () => void;
 }
 
-interface JumpEntry {
+interface JumpForm {
   id: string;
-  userId: string;
+  selectedUserId: string;
   cmjHeight: string;
-  saving: boolean;
+  loading: boolean;
 }
 
 export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSaved }) => {
   const { toast } = useToast();
-  const [entries, setEntries] = useState<JumpEntry[]>([
-    { id: '1', userId: '', cmjHeight: '', saving: false }
+  const [forms, setForms] = useState<JumpForm[]>([
+    { id: '1', selectedUserId: '', cmjHeight: '', loading: false }
   ]);
 
-  const addNewEntry = () => {
-    const newEntry: JumpEntry = {
-      id: Date.now().toString(),
-      userId: '',
+  const userOptions = useMemo(() => 
+    (users || []).map(user => ({ 
+      value: user.id, 
+      label: user.name,
+      searchTerms: `${user.name} ${user.email || ''}`
+    })),
+    [users]
+  );
+
+  const addNewForm = () => {
+    const newId = (Math.max(...forms.map(f => parseInt(f.id))) + 1).toString();
+    setForms([...forms, {
+      id: newId,
+      selectedUserId: '',
       cmjHeight: '',
-      saving: false
-    };
-    setEntries([...entries, newEntry]);
+      loading: false
+    }]);
   };
 
-  const updateEntry = (id: string, field: keyof JumpEntry, value: string) => {
-    setEntries(entries.map(entry => 
-      entry.id === id ? { ...entry, [field]: value } : entry
-    ));
+  const removeForm = (formId: string) => {
+    if (forms.length > 1) {
+      setForms(forms.filter(f => f.id !== formId));
+    }
   };
 
-  const saveEntry = async (entryId: string) => {
-    const entry = entries.find(e => e.id === entryId);
+  const updateForm = (formId: string, updates: Partial<JumpForm>) => {
+    setForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
+  const handleSave = async (formId: string) => {
+    const form = forms.find(f => f.id === formId);
+    if (!form) return;
     
-    if (!entry || !entry.userId || !entry.cmjHeight) {
+    if (!form.selectedUserId || !form.cmjHeight) {
       toast({
         title: "Σφάλμα",
         description: "Παρακαλώ συμπληρώστε όλα τα πεδία",
@@ -54,19 +69,16 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
       return;
     }
 
-    // Set saving state
-    setEntries(entries.map(e => 
-      e.id === entryId ? { ...e, saving: true } : e
-    ));
+    updateForm(formId, { loading: true });
 
     try {
       // Create jump test session
       const { data: session, error: sessionError } = await supabase
         .from('jump_test_sessions')
         .insert({
-          user_id: entry.userId,
+          user_id: form.selectedUserId,
           test_date: format(new Date(), 'yyyy-MM-dd'),
-          notes: null
+          notes: 'Non-CMJ Test - Καταγραφή Προόδου'
         })
         .select()
         .single();
@@ -78,7 +90,7 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
         .from('jump_test_data')
         .insert({
           test_session_id: session.id,
-          cmj_height: parseFloat(entry.cmjHeight),
+          cmj_height: parseFloat(form.cmjHeight),
           sqj_height: null,
           dj_height: null,
           dj_contact_time: null,
@@ -93,12 +105,11 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
         description: "Η καταγραφή αποθηκεύτηκε",
       });
 
-      // Clear this entry after successful save
-      setEntries(entries.map(e => 
-        e.id === entryId 
-          ? { ...e, userId: '', cmjHeight: '', saving: false } 
-          : e
-      ));
+      // Reset form
+      updateForm(formId, {
+        cmjHeight: '',
+        loading: false
+      });
       
       onRecordSaved?.();
     } catch (error) {
@@ -109,72 +120,77 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
         variant: "destructive",
       });
       
-      // Reset saving state on error
-      setEntries(entries.map(e => 
-        e.id === entryId ? { ...e, saving: false } : e
-      ));
+      updateForm(formId, { loading: false });
     }
   };
 
   return (
-    <div className="space-y-2">
-      <Card className="rounded-none w-80">
-        <CardHeader className="p-2">
-          <CardTitle className="text-xs">Non-CMJ</CardTitle>
-        </CardHeader>
-        <CardContent className="p-2 space-y-1">
-          {entries.map((entry) => (
-            <div key={entry.id} className="flex items-center gap-1">
-              <Select 
-                value={entry.userId} 
-                onValueChange={(value) => updateEntry(entry.id, 'userId', value)}
-                disabled={entry.saving}
-              >
-                <SelectTrigger className="rounded-none h-7 text-xs flex-1">
-                  <SelectValue placeholder="Χρήστης" />
-                </SelectTrigger>
-                <SelectContent className="bg-white z-50">
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id} className="text-xs">
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+    <div className="space-y-3">
+      <div className="flex gap-[1px] overflow-x-auto pb-2 sticky bottom-0 bg-background z-10 -ml-4 pl-4">
+        {forms.map((form, formIndex) => (
+          <Card key={form.id} className="rounded-none w-[calc(66.666%+120px)]">
+            <CardHeader className="pb-1 pt-2 px-3">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-xs">Non-CMJ {forms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                <Button onClick={addNewForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                  <Plus className="w-3 h-3" />
+                </Button>
+                {forms.length > 1 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeForm(form.id)}
+                    className="rounded-none h-5 w-5 p-0"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="p-3 pt-2 space-y-2">
+              {/* User Selection */}
+              <div className="flex gap-2">
+                <div className="w-40">
+                  <Label className="text-xs">Ασκούμενος</Label>
+                  <Combobox
+                    options={userOptions}
+                    value={form.selectedUserId}
+                    onValueChange={(val) => updateForm(form.id, { selectedUserId: val })}
+                    placeholder="Χρήστης"
+                    emptyMessage="Δεν βρέθηκε."
+                    className="h-7 text-xs"
+                  />
+                </div>
+              </div>
 
-              <Input
-                type="number"
-                step="0.1"
-                value={entry.cmjHeight}
-                onChange={(e) => updateEntry(entry.id, 'cmjHeight', e.target.value)}
-                placeholder="cm"
-                className="rounded-none h-7 w-16 text-xs"
-                disabled={entry.saving}
-              />
+              {/* CMJ Height and Save */}
+              <div className="flex gap-2">
+                <div className="w-24">
+                  <Label className="text-xs">Ύψος (cm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="cm"
+                    value={form.cmjHeight}
+                    onChange={(e) => updateForm(form.id, { cmjHeight: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
+                </div>
 
-              <Button
-                type="button"
-                size="icon"
-                onClick={() => saveEntry(entry.id)}
-                disabled={entry.saving}
-                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-7 w-7"
-              >
-                <Save className="w-3 h-3" />
-              </Button>
-            </div>
-          ))}
-
-          <Button
-            type="button"
-            onClick={addNewEntry}
-            variant="outline"
-            className="w-full rounded-none h-6 text-xs"
-          >
-            <Plus className="w-3 h-3 mr-1" />
-            Προσθήκη
-          </Button>
-        </CardContent>
-      </Card>
+                <div className="flex items-end">
+                  <Button 
+                    onClick={() => handleSave(form.id)} 
+                    className="rounded-none h-7 w-7 p-0"
+                    disabled={form.loading}
+                  >
+                    <Save className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
