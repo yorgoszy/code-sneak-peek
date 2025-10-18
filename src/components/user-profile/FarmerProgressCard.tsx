@@ -54,6 +54,14 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
     return sessions[0]?.endurance_test_data?.[0]?.[field];
   };
 
+  const calculatePercentageChange = (field: 'farmer_kg' | 'farmer_meters' | 'farmer_seconds') => {
+    if (sessions.length < 2) return null;
+    const current = sessions[0]?.endurance_test_data?.[0]?.[field];
+    const previous = sessions[1]?.endurance_test_data?.[0]?.[field];
+    if (!current || !previous) return null;
+    return ((current - previous) / previous) * 100;
+  };
+
   if (loading) {
     return null;
   }
@@ -71,15 +79,45 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">Βάρος:</span>
-            <span className="font-semibold text-[#00ffba]">{getLatestValue('farmer_kg')} kg</span>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_kg')} kg</span>
+              {calculatePercentageChange('farmer_kg') !== null && (
+                <span className={`text-[10px] font-semibold ${
+                  calculatePercentageChange('farmer_kg')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                }`}>
+                  {calculatePercentageChange('farmer_kg')! > 0 ? '+' : ''}
+                  {calculatePercentageChange('farmer_kg')!.toFixed(1)}%
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">Μέτρα:</span>
-            <span className="font-semibold text-[#00ffba]">{getLatestValue('farmer_meters')} m</span>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_meters')} m</span>
+              {calculatePercentageChange('farmer_meters') !== null && (
+                <span className={`text-[10px] font-semibold ${
+                  calculatePercentageChange('farmer_meters')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                }`}>
+                  {calculatePercentageChange('farmer_meters')! > 0 ? '+' : ''}
+                  {calculatePercentageChange('farmer_meters')!.toFixed(1)}%
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">Χρόνος:</span>
-            <span className="font-semibold text-[#00ffba]">{getLatestValue('farmer_seconds')} δευτ.</span>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_seconds')} δευτ.</span>
+              {calculatePercentageChange('farmer_seconds') !== null && (
+                <span className={`text-[10px] font-semibold ${
+                  calculatePercentageChange('farmer_seconds')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                }`}>
+                  {calculatePercentageChange('farmer_seconds')! > 0 ? '+' : ''}
+                  {calculatePercentageChange('farmer_seconds')!.toFixed(1)}%
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

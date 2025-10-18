@@ -53,6 +53,14 @@ export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({ userId }
     return sessions[0]?.endurance_test_data?.[0]?.vo2_max;
   };
 
+  const calculatePercentageChange = () => {
+    if (sessions.length < 2) return null;
+    const current = sessions[0]?.endurance_test_data?.[0]?.vo2_max;
+    const previous = sessions[1]?.endurance_test_data?.[0]?.vo2_max;
+    if (!current || !previous) return null;
+    return ((current - previous) / previous) * 100;
+  };
+
   if (loading) {
     return null;
   }
@@ -75,7 +83,17 @@ export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({ userId }
         {/* Latest Value */}
         <div>
           <div className="text-[10px] text-gray-500">Τρέχον</div>
-          <div className="text-sm font-semibold text-[#cb8954]">{latestVO2Max} ml/kg/min</div>
+          <div className="flex items-center gap-1">
+            <div className="text-sm font-semibold text-[#cb8954]">{latestVO2Max} ml/kg/min</div>
+            {calculatePercentageChange() !== null && (
+              <span className={`text-[10px] font-semibold ${
+                calculatePercentageChange()! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+              }`}>
+                {calculatePercentageChange()! > 0 ? '+' : ''}
+                {calculatePercentageChange()!.toFixed(1)}%
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="pt-1 border-t border-gray-200">

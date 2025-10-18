@@ -63,6 +63,14 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
     return sessions[0]?.endurance_test_data?.[0]?.[field];
   };
 
+  const calculatePercentageChange = (field: 'sprint_seconds' | 'sprint_meters' | 'sprint_watt') => {
+    if (sessions.length < 2) return null;
+    const current = sessions[0]?.endurance_test_data?.[0]?.[field];
+    const previous = sessions[1]?.endurance_test_data?.[0]?.[field];
+    if (!current || !previous) return null;
+    return ((current - previous) / previous) * 100;
+  };
+
   if (loading) {
     return null;
   }
@@ -80,16 +88,46 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">Χρόνος:</span>
-            <span className="font-semibold text-[#cb8954]">{getLatestValue('sprint_seconds')} δευτ.</span>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold text-[#cb8954]">{getLatestValue('sprint_seconds')} δευτ.</span>
+              {calculatePercentageChange('sprint_seconds') !== null && (
+                <span className={`text-[10px] font-semibold ${
+                  calculatePercentageChange('sprint_seconds')! < 0 ? 'text-[#00ffba]' : 'text-red-500'
+                }`}>
+                  {calculatePercentageChange('sprint_seconds')! > 0 ? '+' : ''}
+                  {calculatePercentageChange('sprint_seconds')!.toFixed(1)}%
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">Μέτρα:</span>
-            <span className="font-semibold text-[#cb8954]">{getLatestValue('sprint_meters')} m</span>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold text-[#cb8954]">{getLatestValue('sprint_meters')} m</span>
+              {calculatePercentageChange('sprint_meters') !== null && (
+                <span className={`text-[10px] font-semibold ${
+                  calculatePercentageChange('sprint_meters')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                }`}>
+                  {calculatePercentageChange('sprint_meters')! > 0 ? '+' : ''}
+                  {calculatePercentageChange('sprint_meters')!.toFixed(1)}%
+                </span>
+              )}
+            </div>
           </div>
           {getLatestValue('sprint_watt') && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-500">Km/h:</span>
-              <span className="font-semibold text-[#cb8954]">{parseFloat(getLatestValue('sprint_watt') as string).toFixed(2)} km/h</span>
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-[#cb8954]">{parseFloat(getLatestValue('sprint_watt') as string).toFixed(2)} km/h</span>
+                {calculatePercentageChange('sprint_watt') !== null && (
+                  <span className={`text-[10px] font-semibold ${
+                    calculatePercentageChange('sprint_watt')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                  }`}>
+                    {calculatePercentageChange('sprint_watt')! > 0 ? '+' : ''}
+                    {calculatePercentageChange('sprint_watt')!.toFixed(1)}%
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
