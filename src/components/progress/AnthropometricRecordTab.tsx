@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,78 +97,71 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
   };
 
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle>Νέα Σωματομετρική Καταγραφή</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="user">Χρήστης *</Label>
-              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε χρήστη" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="user">Χρήστης *</Label>
+          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+            <SelectTrigger className="rounded-none">
+              <SelectValue placeholder="Επιλέξτε χρήστη" />
+            </SelectTrigger>
+            <SelectContent>
+              {users.map((user) => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="date">Ημερομηνία</Label>
-              <Input
-                id="date"
-                type="date"
-                value={testDate}
-                onChange={(e) => setTestDate(e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="date">Ημερομηνία</Label>
+          <Input
+            id="date"
+            type="date"
+            value={testDate}
+            onChange={(e) => setTestDate(e.target.value)}
+            className="rounded-none"
+          />
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {anthropometricFields.map((field) => (
-              <div key={field.key} className="space-y-2">
-                <Label htmlFor={field.key}>{field.label}</Label>
-                <Input
-                  id={field.key}
-                  type={field.type}
-                  step={field.step}
-                  value={formData[field.key] || ''}
-                  onChange={(e) => handleInputChange(field.key, e.target.value)}
-                  placeholder={`Εισάγετε ${field.label.toLowerCase()}`}
-                  className="rounded-none"
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Σημειώσεις</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Προσθέστε σημειώσεις..."
-              className="rounded-none min-h-[100px]"
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {anthropometricFields.map((field) => (
+          <div key={field.key} className="space-y-2">
+            <Label htmlFor={field.key}>{field.label}</Label>
+            <Input
+              id={field.key}
+              type={field.type}
+              step={field.step}
+              value={formData[field.key] || ''}
+              onChange={(e) => handleInputChange(field.key, e.target.value)}
+              placeholder={`Εισάγετε ${field.label.toLowerCase()}`}
+              className="rounded-none"
             />
           </div>
+        ))}
+      </div>
 
-          <Button 
-            type="submit" 
-            disabled={loading}
-            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-          >
-            {loading ? 'Αποθήκευση...' : 'Αποθήκευση Καταγραφής'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      <div className="space-y-2">
+        <Label htmlFor="notes">Σημειώσεις</Label>
+        <Textarea
+          id="notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Προσθέστε σημειώσεις..."
+          className="rounded-none min-h-[100px]"
+        />
+      </div>
+
+      <Button 
+        type="submit" 
+        disabled={loading}
+        className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+      >
+        {loading ? 'Αποθήκευση...' : 'Αποθήκευση Καταγραφής'}
+      </Button>
+    </form>
   );
 };
