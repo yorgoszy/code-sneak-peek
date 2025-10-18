@@ -17,6 +17,7 @@ export const EnduranceHistoryTab: React.FC = () => {
   const [userSearch, setUserSearch] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>("all");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     fetchSessions();
@@ -121,11 +122,31 @@ export const EnduranceHistoryTab: React.FC = () => {
     }
   };
 
+  const handleClearFilters = () => {
+    setUserSearch("");
+    setSelectedCategory("all");
+    setSelectedYear("all");
+  };
+
   // Get unique years - MUST be before any conditional returns
   const availableYears = useMemo(() => {
     const years = sessions.map(s => new Date(s.test_date).getFullYear());
     return Array.from(new Set(years)).sort((a, b) => b - a);
   }, [sessions]);
+
+  // Get filtered user suggestions
+  const userSuggestions = useMemo(() => {
+    if (!userSearch.trim()) return [];
+    
+    const searchLower = userSearch.toLowerCase();
+    return Array.from(usersMap.entries())
+      .map(([id, user]) => ({ id, ...user }))
+      .filter(user => 
+        user.name?.toLowerCase().includes(searchLower) || 
+        user.email?.toLowerCase().includes(searchLower)
+      )
+      .slice(0, 10); // Limit to 10 suggestions
+  }, [userSearch, usersMap]);
 
   // Filter sessions - MUST be before any conditional returns
   const filteredSessions = useMemo(() => {
@@ -343,13 +364,15 @@ export const EnduranceHistoryTab: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex gap-3 flex-wrap items-start">
         <div className="relative w-[250px]">
           <Input
             type="text"
             placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             className="rounded-none pr-8"
           />
           {userSearch && (
@@ -361,6 +384,25 @@ export const EnduranceHistoryTab: React.FC = () => {
             >
               <X className="w-4 h-4" />
             </Button>
+          )}
+          
+          {/* Suggestions dropdown */}
+          {showSuggestions && userSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
+              {userSuggestions.map((user) => (
+                <div
+                  key={user.id}
+                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => {
+                    setUserSearch(user.name);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  <div className="font-medium text-sm">{user.name}</div>
+                  <div className="text-xs text-gray-500">{user.email}</div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -390,6 +432,16 @@ export const EnduranceHistoryTab: React.FC = () => {
             ))}
           </SelectContent>
         </Select>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleClearFilters}
+          className="rounded-none h-10"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Καθαρισμός
+        </Button>
       </div>
 
       {/* Results */}
