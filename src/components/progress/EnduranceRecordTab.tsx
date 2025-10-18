@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +46,7 @@ interface SprintForm {
   sprintMeters: string;
   sprintResistance: string;
   sprintKmh: string;
+  sprintExercise: string;
   loading: boolean;
 }
 
@@ -117,6 +119,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       sprintMeters: '',
       sprintResistance: '',
       sprintKmh: '',
+      sprintExercise: 'track',
       loading: false
     }
   ]);
@@ -140,18 +143,29 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
     }
   ]);
 
-  // Calculate km/h for sprint
-  const calculateSprintKmh = (meters: string, seconds: string) => {
-    const m = parseFloat(meters);
-    const s = parseFloat(seconds);
+  // Calculate km/h or meters for sprint
+  const calculateSprintMetrics = (form: SprintForm) => {
+    const seconds = parseFloat(form.sprintSeconds);
     
-    if (!m || !s || m <= 0 || s <= 0) {
-      return '';
+    if (!seconds || seconds <= 0) return { kmh: '', meters: '' };
+    
+    if (form.sprintExercise === 'track') {
+      // Track: calculate km/h from meters and seconds
+      const meters = parseFloat(form.sprintMeters);
+      if (!meters || meters <= 0) return { kmh: '', meters: form.sprintMeters };
+      
+      const ms = meters / seconds;
+      const kmh = ms * 3.6;
+      return { kmh: kmh.toFixed(2), meters: form.sprintMeters };
+    } else {
+      // Woodway: calculate meters from km/h and seconds
+      const kmh = parseFloat(form.sprintKmh);
+      if (!kmh || kmh <= 0) return { kmh: form.sprintKmh, meters: '' };
+      
+      const ms = kmh / 3.6;
+      const meters = ms * seconds;
+      return { kmh: form.sprintKmh, meters: meters.toFixed(2) };
     }
-    
-    const ms = m / s;
-    const kmh = ms * 3.6;
-    return kmh.toFixed(2);
   };
 
   const userOptions = useMemo(() => 
@@ -747,6 +761,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       sprintMeters: '',
       sprintResistance: '',
       sprintKmh: '',
+      sprintExercise: 'track',
       loading: false
     }]);
   };
@@ -775,20 +790,20 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
     }
 
     const sprintSeconds = parseFloat(form.sprintSeconds);
-    const sprintMeters = parseFloat(form.sprintMeters);
+    
+    // Calculate meters based on exercise type
+    const metrics = calculateSprintMetrics(form);
+    const sprintMeters = parseFloat(metrics.meters);
+    const sprintKmh = parseFloat(metrics.kmh);
 
     if (!sprintSeconds || !sprintMeters) {
       toast({
         title: "Σφάλμα",
-        description: "Παρακαλώ συμπληρώστε χρόνο και μέτρα",
+        description: "Παρακαλώ συμπληρώστε τα απαραίτητα πεδία",
         variant: "destructive"
       });
       return;
     }
-
-    // Calculate km/h
-    const ms = sprintMeters / sprintSeconds;
-    const sprintKmh = ms * 3.6;
 
     updateSprintForm(formId, { loading: true });
     try {
@@ -802,7 +817,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         .insert({
           user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
-          notes: 'Sprint Test'
+          notes: `Sprint Test - ${form.sprintExercise === 'track' ? 'Track' : 'Woodway'}`
         })
         .select()
         .single();
@@ -831,6 +846,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         sprintMeters: '',
         sprintResistance: '',
         sprintKmh: '',
+        sprintExercise: 'track',
         loading: false
       });
       
@@ -1295,6 +1311,22 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                   />
                 </div>
 
+                <div className="w-32">
+                  <Label className="text-xs">Άσκηση</Label>
+                  <Select 
+                    value={form.sprintExercise} 
+                    onValueChange={(value) => updateSprintForm(form.id, { sprintExercise: value })}
+                  >
+                    <SelectTrigger className="rounded-none h-7 text-xs">
+                      <SelectValue placeholder="Επιλέξτε" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="track">Track</SelectItem>
+                      <SelectItem value="woodway">Woodway</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex gap-2">
                   <div className="w-16">
                     <Label className="text-xs">Δευτ.</Label>
@@ -1308,28 +1340,55 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                     />
                   </div>
 
-                  <div className="w-16">
-                    <Label className="text-xs">Μέτρα</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      placeholder="m"
-                      value={form.sprintMeters}
-                      onChange={(e) => updateSprintForm(form.id, { sprintMeters: e.target.value })}
-                      className="rounded-none no-spinners h-7 text-xs"
-                    />
-                  </div>
-
-                  <div className="w-16">
-                    <Label className="text-xs">Km/h</Label>
-                    <Input
-                      type="text"
-                      value={calculateSprintKmh(form.sprintMeters, form.sprintSeconds)}
-                      readOnly
-                      placeholder="km/h"
-                      className="rounded-none bg-gray-100 h-7 text-xs"
-                    />
-                  </div>
+                  {form.sprintExercise === 'track' ? (
+                    <>
+                      <div className="w-16">
+                        <Label className="text-xs">Μέτρα</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="m"
+                          value={form.sprintMeters}
+                          onChange={(e) => updateSprintForm(form.id, { sprintMeters: e.target.value })}
+                          className="rounded-none no-spinners h-7 text-xs"
+                        />
+                      </div>
+                      <div className="w-16">
+                        <Label className="text-xs">Km/h</Label>
+                        <Input
+                          type="text"
+                          value={calculateSprintMetrics(form).kmh}
+                          readOnly
+                          placeholder="km/h"
+                          className="rounded-none bg-gray-100 h-7 text-xs"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-16">
+                        <Label className="text-xs">Km/h</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="km/h"
+                          value={form.sprintKmh}
+                          onChange={(e) => updateSprintForm(form.id, { sprintKmh: e.target.value })}
+                          className="rounded-none no-spinners h-7 text-xs"
+                        />
+                      </div>
+                      <div className="w-16">
+                        <Label className="text-xs">Μέτρα</Label>
+                        <Input
+                          type="text"
+                          value={calculateSprintMetrics(form).meters}
+                          readOnly
+                          placeholder="m"
+                          className="rounded-none bg-gray-100 h-7 text-xs"
+                        />
+                      </div>
+                    </>
+                  )}
 
                   <div className="flex items-end">
                     <Button 
