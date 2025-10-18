@@ -387,7 +387,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           {/* MAS Card */}
           <MasProgressCard userId={userId} />
           
-          {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway, VO2 Max, Cardiac, Jump Cards */}
+          {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway, VO2 Max, Cardiac Cards */}
           <div className="flex gap-0 flex-wrap">
             <BodyweightProgressCard userId={userId} />
             <FarmerProgressCard userId={userId} />
@@ -395,7 +395,6 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             <SprintProgressCard userId={userId} exerciseName="Woodway" />
             <VO2MaxProgressCard userId={userId} />
             <CardiacProgressCard userId={userId} />
-            <JumpProgressCard userId={userId} />
           </div>
         </>
       ) : (
@@ -403,6 +402,11 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           Δεν υπάρχουν δεδομένα προόδου
         </div>
       )}
+
+      {/* Jump Progress is always visible, independent from strength data */}
+      <div className="flex gap-0 flex-wrap mt-2">
+        <JumpProgressCard userId={userId} />
+      </div>
     </div>
   );
 };
