@@ -105,82 +105,8 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* User and Date Selection */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-sm">Στοιχεία Χρήστη</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Χρήστης *</Label>
-              <Select value={selectedUser} onValueChange={setSelectedUser}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε χρήστη" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Ημερομηνία Τεστ</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal rounded-none",
-                      !testDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {testDate ? format(testDate, "dd/MM/yyyy") : <span>Επιλέξτε ημερομηνία</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-none">
-                  <Calendar
-                    mode="single"
-                    selected={testDate}
-                    onSelect={(date) => date && setTestDate(date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notes */}
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-sm">Σημειώσεις</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Προσθέστε σημειώσεις..."
-            className="rounded-none min-h-[100px]"
-          />
-        </CardContent>
-      </Card>
-
-      {/* Submit Button */}
-      <Button 
-        type="submit" 
-        disabled={loading}
-        className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-      >
-        {loading ? "Αποθήκευση..." : "Αποθήκευση Καταγραφής"}
-      </Button>
-    </form>
+    <div className="space-y-6">
+      {/* Empty content */}
+    </div>
   );
 };
