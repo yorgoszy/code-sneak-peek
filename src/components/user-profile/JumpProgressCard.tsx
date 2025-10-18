@@ -24,6 +24,7 @@ export const JumpProgressCard: React.FC<JumpProgressCardProps> = ({ userId }) =>
         .select(`
           id,
           test_date,
+          notes,
           jump_test_data (
             id,
             non_counter_movement_jump,
@@ -101,7 +102,21 @@ export const JumpProgressCard: React.FC<JumpProgressCardProps> = ({ userId }) =>
   return (
     <Card className="rounded-none">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Jump Profile</CardTitle>
+        <div>
+          <CardTitle className="text-sm">Jump Profile</CardTitle>
+          {sessions[0]?.notes && (
+            <>
+              <p className="text-[10px] text-gray-600 mt-1">
+                {sessions[0].notes.split(' - ')[0]}
+              </p>
+              {sessions[0].notes.includes(' - ') && (
+                <p className="text-2xl font-bold text-[#cb8954] mt-1">
+                  {sessions[0].notes.split(' - ')[1]}
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-2">
         {sessions.map((data) => (
