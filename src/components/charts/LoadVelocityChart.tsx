@@ -104,10 +104,17 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
             />
             <YAxis 
               type="number"
-              domain={['auto', 'auto']}
+              domain={[
+                (dataMin: any) => Math.floor((typeof dataMin === 'number' ? dataMin : 0) - 5),
+                (dataMax: any) => Math.ceil((typeof dataMax === 'number' ? dataMax : 0) + 5)
+              ]}
               label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft', fontSize: 11 }}
               tick={{ fontSize: 10 }}
+              tickCount={5}
               allowDecimals={false}
+              axisLine={true}
+              tickLine={true}
+              allowDataOverflow
             />
             <Tooltip 
               content={({ active, payload }) => {
