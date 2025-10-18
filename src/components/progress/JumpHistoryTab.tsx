@@ -222,9 +222,16 @@ export const JumpHistoryTab: React.FC = () => {
                     <div className="flex-1">
                       <CardTitle className="text-xs">{user?.name || 'Άγνωστος Χρήστης'}</CardTitle>
                       {session.notes && (
-                        <p className="text-[10px] text-gray-600 mt-0.5">
-                          {session.notes}
-                        </p>
+                        <>
+                          <p className="text-[10px] text-gray-600 mt-0.5">
+                            {session.notes.split(' - ')[0]}
+                          </p>
+                          {session.notes.includes(' - ') && (
+                            <p className="text-2xl font-bold text-[#cb8954] mt-1">
+                              {session.notes.split(' - ')[1]}
+                            </p>
+                          )}
+                        </>
                       )}
                       <p className="text-[10px] text-gray-500 mt-0.5">
                         {format(new Date(session.test_date), 'dd/MM/yyyy')}
