@@ -112,11 +112,11 @@ export const JumpHistoryTab: React.FC = () => {
   }, [sessions, userSearch, usersMap]);
 
   const sessionsByType = useMemo(() => {
-    const nonCmj = filteredSessions.filter(s => s.notes?.includes('Non-CMJ Test'));
-    const cmj = filteredSessions.filter(s => s.notes?.includes('CMJ Test'));
-    const depthJump = filteredSessions.filter(s => s.notes?.includes('Depth Jump Test'));
-    const broadJump = filteredSessions.filter(s => s.notes?.includes('Broad Jump Test'));
-    const tripleJump = filteredSessions.filter(s => s.notes?.includes('Triple Jump Test'));
+    const nonCmj = filteredSessions.filter(s => s.notes?.startsWith('Non-CMJ Test'));
+    const cmj = filteredSessions.filter(s => s.notes?.startsWith('CMJ Test') && !s.notes?.startsWith('Non-CMJ'));
+    const depthJump = filteredSessions.filter(s => s.notes?.startsWith('Depth Jump Test'));
+    const broadJump = filteredSessions.filter(s => s.notes?.startsWith('Broad Jump Test'));
+    const tripleJump = filteredSessions.filter(s => s.notes?.startsWith('Triple Jump Test'));
 
     return { nonCmj, cmj, depthJump, broadJump, tripleJump };
   }, [filteredSessions]);
