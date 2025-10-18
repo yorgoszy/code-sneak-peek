@@ -34,7 +34,6 @@ export const JumpHistoryTab: React.FC = () => {
   const [userSearch, setUserSearch] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [jumpDataIdToDelete, setJumpDataIdToDelete] = useState<string | null>(null);
   const [sessionIdToDelete, setSessionIdToDelete] = useState<string | null>(null);
 
   useEffect(() => {
@@ -122,32 +121,29 @@ export const JumpHistoryTab: React.FC = () => {
     return { nonCmj, cmj, depthJump, broadJump, tripleJump };
   }, [filteredSessions]);
 
-  const handleDeleteClick = (jumpDataId: string, sessionId: string) => {
-    setJumpDataIdToDelete(jumpDataId);
+  const handleDeleteClick = (sessionId: string) => {
     setSessionIdToDelete(sessionId);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!jumpDataIdToDelete) return;
+    if (!sessionIdToDelete) return;
 
     try {
-      // Delete only the specific jump_test_data record
+      // Delete related jump_test_data first, then the session
       const { error: dataError } = await supabase
         .from('jump_test_data')
         .delete()
-        .eq('id', jumpDataIdToDelete);
+        .eq('test_session_id', sessionIdToDelete);
 
       if (dataError) throw dataError;
 
-      // Also delete the parent session (1:1 relation)
-      if (sessionIdToDelete) {
-        const { error: sessionError } = await supabase
-          .from('jump_test_sessions')
-          .delete()
-          .eq('id', sessionIdToDelete);
-        if (sessionError) throw sessionError;
-      }
+      const { error: sessionError } = await supabase
+        .from('jump_test_sessions')
+        .delete()
+        .eq('id', sessionIdToDelete);
+
+      if (sessionError) throw sessionError;
 
       toast({
         title: "Επιτυχία",
@@ -157,7 +153,7 @@ export const JumpHistoryTab: React.FC = () => {
       // Refresh the list
       fetchSessions();
     } catch (error) {
-      console.error('Error deleting jump data:', error);
+      console.error('Error deleting jump session:', error);
       toast({
         title: "Σφάλμα",
         description: "Σφάλμα κατά τη διαγραφή",
@@ -165,7 +161,6 @@ export const JumpHistoryTab: React.FC = () => {
       });
     } finally {
       setDeleteDialogOpen(false);
-      setJumpDataIdToDelete(null);
       setSessionIdToDelete(null);
     }
   };
@@ -252,7 +247,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId, session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
@@ -274,7 +269,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId, session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
@@ -296,7 +291,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId, session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
@@ -318,7 +313,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId, session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
@@ -340,7 +335,7 @@ export const JumpHistoryTab: React.FC = () => {
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
                       showDelete
-                      onDelete={() => jumpDataId && handleDeleteClick(jumpDataId, session.id)}
+                      onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
                 })}
