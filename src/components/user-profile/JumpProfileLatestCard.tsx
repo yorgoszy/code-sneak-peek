@@ -7,14 +7,14 @@ interface JumpProfileLatestCardProps {
 }
 
 export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ userId }) => {
-  const [session, setSession] = useState<JumpSessionCardSession | null>(null);
-  const [percentageChange, setPercentageChange] = useState<number | null>(null);
+  const [sessions, setSessions] = useState<JumpSessionCardSession[]>([]);
+  const [percentageChanges, setPercentageChanges] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     const load = async () => {
       if (!userId) return;
       
-      // Φέρνω τις 2 τελευταίες καταγραφές για να υπολογίσω το ποσοστό
+      // Φέρνω όλες τις καταγραφές για τον χρήστη
       const { data, error } = await supabase
         .from('jump_test_sessions')
         .select(`
@@ -33,41 +33,50 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
           )
         `)
         .eq('user_id', userId)
-        .order('test_date', { ascending: false })
-        .limit(2);
+        .order('test_date', { ascending: false });
 
       if (error) {
-        console.error('Error loading latest jump session:', error);
+        console.error('Error loading jump sessions:', error);
         return;
       }
 
-      const sessions = data || [];
-      if (sessions.length === 0) return;
+      const allSessions = data || [];
+      setSessions(allSessions);
 
-      setSession(sessions[0]);
-
-      // Υπολογίζω το ποσοστό αλλαγής από την προηγούμενη καταγραφή
-      if (sessions.length >= 2) {
-        const latestJump = sessions[0].jump_test_data?.[0];
-        const previousJump = sessions[1].jump_test_data?.[0];
+      // Υπολογίζω το ποσοστό αλλαγής για κάθε καταγραφή
+      const changes = new Map<string, number>();
+      
+      for (let i = 0; i < allSessions.length - 1; i++) {
+        const currentJump = allSessions[i].jump_test_data?.[0];
+        const previousJump = allSessions[i + 1].jump_test_data?.[0];
 
         // Συγκρίνω το κύριο μέτρημα (non_counter_movement_jump ή counter_movement_jump)
-        const latestValue = latestJump?.non_counter_movement_jump || latestJump?.counter_movement_jump;
+        const currentValue = currentJump?.non_counter_movement_jump || currentJump?.counter_movement_jump;
         const previousValue = previousJump?.non_counter_movement_jump || previousJump?.counter_movement_jump;
 
-        if (latestValue && previousValue) {
-          const change = ((latestValue - previousValue) / previousValue) * 100;
-          setPercentageChange(change);
+        if (currentValue && previousValue) {
+          const change = ((currentValue - previousValue) / previousValue) * 100;
+          changes.set(allSessions[i].id, change);
         }
       }
+      
+      setPercentageChanges(changes);
     };
 
     load();
   }, [userId]);
 
-  if (!session) return null;
+  if (sessions.length === 0) return null;
 
   return (
-    <JumpSessionCard session={session} percentageChange={percentageChange} />
+    <>
+      {sessions.map((session) => (
+        <JumpSessionCard 
+          key={session.id}
+          session={session} 
+          percentageChange={percentageChanges.get(session.id) ?? null} 
+        />
+      ))}
+    </>
   );
 };
