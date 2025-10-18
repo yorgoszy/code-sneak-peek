@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { Trash2 } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export const EnduranceHistoryTab: React.FC = () => {
@@ -120,6 +120,13 @@ export const EnduranceHistoryTab: React.FC = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleClearFilters = () => {
+    setSelectedUser("all");
+    setUserSearch("");
+    setSelectedCategory("all");
+    setSelectedYear("all");
   };
 
   // Get unique years - MUST be before any conditional returns
@@ -358,7 +365,16 @@ export const EnduranceHistoryTab: React.FC = () => {
                 <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
               ))}
             </SelectContent>
-          </Select>
+        </Select>
+
+        <Button
+          onClick={handleClearFilters}
+          variant="outline"
+          className="rounded-none"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Καθαρισμός Φίλτρων
+        </Button>
         </div>
 
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
