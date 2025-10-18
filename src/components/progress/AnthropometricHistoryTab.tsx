@@ -10,8 +10,13 @@ import { format } from "date-fns";
 
 export const AnthropometricHistoryTab = () => {
   const usersMap = useUserNamesMap();
-  const { results, loading } = useAnthropometricTestResults(usersMap);
+  const { results, loading, refetch } = useAnthropometricTestResults(usersMap);
   const [anthropometricData, setAnthropometricData] = useState<Record<string, any>>({});
+
+  // Refetch when component mounts or key changes
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   useEffect(() => {
     if (results.length > 0) {
