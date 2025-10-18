@@ -211,12 +211,12 @@ export const EnduranceHistoryTab: React.FC = () => {
                   )}
                   {enduranceData.sprint_seconds !== null && (
                     <>
-                      {enduranceData.exercises?.name && (
-                        <div className="flex items-center justify-between col-span-2">
-                          <span className="text-gray-500">Sprint Άσκηση:</span>
-                          <span className="font-bold text-[#cb8954]">{enduranceData.exercises.name}</span>
-                        </div>
-                      )}
+                      <div className="flex items-center justify-between col-span-2">
+                        <span className="text-gray-500">Sprint Άσκηση:</span>
+                        <span className="font-bold text-[#cb8954]">
+                          {enduranceData.exercises?.name || 'Track'}
+                        </span>
+                      </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Sprint s:</span>
                         <span className="font-bold text-[#cb8954]">{enduranceData.sprint_seconds}</span>
