@@ -102,37 +102,13 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
       </CardHeader>
       <CardContent className="space-y-2">
         {sessions.map((data) => (
-          <div key={data.id} className="grid grid-cols-[auto_60px_50px] gap-2 items-center">
-            <div className="space-y-1">
-              {/* Push Ups */}
-              {data.push_ups !== null && (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-gray-500">Push Ups:</span>
-                  <span className="font-semibold text-[#cb8954]">{data.push_ups}</span>
-                </div>
-              )}
-              
-              {/* Pull Ups */}
-              {data.pull_ups !== null && (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-gray-500">Pull Ups:</span>
-                  <span className="font-semibold text-[#cb8954]">{data.pull_ups}</span>
-                </div>
-              )}
-              
-              {/* T2B */}
-              {data.t2b !== null && (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-gray-500">T2B:</span>
-                  <span className="font-semibold text-[#cb8954]">{data.t2b}</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Column for percentages */}
-            <div className="space-y-1 text-right">
-              {data.push_ups !== null && (
-                <div className="h-[20px] flex items-center justify-end">
+          <div key={data.id} className="space-y-1">
+            {/* Push Ups */}
+            {data.push_ups !== null && (
+              <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
+                <span className="text-gray-500">Push Ups:</span>
+                <span className="font-semibold text-[#cb8954] text-right">{data.push_ups}</span>
+                <div className="text-right">
                   {data.pushUpsChange !== null && data.pushUpsChange !== undefined && (
                     <span className={`text-[10px] font-semibold ${
                       data.pushUpsChange > 0 ? 'text-green-700' : 'text-red-500'
@@ -142,10 +118,15 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                     </span>
                   )}
                 </div>
-              )}
-              
-              {data.pull_ups !== null && (
-                <div className="h-[20px] flex items-center justify-end">
+              </div>
+            )}
+            
+            {/* Pull Ups */}
+            {data.pull_ups !== null && (
+              <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
+                <span className="text-gray-500">Pull Ups:</span>
+                <span className="font-semibold text-[#cb8954] text-right">{data.pull_ups}</span>
+                <div className="text-right">
                   {data.pullUpsChange !== null && data.pullUpsChange !== undefined && (
                     <span className={`text-[10px] font-semibold ${
                       data.pullUpsChange > 0 ? 'text-green-700' : 'text-red-500'
@@ -155,10 +136,15 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                     </span>
                   )}
                 </div>
-              )}
-              
-              {data.t2b !== null && (
-                <div className="h-[20px] flex items-center justify-end">
+              </div>
+            )}
+            
+            {/* T2B */}
+            {data.t2b !== null && (
+              <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
+                <span className="text-gray-500">T2B:</span>
+                <span className="font-semibold text-[#cb8954] text-right">{data.t2b}</span>
+                <div className="text-right">
                   {data.t2bChange !== null && data.t2bChange !== undefined && (
                     <span className={`text-[10px] font-semibold ${
                       data.t2bChange > 0 ? 'text-green-700' : 'text-red-500'
@@ -168,8 +154,8 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                     </span>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         ))}
 
