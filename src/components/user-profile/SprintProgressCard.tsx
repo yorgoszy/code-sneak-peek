@@ -5,17 +5,18 @@ import { format } from "date-fns";
 
 interface SprintProgressCardProps {
   userId: string;
+  exerciseName: 'Track' | 'Woodway';
 }
 
-export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId }) => {
+export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, exerciseName }) => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userId) {
+    if (userId && exerciseName) {
       fetchSprintHistory();
     }
-  }, [userId]);
+  }, [userId, exerciseName]);
 
   const fetchSprintHistory = async () => {
     try {
@@ -42,9 +43,12 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId }
 
       if (error) throw error;
 
-      const filteredData = (data || []).filter(session => 
-        session.endurance_test_data && session.endurance_test_data.length > 0
-      );
+      // Φιλτράρω μόνο τα sessions για τη συγκεκριμένη άσκηση
+      const filteredData = (data || []).filter(session => {
+        if (!session.endurance_test_data || session.endurance_test_data.length === 0) return false;
+        const sessionExerciseName = session.endurance_test_data[0]?.exercises?.name || 'Track';
+        return sessionExerciseName === exerciseName;
+      });
 
       setSessions(filteredData);
     } catch (error) {
@@ -67,15 +71,10 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId }
     return null;
   }
 
-  const getExerciseName = () => {
-    if (sessions.length === 0) return null;
-    return sessions[0]?.endurance_test_data?.[0]?.exercises?.name || 'Track';
-  };
-
   return (
     <Card className="rounded-none">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Sprint - {getExerciseName()}</CardTitle>
+        <CardTitle className="text-sm">Sprint - {exerciseName}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="space-y-1">
