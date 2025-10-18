@@ -1,19 +1,20 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { Trash2 } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export const EnduranceHistoryTab: React.FC = () => {
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map());
-  const [selectedUser, setSelectedUser] = useState<string>("all");
+  const [usersMap, setUsersMap] = useState<Map<string, any>>(new Map());
+  const [userSearch, setUserSearch] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>("all");
 
@@ -61,14 +62,14 @@ export const EnduranceHistoryTab: React.FC = () => {
           .order('created_at', { ascending: false }),
         supabase
           .from('app_users')
-          .select('id, name')
+          .select('id, name, email')
       ]);
 
       if (sessionsRes.error) throw sessionsRes.error;
       if (usersRes.error) throw usersRes.error;
 
-      const map = new Map<string, string>();
-      (usersRes.data || []).forEach(u => map.set(u.id, u.name));
+      const map = new Map<string, any>();
+      (usersRes.data || []).forEach(u => map.set(u.id, { name: u.name, email: u.email }));
       setUsersMap(map);
 
       const filteredData = (sessionsRes.data || []).filter(session => 
@@ -126,19 +127,25 @@ export const EnduranceHistoryTab: React.FC = () => {
     return Array.from(new Set(years)).sort((a, b) => b - a);
   }, [sessions]);
 
-  // Get unique users - MUST be before any conditional returns
-  const availableUsers = useMemo(() => {
-    return Array.from(usersMap.entries()).map(([id, name]) => ({ id, name }));
-  }, [usersMap]);
-
   // Filter sessions - MUST be before any conditional returns
   const filteredSessions = useMemo(() => {
     return sessions.filter(s => {
-      if (selectedUser !== "all" && s.user_id !== selectedUser) return false;
+      // Filter by user search (name or email)
+      if (userSearch.trim()) {
+        const user = usersMap.get(s.user_id);
+        if (!user) return false;
+        
+        const searchLower = userSearch.toLowerCase();
+        const nameMatch = user.name?.toLowerCase().includes(searchLower);
+        const emailMatch = user.email?.toLowerCase().includes(searchLower);
+        
+        if (!nameMatch && !emailMatch) return false;
+      }
+      
       if (selectedYear !== "all" && new Date(s.test_date).getFullYear().toString() !== selectedYear) return false;
       return true;
     });
-  }, [sessions, selectedUser, selectedYear]);
+  }, [sessions, userSearch, selectedYear, usersMap]);
 
   // Group filtered sessions by test type - MUST be before any conditional returns
   const masSessions = useMemo(() => {
@@ -206,7 +213,7 @@ export const EnduranceHistoryTab: React.FC = () => {
               <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-sm text-gray-900 truncate">
-                    {usersMap.get(session.user_id) || 'Άγνωστος'}
+                    {usersMap.get(session.user_id)?.name || 'Άγνωστος'}
                   </span>
                   <span className="text-xs text-gray-500 whitespace-nowrap">
                     {format(new Date(session.test_date), 'dd/MM/yy')}
@@ -337,17 +344,25 @@ export const EnduranceHistoryTab: React.FC = () => {
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
-        <Select value={selectedUser} onValueChange={setSelectedUser}>
-          <SelectTrigger className="w-[200px] rounded-none">
-            <SelectValue placeholder="Όλοι οι χρήστες" />
-          </SelectTrigger>
-          <SelectContent className="rounded-none">
-            <SelectItem value="all">Όλοι οι χρήστες</SelectItem>
-            {availableUsers.map(user => (
-              <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="relative w-[250px]">
+          <Input
+            type="text"
+            placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
+            value={userSearch}
+            onChange={(e) => setUserSearch(e.target.value)}
+            className="rounded-none pr-8"
+          />
+          {userSearch && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setUserSearch("")}
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 rounded-none"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
 
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-[200px] rounded-none">
