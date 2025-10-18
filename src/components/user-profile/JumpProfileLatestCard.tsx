@@ -167,43 +167,57 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
   if (!latestSessions.nonCmj && !latestSessions.cmj && !latestSessions.depthJump && !latestSessions.broadJump && !latestSessions.tripleJump) return null;
 
-  return (
-    <>
-      {latestSessions.nonCmj && (
-        <JumpSessionCard 
-          key={latestSessions.nonCmj.id}
-          session={latestSessions.nonCmj} 
-          percentageChange={percentageChanges.nonCmj} 
-        />
-      )}
-      {latestSessions.cmj && (
-        <JumpSessionCard 
-          key={latestSessions.cmj.id}
-          session={latestSessions.cmj} 
-          percentageChange={percentageChanges.cmj} 
-        />
-      )}
-      {latestSessions.depthJump && (
-        <JumpSessionCard 
-          key={latestSessions.depthJump.id}
-          session={latestSessions.depthJump} 
-          percentageChange={percentageChanges.depthJump} 
-        />
-      )}
-      {latestSessions.broadJump && (
-        <JumpSessionCard 
-          key={latestSessions.broadJump.id}
-          session={latestSessions.broadJump} 
-          percentageChange={percentageChanges.broadJump} 
-        />
-      )}
-      {latestSessions.tripleJump && (
-        <JumpSessionCard 
-          key={latestSessions.tripleJump.id}
-          session={latestSessions.tripleJump} 
-          percentageChange={percentageChanges.tripleJump} 
-        />
-      )}
-    </>
-  );
+  const jumpCards = [];
+
+  if (latestSessions.nonCmj) {
+    jumpCards.push(
+      <JumpSessionCard 
+        key={latestSessions.nonCmj.id}
+        session={latestSessions.nonCmj} 
+        percentageChange={percentageChanges.nonCmj} 
+      />
+    );
+  }
+
+  if (latestSessions.cmj) {
+    jumpCards.push(
+      <JumpSessionCard 
+        key={latestSessions.cmj.id}
+        session={latestSessions.cmj} 
+        percentageChange={percentageChanges.cmj} 
+      />
+    );
+  }
+
+  if (latestSessions.depthJump) {
+    jumpCards.push(
+      <JumpSessionCard 
+        key={latestSessions.depthJump.id}
+        session={latestSessions.depthJump} 
+        percentageChange={percentageChanges.depthJump} 
+      />
+    );
+  }
+
+  if (latestSessions.broadJump) {
+    jumpCards.push(
+      <JumpSessionCard 
+        key={latestSessions.broadJump.id}
+        session={latestSessions.broadJump} 
+        percentageChange={percentageChanges.broadJump} 
+      />
+    );
+  }
+
+  if (latestSessions.tripleJump) {
+    jumpCards.push(
+      <JumpSessionCard 
+        key={latestSessions.tripleJump.id}
+        session={latestSessions.tripleJump} 
+        percentageChange={percentageChanges.tripleJump} 
+      />
+    );
+  }
+
+  return <>{jumpCards}</>;
 };
