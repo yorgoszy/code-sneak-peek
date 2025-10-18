@@ -111,10 +111,10 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                   <span className="font-semibold text-[#cb8954]">{data.push_ups}</span>
                   {data.pushUpsChange !== null && data.pushUpsChange !== undefined && (
                     <span className={`text-[10px] font-semibold ${
-                      data.pushUpsChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                      data.pushUpsChange > 0 ? 'text-green-700' : 'text-red-500'
                     }`}>
                       {data.pushUpsChange > 0 ? '+' : ''}
-                      {data.pushUpsChange.toFixed(1)}%
+                      {Math.round(data.pushUpsChange)}%
                     </span>
                   )}
                 </div>
@@ -129,10 +129,10 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                   <span className="font-semibold text-[#cb8954]">{data.pull_ups}</span>
                   {data.pullUpsChange !== null && data.pullUpsChange !== undefined && (
                     <span className={`text-[10px] font-semibold ${
-                      data.pullUpsChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                      data.pullUpsChange > 0 ? 'text-green-700' : 'text-red-500'
                     }`}>
                       {data.pullUpsChange > 0 ? '+' : ''}
-                      {data.pullUpsChange.toFixed(1)}%
+                      {Math.round(data.pullUpsChange)}%
                     </span>
                   )}
                 </div>
@@ -147,10 +147,10 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                   <span className="font-semibold text-[#cb8954]">{data.t2b}</span>
                   {data.t2bChange !== null && data.t2bChange !== undefined && (
                     <span className={`text-[10px] font-semibold ${
-                      data.t2bChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                      data.t2bChange > 0 ? 'text-green-700' : 'text-red-500'
                     }`}>
                       {data.t2bChange > 0 ? '+' : ''}
-                      {data.t2bChange.toFixed(1)}%
+                      {Math.round(data.t2bChange)}%
                     </span>
                   )}
                 </div>
