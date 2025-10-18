@@ -18,13 +18,12 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
 
   const fetchAnthropometricData = async () => {
     try {
-      // Get latest two sessions
+      // Get all sessions
       const { data: sessions, error: sessionError } = await supabase
         .from('anthropometric_test_sessions')
         .select('*')
         .eq('user_id', userId)
-        .order('test_date', { ascending: false })
-        .limit(2);
+        .order('test_date', { ascending: false });
 
       if (sessionError) throw sessionError;
       if (!sessions || sessions.length === 0) {
@@ -32,32 +31,32 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
         return;
       }
 
-      // Get anthropometric data for latest session
-      const { data: latestAnthroData, error: latestError } = await supabase
-        .from('anthropometric_test_data')
-        .select('*')
-        .eq('test_session_id', sessions[0].id)
-        .maybeSingle();
+      // Find the latest session with actual data
+      let latestSessionWithData = null;
+      let previousSessionWithData = null;
 
-      if (latestError) throw latestError;
-
-      setLatestData({
-        ...latestAnthroData,
-        test_date: sessions[0].test_date
-      });
-
-      // Get previous session data if exists
-      if (sessions.length > 1) {
-        const { data: prevAnthroData, error: prevError } = await supabase
+      for (const session of sessions) {
+        const { data: anthroData } = await supabase
           .from('anthropometric_test_data')
           .select('*')
-          .eq('test_session_id', sessions[1].id)
+          .eq('test_session_id', session.id)
           .maybeSingle();
 
-        if (prevError) throw prevError;
-        setPreviousData(prevAnthroData);
+        if (anthroData) {
+          if (!latestSessionWithData) {
+            latestSessionWithData = {
+              ...anthroData,
+              test_date: session.test_date
+            };
+          } else if (!previousSessionWithData) {
+            previousSessionWithData = anthroData;
+            break; // We found both, no need to continue
+          }
+        }
       }
 
+      setLatestData(latestSessionWithData);
+      setPreviousData(previousSessionWithData);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching anthropometric data:', error);
