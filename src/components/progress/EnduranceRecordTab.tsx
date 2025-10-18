@@ -703,28 +703,6 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                   />
                 </div>
 
-                <div className="w-20">
-                  <Label className="text-xs">Max HR</Label>
-                  <Input
-                    type="number"
-                    placeholder="bpm"
-                    value={form.maxHr}
-                    onChange={(e) => updateForm(form.id, { maxHr: e.target.value })}
-                    className="rounded-none no-spinners h-7 text-xs"
-                  />
-                </div>
-
-                <div className="w-20">
-                  <Label className="text-xs whitespace-nowrap">1min Rest</Label>
-                  <Input
-                    type="number"
-                    placeholder="bpm"
-                    value={form.restingHr1min}
-                    onChange={(e) => updateForm(form.id, { restingHr1min: e.target.value })}
-                    className="rounded-none no-spinners h-7 text-xs"
-                  />
-                </div>
-
                 <div className="flex items-end">
                   <Button 
                     onClick={() => handleSave(form.id)} 
@@ -740,6 +718,43 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         );
       })}
         </div>
+
+        {/* Cardiac Data Card */}
+        <div className="space-y-3">
+          {forms.map((form) => (
+            <Card key={`cardiac-${form.id}`} className="rounded-none w-fit">
+              <CardHeader className="pb-1 pt-2 px-3">
+                <CardTitle className="text-xs">Cardiac Data</CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 pt-2 space-y-2">
+                <div className="flex gap-2">
+                  <div className="w-20">
+                    <Label className="text-xs">Max HR</Label>
+                    <Input
+                      type="number"
+                      placeholder="bpm"
+                      value={form.maxHr}
+                      onChange={(e) => updateForm(form.id, { maxHr: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="w-20">
+                    <Label className="text-xs whitespace-nowrap">1min Rest</Label>
+                    <Input
+                      type="number"
+                      placeholder="bpm"
+                      value={form.restingHr1min}
+                      onChange={(e) => updateForm(form.id, { restingHr1min: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
 
         {/* Bodyweight Forms */}
         <div className="space-y-3">
