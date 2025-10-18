@@ -107,6 +107,16 @@ export const JumpHistoryTab: React.FC = () => {
     });
   }, [sessions, userSearch, usersMap]);
 
+  const sessionsByType = useMemo(() => {
+    const nonCmj = filteredSessions.filter(s => s.notes?.includes('Non-CMJ Test'));
+    const cmj = filteredSessions.filter(s => s.notes?.includes('CMJ Test'));
+    const depthJump = filteredSessions.filter(s => s.notes?.includes('Depth Jump Test'));
+    const broadJump = filteredSessions.filter(s => s.notes?.includes('Broad Jump Test'));
+    const tripleJump = filteredSessions.filter(s => s.notes?.includes('Triple Jump Test'));
+
+    return { nonCmj, cmj, depthJump, broadJump, tripleJump };
+  }, [filteredSessions]);
+
   const handleDelete = async (sessionId: string) => {
     if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την καταγραφή;')) {
       return;
@@ -206,26 +216,118 @@ export const JumpHistoryTab: React.FC = () => {
       </div>
 
       {/* Results */}
-      <div className="flex gap-[1px] overflow-x-auto pb-2">
+      <div className="flex gap-2 overflow-x-auto pb-2">
         {filteredSessions.length === 0 ? (
           <div className="text-center py-8 text-gray-500 w-full">
             Δεν βρέθηκαν καταγραφές
           </div>
         ) : (
-          filteredSessions.map((session) => {
-            const user = usersMap.get(session.user_id);
-            const jumpData = session.jump_test_data?.[0];
+          <>
+            {/* Non-CMJ Column */}
+            {sessionsByType.nonCmj.length > 0 && (
+              <div className="space-y-[1px]">
+                <div className="bg-gray-100 px-2 py-1 rounded-none">
+                  <h3 className="text-xs font-semibold">Non-CMJ</h3>
+                </div>
+                {sessionsByType.nonCmj.map((session) => {
+                  const user = usersMap.get(session.user_id);
+                  return (
+                    <JumpSessionCard
+                      key={session.id}
+                      session={session}
+                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      showDelete
+                      onDelete={() => handleDelete(session.id)}
+                    />
+                  );
+                })}
+              </div>
+            )}
 
-              return (
-                <JumpSessionCard
-                  key={session.id}
-                  session={session}
-                  userName={user?.name || 'Άγνωστος Χρήστης'}
-                  showDelete
-                  onDelete={() => handleDelete(session.id)}
-                />
-              );
-          })
+            {/* CMJ Column */}
+            {sessionsByType.cmj.length > 0 && (
+              <div className="space-y-[1px]">
+                <div className="bg-gray-100 px-2 py-1 rounded-none">
+                  <h3 className="text-xs font-semibold">CMJ</h3>
+                </div>
+                {sessionsByType.cmj.map((session) => {
+                  const user = usersMap.get(session.user_id);
+                  return (
+                    <JumpSessionCard
+                      key={session.id}
+                      session={session}
+                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      showDelete
+                      onDelete={() => handleDelete(session.id)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Depth Jump Column */}
+            {sessionsByType.depthJump.length > 0 && (
+              <div className="space-y-[1px]">
+                <div className="bg-gray-100 px-2 py-1 rounded-none">
+                  <h3 className="text-xs font-semibold">Depth Jump</h3>
+                </div>
+                {sessionsByType.depthJump.map((session) => {
+                  const user = usersMap.get(session.user_id);
+                  return (
+                    <JumpSessionCard
+                      key={session.id}
+                      session={session}
+                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      showDelete
+                      onDelete={() => handleDelete(session.id)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Broad Jump Column */}
+            {sessionsByType.broadJump.length > 0 && (
+              <div className="space-y-[1px]">
+                <div className="bg-gray-100 px-2 py-1 rounded-none">
+                  <h3 className="text-xs font-semibold">Broad Jump</h3>
+                </div>
+                {sessionsByType.broadJump.map((session) => {
+                  const user = usersMap.get(session.user_id);
+                  return (
+                    <JumpSessionCard
+                      key={session.id}
+                      session={session}
+                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      showDelete
+                      onDelete={() => handleDelete(session.id)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Triple Jump Column */}
+            {sessionsByType.tripleJump.length > 0 && (
+              <div className="space-y-[1px]">
+                <div className="bg-gray-100 px-2 py-1 rounded-none">
+                  <h3 className="text-xs font-semibold">Triple Jump</h3>
+                </div>
+                {sessionsByType.tripleJump.map((session) => {
+                  const user = usersMap.get(session.user_id);
+                  return (
+                    <JumpSessionCard
+                      key={session.id}
+                      session={session}
+                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      showDelete
+                      onDelete={() => handleDelete(session.id)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
