@@ -112,24 +112,25 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
                 </span>
               </div>
             )}
-            {jumpData.triple_jump_left !== null && (
+            {(jumpData.triple_jump_left !== null || jumpData.triple_jump_right !== null) && (
               <div className="flex justify-between items-center text-[10px]">
-                <span className="text-gray-500">Triple Jump L:</span>
-                <span className="font-semibold text-[#cb8954]">
-                  {jumpData.triple_jump_left}
-                  <span className="text-[9px] ml-0.5">cm</span>
-                </span>
+                <span className="text-gray-500">Triple Jump:</span>
+                <div className="flex gap-2">
+                  {jumpData.triple_jump_left !== null && (
+                    <span className="font-semibold text-[#cb8954]">
+                      L: {jumpData.triple_jump_left}
+                      <span className="text-[9px] ml-0.5">cm</span>
+                    </span>
+                  )}
+                  {jumpData.triple_jump_right !== null && (
+                    <span className="font-semibold text-[#cb8954]">
+                      R: {jumpData.triple_jump_right}
+                      <span className="text-[9px] ml-0.5">cm</span>
+                    </span>
+                  )}
+                </div>
               </div>
             )}
-            {jumpData.triple_jump_right !== null && (
-              <div className="flex justify-between items-center text-[10px]">
-                <span className="text-gray-500">Triple Jump R:</span>
-                <span className="font-semibold text-[#cb8954]">
-                  {jumpData.triple_jump_right}
-                  <span className="text-[9px] ml-0.5">cm</span>
-                </span>
-              </div>
-        )}
       </div>
     )}
     
