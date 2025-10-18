@@ -173,11 +173,11 @@ export const EnduranceHistoryTab: React.FC = () => {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">MAS:</span>
-                        <span className="font-bold text-[#00ffba]">{enduranceData.mas_ms?.toFixed(2)} m/s</span>
+                        <span className="font-bold text-[#cb8954]">{enduranceData.mas_ms?.toFixed(2)} m/s</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">MAS:</span>
-                        <span className="font-bold text-[#00ffba]">{enduranceData.mas_kmh?.toFixed(2)} km/h</span>
+                        <span className="font-bold text-[#cb8954]">{enduranceData.mas_kmh?.toFixed(2)} km/h</span>
                       </div>
                     </>
                   )}
@@ -197,32 +197,38 @@ export const EnduranceHistoryTab: React.FC = () => {
                     <>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Farmer kg:</span>
-                        <span className="font-bold text-[#00ffba]">{enduranceData.farmer_kg}</span>
+                        <span className="font-bold text-[#cb8954]">{enduranceData.farmer_kg}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Farmer m:</span>
-                        <span className="font-bold text-[#00ffba]">{enduranceData.farmer_meters}</span>
+                        <span className="font-bold text-[#cb8954]">{enduranceData.farmer_meters}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Farmer s:</span>
-                        <span className="font-bold text-[#00ffba]">{enduranceData.farmer_seconds}</span>
+                        <span className="font-bold text-[#cb8954]">{enduranceData.farmer_seconds}</span>
                       </div>
                     </>
                   )}
                   {enduranceData.sprint_seconds !== null && (
                     <>
+                      {enduranceData.exercises?.name && (
+                        <div className="flex items-center justify-between col-span-2">
+                          <span className="text-gray-500">Sprint Άσκηση:</span>
+                          <span className="font-bold text-[#cb8954]">{enduranceData.exercises.name}</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Sprint s:</span>
-                        <span className="font-bold text-[#00ffba]">{enduranceData.sprint_seconds}</span>
+                        <span className="font-bold text-[#cb8954]">{enduranceData.sprint_seconds}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Sprint m:</span>
-                        <span className="font-bold text-[#00ffba]">{enduranceData.sprint_meters}</span>
+                        <span className="font-bold text-[#cb8954]">{enduranceData.sprint_meters}</span>
                       </div>
                       {enduranceData.sprint_watt !== null && (
                         <div className="flex items-center justify-between">
                           <span className="text-gray-500">Sprint km/h:</span>
-                          <span className="font-bold text-[#00ffba]">{parseFloat(enduranceData.sprint_watt).toFixed(2)}</span>
+                          <span className="font-bold text-[#cb8954]">{parseFloat(enduranceData.sprint_watt).toFixed(2)}</span>
                         </div>
                       )}
                     </>

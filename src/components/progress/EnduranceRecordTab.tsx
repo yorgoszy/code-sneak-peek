@@ -796,6 +796,26 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
     const sprintMeters = parseFloat(metrics.meters);
     const sprintKmh = parseFloat(metrics.kmh);
 
+    // Βρίσκουμε το exercise_id με βάση την επιλογή
+    let exerciseId = null;
+    if (form.sprintExercise === 'track') {
+      const { data: trackExercise } = await supabase
+        .from('exercises')
+        .select('id')
+        .ilike('name', '%track%')
+        .limit(1)
+        .maybeSingle();
+      exerciseId = trackExercise?.id || null;
+    } else if (form.sprintExercise === 'woodway') {
+      const { data: woodwayExercise } = await supabase
+        .from('exercises')
+        .select('id')
+        .ilike('name', '%woodway%')
+        .limit(1)
+        .maybeSingle();
+      exerciseId = woodwayExercise?.id || null;
+    }
+
     if (!sprintSeconds || !sprintMeters) {
       toast({
         title: "Σφάλμα",
@@ -831,7 +851,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
           sprint_seconds: sprintSeconds,
           sprint_meters: sprintMeters,
           sprint_resistance: form.sprintResistance || null,
-          sprint_watt: sprintKmh
+          sprint_watt: sprintKmh,
+          exercise_id: exerciseId
         });
 
       if (dataError) throw dataError;
