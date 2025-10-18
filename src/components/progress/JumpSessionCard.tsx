@@ -68,9 +68,6 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
                   </>
                 )}
 
-            <p className="text-[9px] text-gray-500 mt-0.5">
-              {format(new Date(session.test_date), 'dd/MM/yy')}
-            </p>
           </div>
 
           {showDelete && (
@@ -157,6 +154,12 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
         </span>
       </div>
     )}
+
+    <div className="pt-1 border-t border-gray-200 mt-1">
+      <div className="text-[10px] text-gray-400 text-center">
+        Τελευταία μέτρηση: {format(new Date(session.test_date), 'dd/MM/yy')}
+      </div>
+    </div>
   </CardContent>
     </Card>
   );
