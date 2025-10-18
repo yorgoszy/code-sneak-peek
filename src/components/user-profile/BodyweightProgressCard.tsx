@@ -27,7 +27,8 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
           endurance_test_data!endurance_test_data_test_session_id_fkey (
             id,
             push_ups,
-            pull_ups
+            pull_ups,
+            t2b
           )
         `)
         .eq('user_id', userId)
@@ -40,7 +41,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
         .map(session => ({
           ...session,
           endurance_test_data: (session.endurance_test_data || [])
-            .filter(ed => ed.push_ups !== null || ed.pull_ups !== null)
+            .filter(ed => ed.push_ups !== null || ed.pull_ups !== null || ed.t2b !== null)
         }))
         .filter(session => session.endurance_test_data.length > 0);
 
@@ -63,6 +64,9 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
           : null,
         pullUpsChange: recentSessions[0].pull_ups && recentSessions[1].pull_ups
           ? ((recentSessions[0].pull_ups - recentSessions[1].pull_ups) / recentSessions[1].pull_ups) * 100
+          : null,
+        t2bChange: recentSessions[0].t2b && recentSessions[1].t2b
+          ? ((recentSessions[0].t2b - recentSessions[1].t2b) / recentSessions[1].t2b) * 100
           : null
       }] : recentSessions.slice(0, 1);
       
@@ -94,7 +98,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
   return (
     <Card className="rounded-none">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Push Ups & Pull Ups</CardTitle>
+        <CardTitle className="text-sm">Push Ups, Pull Ups & T2B</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {sessions.map((data) => (
@@ -129,6 +133,24 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
                     }`}>
                       {data.pullUpsChange > 0 ? '+' : ''}
                       {data.pullUpsChange.toFixed(1)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* T2B */}
+            {data.t2b !== null && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">T2B:</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-[#cb8954]">{data.t2b}</span>
+                  {data.t2bChange !== null && data.t2bChange !== undefined && (
+                    <span className={`text-[10px] font-semibold ${
+                      data.t2bChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                    }`}>
+                      {data.t2bChange > 0 ? '+' : ''}
+                      {data.t2bChange.toFixed(1)}%
                     </span>
                   )}
                 </div>
