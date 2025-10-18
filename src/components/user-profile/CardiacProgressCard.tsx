@@ -54,6 +54,14 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
     return sessions[0]?.endurance_test_data?.[0]?.[field];
   };
 
+  const calculatePercentageChange = (field: 'max_hr' | 'resting_hr_1min') => {
+    if (sessions.length < 2) return null;
+    const current = sessions[0]?.endurance_test_data?.[0]?.[field];
+    const previous = sessions[1]?.endurance_test_data?.[0]?.[field];
+    if (!current || !previous) return null;
+    return ((current - previous) / previous) * 100;
+  };
+
   if (loading) {
     return null;
   }
@@ -91,13 +99,33 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
           {latestMaxHr && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-500">Max HR:</span>
-              <span className="font-semibold text-[#cb8954]">{latestMaxHr} bpm</span>
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-[#cb8954]">{latestMaxHr} bpm</span>
+                {calculatePercentageChange('max_hr') !== null && (
+                  <span className={`text-[10px] font-semibold ${
+                    calculatePercentageChange('max_hr')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                  }`}>
+                    {calculatePercentageChange('max_hr')! > 0 ? '+' : ''}
+                    {calculatePercentageChange('max_hr')!.toFixed(1)}%
+                  </span>
+                )}
+              </div>
             </div>
           )}
           {latestRestingHr && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-500">1min Rest:</span>
-              <span className="font-semibold text-[#cb8954]">{latestRestingHr} bpm</span>
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-[#cb8954]">{latestRestingHr} bpm</span>
+                {calculatePercentageChange('resting_hr_1min') !== null && (
+                  <span className={`text-[10px] font-semibold ${
+                    calculatePercentageChange('resting_hr_1min')! < 0 ? 'text-[#00ffba]' : 'text-red-500'
+                  }`}>
+                    {calculatePercentageChange('resting_hr_1min')! > 0 ? '+' : ''}
+                    {calculatePercentageChange('resting_hr_1min')!.toFixed(1)}%
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
