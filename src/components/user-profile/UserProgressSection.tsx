@@ -399,12 +399,16 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             <MasProgressCard userId={userId} />
           </div>
           
-          {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway, VO2 Max, Cardiac Cards - Responsive Grid */}
+          {/* Bodyweight, Farmer, Sprint Track, Sprint Woodway - Responsive Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full">
             <BodyweightProgressCard userId={userId} />
             <FarmerProgressCard userId={userId} />
             <SprintProgressCard userId={userId} exerciseName="Track" />
             <SprintProgressCard userId={userId} exerciseName="Woodway" />
+          </div>
+
+          {/* VO2 Max and Cardiac Cards - Side by Side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
             <VO2MaxProgressCard userId={userId} />
             <CardiacProgressCard userId={userId} />
           </div>
@@ -415,8 +419,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         </div>
       )}
 
-      {/* Jump Progress - always visible - Responsive */}
-      <div className="w-full mt-2">
+      {/* Jump Progress - Grid 2 columns on mobile */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 w-full mt-2">
         <JumpProfileLatestCard userId={userId} />
       </div>
     </div>

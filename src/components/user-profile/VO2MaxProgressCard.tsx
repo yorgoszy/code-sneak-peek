@@ -72,7 +72,7 @@ export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({ userId }
   const latestVO2Max = getLatestValue();
 
   return (
-    <Card className="rounded-none w-fit">
+    <Card className="rounded-none w-full">
       <CardHeader className="pb-2 pt-3 px-3">
         <CardTitle className="text-xs flex items-center gap-1">
           <Wind className="w-3 h-3" />

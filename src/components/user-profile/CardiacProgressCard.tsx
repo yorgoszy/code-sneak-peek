@@ -86,14 +86,14 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
   const latestRestingHr = getLatestValue('resting_hr_1min');
 
   return (
-    <Card className="rounded-none">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-1">
+    <Card className="rounded-none w-full">
+      <CardHeader className="pb-2 pt-3 px-3">
+        <CardTitle className="text-xs flex items-center gap-1">
           <Activity className="w-3 h-3" />
           Cardiac Data
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="p-3 pt-0 space-y-2">
         {/* Latest Values */}
         <div className="space-y-1">
           {latestMaxHr && (
