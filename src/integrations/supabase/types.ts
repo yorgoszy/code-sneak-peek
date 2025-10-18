@@ -922,6 +922,7 @@ export type Database = {
           sprint_resistance: string | null
           sprint_seconds: number | null
           sprint_watt: number | null
+          t2b: number | null
           test_session_id: string | null
           updated_at: string | null
           vo2_max: number | null
@@ -946,6 +947,7 @@ export type Database = {
           sprint_resistance?: string | null
           sprint_seconds?: number | null
           sprint_watt?: number | null
+          t2b?: number | null
           test_session_id?: string | null
           updated_at?: string | null
           vo2_max?: number | null
@@ -970,6 +972,7 @@ export type Database = {
           sprint_resistance?: string | null
           sprint_seconds?: number | null
           sprint_watt?: number | null
+          t2b?: number | null
           test_session_id?: string | null
           updated_at?: string | null
           vo2_max?: number | null

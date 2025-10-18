@@ -27,6 +27,7 @@ interface BodyweightForm {
   selectedUserId: string;
   pushUps: string;
   pullUps: string;
+  t2b: string;
   loading: boolean;
 }
 
@@ -96,6 +97,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       selectedUserId: '',
       pushUps: '',
       pullUps: '',
+      t2b: '',
       loading: false
     }
   ]);
@@ -550,6 +552,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       selectedUserId: '',
       pushUps: '',
       pullUps: '',
+      t2b: '',
       loading: false
     }]);
   };
@@ -579,8 +582,9 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
 
     const pushUps = parseInt(form.pushUps);
     const pullUps = parseInt(form.pullUps);
+    const t2b = parseInt(form.t2b);
 
-    if ((!pushUps && pushUps !== 0) && (!pullUps && pullUps !== 0)) {
+    if ((!pushUps && pushUps !== 0) && (!pullUps && pullUps !== 0) && (!t2b && t2b !== 0)) {
       toast({
         title: "Σφάλμα",
         description: "Παρακαλώ συμπληρώστε τουλάχιστον ένα πεδίο",
@@ -602,7 +606,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         .insert({
           user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
-          notes: 'Bodyweight Test - Push Ups & Pull Ups'
+          notes: 'Bodyweight Test - Push Ups, Pull Ups & T2B'
         })
         .select()
         .single();
@@ -615,7 +619,8 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         .insert({
           test_session_id: session.id,
           push_ups: pushUps || null,
-          pull_ups: pullUps || null
+          pull_ups: pullUps || null,
+          t2b: t2b || null
         });
 
       if (dataError) throw dataError;
@@ -629,6 +634,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       updateBodyweightForm(formId, {
         pushUps: '',
         pullUps: '',
+        t2b: '',
         loading: false
       });
       
@@ -1141,7 +1147,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
             <Card key={form.id} className="rounded-none w-fit">
               <CardHeader className="pb-1 pt-2 px-3">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-xs">Push Ups & Pull Ups {bodyweightForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                  <CardTitle className="text-xs">Push Ups, Pull Ups & T2B {bodyweightForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
                   <Button onClick={addNewBodyweightForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
                     <Plus className="w-3 h-3" />
                   </Button>
@@ -1171,7 +1177,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                   />
                 </div>
 
-                {/* Push Ups and Pull Ups */}
+                {/* Push Ups, Pull Ups and T2B */}
                 <div className="flex gap-2">
                   <div className="w-20">
                     <Label className="text-xs">Push Ups</Label>
@@ -1191,6 +1197,17 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                       placeholder="0"
                       value={form.pullUps}
                       onChange={(e) => updateBodyweightForm(form.id, { pullUps: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="w-20">
+                    <Label className="text-xs">T2B</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={form.t2b}
+                      onChange={(e) => updateBodyweightForm(form.id, { t2b: e.target.value })}
                       className="rounded-none no-spinners h-7 text-xs"
                     />
                   </div>
