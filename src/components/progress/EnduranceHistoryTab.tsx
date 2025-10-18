@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -14,6 +15,7 @@ export const EnduranceHistoryTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map());
   const [selectedUser, setSelectedUser] = useState<string>("all");
+  const [userSearch, setUserSearch] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>("all");
 
@@ -128,8 +130,10 @@ export const EnduranceHistoryTab: React.FC = () => {
 
   // Get unique users - MUST be before any conditional returns
   const availableUsers = useMemo(() => {
-    return Array.from(usersMap.entries()).map(([id, name]) => ({ id, name }));
-  }, [usersMap]);
+    const users = Array.from(usersMap.entries()).map(([id, name]) => ({ id, name }));
+    if (!userSearch.trim()) return users;
+    return users.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
+  }, [usersMap, userSearch]);
 
   // Filter sessions - MUST be before any conditional returns
   const filteredSessions = useMemo(() => {
@@ -337,17 +341,25 @@ export const EnduranceHistoryTab: React.FC = () => {
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
-        <Select value={selectedUser} onValueChange={setSelectedUser}>
-          <SelectTrigger className="w-[200px] rounded-none">
-            <SelectValue placeholder="Όλοι οι χρήστες" />
-          </SelectTrigger>
-          <SelectContent className="rounded-none">
-            <SelectItem value="all">Όλοι οι χρήστες</SelectItem>
-            {availableUsers.map(user => (
-              <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col gap-1">
+          <Input
+            placeholder="Αναζήτηση χρήστη..."
+            value={userSearch}
+            onChange={(e) => setUserSearch(e.target.value)}
+            className="w-[200px] rounded-none"
+          />
+          <Select value={selectedUser} onValueChange={setSelectedUser}>
+            <SelectTrigger className="w-[200px] rounded-none">
+              <SelectValue placeholder="Όλοι οι χρήστες" />
+            </SelectTrigger>
+            <SelectContent className="rounded-none">
+              <SelectItem value="all">Όλοι οι χρήστες</SelectItem>
+              {availableUsers.map(user => (
+                <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-[200px] rounded-none">
