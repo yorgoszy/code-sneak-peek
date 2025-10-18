@@ -131,7 +131,7 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
           <Card key={form.id} className="rounded-none w-60">
             <CardHeader className="pb-0.5 pt-1 px-2">
               <div className="flex items-center gap-1">
-                <CardTitle className="text-[10px]">Non-CMJ {forms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                <CardTitle className="text-xs">Non-CMJ {forms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
                 <Button onClick={addNewForm} size="sm" className="rounded-none h-4 w-4 p-0 ml-auto">
                   <Plus className="w-2.5 h-2.5" />
                 </Button>
