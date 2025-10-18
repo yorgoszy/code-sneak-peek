@@ -42,18 +42,18 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
               <CardTitle className="text-xs">{userName}</CardTitle>
             )}
 
-            {session.notes && (
-              <>
-                <p className="text-[10px] text-gray-600 mt-0.5">
-                  {session.notes.split(' - ')[0]}
-                </p>
-                {session.notes.includes(' - ') && (
-                  <p className="text-2xl font-bold text-[#cb8954] mt-1">
-                    {session.notes.split(' - ')[1]}
-                  </p>
+                {session.notes && (
+                  <>
+                    <p className="text-[10px] text-gray-600 mt-0.5">
+                      {session.notes.split(' - ')[0]}
+                    </p>
+                    {session.notes.includes(' - ') && (
+                      <p className="text-2xl font-bold text-[hsl(var(--metric-green))] mt-1">
+                        {session.notes.split(' - ')[1]}
+                      </p>
+                    )}
+                  </>
                 )}
-              </>
-            )}
 
             <p className="text-[10px] text-gray-500 mt-0.5">
               {format(new Date(session.test_date), 'dd/MM/yyyy')}
@@ -79,7 +79,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             {jumpData.non_counter_movement_jump !== null && (
               <div className="flex justify-between items-center text-[10px]">
                 <span className="text-gray-500">Non-CMJ:</span>
-                <span className="font-semibold text-[#cb8954]">
+                <span className="font-semibold text-[hsl(var(--metric-green))]">
                   {jumpData.non_counter_movement_jump}
                   <span className="text-[9px] ml-0.5">cm</span>
                 </span>
@@ -88,7 +88,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             {jumpData.counter_movement_jump !== null && (
               <div className="flex justify-between items-center text-[10px]">
                 <span className="text-gray-500">CMJ:</span>
-                <span className="font-semibold text-[#cb8954]">
+                <span className="font-semibold text-[hsl(var(--metric-green))]">
                   {jumpData.counter_movement_jump}
                   <span className="text-[9px] ml-0.5">cm</span>
                 </span>
@@ -97,7 +97,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             {jumpData.depth_jump !== null && (
               <div className="flex justify-between items-center text-[10px]">
                 <span className="text-gray-500">Depth Jump:</span>
-                <span className="font-semibold text-[#cb8954]">
+                <span className="font-semibold text-[hsl(var(--metric-green))]">
                   {jumpData.depth_jump}
                   <span className="text-[9px] ml-0.5">cm</span>
                 </span>
@@ -106,7 +106,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             {jumpData.broad_jump !== null && (
               <div className="flex justify-between items-center text-[10px]">
                 <span className="text-gray-500">Broad Jump:</span>
-                <span className="font-semibold text-[#cb8954]">
+                <span className="font-semibold text-[hsl(var(--metric-green))]">
                   {jumpData.broad_jump}
                   <span className="text-[9px] ml-0.5">cm</span>
                 </span>
@@ -115,22 +115,22 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             {(jumpData.triple_jump_left !== null || jumpData.triple_jump_right !== null) && (
               <div className="space-y-0.5">
                 {jumpData.triple_jump_left !== null && (
-                  <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-gray-500">L:</span>
-                    <span className="font-semibold text-[#cb8954]">
-                      {jumpData.triple_jump_left}
-                      <span className="text-[9px] ml-0.5">cm</span>
-                    </span>
-                  </div>
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-gray-500">L:</span>
+                  <span className="font-semibold text-[hsl(var(--metric-green))]">
+                    {jumpData.triple_jump_left}
+                    <span className="text-[9px] ml-0.5">cm</span>
+                  </span>
+                </div>
                 )}
                 {jumpData.triple_jump_right !== null && (
-                  <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-gray-500">R:</span>
-                    <span className="font-semibold text-[#cb8954]">
-                      {jumpData.triple_jump_right}
-                      <span className="text-[9px] ml-0.5">cm</span>
-                    </span>
-                  </div>
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-gray-500">R:</span>
+                  <span className="font-semibold text-[hsl(var(--metric-green))]">
+                    {jumpData.triple_jump_right}
+                    <span className="text-[9px] ml-0.5">cm</span>
+                  </span>
+                </div>
                 )}
               </div>
             )}
