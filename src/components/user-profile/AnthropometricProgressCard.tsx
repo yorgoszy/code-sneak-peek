@@ -9,47 +9,65 @@ interface AnthropometricProgressCardProps {
 
 export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProps> = ({ userId }) => {
   const [latestData, setLatestData] = useState<any>(null);
+  const [previousData, setPreviousData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchLatestAnthropometric();
+    fetchAnthropometricData();
   }, [userId]);
 
-  const fetchLatestAnthropometric = async () => {
+  const fetchAnthropometricData = async () => {
     try {
-      // Get latest session
-      const { data: session, error: sessionError } = await supabase
+      // Get latest two sessions
+      const { data: sessions, error: sessionError } = await supabase
         .from('anthropometric_test_sessions')
         .select('*')
         .eq('user_id', userId)
         .order('test_date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(2);
 
       if (sessionError) throw sessionError;
-      if (!session) {
+      if (!sessions || sessions.length === 0) {
         setLoading(false);
         return;
       }
 
-      // Get anthropometric data for this session
-      const { data: anthroData, error: anthroError } = await supabase
+      // Get anthropometric data for latest session
+      const { data: latestAnthroData, error: latestError } = await supabase
         .from('anthropometric_test_data')
         .select('*')
-        .eq('test_session_id', session.id)
+        .eq('test_session_id', sessions[0].id)
         .maybeSingle();
 
-      if (anthroError) throw anthroError;
+      if (latestError) throw latestError;
 
       setLatestData({
-        ...anthroData,
-        test_date: session.test_date
+        ...latestAnthroData,
+        test_date: sessions[0].test_date
       });
+
+      // Get previous session data if exists
+      if (sessions.length > 1) {
+        const { data: prevAnthroData, error: prevError } = await supabase
+          .from('anthropometric_test_data')
+          .select('*')
+          .eq('test_session_id', sessions[1].id)
+          .maybeSingle();
+
+        if (prevError) throw prevError;
+        setPreviousData(prevAnthroData);
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching anthropometric data:', error);
       setLoading(false);
     }
+  };
+
+  const calculatePercentageChange = (current: number, previous: number): number | null => {
+    if (!previous || previous === 0) return null;
+    return Math.round(((current - previous) / previous) * 100);
   };
 
   if (loading) {
@@ -81,8 +99,18 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           {latestData.height && (
             <div className="space-y-0.5">
               <div className="text-[10px] text-gray-500">Ύψος</div>
-              <div className="text-sm font-bold text-gray-900">
+              <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
                 {latestData.height}<span className="text-[9px] text-gray-400 ml-0.5">cm</span>
+                {previousData?.height && calculatePercentageChange(latestData.height, previousData.height) !== null && (
+                  <span className={`text-[9px] font-semibold ${
+                    calculatePercentageChange(latestData.height, previousData.height)! > 0 
+                      ? 'text-green-700' 
+                      : 'text-red-600'
+                  }`}>
+                    {calculatePercentageChange(latestData.height, previousData.height)! > 0 ? '+' : ''}
+                    {calculatePercentageChange(latestData.height, previousData.height)}%
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -90,8 +118,18 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           {latestData.weight && (
             <div className="space-y-0.5">
               <div className="text-[10px] text-gray-500">Βάρος</div>
-              <div className="text-sm font-bold text-gray-900">
+              <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
                 {latestData.weight}<span className="text-[9px] text-gray-400 ml-0.5">kg</span>
+                {previousData?.weight && calculatePercentageChange(latestData.weight, previousData.weight) !== null && (
+                  <span className={`text-[9px] font-semibold ${
+                    calculatePercentageChange(latestData.weight, previousData.weight)! > 0 
+                      ? 'text-green-700' 
+                      : 'text-red-600'
+                  }`}>
+                    {calculatePercentageChange(latestData.weight, previousData.weight)! > 0 ? '+' : ''}
+                    {calculatePercentageChange(latestData.weight, previousData.weight)}%
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -99,8 +137,18 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           {latestData.body_fat_percentage && (
             <div className="space-y-0.5">
               <div className="text-[10px] text-gray-500">Λίπος</div>
-              <div className="text-sm font-bold text-gray-900">
+              <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
                 {latestData.body_fat_percentage}<span className="text-[9px] text-gray-400 ml-0.5">%</span>
+                {previousData?.body_fat_percentage && calculatePercentageChange(latestData.body_fat_percentage, previousData.body_fat_percentage) !== null && (
+                  <span className={`text-[9px] font-semibold ${
+                    calculatePercentageChange(latestData.body_fat_percentage, previousData.body_fat_percentage)! > 0 
+                      ? 'text-red-600' 
+                      : 'text-green-700'
+                  }`}>
+                    {calculatePercentageChange(latestData.body_fat_percentage, previousData.body_fat_percentage)! > 0 ? '+' : ''}
+                    {calculatePercentageChange(latestData.body_fat_percentage, previousData.body_fat_percentage)}%
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -108,8 +156,18 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           {latestData.muscle_mass_percentage && (
             <div className="space-y-0.5">
               <div className="text-[10px] text-gray-500">Μυϊκή Μάζα</div>
-              <div className="text-sm font-bold text-gray-900">
+              <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
                 {latestData.muscle_mass_percentage}<span className="text-[9px] text-gray-400 ml-0.5">%</span>
+                {previousData?.muscle_mass_percentage && calculatePercentageChange(latestData.muscle_mass_percentage, previousData.muscle_mass_percentage) !== null && (
+                  <span className={`text-[9px] font-semibold ${
+                    calculatePercentageChange(latestData.muscle_mass_percentage, previousData.muscle_mass_percentage)! > 0 
+                      ? 'text-green-700' 
+                      : 'text-red-600'
+                  }`}>
+                    {calculatePercentageChange(latestData.muscle_mass_percentage, previousData.muscle_mass_percentage)! > 0 ? '+' : ''}
+                    {calculatePercentageChange(latestData.muscle_mass_percentage, previousData.muscle_mass_percentage)}%
+                  </span>
+                )}
               </div>
             </div>
           )}
