@@ -130,98 +130,98 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex gap-[1px] overflow-x-auto pb-2">
-        <div className="space-y-3">
+        <div className="space-y-2">
           {forms.map((form, formIndex) => (
             <Card key={form.id} className="rounded-none w-[calc(66.666%+120px)]">
-              <CardHeader className="pb-1 pt-2 px-3">
+              <CardHeader className="pb-0.5 pt-1.5 px-2">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-xs">
+                  <CardTitle className="text-[11px]">
                     Σωματομετρικά {forms.length > 1 ? `#${formIndex + 1}` : ''}
                   </CardTitle>
                   <Button 
                     onClick={addNewForm} 
                     size="sm" 
-                    className="rounded-none h-5 w-5 p-0 ml-auto bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                    className="rounded-none h-4 w-4 p-0 ml-auto bg-black hover:bg-black/90 text-white"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-2.5 h-2.5" />
                   </Button>
                   {forms.length > 1 && (
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => removeForm(form.id)}
-                      className="rounded-none h-5 w-5 p-0"
+                      className="rounded-none h-4 w-4 p-0"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-2.5 h-2.5" />
                     </Button>
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="p-3 pt-2 space-y-2">
+              <CardContent className="p-2 pt-1 space-y-1.5">
                 {/* User Selection */}
-                <div className="flex gap-2">
-                  <div className="w-40">
-                    <Label className="text-xs">Ασκούμενος</Label>
+                <div className="flex gap-1.5">
+                  <div className="w-36">
+                    <Label className="text-[11px]">Ασκούμενος</Label>
                     <Combobox
                       options={userOptions}
                       value={form.selectedUserId}
                       onValueChange={(val) => updateForm(form.id, { selectedUserId: val })}
                       placeholder="Χρήστης"
                       emptyMessage="Δεν βρέθηκε."
-                      className="h-7 text-xs"
+                      className="h-6 text-[11px]"
                     />
                   </div>
                 </div>
 
                 {/* Measurements */}
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <div className="flex-1">
-                    <Label className="text-xs">Ύψος (cm)</Label>
+                    <Label className="text-[11px]">Ύψος (cm)</Label>
                     <Input
                       type="number"
                       step="0.1"
                       placeholder="cm"
                       value={form.height}
                       onChange={(e) => updateForm(form.id, { height: e.target.value })}
-                      className="rounded-none no-spinners h-7 text-xs"
+                      className="rounded-none no-spinners h-6 text-[11px]"
                     />
                   </div>
 
                   <div className="flex-1">
-                    <Label className="text-xs">Βάρος (kg)</Label>
+                    <Label className="text-[11px]">Βάρος (kg)</Label>
                     <Input
                       type="number"
                       step="0.1"
                       placeholder="kg"
                       value={form.weight}
                       onChange={(e) => updateForm(form.id, { weight: e.target.value })}
-                      className="rounded-none no-spinners h-7 text-xs"
+                      className="rounded-none no-spinners h-6 text-[11px]"
                     />
                   </div>
 
                   <div className="flex-1">
-                    <Label className="text-xs">Ποσοστό Λίπους (%)</Label>
+                    <Label className="text-[11px]">Ποσοστό Λίπους (%)</Label>
                     <Input
                       type="number"
                       step="0.1"
                       placeholder="%"
                       value={form.bodyFatPercentage}
                       onChange={(e) => updateForm(form.id, { bodyFatPercentage: e.target.value })}
-                      className="rounded-none no-spinners h-7 text-xs"
+                      className="rounded-none no-spinners h-6 text-[11px]"
                     />
                   </div>
 
                   <div className="flex-1">
-                    <Label className="text-xs">Ποσοστό Μυϊκής Μάζας (%)</Label>
+                    <Label className="text-[11px]">Ποσοστό Μυϊκής Μάζας (%)</Label>
                     <Input
                       type="number"
                       step="0.1"
                       placeholder="%"
                       value={form.muscleMassPercentage}
                       onChange={(e) => updateForm(form.id, { muscleMassPercentage: e.target.value })}
-                      className="rounded-none no-spinners h-7 text-xs"
+                      className="rounded-none no-spinners h-6 text-[11px]"
                     />
                   </div>
 
@@ -229,9 +229,9 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
                     <Button
                       onClick={() => handleSave(form.id)}
                       disabled={form.loading}
-                      className="rounded-none h-7 w-7 p-0 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                      className="rounded-none h-6 w-6 p-0 bg-black hover:bg-black/90 text-white"
                     >
-                      <Save className="w-4 h-4" />
+                      <Save className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 </div>
