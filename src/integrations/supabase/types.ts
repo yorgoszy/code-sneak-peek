@@ -372,7 +372,7 @@ export type Database = {
             foreignKeyName: "fk_anthropometric_test_data_session"
             columns: ["test_session_id"]
             isOneToOne: false
-            referencedRelation: "test_sessions"
+            referencedRelation: "anthropometric_test_sessions"
             referencedColumns: ["id"]
           },
         ]
