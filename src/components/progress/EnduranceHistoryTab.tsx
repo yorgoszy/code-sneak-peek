@@ -348,34 +348,24 @@ export const EnduranceHistoryTab: React.FC = () => {
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
-        <div className="flex flex-col gap-1">
-          <Input
-            placeholder="Αναζήτηση χρήστη..."
-            value={userSearch}
-            onChange={(e) => setUserSearch(e.target.value)}
-            className="w-[200px] rounded-none"
-          />
-          <Select value={selectedUser} onValueChange={setSelectedUser}>
-            <SelectTrigger className="w-[200px] rounded-none">
-              <SelectValue placeholder="Όλοι οι χρήστες" />
-            </SelectTrigger>
-            <SelectContent className="rounded-none">
-              <SelectItem value="all">Όλοι οι χρήστες</SelectItem>
-              {availableUsers.map(user => (
-                <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-              ))}
-            </SelectContent>
+        <Input
+          placeholder="Αναζήτηση χρήστη..."
+          value={userSearch}
+          onChange={(e) => setUserSearch(e.target.value)}
+          className="w-[200px] rounded-none"
+        />
+        <Select value={selectedUser} onValueChange={setSelectedUser}>
+          <SelectTrigger className="w-[200px] rounded-none">
+            <SelectValue placeholder="Όλοι οι χρήστες" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="all">Όλοι οι χρήστες</SelectItem>
+            {availableUsers.map(user => (
+              <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+            ))}
+          </SelectContent>
         </Select>
 
-        <Button
-          onClick={handleClearFilters}
-          variant="outline"
-          className="rounded-none"
-        >
-          <X className="w-4 h-4 mr-2" />
-          Καθαρισμός Φίλτρων
-        </Button>
-        </div>
 
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-[200px] rounded-none">
@@ -392,17 +382,15 @@ export const EnduranceHistoryTab: React.FC = () => {
           </SelectContent>
         </Select>
 
-        <Select value={selectedYear} onValueChange={setSelectedYear}>
-          <SelectTrigger className="w-[150px] rounded-none">
-            <SelectValue placeholder="Όλα τα έτη" />
-          </SelectTrigger>
-          <SelectContent className="rounded-none">
-            <SelectItem value="all">Όλα τα έτη</SelectItem>
-            {availableYears.map(year => (
-              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+
+        <Button
+          onClick={handleClearFilters}
+          variant="outline"
+          className="rounded-none"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Καθαρισμός Φίλτρων
+        </Button>
       </div>
 
       {/* Results */}
