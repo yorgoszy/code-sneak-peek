@@ -57,12 +57,12 @@ export const JumpHistoryTab: React.FC = () => {
           notes,
           jump_test_data (
             id,
-            cmj_height,
-            sqj_height,
-            dj_height,
-            dj_contact_time,
-            rsi,
-            asymmetry_percentage
+            non_counter_movement_jump,
+            counter_movement_jump,
+            depth_jump,
+            broad_jump,
+            triple_jump_left,
+            triple_jump_right
           )
         `)
         .order('test_date', { ascending: false });
@@ -192,51 +192,51 @@ export const JumpHistoryTab: React.FC = () => {
                 <CardContent>
                   {jumpData && (
                     <div className="grid grid-cols-3 gap-4">
-                      {jumpData.cmj_height !== null && (
+                      {jumpData.non_counter_movement_jump !== null && (
+                        <div className="text-sm">
+                          <span className="text-gray-500">Non-CMJ:</span>
+                          <span className="ml-2 font-semibold text-[#cb8954]">
+                            {jumpData.non_counter_movement_jump} cm
+                          </span>
+                        </div>
+                      )}
+                      {jumpData.counter_movement_jump !== null && (
                         <div className="text-sm">
                           <span className="text-gray-500">CMJ:</span>
                           <span className="ml-2 font-semibold text-[#cb8954]">
-                            {jumpData.cmj_height} cm
+                            {jumpData.counter_movement_jump} cm
                           </span>
                         </div>
                       )}
-                      {jumpData.sqj_height !== null && (
+                      {jumpData.depth_jump !== null && (
                         <div className="text-sm">
-                          <span className="text-gray-500">SQJ:</span>
+                          <span className="text-gray-500">Depth Jump:</span>
                           <span className="ml-2 font-semibold text-[#cb8954]">
-                            {jumpData.sqj_height} cm
+                            {jumpData.depth_jump} cm
                           </span>
                         </div>
                       )}
-                      {jumpData.dj_height !== null && (
+                      {jumpData.broad_jump !== null && (
                         <div className="text-sm">
-                          <span className="text-gray-500">DJ Height:</span>
+                          <span className="text-gray-500">Broad Jump:</span>
                           <span className="ml-2 font-semibold text-[#cb8954]">
-                            {jumpData.dj_height} cm
+                            {jumpData.broad_jump} cm
                           </span>
                         </div>
                       )}
-                      {jumpData.dj_contact_time !== null && (
+                      {jumpData.triple_jump_left !== null && (
                         <div className="text-sm">
-                          <span className="text-gray-500">DJ Contact:</span>
+                          <span className="text-gray-500">Triple Jump L:</span>
                           <span className="ml-2 font-semibold text-[#cb8954]">
-                            {jumpData.dj_contact_time} ms
+                            {jumpData.triple_jump_left} cm
                           </span>
                         </div>
                       )}
-                      {jumpData.rsi !== null && (
+                      {jumpData.triple_jump_right !== null && (
                         <div className="text-sm">
-                          <span className="text-gray-500">RSI:</span>
+                          <span className="text-gray-500">Triple Jump R:</span>
                           <span className="ml-2 font-semibold text-[#cb8954]">
-                            {jumpData.rsi}
-                          </span>
-                        </div>
-                      )}
-                      {jumpData.asymmetry_percentage !== null && (
-                        <div className="text-sm">
-                          <span className="text-gray-500">Asymmetry:</span>
-                          <span className="ml-2 font-semibold text-[#cb8954]">
-                            {jumpData.asymmetry_percentage}%
+                            {jumpData.triple_jump_right} cm
                           </span>
                         </div>
                       )}

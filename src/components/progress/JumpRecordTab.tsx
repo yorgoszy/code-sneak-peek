@@ -90,12 +90,12 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
         .from('jump_test_data')
         .insert({
           test_session_id: session.id,
-          cmj_height: parseFloat(form.cmjHeight),
-          sqj_height: null,
-          dj_height: null,
-          dj_contact_time: null,
-          rsi: null,
-          asymmetry_percentage: null
+          non_counter_movement_jump: parseFloat(form.cmjHeight),
+          counter_movement_jump: null,
+          depth_jump: null,
+          broad_jump: null,
+          triple_jump_left: null,
+          triple_jump_right: null
         });
 
       if (dataError) throw dataError;

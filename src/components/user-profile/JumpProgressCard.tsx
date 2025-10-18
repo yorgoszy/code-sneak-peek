@@ -26,12 +26,12 @@ export const JumpProgressCard: React.FC<JumpProgressCardProps> = ({ userId }) =>
           test_date,
           jump_test_data (
             id,
-            cmj_height,
-            sqj_height,
-            dj_height,
-            dj_contact_time,
-            rsi,
-            asymmetry_percentage
+            non_counter_movement_jump,
+            counter_movement_jump,
+            depth_jump,
+            broad_jump,
+            triple_jump_left,
+            triple_jump_right
           )
         `)
         .eq('user_id', userId)
@@ -44,7 +44,7 @@ export const JumpProgressCard: React.FC<JumpProgressCardProps> = ({ userId }) =>
         .map(session => ({
           ...session,
           jump_test_data: (session.jump_test_data || [])
-            .filter(jd => jd.cmj_height !== null || jd.sqj_height !== null || jd.dj_height !== null)
+            .filter(jd => jd.non_counter_movement_jump !== null || jd.counter_movement_jump !== null || jd.depth_jump !== null)
         }))
         .filter(session => session.jump_test_data.length > 0);
 
@@ -62,14 +62,14 @@ export const JumpProgressCard: React.FC<JumpProgressCardProps> = ({ userId }) =>
       // Calculate percentage changes if we have at least 2 entries
       const processedSessions = recentSessions.length >= 2 ? [{
         ...recentSessions[0],
-        cmjChange: recentSessions[0].cmj_height && recentSessions[1].cmj_height
-          ? ((recentSessions[0].cmj_height - recentSessions[1].cmj_height) / recentSessions[1].cmj_height) * 100
+        nonCmjChange: recentSessions[0].non_counter_movement_jump && recentSessions[1].non_counter_movement_jump
+          ? ((recentSessions[0].non_counter_movement_jump - recentSessions[1].non_counter_movement_jump) / recentSessions[1].non_counter_movement_jump) * 100
           : null,
-        sqjChange: recentSessions[0].sqj_height && recentSessions[1].sqj_height
-          ? ((recentSessions[0].sqj_height - recentSessions[1].sqj_height) / recentSessions[1].sqj_height) * 100
+        cmjChange: recentSessions[0].counter_movement_jump && recentSessions[1].counter_movement_jump
+          ? ((recentSessions[0].counter_movement_jump - recentSessions[1].counter_movement_jump) / recentSessions[1].counter_movement_jump) * 100
           : null,
-        djChange: recentSessions[0].dj_height && recentSessions[1].dj_height
-          ? ((recentSessions[0].dj_height - recentSessions[1].dj_height) / recentSessions[1].dj_height) * 100
+        djChange: recentSessions[0].depth_jump && recentSessions[1].depth_jump
+          ? ((recentSessions[0].depth_jump - recentSessions[1].depth_jump) / recentSessions[1].depth_jump) * 100
           : null
       }] : recentSessions.slice(0, 1);
       
@@ -106,11 +106,29 @@ export const JumpProgressCard: React.FC<JumpProgressCardProps> = ({ userId }) =>
       <CardContent className="space-y-2">
         {sessions.map((data) => (
           <div key={data.id} className="space-y-1">
-            {/* CMJ Height */}
-            {data.cmj_height !== null && (
+            {/* Non-CMJ */}
+            {data.non_counter_movement_jump !== null && (
+              <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
+                <span className="text-gray-500">Non-CMJ:</span>
+                <span className="font-semibold text-[#cb8954] text-right">{data.non_counter_movement_jump} cm</span>
+                <div className="text-right">
+                  {data.nonCmjChange !== null && data.nonCmjChange !== undefined && (
+                    <span className={`text-[10px] font-semibold ${
+                      data.nonCmjChange > 0 ? 'text-green-700' : 'text-red-500'
+                    }`}>
+                      {data.nonCmjChange > 0 ? '+' : ''}
+                      {Math.round(data.nonCmjChange)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* CMJ */}
+            {data.counter_movement_jump !== null && (
               <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
                 <span className="text-gray-500">CMJ:</span>
-                <span className="font-semibold text-[#cb8954] text-right">{data.cmj_height} cm</span>
+                <span className="font-semibold text-[#cb8954] text-right">{data.counter_movement_jump} cm</span>
                 <div className="text-right">
                   {data.cmjChange !== null && data.cmjChange !== undefined && (
                     <span className={`text-[10px] font-semibold ${
@@ -124,29 +142,11 @@ export const JumpProgressCard: React.FC<JumpProgressCardProps> = ({ userId }) =>
               </div>
             )}
             
-            {/* SQJ Height */}
-            {data.sqj_height !== null && (
+            {/* Depth Jump */}
+            {data.depth_jump !== null && (
               <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
-                <span className="text-gray-500">SQJ:</span>
-                <span className="font-semibold text-[#cb8954] text-right">{data.sqj_height} cm</span>
-                <div className="text-right">
-                  {data.sqjChange !== null && data.sqjChange !== undefined && (
-                    <span className={`text-[10px] font-semibold ${
-                      data.sqjChange > 0 ? 'text-green-700' : 'text-red-500'
-                    }`}>
-                      {data.sqjChange > 0 ? '+' : ''}
-                      {Math.round(data.sqjChange)}%
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* DJ Height */}
-            {data.dj_height !== null && (
-              <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
-                <span className="text-gray-500">DJ Height:</span>
-                <span className="font-semibold text-[#cb8954] text-right">{data.dj_height} cm</span>
+                <span className="text-gray-500">Depth Jump:</span>
+                <span className="font-semibold text-[#cb8954] text-right">{data.depth_jump} cm</span>
                 <div className="text-right">
                   {data.djChange !== null && data.djChange !== undefined && (
                     <span className={`text-[10px] font-semibold ${
@@ -160,29 +160,29 @@ export const JumpProgressCard: React.FC<JumpProgressCardProps> = ({ userId }) =>
               </div>
             )}
             
-            {/* DJ Contact Time */}
-            {data.dj_contact_time !== null && (
+            {/* Broad Jump */}
+            {data.broad_jump !== null && (
               <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
-                <span className="text-gray-500">DJ Contact:</span>
-                <span className="font-semibold text-[#cb8954] text-right">{data.dj_contact_time} ms</span>
+                <span className="text-gray-500">Broad Jump:</span>
+                <span className="font-semibold text-[#cb8954] text-right">{data.broad_jump} cm</span>
                 <div className="text-right"></div>
               </div>
             )}
             
-            {/* RSI */}
-            {data.rsi !== null && (
+            {/* Triple Jump Left */}
+            {data.triple_jump_left !== null && (
               <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
-                <span className="text-gray-500">RSI:</span>
-                <span className="font-semibold text-[#cb8954] text-right">{data.rsi}</span>
+                <span className="text-gray-500">Triple Jump L:</span>
+                <span className="font-semibold text-[#cb8954] text-right">{data.triple_jump_left} cm</span>
                 <div className="text-right"></div>
               </div>
             )}
             
-            {/* Asymmetry */}
-            {data.asymmetry_percentage !== null && (
+            {/* Triple Jump Right */}
+            {data.triple_jump_right !== null && (
               <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
-                <span className="text-gray-500">Asymmetry:</span>
-                <span className="font-semibold text-[#cb8954] text-right">{data.asymmetry_percentage}%</span>
+                <span className="text-gray-500">Triple Jump R:</span>
+                <span className="font-semibold text-[#cb8954] text-right">{data.triple_jump_right} cm</span>
                 <div className="text-right"></div>
               </div>
             )}
