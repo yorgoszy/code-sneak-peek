@@ -8,10 +8,13 @@ interface JumpProfileLatestCardProps {
 
 export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ userId }) => {
   const [session, setSession] = useState<JumpSessionCardSession | null>(null);
+  const [percentageChange, setPercentageChange] = useState<number | null>(null);
 
   useEffect(() => {
     const load = async () => {
       if (!userId) return;
+      
+      // Φέρνω τις 2 τελευταίες καταγραφές για να υπολογίσω το ποσοστό
       const { data, error } = await supabase
         .from('jump_test_sessions')
         .select(`
@@ -31,14 +34,32 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         `)
         .eq('user_id', userId)
         .order('test_date', { ascending: false })
-        .limit(1);
+        .limit(2);
 
       if (error) {
         console.error('Error loading latest jump session:', error);
         return;
       }
 
-      setSession((data || [])[0] || null);
+      const sessions = data || [];
+      if (sessions.length === 0) return;
+
+      setSession(sessions[0]);
+
+      // Υπολογίζω το ποσοστό αλλαγής από την προηγούμενη καταγραφή
+      if (sessions.length >= 2) {
+        const latestJump = sessions[0].jump_test_data?.[0];
+        const previousJump = sessions[1].jump_test_data?.[0];
+
+        // Συγκρίνω το κύριο μέτρημα (non_counter_movement_jump ή counter_movement_jump)
+        const latestValue = latestJump?.non_counter_movement_jump || latestJump?.counter_movement_jump;
+        const previousValue = previousJump?.non_counter_movement_jump || previousJump?.counter_movement_jump;
+
+        if (latestValue && previousValue) {
+          const change = ((latestValue - previousValue) / previousValue) * 100;
+          setPercentageChange(change);
+        }
+      }
     };
 
     load();
@@ -47,6 +68,6 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
   if (!session) return null;
 
   return (
-    <JumpSessionCard session={session} />
+    <JumpSessionCard session={session} percentageChange={percentageChange} />
   );
 };
