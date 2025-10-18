@@ -1179,7 +1179,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
 
                 {/* Push Ups, Pull Ups and T2B */}
                 <div className="flex gap-2">
-                  <div className="w-20">
+                  <div className="w-16">
                     <Label className="text-xs">Push Ups</Label>
                     <Input
                       type="number"
@@ -1190,7 +1190,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                     />
                   </div>
 
-                  <div className="w-20">
+                  <div className="w-16">
                     <Label className="text-xs">Pull Ups</Label>
                     <Input
                       type="number"
@@ -1201,7 +1201,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                     />
                   </div>
 
-                  <div className="w-20">
+                  <div className="w-16">
                     <Label className="text-xs">T2B</Label>
                     <Input
                       type="number"
