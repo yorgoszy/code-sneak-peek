@@ -715,7 +715,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                 </div>
 
                 <div className="w-20">
-                  <Label className="text-xs">1min Rest</Label>
+                  <Label className="text-xs whitespace-nowrap">1min Rest</Label>
                   <Input
                     type="number"
                     placeholder="bpm"
