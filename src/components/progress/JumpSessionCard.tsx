@@ -34,7 +34,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
   const jumpData = session.jump_test_data?.[0];
 
   return (
-    <Card key={session.id} className="rounded-none w-[200px]">
+    <Card key={session.id} className="rounded-none w-[150px]">
       <CardHeader className="pb-1 pt-2 px-2">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -113,20 +113,25 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
               </div>
             )}
             {(jumpData.triple_jump_left !== null || jumpData.triple_jump_right !== null) && (
-              <div className="flex justify-between items-center text-[9px]">
-                <span className="text-gray-500">Triple Jump:</span>
-                <div className="flex gap-2">
-                  {jumpData.triple_jump_left !== null && (
+              <div className="space-y-0.5">
+                {jumpData.triple_jump_left !== null && (
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-gray-500">L:</span>
                     <span className="font-semibold text-[#cb8954]">
-                      L: {jumpData.triple_jump_left}<span className="text-[8px] ml-0.5">cm</span>
+                      {jumpData.triple_jump_left}
+                      <span className="text-[9px] ml-0.5">cm</span>
                     </span>
-                  )}
-                  {jumpData.triple_jump_right !== null && (
+                  </div>
+                )}
+                {jumpData.triple_jump_right !== null && (
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-gray-500">R:</span>
                     <span className="font-semibold text-[#cb8954]">
-                      R: {jumpData.triple_jump_right}<span className="text-[8px] ml-0.5">cm</span>
+                      {jumpData.triple_jump_right}
+                      <span className="text-[9px] ml-0.5">cm</span>
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
       </div>
