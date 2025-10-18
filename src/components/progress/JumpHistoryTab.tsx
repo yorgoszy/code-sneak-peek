@@ -72,7 +72,8 @@ export const JumpHistoryTab: React.FC = () => {
             triple_jump_right
           )
         `)
-        .order('test_date', { ascending: false });
+        .order('test_date', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setSessions(data as any || []);
