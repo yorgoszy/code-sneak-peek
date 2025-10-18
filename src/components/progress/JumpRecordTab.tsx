@@ -161,8 +161,8 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
                 />
               </div>
 
-              {/* CMJ Height */}
-              <div>
+              {/* CMJ Height and Save */}
+              <div className="flex justify-between items-end">
                 <div className="w-16">
                   <Label className="text-[10px]">cm</Label>
                   <Input
@@ -174,10 +174,7 @@ export const JumpRecordTab: React.FC<JumpRecordTabProps> = ({ users, onRecordSav
                     className="rounded-none no-spinners h-6 text-[10px]"
                   />
                 </div>
-              </div>
 
-              {/* Save Button */}
-              <div className="flex justify-end">
                 <Button 
                   onClick={() => handleSave(form.id)} 
                   className="rounded-none h-6 w-6 p-0"
