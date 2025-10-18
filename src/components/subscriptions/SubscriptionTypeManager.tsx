@@ -101,34 +101,38 @@ export const SubscriptionTypeManager: React.FC = () => {
 
   const checkUserRole = async () => {
     try {
-      console.log('🔍 Checking user role...');
+      console.log('🔍 [SubscriptionTypeManager] Checking user role...');
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        console.log('❌ No authenticated user found');
+        console.log('❌ [SubscriptionTypeManager] No authenticated user found');
         setIsAdmin(false);
         setRoleLoading(false);
         return;
       }
 
-      console.log('👤 Authenticated user:', user.id);
+      console.log('👤 [SubscriptionTypeManager] Authenticated user ID:', user.id);
+      console.log('👤 [SubscriptionTypeManager] User email:', user.email);
 
       // Check if user is admin in app_users table
       const { data: appUser, error } = await supabase
         .from('app_users')
-        .select('role')
+        .select('id, auth_user_id, email, role')
         .eq('auth_user_id', user.id)
         .single();
 
       if (error) {
-        console.error('❌ Error checking user role:', error);
+        console.error('❌ [SubscriptionTypeManager] Error checking user role:', error);
+        console.error('❌ [SubscriptionTypeManager] Error details:', JSON.stringify(error));
         setIsAdmin(false);
       } else {
-        console.log('✅ User role:', appUser?.role);
+        console.log('✅ [SubscriptionTypeManager] Found app_user:', appUser);
+        console.log('✅ [SubscriptionTypeManager] User role:', appUser?.role);
+        console.log('✅ [SubscriptionTypeManager] Is admin?', appUser?.role === 'admin');
         setIsAdmin(appUser?.role === 'admin');
       }
     } catch (error) {
-      console.error('💥 Error in checkUserRole:', error);
+      console.error('💥 [SubscriptionTypeManager] Error in checkUserRole:', error);
       setIsAdmin(false);
     } finally {
       setRoleLoading(false);
