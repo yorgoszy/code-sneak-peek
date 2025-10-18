@@ -619,7 +619,7 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         const calculatedMas = calculateMas(form.distance, form.duration);
 
         return (
-          <Card key={form.id} className="rounded-none w-fit">
+          <Card key={form.id} className="rounded-none w-2/3">
             <CardHeader className="pb-1 pt-2 px-3">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-xs">MAS Test {forms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
