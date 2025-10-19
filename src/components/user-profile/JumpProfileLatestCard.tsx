@@ -56,6 +56,49 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
       const allSessions = data || [];
       
+      // Βοηθητικές συναρτήσεις για εξαγωγή τιμών και ποσοστού
+      const extractValue = (session: any, type: 'nonCmj' | 'cmj' | 'depth' | 'broad' | 'triple'): number | null => {
+        const d = session?.jump_test_data?.[0];
+        if (d) {
+          switch (type) {
+            case 'nonCmj':
+              return typeof d.non_counter_movement_jump === 'number' ? d.non_counter_movement_jump : null;
+            case 'cmj':
+              return typeof d.counter_movement_jump === 'number' ? d.counter_movement_jump : null;
+            case 'depth':
+              return typeof d.depth_jump === 'number' ? d.depth_jump : null;
+            case 'broad':
+              return typeof d.broad_jump === 'number' ? d.broad_jump : null;
+            case 'triple': {
+              const L = typeof d.triple_jump_left === 'number' ? d.triple_jump_left : 0;
+              const R = typeof d.triple_jump_right === 'number' ? d.triple_jump_right : 0;
+              return (L || R) ? (L + R) / 2 : null;
+            }
+          }
+        }
+        // Fallback από τα notes (π.χ. "47cm" ή Triple: "L: 560cm R: 660cm")
+        const notes: string = session?.notes || '';
+        if (type === 'triple') {
+          const lMatch = notes.match(/L:\s*(\d+(?:\.\d+)?)/i);
+          const rMatch = notes.match(/R:\s*(\d+(?:\.\d+)?)/i);
+          const L = lMatch ? parseFloat(lMatch[1]) : 0;
+          const R = rMatch ? parseFloat(rMatch[1]) : 0;
+          return (L || R) ? (L + R) / 2 : null;
+        } else {
+          const cmMatch = notes.match(/(\d+(?:\.\d+)?)\s*cm/i) || notes.match(/(\d+(?:\.\d+)?)/);
+          return cmMatch ? parseFloat(cmMatch[1]) : null;
+        }
+      };
+
+      const computeChange = (values: number[]): number | null => {
+        if (!values || values.length < 2) return null;
+        const current = values[0];
+        const previous = values[1];
+        if (typeof current !== 'number' || typeof previous !== 'number' || previous === 0) return null;
+        const change = ((current - previous) / previous) * 100;
+        return Number.isFinite(change) ? change : null;
+      };
+
       // Χωρίζω τα sessions ανά τύπο
       const nonCmjSessions = allSessions.filter(s => s.notes?.includes('Non-CMJ Test'));
       const cmjSessions = allSessions.filter(s => s.notes?.includes('CMJ Test'));
@@ -78,80 +121,28 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         tripleJump: latestTripleJump
       });
 
-      // Υπολογίζω το ποσοστό για Non-CMJ
-      let nonCmjChange: number | null = null;
-      if (nonCmjSessions.length >= 2) {
-        const currentJump = nonCmjSessions[0].jump_test_data?.[0];
-        const previousJump = nonCmjSessions[1].jump_test_data?.[0];
-        
-        const currentValue = currentJump?.non_counter_movement_jump;
-        const previousValue = previousJump?.non_counter_movement_jump;
+      // Υπολογισμός ποσοστών από τις 2 τελευταίες έγκυρες μετρήσεις (data ή notes)
+      const nonValues = nonCmjSessions
+        .map((s: any) => extractValue(s, 'nonCmj'))
+        .filter((v: number | null): v is number => typeof v === 'number');
+      const cmjValues = cmjSessions
+        .map((s: any) => extractValue(s, 'cmj'))
+        .filter((v: number | null): v is number => typeof v === 'number');
+      const depthValues = depthJumpSessions
+        .map((s: any) => extractValue(s, 'depth'))
+        .filter((v: number | null): v is number => typeof v === 'number');
+      const broadValues = broadJumpSessions
+        .map((s: any) => extractValue(s, 'broad'))
+        .filter((v: number | null): v is number => typeof v === 'number');
+      const tripleValues = tripleJumpSessions
+        .map((s: any) => extractValue(s, 'triple'))
+        .filter((v: number | null): v is number => typeof v === 'number');
 
-        if (currentValue && previousValue) {
-          nonCmjChange = ((currentValue - previousValue) / previousValue) * 100;
-        }
-      }
-
-      // Υπολογίζω το ποσοστό για CMJ
-      let cmjChange: number | null = null;
-      if (cmjSessions.length >= 2) {
-        const currentJump = cmjSessions[0].jump_test_data?.[0];
-        const previousJump = cmjSessions[1].jump_test_data?.[0];
-        
-        const currentValue = currentJump?.counter_movement_jump;
-        const previousValue = previousJump?.counter_movement_jump;
-
-        if (currentValue && previousValue) {
-          cmjChange = ((currentValue - previousValue) / previousValue) * 100;
-        }
-      }
-
-      // Υπολογίζω το ποσοστό για Depth Jump
-      let depthJumpChange: number | null = null;
-      if (depthJumpSessions.length >= 2) {
-        const currentJump = depthJumpSessions[0].jump_test_data?.[0];
-        const previousJump = depthJumpSessions[1].jump_test_data?.[0];
-        
-        const currentValue = currentJump?.depth_jump;
-        const previousValue = previousJump?.depth_jump;
-
-        if (currentValue && previousValue) {
-          depthJumpChange = ((currentValue - previousValue) / previousValue) * 100;
-        }
-      }
-
-      // Υπολογίζω το ποσοστό για Broad Jump
-      let broadJumpChange: number | null = null;
-      if (broadJumpSessions.length >= 2) {
-        const currentJump = broadJumpSessions[0].jump_test_data?.[0];
-        const previousJump = broadJumpSessions[1].jump_test_data?.[0];
-        
-        const currentValue = currentJump?.broad_jump;
-        const previousValue = previousJump?.broad_jump;
-
-        if (currentValue && previousValue) {
-          broadJumpChange = ((currentValue - previousValue) / previousValue) * 100;
-        }
-      }
-
-      // Υπολογίζω το ποσοστό για Triple Jump (average of left and right)
-      let tripleJumpChange: number | null = null;
-      if (tripleJumpSessions.length >= 2) {
-        const currentJump = tripleJumpSessions[0].jump_test_data?.[0];
-        const previousJump = tripleJumpSessions[1].jump_test_data?.[0];
-        
-        const currentLeft = currentJump?.triple_jump_left || 0;
-        const currentRight = currentJump?.triple_jump_right || 0;
-        const previousLeft = previousJump?.triple_jump_left || 0;
-        const previousRight = previousJump?.triple_jump_right || 0;
-
-        const currentAvg = (currentLeft + currentRight) / 2;
-        const previousAvg = (previousLeft + previousRight) / 2;
-
-        if (currentAvg && previousAvg) {
-          tripleJumpChange = ((currentAvg - previousAvg) / previousAvg) * 100;
-        }
-      }
+      const nonCmjChange = computeChange(nonValues);
+      const cmjChange = computeChange(cmjValues);
+      const depthJumpChange = computeChange(depthValues);
+      const broadJumpChange = computeChange(broadValues);
+      const tripleJumpChange = computeChange(tripleValues);
 
       setPercentageChanges({
         nonCmj: nonCmjChange,
