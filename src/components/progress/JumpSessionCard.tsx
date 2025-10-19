@@ -159,7 +159,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
 
     <div className="pt-1 border-t border-gray-200 mt-auto">
       <div className="text-[10px] text-gray-400 text-center">
-        Τελευταία μέτρηση: {format(new Date(session.test_date), 'dd/MM/yy')}
+        {format(new Date(session.test_date), 'dd/MM/yy')}
       </div>
     </div>
 
