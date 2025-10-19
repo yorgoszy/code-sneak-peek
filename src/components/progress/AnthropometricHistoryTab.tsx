@@ -229,13 +229,6 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
                     </div>
                   )}
                 </div>
-                
-                {result.notes && (
-                  <div className="mt-2 pt-2 border-t">
-                    <p className="text-xs text-muted-foreground mb-0.5">Σημειώσεις</p>
-                    <p className="text-xs">{result.notes}</p>
-                  </div>
-                )}
               </CardContent>
             )}
           </Card>
