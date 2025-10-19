@@ -188,7 +188,6 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Σχολικές Σημειώσεις</h2>
             <SchoolNotes userId={userProfile?.id} />
           </div>
         );
