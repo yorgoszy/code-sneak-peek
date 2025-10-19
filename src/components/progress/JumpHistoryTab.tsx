@@ -45,6 +45,8 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionIdToDelete, setSessionIdToDelete] = useState<string | null>(null);
   const typeDropdownRef = useRef<HTMLDivElement>(null);
+  const [userSearch, setUserSearch] = useState<string>("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     fetchSessions();
@@ -115,6 +117,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
     setSelectedTypes([]);
     setSelectedYear("all");
     setTypeSearch("");
+    setUserSearch("");
   };
 
   // Get unique jump types from notes
@@ -144,8 +147,34 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
     return Array.from(new Set(years)).sort((a, b) => b - a);
   }, [sessions]);
 
+  // Get filtered user suggestions
+  const userSuggestions = useMemo(() => {
+    if (!userSearch.trim()) return [];
+    
+    const searchLower = userSearch.toLowerCase();
+    return Array.from(usersMap.entries())
+      .map(([id, user]) => ({ id, ...user }))
+      .filter(user => 
+        user.name?.toLowerCase().includes(searchLower) || 
+        user.email?.toLowerCase().includes(searchLower)
+      )
+      .slice(0, 10);
+  }, [userSearch, usersMap]);
+
   const filteredSessions = useMemo(() => {
     return sessions.filter(session => {
+      // Filter by user search (name or email) - only in admin dashboard
+      if (!readOnly && userSearch.trim()) {
+        const user = usersMap.get(session.user_id);
+        if (!user) return false;
+        
+        const searchLower = userSearch.toLowerCase();
+        const nameMatch = user.name?.toLowerCase().includes(searchLower);
+        const emailMatch = user.email?.toLowerCase().includes(searchLower);
+        
+        if (!nameMatch && !emailMatch) return false;
+      }
+      
       // Filter by jump types
       if (selectedTypes.length > 0) {
         let matchesType = false;
@@ -160,7 +189,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
       if (selectedYear !== "all" && new Date(session.test_date).getFullYear().toString() !== selectedYear) return false;
       return true;
     });
-  }, [sessions, selectedTypes, selectedYear]);
+  }, [sessions, selectedTypes, selectedYear, userSearch, usersMap, readOnly]);
 
   const sessionsByType = useMemo(() => {
     const nonCmj = filteredSessions.filter(s => s.notes?.startsWith('Non-CMJ Test'));
@@ -224,6 +253,48 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex gap-3 flex-wrap items-start">
+        {!readOnly && (
+          <div className="relative w-[250px]">
+            <Input
+              type="text"
+              placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              className="rounded-none pr-8"
+            />
+            {userSearch && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+                onClick={() => setUserSearch("")}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+            
+            {showSuggestions && userSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
+                {userSuggestions.map((user) => (
+                  <div
+                    key={user.id}
+                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => {
+                      setUserSearch(user.name);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    <div className="font-medium text-sm">{user.name}</div>
+                    <div className="text-xs text-gray-500">{user.email}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Jump Types Multi-Select */}
         <div className="relative w-[250px]" ref={typeDropdownRef}>
           <div
