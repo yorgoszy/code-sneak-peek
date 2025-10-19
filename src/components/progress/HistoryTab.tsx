@@ -265,16 +265,12 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
                 {availableExercises.map(exercise => (
                   <div
                     key={exercise.id}
-                    className="flex items-center space-x-2 p-2 hover:bg-gray-100 cursor-pointer rounded-none"
+                    className={`p-2 hover:bg-gray-100 cursor-pointer rounded-none ${
+                      selectedExercises.includes(exercise.id) ? 'bg-[#00ffba]/20 font-medium' : ''
+                    }`}
                     onClick={() => toggleExercise(exercise.id)}
                   >
-                    <Checkbox
-                      checked={selectedExercises.includes(exercise.id)}
-                      onCheckedChange={() => toggleExercise(exercise.id)}
-                    />
-                    <label className="text-sm cursor-pointer flex-1">
-                      {exercise.name}
-                    </label>
+                    <span className="text-sm">{exercise.name}</span>
                   </div>
                 ))}
               </div>
