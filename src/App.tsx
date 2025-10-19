@@ -27,7 +27,6 @@ import ArticlesWithSidebar from "@/pages/Dashboard/ArticlesWithSidebar";
 import ResultsWithSidebar from "@/pages/Dashboard/ResultsWithSidebar";
 import TestResultsWithSidebar from "@/pages/Dashboard/TestResultsWithSidebar";
 import ProgressTrackingWithSidebar from "@/pages/Dashboard/ProgressTrackingWithSidebar";
-import UserProgressHistory from "@/pages/Dashboard/UserProgressHistory";
 import Shop from "@/pages/Shop";
 import AdminShopWithSidebar from "@/pages/Dashboard/AdminShopWithSidebar";
 import OnlineCoaching from "@/pages/OnlineCoaching";
@@ -81,7 +80,6 @@ function App() {
                 <Route path="/dashboard/user-profile/:userId" element={<UserProfile />} />
                 <Route path="/dashboard/user-profile/:userId/edit" element={<ProfileEdit />} />
                 <Route path="/dashboard/user-profile/:userId/shop" element={<ShopWithSidebar />} />
-                <Route path="/dashboard/user-profile/:userId/test" element={<UserProgressHistory />} />
                 <Route path="/program-builder" element={<ProgramBuilder />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
