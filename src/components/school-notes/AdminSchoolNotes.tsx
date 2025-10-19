@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { BookOpen, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval, isSameDay } from "date-fns";
+import { el } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface SchoolNote {
   id: string;
@@ -31,6 +37,8 @@ export const AdminSchoolNotes = () => {
   const [notes, setNotes] = useState<SchoolNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedWeek, setSelectedWeek] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>();
 
   useEffect(() => {
     fetchNotes();
@@ -68,6 +76,31 @@ export const AdminSchoolNotes = () => {
     ? notes 
     : notes.filter(note => note.category === selectedCategory);
 
+  // Get week days
+  const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Monday
+  const weekEnd = endOfWeek(selectedWeek, { weekStartsOn: 1 });
+  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+  // Group notes by day
+  const notesByDay = weekDays.map(day => ({
+    date: day,
+    notes: filteredNotes.filter(note => 
+      isSameDay(new Date(note.created_at), day)
+    )
+  }));
+
+  const handlePreviousWeek = () => {
+    setSelectedWeek(prev => subWeeks(prev, 1));
+  };
+
+  const handleNextWeek = () => {
+    setSelectedWeek(prev => addWeeks(prev, 1));
+  };
+
+  const handleToday = () => {
+    setSelectedWeek(new Date());
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -80,10 +113,64 @@ export const AdminSchoolNotes = () => {
     <div className="space-y-4">
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            Σχολικές Σημειώσεις - Admin View
-          </CardTitle>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Σχολικές Σημειώσεις - Εβδομαδιαία Προβολή
+            </CardTitle>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviousWeek}
+                className="rounded-none"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="rounded-none min-w-[240px]">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(weekStart, "d MMM", { locale: el })} - {format(weekEnd, "d MMM yyyy", { locale: el })}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setSelectedDate(date);
+                        setSelectedWeek(date);
+                      }
+                    }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextWeek}
+                className="rounded-none"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleToday}
+                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              >
+                Σήμερα
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -101,47 +188,64 @@ export const AdminSchoolNotes = () => {
 
             {CATEGORIES.map((cat) => (
               <TabsContent key={cat.value} value={cat.value} className="space-y-4 mt-4">
-                {filteredNotes.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Δεν υπάρχουν σημειώσεις σε αυτή την κατηγορία
-                  </div>
-                ) : (
-                  filteredNotes.map((note) => (
-                    <Card key={note.id} className="rounded-none">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-gray-500 mb-1">Γονέας</p>
-                            <CardTitle className="text-base">
-                              {note.app_users?.name || "Άγνωστος Γονέας"}
-                            </CardTitle>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {new Date(note.created_at).toLocaleDateString('el-GR')}
+                {/* Calendar Week View */}
+                <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+                  {notesByDay.map((day, index) => (
+                    <Card key={index} className="rounded-none">
+                      <CardHeader className="p-3 bg-gray-50 border-b">
+                        <CardTitle className="text-sm font-semibold text-center">
+                          {format(day.date, "EEEE", { locale: el })}
+                          <br />
+                          <span className="text-xs text-gray-500">
+                            {format(day.date, "d MMM", { locale: el })}
                           </span>
-                        </div>
+                        </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3">
-                        {note.ai_summary && (
-                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-none">
-                            <p className="text-sm font-medium text-blue-900 mb-1">
-                              AI Περίληψη:
-                            </p>
-                            <p className="text-sm text-blue-800">
-                              {note.ai_summary}
-                            </p>
-                          </div>
-                        )}
-                        <div>
-                          <p className="text-sm font-medium mb-1">Πλήρες Κείμενο:</p>
-                          <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                            {note.content}
+                      <CardContent className="p-2 space-y-2 min-h-[200px]">
+                        {day.notes.length === 0 ? (
+                          <p className="text-xs text-gray-400 text-center py-4">
+                            Δεν υπάρχουν σημειώσεις
                           </p>
-                        </div>
+                        ) : (
+                          day.notes.map((note) => (
+                            <Card key={note.id} className="rounded-none bg-blue-50 border-blue-200">
+                              <CardContent className="p-2 space-y-1">
+                                <div className="flex items-start justify-between gap-1">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-gray-600 font-medium truncate">
+                                      {note.app_users?.name || "Άγνωστος"}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {CATEGORIES.find(c => c.value === note.category)?.label}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                {note.ai_summary && (
+                                  <div className="mt-2">
+                                    <p className="text-xs font-medium text-blue-900 mb-1">AI:</p>
+                                    <p className="text-xs text-blue-800 line-clamp-3">
+                                      {note.ai_summary}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                <details className="mt-2">
+                                  <summary className="text-xs text-blue-600 cursor-pointer hover:underline">
+                                    Πλήρες κείμενο
+                                  </summary>
+                                  <p className="text-xs text-gray-700 mt-1 whitespace-pre-wrap">
+                                    {note.content}
+                                  </p>
+                                </details>
+                              </CardContent>
+                            </Card>
+                          ))
+                        )}
                       </CardContent>
                     </Card>
-                  ))
-                )}
+                  ))}
+                </div>
               </TabsContent>
             ))}
           </Tabs>
