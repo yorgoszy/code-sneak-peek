@@ -177,18 +177,16 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
         </div>
 
         {previousData && (
-          <div className="space-y-1 pt-2 border-t border-gray-200 mt-2">
-            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό (1 προηγούμενες)</div>
-            <div className="flex flex-col gap-0.5 text-[10px] text-gray-400">
-              <div className="flex items-center justify-between">
-                <span>{format(new Date(previousData.test_date), 'dd/MM/yy')}</span>
-              </div>
-              <span className="text-right">
-                {previousData.height && `Ύψος:${previousData.height}cm `}
-                {previousData.weight && `Βάρος:${previousData.weight}kg `}
-                {previousData.body_fat_percentage && `Λίπος:${previousData.body_fat_percentage}% `}
-                {previousData.muscle_mass_percentage && `Μυϊκή:${previousData.muscle_mass_percentage}%`}
-              </span>
+          <div className="pt-2 border-t border-gray-200 mt-2">
+            <div className="text-[9px] text-gray-400">
+              Ιστορικό (1 προηγούμενες)
+            </div>
+            <div className="text-[9px] text-gray-400 underline decoration-red-500">
+              {format(new Date(previousData.test_date), 'dd/MM/yy')}
+              {previousData.height && ` Ύψος:${previousData.height}cm`}
+              {previousData.weight && ` Βάρος:${previousData.weight}kg`}
+              {previousData.body_fat_percentage && ` Λίπος:${previousData.body_fat_percentage}%`}
+              {previousData.muscle_mass_percentage && ` Μυϊκή:${previousData.muscle_mass_percentage}%`}
             </div>
           </div>
         )}
