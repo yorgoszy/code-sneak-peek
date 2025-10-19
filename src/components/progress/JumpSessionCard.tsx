@@ -36,7 +36,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
   const jumpData = session.jump_test_data?.[0];
 
   return (
-    <Card key={session.id} className="rounded-none w-full flex flex-col">
+    <Card key={session.id} className="rounded-none w-full flex flex-col min-h-[200px]">
       <CardHeader className="pb-1 pt-2 px-1.5">
         <div className="flex items-start justify-between">
           <div className="flex-1">
