@@ -25,7 +25,11 @@ interface Child {
   birth_date: string;
 }
 
-export const SchoolNotes = () => {
+interface SchoolNotesProps {
+  userId?: string;
+}
+
+export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
   const { user } = useAuth();
   const [category, setCategory] = useState<string>("");
   const [content, setContent] = useState<string>("");
@@ -35,27 +39,35 @@ export const SchoolNotes = () => {
 
   useEffect(() => {
     fetchChildren();
-  }, [user]);
+  }, [user, userId]);
 
   const fetchChildren = async () => {
-    if (!user?.id) return;
+    if (!user?.id && !userId) return;
 
     try {
-      const { data: appUser } = await supabase
-        .from('app_users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
+      let appUserId = userId;
+      
+      // If no userId prop, get from auth user
+      if (!appUserId) {
+        const { data: appUser } = await supabase
+          .from('app_users')
+          .select('id')
+          .eq('auth_user_id', user!.id)
+          .single();
 
-      if (!appUser) return;
+        if (!appUser) return;
+        appUserId = appUser.id;
+      }
 
       const { data, error } = await supabase
         .from('children')
         .select('*')
-        .eq('parent_id', appUser.id)
+        .eq('parent_id', appUserId)
         .order('birth_date', { ascending: false });
 
       if (error) throw error;
+      
+      console.log('Loaded children:', data);
       setChildren(data || []);
     } catch (error) {
       console.error('Error fetching children:', error);
@@ -90,15 +102,20 @@ export const SchoolNotes = () => {
     setIsSubmitting(true);
 
     try {
-      // Get current user from app_users
-      const { data: appUser, error: userError } = await supabase
-        .from('app_users')
-        .select('id')
-        .eq('auth_user_id', user?.id)
-        .single();
+      // Use provided userId or get from auth
+      let appUserId = userId;
+      
+      if (!appUserId) {
+        const { data: appUser, error: userError } = await supabase
+          .from('app_users')
+          .select('id')
+          .eq('auth_user_id', user?.id)
+          .single();
 
-      if (userError || !appUser) {
-        throw new Error("Δεν βρέθηκε ο χρήστης");
+        if (userError || !appUser) {
+          throw new Error("Δεν βρέθηκε ο χρήστης");
+        }
+        appUserId = appUser.id;
       }
 
       // Create a note for each selected child
@@ -113,8 +130,8 @@ export const SchoolNotes = () => {
         const { data, error } = await supabase
           .from('school_notes')
           .insert({
-            user_id: appUser.id,
-            parent_id: appUser.id,
+            user_id: appUserId,
+            parent_id: appUserId,
             child_id: childId,
             child_age: childAge,
             category,

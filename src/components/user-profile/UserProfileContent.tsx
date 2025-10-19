@@ -189,7 +189,7 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <h2 className="text-xl font-semibold">Σχολικές Σημειώσεις</h2>
-            <SchoolNotes />
+            <SchoolNotes userId={userProfile?.id} />
           </div>
         );
       default:
