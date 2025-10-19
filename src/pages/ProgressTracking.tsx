@@ -54,37 +54,37 @@ export default function ProgressTracking() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Καταγραφή Προόδου</h1>
+    <div className="p-3 md:p-6 space-y-4 md:space-y-6">
+      <h1 className="text-xl md:text-2xl font-bold">Καταγραφή Προόδου</h1>
 
       <Tabs defaultValue="force-velocity" className="w-full">
-        <TabsList className="rounded-none w-full grid grid-cols-4">
-          <TabsTrigger value="force-velocity" className="rounded-none">
+        <TabsList className="rounded-none w-full grid grid-cols-2 md:grid-cols-4 gap-1">
+          <TabsTrigger value="force-velocity" className="rounded-none text-xs md:text-sm">
             Force/Velocity
           </TabsTrigger>
-          <TabsTrigger value="endurance" className="rounded-none">
+          <TabsTrigger value="endurance" className="rounded-none text-xs md:text-sm">
             Endurance
           </TabsTrigger>
-          <TabsTrigger value="jump-profile" className="rounded-none">
+          <TabsTrigger value="jump-profile" className="rounded-none text-xs md:text-sm">
             Jump Profile
           </TabsTrigger>
-          <TabsTrigger value="anthropometric" className="rounded-none">
+          <TabsTrigger value="anthropometric" className="rounded-none text-xs md:text-sm">
             Σωματομετρικά
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="force-velocity" className="mt-6">
+        <TabsContent value="force-velocity" className="mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
             <TabsList className="rounded-none w-full bg-gray-100">
-              <TabsTrigger value="new" className="rounded-none flex-1">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-sm md:text-base">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-sm md:text-base">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="new" className="mt-6">
+            <TabsContent value="new" className="mt-4 md:mt-6">
               <NewRecordTab 
                 users={users} 
                 exercises={exercises} 
@@ -92,24 +92,24 @@ export default function ProgressTracking() {
               />
             </TabsContent>
 
-            <TabsContent value="history" className="mt-6">
+            <TabsContent value="history" className="mt-4 md:mt-6">
               <HistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
-        <TabsContent value="endurance" className="mt-6">
+        <TabsContent value="endurance" className="mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
             <TabsList className="rounded-none w-full bg-gray-100">
-              <TabsTrigger value="new" className="rounded-none flex-1">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-sm md:text-base">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-sm md:text-base">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="new" className="mt-6">
+            <TabsContent value="new" className="mt-4 md:mt-6">
               <EnduranceRecordTab 
                 users={users} 
                 exercises={exercises}
@@ -117,55 +117,55 @@ export default function ProgressTracking() {
               />
             </TabsContent>
 
-            <TabsContent value="history" className="mt-6">
+            <TabsContent value="history" className="mt-4 md:mt-6">
               <EnduranceHistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
-        <TabsContent value="jump-profile" className="mt-6">
+        <TabsContent value="jump-profile" className="mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
             <TabsList className="rounded-none w-full bg-gray-100">
-              <TabsTrigger value="new" className="rounded-none flex-1">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-sm md:text-base">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-sm md:text-base">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="new" className="mt-6">
+            <TabsContent value="new" className="mt-4 md:mt-6">
               <JumpRecordTab 
                 users={users} 
                 onRecordSaved={handleRecordSaved}
               />
             </TabsContent>
 
-            <TabsContent value="history" className="mt-6">
+            <TabsContent value="history" className="mt-4 md:mt-6">
               <JumpHistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
-        <TabsContent value="anthropometric" className="mt-6">
+        <TabsContent value="anthropometric" className="mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
             <TabsList className="rounded-none w-full bg-gray-100">
-              <TabsTrigger value="new" className="rounded-none flex-1">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-sm md:text-base">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-sm md:text-base">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="new" className="mt-6">
+            <TabsContent value="new" className="mt-4 md:mt-6">
               <AnthropometricRecordTab 
                 users={users} 
                 onRecordSaved={handleRecordSaved}
               />
             </TabsContent>
 
-            <TabsContent value="history" className="mt-6">
+            <TabsContent value="history" className="mt-4 md:mt-6">
               <AnthropometricHistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
