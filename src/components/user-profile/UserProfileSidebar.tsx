@@ -203,18 +203,6 @@ export const UserProfileSidebar = forwardRef<
       badge: activePrograms > 0 ? activePrograms : null
     },
     { 
-      icon: Calendar, 
-      label: "Ημερολόγιο", 
-      key: "calendar",
-      badge: null
-    },
-    { 
-      icon: FileText, 
-      label: "Τεστ", 
-      key: "tests",
-      badge: stats.testsCount > 0 ? stats.testsCount : null
-    },
-    { 
       icon: TrendingUp, 
       label: "Πρόοδος", 
       key: "progress",
@@ -325,14 +313,10 @@ export const UserProfileSidebar = forwardRef<
       <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
         Γρήγορη Επισκόπηση
       </h3>
-      <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="grid grid-cols-1 gap-2 text-xs">
         <div className="bg-gray-50 p-2 rounded-none">
           <div className="font-semibold text-gray-800">{stats.programsCount}</div>
           <div className="text-gray-600 text-xs">Προγράμματα</div>
-        </div>
-        <div className="bg-gray-50 p-2 rounded-none">
-          <div className="font-semibold text-gray-800">{stats.testsCount}</div>
-          <div className="text-gray-600 text-xs">Τεστ</div>
         </div>
       </div>
     </div>
