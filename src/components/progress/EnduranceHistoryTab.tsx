@@ -12,17 +12,17 @@ import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
 
 interface EnduranceHistoryTabProps {
   selectedUserId?: string;
+  readOnly?: boolean;
 }
 
-export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ selectedUserId }) => {
+export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [usersMap, setUsersMap] = useState<Map<string, any>>(new Map());
-  const [userSearch, setUserSearch] = useState<string>("");
+  const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>("all");
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
@@ -141,50 +141,44 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
   };
 
   const handleClearFilters = () => {
-    setUserSearch("");
+    setSelectedExercises([]);
     setSelectedCategory("all");
     setSelectedYear("all");
   };
 
-  // Get unique years - MUST be before any conditional returns
-  const availableYears = useMemo(() => {
-    const years = sessions.map(s => new Date(s.test_date).getFullYear());
-    return Array.from(new Set(years)).sort((a, b) => b - a);
+  // Get unique exercises
+  const availableExercises = useMemo(() => {
+    const exercisesMap = new Map<string, string>();
+    sessions.forEach(session => {
+      const data = session.endurance_test_data?.[0];
+      if (data?.exercises?.id && data?.exercises?.name) {
+        exercisesMap.set(data.exercises.id, data.exercises.name);
+      }
+    });
+    return Array.from(exercisesMap.entries())
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [sessions]);
 
-  // Get filtered user suggestions
-  const userSuggestions = useMemo(() => {
-    if (!userSearch.trim()) return [];
-    
-    const searchLower = userSearch.toLowerCase();
-    return Array.from(usersMap.entries())
-      .map(([id, user]) => ({ id, ...user }))
-      .filter(user => 
-        user.name?.toLowerCase().includes(searchLower) || 
-        user.email?.toLowerCase().includes(searchLower)
-      )
-      .slice(0, 10); // Limit to 10 suggestions
-  }, [userSearch, usersMap]);
-
-  // Filter sessions - MUST be before any conditional returns
+  // Filter sessions
   const filteredSessions = useMemo(() => {
     return sessions.filter(s => {
-      // Filter by user search (name or email)
-      if (userSearch.trim()) {
-        const user = usersMap.get(s.user_id);
-        if (!user) return false;
-        
-        const searchLower = userSearch.toLowerCase();
-        const nameMatch = user.name?.toLowerCase().includes(searchLower);
-        const emailMatch = user.email?.toLowerCase().includes(searchLower);
-        
-        if (!nameMatch && !emailMatch) return false;
+      // Filter by selected exercises
+      if (selectedExercises.length > 0) {
+        const exerciseId = s.endurance_test_data?.[0]?.exercises?.id;
+        if (!exerciseId || !selectedExercises.includes(exerciseId)) return false;
       }
       
       if (selectedYear !== "all" && new Date(s.test_date).getFullYear().toString() !== selectedYear) return false;
       return true;
     });
-  }, [sessions, userSearch, selectedYear, usersMap]);
+  }, [sessions, selectedExercises, selectedYear]);
+
+  // Get unique years
+  const availableYears = useMemo(() => {
+    const years = sessions.map(s => new Date(s.test_date).getFullYear());
+    return Array.from(new Set(years)).sort((a, b) => b - a);
+  }, [sessions]);
 
   // Group filtered sessions by test type - MUST be before any conditional returns
   const masSessions = useMemo(() => {
@@ -240,6 +234,14 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
     return <div className="text-center py-8 text-gray-500">Δεν υπάρχουν καταγραφές</div>;
   }
 
+  const toggleExercise = (exerciseId: string) => {
+    setSelectedExercises(prev => 
+      prev.includes(exerciseId) 
+        ? prev.filter(id => id !== exerciseId)
+        : [...prev, exerciseId]
+    );
+  };
+
   const renderSessionCard = (session: any) => {
     const enduranceData = session.endurance_test_data[0];
     
@@ -264,14 +266,16 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
                   </span>
                 )}
               </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleDeleteSessionClick(session.id)}
-                className="rounded-none h-8 w-8 p-0 shrink-0"
-              >
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
+              {!readOnly && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleDeleteSessionClick(session.id)}
+                  className="rounded-none h-8 w-8 p-0 shrink-0"
+                >
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </Button>
+              )}
             </div>
             
             {/* Μετρήσεις */}
@@ -383,45 +387,37 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex gap-3 flex-wrap items-start">
-        <div className="relative w-[250px]">
-          <Input
-            type="text"
-            placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
-            value={userSearch}
-            onChange={(e) => setUserSearch(e.target.value)}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            className="rounded-none pr-8"
-          />
-          {userSearch && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setUserSearch("")}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 rounded-none"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
-          
-          {/* Suggestions dropdown */}
-          {showSuggestions && userSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
-              {userSuggestions.map((user) => (
-                <div
-                  key={user.id}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => {
-                    setUserSearch(user.name);
-                    setShowSuggestions(false);
-                  }}
-                >
-                  <div className="font-medium text-sm">{user.name}</div>
-                  <div className="text-xs text-gray-500">{user.email}</div>
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="relative w-[300px]">
+          <Select 
+            value={selectedExercises.length === 1 ? selectedExercises[0] : "multiple"}
+            onValueChange={() => {}}
+          >
+            <SelectTrigger className="rounded-none">
+              <SelectValue>
+                {selectedExercises.length === 0 
+                  ? "Όλες οι ασκήσεις" 
+                  : selectedExercises.length === 1
+                    ? availableExercises.find(e => e.id === selectedExercises[0])?.name
+                    : `${selectedExercises.length} ασκήσεις επιλεγμένες`
+                }
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="rounded-none max-h-[300px]">
+              <div className="p-2 space-y-1">
+                {availableExercises.map(exercise => (
+                  <div
+                    key={exercise.id}
+                    className={`p-2 hover:bg-gray-100 cursor-pointer rounded-none ${
+                      selectedExercises.includes(exercise.id) ? 'bg-[#00ffba]/20 font-medium' : ''
+                    }`}
+                    onClick={() => toggleExercise(exercise.id)}
+                  >
+                    <span className="text-sm">{exercise.name}</span>
+                  </div>
+                ))}
+              </div>
+            </SelectContent>
+          </Select>
         </div>
 
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>

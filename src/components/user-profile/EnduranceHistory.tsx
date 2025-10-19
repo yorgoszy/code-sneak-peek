@@ -5,5 +5,5 @@ interface EnduranceHistoryProps {
 }
 
 export const EnduranceHistory: React.FC<EnduranceHistoryProps> = ({ userId }) => {
-  return <EnduranceHistoryTab selectedUserId={userId} />;
+  return <EnduranceHistoryTab selectedUserId={userId} readOnly={true} />;
 };
