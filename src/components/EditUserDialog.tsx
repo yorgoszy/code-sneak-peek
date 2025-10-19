@@ -10,6 +10,7 @@ import { PhotoUpload } from "./PhotoUpload";
 import { useEditUserDialog } from "./edit-user/useEditUserDialog";
 import { BasicInfoFields } from "./edit-user/BasicInfoFields";
 import { RoleStatusFields } from "./edit-user/RoleStatusFields";
+import { ChildrenFields } from "./edit-user/ChildrenFields";
 import { DialogActions } from "./edit-user/DialogActions";
 import type { EditUserDialogProps } from "./edit-user/types";
 
@@ -25,7 +26,11 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
     birthDate, setBirthDate,
     photoUrl, setPhotoUrl,
     loading,
-    handleSubmit
+    handleSubmit,
+    children,
+    addChild,
+    removeChild,
+    updateChild
   } = useEditUserDialog(user, isOpen);
 
   const onSubmit = () => {
@@ -72,6 +77,16 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
             setSubscriptionStatus={setSubscriptionStatus}
             loading={loading}
           />
+
+          {role === 'parent' && (
+            <ChildrenFields
+              children={children}
+              addChild={addChild}
+              removeChild={removeChild}
+              updateChild={updateChild}
+              loading={loading}
+            />
+          )}
           
           <DialogActions
             loading={loading}

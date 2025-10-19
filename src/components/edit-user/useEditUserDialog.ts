@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface Child {
+  id?: string;
+  name: string;
+  birth_date: string;
+}
+
 // Map UI/localized values to DB-allowed values
 const normalizeSubscriptionStatus = (value: string | null | undefined): "active" | "inactive" => {
   const v = (value || "").toLowerCase().trim();
@@ -25,25 +31,53 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
   const [birthDate, setBirthDate] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [children, setChildren] = useState<Child[]>([]);
 
   useEffect(() => {
-    if (user && isOpen) {
-      setName(user.name || "");
-      setEmail(user.email || "");
-      setPhone(user.phone || "");
-      setRole(user.role || "");
-      setCategory(user.category || "");
-      setUserStatus(user.user_status || "");
-      setSubscriptionStatus(normalizeSubscriptionStatus(user.subscription_status));
-      setBirthDate(user.birth_date || "");
-      setPhotoUrl(user.photo_url || "");
-    }
+    const fetchUserData = async () => {
+      if (user && isOpen) {
+        setName(user.name || "");
+        setEmail(user.email || "");
+        setPhone(user.phone || "");
+        setRole(user.role || "");
+        setCategory(user.category || "");
+        setUserStatus(user.user_status || "");
+        setSubscriptionStatus(normalizeSubscriptionStatus(user.subscription_status));
+        setBirthDate(user.birth_date || "");
+        setPhotoUrl(user.photo_url || "");
+
+        // Fetch children if role is parent
+        if (user.role === 'parent') {
+          const { data: childrenData } = await supabase
+            .from('children')
+            .select('*')
+            .eq('parent_id', user.id)
+            .order('created_at', { ascending: true });
+          
+          setChildren(childrenData || []);
+        } else {
+          setChildren([]);
+        }
+      }
+    };
+
+    fetchUserData();
   }, [user, isOpen]);
 
   const handleSubmit = async (onUserUpdated: () => void, onClose: () => void) => {
     if (!name.trim() || !email.trim()) {
       toast.error("Το όνομα και το email είναι υποχρεωτικά");
       return;
+    }
+
+    // Validate children if role is parent
+    if (role === 'parent' && children.length > 0) {
+      for (const child of children) {
+        if (!child.name.trim() || !child.birth_date) {
+          toast.error("Όλα τα παιδιά πρέπει να έχουν όνομα και ημερομηνία γέννησης");
+          return;
+        }
+      }
     }
 
     setLoading(true);
@@ -77,6 +111,51 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         throw error;
       }
 
+      // Handle children updates if role is parent
+      if (role === 'parent') {
+        // Get existing children
+        const { data: existingChildren } = await supabase
+          .from('children')
+          .select('id')
+          .eq('parent_id', user.id);
+
+        const existingIds = new Set(existingChildren?.map(c => c.id) || []);
+        const currentIds = new Set(children.filter(c => c.id).map(c => c.id));
+
+        // Delete removed children
+        const toDelete = Array.from(existingIds).filter(id => !currentIds.has(id));
+        if (toDelete.length > 0) {
+          await supabase
+            .from('children')
+            .delete()
+            .in('id', toDelete);
+        }
+
+        // Update or insert children
+        for (const child of children) {
+          if (child.id) {
+            // Update existing
+            await supabase
+              .from('children')
+              .update({
+                name: child.name,
+                birth_date: child.birth_date,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', child.id);
+          } else {
+            // Insert new
+            await supabase
+              .from('children')
+              .insert({
+                parent_id: user.id,
+                name: child.name,
+                birth_date: child.birth_date
+              });
+          }
+        }
+      }
+
       toast.success("Ο χρήστης ενημερώθηκε επιτυχώς!");
       onUserUpdated();
       onClose();
@@ -86,6 +165,20 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const addChild = () => {
+    setChildren([...children, { name: '', birth_date: '' }]);
+  };
+
+  const removeChild = (index: number) => {
+    setChildren(children.filter((_, i) => i !== index));
+  };
+
+  const updateChild = (index: number, field: keyof Child, value: string) => {
+    const newChildren = [...children];
+    newChildren[index] = { ...newChildren[index], [field]: value };
+    setChildren(newChildren);
   };
 
   return {
@@ -99,6 +192,10 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
     birthDate, setBirthDate,
     photoUrl, setPhotoUrl,
     loading,
-    handleSubmit
+    handleSubmit,
+    children,
+    addChild,
+    removeChild,
+    updateChild
   };
 };
